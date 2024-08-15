@@ -1,0 +1,36 @@
+<script lang="ts">
+	import { browser } from '$app/environment';
+	import Button from '../ui/button/button.svelte';
+
+	let darkMode = true;
+
+	function handleSwitchDarkMode() {
+		darkMode = !darkMode;
+		localStorage.setItem('mode', darkMode ? 'dark' : 'light');
+
+		darkMode
+			? document.documentElement.classList.add('dark')
+			: document.documentElement.classList.remove('dark');
+	}
+
+	if (browser) {
+		if (
+			localStorage.mode === 'dark' ||
+			(!('mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+		) {
+			document.documentElement.classList.add('dark');
+			darkMode = true;
+		} else {
+			document.documentElement.classList.remove('dark');
+			darkMode = false;
+		}
+	}
+</script>
+
+<Button variant="ghost" on:click={handleSwitchDarkMode}>
+	{#if darkMode}
+		<iconify-icon icon="line-md:sunny-outline-to-moon-loop-transition" width="20" height="20" />
+	{:else}
+		<iconify-icon icon="line-md:moon-alt-to-sunny-outline-loop-transition" width="20" height="20" />
+	{/if}
+</Button>
