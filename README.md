@@ -2,13 +2,14 @@
 
 # Mantræ
 
-**Mantræ** is a user-friendly web interface designed to simplify the management of Traefik's dynamic configurations. Similar to Nginx Proxy Manager (NPM), this application allows you to manage domains and assign hosts to them. However, Traefik Web UI focuses on providing a streamlined experience by enabling the creation and management of routers, services, and middlewares, while letting Traefik's static configuration handle tasks like Let's Encrypt.
+**Mantræ** is a user-friendly web interface designed to simplify the management of Traefik's dynamic configurations. Similar to Nginx Proxy Manager (NPM), this application allows you to manage your dynamic Traefik configuration from the comfort of a simple web ui.
 
 ## Features
 
 - **Domain Management**: Easily manage your domains and assign them to specific hosts via the web interface.
 - **Router Configuration**: Create and manage Traefik routers with custom rules, entrypoints, and middleware configurations.
-- **Middleware Management**: Apply various middlewares to your routers, including rate limiting, authentication, and more.
+- **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
+- **Service Status**: Monitor the status of your services and see their health information.
 - **Simplified UI**: A clean and intuitive interface that keeps the complexity to a minimum.
 
 ## Getting Started
