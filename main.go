@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MizuchiLabs/traefik-web/api"
+	"github.com/MizuchiLabs/mantrae/api"
 	"github.com/lmittmann/tint"
 )
 

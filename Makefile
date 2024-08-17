@@ -1,11 +1,11 @@
-BIN=traefik-web
+BIN=mantrae
 
 VERSION=$(shell git describe --tags)
 DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/traefik-web/tools/updater.Version=${VERSION} -X github.com/MizuchiLabs/traefik-web/tools/updater.BuildDate=${DATE} -X github.com/MizuchiLabs/traefik-web/tools/updater.Commit=${COMMIT}"
+LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/tools/updater.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/tools/updater.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/tools/updater.Commit=${COMMIT}"
 
 all: clean build
 
@@ -34,14 +34,14 @@ build-fast:
 .PHONY: docker
 docker:
 	docker build \
-		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/traefik-web" \
-		--label "org.opencontainers.image.description=Traefik Web UI" \
+		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \
+		--label "org.opencontainers.image.description=Mantrae" \
 		--label "org.opencontainers.image.version=${VERSION}" \
 		--label "org.opencontainers.image.revision=${COMMIT}" \
 		--label "org.opencontainers.image.created=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')" \
 		--label "org.opencontainers.image.licenses=Apache-2.0" \
-		-t ghcr.io/mizuchilabs/traefik-web:${VERSION} .
-	docker tag ghcr.io/mizuchilabs/traefik-web:${VERSION} ghcr.io/mizuchilabs/traefik-web:latest
+		-t ghcr.io/mizuchilabs/mantrae:${VERSION} .
+	docker tag ghcr.io/mizuchilabs/mantrae:${VERSION} ghcr.io/mizuchilabs/mantrae:latest
 
 .PHONY: upgrade
 upgrade:

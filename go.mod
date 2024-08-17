@@ -1,4 +1,4 @@
-module github.com/MizuchiLabs/traefik-web
+module github.com/MizuchiLabs/mantrae
 
 go 1.22.5
 

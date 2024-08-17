@@ -1,8 +1,8 @@
 <img src="./web/src/lib/images/logo.png" width="80">
 
-# Traefik Web UI
+# Mantræ
 
-**Traefik Web UI** is a user-friendly web interface designed to simplify the management of Traefik's dynamic configurations. Similar to Nginx Proxy Manager (NPM), this application allows you to manage domains and assign hosts to them. However, Traefik Web UI focuses on providing a streamlined experience by enabling the creation and management of routers, services, and middlewares, while letting Traefik's static configuration handle tasks like Let's Encrypt.
+**Mantræ** is a user-friendly web interface designed to simplify the management of Traefik's dynamic configurations. Similar to Nginx Proxy Manager (NPM), this application allows you to manage domains and assign hosts to them. However, Traefik Web UI focuses on providing a streamlined experience by enabling the creation and management of routers, services, and middlewares, while letting Traefik's static configuration handle tasks like Let's Encrypt.
 
 ## Features
 
@@ -24,7 +24,7 @@
 
 1. Extract the downloaded file
 
-1. Run the application `./traefik-web`
+1. Run the application `./mantrae`
 
 1. **Access the Web UI**:
    Open your web browser and navigate to `http://localhost:3000`
@@ -74,7 +74,7 @@ certificatesResolvers:
 
 providers:
   http:
-    endpoint: "<endpoint where traefik-web is running>"
+    endpoint: "<endpoint where mantrae is running>"
 ```
 
 ## Contributing
@@ -89,4 +89,3 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 - **Traefik**: For providing the powerful reverse proxy that powers this application.
 - **Nginx Proxy Manager**: For inspiration on building a simple and effective web UI for managing reverse proxies.
-
