@@ -4,9 +4,6 @@
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
-	import { createEventDispatcher } from 'svelte';
-
-	const dispatch = createEventDispatcher();
 
 	export let count: number;
 	export let perPage: Selected<number> | undefined;
@@ -15,15 +12,10 @@
 	const changePage = (page: number) => {
 		currentPage = page;
 	};
-	const changeLimit = (limit: Selected<number> | undefined) => {
-		if (limit === undefined) return;
-		perPage = { value: limit.value, label: limit.label };
-		dispatch('changeLimit', limit);
-	};
 </script>
 
 <div class="flex flex-row justify-between">
-	<Select.Root onSelectedChange={(value) => changeLimit(value)} selected={perPage}>
+	<Select.Root selected={perPage}>
 		<Select.Trigger class="w-[180px]">
 			<Select.Value placeholder="Select a limit" />
 		</Select.Trigger>

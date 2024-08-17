@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { HttpMiddleware } from '$lib/types/middlewares';
+	import type { Middleware } from '$lib/types/middlewares';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 
-	export let middleware: HttpMiddleware;
+	export let middleware: Middleware;
 	middleware.retry = middleware.retry ?? {
 		attempts: 0,
 		initialInterval: ''

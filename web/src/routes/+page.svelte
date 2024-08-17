@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
@@ -10,72 +10,64 @@
 	import type { Router } from '$lib/types/config';
 	import type { Selected } from 'bits-ui';
 	import Input from '$lib/components/ui/input/input.svelte';
+	import { onMount } from 'svelte';
 
 	let search = '';
+	let count = 0;
 	let currentPage = 1;
+	let fRouters: Router[] = [];
 	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
 
 	$: routers = Object.values($activeProfile?.instance?.dynamic?.routers ?? []);
 	$: services = Object.values($activeProfile?.instance?.dynamic?.services ?? []);
 	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
-	$: count = routers.length > 0 ? routers.length : 1;
-	$: filteredRouters = routers.slice(
-		(currentPage - 1) * perPage?.value!,
-		currentPage * perPage?.value!
-	);
-	$: search, searchRouter();
+	$: search, routers, currentPage, searchRouter();
+
+	// Reset the page to 1 when the search input changes
+	$: {
+		if (search) {
+			currentPage = 1;
+		}
+	}
 
 	const searchRouter = () => {
-		if (search === '') {
-			count = routers.length > 0 ? routers.length : 1;
-			filteredRouters = paginate(routers);
-			return;
-		}
-		let searchParts = search.split(' ');
-		let providerSearch = '';
-		let typeSearch = '';
-		let generalSearch = [];
-
-		// Parse the search parts
-		for (const part of searchParts) {
-			if (part.startsWith('@provider:')) {
-				providerSearch = part.split(':')[1].toLowerCase();
-			} else if (part.startsWith('@type:')) {
-				typeSearch = part.split(':')[1].toLowerCase();
-			} else {
-				generalSearch.push(part.toLowerCase());
-			}
-		}
-
 		let items: Router[] = [...routers];
-		// Filter by provider if applicable
-		if (providerSearch) {
-			items = routers.filter((router) => {
-				return router.provider?.toLowerCase() === providerSearch;
+
+		if (search) {
+			const searchParts = search.split(' ').map((part) => part.toLowerCase());
+			let providerSearch = '';
+			let typeSearch = '';
+			let generalSearch = [];
+
+			for (const part of searchParts) {
+				if (part.startsWith('@provider:')) {
+					providerSearch = part.split(':')[1];
+				} else if (part.startsWith('@type:')) {
+					typeSearch = part.split(':')[1];
+				} else {
+					generalSearch.push(part);
+				}
+			}
+
+			items = items.filter((router) => {
+				const matchesProvider = providerSearch
+					? router.provider?.toLowerCase() === providerSearch
+					: true;
+				const matchesType = typeSearch ? router.routerType.toLowerCase() === typeSearch : true;
+				const matchesGeneral = generalSearch.every((term) =>
+					router.service.toLowerCase().includes(term)
+				);
+				return matchesProvider && matchesType && matchesGeneral;
 			});
 		}
 
-		// Filter by type if applicable
-		if (typeSearch) {
-			items = routers.filter((router) => {
-				return router.routerType.toLowerCase() === typeSearch;
-			});
-		}
-
-		// Filter by general search terms
-		if (generalSearch.length > 0) {
-			items = routers.filter((router) => {
-				return generalSearch.every((term) => router.service.toLowerCase().includes(term));
-			});
-		}
-
-		currentPage = 1;
-		count = items.length > 0 ? items.length : 1;
-		filteredRouters = paginate(items);
+		fRouters = paginate(items);
+		count = items.length || 1;
 	};
 
 	const paginate = (routers: Router[]) => {
-		return routers.slice((currentPage - 1) * perPage?.value!, currentPage * perPage?.value!);
+		const itemsPerPage = perPage?.value ?? 10;
+		return routers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 	};
 
 	// let columns: Selected<string>[] | undefined = [
@@ -129,6 +121,19 @@
 		let ok = upServices === totalServices ? true : false;
 		return { status: status, ok: ok };
 	};
+
+	// Only show local routers not external ones
+	let onlyLocal = localStorage.getItem('local-only') === 'true';
+	const toggleLocalOnly = () => {
+		onlyLocal = !onlyLocal;
+		localStorage.setItem('localOnly', onlyLocal.toString());
+		search = onlyLocal ? '@provider:http' : '';
+	};
+
+	onMount(() => {
+		onlyLocal = localStorage.getItem('localOnly') === 'true';
+		search = onlyLocal ? '@provider:http' : '';
+	});
 </script>
 
 <svelte:head>
@@ -147,7 +152,14 @@
 		<Button variant="outline" on:click={() => (search = '')} aria-hidden>
 			<iconify-icon icon="fa6-solid:xmark" />
 		</Button>
-		<Button variant="default" on:click={() => (search = `@provider:http`)}>Local Only</Button>
+		<button
+			class={buttonVariants({ variant: 'outline' })}
+			class:bg-primary={onlyLocal}
+			class:text-primary-foreground={onlyLocal}
+			on:click={toggleLocalOnly}
+		>
+			Local Only
+		</button>
 	</div>
 	<!-- <Select.Root -->
 	<!-- 	multiple={true} -->
@@ -192,7 +204,7 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#each filteredRouters as router}
+				{#each fRouters as router}
 					<Table.Row>
 						<Table.Cell class="font-medium">
 							{router.service}
@@ -306,10 +318,10 @@
 	</Card.Content>
 	<Card.Footer>
 		<div class="text-xs text-muted-foreground">
-			Showing <strong>{filteredRouters.length > 0 ? 1 : 0}-{filteredRouters.length}</strong> of
+			Showing <strong>{fRouters.length > 0 ? 1 : 0}-{fRouters.length}</strong> of
 			<strong>{routers.length}</strong> routers
 		</div>
 	</Card.Footer>
 </Card.Root>
 
-<Pagination {count} {perPage} bind:currentPage on:changeLimit={(e) => (perPage = e.detail)} />
+<Pagination {count} {perPage} bind:currentPage />

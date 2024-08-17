@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { HttpMiddleware } from '$lib/types/middlewares';
+	import type { Middleware } from '$lib/types/middlewares';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 
-	export let middleware: HttpMiddleware;
+	export let middleware: Middleware;
 	middleware.contentType = middleware.contentType ?? {
 		autoDetect: false
 	};

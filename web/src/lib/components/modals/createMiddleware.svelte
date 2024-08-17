@@ -7,34 +7,19 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { activeProfile, updateProfile } from '$lib/api';
-	import type { HttpMiddleware, TCPMiddleware } from '$lib/types/middlewares';
-	import type { SvelteComponent } from 'svelte';
+	import { activeProfile, updateMiddleware } from '$lib/api';
+	import { newMiddleware } from '$lib/types/middlewares';
 
-	let httpMiddleware: HttpMiddleware = { name: '', provider: 'http' };
-	let tcpMiddleware: TCPMiddleware = { name: '', provider: 'http' };
-	let isHTTP = true;
+	let middleware = newMiddleware();
+	let isHTTP = middleware.middlewareType === 'http';
 
 	const create = () => {
-		if (isHTTP) {
-			httpMiddleware.name = httpMiddleware.name.trim();
-			if (httpMiddleware.name === '') return;
-		} else {
-			tcpMiddleware.name = tcpMiddleware.name.trim();
-			if (tcpMiddleware.name === '') return;
-		}
-		activeProfile.update((p) => ({
-			...p,
-			instance: {
-				...p.instance,
-				dynamic: {
-					...p.instance.dynamic,
-					httpmiddlewares: [...(p.instance.dynamic?.httpmiddlewares || []), { ...httpMiddleware }],
-					tcpmiddlewares: [...(p.instance.dynamic?.tcpmiddlewares || []), { ...tcpMiddleware }]
-				}
-			}
-		}));
-		updateProfile($activeProfile.name, $activeProfile);
+		if (middleware.type === '') return;
+		middleware.name = middleware.name + '@' + middleware.provider;
+		if (isHTTP) middleware.middlewareType = 'http';
+		else middleware.middlewareType = 'tcp';
+
+		updateMiddleware($activeProfile.name, middleware, middleware.name);
 	};
 
 	const HTTPMiddlewareTypes: Selected<string>[] = [
@@ -101,6 +86,7 @@
 	const changeMiddlewareType = async (serviceType: Selected<string> | undefined) => {
 		if (serviceType === undefined) return;
 		middlewareType = { label: serviceType.label || '', value: serviceType.value };
+		middleware.type = serviceType.value.toLowerCase();
 		await loadMiddlewareFormComponent(serviceType);
 	};
 
@@ -149,7 +135,7 @@
 							<Select.Value placeholder="Select a type" />
 						</Select.Trigger>
 						<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-							{#if isHTTP}
+							{#if middleware.middlewareType === 'http'}
 								{#each HTTPMiddlewareTypes as type}
 									<Select.Item value={type.value} label={type.label}>
 										{type.label}
@@ -171,7 +157,7 @@
 						id="name"
 						name="name"
 						type="text"
-						bind:value={httpMiddleware.name}
+						bind:value={middleware.name}
 						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 						placeholder="Name of the middleware"
 						required
@@ -179,7 +165,7 @@
 				</div>
 				{#if MiddlewareFormComponent}
 					<div class="mt-6 space-y-2">
-						<svelte:component this={MiddlewareFormComponent} bind:middleware={httpMiddleware} />
+						<svelte:component this={MiddlewareFormComponent} bind:middleware />
 					</div>
 				{/if}
 			</Card.Content>

@@ -4,43 +4,22 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { activeProfile, updateProfile } from '$lib/api';
-	import type { HttpMiddleware, TCPMiddleware } from '$lib/types/middlewares';
+	import { activeProfile, updateMiddleware } from '$lib/api';
+	import type { Middleware } from '$lib/types/middlewares';
 
-	export let httpMiddleware: HttpMiddleware | undefined;
-	export let tcpMiddleware: TCPMiddleware | undefined;
+	export let middleware: Middleware;
+	let oldMiddleware = middleware.name;
+	let name = middleware.name.split('@')[0];
 
 	const update = () => {
-		if (httpMiddleware === undefined && tcpMiddleware === undefined) return;
-		if (httpMiddleware !== undefined) {
-			httpMiddleware.name = httpMiddleware.name.trim();
-			if (httpMiddleware.name === '') return;
-			activeProfile.update((p) => ({
-				...p,
-				instance: {
-					...p.instance,
-					dynamic: {
-						...p.instance.dynamic,
-						httpmiddlewares: [...(p.instance.dynamic?.httpmiddlewares || []), { ...httpMiddleware }]
-					}
-				}
-			}));
+		middleware.name = name + '@' + middleware.provider;
+		updateMiddleware($activeProfile.name, middleware, oldMiddleware);
+	};
+
+	const onKeydown = (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			update();
 		}
-		if (tcpMiddleware !== undefined) {
-			tcpMiddleware.name = tcpMiddleware.name.trim();
-			if (tcpMiddleware.name === '') return;
-			activeProfile.update((p) => ({
-				...p,
-				instance: {
-					...p.instance,
-					dynamic: {
-						...p.instance.dynamic,
-						tcpmiddlewares: [...(p.instance.dynamic?.tcpmiddlewares || []), { ...tcpMiddleware }]
-					}
-				}
-			}));
-		}
-		updateProfile($activeProfile.name, $activeProfile);
 	};
 </script>
 
@@ -61,27 +40,16 @@
 			<Card.Content class="space-y-2">
 				<div class="grid grid-cols-4 items-center gap-4">
 					<Label for="name" class="text-right">Name</Label>
-					{#if httpMiddleware !== undefined}
-						<Input
-							id="name"
-							name="name"
-							type="text"
-							bind:value={httpMiddleware.name}
-							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-							placeholder="Name of the middleware"
-							required
-						/>
-					{:else if tcpMiddleware !== undefined}
-						<Input
-							id="name"
-							name="name"
-							type="text"
-							bind:value={tcpMiddleware.name}
-							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-							placeholder="Name of the middleware"
-							required
-						/>
-					{/if}
+					<Input
+						id="name"
+						name="name"
+						type="text"
+						bind:value={name}
+						on:keydown={onKeydown}
+						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+						placeholder="Name of the middleware"
+						required
+					/>
 				</div>
 			</Card.Content>
 		</Card.Root>

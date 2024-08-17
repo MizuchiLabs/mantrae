@@ -26,6 +26,7 @@
 		if (service === undefined) return;
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
+		service.serviceType = router.routerType;
 		try {
 			await updateRouter($activeProfile.name, router, oldRouter);
 			await updateService($activeProfile.name, service, oldService);
@@ -199,7 +200,7 @@
 			</Tabs.Content>
 		</Tabs.Root>
 		<Dialog.Close class="w-full">
-			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
+			<Button class="w-full" on:click={() => update()}>Save</Button>
 		</Dialog.Close>
 	</Dialog.Content>
 </Dialog.Root>

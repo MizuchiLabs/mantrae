@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { HttpMiddleware } from '$lib/types/middlewares';
+	import type { Middleware } from '$lib/types/middlewares';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
-	export let middleware: HttpMiddleware;
+	export let middleware: Middleware;
 	middleware.basicAuth = middleware.basicAuth ?? {
 		users: [''],
 		realm: '',

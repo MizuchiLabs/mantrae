@@ -255,8 +255,10 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.PathValue("profile") == "" {
-		http.Error(w, "profile name cannot be empty", http.StatusBadRequest)
+	profileName := r.PathValue("profile")
+	middlewareName := r.PathValue("middleware")
+	if profileName == "" || middlewareName == "" {
+		http.Error(w, "profile or middleware name cannot be empty", http.StatusBadRequest)
 		return
 	}
 
@@ -267,7 +269,10 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, profile := range profiles {
-		if strings.EqualFold(profile.Name, r.PathValue("profile")) {
+		if strings.EqualFold(profile.Name, profileName) {
+			if middlewareName != middleware.Name {
+				delete(profiles[i].Instance.Dynamic.Middlewares, middlewareName)
+			}
 			profiles[i].Instance.Dynamic.Middlewares[middleware.Name] = middleware
 			if err := SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

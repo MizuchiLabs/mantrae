@@ -21,6 +21,7 @@
 	const create = async () => {
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider;
+		service.serviceType = router.routerType;
 		try {
 			await updateRouter($activeProfile.name, router, router.name);
 			await updateService($activeProfile.name, service, service.name);

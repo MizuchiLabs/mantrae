@@ -126,8 +126,12 @@ export async function deleteService(profileName: string, serviceName: string): P
 }
 
 // Middlewares ----------------------------------------------------------------
-export async function updateMiddleware(profileName: string, middleware: Middleware): Promise<void> {
-	const response = await fetch(`${API_URL}/middlewares/${profileName}/${middleware.name}`, {
+export async function updateMiddleware(
+	profileName: string,
+	middleware: Middleware,
+	oldMiddleware: string
+): Promise<void> {
+	const response = await fetch(`${API_URL}/middlewares/${profileName}/${oldMiddleware}`, {
 		method: 'PUT',
 		body: JSON.stringify(middleware)
 	});
@@ -140,8 +144,8 @@ export async function updateMiddleware(profileName: string, middleware: Middlewa
 	}
 }
 
-export async function deleteMiddleware(name: string): Promise<void> {
-	const response = await fetch(`${API_URL}/middlewares/${name}`, {
+export async function deleteMiddleware(profileName: string, name: string): Promise<void> {
+	const response = await fetch(`${API_URL}/middlewares/${profileName}/${name}`, {
 		method: 'DELETE'
 	});
 	handleError(response);

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { HttpMiddleware } from '$lib/types/middlewares';
+	import type { Middleware } from '$lib/types/middlewares';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
-	export let middleware: HttpMiddleware;
+	export let middleware: Middleware;
 	middleware.stripPrefixRegex = middleware.stripPrefixRegex ?? {
 		regex: ['']
 	};
