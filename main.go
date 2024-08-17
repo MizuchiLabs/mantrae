@@ -2,11 +2,13 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -59,6 +61,8 @@ func loggingMiddleware(next http.Handler) http.Handler {
 			"protocol", r.Proto,
 			"status", recorder.statusCode,
 			"duration", duration,
+			"headers", r.Header,
+			"query", r.URL.RawQuery,
 		)
 	})
 }
@@ -85,17 +89,24 @@ func enableCors(next http.Handler) http.Handler {
 }
 
 func main() {
+	port := flag.Int("port", 3000, "Port to listen on")
+	flag.Parse()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/profiles", api.CreateProfile)
 	mux.HandleFunc("GET /api/profiles", api.GetProfiles)
 	mux.HandleFunc("PUT /api/profiles/{name}", api.UpdateProfile)
 	mux.HandleFunc("DELETE /api/profiles/{name}", api.DeleteProfile)
+
 	mux.HandleFunc("PUT /api/routers/{profile}/{router}", api.UpdateRouter)
 	mux.HandleFunc("DELETE /api/routers/{profile}/{router}", api.DeleteRouter)
+
 	mux.HandleFunc("PUT /api/services/{profile}/{service}", api.UpdateService)
 	mux.HandleFunc("DELETE /api/services/{profile}/{service}", api.DeleteService)
+
 	mux.HandleFunc("PUT /api/middlewares/{profile}/{middleware}", api.UpdateMiddleware)
 	mux.HandleFunc("DELETE /api/middlewares/{profile}/{middleware}", api.DeleteMiddleware)
+
 	mux.HandleFunc("GET /api/{name}", api.GetConfig)
 
 	staticContent, err := fs.Sub(webFS, "web/build")
@@ -112,8 +123,8 @@ func main() {
 	wg.Add(1)
 	go api.Sync(wg)
 
-	log.Println("Listening on port 3000")
-	if err := http.ListenAndServe(":3000", cors); err != nil {
+	log.Println("Listening on port", *port)
+	if err := http.ListenAndServe(":"+strconv.Itoa(*port), cors); err != nil {
 		slog.Error("ListenAndServe", "error", err)
 		return
 	}
