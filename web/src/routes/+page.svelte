@@ -12,8 +12,13 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 
 	let search = '';
-	$: routers = $activeProfile?.instance?.dynamic?.routers ?? [];
-	$: services = $activeProfile?.instance?.dynamic?.services ?? [];
+	let currentPage = 1;
+	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
+
+	$: routers = Object.values($activeProfile?.instance?.dynamic?.routers ?? []);
+	$: services = Object.values($activeProfile?.instance?.dynamic?.services ?? []);
+	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
+	$: count = routers.length > 0 ? routers.length : 1;
 	$: filteredRouters = routers.slice(
 		(currentPage - 1) * perPage?.value!,
 		currentPage * perPage?.value!
@@ -21,12 +26,9 @@
 	$: search, searchRouter();
 
 	const searchRouter = () => {
-		let paginatedRouters = routers.slice(
-			(currentPage - 1) * perPage?.value!,
-			currentPage * perPage?.value!
-		);
 		if (search === '') {
-			filteredRouters = paginatedRouters;
+			count = routers.length > 0 ? routers.length : 1;
+			filteredRouters = paginate(routers);
 			return;
 		}
 		let searchParts = search.split(' ');
@@ -45,32 +47,37 @@
 			}
 		}
 
+		let items: Router[] = [...routers];
 		// Filter by provider if applicable
 		if (providerSearch) {
-			paginatedRouters = paginatedRouters.filter((router) => {
+			items = routers.filter((router) => {
 				return router.provider?.toLowerCase() === providerSearch;
 			});
 		}
 
 		// Filter by type if applicable
 		if (typeSearch) {
-			paginatedRouters = paginatedRouters.filter((router) => {
+			items = routers.filter((router) => {
 				return router.routerType.toLowerCase() === typeSearch;
 			});
 		}
 
 		// Filter by general search terms
 		if (generalSearch.length > 0) {
-			paginatedRouters = paginatedRouters.filter((router) => {
+			items = routers.filter((router) => {
 				return generalSearch.every((term) => router.service.toLowerCase().includes(term));
 			});
 		}
 
-		filteredRouters = paginatedRouters;
+		currentPage = 1;
+		count = items.length > 0 ? items.length : 1;
+		filteredRouters = paginate(items);
 	};
 
-	let currentPage = 1;
-	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
+	const paginate = (routers: Router[]) => {
+		return routers.slice((currentPage - 1) * perPage?.value!, currentPage * perPage?.value!);
+	};
+
 	// let columns: Selected<string>[] | undefined = [
 	// 	{ value: 'name', label: 'Name' },
 	// 	{ value: 'provider', label: 'Provider' },
@@ -102,20 +109,25 @@
 		return list ?? [];
 	};
 	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
-		let list = router?.middlewares?.map((middleware) => {
+		if (router?.middlewares === undefined) return [];
+		return router.middlewares.map((middleware) => {
 			return { value: middleware, label: middleware };
 		});
-		return list ?? [];
 	};
-	const getServiceStatus = (router: Router): string => {
-		let service = services.find((s) => s.name === router.service + '@' + router.provider);
-		if (service?.serverStatus === undefined) return '0/0';
 
-		let totalServices = Object.keys(service.serverStatus).length;
-		let upServices = Object.keys(service.serverStatus).filter(
-			(key) => service.serverStatus !== undefined && service.serverStatus[key] === 'UP'
-		).length;
-		return `${upServices}/${totalServices}`;
+	const getServiceStatus = (router: Router): Record<string, string | boolean> => {
+		let service = services.find((s) => s.name === router.service + '@' + router.provider);
+		let totalServices = service?.loadBalancer?.servers?.length || 0;
+
+		let upServices = 0;
+		if (service?.serverStatus !== undefined) {
+			upServices = Object.keys(service.serverStatus).filter(
+				(key) => service.serverStatus !== undefined && service.serverStatus[key] === 'UP'
+			).length;
+		}
+		let status = `${upServices}/${totalServices}`;
+		let ok = upServices === totalServices ? true : false;
+		return { status: status, ok: ok };
 	};
 </script>
 
@@ -132,9 +144,10 @@
 			class="w-80 focus-visible:ring-0 focus-visible:ring-offset-0"
 			bind:value={search}
 		/>
-		<Button variant="outline" class="focus:outline-none" on:click={() => (search = '')} aria-hidden>
+		<Button variant="outline" on:click={() => (search = '')} aria-hidden>
 			<iconify-icon icon="fa6-solid:xmark" />
 		</Button>
+		<Button variant="default" on:click={() => (search = `@provider:http`)}>Local Only</Button>
 	</div>
 	<!-- <Select.Root -->
 	<!-- 	multiple={true} -->
@@ -172,7 +185,7 @@
 					<Table.Head class="hidden lg:table-cell">Rule</Table.Head>
 					<Table.Head class="hidden lg:table-cell">Entrypoints</Table.Head>
 					<Table.Head class="hidden lg:table-cell">Middlewares</Table.Head>
-					<Table.Head class="hidden lg:table-cell">Service Status</Table.Head>
+					<Table.Head>Service Status</Table.Head>
 					<Table.Head>
 						<span class="sr-only">Edit</span>
 					</Table.Head>
@@ -187,7 +200,7 @@
 						<Table.Cell class="font-medium">
 							<span
 								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-								on:click={() => (search += ` @provider:${router.provider}`)}
+								on:click={() => (search = `@provider:${router.provider}`)}
 								aria-hidden
 							>
 								{router.provider}
@@ -199,7 +212,7 @@
 								class:bg-green-300={router.routerType === 'http'}
 								class:bg-blue-300={router.routerType === 'tcp'}
 								class:bg-purple-300={router.routerType === 'udp'}
-								on:click={() => (search += ` @type:${router.routerType}`)}
+								on:click={() => (search = `@type:${router.routerType}`)}
 								aria-hidden
 							>
 								{router.routerType}
@@ -243,38 +256,35 @@
 							</Select.Root>
 						</Table.Cell>
 						<Table.Cell class="hidden lg:table-cell">
-							<Select.Root
-								multiple={true}
-								selected={getSelectedMiddlewares(router)}
-								onSelectedChange={(value) => toggleMiddleware(router, value)}
-								disabled={router.provider !== 'http'}
-							>
-								<Select.Trigger class="w-[180px]">
-									<Select.Value placeholder="Select a middleware" />
-								</Select.Trigger>
-								<Select.Content class="text-sm">
-									{#if router.routerType === 'http'}
-										{#each $activeProfile?.instance?.dynamic?.httpmiddlewares || [] as middleware}
-											<Select.Item value={middleware.name}>
-												{middleware.name}
-											</Select.Item>
+							<div class:hidden={router.routerType === 'udp'}>
+								<Select.Root
+									multiple={true}
+									selected={getSelectedMiddlewares(router)}
+									onSelectedChange={(value) => toggleMiddleware(router, value)}
+									disabled={router.provider !== 'http'}
+								>
+									<Select.Trigger class="w-[180px]">
+										<Select.Value placeholder="Select a middleware" />
+									</Select.Trigger>
+									<Select.Content class="text-sm">
+										{#each middlewares as middleware}
+											{#if router.routerType === middleware.middlewareType}
+												<Select.Item value={middleware.name}>
+													{middleware.name}
+												</Select.Item>
+											{/if}
 										{/each}
-									{/if}
-									{#if router.routerType === 'tcp'}
-										{#each $activeProfile?.instance?.dynamic?.tcpmiddlewares || [] as middleware}
-											<Select.Item value={middleware.name}>
-												{middleware.name}
-											</Select.Item>
-										{/each}
-									{/if}
-								</Select.Content>
-							</Select.Root>
+									</Select.Content>
+								</Select.Root>
+							</div>
 						</Table.Cell>
 						<Table.Cell>
 							<span
-								class="rounded-full bg-green-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
+								class="rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
+								class:bg-green-300={getServiceStatus(router).ok}
+								class:bg-red-300={!getServiceStatus(router).ok}
 							>
-								{getServiceStatus(router)}
+								{getServiceStatus(router).status}
 							</span>
 						</Table.Cell>
 						<Table.Cell class="min-w-[100px]">
@@ -283,7 +293,7 @@
 								<Button
 									variant="ghost"
 									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteRouter(router.service)}
+									on:click={() => deleteRouter($activeProfile.name, router.name)}
 								>
 									<iconify-icon icon="fa6-solid:xmark" />
 								</Button>
@@ -302,9 +312,4 @@
 	</Card.Footer>
 </Card.Root>
 
-<Pagination
-	count={routers.length > 0 ? routers.length : 1}
-	{perPage}
-	bind:currentPage
-	on:changeLimit={(e) => (perPage = e.detail)}
-/>
+<Pagination {count} {perPage} bind:currentPage on:changeLimit={(e) => (perPage = e.detail)} />

@@ -1,12 +1,9 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
-	import type { Selected } from 'bits-ui';
 	import { activeProfile, updateProfile } from '$lib/api';
 	import type { HttpMiddleware, TCPMiddleware } from '$lib/types/middlewares';
 

@@ -1,5 +1,5 @@
 import type { Router, Service } from './config';
-import type { HttpMiddleware, TCPMiddleware } from './middlewares';
+import type { Middleware } from './middlewares';
 import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
@@ -16,10 +16,9 @@ export interface Instance {
 
 export interface Dynamic {
 	entrypoints?: Entrypoint[];
-	routers?: Router[];
-	services?: Service[];
-	httpmiddlewares?: HttpMiddleware[];
-	tcpmiddlewares?: TCPMiddleware[];
+	routers?: Record<string, Router>;
+	services?: Record<string, Service>;
+	middlewares?: Record<string, Middleware>;
 	version?: string;
 }
 

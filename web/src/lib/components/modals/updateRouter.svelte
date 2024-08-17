@@ -7,51 +7,30 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { activeProfile, updateProfile } from '$lib/api';
-	import type { Router, Service } from '$lib/types/config';
+	import { activeProfile, updateRouter, updateService } from '$lib/api';
+	import { newService, type Router, type Service } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
+	import { toast } from 'svelte-sonner';
 
 	export let router: Router;
-	let service: Service = $activeProfile?.instance?.dynamic?.services?.find(
-		(s) => s.name === router.service + '@' + router.provider
-	) ?? {
-		serviceType: router.routerType,
-		provider: router.provider,
-		loadBalancer: { servers: [{ url: '' }], passHostHeader: true }
-	};
+	let oldRouter = router.name;
+	let oldService = router.service + '@' + router.provider;
+
+	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares || []);
+	let service: Service | undefined =
+		$activeProfile?.instance?.dynamic?.services?.[router.service + '@' + router.provider];
 	$: servers = service?.loadBalancer?.servers?.length || 0;
 
-	const update = () => {
-		service.name = router.service + '@' + router.provider;
-		activeProfile.update((p) => {
-			const routers = p.instance.dynamic?.routers || [];
-			const services = p.instance.dynamic?.services || [];
-			const index = routers.findIndex((r) => r.name === router.name);
-			if (index > -1) {
-				routers[index] = { ...router };
-			} else {
-				routers.push({ ...router });
-			}
-			const serviceIndex = services.findIndex((s) => s.name === service.name);
-			if (serviceIndex > -1) {
-				services[serviceIndex] = { ...service };
-			} else {
-				services.push({ ...service });
-			}
-			return {
-				...p,
-				instance: {
-					...p.instance,
-					dynamic: {
-						...p.instance.dynamic,
-						routers,
-						services
-					}
-				}
-			};
-		});
-		updateProfile($activeProfile.name, $activeProfile);
+	const update = async () => {
+		if (service === undefined) return;
+		router.name = router.service + '@' + router.provider;
+		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
+		try {
+			await updateRouter($activeProfile.name, router, oldRouter);
+			await updateService($activeProfile.name, service, oldService);
+			toast.success(`Router ${router.name} updated`);
+		} catch (e) {}
 	};
 
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
@@ -77,11 +56,7 @@
 
 	const addServer = () => {
 		if (service?.loadBalancer?.servers === undefined) {
-			service = {
-				serviceType: router.routerType,
-				name: router.service,
-				loadBalancer: { servers: [{ url: '' }], passHostHeader: true }
-			};
+			service = newService();
 			return;
 		}
 		service.loadBalancer.servers = [...service.loadBalancer.servers, { url: '' }];
@@ -153,37 +128,33 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
-						{#if router.routerType === 'http' || router.routerType === 'tcp'}
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="middlewares" class="text-right">Middlewares</Label>
-								<Select.Root
-									multiple={true}
-									selected={getSelectedMiddlewares(router)}
-									onSelectedChange={(value) => toggleMiddleware(router, value)}
-								>
-									<Select.Trigger class="col-span-3">
-										<Select.Value placeholder="Select a middleware" />
-									</Select.Trigger>
-									<Select.Content>
-										{#if router.routerType === 'http'}
-											{#each $activeProfile?.instance?.dynamic?.httpmiddlewares || [] as middleware}
-												<Select.Item value={middleware.name}>
-													{middleware.name}
-												</Select.Item>
-											{/each}
+						<div
+							class="grid grid-cols-4 items-center gap-4"
+							class:hidden={router.routerType === 'udp'}
+						>
+							<Label for="middlewares" class="text-right">Middlewares</Label>
+							<Select.Root
+								multiple={true}
+								selected={getSelectedMiddlewares(router)}
+								onSelectedChange={(value) => toggleMiddleware(router, value)}
+							>
+								<Select.Trigger class="col-span-3">
+									<Select.Value placeholder="Select a middleware" />
+								</Select.Trigger>
+								<Select.Content>
+									{#each middlewares as middleware}
+										{#if router.routerType === middleware.type}
+											<Select.Item value={middleware.name}>
+												{middleware.name}
+											</Select.Item>
 										{/if}
-										{#if router.routerType === 'tcp'}
-											{#each $activeProfile?.instance?.dynamic?.tcpmiddlewares || [] as middleware}
-												<Select.Item value={middleware.name}>
-													{middleware.name}
-												</Select.Item>
-											{/each}
-										{/if}
-									</Select.Content>
-								</Select.Root>
-							</div>
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						</div>
+						<div class:hidden={router.routerType === 'udp'}>
 							<RuleEditor bind:rule={router.rule} />
-						{/if}
+						</div>
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>

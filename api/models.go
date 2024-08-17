@@ -1,8 +1,6 @@
 package api
 
 import (
-	"math/big"
-
 	"github.com/traefik/genconf/dynamic"
 )
 
@@ -17,32 +15,54 @@ type Entrypoint struct {
 }
 
 type Router struct {
-	RouterType  string                   `json:"routerType,omitempty"`
-	Entrypoints []string                 `json:"entrypoints,omitempty"`
-	Middlewares []string                 `json:"middlewares,omitempty"`
-	Rule        string                   `json:"rule,omitempty"`
-	Service     string                   `json:"service,omitempty"`
-	Priority    big.Int                  `json:"priority,omitempty"`
-	TLS         *dynamic.RouterTLSConfig `json:"tls,omitempty"`
-	Status      string                   `json:"status,omitempty"`
-	Name        string                   `json:"name,omitempty"`
-	Provider    string                   `json:"provider,omitempty"`
+	// Common fields
+	Name       string `json:"name,omitempty"`
+	Provider   string `json:"provider,omitempty"`
+	Status     string `json:"status,omitempty"`
+	RouterType string `json:"routerType,omitempty"`
+
+	Entrypoints []string `json:"entrypoints,omitempty"` // http, tcp, udp
+	Middlewares []string `json:"middlewares,omitempty"` // http, tcp
+	Rule        string   `json:"rule,omitempty"`        // http, tcp
+	Service     string   `json:"service,omitempty"`     // http, tcp, udp
+	// Priority    *big.Int                    `json:"priority,omitempty"`
+	TLS    *dynamic.RouterTLSConfig    `json:"tls,omitempty"`    // http
+	TCPTLS *dynamic.RouterTCPTLSConfig `json:"tcpTLS,omitempty"` // tcp
 }
 
 type Service struct {
-	ServiceType  string                       `json:"serviceType,omitempty"`
+	// Common fields
+	Name         string            `json:"name,omitempty"`
+	Provider     string            `json:"provider,omitempty"`
+	Type         string            `json:"type,omitempty"`
+	Status       string            `json:"status,omitempty"`
+	ServiceType  string            `json:"serviceType,omitempty"` // "http" or "tcp" or "udp"
+	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+
+	// HTTP-specific fields
 	LoadBalancer *dynamic.ServersLoadBalancer `json:"loadBalancer,omitempty"`
 	Weighted     *dynamic.WeightedRoundRobin  `json:"weighted,omitempty"`
 	Mirroring    *dynamic.Mirroring           `json:"mirroring,omitempty"`
 	Failover     *dynamic.Failover            `json:"failover,omitempty"`
-	ServerStatus map[string]string            `json:"serverStatus,omitempty"`
-	Status       string                       `json:"status,omitempty"`
-	Name         string                       `json:"name,omitempty"`
-	Provider     string                       `json:"provider,omitempty"`
-	Type         string                       `json:"type,omitempty"`
+
+	// TCP-specific fields
+	TCPLoadBalancer *dynamic.TCPServersLoadBalancer `json:"tcpLoadBalancer,omitempty"`
+	TCPWeighted     *dynamic.TCPWeightedRoundRobin  `json:"tcpWeighted,omitempty"`
+
+	// UDP-specific fields
+	UDPLoadBalancer *dynamic.UDPServersLoadBalancer `json:"udpLoadBalancer,omitempty"`
+	UDPWeighted     *dynamic.UDPWeightedRoundRobin  `json:"udpWeighted,omitempty"`
 }
 
-type HTTPMiddleware struct {
+type Middleware struct {
+	// Common fields
+	Name           string `json:"name,omitempty"`
+	Provider       string `json:"provider,omitempty"`
+	Type           string `json:"type,omitempty"`
+	Status         string `json:"status,omitempty"`
+	MiddlewareType string `json:"middlewareType,omitempty"` // "http" or "tcp"
+
+	// HTTP-specific fields
 	AddPrefix         *dynamic.AddPrefix            `json:"addPrefix,omitempty"`
 	StripPrefix       *dynamic.StripPrefix          `json:"stripPrefix,omitempty"`
 	StripPrefixRegex  *dynamic.StripPrefixRegex     `json:"stripPrefixRegex,omitempty"`
@@ -67,29 +87,19 @@ type HTTPMiddleware struct {
 	Retry             *dynamic.Retry                `json:"retry,omitempty"`
 	ContentType       *dynamic.ContentType          `json:"contentType,omitempty"`
 	Plugin            map[string]dynamic.PluginConf `json:"plugin,omitempty"`
-	Status            string                        `json:"status,omitempty"`
-	Name              string                        `json:"name,omitempty"`
-	Provider          string                        `json:"provider,omitempty"`
-	Type              string                        `json:"type,omitempty"`
-}
 
-type TCPMiddleware struct {
-	InFlightConn *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	IPWhiteList  *dynamic.TCPIPWhiteList  `json:"ipWhiteList,omitempty"`
-	IPAllowList  *dynamic.TCPIPAllowList  `json:"ipAllowList,omitempty"`
-	Status       string                   `json:"status,omitempty"`
-	Name         string                   `json:"name,omitempty"`
-	Provider     string                   `json:"provider,omitempty"`
-	Type         string                   `json:"type,omitempty"`
+	// TCP-specific fields
+	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
+	TCPIPWhiteList *dynamic.TCPIPWhiteList  `json:"tcpIpWhiteList,omitempty"`
+	TCPIPAllowList *dynamic.TCPIPAllowList  `json:"tcpIpAllowList,omitempty"`
 }
 
 type Dynamic struct {
-	Entrypoints     []Entrypoint     `json:"entrypoints,omitempty"`
-	Routers         []Router         `json:"routers,omitempty"`
-	Services        []Service        `json:"services,omitempty"`
-	HTTPMiddlewares []HTTPMiddleware `json:"httpmiddlewares,omitempty"`
-	TCPMiddlewares  []TCPMiddleware  `json:"tcpmiddlewares,omitempty"`
-	Version         string           `json:"version,omitempty"`
+	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
+	Routers     map[string]Router     `json:"routers,omitempty"`
+	Services    map[string]Service    `json:"services,omitempty"`
+	Middlewares map[string]Middleware `json:"middlewares,omitempty"`
+	Version     string                `json:"version,omitempty"`
 }
 
 type Instance struct {

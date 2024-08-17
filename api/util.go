@@ -1,17 +1,13 @@
 package api
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"log/slog"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +16,8 @@ import (
 	ttls "github.com/traefik/genconf/dynamic/tls"
 	"sigs.k8s.io/yaml"
 )
+
+var rwMutex sync.RWMutex
 
 func profilePath() string {
 	cwd, err := os.Getwd()
@@ -44,7 +42,10 @@ func defaultProfile() Profile {
 }
 
 func LoadProfiles() ([]Profile, error) {
-	var profiles []Profile
+	rwMutex.RLock()
+	defer rwMutex.RUnlock()
+
+	profiles := []Profile{}
 
 	if _, err := os.Stat(profilePath()); os.IsNotExist(err) {
 		profiles = append(profiles, defaultProfile())
@@ -67,66 +68,73 @@ func LoadProfiles() ([]Profile, error) {
 }
 
 func SaveProfiles(profiles []Profile) error {
-	file, err := os.OpenFile(profilePath(), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	rwMutex.Lock()
+	defer rwMutex.Unlock()
+
+	tmpFile, err := os.CreateTemp(os.TempDir(), "profiles-*.json")
 	if err != nil {
-		return fmt.Errorf("failed to open profiles file: %w", err)
+		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer file.Close()
+	defer os.Remove(tmpFile.Name())
 
 	profileBytes, err := json.Marshal(profiles)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profiles: %w", err)
 	}
 
-	_, err = file.Write(profileBytes)
+	_, err = tmpFile.Write(profileBytes)
 	if err != nil {
 		return fmt.Errorf("failed to write profiles: %w", err)
 	}
 
+	if err := tmpFile.Sync(); err != nil {
+		return fmt.Errorf("failed to sync temp file: %w", err)
+	}
+	tmpFile.Close()
+
+	if err := Move(tmpFile.Name(), profilePath()); err != nil {
+		return fmt.Errorf("failed to move temp file: %w", err)
+	}
+
 	return nil
 }
 
-func VerifyProfile(profile Profile) error {
-	if profile.Name == "" {
-		return fmt.Errorf("profile name cannot be empty")
+func Move(source, destination string) error {
+	err := os.Rename(source, destination)
+	if err != nil && strings.Contains(err.Error(), "invalid cross-device link") {
+		return moveCrossDevice(source, destination)
 	}
-
-	if profile.Instance.URL != "" {
-		if !isValidURL(profile.Instance.URL) {
-			return fmt.Errorf("invalid url")
-		}
-	} else {
-		return fmt.Errorf("url cannot be empty")
-	}
-	return nil
+	return err
 }
 
-func isValidURL(u string) bool {
-	parsedURL, err := url.Parse(u)
-	if err != nil || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
-		return false
-	}
-
-	host := parsedURL.Hostname()
-	port := parsedURL.Port()
-	if port != "" {
-		if _, err = net.LookupPort("tcp", port); err != nil {
-			return false
-		}
-	}
-
-	ip := net.ParseIP(host)
-	if ip != nil {
-		return true
-	}
-
-	domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`
-	matched, err := regexp.MatchString(domainRegex, host)
+func moveCrossDevice(source, destination string) error {
+	src, err := os.Open(source)
 	if err != nil {
-		return false
+		return fmt.Errorf("failed to open source file: %w", err)
 	}
-
-	return matched
+	dst, err := os.Create(destination)
+	if err != nil {
+		src.Close()
+		return fmt.Errorf("failed to create destination file: %w", err)
+	}
+	_, err = io.Copy(dst, src)
+	src.Close()
+	dst.Close()
+	if err != nil {
+		return fmt.Errorf("failed to copy file: %w", err)
+	}
+	fi, err := os.Stat(source)
+	if err != nil {
+		os.Remove(destination)
+		return fmt.Errorf("failed to stat source file: %w", err)
+	}
+	err = os.Chmod(destination, fi.Mode())
+	if err != nil {
+		os.Remove(destination)
+		return fmt.Errorf("failed to chmod destination file: %w", err)
+	}
+	os.Remove(source)
+	return nil
 }
 
 func ParseConfig(dyn Dynamic) ([]byte, error) {
@@ -162,16 +170,16 @@ func ParseConfig(dyn Dynamic) ([]byte, error) {
 					Middlewares: router.Middlewares,
 					Service:     router.Service,
 					Rule:        router.Rule,
-					Priority:    int(router.Priority.Int64()),
-					TLS:         router.TLS,
+					// Priority:    int(router.Priority.Int64()),
+					TLS: router.TLS,
 				}
 			case "tcp":
 				config.TCP.Routers[router.Service] = &dynamic.TCPRouter{
 					EntryPoints: router.Entrypoints,
 					Middlewares: router.Middlewares,
 					Service:     router.Service,
-					Priority:    int(router.Priority.Int64()),
-					Rule:        router.Rule,
+					// Priority:    int(router.Priority.Int64()),
+					Rule: router.Rule,
 				}
 			case "udp":
 				config.UDP.Routers[router.Service] = &dynamic.UDPRouter{
@@ -200,7 +208,7 @@ func ParseConfig(dyn Dynamic) ([]byte, error) {
 			}
 		}
 	}
-	for _, middleware := range dyn.HTTPMiddlewares {
+	for _, middleware := range dyn.Middlewares {
 		if middleware.Provider == "http" {
 			config.HTTP.Middlewares[middleware.Name] = &dynamic.Middleware{
 				AddPrefix:         middleware.AddPrefix,
@@ -228,14 +236,8 @@ func ParseConfig(dyn Dynamic) ([]byte, error) {
 				ContentType:       middleware.ContentType,
 				Plugin:            middleware.Plugin,
 			}
-		}
-	}
-	for _, middleware := range dyn.TCPMiddlewares {
-		if middleware.Provider == "http" {
 			config.TCP.Middlewares[middleware.Name] = &dynamic.TCPMiddleware{
 				InFlightConn: middleware.InFlightConn,
-				IPWhiteList:  middleware.IPWhiteList,
-				IPAllowList:  middleware.IPAllowList,
 			}
 		}
 	}
@@ -298,100 +300,85 @@ func FetchTraefikConfig() {
 		return
 	}
 
-	client := http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	}
-	endpoints := map[string]string{
-		"entrypoints":     "/api/entrypoints",
-		"http-routers":    "/api/http/routers",
-		"tcp-routers":     "/api/tcp/routers",
-		"udp-routers":     "/api/udp/routers",
-		"http-services":   "/api/http/services",
-		"tcp-services":    "/api/tcp/services",
-		"udp-services":    "/api/udp/services",
-		"httpmiddlewares": "/api/http/middlewares",
-		"tcpmiddlewares":  "/api/tcp/middlewares",
-		"version":         "/api/version",
-	}
-
 	for idx, profile := range profiles {
-		dynamic := profile.Instance.Dynamic
-
-		for endpoint, url := range endpoints {
-			req, err := http.NewRequest("GET", profile.Instance.URL+url, nil)
-			if err != nil {
-				slog.Error("Failed to create request", "error", err)
-				return
-			}
-			req.Header.Set("Content-Type", "application/json")
-			if profile.Instance.Username != "" && profile.Instance.Password != "" {
-				req.SetBasicAuth(profile.Instance.Username, profile.Instance.Password)
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				slog.Error("Failed to make request", "error", err)
-				return
-			}
-			defer resp.Body.Close()
-			if resp.StatusCode != http.StatusOK {
-				slog.Error("Unexpected status code", "status", resp.StatusCode)
-				return
-			}
-
-			switch endpoint {
-			case "entrypoints":
-				if err := json.NewDecoder(resp.Body).Decode(&dynamic.Entrypoints); err != nil {
-					slog.Error("Failed to decode entrypoints", "error", err)
-					return
-				}
-			case "http-routers", "tcp-routers", "udp-routers":
-				var routers []Router
-				if err := json.NewDecoder(resp.Body).Decode(&routers); err != nil {
-					slog.Error("Failed to decode routers", "error", err)
-					return
-				}
-				routerType := strings.Split(endpoint, "-")[0] // Extracts "http", "tcp", or "udp"
-				for i := range routers {
-					routers[i].RouterType = routerType
-				}
-				dynamic.Routers = append(dynamic.Routers, routers...)
-			case "htttp-services", "tcp-services", "udp-services":
-				var services []Service
-				if err := json.NewDecoder(resp.Body).Decode(&services); err != nil {
-					slog.Error("Failed to decode services", "error", err)
-					return
-				}
-				serviceType := strings.Split(endpoint, "-")[0]
-				for i := range services {
-					services[i].ServiceType = serviceType
-				}
-				dynamic.Services = append(dynamic.Services, services...)
-			case "httpmiddlewares":
-				if err := json.NewDecoder(resp.Body).Decode(&dynamic.HTTPMiddlewares); err != nil {
-					slog.Error("Failed to decode http middlewares", "error", err)
-					return
-				}
-			case "tcpmiddlewares":
-				if err := json.NewDecoder(resp.Body).Decode(&dynamic.TCPMiddlewares); err != nil {
-					slog.Error("Failed to decode tcp middlewares", "error", err)
-					return
-				}
-			case "version":
-				var version struct {
-					Version  string `json:"version"`
-					Codename string `json:"codename"`
-				}
-				if err := json.NewDecoder(resp.Body).Decode(&version); err != nil {
-					slog.Error("Failed to decode version", "error", err)
-					return
-				}
-				dynamic.Version = version.Version
-			}
+		i := profile.Instance
+		d := Dynamic{
+			Routers:     make(map[string]Router),
+			Services:    make(map[string]Service),
+			Middlewares: make(map[string]Middleware),
 		}
-		profiles[idx].Instance.Dynamic = dynamic
+
+		// Retrieve routers
+		var tRouter []Router
+		tRouter = append(tRouter, fetchRouters[HTTPRouter](i, HTTPRouterAPI)...)
+		tRouter = append(tRouter, fetchRouters[TCPRouter](i, TCPRouterAPI)...)
+		tRouter = append(tRouter, fetchRouters[UDPRouter](i, UDPRouterAPI)...)
+		for _, r := range tRouter {
+			d.Routers[r.Name] = r
+		}
+		for _, r := range profile.Instance.Dynamic.Routers {
+			d.Routers[r.Name] = r
+		}
+
+		// Retrieve services
+		var tServices []Service
+		tServices = append(tServices, fetchServices[HTTPService](i, HTTPServiceAPI)...)
+		tServices = append(tServices, fetchServices[TCPService](i, TCPServiceAPI)...)
+		tServices = append(tServices, fetchServices[UDPService](i, UDPServiceAPI)...)
+		for _, s := range tServices {
+			d.Services[s.Name] = s
+		}
+		for _, s := range profile.Instance.Dynamic.Services {
+			d.Services[s.Name] = s
+		}
+
+		// Fetch middlewares
+		var tMiddlewares []Middleware
+		tMiddlewares = append(
+			tMiddlewares,
+			fetchMiddlewares[HTTPMiddleware](i, HTTPMiddlewaresAPI)...)
+		tMiddlewares = append(
+			tMiddlewares,
+			fetchMiddlewares[TCPMiddleware](i, TCPMiddlewaresAPI)...)
+		for _, m := range tMiddlewares {
+			d.Middlewares[m.Name] = m
+		}
+		for _, m := range profile.Instance.Dynamic.Middlewares {
+			d.Middlewares[m.Name] = m
+		}
+
+		// Retrieve entrypoints
+		entrypoints, err := get(i, EntrypointsAPI)
+		if err != nil {
+			slog.Error("Failed to get entrypoints", "error", err)
+			return
+		}
+		defer entrypoints.Close()
+
+		if err = json.NewDecoder(entrypoints).Decode(&d.Entrypoints); err != nil {
+			slog.Error("Failed to decode entrypoints", "error", err)
+			return
+		}
+
+		// Fetch version
+		version, err := get(i, VersionAPI)
+		if err != nil {
+			slog.Error("Failed to get version", "error", err)
+			return
+		}
+		defer version.Close()
+
+		var v struct {
+			Version string `json:"version"`
+		}
+
+		if err = json.NewDecoder(version).Decode(&v); err != nil {
+			slog.Error("Failed to decode version", "error", err)
+			return
+		}
+		d.Version = v.Version
+
+		profiles[idx].Instance.Dynamic = d
 	}
 
 	if err := SaveProfiles(profiles); err != nil {

@@ -36,6 +36,7 @@
 	<div class="flex">
 		<Pagination.Root
 			{count}
+			page={currentPage}
 			perPage={perPage?.value ?? 10}
 			let:pages
 			let:currentPage

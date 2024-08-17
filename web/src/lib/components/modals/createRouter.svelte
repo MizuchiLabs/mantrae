@@ -8,42 +8,27 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { activeProfile, updateProfile } from '$lib/api';
-	import type { Router, Service } from '$lib/types/config';
+	import { activeProfile, updateRouter, updateService } from '$lib/api';
+	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
+	import { toast } from 'svelte-sonner';
 
-	let router: Router = {
-		routerType: 'http',
-		rule: '',
-		service: '',
-		provider: 'http'
-	};
-	let service: Service = {
-		serviceType: router.routerType,
-		provider: router.provider,
-		loadBalancer: { servers: [{ url: '' }], passHostHeader: true }
-	};
+	let router = newRouter();
+	let service = newService();
+	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
 	$: servers = service?.loadBalancer?.servers?.length || 0;
 
-	const create = () => {
+	const create = async () => {
+		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider;
+		try {
+			await updateRouter($activeProfile.name, router, router.name);
+			await updateService($activeProfile.name, service, service.name);
+			toast.success(`Router ${router.name} created`);
+		} catch (e) {}
 
-		activeProfile.update((p) => ({
-			...p,
-			instance: {
-				...p.instance,
-				dynamic: {
-					...p.instance.dynamic,
-					routers: [...(p.instance.dynamic?.routers || []), { ...router }],
-					services: [...(p.instance.dynamic?.services || []), { ...service }]
-				}
-			}
-		}));
-		updateProfile($activeProfile.name, $activeProfile);
-		router.routerType = 'http';
-		router.rule = '';
-		router.service = '';
-		service.loadBalancer = { servers: [{ url: '' }], passHostHeader: true };
+		router = newRouter();
+		service = newService();
 	};
 
 	let routerType: Selected<string> | undefined = { label: 'HTTP', value: 'http' };
@@ -161,38 +146,34 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
-						{#if routerType?.value === 'http' || routerType?.value === 'tcp'}
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="middlewares" class="text-right">Middlewares</Label>
-								<Select.Root
-									multiple={true}
-									selected={getSelectedMiddlewares(router)}
-									onSelectedChange={(value) => toggleMiddleware(router, value)}
-								>
-									<Select.Trigger class="col-span-3">
-										<Select.Value placeholder="Select a middleware" />
-									</Select.Trigger>
-									<Select.Content>
-										{#if routerType?.value === 'http'}
-											{#each $activeProfile?.instance?.dynamic?.httpmiddlewares || [] as middleware}
-												<Select.Item value={middleware.name}>
-													{middleware.name}
-												</Select.Item>
-											{/each}
+						<div
+							class="grid grid-cols-4 items-center gap-4"
+							class:hidden={router.routerType === 'udp'}
+						>
+							<Label for="middlewares" class="text-right">Middlewares</Label>
+							<Select.Root
+								multiple={true}
+								selected={getSelectedMiddlewares(router)}
+								onSelectedChange={(value) => toggleMiddleware(router, value)}
+							>
+								<Select.Trigger class="col-span-3">
+									<Select.Value placeholder="Select a middleware" />
+								</Select.Trigger>
+								<Select.Content>
+									{#each middlewares as middleware}
+										{#if router.routerType === middleware.middlewareType}
+											<Select.Item value={middleware.name}>
+												{middleware.name}
+											</Select.Item>
 										{/if}
-										{#if routerType?.value === 'tcp'}
-											{#each $activeProfile?.instance?.dynamic?.tcpmiddlewares || [] as middleware}
-												<Select.Item value={middleware.name}>
-													{middleware.name}
-												</Select.Item>
-											{/each}
-										{/if}
-									</Select.Content>
-								</Select.Root>
-							</div>
-							<!-- Insane hacky editor for traefik rules -->
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						</div>
+						<!-- Insane hacky editor for traefik rules -->
+						<div class:hidden={router.routerType === 'udp'}>
 							<RuleEditor bind:rule={router.rule} />
-						{/if}
+						</div>
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>

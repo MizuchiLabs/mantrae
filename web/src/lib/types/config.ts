@@ -1,33 +1,93 @@
 import type { Domain } from './tls';
 
 export interface Router {
-	routerType: string; // http, tcp, udp
+	// Common fields
+	name: string;
+	provider?: string;
+	status?: string;
+	routerType: string;
+
 	entrypoints?: string[];
 	middlewares?: string[];
 	service: string;
 	rule: string;
 	priority?: number;
 	tls?: TLSConfig;
-	status?: string;
-	name?: string;
-	provider?: string;
+	tcpTLS?: TCPTLSConfig;
+}
+
+export function newRouter(): Router {
+	return {
+		name: '',
+		provider: 'http',
+		status: '',
+		routerType: 'http',
+		entrypoints: [],
+		middlewares: [],
+		rule: '',
+		service: '',
+		priority: 0
+	};
 }
 
 export interface Service {
-	serviceType: string; // http, tcp, udp
-	loadBalancer?: ServersLoadBalancer;
-	weighted?: WeightedRoundRobin;
-	mirroring?: Mirroring; // Specific to HTTP, can be ignored for others
-	failover?: Failover; // Specific to HTTP, can be ignored for others
-	serverStatus?: Record<string, string>;
-	status?: string;
-	name?: string;
+	// Common fields
+	name: string;
 	provider?: string;
 	type?: string;
+	status?: string;
+	serviceType: string;
+	serverStatus?: Record<string, string>;
+
+	// HTTP-specific fields
+	loadBalancer?: ServersLoadBalancer;
+	weighted?: WeightedRoundRobin;
+	mirroring?: Mirroring;
+	failover?: Failover;
+
+	// TCP-specific fields
+	tcpLoadBalancer?: TCPServersLoadBalancer;
+	tcpWeighted?: TCPWeightedRoundRobin;
+
+	// UDP-specific fields
+	udpLoadBalancer?: UDPServersLoadBalancer;
+	udpWeighted?: UDPWeightedRoundRobin;
+}
+
+export function newService(): Service {
+	return {
+		name: '',
+		provider: 'http',
+		type: '',
+		status: '',
+		serviceType: 'http',
+		serverStatus: {},
+		loadBalancer: {
+			servers: [{ url: '' }],
+			passHostHeader: true,
+			responseForwarding: { flushInterval: '100ms' }
+		},
+		weighted: { services: [] },
+		mirroring: { service: '', maxBodySize: 0, mirrors: [], healthCheck: {} },
+		failover: { service: '', fallback: '', healthCheck: {} },
+		tcpLoadBalancer: {
+			terminationDelay: 0,
+			proxyProtocol: { version: 2 }
+		},
+		tcpWeighted: { services: [] },
+		udpLoadBalancer: { servers: [{ address: '' }] },
+		udpWeighted: { services: [] }
+	};
 }
 
 export interface TLSConfig {
-	passthrough?: boolean; // Specific to TCP
+	options?: string;
+	certResolver?: string;
+	domains?: Domain[];
+}
+
+export interface TCPTLSConfig {
+	passthrough?: boolean;
 	options?: string;
 	certResolver?: string;
 	domains?: Domain[];
@@ -37,17 +97,33 @@ export interface ServersLoadBalancer {
 	sticky?: Sticky;
 	servers?: Server[];
 	healthCheck?: ServerHealthCheck;
-	passHostHeader?: boolean; // Specific to HTTP
-	responseForwarding?: ResponseForwarding; // Specific to HTTP
-	serversTransport?: string; // Specific to HTTP
-	terminationDelay?: number; // Specific to TCP
-	proxyProtocol?: ProxyProtocol; // Specific to TCP
+	passHostHeader?: boolean;
+	responseForwarding?: ResponseForwarding;
+	serversTransport?: string;
+}
+
+export interface TCPServersLoadBalancer {
+	terminationDelay?: number;
+	proxyProtocol?: ProxyProtocol;
+	servers?: TCPServer[];
+}
+
+export interface UDPServersLoadBalancer {
+	servers?: TCPServer[];
 }
 
 export interface WeightedRoundRobin {
 	services?: WRRService[];
 	sticky?: Sticky;
 	healthCheck?: Record<string, unknown>;
+}
+
+export interface TCPWeightedRoundRobin {
+	services?: WRRService[];
+}
+
+export interface UDPWeightedRoundRobin {
+	services?: WRRService[];
 }
 
 export interface Cookie {
@@ -95,6 +171,10 @@ export interface RouterTLSConfig {
 
 export interface Server {
 	url?: string;
+}
+
+export interface TCPServer {
+	address?: string;
 }
 
 export interface ServerHealthCheck {

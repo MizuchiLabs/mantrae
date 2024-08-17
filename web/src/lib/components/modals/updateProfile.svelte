@@ -10,7 +10,6 @@
 	export let profile: Profile;
 	let oldName = profile.name;
 	let open = false;
-	$: console.log(oldName);
 
 	const update = async () => {
 		try {
@@ -19,11 +18,7 @@
 				description: `Profile ${profile.name} has been updated`
 			});
 			oldName = profile.name;
-		} catch (err: any) {
-			toast.error('Failed to update profile', {
-				description: err
-			});
-		}
+		} catch (e) {}
 		open = false;
 	};
 

@@ -3,27 +3,21 @@
 	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import * as Select from '$lib/components/ui/select';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import type { Selected } from 'bits-ui';
 	import UpdateMiddleware from '$lib/components/modals/updateMiddleware.svelte';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 
-	$: httpmiddlewares = $activeProfile?.instance?.dynamic?.httpmiddlewares ?? [];
-	$: tcpmiddlewares = $activeProfile?.instance?.dynamic?.tcpmiddlewares ?? [];
-	$: middlewares = [
-		...httpmiddlewares.map((m) => ({ ...m, middlewareType: 'http' })),
-		...tcpmiddlewares.map((m) => ({ ...m, middlewareType: 'tcp' }))
-	];
+	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
+	let currentPage = 1; // Current page
+
+	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
+	$: count = middlewares.length > 0 ? middlewares.length : 1;
 	$: paginatedMiddlewares = middlewares.slice(
 		(currentPage - 1) * perPage?.value!,
 		currentPage * perPage?.value!
 	);
-	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
-	let currentPage = 1; // Current page
-
-	const isHttp = (name: string) => name.includes('@http');
 </script>
 
 <svelte:head>
@@ -100,9 +94,4 @@
 	</Card.Footer>
 </Card.Root>
 
-<Pagination
-	count={middlewares.length > 0 ? middlewares.length : 1}
-	{perPage}
-	bind:currentPage
-	on:changeLimit={(e) => (perPage = e.detail)}
-/>
+<Pagination {count} {perPage} bind:currentPage on:changeLimit={(e) => (perPage = e.detail)} />

@@ -1,7 +1,15 @@
 import type { ClientTLS } from './tls';
 
 // HTTP  Middlewares ----------------------------------------------------------
-export interface HttpMiddleware {
+export interface Middleware {
+	// Common fields
+	name: string;
+	provider?: string;
+	type?: string;
+	status?: string;
+	middlewareType: string;
+
+	// HTTP-specific fields
 	addPrefix?: AddPrefix;
 	stripPrefix?: StripPrefix;
 	stripPrefixRegex?: StripPrefixRegex;
@@ -26,10 +34,11 @@ export interface HttpMiddleware {
 	retry?: Retry;
 	contentType?: ContentType;
 	plugin?: Record<string, Record<string, string>>;
-	status?: string;
-	name: string;
-	provider?: string;
-	type?: string;
+
+	// TCP-specific fields
+	inFlightConn?: TCPInFlightConn;
+	tcpIpWhiteList?: TCPIPWhiteList;
+	tcpIpAllowList?: TCPIPAllowList;
 }
 
 export interface AddPrefix {
@@ -234,16 +243,6 @@ export interface TLSClientCertificateSubjectDNInfo {
 }
 
 // TCP Middlewares ------------------------------------------------------------
-export interface TCPMiddleware {
-	inFlightConn?: TCPInFlightConn;
-	ipWhiteList?: TCPIPWhiteList;
-	ipAllowList?: TCPIPAllowList;
-	status?: string;
-	name: string;
-	provider?: string;
-	type?: string;
-}
-
 export interface TCPIPAllowList {
 	sourceRange?: string[];
 }

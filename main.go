@@ -90,6 +90,12 @@ func main() {
 	mux.HandleFunc("GET /api/profiles", api.GetProfiles)
 	mux.HandleFunc("PUT /api/profiles/{name}", api.UpdateProfile)
 	mux.HandleFunc("DELETE /api/profiles/{name}", api.DeleteProfile)
+	mux.HandleFunc("PUT /api/routers/{profile}/{router}", api.UpdateRouter)
+	mux.HandleFunc("DELETE /api/routers/{profile}/{router}", api.DeleteRouter)
+	mux.HandleFunc("PUT /api/services/{profile}/{service}", api.UpdateService)
+	mux.HandleFunc("DELETE /api/services/{profile}/{service}", api.DeleteService)
+	mux.HandleFunc("PUT /api/middlewares/{profile}/{middleware}", api.UpdateMiddleware)
+	mux.HandleFunc("DELETE /api/middlewares/{profile}/{middleware}", api.DeleteMiddleware)
 	mux.HandleFunc("GET /api/{name}", api.GetConfig)
 
 	staticContent, err := fs.Sub(webFS, "web/build")
