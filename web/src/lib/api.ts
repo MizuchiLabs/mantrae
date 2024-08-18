@@ -3,9 +3,11 @@ import { toast } from 'svelte-sonner';
 import type { Profile } from './types/dynamic';
 import type { Router, Service } from './types/config';
 import type { Middleware } from './types/middlewares';
+import { goto } from '$app/navigation';
 
 export const profiles: Writable<Profile[]> = writable([]);
 export const activeProfile: Writable<Profile> = writable({} as Profile);
+export const loggedIn = writable(false);
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 async function handleError(response: Response) {
@@ -18,31 +20,58 @@ async function handleError(response: Response) {
 	}
 }
 
-// Profiles -------------------------------------------------------------------
-export async function getProfiles() {
-	const response = await fetch(`${API_URL}/profiles`);
-	handleError(response);
+async function handleRequest(endpoint: string, method: string, body?: any): Promise<any> {
+	if (!get(loggedIn)) return;
 
-	profiles.set(await response.json());
+	const token = localStorage.getItem('token');
+	const response = await fetch(`${API_URL}${endpoint}`, {
+		method: method,
+		body: body ? JSON.stringify(body) : undefined,
+		headers: { Authorization: `Bearer ${token}` }
+	});
+	handleError(response);
+	return await response.json();
 }
 
-export async function createProfile(profile: Profile): Promise<void> {
-	const response = await fetch(`${API_URL}/profiles`, {
+// Login ----------------------------------------------------------------------
+export async function login(username: string, password: string) {
+	const response = await fetch(`${API_URL}/login`, {
 		method: 'POST',
-		body: JSON.stringify(profile)
+		body: JSON.stringify({ username, password })
 	});
 	handleError(response);
 
+	const { token, expiry } = await response.json();
+	localStorage.setItem('token', token);
+	localStorage.setItem('expiry', expiry);
+	loggedIn.set(true);
+	await getProfiles();
+	goto('/');
+}
+
+export async function logout() {
+	localStorage.removeItem('token');
+	localStorage.removeItem('expiry');
+	loggedIn.set(false);
+}
+
+// Profiles -------------------------------------------------------------------
+export async function getProfiles() {
+	const response = await handleRequest('/profiles', 'GET');
+
+	profiles.set(response);
+	if (get(activeProfile).name === undefined) {
+		activeProfile.set(get(profiles)[0]);
+	}
+}
+
+export async function createProfile(profile: Profile): Promise<void> {
+	await handleRequest('/profiles', 'POST', profile);
 	profiles.update((profiles) => [...profiles, profile]);
 }
 
 export async function updateProfile(name: string, profile: Profile): Promise<void> {
-	const response = await fetch(`${API_URL}/profiles/${name}`, {
-		method: 'PUT',
-		body: JSON.stringify(profile)
-	});
-	handleError(response);
-
+	await handleRequest(`/profiles/${name}`, 'PUT', profile);
 	profiles.update((profiles) => profiles.map((p) => (p.name === name ? profile : p)));
 
 	if (profile.name === get(activeProfile).name) {
@@ -51,11 +80,7 @@ export async function updateProfile(name: string, profile: Profile): Promise<voi
 }
 
 export async function deleteProfile(name: string): Promise<void> {
-	const response = await fetch(`${API_URL}/profiles/${name}`, {
-		method: 'DELETE'
-	});
-	handleError(response);
-
+	await handleRequest(`/profiles/${name}`, 'DELETE');
 	profiles.update((profiles) => profiles.filter((p) => p.name !== name));
 }
 
@@ -65,30 +90,20 @@ export async function updateRouter(
 	router: Router,
 	oldRouter: string
 ): Promise<void> {
-	const response = await fetch(`${API_URL}/routers/${profileName}/${oldRouter}`, {
-		method: 'PUT',
-		body: JSON.stringify(router)
-	});
-	handleError(response);
+	const response = await handleRequest(`/routers/${profileName}/${oldRouter}`, 'PUT', router);
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => [...profiles, updatedProfile]);
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => [...profiles, response]);
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
 
 export async function deleteRouter(profileName: string, routerName: string): Promise<void> {
-	const response = await fetch(`${API_URL}/routers/${profileName}/${routerName}`, {
-		method: 'DELETE'
-	});
-	handleError(response);
+	const response = await handleRequest(`/routers/${profileName}/${routerName}`, 'DELETE');
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? updatedProfile : p)));
-
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
 
@@ -98,30 +113,20 @@ export async function updateService(
 	service: Service,
 	oldService: string
 ): Promise<void> {
-	const response = await fetch(`${API_URL}/services/${profileName}/${oldService}`, {
-		method: 'PUT',
-		body: JSON.stringify(service)
-	});
-	handleError(response);
+	const response = await handleRequest(`/services/${profileName}/${oldService}`, 'PUT', service);
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => [...profiles, updatedProfile]);
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => [...profiles, response]);
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
 
 export async function deleteService(profileName: string, serviceName: string): Promise<void> {
-	const response = await fetch(`${API_URL}/services/${profileName}/${serviceName}`, {
-		method: 'DELETE'
-	});
-	handleError(response);
+	const response = await handleRequest(`/services/${profileName}/${serviceName}`, 'DELETE');
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? updatedProfile : p)));
-
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
 
@@ -131,55 +136,23 @@ export async function updateMiddleware(
 	middleware: Middleware,
 	oldMiddleware: string
 ): Promise<void> {
-	const response = await fetch(`${API_URL}/middlewares/${profileName}/${oldMiddleware}`, {
-		method: 'PUT',
-		body: JSON.stringify(middleware)
-	});
-	handleError(response);
+	const response = await handleRequest(
+		`/middlewares/${profileName}/${oldMiddleware}`,
+		'PUT',
+		middleware
+	);
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => [...profiles, updatedProfile]);
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => [...profiles, response]);
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
 
 export async function deleteMiddleware(profileName: string, name: string): Promise<void> {
-	const response = await fetch(`${API_URL}/middlewares/${profileName}/${name}`, {
-		method: 'DELETE'
-	});
-	handleError(response);
+	const response = await handleRequest(`/middlewares/${profileName}/${name}`, 'DELETE');
 
-	const updatedProfile = await response.json();
-	profiles.update((profiles) => profiles.map((p) => (p.name === name ? updatedProfile : p)));
-
-	if (updatedProfile.name === get(activeProfile).name) {
-		activeProfile.set(updatedProfile);
+	profiles.update((profiles) => profiles.map((p) => (p.name === name ? response : p)));
+	if (response.name === get(activeProfile).name) {
+		activeProfile.set(response);
 	}
 }
-
-// Helpers
-// export function deleteRouter(name: string) {
-// 	activeProfile.update((p) => {
-// 		if (p.instance.dynamic?.routers === undefined) return p;
-// 		p.instance.dynamic.routers = p.instance.dynamic.routers.filter((r) => r.service !== name);
-// 		p.instance.dynamic.services = p.instance.dynamic.services?.filter((s) => s.name !== name);
-// 		return p;
-// 	});
-// 	updateProfile(get(activeProfile).name, get(activeProfile));
-// }
-//
-// export function deleteMiddleware(name: string) {
-// 	activeProfile.update((p) => {
-// 		if (p.instance.dynamic?.httpmiddlewares === undefined) return p;
-// 		p.instance.dynamic.httpmiddlewares = p.instance.dynamic.httpmiddlewares.filter(
-// 			(m) => m.name !== name
-// 		);
-// 		if (p.instance.dynamic?.tcpmiddlewares === undefined) return p;
-// 		p.instance.dynamic.tcpmiddlewares = p.instance.dynamic.tcpmiddlewares.filter(
-// 			(m) => m.name !== name
-// 		);
-// 		return p;
-// 	});
-// 	updateProfile(get(activeProfile).name, get(activeProfile));
-// }

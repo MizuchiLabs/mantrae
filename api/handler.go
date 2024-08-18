@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/MizuchiLabs/mantrae/util"
 )
 
 // Helper function to write JSON response
@@ -17,9 +20,44 @@ func writeJSON(w http.ResponseWriter, data any) {
 	}
 }
 
+func Login(w http.ResponseWriter, r *http.Request) {
+	var creds util.Credentials
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if creds.Username == "" || creds.Password == "" {
+		http.Error(w, "username and password cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	var valid util.Credentials
+	if err := valid.GetCreds(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if creds.Username != valid.Username || creds.Password != valid.Password {
+		http.Error(w, "invalid username or password", http.StatusUnauthorized)
+		return
+	}
+
+	token, err := GenerateJWT(creds.Username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, map[string]string{
+		"token":  token,
+		"expiry": time.Now().Add(168 * time.Hour).Format(time.RFC3339),
+	})
+}
+
 // CreateProfile creates a new profile
 func CreateProfile(w http.ResponseWriter, r *http.Request) {
-	var profile Profile
+	var profile util.Profile
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -30,14 +68,14 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	profiles = append(profiles, profile)
-	if err := SaveProfiles(profiles); err != nil {
+	if err := util.SaveProfiles(profiles); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -46,7 +84,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 
 // GetProfiles returns all profiles
 func GetProfiles(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,7 +95,7 @@ func GetProfiles(w http.ResponseWriter, r *http.Request) {
 
 // UpdateProfile updates a single profile
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	var updatedProfile Profile
+	var updatedProfile util.Profile
 	if err := json.NewDecoder(r.Body).Decode(&updatedProfile); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -73,7 +111,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -82,7 +120,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	for i, profile := range profiles {
 		if profile.Name == r.PathValue("name") {
 			profiles[i] = updatedProfile
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -95,7 +133,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 // DeleteProfile deletes a single profile
 func DeleteProfile(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -104,7 +142,7 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	for i, profile := range profiles {
 		if profile.Name == r.PathValue("name") {
 			profiles = append(profiles[:i], profiles[i+1:]...)
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -117,7 +155,7 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 
 // UpdateRouter updates or creates a router
 func UpdateRouter(w http.ResponseWriter, r *http.Request) {
-	var router Router
+	var router util.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -135,7 +173,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -147,7 +185,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 				delete(profiles[i].Instance.Dynamic.Routers, routerName)
 			}
 			profiles[i].Instance.Dynamic.Routers[router.Name] = router
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -160,7 +198,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 
 // DeleteRouter deletes a single router and it's services
 func DeleteRouter(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -170,7 +208,7 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 		if profile.Name == r.PathValue("profile") {
 			delete(profiles[i].Instance.Dynamic.Routers, r.PathValue("router"))
 			delete(profiles[i].Instance.Dynamic.Services, r.PathValue("router"))
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -183,7 +221,7 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 
 // UpdateService updates or creates a service
 func UpdateService(w http.ResponseWriter, r *http.Request) {
-	var service Service
+	var service util.Service
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -201,7 +239,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -213,7 +251,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 				delete(profiles[i].Instance.Dynamic.Services, serviceName)
 			}
 			profiles[i].Instance.Dynamic.Services[service.Name] = service
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -226,7 +264,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 
 // DeleteService deletes a single service and its router
 func DeleteService(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -236,7 +274,7 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 		if profile.Name == r.PathValue("profile") {
 			delete(profiles[i].Instance.Dynamic.Services, r.PathValue("service"))
 			delete(profiles[i].Instance.Dynamic.Routers, r.PathValue("service"))
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -249,7 +287,7 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 
 // UpdateMiddleware updates or creates a middleware
 func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
-	var middleware Middleware
+	var middleware util.Middleware
 	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -262,7 +300,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -274,7 +312,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 				delete(profiles[i].Instance.Dynamic.Middlewares, middlewareName)
 			}
 			profiles[i].Instance.Dynamic.Middlewares[middleware.Name] = middleware
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -287,7 +325,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 
 // DeleteMiddleware deletes a single middleware and it's services
 func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -296,7 +334,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	for i, profile := range profiles {
 		if profile.Name == r.PathValue("profile") {
 			delete(profiles[i].Instance.Dynamic.Middlewares, r.PathValue("middleware"))
-			if err := SaveProfiles(profiles); err != nil {
+			if err := util.SaveProfiles(profiles); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -309,7 +347,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 
 // GetConfig returns the traefik config for a single profile
 func GetConfig(w http.ResponseWriter, r *http.Request) {
-	profiles, err := LoadProfiles()
+	profiles, err := util.LoadProfiles()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -321,7 +359,7 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 			w.Header().
 				Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.yaml", profile.Name))
 
-			yamlConfig, err := ParseConfig(profile.Instance.Dynamic)
+			yamlConfig, err := util.ParseConfig(profile.Instance.Dynamic)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

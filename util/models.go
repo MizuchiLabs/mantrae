@@ -1,8 +1,13 @@
-package api
+package util
 
 import (
 	"github.com/traefik/genconf/dynamic"
 )
+
+type Credentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
 type Entrypoint struct {
 	Name      string `json:"name,omitempty"`

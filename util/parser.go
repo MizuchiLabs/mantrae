@@ -1,4 +1,4 @@
-package api
+package util
 
 import (
 	"crypto/tls"

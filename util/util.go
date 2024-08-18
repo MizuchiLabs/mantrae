@@ -1,6 +1,8 @@
-package api
+package util
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -134,6 +136,57 @@ func moveCrossDevice(source, destination string) error {
 		return fmt.Errorf("failed to chmod destination file: %w", err)
 	}
 	os.Remove(source)
+	return nil
+}
+
+func GenerateCreds() error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	credsPath := filepath.Join(cwd, "creds.json")
+	if _, err = os.Stat(credsPath); os.IsNotExist(err) {
+		bytes := make([]byte, 32)
+		if _, err = rand.Read(bytes); err != nil {
+			return err
+		}
+		username := "admin"
+		password := base64.StdEncoding.EncodeToString(bytes)
+
+		jsonCreds, err := json.Marshal(Credentials{
+			Username: username,
+			Password: password,
+		})
+		if err != nil {
+			return err
+		}
+
+		if err := os.WriteFile(credsPath, jsonCreds, 0644); err != nil {
+			return err
+		}
+
+		slog.Info("Generated new credentials", "username", username, "password", password)
+	}
+
+	return nil
+}
+
+// GetCreds retrieves the credentials from the creds.json file or generates a new one
+func (c *Credentials) GetCreds() error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	credsPath := filepath.Join(cwd, "creds.json")
+
+	file, err := os.ReadFile(credsPath)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(file, &c); err != nil {
+		return err
+	}
+
 	return nil
 }
 
