@@ -1,18 +1,20 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"flag"
 	"io/fs"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
-	"sync"
+	"time"
 
-	"github.com/MizuchiLabs/mantrae/api"
-	"github.com/MizuchiLabs/mantrae/util"
+	"github.com/MizuchiLabs/mantrae/internal/api"
+	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )
 
@@ -26,7 +28,7 @@ func init() {
 	if err := util.GenerateCreds(); err != nil {
 		slog.Error("Failed to generate creds", "error", err)
 	}
-	go util.FetchTraefikConfig()
+	go traefik.GetTraefikConfig()
 }
 
 func main() {
@@ -45,14 +47,31 @@ func main() {
 	mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
 	// Start the background sync process
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go util.Sync(wg)
+	go traefik.Sync()
 
-	log.Println("Listening on port", *port)
-	if err := http.ListenAndServe(":"+strconv.Itoa(*port), middle(mux)); err != nil {
-		slog.Error("ListenAndServe", "error", err)
-		return
+	srv := &http.Server{
+		Addr:    ":" + strconv.Itoa(*port),
+		Handler: middle(mux),
 	}
-	wg.Wait()
+
+	slog.Info("Listening on port", "port", *port)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("ListenAndServe", "error", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	slog.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("Server forced to shutdown:", "error", err)
+	}
+
+	slog.Info("Server exiting")
 }

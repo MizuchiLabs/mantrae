@@ -1,14 +1,28 @@
-import { get, writable, type Writable } from 'svelte/store';
+import { derived, get, writable, type Writable } from 'svelte/store';
 import { toast } from 'svelte-sonner';
 import type { Profile } from './types/dynamic';
 import type { Router, Service } from './types/config';
 import type { Middleware } from './types/middlewares';
 import { goto } from '$app/navigation';
 
+export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable([]);
 export const activeProfile: Writable<Profile> = writable({} as Profile);
-export const loggedIn = writable(false);
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
+
+export const entrypoints = derived(
+	activeProfile,
+	($activeProfile) => $activeProfile?.client?.dynamic?.entrypoints ?? []
+);
+export const routers = derived(activeProfile, ($activeProfile) =>
+	Object.values($activeProfile?.client?.dynamic?.routers ?? [])
+);
+export const services = derived(activeProfile, ($activeProfile) =>
+	Object.values($activeProfile?.client?.dynamic?.services ?? [])
+);
+export const middlewares = derived(activeProfile, ($activeProfile) =>
+	Object.values($activeProfile?.client?.dynamic?.middlewares ?? [])
+);
 
 async function handleError(response: Response) {
 	if (!response.ok) {
@@ -41,9 +55,8 @@ export async function login(username: string, password: string) {
 	});
 	handleError(response);
 
-	const { token, expiry } = await response.json();
+	const { token } = await response.json();
 	localStorage.setItem('token', token);
-	localStorage.setItem('expiry', expiry);
 	loggedIn.set(true);
 	await getProfiles();
 	goto('/');
@@ -51,7 +64,6 @@ export async function login(username: string, password: string) {
 
 export async function logout() {
 	localStorage.removeItem('token');
-	localStorage.removeItem('expiry');
 	loggedIn.set(false);
 }
 

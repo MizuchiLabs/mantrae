@@ -1,12 +1,27 @@
-package util
+// Package traefik provides a client for the Traefik API
+// Here are all the models used to convert between the API and the UI
+package traefik
 
-import (
-	"github.com/traefik/genconf/dynamic"
-)
+import "github.com/traefik/genconf/dynamic"
 
-type Credentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type Profile struct {
+	Name   string `json:"name"`
+	Client Client `json:"client,omitempty"`
+}
+
+type Client struct {
+	URL      string  `json:"url"`
+	Username string  `json:"username,omitempty"`
+	Password string  `json:"password,omitempty"`
+	Dynamic  Dynamic `json:"dynamic,omitempty"`
+}
+
+type Dynamic struct {
+	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
+	Routers     map[string]Router     `json:"routers,omitempty"`
+	Services    map[string]Service    `json:"services,omitempty"`
+	Middlewares map[string]Middleware `json:"middlewares,omitempty"`
+	Version     string                `json:"version,omitempty"`
 }
 
 type Entrypoint struct {
@@ -97,24 +112,4 @@ type Middleware struct {
 	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
 	TCPIPWhiteList *dynamic.TCPIPWhiteList  `json:"tcpIpWhiteList,omitempty"`
 	TCPIPAllowList *dynamic.TCPIPAllowList  `json:"tcpIpAllowList,omitempty"`
-}
-
-type Dynamic struct {
-	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
-	Routers     map[string]Router     `json:"routers,omitempty"`
-	Services    map[string]Service    `json:"services,omitempty"`
-	Middlewares map[string]Middleware `json:"middlewares,omitempty"`
-	Version     string                `json:"version,omitempty"`
-}
-
-type Instance struct {
-	URL      string  `json:"url"`
-	Username string  `json:"username,omitempty"`
-	Password string  `json:"password,omitempty"`
-	Dynamic  Dynamic `json:"dynamic,omitempty"`
-}
-
-type Profile struct {
-	Name     string   `json:"name"`
-	Instance Instance `json:"instance,omitempty"`
 }

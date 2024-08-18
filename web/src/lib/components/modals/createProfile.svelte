@@ -8,7 +8,7 @@
 
 	let profile: Profile = {
 		name: '',
-		instance: { url: '', username: '', password: '', dynamic: {} }
+		client: { url: '', username: '', password: '', dynamic: {} }
 	};
 
 	const create = () => {
@@ -18,7 +18,7 @@
 		createProfile(profile);
 		profile = {
 			name: '',
-			instance: { url: '', username: '', password: '', dynamic: {} }
+			client: { url: '', username: '', password: '', dynamic: {} }
 		};
 	};
 
@@ -41,9 +41,7 @@
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
 			<Dialog.Title>New profile</Dialog.Title>
-			<Dialog.Description>
-				Create a new profile to manage your Traefik instances.
-			</Dialog.Description>
+			<Dialog.Description>Create a new profile to manage your Traefik clients.</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid gap-4 py-4" on:keydown={onKeydown} aria-hidden>
 			<div class="grid grid-cols-4 items-center gap-4">
@@ -63,8 +61,8 @@
 					name="url"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.instance.url}
-					placeholder="URL of your traefik instance"
+					bind:value={profile.client.url}
+					placeholder="URL of your traefik client"
 					required
 				/>
 			</div>
@@ -74,8 +72,8 @@
 					name="username"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.instance.username}
-					placeholder="Username of your instance"
+					bind:value={profile.client.username}
+					placeholder="Username of your client"
 					required
 				/>
 			</div>
@@ -85,8 +83,8 @@
 					name="password"
 					type="password"
 					class="col-span-3"
-					bind:value={profile.instance.password}
-					placeholder="Password of your instance"
+					bind:value={profile.client.password}
+					placeholder="Password of your client"
 					required
 				/>
 			</div>

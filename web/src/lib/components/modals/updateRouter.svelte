@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { activeProfile, updateRouter, updateService } from '$lib/api';
+	import { activeProfile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
 	import { newService, type Router, type Service } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
@@ -17,9 +17,8 @@
 	let oldRouter = router.name;
 	let oldService = router.service + '@' + router.provider;
 
-	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares || []);
 	let service: Service | undefined =
-		$activeProfile?.instance?.dynamic?.services?.[router.service + '@' + router.provider];
+		$activeProfile?.client?.dynamic?.services?.[router.service + '@' + router.provider];
 	$: servers = service?.loadBalancer?.servers?.length || 0;
 
 	const update = async () => {
@@ -114,7 +113,7 @@
 									<Select.Value placeholder="Select an entrypoint" />
 								</Select.Trigger>
 								<Select.Content>
-									{#each $activeProfile?.instance?.dynamic?.entrypoints || [] as entrypoint}
+									{#each $entrypoints || [] as entrypoint}
 										<Select.Item value={entrypoint.name}>
 											<div class="flex flex-row items-center gap-2">
 												{entrypoint.name}
@@ -143,7 +142,7 @@
 									<Select.Value placeholder="Select a middleware" />
 								</Select.Trigger>
 								<Select.Content>
-									{#each middlewares as middleware}
+									{#each $middlewares as middleware}
 										{#if router.routerType === middleware.type}
 											<Select.Item value={middleware.name}>
 												{middleware.name}

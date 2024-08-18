@@ -3,7 +3,15 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
-	import { activeProfile, deleteRouter, updateProfile } from '$lib/api';
+	import {
+		activeProfile,
+		deleteRouter,
+		entrypoints,
+		middlewares,
+		routers,
+		services,
+		updateProfile
+	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
@@ -17,11 +25,7 @@
 	let currentPage = 1;
 	let fRouters: Router[] = [];
 	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
-
-	$: routers = Object.values($activeProfile?.instance?.dynamic?.routers ?? []);
-	$: services = Object.values($activeProfile?.instance?.dynamic?.services ?? []);
-	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
-	$: search, routers, currentPage, searchRouter();
+	$: search, $routers, currentPage, searchRouter();
 
 	// Reset the page to 1 when the search input changes
 	$: {
@@ -31,7 +35,7 @@
 	}
 
 	const searchRouter = () => {
-		let items: Router[] = [...routers];
+		let items: Router[] = [...$routers];
 
 		if (search) {
 			const searchParts = search.split(' ').map((part) => part.toLowerCase());
@@ -108,7 +112,7 @@
 	};
 
 	const getServiceStatus = (router: Router): Record<string, string | boolean> => {
-		let service = services.find((s) => s.name === router.service + '@' + router.provider);
+		let service = $services.find((s) => s.name === router.service + '@' + router.provider);
 		let totalServices = service?.loadBalancer?.servers?.length || 0;
 
 		let upServices = 0;
@@ -252,7 +256,7 @@
 									<Select.Value placeholder="Select an entrypoint" />
 								</Select.Trigger>
 								<Select.Content class="text-sm">
-									{#each $activeProfile?.instance?.dynamic?.entrypoints || [] as entrypoint}
+									{#each $entrypoints as entrypoint}
 										<Select.Item value={entrypoint.name}>
 											<div class="flex flex-row items-center gap-2">
 												{entrypoint.name}
@@ -279,7 +283,7 @@
 										<Select.Value placeholder="Select a middleware" />
 									</Select.Trigger>
 									<Select.Content class="text-sm">
-										{#each middlewares as middleware}
+										{#each $middlewares as middleware}
 											{#if router.routerType === middleware.middlewareType}
 												<Select.Item value={middleware.name}>
 													{middleware.name}
@@ -319,7 +323,7 @@
 	<Card.Footer>
 		<div class="text-xs text-muted-foreground">
 			Showing <strong>{fRouters.length > 0 ? 1 : 0}-{fRouters.length}</strong> of
-			<strong>{routers.length}</strong> routers
+			<strong>{$routers.length}</strong> routers
 		</div>
 	</Card.Footer>
 </Card.Root>

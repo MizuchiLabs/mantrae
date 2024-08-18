@@ -1,4 +1,4 @@
-package util
+package traefik
 
 import (
 	"fmt"
@@ -12,8 +12,8 @@ func (p *Profile) Verify() error {
 		return fmt.Errorf("profile name cannot be empty")
 	}
 
-	if p.Instance.URL != "" {
-		if !isValidURL(p.Instance.URL) {
+	if p.Client.URL != "" {
+		if !isValidURL(p.Client.URL) {
 			return fmt.Errorf("invalid url")
 		}
 	} else {

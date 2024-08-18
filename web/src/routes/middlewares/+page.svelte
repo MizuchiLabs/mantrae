@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { activeProfile, deleteMiddleware } from '$lib/api';
+	import { activeProfile, deleteMiddleware, middlewares } from '$lib/api';
 	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
@@ -16,9 +16,7 @@
 	let currentPage = 1;
 	let fMiddlewares: Middleware[] = [];
 	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
-
-	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
-	$: search, middlewares, currentPage, searchMiddleware();
+	$: search, $middlewares, currentPage, searchMiddleware();
 
 	// Reset the page to 1 when the search input changes
 	$: {
@@ -28,7 +26,7 @@
 	}
 
 	function searchMiddleware() {
-		let items: Middleware[] = [...middlewares];
+		let items: Middleware[] = [...$middlewares];
 
 		if (search) {
 			const searchParts = search.split(' ').map((part) => part.toLowerCase());
@@ -174,7 +172,7 @@
 		<div class="text-xs text-muted-foreground">
 			Showing <strong>{fMiddlewares.length > 0 ? 1 : 0}-{fMiddlewares.length}</strong>
 			of
-			<strong>{middlewares.length}</strong> middlewares
+			<strong>{$middlewares.length}</strong> middlewares
 		</div>
 	</Card.Footer>
 </Card.Root>

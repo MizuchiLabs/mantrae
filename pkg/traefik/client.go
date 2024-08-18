@@ -1,4 +1,4 @@
-package util
+package traefik
 
 import (
 	"crypto/tls"
@@ -27,9 +27,9 @@ const (
 
 type BaseFields struct {
 	Name     string `json:"name,omitempty"`
-	Provider string `json:"provider,omitempty"`
-	Status   string `json:"status,omitempty"`
 	Type     string `json:"type,omitempty"`
+	Status   string `json:"status,omitempty"`
+	Provider string `json:"provider,omitempty"`
 }
 
 type HTTPRouter struct {
@@ -106,8 +106,8 @@ func (r UDPRouter) ToRouter() Router {
 	}
 }
 
-func fetchRouters[T Routerable](instance Instance, endpoint string) []Router {
-	body, err := get(instance, endpoint)
+func getRouters[T Routerable](c Client, endpoint string) []Router {
+	body, err := c.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get routers", "error", err)
 		return nil
@@ -199,8 +199,8 @@ func (s UDPService) ToService() Service {
 	}
 }
 
-func fetchServices[T Serviceable](instance Instance, endpoint string) []Service {
-	body, err := get(instance, endpoint)
+func getServices[T Serviceable](c Client, endpoint string) []Service {
+	body, err := c.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get services", "error", err)
 		return nil
@@ -309,8 +309,8 @@ func (m TCPMiddleware) ToMiddleware() Middleware {
 	}
 }
 
-func fetchMiddlewares[T Middlewareable](instance Instance, endpoint string) []Middleware {
-	body, err := get(instance, endpoint)
+func getMiddlewares[T Middlewareable](c Client, endpoint string) []Middleware {
+	body, err := c.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get middlewares", "error", err)
 		return nil
@@ -331,8 +331,111 @@ func fetchMiddlewares[T Middlewareable](instance Instance, endpoint string) []Mi
 	return middlewares
 }
 
-func get(instance Instance, endpoint string) (io.ReadCloser, error) {
-	apiURL := instance.URL + endpoint
+func GetTraefikConfig() {
+	profiles, err := LoadProfiles()
+	if err != nil {
+		slog.Error("Failed to load profiles", "error", err)
+		return
+	}
+
+	for idx, profile := range profiles {
+		c := profile.Client
+		d := Dynamic{
+			Routers:     make(map[string]Router),
+			Services:    make(map[string]Service),
+			Middlewares: make(map[string]Middleware),
+		}
+
+		// Retrieve routers
+		var tRouter []Router
+		tRouter = append(tRouter, getRouters[HTTPRouter](c, HTTPRouterAPI)...)
+		tRouter = append(tRouter, getRouters[TCPRouter](c, TCPRouterAPI)...)
+		tRouter = append(tRouter, getRouters[UDPRouter](c, UDPRouterAPI)...)
+		for _, r := range tRouter {
+			d.Routers[r.Name] = r
+		}
+		for _, r := range profile.Client.Dynamic.Routers {
+			d.Routers[r.Name] = r
+		}
+
+		// Retrieve services
+		var tServices []Service
+		tServices = append(tServices, getServices[HTTPService](c, HTTPServiceAPI)...)
+		tServices = append(tServices, getServices[TCPService](c, TCPServiceAPI)...)
+		tServices = append(tServices, getServices[UDPService](c, UDPServiceAPI)...)
+		for _, s := range tServices {
+			d.Services[s.Name] = s
+		}
+		for _, s := range profile.Client.Dynamic.Services {
+			d.Services[s.Name] = s
+		}
+
+		// Fetch middlewares
+		var tMiddlewares []Middleware
+		tMiddlewares = append(
+			tMiddlewares,
+			getMiddlewares[HTTPMiddleware](c, HTTPMiddlewaresAPI)...)
+		tMiddlewares = append(
+			tMiddlewares,
+			getMiddlewares[TCPMiddleware](c, TCPMiddlewaresAPI)...)
+		for _, m := range tMiddlewares {
+			d.Middlewares[m.Name] = m
+		}
+		for _, m := range profile.Client.Dynamic.Middlewares {
+			d.Middlewares[m.Name] = m
+		}
+
+		// Retrieve entrypoints
+		entrypoints, err := c.fetch(EntrypointsAPI)
+		if err != nil {
+			slog.Error("Failed to get entrypoints", "error", err)
+			return
+		}
+		defer entrypoints.Close()
+
+		if err = json.NewDecoder(entrypoints).Decode(&d.Entrypoints); err != nil {
+			slog.Error("Failed to decode entrypoints", "error", err)
+			return
+		}
+
+		// Fetch version
+		version, err := c.fetch(VersionAPI)
+		if err != nil {
+			slog.Error("Failed to get version", "error", err)
+			return
+		}
+		defer version.Close()
+
+		var v struct {
+			Version string `json:"version"`
+		}
+
+		if err = json.NewDecoder(version).Decode(&v); err != nil {
+			slog.Error("Failed to decode version", "error", err)
+			return
+		}
+		d.Version = v.Version
+
+		profiles[idx].Client.Dynamic = d
+	}
+
+	if err := SaveProfiles(profiles); err != nil {
+		slog.Error("Failed to save profiles", "error", err)
+	}
+}
+
+// Sync periodically syncs the Traefik configuration
+func Sync() {
+	ticker := time.NewTicker(time.Second * 60)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		GetTraefikConfig()
+	}
+}
+
+func (c *Client) fetch(endpoint string) (io.ReadCloser, error) {
+	apiURL := c.URL + endpoint
 	client := http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
@@ -345,8 +448,8 @@ func get(instance Instance, endpoint string) (io.ReadCloser, error) {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if instance.Username != "" && instance.Password != "" {
-		req.SetBasicAuth(instance.Username, instance.Password)
+	if c.Username != "" && c.Password != "" {
+		req.SetBasicAuth(c.Username, c.Password)
 	}
 
 	resp, err := client.Do(req)

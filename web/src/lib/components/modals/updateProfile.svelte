@@ -57,8 +57,8 @@
 					name="url"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.instance.url}
-					placeholder="URL of your instance"
+					bind:value={profile.client.url}
+					placeholder="URL of your client"
 					required
 				/>
 			</div>
@@ -68,8 +68,8 @@
 					name="username"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.instance.username}
-					placeholder="Username of your instance"
+					bind:value={profile.client.username}
+					placeholder="Username of your client"
 					required
 				/>
 			</div>
@@ -79,8 +79,8 @@
 					name="password"
 					type="password"
 					class="col-span-3"
-					bind:value={profile.instance.password}
-					placeholder="Password of your instance"
+					bind:value={profile.client.password}
+					placeholder="Password of your client"
 					required
 				/>
 			</div>

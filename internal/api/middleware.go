@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/util"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code

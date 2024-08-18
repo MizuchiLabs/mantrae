@@ -4,10 +4,10 @@ import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
 	name: string;
-	instance: Instance;
+	client: Client;
 }
 
-export interface Instance {
+export interface Client {
 	url: string;
 	username: string;
 	password: string;

@@ -8,14 +8,13 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { activeProfile, updateRouter, updateService } from '$lib/api';
+	import { activeProfile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import { toast } from 'svelte-sonner';
 
 	let router = newRouter();
 	let service = newService();
-	$: middlewares = Object.values($activeProfile?.instance?.dynamic?.middlewares ?? []);
 	$: servers = service?.loadBalancer?.servers?.length || 0;
 
 	const create = async () => {
@@ -132,7 +131,7 @@
 									<Select.Value placeholder="Select an entrypoint" />
 								</Select.Trigger>
 								<Select.Content>
-									{#each $activeProfile?.instance?.dynamic?.entrypoints || [] as entrypoint}
+									{#each $entrypoints as entrypoint}
 										<Select.Item value={entrypoint.name}>
 											<div class="flex flex-row items-center gap-2">
 												{entrypoint.name}
@@ -161,7 +160,7 @@
 									<Select.Value placeholder="Select a middleware" />
 								</Select.Trigger>
 								<Select.Content>
-									{#each middlewares as middleware}
+									{#each $middlewares as middleware}
 										{#if router.routerType === middleware.middlewareType}
 											<Select.Item value={middleware.name}>
 												{middleware.name}

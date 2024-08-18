@@ -6,6 +6,8 @@ func Routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/login", Login)
+	mux.HandleFunc("POST /api/verify", VerifyToken)
+
 	mux.HandleFunc("POST /api/profiles", JWT(CreateProfile))
 	mux.HandleFunc("GET /api/profiles", JWT(GetProfiles))
 	mux.HandleFunc("PUT /api/profiles/{name}", JWT(UpdateProfile))

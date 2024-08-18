@@ -1,15 +1,14 @@
 import { goto } from '$app/navigation';
-import { loggedIn, logout } from '$lib/api';
+import { API_URL, loggedIn, logout } from '$lib/api';
 import type { LayoutLoad } from './$types';
 
 export const ssr = false;
 export const prerender = true;
 
-export const load: LayoutLoad = async ({ url }) => {
+export const load: LayoutLoad = async ({ fetch, url }) => {
 	const token = localStorage.getItem('token');
-	const expiry = localStorage.getItem('expiry') as string;
 
-	if (token === null || expiry === null) {
+	if (token === null) {
 		logout();
 		if (url.pathname !== '/login') {
 			goto('/login');
@@ -17,8 +16,11 @@ export const load: LayoutLoad = async ({ url }) => {
 		return {};
 	}
 
-	const expiryDate = new Date(expiry);
-	if (Date.now() > expiryDate.getTime()) {
+	const response = await fetch(`${API_URL}/verify`, {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${token}` }
+	});
+	if (!response.ok) {
 		logout();
 		if (url.pathname !== '/login') {
 			goto('/login');
@@ -26,15 +28,5 @@ export const load: LayoutLoad = async ({ url }) => {
 		return {};
 	}
 
-	try {
-		if (url.pathname === '/login') {
-			goto('/');
-		}
-		loggedIn.set(true);
-	} catch (e) {
-		logout();
-		if (url.pathname !== '/login') {
-			goto('/login');
-		}
-	}
+	loggedIn.set(true);
 };
