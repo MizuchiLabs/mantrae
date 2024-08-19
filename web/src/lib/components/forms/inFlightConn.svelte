@@ -4,17 +4,17 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
-	middleware.replacePath = middleware.replacePath ?? { path: '' };
+	middleware.inFlightConn = middleware.inFlightConn ?? { amount: 0 };
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">
-	<Label for="path" class="text-right">Path</Label>
+	<Label for="amount" class="text-right">Amount</Label>
 	<Input
-		id="path"
-		name="path"
-		type="text"
-		bind:value={middleware.replacePath.path}
+		id="amount"
+		name="amount"
+		type="number"
+		bind:value={middleware.inFlightConn.amount}
 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-		placeholder="Path"
+		placeholder="Amount"
 	/>
 </div>

@@ -6,7 +6,7 @@
 
 	export let middleware: Middleware;
 	middleware.compress = middleware.compress ?? {
-		excludedContentTypes: [''],
+		excludedContentTypes: [],
 		minResponseBodyBytes: 0
 	};
 </script>

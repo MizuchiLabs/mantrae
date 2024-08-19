@@ -14,6 +14,7 @@
 	let isHTTP = middleware.middlewareType === 'http';
 
 	const create = () => {
+		console.log(middleware);
 		if (middleware.type === '') return;
 		middleware.name = middleware.name + '@' + middleware.provider;
 		if (isHTTP) middleware.middlewareType = 'http';
@@ -29,7 +30,6 @@
 		{ label: 'Replace Path', value: 'replacePath' },
 		{ label: 'Replace Path Regex', value: 'replacePathRegex' },
 		{ label: 'Chain', value: 'chain' },
-		{ label: 'IP White List', value: 'ipWhiteList' },
 		{ label: 'IP Allow List', value: 'ipAllowList' },
 		{ label: 'Headers', value: 'headers' },
 		{ label: 'Errors', value: 'errors' },
@@ -43,14 +43,13 @@
 		{ label: 'Buffering', value: 'buffering' },
 		{ label: 'Circuit Breaker', value: 'circuitBreaker' },
 		{ label: 'Compress', value: 'compress' },
-		{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
+		//{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
 		{ label: 'Retry', value: 'retry' },
 		{ label: 'Content Type', value: 'contentType' }
 	];
 	const TCPMiddlewareTypes: Selected<string>[] = [
 		{ label: 'In Flight Conn', value: 'inFlightConn' },
-		{ label: 'IP White List', value: 'ipWhiteList' },
-		{ label: 'IP Allow List', value: 'ipAllowList' }
+		{ label: 'IP Allow List', value: 'tcpIpAllowList' }
 	];
 
 	// Dynamic imports based on middleware type
@@ -61,15 +60,14 @@
 		replacePath: () => import('$lib/components/forms/replacePath.svelte'),
 		replacePathRegex: () => import('$lib/components/forms/replacePathRegex.svelte'),
 		chain: () => import('$lib/components/forms/chain.svelte'),
-		// ipWhiteList: () => import('$lib/components/forms/ipWhiteList.svelte'),
-		// ipAllowList: () => import('$lib/components/forms/ipAllowList.svelte'),
+		ipAllowList: () => import('$lib/components/forms/ipAllowList.svelte'),
 		headers: () => import('$lib/components/forms/headers.svelte'),
 		errors: () => import('$lib/components/forms/errorPage.svelte'),
 		rateLimit: () => import('$lib/components/forms/rateLimit.svelte'),
 		redirectRegex: () => import('$lib/components/forms/redirectRegex.svelte'),
 		redirectScheme: () => import('$lib/components/forms/redirectScheme.svelte'),
 		basicAuth: () => import('$lib/components/forms/basicAuth.svelte'),
-		// digestAuth: () => import('$lib/components/forms/digestAuth.svelte'),
+		digestAuth: () => import('$lib/components/forms/digestAuth.svelte'),
 		forwardAuth: () => import('$lib/components/forms/forwardAuth.svelte'),
 		inFlightReq: () => import('$lib/components/forms/inFlightReq.svelte'),
 		buffering: () => import('$lib/components/forms/buffering.svelte'),
@@ -77,7 +75,11 @@
 		compress: () => import('$lib/components/forms/compress.svelte'),
 		// passTLSClientCert: () => import('$lib/components/forms/passTLSClientCert.svelte'),
 		retry: () => import('$lib/components/forms/retry.svelte'),
-		contentType: () => import('$lib/components/forms/contentType.svelte')
+		contentType: () => import('$lib/components/forms/contentType.svelte'),
+
+		// TCP-specific
+		inFlightConn: () => import('$lib/components/forms/inFlightConn.svelte'),
+		tcpIpAllowList: () => import('$lib/components/forms/tcpIpAllowList.svelte')
 	};
 
 	let MiddlewareFormComponent: any = null;
@@ -92,6 +94,7 @@
 
 	const loadMiddlewareFormComponent = async (serviceType: Selected<string> | undefined) => {
 		if (serviceType && middlewareForms[serviceType.value as keyof typeof middlewareForms]) {
+			middleware.type = serviceType.value.toLowerCase();
 			const module = await middlewareForms[serviceType.value as keyof typeof middlewareForms]();
 			MiddlewareFormComponent = module.default;
 		} else {
@@ -112,7 +115,7 @@
 			</Button>
 		</div>
 	</Dialog.Trigger>
-	<Dialog.Content class="sm:max-w-[520px]">
+	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[520px]">
 		<Card.Root class="mt-4">
 			<Card.Header>
 				<Card.Title>Middleware</Card.Title>
@@ -135,7 +138,7 @@
 							<Select.Value placeholder="Select a type" />
 						</Select.Trigger>
 						<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-							{#if middleware.middlewareType === 'http'}
+							{#if isHTTP}
 								{#each HTTPMiddlewareTypes as type}
 									<Select.Item value={type.value} label={type.label}>
 										{type.label}

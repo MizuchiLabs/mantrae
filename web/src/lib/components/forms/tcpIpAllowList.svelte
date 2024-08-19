@@ -3,7 +3,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
-	middleware.stripPrefixRegex = middleware.stripPrefixRegex ?? { regex: [] };
+	middleware.tcpIpAllowList = middleware.tcpIpAllowList ?? { sourceRange: [] };
 </script>
 
-<ArrayInput bind:items={middleware.stripPrefixRegex.regex} label="Regex" />
+<ArrayInput bind:items={middleware.tcpIpAllowList.sourceRange} label="Source Range" />

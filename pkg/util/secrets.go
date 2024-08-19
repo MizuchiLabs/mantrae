@@ -31,11 +31,11 @@ func GenerateCreds() error {
 	credsPath := filepath.Join(cwd, "creds.json")
 	if _, err = os.Stat(credsPath); os.IsNotExist(err) {
 		username := "admin"
-		password := randomPassword(32)
+		password := base64.StdEncoding.EncodeToString(randomPassword(32))
 
 		jsonCreds, err := json.MarshalIndent(Credentials{
 			Username: username,
-			Password: base64.StdEncoding.EncodeToString(password),
+			Password: password,
 			Secret:   randomPassword(64),
 		}, "", "  ")
 		if err != nil {

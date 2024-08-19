@@ -5,18 +5,11 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
-	middleware.stripPrefix = middleware.stripPrefix ?? {
-		prefixes: [''],
-		forceSlash: false
-	};
+	middleware.stripPrefix = middleware.stripPrefix ?? { prefixes: [], forceSlash: false };
 </script>
 
-<ArrayInput bind:items={middleware.stripPrefix.prefixes} label="Prefixes" />
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="force-slash" class="text-right">Force Slash</Label>
-	<Switch
-		id="force-slash"
-		bind:checked={middleware.stripPrefix.forceSlash}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="force-slash" bind:checked={middleware.stripPrefix.forceSlash} class="col-span-3" />
 </div>
+<ArrayInput bind:items={middleware.stripPrefix.prefixes} label="Prefixes" />

@@ -9,10 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 )
-
-var rwMutex sync.RWMutex
 
 func profilePath() string {
 	cwd, err := os.Getwd()
@@ -20,51 +17,36 @@ func profilePath() string {
 		log.Fatal(err)
 	}
 
-	newFilePath := filepath.Join(cwd, "profiles.json")
-	return newFilePath
+	return filepath.Join(cwd, "profiles.json")
 }
 
-func defaultProfile() Profile {
-	return Profile{
-		Name: "default",
-		Client: Client{
-			URL:      "http://127.0.0.1:8080",
-			Username: "",
-			Password: "",
-			Dynamic:  Dynamic{},
-		},
-	}
-}
-
-func LoadProfiles() ([]Profile, error) {
-	rwMutex.RLock()
-	defer rwMutex.RUnlock()
-
-	profiles := []Profile{}
-
+func (p *Profiles) Load() error {
 	if _, err := os.Stat(profilePath()); os.IsNotExist(err) {
-		profiles = append(profiles, defaultProfile())
-		if err := SaveProfiles(profiles); err != nil {
+		p.Profiles = append(p.Profiles, Profile{
+			Name:   "default",
+			Client: Client{},
+		})
+		if err := p.Save(); err != nil {
 			slog.Error("Failed to save profiles", "error", err)
 		}
-		return profiles, nil
+		return nil
 	}
 
 	file, err := os.ReadFile(profilePath())
 	if err != nil {
-		return []Profile{}, fmt.Errorf("failed to read profiles file: %w", err)
+		return fmt.Errorf("failed to read profiles file: %w", err)
 	}
 
-	if err := json.Unmarshal(file, &profiles); err != nil {
-		return []Profile{}, fmt.Errorf("failed to unmarshal profiles: %w", err)
+	if err := json.Unmarshal(file, &p.Profiles); err != nil {
+		return fmt.Errorf("failed to unmarshal profiles: %w", err)
 	}
 
-	return profiles, nil
+	return nil
 }
 
-func SaveProfiles(profiles []Profile) error {
-	rwMutex.Lock()
-	defer rwMutex.Unlock()
+func (p *Profiles) Save() error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
 	tmpFile, err := os.CreateTemp(os.TempDir(), "profiles-*.json")
 	if err != nil {
@@ -72,7 +54,7 @@ func SaveProfiles(profiles []Profile) error {
 	}
 	defer os.Remove(tmpFile.Name())
 
-	profileBytes, err := json.Marshal(profiles)
+	profileBytes, err := json.Marshal(p.Profiles)
 	if err != nil {
 		return fmt.Errorf("failed to marshal profiles: %w", err)
 	}

@@ -4,7 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
-	middleware.buffering = middleware.buffering ?? {
+	middleware.buffering = middleware.buffering || {
 		maxRequestBodyBytes: 0,
 		memRequestBodyBytes: 0,
 		maxResponseBodyBytes: 0,

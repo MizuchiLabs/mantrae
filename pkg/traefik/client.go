@@ -223,38 +223,35 @@ func getServices[T Serviceable](c Client, endpoint string) []Service {
 
 type HTTPMiddleware struct {
 	BaseFields
-	MiddlewareType    string                        `json:"middlewareType,omitempty"`
-	AddPrefix         *dynamic.AddPrefix            `json:"addPrefix,omitempty"`
-	StripPrefix       *dynamic.StripPrefix          `json:"stripPrefix,omitempty"`
-	StripPrefixRegex  *dynamic.StripPrefixRegex     `json:"stripPrefixRegex,omitempty"`
-	ReplacePath       *dynamic.ReplacePath          `json:"replacePath,omitempty"`
-	ReplacePathRegex  *dynamic.ReplacePathRegex     `json:"replacePathRegex,omitempty"`
-	Chain             *dynamic.Chain                `json:"chain,omitempty"`
-	IPWhiteList       *dynamic.IPWhiteList          `json:"ipWhiteList,omitempty"`
-	IPAllowList       *dynamic.IPAllowList          `json:"ipAllowList,omitempty"`
-	Headers           *dynamic.Headers              `json:"headers,omitempty"`
-	Errors            *dynamic.ErrorPage            `json:"errors,omitempty"`
-	RateLimit         *dynamic.RateLimit            `json:"rateLimit,omitempty"`
-	RedirectRegex     *dynamic.RedirectRegex        `json:"redirectRegex,omitempty"`
-	RedirectScheme    *dynamic.RedirectScheme       `json:"redirectScheme,omitempty"`
-	BasicAuth         *dynamic.BasicAuth            `json:"basicAuth,omitempty"`
-	DigestAuth        *dynamic.DigestAuth           `json:"digestAuth,omitempty"`
-	ForwardAuth       *dynamic.ForwardAuth          `json:"forwardAuth,omitempty"`
-	InFlightReq       *dynamic.InFlightReq          `json:"inFlightReq,omitempty"`
-	Buffering         *dynamic.Buffering            `json:"buffering,omitempty"`
-	CircuitBreaker    *dynamic.CircuitBreaker       `json:"circuitBreaker,omitempty"`
-	Compress          *dynamic.Compress             `json:"compress,omitempty"`
-	PassTLSClientCert *dynamic.PassTLSClientCert    `json:"passTLSClientCert,omitempty"`
-	Retry             *dynamic.Retry                `json:"retry,omitempty"`
-	ContentType       *dynamic.ContentType          `json:"contentType,omitempty"`
-	Plugin            map[string]dynamic.PluginConf `json:"plugin,omitempty"`
+	MiddlewareType    string                     `json:"middlewareType,omitempty"`
+	AddPrefix         *dynamic.AddPrefix         `json:"addPrefix,omitempty"`
+	StripPrefix       *dynamic.StripPrefix       `json:"stripPrefix,omitempty"`
+	StripPrefixRegex  *dynamic.StripPrefixRegex  `json:"stripPrefixRegex,omitempty"`
+	ReplacePath       *dynamic.ReplacePath       `json:"replacePath,omitempty"`
+	ReplacePathRegex  *dynamic.ReplacePathRegex  `json:"replacePathRegex,omitempty"`
+	Chain             *dynamic.Chain             `json:"chain,omitempty"`
+	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"`
+	Headers           *dynamic.Headers           `json:"headers,omitempty"`
+	Errors            *dynamic.ErrorPage         `json:"errors,omitempty"`
+	RateLimit         *dynamic.RateLimit         `json:"rateLimit,omitempty"`
+	RedirectRegex     *dynamic.RedirectRegex     `json:"redirectRegex,omitempty"`
+	RedirectScheme    *dynamic.RedirectScheme    `json:"redirectScheme,omitempty"`
+	BasicAuth         *dynamic.BasicAuth         `json:"basicAuth,omitempty"`
+	DigestAuth        *dynamic.DigestAuth        `json:"digestAuth,omitempty"`
+	ForwardAuth       *dynamic.ForwardAuth       `json:"forwardAuth,omitempty"`
+	InFlightReq       *dynamic.InFlightReq       `json:"inFlightReq,omitempty"`
+	Buffering         *dynamic.Buffering         `json:"buffering,omitempty"`
+	CircuitBreaker    *dynamic.CircuitBreaker    `json:"circuitBreaker,omitempty"`
+	Compress          *dynamic.Compress          `json:"compress,omitempty"`
+	PassTLSClientCert *dynamic.PassTLSClientCert `json:"passTLSClientCert,omitempty"`
+	Retry             *dynamic.Retry             `json:"retry,omitempty"`
+	ContentType       *dynamic.ContentType       `json:"contentType,omitempty"`
 }
 
 type TCPMiddleware struct {
 	BaseFields
 	MiddlewareType string                   `json:"middlewareType,omitempty"`
 	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	IPWhiteList    *dynamic.TCPIPWhiteList  `json:"ipWhiteList,omitempty"`
 	IPAllowList    *dynamic.TCPIPAllowList  `json:"ipAllowList,omitempty"`
 }
 
@@ -275,7 +272,6 @@ func (m HTTPMiddleware) ToMiddleware() Middleware {
 		ReplacePath:       m.ReplacePath,
 		ReplacePathRegex:  m.ReplacePathRegex,
 		Chain:             m.Chain,
-		IPWhiteList:       m.IPWhiteList,
 		IPAllowList:       m.IPAllowList,
 		Headers:           m.Headers,
 		Errors:            m.Errors,
@@ -292,7 +288,6 @@ func (m HTTPMiddleware) ToMiddleware() Middleware {
 		PassTLSClientCert: m.PassTLSClientCert,
 		Retry:             m.Retry,
 		ContentType:       m.ContentType,
-		Plugin:            m.Plugin,
 	}
 }
 
@@ -304,7 +299,6 @@ func (m TCPMiddleware) ToMiddleware() Middleware {
 		Status:         m.Status,
 		MiddlewareType: "tcp",
 		InFlightConn:   m.InFlightConn,
-		TCPIPWhiteList: m.IPWhiteList,
 		TCPIPAllowList: m.IPAllowList,
 	}
 }
@@ -332,13 +326,17 @@ func getMiddlewares[T Middlewareable](c Client, endpoint string) []Middleware {
 }
 
 func GetTraefikConfig() {
-	profiles, err := LoadProfiles()
-	if err != nil {
+	var p Profiles
+	if err := p.Load(); err != nil {
 		slog.Error("Failed to load profiles", "error", err)
 		return
 	}
 
-	for idx, profile := range profiles {
+	for idx, profile := range p.Profiles {
+		if profile.Client.URL == "" {
+			continue
+		}
+
 		c := profile.Client
 		d := Dynamic{
 			Routers:     make(map[string]Router),
@@ -416,10 +414,10 @@ func GetTraefikConfig() {
 		}
 		d.Version = v.Version
 
-		profiles[idx].Client.Dynamic = d
+		p.Profiles[idx].Client.Dynamic = d
 	}
 
-	if err := SaveProfiles(profiles); err != nil {
+	if err := p.Save(); err != nil {
 		slog.Error("Failed to save profiles", "error", err)
 	}
 }

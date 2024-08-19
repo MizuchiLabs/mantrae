@@ -16,7 +16,6 @@ export interface Middleware {
 	replacePath?: ReplacePath;
 	replacePathRegex?: ReplacePathRegex;
 	chain?: Chain;
-	ipWhiteList?: IPWhiteList;
 	ipAllowList?: IPAllowList;
 	headers?: Headers;
 	errors?: ErrorPage;
@@ -33,11 +32,9 @@ export interface Middleware {
 	passTLSClientCert?: PassTLSClientCert;
 	retry?: Retry;
 	contentType?: ContentType;
-	plugin?: Record<string, Record<string, string>>;
 
 	// TCP-specific fields
 	inFlightConn?: TCPInFlightConn;
-	tcpIpWhiteList?: TCPIPWhiteList;
 	tcpIpAllowList?: TCPIPAllowList;
 }
 
@@ -47,52 +44,7 @@ export function newMiddleware(): Middleware {
 		provider: 'http',
 		type: '',
 		status: '',
-		middlewareType: 'http',
-		addPrefix: { prefix: '' },
-		stripPrefix: { prefixes: [] },
-		stripPrefixRegex: { regex: [] },
-		replacePath: { path: '' },
-		replacePathRegex: { regex: '', replacement: '' },
-		chain: { middlewares: [] },
-		ipWhiteList: { sourceRange: [] },
-		ipAllowList: { sourceRange: [] },
-		headers: {
-			customRequestHeaders: {},
-			customResponseHeaders: {},
-			accessControlAllowCredentials: false,
-			accessControlAllowHeaders: [],
-			accessControlAllowMethods: [],
-			accessControlAllowOriginList: [],
-			accessControlAllowOriginListRegex: [],
-			accessControlExposeHeaders: [],
-			accessControlMaxAge: 0,
-			addVaryHeader: false,
-			allowedHosts: [],
-			hostsProxyHeaders: [],
-			sslRedirect: false,
-			sslTemporaryRedirect: false,
-			sslHost: '',
-			sslProxyHeaders: {},
-			sslForceHost: false,
-			stsSeconds: 0,
-			stsIncludeSubdomains: false,
-			stsPreload: false,
-			forceSTSHeader: false,
-			frameDeny: false,
-			customFrameOptionsValue: '',
-			contentTypeNosniff: false,
-			browserXssFilter: false,
-			customBrowserXSSValue: '',
-			contentSecurityPolicy: '',
-			publicKey: '',
-			referrerPolicy: '',
-			featurePolicy: '',
-			permissionsPolicy: '',
-			isDevelopment: false
-		},
-		inFlightConn: { amount: 0 },
-		tcpIpWhiteList: { sourceRange: [] },
-		tcpIpAllowList: { sourceRange: [] }
+		middlewareType: 'http'
 	};
 }
 
@@ -204,11 +156,6 @@ export interface IPStrategy {
 	excludedIPs?: string[];
 }
 
-export interface IPWhiteList {
-	sourceRange?: string[];
-	ipStrategy?: IPStrategy;
-}
-
 export interface InFlightReq {
 	amount?: number;
 	sourceCriterion?: SourceCriterion;
@@ -299,10 +246,6 @@ export interface TLSClientCertificateSubjectDNInfo {
 
 // TCP Middlewares ------------------------------------------------------------
 export interface TCPIPAllowList {
-	sourceRange?: string[];
-}
-
-export interface TCPIPWhiteList {
 	sourceRange?: string[];
 }
 

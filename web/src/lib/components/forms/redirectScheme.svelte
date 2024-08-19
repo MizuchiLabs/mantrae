@@ -36,9 +36,5 @@
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="permanent" class="text-right">Permanent</Label>
-	<Switch
-		id="permanent"
-		bind:checked={middleware.redirectScheme.permanent}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="permanent" bind:checked={middleware.redirectScheme.permanent} class="col-span-3" />
 </div>

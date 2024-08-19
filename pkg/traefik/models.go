@@ -2,7 +2,16 @@
 // Here are all the models used to convert between the API and the UI
 package traefik
 
-import "github.com/traefik/genconf/dynamic"
+import (
+	"sync"
+
+	"github.com/traefik/genconf/dynamic"
+)
+
+type Profiles struct {
+	Profiles []Profile `json:"profiles"`
+	mu       sync.RWMutex
+}
 
 type Profile struct {
 	Name   string `json:"name"`
@@ -83,33 +92,30 @@ type Middleware struct {
 	MiddlewareType string `json:"middlewareType,omitempty"` // "http" or "tcp"
 
 	// HTTP-specific fields
-	AddPrefix         *dynamic.AddPrefix            `json:"addPrefix,omitempty"`
-	StripPrefix       *dynamic.StripPrefix          `json:"stripPrefix,omitempty"`
-	StripPrefixRegex  *dynamic.StripPrefixRegex     `json:"stripPrefixRegex,omitempty"`
-	ReplacePath       *dynamic.ReplacePath          `json:"replacePath,omitempty"`
-	ReplacePathRegex  *dynamic.ReplacePathRegex     `json:"replacePathRegex,omitempty"`
-	Chain             *dynamic.Chain                `json:"chain,omitempty"`
-	IPWhiteList       *dynamic.IPWhiteList          `json:"ipWhiteList,omitempty"`
-	IPAllowList       *dynamic.IPAllowList          `json:"ipAllowList,omitempty"`
-	Headers           *dynamic.Headers              `json:"headers,omitempty"`
-	Errors            *dynamic.ErrorPage            `json:"errors,omitempty"`
-	RateLimit         *dynamic.RateLimit            `json:"rateLimit,omitempty"`
-	RedirectRegex     *dynamic.RedirectRegex        `json:"redirectRegex,omitempty"`
-	RedirectScheme    *dynamic.RedirectScheme       `json:"redirectScheme,omitempty"`
-	BasicAuth         *dynamic.BasicAuth            `json:"basicAuth,omitempty"`
-	DigestAuth        *dynamic.DigestAuth           `json:"digestAuth,omitempty"`
-	ForwardAuth       *dynamic.ForwardAuth          `json:"forwardAuth,omitempty"`
-	InFlightReq       *dynamic.InFlightReq          `json:"inFlightReq,omitempty"`
-	Buffering         *dynamic.Buffering            `json:"buffering,omitempty"`
-	CircuitBreaker    *dynamic.CircuitBreaker       `json:"circuitBreaker,omitempty"`
-	Compress          *dynamic.Compress             `json:"compress,omitempty"`
-	PassTLSClientCert *dynamic.PassTLSClientCert    `json:"passTLSClientCert,omitempty"`
-	Retry             *dynamic.Retry                `json:"retry,omitempty"`
-	ContentType       *dynamic.ContentType          `json:"contentType,omitempty"`
-	Plugin            map[string]dynamic.PluginConf `json:"plugin,omitempty"`
+	AddPrefix         *dynamic.AddPrefix         `json:"addPrefix,omitempty"`
+	StripPrefix       *dynamic.StripPrefix       `json:"stripPrefix,omitempty"`
+	StripPrefixRegex  *dynamic.StripPrefixRegex  `json:"stripPrefixRegex,omitempty"`
+	ReplacePath       *dynamic.ReplacePath       `json:"replacePath,omitempty"`
+	ReplacePathRegex  *dynamic.ReplacePathRegex  `json:"replacePathRegex,omitempty"`
+	Chain             *dynamic.Chain             `json:"chain,omitempty"`
+	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"`
+	Headers           *dynamic.Headers           `json:"headers,omitempty"`
+	Errors            *dynamic.ErrorPage         `json:"errors,omitempty"`
+	RateLimit         *dynamic.RateLimit         `json:"rateLimit,omitempty"`
+	RedirectRegex     *dynamic.RedirectRegex     `json:"redirectRegex,omitempty"`
+	RedirectScheme    *dynamic.RedirectScheme    `json:"redirectScheme,omitempty"`
+	BasicAuth         *dynamic.BasicAuth         `json:"basicAuth,omitempty"`
+	DigestAuth        *dynamic.DigestAuth        `json:"digestAuth,omitempty"`
+	ForwardAuth       *dynamic.ForwardAuth       `json:"forwardAuth,omitempty"`
+	InFlightReq       *dynamic.InFlightReq       `json:"inFlightReq,omitempty"`
+	Buffering         *dynamic.Buffering         `json:"buffering,omitempty"`
+	CircuitBreaker    *dynamic.CircuitBreaker    `json:"circuitBreaker,omitempty"`
+	Compress          *dynamic.Compress          `json:"compress,omitempty"`
+	PassTLSClientCert *dynamic.PassTLSClientCert `json:"passTLSClientCert,omitempty"`
+	Retry             *dynamic.Retry             `json:"retry,omitempty"`
+	ContentType       *dynamic.ContentType       `json:"contentType,omitempty"`
 
 	// TCP-specific fields
 	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	TCPIPWhiteList *dynamic.TCPIPWhiteList  `json:"tcpIpWhiteList,omitempty"`
 	TCPIPAllowList *dynamic.TCPIPAllowList  `json:"tcpIpAllowList,omitempty"`
 }

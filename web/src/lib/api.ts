@@ -44,7 +44,9 @@ async function handleRequest(endpoint: string, method: string, body?: any): Prom
 		headers: { Authorization: `Bearer ${token}` }
 	});
 	handleError(response);
-	return await response.json();
+	if (response.status !== 204) {
+		return await response.json();
+	}
 }
 
 // Login ----------------------------------------------------------------------

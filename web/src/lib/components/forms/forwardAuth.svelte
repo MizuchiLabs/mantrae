@@ -8,10 +8,11 @@
 	export let middleware: Middleware;
 	middleware.forwardAuth = middleware.forwardAuth ?? {
 		address: '',
+		tls: { insecureSkipVerify: false, ca: '', cert: '', key: '' },
 		trustForwardHeader: false,
-		authResponseHeaders: [''],
+		authResponseHeaders: [],
 		authResponseHeadersRegex: '',
-		authRequestHeaders: ['']
+		authRequestHeaders: []
 	};
 </script>
 
@@ -31,7 +32,7 @@
 	<Switch
 		id="trust-forward-header"
 		bind:checked={middleware.forwardAuth.trustForwardHeader}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">

@@ -4,10 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
-	middleware.retry = middleware.retry ?? {
-		attempts: 0,
-		initialInterval: ''
-	};
+	middleware.retry = middleware.retry ?? { attempts: 3, initialInterval: '' };
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

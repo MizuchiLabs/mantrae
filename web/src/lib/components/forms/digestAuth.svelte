@@ -6,22 +6,23 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
-	middleware.basicAuth = middleware.basicAuth || {
+	middleware.digestAuth = middleware.digestAuth ?? {
 		users: [],
+		usersFile: '',
 		realm: '',
 		removeHeader: false,
 		headerField: ''
 	};
 </script>
 
-<ArrayInput bind:items={middleware.basicAuth.users} label="Users" />
+<ArrayInput bind:items={middleware.digestAuth.users} label="Users" />
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="users-file" class="text-right">Users File</Label>
 	<Input
 		id="users-file"
 		name="users-file"
 		type="text"
-		bind:value={middleware.basicAuth.usersFile}
+		bind:value={middleware.digestAuth.usersFile}
 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 		placeholder="Users File"
 	/>
@@ -32,14 +33,14 @@
 		id="realm"
 		name="realm"
 		type="text"
-		bind:value={middleware.basicAuth.realm}
+		bind:value={middleware.digestAuth.realm}
 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 		placeholder="Realm"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="remove-header" class="text-right">Remove Header</Label>
-	<Switch id="remove-header" bind:checked={middleware.basicAuth.removeHeader} class="col-span-3" />
+	<Switch id="remove-header" bind:checked={middleware.digestAuth.removeHeader} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="header-field" class="text-right">Header Field</Label>
@@ -47,7 +48,7 @@
 		id="header-field"
 		name="header-field"
 		type="text"
-		bind:value={middleware.basicAuth.headerField}
+		bind:value={middleware.digestAuth.headerField}
 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 		placeholder="Header Field"
 	/>

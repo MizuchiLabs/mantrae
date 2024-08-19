@@ -80,15 +80,15 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 		}
 	}
 	for _, middleware := range d.Middlewares {
+		name := strings.Split(middleware.Name, "@")[0]
 		if middleware.Provider == "http" {
-			config.HTTP.Middlewares[middleware.Name] = &dynamic.Middleware{
+			config.HTTP.Middlewares[name] = &dynamic.Middleware{
 				AddPrefix:         middleware.AddPrefix,
 				StripPrefix:       middleware.StripPrefix,
 				StripPrefixRegex:  middleware.StripPrefixRegex,
 				ReplacePath:       middleware.ReplacePath,
 				ReplacePathRegex:  middleware.ReplacePathRegex,
 				Chain:             middleware.Chain,
-				IPWhiteList:       middleware.IPWhiteList,
 				IPAllowList:       middleware.IPAllowList,
 				Headers:           middleware.Headers,
 				Errors:            middleware.Errors,
@@ -105,10 +105,10 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 				PassTLSClientCert: middleware.PassTLSClientCert,
 				Retry:             middleware.Retry,
 				ContentType:       middleware.ContentType,
-				Plugin:            middleware.Plugin,
 			}
-			config.TCP.Middlewares[middleware.Name] = &dynamic.TCPMiddleware{
+			config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
 				InFlightConn: middleware.InFlightConn,
+				IPAllowList:  middleware.TCPIPAllowList,
 			}
 		}
 	}

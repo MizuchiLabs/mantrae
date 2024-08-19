@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/api"
@@ -27,6 +28,10 @@ func init() {
 	slog.SetDefault(logger)
 	if err := util.GenerateCreds(); err != nil {
 		slog.Error("Failed to generate creds", "error", err)
+	}
+	var profiles traefik.Profiles
+	if err := profiles.Load(); err != nil {
+		slog.Error("Failed to get traefik config", "error", err)
 	}
 	go traefik.GetTraefikConfig()
 }
@@ -63,7 +68,7 @@ func main() {
 
 	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("Shutting down server...")
 

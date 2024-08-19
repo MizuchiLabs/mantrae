@@ -70,7 +70,7 @@
 	<Switch
 		id="access-control-allow-credentials"
 		bind:checked={middleware.headers.accessControlAllowCredentials}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
@@ -146,11 +146,7 @@
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="add-vary-header" class="text-right">Add Vary Header</Label>
-	<Switch
-		id="add-vary-header"
-		bind:checked={middleware.headers.addVaryHeader}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="add-vary-header" bind:checked={middleware.headers.addVaryHeader} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="allowed-hosts" class="text-right">Allowed Hosts</Label>
@@ -176,18 +172,14 @@
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="ssl-redirect" class="text-right">SSL Redirect</Label>
-	<Switch
-		id="ssl-redirect"
-		bind:checked={middleware.headers.sslRedirect}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="ssl-redirect" bind:checked={middleware.headers.sslRedirect} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="ssl-temporary-redirect" class="text-right">SSL Temporary Redirect</Label>
 	<Switch
 		id="ssl-temporary-redirect"
 		bind:checked={middleware.headers.sslTemporaryRedirect}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
@@ -214,11 +206,7 @@
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="ssl-force-host" class="text-right">SSL Force Host</Label>
-	<Switch
-		id="ssl-force-host"
-		bind:checked={middleware.headers.sslForceHost}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="ssl-force-host" bind:checked={middleware.headers.sslForceHost} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="sts-seconds" class="text-right">STS Seconds</Label>
@@ -236,32 +224,24 @@
 	<Switch
 		id="sts-include-sub-domains"
 		bind:checked={middleware.headers.stsIncludeSubdomains}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="sts-pre-load" class="text-right">STS Pre Load</Label>
-	<Switch
-		id="sts-pre-load"
-		bind:checked={middleware.headers.stsPreload}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="sts-pre-load" bind:checked={middleware.headers.stsPreload} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="force-sts-header" class="text-right">Force STS Header</Label>
 	<Switch
 		id="force-sts-header"
 		bind:checked={middleware.headers.forceSTSHeader}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="frame-deny" class="text-right">Frame Deny</Label>
-	<Switch
-		id="frame-deny"
-		bind:checked={middleware.headers.frameDeny}
-		class="col-span-3 justify-self-end"
-	/>
+	<Switch id="frame-deny" bind:checked={middleware.headers.frameDeny} class="col-span-3" />
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
 	<Label for="custom-frame-options-value" class="text-right">Custom Frame Options Value</Label>
@@ -279,7 +259,7 @@
 	<Switch
 		id="content-type-no-snuff"
 		bind:checked={middleware.headers.contentTypeNosniff}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">
@@ -287,7 +267,7 @@
 	<Switch
 		id="browser-xss-filter"
 		bind:checked={middleware.headers.browserXssFilter}
-		class="col-span-3 justify-self-end"
+		class="col-span-3"
 	/>
 </div>
 <div class="grid grid-cols-4 items-center gap-4">

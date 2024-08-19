@@ -6,7 +6,7 @@
 
 	export let middleware: Middleware;
 	middleware.errors = middleware.errors ?? {
-		status: [''],
+		status: [],
 		service: '',
 		query: ''
 	};

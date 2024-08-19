@@ -4,7 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
-	middleware.addPrefix = middleware.addPrefix ?? { prefix: '' };
+	middleware.addPrefix = middleware.addPrefix ?? { prefix: '/' };
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">
