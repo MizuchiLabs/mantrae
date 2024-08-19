@@ -7,20 +7,19 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { activeProfile, updateMiddleware } from '$lib/api';
+	import { profile, updateMiddleware } from '$lib/api';
 	import { newMiddleware } from '$lib/types/middlewares';
 
 	let middleware = newMiddleware();
 	let isHTTP = middleware.middlewareType === 'http';
 
 	const create = () => {
-		console.log(middleware);
 		if (middleware.type === '') return;
 		middleware.name = middleware.name + '@' + middleware.provider;
 		if (isHTTP) middleware.middlewareType = 'http';
 		else middleware.middlewareType = 'tcp';
 
-		updateMiddleware($activeProfile.name, middleware, middleware.name);
+		updateMiddleware($profile, middleware, middleware.name);
 	};
 
 	const HTTPMiddlewareTypes: Selected<string>[] = [

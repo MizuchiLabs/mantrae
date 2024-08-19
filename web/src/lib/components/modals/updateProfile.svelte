@@ -4,23 +4,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { deleteProfile, profiles, updateProfile } from '$lib/api';
-	import { toast } from 'svelte-sonner';
-	import type { Profile } from '$lib/types/dynamic';
 
 	export let name: string;
-	let profile = profiles.find((p) => p.name === name);
-	let oldName = profile.name;
-	let open = false;
+	let oldName = $profiles[name].name;
 
-	const update = async () => {
-		try {
-			await updateProfile(oldName, profile);
-			toast.success('Success', {
-				description: `Profile ${profile.name} has been updated`
-			});
-			oldName = profile.name;
-		} catch (e) {}
-		open = false;
+	const update = () => {
+		updateProfile(oldName, $profiles[name]);
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -30,7 +19,7 @@
 	};
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root>
 	<Dialog.Trigger class="flex flex-row justify-end">
 		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
 			<iconify-icon icon="fa6-solid:pencil" />
@@ -48,7 +37,7 @@
 					type="text"
 					class="col-span-3"
 					placeholder="Your profile name"
-					bind:value={profile.name}
+					bind:value={$profiles[name].name}
 					required
 				/>
 			</div>
@@ -58,7 +47,7 @@
 					name="url"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.client.url}
+					bind:value={$profiles[name].url}
 					placeholder="URL of your client"
 					required
 				/>
@@ -69,7 +58,7 @@
 					name="username"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.client.username}
+					bind:value={$profiles[name].username}
 					placeholder="Username of your client"
 					required
 				/>
@@ -80,14 +69,14 @@
 					name="password"
 					type="password"
 					class="col-span-3"
-					bind:value={profile.client.password}
+					bind:value={$profiles[name].password}
 					placeholder="Password of your client"
 					required
 				/>
 			</div>
 		</div>
 		<Dialog.Close class="flex w-full flex-row gap-2">
-			<Button type="submit" class="w-full bg-red-400" on:click={() => deleteProfile(profile.name)}>
+			<Button type="submit" class="w-full bg-red-400" on:click={() => deleteProfile(name)}>
 				Delete
 			</Button>
 			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>

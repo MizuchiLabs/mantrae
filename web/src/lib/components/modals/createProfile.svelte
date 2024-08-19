@@ -4,22 +4,14 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { createProfile } from '$lib/api';
-	import type { Profile } from '$lib/types/dynamic';
+	import { newProfile } from '$lib/types/dynamic';
 
-	let profile: Profile = {
-		name: '',
-		client: { url: '', username: '', password: '', dynamic: {} }
-	};
+	let profile = newProfile();
 
 	const create = () => {
-		if (profile.name === '') {
-			return;
-		}
+		if (profile.name === '') return;
 		createProfile(profile);
-		profile = {
-			name: '',
-			client: { url: '', username: '', password: '', dynamic: {} }
-		};
+		profile = newProfile();
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -61,7 +53,7 @@
 					name="url"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.client.url}
+					bind:value={profile.url}
 					placeholder="URL of your traefik client"
 					required
 				/>
@@ -72,7 +64,7 @@
 					name="username"
 					type="text"
 					class="col-span-3"
-					bind:value={profile.client.username}
+					bind:value={profile.username}
 					placeholder="Username of your client"
 					required
 				/>
@@ -83,7 +75,7 @@
 					name="password"
 					type="password"
 					class="col-span-3"
-					bind:value={profile.client.password}
+					bind:value={profile.password}
 					placeholder="Password of your client"
 					required
 				/>

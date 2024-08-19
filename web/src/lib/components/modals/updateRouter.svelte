@@ -7,30 +7,33 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { activeProfile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
+	import {
+		profile,
+		profiles,
+		entrypoints,
+		middlewares,
+		updateRouter,
+		updateService
+	} from '$lib/api';
 	import { newService, type Router, type Service } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
-	import { toast } from 'svelte-sonner';
 
 	export let router: Router;
 	let oldRouter = router.name;
 	let oldService = router.service + '@' + router.provider;
 
 	let service: Service | undefined =
-		$activeProfile?.client?.dynamic?.services?.[router.service + '@' + router.provider];
+		$profiles[$profile]?.dynamic?.services?.[router.service + '@' + router.provider];
 	$: servers = service?.loadBalancer?.servers?.length || 0;
 
-	const update = async () => {
+	const update = () => {
 		if (service === undefined) return;
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
 		service.serviceType = router.routerType;
-		try {
-			await updateRouter($activeProfile.name, router, oldRouter);
-			await updateService($activeProfile.name, service, oldService);
-			toast.success(`Router ${router.name} updated`);
-		} catch (e) {}
+		updateRouter($profile, router, oldRouter);
+		updateService($profile, service, oldService);
 	};
 
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {

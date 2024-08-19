@@ -5,12 +5,12 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import CreateProfile from '../modals/createProfile.svelte';
 	import UpdateProfile from '../modals/updateProfile.svelte';
-	import { profiles, activeProfile } from '$lib/api';
-	import type { Profile } from '$lib/types/dynamic';
+	import { profiles, profile } from '$lib/api';
 
 	let open = false;
-	function handleProfileClick(profile: string) {
-		//activeProfile.set(profile);
+	function handleProfileClick(name: string) {
+		profile.set(name);
+		localStorage.setItem('profile', name);
 		open = false;
 	}
 </script>
@@ -24,7 +24,7 @@
 			aria-expanded={open}
 			class="w-[200px] justify-between"
 		>
-			{$activeProfile?.name || 'Select a profile'}
+			{$profile || 'Select a profile'}
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>
@@ -33,16 +33,14 @@
 			<Command.Input placeholder="Search profile..." />
 			<Command.Empty>No profile found.</Command.Empty>
 			<Command.Group>
-				{#if $profiles !== null}
-					{#each Object.keys($profiles) as profile}
-						<Command.Item class="flex w-full flex-row items-center justify-between">
-							<span class="w-full py-2" on:click={() => handleProfileClick(profile)} aria-hidden
-								>{profile}</span
-							>
-							<!--<UpdateProfile {profile} />-->
-						</Command.Item>
-					{/each}
-				{/if}
+				{#each Object.keys($profiles) ?? [] as name}
+					<Command.Item class="flex w-full flex-row items-center justify-between">
+						<span class="w-full py-2" on:click={() => handleProfileClick(name)} aria-hidden
+							>{name}</span
+						>
+						<UpdateProfile {name} />
+					</Command.Item>
+				{/each}
 				<Command.Item>
 					<CreateProfile />
 				</Command.Item>

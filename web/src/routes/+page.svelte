@@ -4,7 +4,8 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import {
-		activeProfile,
+		profile,
+		profiles,
 		deleteRouter,
 		entrypoints,
 		middlewares,
@@ -91,12 +92,12 @@
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
-		updateProfile($activeProfile.name, $activeProfile);
+		updateProfile($profile, $profiles[$profile]);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
-		updateProfile($activeProfile.name, $activeProfile);
+		updateProfile($profile, $profiles[$profile]);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
@@ -141,7 +142,7 @@
 </script>
 
 <svelte:head>
-	<title>Routers | {$activeProfile?.name}</title>
+	<title>Routers | {$profile}</title>
 	<meta name="description" content="Traefik Web UI" />
 </svelte:head>
 
@@ -309,7 +310,7 @@
 								<Button
 									variant="ghost"
 									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteRouter($activeProfile.name, router.name)}
+									on:click={() => deleteRouter($profile, router.name)}
 								>
 									<iconify-icon icon="fa6-solid:xmark" />
 								</Button>

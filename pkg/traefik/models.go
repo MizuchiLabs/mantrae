@@ -14,11 +14,7 @@ type Profiles struct {
 }
 
 type Profile struct {
-	Name   string `json:"name"`
-	Client Client `json:"client,omitempty"`
-}
-
-type Client struct {
+	Name     string  `json:"name"`
 	URL      string  `json:"url"`
 	Username string  `json:"username,omitempty"`
 	Password string  `json:"password,omitempty"`

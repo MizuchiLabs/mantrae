@@ -8,25 +8,19 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { activeProfile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
+	import { profile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
-	import { toast } from 'svelte-sonner';
-	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	let router = newRouter();
 	let service = newService();
-	$: servers = service?.loadBalancer?.servers?.length || 0;
 
-	const create = async () => {
+	const create = () => {
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider;
 		service.serviceType = router.routerType;
-		try {
-			await updateRouter($activeProfile.name, router, router.name);
-			await updateService($activeProfile.name, service, service.name);
-			toast.success(`Router ${router.name} created`);
-		} catch (e) {}
+		updateRouter($profile, router, router.name);
+		updateService($profile, service, service.name);
 
 		router = newRouter();
 		service = newService();
@@ -209,7 +203,7 @@
 											>
 												<iconify-icon icon="fa6-solid:plus" />
 											</Button>
-											{#if servers > 1 && idx >= 1}
+											{#if (service?.loadBalancer?.servers?.length ?? 0) > 1 && idx >= 1}
 												<Button on:click={() => removeServer(idx)} class="h-8 w-4 rounded-full ">
 													<iconify-icon icon="fa6-solid:minus" />
 												</Button>

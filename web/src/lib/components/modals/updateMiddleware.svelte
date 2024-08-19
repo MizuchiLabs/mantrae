@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { activeProfile, updateMiddleware } from '$lib/api';
+	import { profile, updateMiddleware } from '$lib/api';
 	import type { Middleware } from '$lib/types/middlewares';
 
 	export let middleware: Middleware;
@@ -13,7 +13,7 @@
 
 	const update = () => {
 		middleware.name = name + '@' + middleware.provider;
-		updateMiddleware($activeProfile.name, middleware, oldMiddleware);
+		updateMiddleware($profile, middleware, oldMiddleware);
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {

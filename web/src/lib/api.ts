@@ -6,22 +6,26 @@ import type { Middleware } from './types/middlewares';
 import { goto } from '$app/navigation';
 
 export const loggedIn = writable(false);
+export const profile = writable('');
 export const profiles: Writable<Record<string, Profile>> = writable({});
-export const activeProfile: Writable<Profile> = writable({} as Profile);
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 export const entrypoints = derived(
-	activeProfile,
-	($activeProfile) => $activeProfile?.client?.dynamic?.entrypoints ?? []
+	[profiles, profile],
+	([$profiles, $profile]) => $profiles[$profile]?.dynamic?.entrypoints ?? []
 );
-export const routers = derived(activeProfile, ($activeProfile) =>
-	Object.values($activeProfile?.client?.dynamic?.routers ?? [])
+export const routers = derived([profiles, profile], ([$profiles, $profile]) =>
+	Object.values($profiles[$profile]?.dynamic?.routers ?? [])
 );
-export const services = derived(activeProfile, ($activeProfile) =>
-	Object.values($activeProfile?.client?.dynamic?.services ?? [])
+export const services = derived([profiles, profile], ([$profiles, $profile]) =>
+	Object.values($profiles[$profile]?.dynamic?.services ?? [])
 );
-export const middlewares = derived(activeProfile, ($activeProfile) =>
-	Object.values($activeProfile?.client?.dynamic?.middlewares ?? [])
+export const middlewares = derived([profiles, profile], ([$profiles, $profile]) =>
+	Object.values($profiles[$profile]?.dynamic?.middlewares ?? [])
+);
+export const version = derived(
+	[profiles, profile],
+	([$profiles, $profile]) => $profiles[$profile]?.dynamic?.version ?? ''
 );
 
 async function handleError(response: Response) {
@@ -72,32 +76,31 @@ export async function logout() {
 // Profiles -------------------------------------------------------------------
 export async function getProfiles() {
 	const response = await handleRequest('/profiles', 'GET');
-
 	profiles.set(response);
-	console.log(get(profiles));
-	if (get(activeProfile).name === undefined) {
-		activeProfile.set(get(profiles)[0]);
+
+	// Get saved profile
+	const savedProfile = localStorage.getItem('profile');
+	if (savedProfile !== null) {
+		profile.set(savedProfile);
 	}
 }
 
 export async function createProfile(profile: Profile): Promise<void> {
 	const response = await handleRequest('/profiles', 'POST', profile);
-	console.log(response);
-	profiles.update(() => ([response.name] = response));
+	profiles.set(response);
+	toast.success(`Profile ${profile.name} created`);
 }
 
 export async function updateProfile(name: string, profile: Profile): Promise<void> {
-	await handleRequest(`/profiles/${name}`, 'PUT', profile);
-	profiles.update((profiles) => profiles.map((p) => (p.name === name ? profile : p)));
-
-	if (profile.name === get(activeProfile).name) {
-		activeProfile.set(profile);
-	}
+	const response = await handleRequest(`/profiles/${name}`, 'PUT', profile);
+	profiles.set(response);
+	toast.success(`Profile ${name} updated`);
 }
 
 export async function deleteProfile(name: string): Promise<void> {
-	await handleRequest(`/profiles/${name}`, 'DELETE');
-	profiles.update((profiles) => profiles.filter((p) => p.name !== name));
+	const response = await handleRequest(`/profiles/${name}`, 'DELETE');
+	profiles.set(response);
+	toast.success(`Profile ${name} deleted`);
 }
 
 // Routers --------------------------------------------------------------------
@@ -107,20 +110,14 @@ export async function updateRouter(
 	oldRouter: string
 ): Promise<void> {
 	const response = await handleRequest(`/routers/${profileName}/${oldRouter}`, 'PUT', router);
-
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Router ${router.name} updated`);
 }
 
 export async function deleteRouter(profileName: string, routerName: string): Promise<void> {
 	const response = await handleRequest(`/routers/${profileName}/${routerName}`, 'DELETE');
-
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Router ${routerName} deleted`);
 }
 
 // Services -------------------------------------------------------------------
@@ -130,20 +127,14 @@ export async function updateService(
 	oldService: string
 ): Promise<void> {
 	const response = await handleRequest(`/services/${profileName}/${oldService}`, 'PUT', service);
-
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Service ${service.name} updated`);
 }
 
 export async function deleteService(profileName: string, serviceName: string): Promise<void> {
 	const response = await handleRequest(`/services/${profileName}/${serviceName}`, 'DELETE');
-
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Service ${serviceName} deleted`);
 }
 
 // Middlewares ----------------------------------------------------------------
@@ -158,17 +149,12 @@ export async function updateMiddleware(
 		middleware
 	);
 
-	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Middleware ${middleware.name} updated`);
 }
 
 export async function deleteMiddleware(profileName: string, name: string): Promise<void> {
 	const response = await handleRequest(`/middlewares/${profileName}/${name}`, 'DELETE');
-
-	profiles.update((profiles) => profiles.map((p) => (p.name === name ? response : p)));
-	if (response.name === get(activeProfile).name) {
-		activeProfile.set(response);
-	}
+	profiles.set(response);
+	toast.success(`Middleware ${name} deleted`);
 }

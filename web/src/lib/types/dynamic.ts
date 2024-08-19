@@ -4,10 +4,6 @@ import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
 	name: string;
-	client: Client;
-}
-
-export interface Client {
 	url: string;
 	username: string;
 	password: string;
@@ -37,3 +33,13 @@ export interface TLSConfiguration {
 	options?: Record<string, Options>;
 	stores?: Record<string, Store>;
 }
+
+export const newProfile = (): Profile => {
+	return {
+		name: '',
+		url: '',
+		username: '',
+		password: '',
+		dynamic: {}
+	};
+};

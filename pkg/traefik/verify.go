@@ -12,8 +12,8 @@ func (p *Profile) Verify() error {
 		return fmt.Errorf("profile name cannot be empty")
 	}
 
-	if p.Client.URL != "" {
-		if !isValidURL(p.Client.URL) {
+	if p.URL != "" {
+		if !isValidURL(p.URL) {
 			return fmt.Errorf("invalid url")
 		}
 	} else {

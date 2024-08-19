@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { activeProfile, deleteMiddleware, middlewares } from '$lib/api';
+	import { profile, deleteMiddleware, middlewares } from '$lib/api';
 	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
@@ -80,7 +80,7 @@
 </script>
 
 <svelte:head>
-	<title>Middlewares | {$activeProfile?.name}</title>
+	<title>Middlewares | {$profile}</title>
 </svelte:head>
 
 <div class="flex flex-row items-center justify-between">
@@ -157,7 +157,7 @@
 								<Button
 									variant="ghost"
 									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteMiddleware($activeProfile.name, middleware.name)}
+									on:click={() => deleteMiddleware($profile, middleware.name)}
 								>
 									<iconify-icon icon="fa6-solid:xmark" />
 								</Button>

@@ -107,8 +107,8 @@ func (r UDPRouter) ToRouter() Router {
 	}
 }
 
-func getRouters[T Routerable](c Client, endpoint string) []Router {
-	body, err := c.fetch(endpoint)
+func getRouters[T Routerable](p Profile, endpoint string) []Router {
+	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get routers", "error", err)
 		return nil
@@ -201,8 +201,8 @@ func (s UDPService) ToService() Service {
 	}
 }
 
-func getServices[T Serviceable](c Client, endpoint string) []Service {
-	body, err := c.fetch(endpoint)
+func getServices[T Serviceable](p Profile, endpoint string) []Service {
+	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get services", "error", err)
 		return nil
@@ -305,8 +305,8 @@ func (m TCPMiddleware) ToMiddleware() Middleware {
 	}
 }
 
-func getMiddlewares[T Middlewareable](c Client, endpoint string) []Middleware {
-	body, err := c.fetch(endpoint)
+func getMiddlewares[T Middlewareable](p Profile, endpoint string) []Middleware {
+	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get middlewares", "error", err)
 		return nil
@@ -335,11 +335,10 @@ func GetTraefikConfig() {
 	}
 
 	for _, profile := range p.Profiles {
-		if profile.Client.URL == "" {
+		if profile.URL == "" {
 			continue
 		}
 
-		c := profile.Client
 		d := Dynamic{
 			Routers:     make(map[string]Router),
 			Services:    make(map[string]Service),
@@ -348,25 +347,25 @@ func GetTraefikConfig() {
 
 		// Retrieve routers
 		var tRouter []Router
-		tRouter = append(tRouter, getRouters[HTTPRouter](c, HTTPRouterAPI)...)
-		tRouter = append(tRouter, getRouters[TCPRouter](c, TCPRouterAPI)...)
-		tRouter = append(tRouter, getRouters[UDPRouter](c, UDPRouterAPI)...)
+		tRouter = append(tRouter, getRouters[HTTPRouter](profile, HTTPRouterAPI)...)
+		tRouter = append(tRouter, getRouters[TCPRouter](profile, TCPRouterAPI)...)
+		tRouter = append(tRouter, getRouters[UDPRouter](profile, UDPRouterAPI)...)
 		for _, r := range tRouter {
 			d.Routers[r.Name] = r
 		}
-		for _, r := range profile.Client.Dynamic.Routers {
+		for _, r := range profile.Dynamic.Routers {
 			d.Routers[r.Name] = r
 		}
 
 		// Retrieve services
 		var tServices []Service
-		tServices = append(tServices, getServices[HTTPService](c, HTTPServiceAPI)...)
-		tServices = append(tServices, getServices[TCPService](c, TCPServiceAPI)...)
-		tServices = append(tServices, getServices[UDPService](c, UDPServiceAPI)...)
+		tServices = append(tServices, getServices[HTTPService](profile, HTTPServiceAPI)...)
+		tServices = append(tServices, getServices[TCPService](profile, TCPServiceAPI)...)
+		tServices = append(tServices, getServices[UDPService](profile, UDPServiceAPI)...)
 		for _, s := range tServices {
 			d.Services[s.Name] = s
 		}
-		for _, s := range profile.Client.Dynamic.Services {
+		for _, s := range profile.Dynamic.Services {
 			d.Services[s.Name] = s
 		}
 
@@ -374,19 +373,19 @@ func GetTraefikConfig() {
 		var tMiddlewares []Middleware
 		tMiddlewares = append(
 			tMiddlewares,
-			getMiddlewares[HTTPMiddleware](c, HTTPMiddlewaresAPI)...)
+			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI)...)
 		tMiddlewares = append(
 			tMiddlewares,
-			getMiddlewares[TCPMiddleware](c, TCPMiddlewaresAPI)...)
+			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI)...)
 		for _, m := range tMiddlewares {
 			d.Middlewares[m.Name] = m
 		}
-		for _, m := range profile.Client.Dynamic.Middlewares {
+		for _, m := range profile.Dynamic.Middlewares {
 			d.Middlewares[m.Name] = m
 		}
 
 		// Retrieve entrypoints
-		entrypoints, err := c.fetch(EntrypointsAPI)
+		entrypoints, err := profile.fetch(EntrypointsAPI)
 		if err != nil {
 			slog.Error("Failed to get entrypoints", "error", err)
 			return
@@ -399,7 +398,7 @@ func GetTraefikConfig() {
 		}
 
 		// Fetch version
-		version, err := c.fetch(VersionAPI)
+		version, err := profile.fetch(VersionAPI)
 		if err != nil {
 			slog.Error("Failed to get version", "error", err)
 			return
@@ -416,7 +415,7 @@ func GetTraefikConfig() {
 		}
 		d.Version = v.Version
 
-		profile.Client.Dynamic = d
+		profile.Dynamic = d
 	}
 
 	if err := p.Save(); err != nil {
@@ -434,12 +433,12 @@ func Sync() {
 	}
 }
 
-func (c Client) fetch(endpoint string) (io.ReadCloser, error) {
-	if c.URL == "" || endpoint == "" {
+func (p Profile) fetch(endpoint string) (io.ReadCloser, error) {
+	if p.URL == "" || endpoint == "" {
 		return nil, fmt.Errorf("invalid URL or endpoint")
 	}
 
-	apiURL := c.URL + endpoint
+	apiURL := p.URL + endpoint
 	client := http.Client{
 		Timeout: time.Second * 10,
 		Transport: &http.Transport{
@@ -453,8 +452,8 @@ func (c Client) fetch(endpoint string) (io.ReadCloser, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if c.Username != "" && c.Password != "" {
-		req.SetBasicAuth(c.Username, c.Password)
+	if p.Username != "" && p.Password != "" {
+		req.SetBasicAuth(p.Username, p.Password)
 	}
 
 	resp, err := client.Do(req)

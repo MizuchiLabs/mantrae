@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { activeProfile } from '$lib/api';
+	import { version } from '$lib/api';
 </script>
 
 <footer class="flex flex-row items-center justify-end sm:px-6">
-	{#if $activeProfile?.client?.dynamic?.version}
+	{#if $version}
 		<span class="text-xs text-muted-foreground">
-			Traefik v{$activeProfile?.client?.dynamic?.version}
+			Traefik v{$version}
 		</span>
 	{/if}
 </footer>

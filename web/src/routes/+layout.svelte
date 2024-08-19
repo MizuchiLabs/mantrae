@@ -4,7 +4,7 @@
 	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { activeProfile, API_URL, getProfiles, loggedIn } from '$lib/api';
+	import { profile, API_URL, getProfiles, loggedIn } from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import { onMount } from 'svelte';
 
@@ -23,7 +23,7 @@
 			<main class="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0">
 				<div class="mb-6 flex flex-row items-center justify-between">
 					<Profile />
-					<Button variant="default" href={`${API_URL}/${$activeProfile?.name}`}>
+					<Button variant="default" href={`${API_URL}/${$profile}`}>
 						Download Config
 						<iconify-icon icon="fa6-solid:download" class="ml-2" />
 					</Button>
