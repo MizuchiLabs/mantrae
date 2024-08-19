@@ -168,31 +168,43 @@
 					</Card.Header>
 					<Card.Content class="space-y-2">
 						{#if router.routerType === 'http' && service?.loadBalancer !== undefined}
-							<div class="flex items-center space-x-2">
-								<Label for="passHostHeader">Pass Host Header</Label>
-								<Switch id="passHostHeader" bind:checked={service.loadBalancer.passHostHeader} />
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
+								<Switch
+									id="passHostHeader"
+									class="col-span-3"
+									bind:checked={service.loadBalancer.passHostHeader}
+								/>
 							</div>
 						{/if}
-						<div class="space-y-1">
-							<div class="flex flex-row items-center justify-between">
-								<Label for="url">Load Balancer URL</Label>
-								<Button class="h-8 w-4 bg-red-400 text-black" on:click={() => addServer()}>
-									<iconify-icon icon="fa6-solid:plus" />
-								</Button>
+						<div class="grid grid-cols-4 items-center gap-4">
+							<Label for="url" class="text-right">Load Balancer</Label>
+							<div class="col-span-3 space-y-2">
+								{#each service?.loadBalancer?.servers || [] as server, idx}
+									<div class="flex flex-row items-center justify-end gap-1">
+										<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
+											<Button
+												class="h-8 w-4 rounded-full bg-red-400 text-black"
+												on:click={() => addServer()}
+											>
+												<iconify-icon icon="fa6-solid:plus" />
+											</Button>
+											{#if servers > 1 && idx >= 1}
+												<Button on:click={() => removeServer(idx)} class="h-8 w-4 rounded-full ">
+													<iconify-icon icon="fa6-solid:minus" />
+												</Button>
+											{/if}
+										</div>
+										<Input
+											id="url"
+											type="text"
+											bind:value={server.url}
+											class="focus-visible:ring-0 focus-visible:ring-offset-0"
+											placeholder="URL"
+										/>
+									</div>
+								{/each}
 							</div>
-							{#each service?.loadBalancer?.servers || [] as server, idx}
-								<div class="flex items-center gap-2">
-									<Input
-										id="url"
-										type="text"
-										bind:value={server.url}
-										class="focus-visible:ring-0 focus-visible:ring-offset-0"
-									/>
-									{#if servers > 1 && idx >= 1}
-										<Button on:click={() => removeServer(idx)}>-</Button>
-									{/if}
-								</div>
-							{/each}
 						</div>
 					</Card.Content>
 				</Card.Root>

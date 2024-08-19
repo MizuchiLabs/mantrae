@@ -106,7 +106,7 @@ export async function updateRouter(
 ): Promise<void> {
 	const response = await handleRequest(`/routers/${profileName}/${oldRouter}`, 'PUT', router);
 
-	profiles.update((profiles) => [...profiles, response]);
+	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
 	if (response.name === get(activeProfile).name) {
 		activeProfile.set(response);
 	}
@@ -129,7 +129,7 @@ export async function updateService(
 ): Promise<void> {
 	const response = await handleRequest(`/services/${profileName}/${oldService}`, 'PUT', service);
 
-	profiles.update((profiles) => [...profiles, response]);
+	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
 	if (response.name === get(activeProfile).name) {
 		activeProfile.set(response);
 	}
@@ -156,7 +156,7 @@ export async function updateMiddleware(
 		middleware
 	);
 
-	profiles.update((profiles) => [...profiles, response]);
+	profiles.update((profiles) => profiles.map((p) => (p.name === profileName ? response : p)));
 	if (response.name === get(activeProfile).name) {
 		activeProfile.set(response);
 	}

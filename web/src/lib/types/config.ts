@@ -66,17 +66,7 @@ export function newService(): Service {
 			servers: [{ url: '' }],
 			passHostHeader: true,
 			responseForwarding: { flushInterval: '100ms' }
-		},
-		weighted: { services: [] },
-		mirroring: { service: '', maxBodySize: 0, mirrors: [], healthCheck: {} },
-		failover: { service: '', fallback: '', healthCheck: {} },
-		tcpLoadBalancer: {
-			terminationDelay: 0,
-			proxyProtocol: { version: 2 }
-		},
-		tcpWeighted: { services: [] },
-		udpLoadBalancer: { servers: [{ address: '' }] },
-		udpWeighted: { services: [] }
+		}
 	};
 }
 
