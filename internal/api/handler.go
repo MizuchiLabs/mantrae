@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
@@ -87,11 +86,16 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.Profiles = append(p.Profiles, profile)
+	if len(p.Profiles) == 0 {
+		p.Profiles = make(map[string]traefik.Profile)
+	}
+
+	p.Profiles[profile.Name] = profile
 	if err := p.Save(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	traefik.GetTraefikConfig()
 	writeJSON(w, profile)
 }
 
@@ -119,7 +123,8 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.PathValue("name") == "" {
+	profileName := r.PathValue("name")
+	if profileName == "" {
 		http.Error(w, "profile name cannot be empty", http.StatusBadRequest)
 		return
 	}
@@ -130,18 +135,27 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if profile.Name == r.PathValue("name") {
-			p.Profiles[i] = updatedProfile
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	if len(p.Profiles) == 0 {
+		http.Error(w, "no profiles configured", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	if updatedProfile.Name != profileName {
+		delete(p.Profiles, profileName)
+	}
+
+	p.Profiles[profileName] = updatedProfile
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[profileName])
 }
 
 // DeleteProfile deletes a single profile
@@ -152,18 +166,23 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if profile.Name == r.PathValue("name") {
-			p.Profiles = append(p.Profiles[:i], p.Profiles[i+1:]...)
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
+	profileName := r.PathValue("name")
+	if profileName == "" {
+		http.Error(w, "profile name cannot be empty", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	delete(p.Profiles, profileName)
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // UpdateRouter updates or creates a router
@@ -192,24 +211,21 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if strings.EqualFold(profile.Name, profileName) {
-			if routerName != router.Name {
-				delete(p.Profiles[i].Client.Dynamic.Routers, routerName)
-			}
-			if len(p.Profiles[i].Client.Dynamic.Routers) == 0 {
-				p.Profiles[i].Client.Dynamic.Routers = make(map[string]traefik.Router)
-			}
-			p.Profiles[i].Client.Dynamic.Routers[router.Name] = router
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, profile)
-			return
-		}
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if routerName != router.Name {
+		delete(p.Profiles[profileName].Client.Dynamic.Routers, routerName)
+	}
+
+	p.Profiles[profileName].Client.Dynamic.Routers[routerName] = router
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, p.Profiles[profileName])
 }
 
 // DeleteRouter deletes a single router and it's services
@@ -220,19 +236,26 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if profile.Name == r.PathValue("profile") {
-			delete(p.Profiles[i].Client.Dynamic.Routers, r.PathValue("router"))
-			delete(p.Profiles[i].Client.Dynamic.Services, r.PathValue("router"))
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	profileName := r.PathValue("profile")
+	routerName := r.PathValue("router")
+	if profileName == "" || routerName == "" {
+		http.Error(w, "profile or router name cannot be empty", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	delete(p.Profiles[profileName].Client.Dynamic.Routers, routerName)
+	delete(p.Profiles[profileName].Client.Dynamic.Services, routerName)
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[r.PathValue("profile")])
 }
 
 // UpdateService updates or creates a service
@@ -261,24 +284,22 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if strings.EqualFold(profile.Name, r.PathValue("profile")) {
-			if serviceName != service.Name {
-				delete(p.Profiles[i].Client.Dynamic.Services, serviceName)
-			}
-			if len(p.Profiles[i].Client.Dynamic.Services) == 0 {
-				p.Profiles[i].Client.Dynamic.Services = make(map[string]traefik.Service)
-			}
-			p.Profiles[i].Client.Dynamic.Services[service.Name] = service
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if serviceName != service.Name {
+		delete(p.Profiles[profileName].Client.Dynamic.Services, serviceName)
+	}
+
+	p.Profiles[profileName].Client.Dynamic.Services[serviceName] = service
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[profileName])
 }
 
 // DeleteService deletes a single service and its router
@@ -289,19 +310,25 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if profile.Name == r.PathValue("profile") {
-			delete(p.Profiles[i].Client.Dynamic.Services, r.PathValue("service"))
-			delete(p.Profiles[i].Client.Dynamic.Routers, r.PathValue("service"))
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	profileName := r.PathValue("profile")
+	serviceName := r.PathValue("service")
+	if profileName == "" || serviceName == "" {
+		http.Error(w, "profile or service name cannot be empty", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+	if _, ok := p.Profiles[r.PathValue("profile")]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	delete(p.Profiles[profileName].Client.Dynamic.Services, serviceName)
+	delete(p.Profiles[profileName].Client.Dynamic.Routers, serviceName)
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[r.PathValue("profile")])
 }
 
 // UpdateMiddleware updates or creates a middleware
@@ -325,24 +352,22 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if strings.EqualFold(profile.Name, profileName) {
-			if middlewareName != middleware.Name {
-				delete(p.Profiles[i].Client.Dynamic.Middlewares, middlewareName)
-			}
-			if len(p.Profiles[i].Client.Dynamic.Middlewares) == 0 {
-				p.Profiles[i].Client.Dynamic.Middlewares = make(map[string]traefik.Middleware)
-			}
-			p.Profiles[i].Client.Dynamic.Middlewares[middleware.Name] = middleware
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if middlewareName != middleware.Name {
+		delete(p.Profiles[profileName].Client.Dynamic.Middlewares, middlewareName)
+	}
+
+	p.Profiles[profileName].Client.Dynamic.Middlewares[middleware.Name] = middleware
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[profileName])
 }
 
 // DeleteMiddleware deletes a single middleware and it's services
@@ -353,18 +378,25 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, profile := range p.Profiles {
-		if profile.Name == r.PathValue("profile") {
-			delete(p.Profiles[i].Client.Dynamic.Middlewares, r.PathValue("middleware"))
-			if err := p.Save(); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writeJSON(w, p.Profiles[i])
-			return
-		}
+	profileName := r.PathValue("profile")
+	middlewareName := r.PathValue("middleware")
+	if profileName == "" || middlewareName == "" {
+		http.Error(w, "profile or middleware name cannot be empty", http.StatusBadRequest)
+		return
 	}
-	http.Error(w, "profile not found", http.StatusNotFound)
+
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	delete(p.Profiles[profileName].Client.Dynamic.Middlewares, middlewareName)
+	if err := p.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, p.Profiles[profileName])
 }
 
 // GetConfig returns the traefik config for a single profile
@@ -375,24 +407,29 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, profile := range p.Profiles {
-		if strings.EqualFold(profile.Name, r.PathValue("name")) {
-			w.Header().Set("Content-Type", "application/yaml")
-			w.Header().
-				Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.yaml", profile.Name))
-
-			yamlConfig, err := traefik.GenerateConfig(profile.Client.Dynamic)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			if _, err := w.Write(yamlConfig); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			return
-		}
+	profileName := r.PathValue("name")
+	if profileName == "" {
+		http.Error(w, "profile name cannot be empty", http.StatusBadRequest)
+		return
 	}
-	http.NotFound(w, r)
+
+	if _, ok := p.Profiles[profileName]; !ok {
+		http.Error(w, "profile not found", http.StatusNotFound)
+		return
+	}
+
+	yamlConfig, err := traefik.GenerateConfig(p.Profiles[profileName].Client.Dynamic)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/yaml")
+	w.Header().
+		Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.yaml", profileName))
+
+	if _, err := w.Write(yamlConfig); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

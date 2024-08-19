@@ -9,8 +9,8 @@
 	import type { Profile } from '$lib/types/dynamic';
 
 	let open = false;
-	function handleProfileClick(profile: Profile) {
-		activeProfile.set(profile);
+	function handleProfileClick(profile: string) {
+		//activeProfile.set(profile);
 		open = false;
 	}
 </script>
@@ -34,12 +34,12 @@
 			<Command.Empty>No profile found.</Command.Empty>
 			<Command.Group>
 				{#if $profiles !== null}
-					{#each $profiles as profile}
+					{#each Object.keys($profiles) as profile}
 						<Command.Item class="flex w-full flex-row items-center justify-between">
 							<span class="w-full py-2" on:click={() => handleProfileClick(profile)} aria-hidden
-								>{profile.name}</span
+								>{profile}</span
 							>
-							<UpdateProfile {profile} />
+							<!--<UpdateProfile {profile} />-->
 						</Command.Item>
 					{/each}
 				{/if}

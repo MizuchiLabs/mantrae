@@ -6,7 +6,7 @@ import type { Middleware } from './types/middlewares';
 import { goto } from '$app/navigation';
 
 export const loggedIn = writable(false);
-export const profiles: Writable<Profile[]> = writable([]);
+export const profiles: Writable<Record<string, Profile>> = writable({});
 export const activeProfile: Writable<Profile> = writable({} as Profile);
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
@@ -74,14 +74,16 @@ export async function getProfiles() {
 	const response = await handleRequest('/profiles', 'GET');
 
 	profiles.set(response);
+	console.log(get(profiles));
 	if (get(activeProfile).name === undefined) {
 		activeProfile.set(get(profiles)[0]);
 	}
 }
 
 export async function createProfile(profile: Profile): Promise<void> {
-	await handleRequest('/profiles', 'POST', profile);
-	profiles.update((profiles) => [...profiles, profile]);
+	const response = await handleRequest('/profiles', 'POST', profile);
+	console.log(response);
+	profiles.update(() => ([response.name] = response));
 }
 
 export async function updateProfile(name: string, profile: Profile): Promise<void> {

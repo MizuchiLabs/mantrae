@@ -23,7 +23,7 @@
 			<main class="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0">
 				<div class="mb-6 flex flex-row items-center justify-between">
 					<Profile />
-					<Button variant="default" href={`${API_URL}/${$activeProfile.name}`}>
+					<Button variant="default" href={`${API_URL}/${$activeProfile?.name}`}>
 						Download Config
 						<iconify-icon icon="fa6-solid:download" class="ml-2" />
 					</Button>

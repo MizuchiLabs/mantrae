@@ -3,6 +3,7 @@ package traefik
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"math/big"
@@ -113,7 +114,9 @@ func getRouters[T Routerable](c Client, endpoint string) []Router {
 		return nil
 	}
 	defer body.Close()
-
+	if body == nil {
+		return nil
+	}
 	var routerables []T
 	if err := json.NewDecoder(body).Decode(&routerables); err != nil {
 		slog.Error("Failed to decode routers", "error", err)
@@ -124,7 +127,6 @@ func getRouters[T Routerable](c Client, endpoint string) []Router {
 	for _, r := range routerables {
 		routers = append(routers, r.ToRouter())
 	}
-
 	return routers
 }
 
@@ -332,7 +334,7 @@ func GetTraefikConfig() {
 		return
 	}
 
-	for idx, profile := range p.Profiles {
+	for _, profile := range p.Profiles {
 		if profile.Client.URL == "" {
 			continue
 		}
@@ -414,7 +416,7 @@ func GetTraefikConfig() {
 		}
 		d.Version = v.Version
 
-		p.Profiles[idx].Client.Dynamic = d
+		profile.Client.Dynamic = d
 	}
 
 	if err := p.Save(); err != nil {
@@ -432,7 +434,11 @@ func Sync() {
 	}
 }
 
-func (c *Client) fetch(endpoint string) (io.ReadCloser, error) {
+func (c Client) fetch(endpoint string) (io.ReadCloser, error) {
+	if c.URL == "" || endpoint == "" {
+		return nil, fmt.Errorf("invalid URL or endpoint")
+	}
+
 	apiURL := c.URL + endpoint
 	client := http.Client{
 		Timeout: time.Second * 10,
@@ -443,8 +449,9 @@ func (c *Client) fetch(endpoint string) (io.ReadCloser, error) {
 
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	if c.Username != "" && c.Password != "" {
 		req.SetBasicAuth(c.Username, c.Password)
@@ -452,10 +459,11 @@ func (c *Client) fetch(endpoint string) (io.ReadCloser, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch %s: %w", apiURL, err)
 	}
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	return resp.Body, nil

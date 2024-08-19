@@ -22,10 +22,11 @@ func profilePath() string {
 
 func (p *Profiles) Load() error {
 	if _, err := os.Stat(profilePath()); os.IsNotExist(err) {
-		p.Profiles = append(p.Profiles, Profile{
+		p.Profiles = make(map[string]Profile)
+		p.Profiles["default"] = Profile{
 			Name:   "default",
 			Client: Client{},
-		})
+		}
 		if err := p.Save(); err != nil {
 			slog.Error("Failed to save profiles", "error", err)
 		}

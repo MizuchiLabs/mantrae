@@ -9,7 +9,7 @@ import (
 )
 
 type Profiles struct {
-	Profiles []Profile `json:"profiles"`
+	Profiles map[string]Profile `json:"profiles,omitempty"`
 	mu       sync.RWMutex
 }
 

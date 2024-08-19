@@ -3,11 +3,12 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { deleteProfile, updateProfile } from '$lib/api';
+	import { deleteProfile, profiles, updateProfile } from '$lib/api';
 	import { toast } from 'svelte-sonner';
 	import type { Profile } from '$lib/types/dynamic';
 
-	export let profile: Profile;
+	export let name: string;
+	let profile = profiles.find((p) => p.name === name);
 	let oldName = profile.name;
 	let open = false;
 
