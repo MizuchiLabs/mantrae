@@ -6,11 +6,14 @@
 	import { deleteProfile, profiles, updateProfile } from '$lib/api';
 
 	export let name: string;
-	let oldName = $profiles[name].name;
 	let open = false;
 
 	const update = () => {
-		updateProfile(oldName, $profiles[name]);
+		// Strip trailing slashes
+		if ($profiles[name].url.endsWith('/')) {
+			$profiles[name].url = $profiles[name].url.slice(0, -1);
+		}
+		updateProfile(name, $profiles[name]);
 		open = false;
 	};
 

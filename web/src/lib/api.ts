@@ -1,7 +1,7 @@
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { toast } from 'svelte-sonner';
 import type { Profile } from './types/dynamic';
-import type { Router, Service } from './types/config';
+import { newRouter, newService, type Router, type Service } from './types/config';
 import type { Middleware } from './types/middlewares';
 import { goto } from '$app/navigation';
 
@@ -12,20 +12,20 @@ export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/ap
 
 export const entrypoints = derived(
 	[profiles, profile],
-	([$profiles, $profile]) => $profiles[$profile]?.dynamic?.entrypoints ?? []
+	([$profiles, $profile]) => $profiles?.[$profile]?.dynamic?.entrypoints ?? []
 );
 export const routers = derived([profiles, profile], ([$profiles, $profile]) =>
-	Object.values($profiles[$profile]?.dynamic?.routers ?? [])
+	Object.values($profiles?.[$profile]?.dynamic?.routers ?? [])
 );
 export const services = derived([profiles, profile], ([$profiles, $profile]) =>
-	Object.values($profiles[$profile]?.dynamic?.services ?? [])
+	Object.values($profiles?.[$profile]?.dynamic?.services ?? [])
 );
 export const middlewares = derived([profiles, profile], ([$profiles, $profile]) =>
-	Object.values($profiles[$profile]?.dynamic?.middlewares ?? [])
+	Object.values($profiles?.[$profile]?.dynamic?.middlewares ?? [])
 );
 export const version = derived(
 	[profiles, profile],
-	([$profiles, $profile]) => $profiles[$profile]?.dynamic?.version ?? ''
+	([$profiles, $profile]) => $profiles?.[$profile]?.dynamic?.version ?? ''
 );
 
 async function handleRequest(endpoint: string, method: string, body?: any): Promise<any> {
@@ -92,20 +92,30 @@ export async function getProfiles() {
 
 export async function createProfile(profile: Profile): Promise<void> {
 	const response = await handleRequest('/profiles', 'POST', profile);
-	profiles.set(response);
-	toast.success(`Profile ${profile.name} created`);
+	if (response) {
+		profiles.set(response);
+		toast.success(`Profile ${profile.name} created`);
+	}
 }
 
-export async function updateProfile(name: string, profile: Profile): Promise<void> {
-	const response = await handleRequest(`/profiles/${name}`, 'PUT', profile);
-	profiles.set(response);
-	toast.success(`Profile ${name} updated`);
+export async function updateProfile(name: string, p: Profile): Promise<void> {
+	const response = await handleRequest(`/profiles/${name}`, 'PUT', p);
+	if (response) {
+		profiles.set(response);
+		toast.success(`Profile ${name} updated`);
+		if (get(profile) === name) {
+			profile.set(p.name);
+			localStorage.setItem('profile', p.name);
+		}
+	}
 }
 
 export async function deleteProfile(name: string): Promise<void> {
 	const response = await handleRequest(`/profiles/${name}`, 'DELETE');
-	profiles.set(response);
-	toast.success(`Profile ${name} deleted`);
+	if (response) {
+		profiles.set(response);
+		toast.success(`Profile ${name} deleted`);
+	}
 }
 
 // Routers --------------------------------------------------------------------
@@ -162,4 +172,14 @@ export async function deleteMiddleware(profileName: string, name: string): Promi
 	const response = await handleRequest(`/middlewares/${profileName}/${name}`, 'DELETE');
 	profiles.set(response);
 	toast.success(`Middleware ${name} deleted`);
+}
+
+// Helper functions -----------------------------------------------------------
+export function getRouter(profileName: string, routerName: string): Router {
+	const router = get(profiles)?.[profileName].dynamic?.routers?.[routerName];
+	return router ?? newRouter();
+}
+export function getService(profileName: string, serviceName: string): Service {
+	const service = get(profiles)?.[profileName].dynamic?.services?.[serviceName];
+	return service ?? newService();
 }

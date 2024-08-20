@@ -9,31 +9,29 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import {
 		profile,
-		profiles,
 		entrypoints,
 		middlewares,
 		updateRouter,
-		updateService
+		updateService,
+		profiles
 	} from '$lib/api';
-	import { newService, type Router, type Service } from '$lib/types/config';
+	import { newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 
 	export let router: Router;
-	let oldRouter = router.name;
-	let oldService = router.service + '@' + router.provider;
+	let service = $profiles[$profile]?.dynamic?.services?.[router.name];
 
-	let service: Service | undefined =
-		$profiles[$profile]?.dynamic?.services?.[router.service + '@' + router.provider];
-	$: servers = service?.loadBalancer?.servers?.length || 0;
-
+	let open = false;
 	const update = () => {
 		if (service === undefined) return;
+		let oldName = router.name;
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
 		service.serviceType = router.routerType;
-		updateRouter($profile, router, oldRouter);
-		updateService($profile, service, oldService);
+		updateRouter($profile, router, oldName);
+		updateService($profile, service, oldName);
+		open = false;
 	};
 
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
@@ -70,9 +68,15 @@
 			service.loadBalancer.servers = service.loadBalancer.servers.filter((_, i) => i !== index);
 		}
 	};
+
+	const onKeydown = (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			update();
+		}
+	};
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open>
 	<Dialog.Trigger>
 		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
 			<iconify-icon icon="fa6-solid:pencil" />
@@ -102,6 +106,7 @@
 								class="col-span-3"
 								bind:value={router.service}
 								placeholder="Name of the router"
+								on:keydown={onKeydown}
 								required
 							/>
 						</div>
@@ -192,7 +197,7 @@
 											>
 												<iconify-icon icon="fa6-solid:plus" />
 											</Button>
-											{#if servers > 1 && idx >= 1}
+											{#if (service?.loadBalancer?.servers?.length || 0) > 1 && idx >= 1}
 												<Button on:click={() => removeServer(idx)} class="h-8 w-4 rounded-full ">
 													<iconify-icon icon="fa6-solid:minus" />
 												</Button>

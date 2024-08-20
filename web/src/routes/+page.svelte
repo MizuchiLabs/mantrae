@@ -11,7 +11,8 @@
 		middlewares,
 		routers,
 		services,
-		updateProfile
+		updateProfile,
+		updateRouter
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -92,12 +93,12 @@
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
-		updateProfile($profile, $profiles[$profile]);
+		updateRouter($profile, router, router.name);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
-		updateProfile($profile, $profiles[$profile]);
+		updateRouter($profile, router, router.name);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {

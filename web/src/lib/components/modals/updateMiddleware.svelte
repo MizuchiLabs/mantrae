@@ -8,12 +8,12 @@
 	import type { Middleware } from '$lib/types/middlewares';
 
 	export let middleware: Middleware;
-	let oldMiddleware = middleware.name;
 	let name = middleware.name.split('@')[0];
 
 	const update = () => {
+		let oldName = middleware.name;
 		middleware.name = name + '@' + middleware.provider;
-		updateMiddleware($profile, middleware, oldMiddleware);
+		updateMiddleware($profile, middleware, oldName);
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {

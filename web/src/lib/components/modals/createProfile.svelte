@@ -10,6 +10,10 @@
 
 	const create = () => {
 		if (profile.name === '') return;
+		// Strip trailing slashes
+		if (profile.url.endsWith('/')) {
+			profile.url = profile.url.slice(0, -1);
+		}
 		createProfile(profile);
 		profile = newProfile();
 	};
