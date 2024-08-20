@@ -21,6 +21,9 @@ func profilePath() string {
 }
 
 func (p *Profiles) Load() error {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
 	if _, err := os.Stat(profilePath()); os.IsNotExist(err) {
 		p.Profiles = make(map[string]Profile)
 		p.Profiles["default"] = Profile{Name: "default"}

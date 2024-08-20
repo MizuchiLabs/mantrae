@@ -63,11 +63,11 @@ type UDPRouter struct {
 }
 
 type Routerable interface {
-	ToRouter() Router
+	ToRouter() *Router
 }
 
-func (r HTTPRouter) ToRouter() Router {
-	return Router{
+func (r HTTPRouter) ToRouter() *Router {
+	return &Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
 		Status:      r.Status,
@@ -81,8 +81,8 @@ func (r HTTPRouter) ToRouter() Router {
 	}
 }
 
-func (r TCPRouter) ToRouter() Router {
-	return Router{
+func (r TCPRouter) ToRouter() *Router {
+	return &Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
 		Status:      r.Status,
@@ -96,8 +96,8 @@ func (r TCPRouter) ToRouter() Router {
 	}
 }
 
-func (r UDPRouter) ToRouter() Router {
-	return Router{
+func (r UDPRouter) ToRouter() *Router {
+	return &Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
 		Status:      r.Status,
@@ -107,7 +107,7 @@ func (r UDPRouter) ToRouter() Router {
 	}
 }
 
-func getRouters[T Routerable](p Profile, endpoint string) []Router {
+func getRouters[T Routerable](p Profile, endpoint string) map[string]Router {
 	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get routers", "error", err)
@@ -123,9 +123,10 @@ func getRouters[T Routerable](p Profile, endpoint string) []Router {
 		return nil
 	}
 
-	var routers []Router
+	routers := make(map[string]Router)
 	for _, r := range routerables {
-		routers = append(routers, r.ToRouter())
+		newRouter := r.ToRouter()
+		routers[newRouter.Name] = *newRouter
 	}
 	return routers
 }
@@ -157,11 +158,11 @@ type UDPService struct {
 }
 
 type Serviceable interface {
-	ToService() Service
+	ToService() *Service
 }
 
-func (s HTTPService) ToService() Service {
-	return Service{
+func (s HTTPService) ToService() *Service {
+	return &Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
 		Type:         s.Type,
@@ -175,8 +176,8 @@ func (s HTTPService) ToService() Service {
 	}
 }
 
-func (s TCPService) ToService() Service {
-	return Service{
+func (s TCPService) ToService() *Service {
+	return &Service{
 		Name:            s.Name,
 		Provider:        s.Provider,
 		Type:            s.Type,
@@ -188,8 +189,8 @@ func (s TCPService) ToService() Service {
 	}
 }
 
-func (s UDPService) ToService() Service {
-	return Service{
+func (s UDPService) ToService() *Service {
+	return &Service{
 		Name:            s.Name,
 		Provider:        s.Provider,
 		Type:            s.Type,
@@ -201,7 +202,7 @@ func (s UDPService) ToService() Service {
 	}
 }
 
-func getServices[T Serviceable](p Profile, endpoint string) []Service {
+func getServices[T Serviceable](p Profile, endpoint string) map[string]Service {
 	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get services", "error", err)
@@ -215,9 +216,10 @@ func getServices[T Serviceable](p Profile, endpoint string) []Service {
 		return nil
 	}
 
-	var services []Service
+	services := make(map[string]Service)
 	for _, s := range serviceables {
-		services = append(services, s.ToService())
+		newService := s.ToService()
+		services[newService.Name] = *newService
 	}
 
 	return services
@@ -258,11 +260,11 @@ type TCPMiddleware struct {
 }
 
 type Middlewareable interface {
-	ToMiddleware() Middleware
+	ToMiddleware() *Middleware
 }
 
-func (m HTTPMiddleware) ToMiddleware() Middleware {
-	return Middleware{
+func (m HTTPMiddleware) ToMiddleware() *Middleware {
+	return &Middleware{
 		Name:              m.Name,
 		Provider:          m.Provider,
 		Type:              m.Type,
@@ -293,8 +295,8 @@ func (m HTTPMiddleware) ToMiddleware() Middleware {
 	}
 }
 
-func (m TCPMiddleware) ToMiddleware() Middleware {
-	return Middleware{
+func (m TCPMiddleware) ToMiddleware() *Middleware {
+	return &Middleware{
 		Name:           m.Name,
 		Provider:       m.Provider,
 		Type:           m.Type,
@@ -305,7 +307,7 @@ func (m TCPMiddleware) ToMiddleware() Middleware {
 	}
 }
 
-func getMiddlewares[T Middlewareable](p Profile, endpoint string) []Middleware {
+func getMiddlewares[T Middlewareable](p Profile, endpoint string) map[string]Middleware {
 	body, err := p.fetch(endpoint)
 	if err != nil {
 		slog.Error("Failed to get middlewares", "error", err)
@@ -319,9 +321,10 @@ func getMiddlewares[T Middlewareable](p Profile, endpoint string) []Middleware {
 		return nil
 	}
 
-	var middlewares []Middleware
+	middlewares := make(map[string]Middleware)
 	for _, m := range middlewareables {
-		middlewares = append(middlewares, m.ToMiddleware())
+		newMiddleware := m.ToMiddleware()
+		middlewares[newMiddleware.Name] = *newMiddleware
 	}
 
 	return middlewares
@@ -334,55 +337,40 @@ func GetTraefikConfig() {
 		return
 	}
 
-	for _, profile := range p.Profiles {
+	for i, profile := range p.Profiles {
 		if profile.URL == "" {
 			continue
 		}
 
 		d := Dynamic{
+			Entrypoints: make([]Entrypoint, 0),
 			Routers:     make(map[string]Router),
 			Services:    make(map[string]Service),
 			Middlewares: make(map[string]Middleware),
 		}
 
 		// Retrieve routers
-		var tRouter []Router
-		tRouter = append(tRouter, getRouters[HTTPRouter](profile, HTTPRouterAPI)...)
-		tRouter = append(tRouter, getRouters[TCPRouter](profile, TCPRouterAPI)...)
-		tRouter = append(tRouter, getRouters[UDPRouter](profile, UDPRouterAPI)...)
-		for _, r := range tRouter {
-			d.Routers[r.Name] = r
-		}
-		for _, r := range profile.Dynamic.Routers {
-			d.Routers[r.Name] = r
-		}
+		d.Routers = merge(
+			getRouters[HTTPRouter](profile, HTTPRouterAPI),
+			getRouters[TCPRouter](profile, TCPRouterAPI),
+			getRouters[UDPRouter](profile, UDPRouterAPI),
+			profile.Dynamic.Routers,
+		)
 
 		// Retrieve services
-		var tServices []Service
-		tServices = append(tServices, getServices[HTTPService](profile, HTTPServiceAPI)...)
-		tServices = append(tServices, getServices[TCPService](profile, TCPServiceAPI)...)
-		tServices = append(tServices, getServices[UDPService](profile, UDPServiceAPI)...)
-		for _, s := range tServices {
-			d.Services[s.Name] = s
-		}
-		for _, s := range profile.Dynamic.Services {
-			d.Services[s.Name] = s
-		}
+		d.Services = merge(
+			getServices[HTTPService](profile, HTTPServiceAPI),
+			getServices[TCPService](profile, TCPServiceAPI),
+			getServices[UDPService](profile, UDPServiceAPI),
+			profile.Dynamic.Services,
+		)
 
 		// Fetch middlewares
-		var tMiddlewares []Middleware
-		tMiddlewares = append(
-			tMiddlewares,
-			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI)...)
-		tMiddlewares = append(
-			tMiddlewares,
-			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI)...)
-		for _, m := range tMiddlewares {
-			d.Middlewares[m.Name] = m
-		}
-		for _, m := range profile.Dynamic.Middlewares {
-			d.Middlewares[m.Name] = m
-		}
+		d.Middlewares = merge(
+			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI),
+			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI),
+			profile.Dynamic.Middlewares,
+		)
 
 		// Retrieve entrypoints
 		entrypoints, err := profile.fetch(EntrypointsAPI)
@@ -416,6 +404,7 @@ func GetTraefikConfig() {
 		d.Version = v.Version
 
 		profile.Dynamic = d
+		p.Profiles[i] = profile
 	}
 
 	if err := p.Save(); err != nil {
@@ -431,6 +420,16 @@ func Sync() {
 	for range ticker.C {
 		GetTraefikConfig()
 	}
+}
+
+func merge[T any](maps ...map[string]T) map[string]T {
+	merged := make(map[string]T)
+	for _, m := range maps {
+		for k, v := range m {
+			merged[k] = v
+		}
+	}
+	return merged
 }
 
 func (p Profile) fetch(endpoint string) (io.ReadCloser, error) {

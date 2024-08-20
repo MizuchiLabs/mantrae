@@ -95,7 +95,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	traefik.GetTraefikConfig()
+	go traefik.GetTraefikConfig()
 	writeJSON(w, p.Profiles)
 }
 
@@ -155,6 +155,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go traefik.GetTraefikConfig()
 	writeJSON(w, profiles.Profiles)
 }
 
