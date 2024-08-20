@@ -7,9 +7,11 @@
 
 	export let name: string;
 	let oldName = $profiles[name].name;
+	let open = false;
 
 	const update = () => {
 		updateProfile(oldName, $profiles[name]);
+		open = false;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -19,7 +21,7 @@
 	};
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open>
 	<Dialog.Trigger class="flex flex-row justify-end">
 		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
 			<iconify-icon icon="fa6-solid:pencil" />

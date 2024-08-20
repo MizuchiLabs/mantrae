@@ -28,44 +28,45 @@ export const version = derived(
 	([$profiles, $profile]) => $profiles[$profile]?.dynamic?.version ?? ''
 );
 
-async function handleError(response: Response) {
-	if (!response.ok) {
-		toast.error('Request failed', {
-			description: await response.text(),
-			duration: 3000
-		});
-		throw new Error(`Failed to fetch: ${response}`);
-	}
-}
-
 async function handleRequest(endpoint: string, method: string, body?: any): Promise<any> {
 	if (!get(loggedIn)) return;
 
 	const token = localStorage.getItem('token');
-	const response = await fetch(`${API_URL}${endpoint}`, {
-		method: method,
-		body: body ? JSON.stringify(body) : undefined,
-		headers: { Authorization: `Bearer ${token}` }
-	});
-	handleError(response);
-	if (response.status !== 204) {
+	try {
+		const response = await fetch(`${API_URL}${endpoint}`, {
+			method: method,
+			body: body ? JSON.stringify(body) : undefined,
+			headers: { Authorization: `Bearer ${token}` }
+		});
 		return await response.json();
+	} catch (e: any) {
+		toast.error('Request failed', {
+			description: e.message,
+			duration: 3000
+		});
 	}
 }
 
 // Login ----------------------------------------------------------------------
 export async function login(username: string, password: string) {
-	const response = await fetch(`${API_URL}/login`, {
-		method: 'POST',
-		body: JSON.stringify({ username, password })
-	});
-	handleError(response);
-
-	const { token } = await response.json();
-	localStorage.setItem('token', token);
-	loggedIn.set(true);
-	await getProfiles();
-	goto('/');
+	try {
+		const response = await fetch(`${API_URL}/login`, {
+			method: 'POST',
+			body: JSON.stringify({ username, password })
+		});
+		const { token } = await response.json();
+		localStorage.setItem('token', token);
+		loggedIn.set(true);
+		await getProfiles();
+		goto('/');
+		toast.success('Login successful');
+	} catch (e: any) {
+		toast.error('Login failed', {
+			description: e.message,
+			duration: 3000
+		});
+		return;
+	}
 }
 
 export async function logout() {
@@ -82,6 +83,10 @@ export async function getProfiles() {
 	const savedProfile = localStorage.getItem('profile');
 	if (savedProfile !== null) {
 		profile.set(savedProfile);
+	}
+	if (get(profile) === '' && Object.keys(response).length > 0) {
+		profile.set(Object.keys(response)[0]);
+		localStorage.setItem('profile', Object.keys(response)[0]);
 	}
 }
 

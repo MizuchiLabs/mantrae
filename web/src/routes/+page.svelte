@@ -142,7 +142,7 @@
 </script>
 
 <svelte:head>
-	<title>Routers | {$profile}</title>
+	<title>Routers {$profile ? `| ${$profile}` : ''}</title>
 	<meta name="description" content="Traefik Web UI" />
 </svelte:head>
 
