@@ -5,13 +5,11 @@
 	import * as Select from '$lib/components/ui/select';
 	import {
 		profile,
-		profiles,
 		deleteRouter,
 		entrypoints,
 		middlewares,
 		routers,
 		services,
-		updateProfile,
 		updateRouter
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
@@ -26,8 +24,10 @@
 	let count = 0;
 	let currentPage = 1;
 	let fRouters: Router[] = [];
-	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
-	$: search, $routers, currentPage, searchRouter();
+	let perPage: Selected<number> | undefined = JSON.parse(
+		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
+	);
+	$: search, $routers, currentPage, perPage, searchRouter();
 
 	// Reset the page to 1 when the search input changes
 	$: {
@@ -37,38 +37,20 @@
 	}
 
 	const searchRouter = () => {
-		let items: Router[] = [...$routers];
+		let items = $routers.filter((router) => {
+			if (localProvider && router.provider !== 'http') return false;
+			const searchParts = search.toLowerCase().split(' ');
+			return searchParts.every((part) =>
+				part.startsWith('@provider:')
+					? router.provider?.toLowerCase() === part.split(':')[1]
+					: part.startsWith('@type:')
+						? router.routerType.toLowerCase() === part.split(':')[1]
+						: router.service.toLowerCase().includes(part)
+			);
+		});
 
-		if (search) {
-			const searchParts = search.split(' ').map((part) => part.toLowerCase());
-			let providerSearch = '';
-			let typeSearch = '';
-			let generalSearch = [];
-
-			for (const part of searchParts) {
-				if (part.startsWith('@provider:')) {
-					providerSearch = part.split(':')[1];
-				} else if (part.startsWith('@type:')) {
-					typeSearch = part.split(':')[1];
-				} else {
-					generalSearch.push(part);
-				}
-			}
-
-			items = items.filter((router) => {
-				const matchesProvider = providerSearch
-					? router.provider?.toLowerCase() === providerSearch
-					: true;
-				const matchesType = typeSearch ? router.routerType.toLowerCase() === typeSearch : true;
-				const matchesGeneral = generalSearch.every((term) =>
-					router.service.toLowerCase().includes(term)
-				);
-				return matchesProvider && matchesType && matchesGeneral;
-			});
-		}
-
-		fRouters = paginate(items);
 		count = items.length || 1;
+		fRouters = paginate(items);
 	};
 
 	const paginate = (routers: Router[]) => {
@@ -76,19 +58,26 @@
 		return routers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 	};
 
-	// let columns: Selected<string>[] | undefined = [
-	// 	{ value: 'name', label: 'Name' },
-	// 	{ value: 'provider', label: 'Provider' },
-	// 	{ value: 'type', label: 'Type' },
-	// 	{ value: 'rule', label: 'Rule' },
-	// 	{ value: 'entrypoints', label: 'Entrypoints' },
-	// 	{ value: 'middlewares', label: 'Middlewares' }
-	// ];
-	// $: selectedColumns = [...columns];
-	//
-	// $: showColumn = (column: string): boolean => {
-	// 	return selectedColumns.find((c) => c.value === column) !== undefined;
-	// };
+	let columns: Selected<string>[] | undefined = [
+		{ value: 'name', label: 'Name' },
+		{ value: 'provider', label: 'Provider' },
+		{ value: 'type', label: 'Type' },
+		{ value: 'rule', label: 'Rule' },
+		{ value: 'entrypoints', label: 'Entrypoints' },
+		{ value: 'middlewares', label: 'Middlewares' }
+	];
+	let selectedColumns: string[] = JSON.parse(
+		localStorage.getItem('router-columns') ??
+			'["name", "provider", "type", "rule", "entrypoints", "middlewares"]'
+	);
+	$: showColumn = (column: string): boolean => {
+		return selectedColumns.includes(column);
+	};
+	const changeColumns = (columns: Selected<string>[] | undefined) => {
+		if (columns === undefined) return;
+		selectedColumns = columns.map((c) => c.value);
+		localStorage.setItem('router-columns', JSON.stringify(selectedColumns));
+	};
 
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
@@ -113,32 +102,25 @@
 		});
 	};
 
-	const getServiceStatus = (router: Router): Record<string, string | boolean> => {
-		let service = $services.find((s) => s.name === router.service + '@' + router.provider);
-		let totalServices = service?.loadBalancer?.servers?.length || 0;
-
-		let upServices = 0;
-		if (service?.serverStatus !== undefined) {
-			upServices = Object.keys(service.serverStatus).filter(
-				(key) => service.serverStatus !== undefined && service.serverStatus[key] === 'UP'
-			).length;
-		}
-		let status = `${upServices}/${totalServices}`;
-		let ok = upServices === totalServices ? true : false;
-		return { status: status, ok: ok };
+	// Show how many services are up and total services
+	const getServiceStatus = (router: Router) => {
+		let service = $services.find((s) => s.name === `${router.service}@${router.provider}`);
+		let total = service?.loadBalancer?.servers?.length || 0;
+		let up = Object.values(service?.serverStatus || {}).filter((status) => status === 'UP').length;
+		return { status: `${up}/${total}`, ok: up === total };
 	};
 
 	// Only show local routers not external ones
-	let onlyLocal = localStorage.getItem('local-only') === 'true';
-	const toggleLocalOnly = () => {
-		onlyLocal = !onlyLocal;
-		localStorage.setItem('localOnly', onlyLocal.toString());
-		search = onlyLocal ? '@provider:http' : '';
+	let localProvider = localStorage.getItem('local-provider') === 'true';
+	const toggleProvider = () => {
+		localProvider = !localProvider;
+		search = localProvider ? '@provider:http' : '';
+		localStorage.setItem('local-provider', localProvider.toString());
 	};
 
 	onMount(() => {
-		onlyLocal = localStorage.getItem('localOnly') === 'true';
-		search = onlyLocal ? '@provider:http' : '';
+		search = localProvider ? '@provider:http' : '';
+		searchRouter();
 	});
 </script>
 
@@ -160,27 +142,27 @@
 		</Button>
 		<button
 			class={buttonVariants({ variant: 'outline' })}
-			class:bg-primary={onlyLocal}
-			class:text-primary-foreground={onlyLocal}
-			on:click={toggleLocalOnly}
+			class:bg-primary={localProvider}
+			class:text-primary-foreground={localProvider}
+			on:click={toggleProvider}
 		>
 			Local Only
 		</button>
 	</div>
-	<!-- <Select.Root -->
-	<!-- 	multiple={true} -->
-	<!-- 	selected={selectedColumns} -->
-	<!-- 	onSelectedChange={(value) => (selectedColumns = value ?? [])} -->
-	<!-- > -->
-	<!-- 	<Select.Trigger class="w-[180px]"> -->
-	<!-- 		<Select.Value placeholder="Columns" /> -->
-	<!-- 	</Select.Trigger> -->
-	<!-- 	<Select.Content> -->
-	<!-- 		{#each columns as column} -->
-	<!-- 			<Select.Item value={column.value}>{column.label}</Select.Item> -->
-	<!-- 		{/each} -->
-	<!-- 	</Select.Content> -->
-	<!-- </Select.Root> -->
+	<Select.Root
+		multiple
+		selected={selectedColumns.map((c) => ({ value: c, label: c }))}
+		onSelectedChange={changeColumns}
+	>
+		<Select.Trigger class="w-[180px]">
+			<Select.Value placeholder="Columns" />
+		</Select.Trigger>
+		<Select.Content>
+			{#each columns as column}
+				<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
+			{/each}
+		</Select.Content>
+	</Select.Root>
 </div>
 
 <Card.Root>
@@ -197,13 +179,27 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head>Name</Table.Head>
-					<Table.Head>Provider</Table.Head>
-					<Table.Head>Type</Table.Head>
-					<Table.Head class="hidden lg:table-cell">Rule</Table.Head>
-					<Table.Head class="hidden lg:table-cell">Entrypoints</Table.Head>
-					<Table.Head class="hidden lg:table-cell">Middlewares</Table.Head>
-					<Table.Head>Service Status</Table.Head>
+					{#if showColumn('name')}
+						<Table.Head>Name</Table.Head>
+					{/if}
+					{#if showColumn('provider')}
+						<Table.Head>Provider</Table.Head>
+					{/if}
+					{#if showColumn('type')}
+						<Table.Head>Type</Table.Head>
+					{/if}
+					{#if showColumn('rule')}
+						<Table.Head class="hidden lg:table-cell">Rule</Table.Head>
+					{/if}
+					{#if showColumn('entrypoints')}
+						<Table.Head class="hidden lg:table-cell">Entrypoints</Table.Head>
+					{/if}
+					{#if showColumn('middlewares')}
+						<Table.Head class="hidden lg:table-cell">Middlewares</Table.Head>
+					{/if}
+					{#if showColumn('serviceStatus')}
+						<Table.Head>Service Status</Table.Head>
+					{/if}
 					<Table.Head>
 						<span class="sr-only">Edit</span>
 					</Table.Head>
@@ -212,10 +208,10 @@
 			<Table.Body>
 				{#each fRouters as router}
 					<Table.Row>
-						<Table.Cell class="font-medium">
+						<Table.Cell class={showColumn('name') ? 'font-medium' : 'hidden'}>
 							{router.service}
 						</Table.Cell>
-						<Table.Cell class="font-medium">
+						<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
 							<span
 								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 								on:click={() => (search = `@provider:${router.provider}`)}
@@ -224,7 +220,7 @@
 								{router.provider}
 							</span>
 						</Table.Cell>
-						<Table.Cell class="font-medium">
+						<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
 							<span
 								class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 								class:bg-green-300={router.routerType === 'http'}
@@ -237,7 +233,9 @@
 							</span>
 						</Table.Cell>
 						<Table.Cell
-							class="hidden max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap lg:table-cell"
+							class={showColumn('rule')
+								? 'hidden max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap lg:table-cell'
+								: 'hidden'}
 						>
 							{#if 'rule' in router}
 								{#if router?.rule !== ''}
@@ -247,7 +245,7 @@
 								{/if}
 							{/if}
 						</Table.Cell>
-						<Table.Cell class="hidden lg:table-cell">
+						<Table.Cell class={showColumn('entrypoints') ? 'hidden lg:table-cell' : 'hidden'}>
 							<Select.Root
 								multiple={true}
 								selected={getSelectedEntrypoints(router)}
@@ -273,7 +271,7 @@
 								</Select.Content>
 							</Select.Root>
 						</Table.Cell>
-						<Table.Cell class="hidden lg:table-cell">
+						<Table.Cell class={showColumn('middlewares') ? 'hidden lg:table-cell' : 'hidden'}>
 							<div class:hidden={router.routerType === 'udp'}>
 								<Select.Root
 									multiple={true}
@@ -296,7 +294,7 @@
 								</Select.Root>
 							</div>
 						</Table.Cell>
-						<Table.Cell>
+						<Table.Cell class={showColumn('serviceStatus') ? 'font-medium' : 'hidden'}>
 							<span
 								class="rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
 								class:bg-green-300={getServiceStatus(router).ok}
@@ -330,4 +328,4 @@
 	</Card.Footer>
 </Card.Root>
 
-<Pagination {count} {perPage} bind:currentPage />
+<Pagination {count} bind:perPage bind:currentPage />

@@ -1,9 +1,9 @@
-import { derived, get, writable, type Writable } from 'svelte/store';
+import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import type { Profile } from './types/dynamic';
-import { newRouter, newService, type Router, type Service } from './types/config';
 import type { Middleware } from './types/middlewares';
-import { goto } from '$app/navigation';
+import { derived, get, writable, type Writable } from 'svelte/store';
+import { newRouter, newService, type Router, type Service } from './types/config';
 
 export const loggedIn = writable(false);
 export const profile = writable('');

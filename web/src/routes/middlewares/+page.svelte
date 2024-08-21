@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { profile, deleteMiddleware, middlewares } from '$lib/api';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Select from '$lib/components/ui/select';
 	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import type { Selected } from 'bits-ui';
 	import UpdateMiddleware from '$lib/components/modals/updateMiddleware.svelte';
+	import type { Selected } from 'bits-ui';
 	import type { Middleware } from '$lib/types/middlewares';
 	import { Input } from '$lib/components/ui/input';
 	import { onMount } from 'svelte';
@@ -15,7 +16,9 @@
 	let count = 0;
 	let currentPage = 1;
 	let fMiddlewares: Middleware[] = [];
-	let perPage: Selected<number> | undefined = { value: 10, label: '10' }; // Items per page
+	let perPage: Selected<number> | undefined = JSON.parse(
+		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
+	);
 	$: search, $middlewares, currentPage, searchMiddleware();
 
 	// Reset the page to 1 when the search input changes
@@ -26,38 +29,20 @@
 	}
 
 	function searchMiddleware() {
-		let items: Middleware[] = [...$middlewares];
+		let items = $middlewares.filter((middleware) => {
+			if (localProvider && middleware.provider !== 'http') return false;
+			const searchParts = search.toLowerCase().split(' ');
+			return searchParts.every((part) =>
+				part.startsWith('@provider:')
+					? middleware.provider?.toLowerCase() === part.split(':')[1]
+					: part.startsWith('@type:')
+						? middleware.type?.toLowerCase() === part.split(':')[1]
+						: middleware.name.toLowerCase().includes(part)
+			);
+		});
 
-		if (search) {
-			const searchParts = search.split(' ').map((part) => part.toLowerCase());
-			let providerSearch = '';
-			let typeSearch = '';
-			let generalSearch = [];
-
-			for (const part of searchParts) {
-				if (part.startsWith('@provider:')) {
-					providerSearch = part.split(':')[1];
-				} else if (part.startsWith('@type:')) {
-					typeSearch = part.split(':')[1];
-				} else {
-					generalSearch.push(part);
-				}
-			}
-
-			items = items.filter((middleware) => {
-				const matchesProvider = providerSearch
-					? middleware.provider?.toLowerCase() === providerSearch
-					: true;
-				const matchesType = typeSearch ? middleware.type?.toLowerCase() === typeSearch : true;
-				const matchesGeneral = generalSearch.every((term) =>
-					middleware.name.toLowerCase().includes(term)
-				);
-				return matchesProvider && matchesType && matchesGeneral;
-			});
-		}
-
-		fMiddlewares = paginate(items);
 		count = items.length || 1;
+		fMiddlewares = paginate(items);
 	}
 
 	const paginate = (middlewares: Middleware[]) => {
@@ -65,17 +50,34 @@
 		return middlewares.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 	};
 
-	// Only show local routers not external ones
-	let onlyLocal = localStorage.getItem('local-only') === 'true';
-	const toggleLocalOnly = () => {
-		onlyLocal = !onlyLocal;
-		localStorage.setItem('localOnly', onlyLocal.toString());
-		search = onlyLocal ? '@provider:http' : '';
+	let columns: Selected<string>[] | undefined = [
+		{ value: 'name', label: 'Name' },
+		{ value: 'provider', label: 'Provider' },
+		{ value: 'type', label: 'Type' }
+	];
+	let selectedColumns: string[] = JSON.parse(
+		localStorage.getItem('middleware-columns') ?? '["name", "provider", "type"]'
+	);
+	$: showColumn = (column: string): boolean => {
+		return selectedColumns.includes(column);
+	};
+	const changeColumns = (columns: Selected<string>[] | undefined) => {
+		if (columns === undefined) return;
+		selectedColumns = columns.map((c) => c.value);
+		localStorage.setItem('middleware-columns', JSON.stringify(selectedColumns));
+	};
+
+	// Only show local middlewares not external ones
+	let localProvider = localStorage.getItem('local-provider') === 'true';
+	const toggleProvider = () => {
+		localProvider = !localProvider;
+		search = localProvider ? '@provider:http' : '';
+		localStorage.setItem('local-provider', localProvider.toString());
 	};
 
 	onMount(() => {
-		onlyLocal = localStorage.getItem('localOnly') === 'true';
-		search = onlyLocal ? '@provider:http' : '';
+		search = localProvider ? '@provider:http' : '';
+		searchMiddleware();
 	});
 </script>
 
@@ -96,13 +98,27 @@
 		</Button>
 		<button
 			class={buttonVariants({ variant: 'outline' })}
-			class:bg-primary={onlyLocal}
-			class:text-primary-foreground={onlyLocal}
-			on:click={toggleLocalOnly}
+			class:bg-primary={localProvider}
+			class:text-primary-foreground={localProvider}
+			on:click={toggleProvider}
 		>
 			Local Only
 		</button>
 	</div>
+	<Select.Root
+		multiple
+		selected={selectedColumns.map((c) => ({ value: c, label: c }))}
+		onSelectedChange={changeColumns}
+	>
+		<Select.Trigger class="w-[180px]">
+			<Select.Value placeholder="Columns" />
+		</Select.Trigger>
+		<Select.Content>
+			{#each columns as column}
+				<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
+			{/each}
+		</Select.Content>
+	</Select.Root>
 </div>
 
 <Card.Root>
@@ -119,9 +135,15 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head>Name</Table.Head>
-					<Table.Head>Provider</Table.Head>
-					<Table.Head class="hidden md:table-cell">Type</Table.Head>
+					{#if showColumn('name')}
+						<Table.Head>Name</Table.Head>
+					{/if}
+					{#if showColumn('provider')}
+						<Table.Head>Provider</Table.Head>
+					{/if}
+					{#if showColumn('type')}
+						<Table.Head class="hidden md:table-cell">Type</Table.Head>
+					{/if}
 					<Table.Head>
 						<span class="sr-only">Delete</span>
 					</Table.Head>
@@ -130,10 +152,14 @@
 			<Table.Body>
 				{#each fMiddlewares as middleware}
 					<Table.Row>
-						<Table.Cell class="max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap">
+						<Table.Cell
+							class={showColumn('name')
+								? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
+								: 'hidden'}
+						>
 							{middleware.name}
 						</Table.Cell>
-						<Table.Cell class="font-medium">
+						<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
 							<span
 								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 								on:click={() => (search = `@provider:${middleware.provider}`)}
@@ -142,7 +168,7 @@
 								{middleware.provider}
 							</span>
 						</Table.Cell>
-						<Table.Cell class="font-medium">
+						<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
 							<span
 								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 								on:click={() => (search = `@type:${middleware.type}`)}
@@ -177,4 +203,4 @@
 	</Card.Footer>
 </Card.Root>
 
-<Pagination {count} {perPage} bind:currentPage />
+<Pagination {count} bind:perPage bind:currentPage />

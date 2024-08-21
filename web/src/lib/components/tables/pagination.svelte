@@ -9,19 +9,21 @@
 	export let perPage: Selected<number> | undefined;
 	export let currentPage: number;
 	const limits = [10, 25, 50, 100];
-	const changePage = (page: number) => {
-		currentPage = page;
+	const changeLimit = (limit: Selected<number> | undefined) => {
+		if (limit === undefined) return;
+		perPage = limit;
+		localStorage.setItem('limit', JSON.stringify(limit));
 	};
 </script>
 
 <div class="flex flex-row justify-between">
-	<Select.Root selected={perPage}>
+	<Select.Root selected={perPage} onSelectedChange={changeLimit}>
 		<Select.Trigger class="w-[180px]">
 			<Select.Value placeholder="Select a limit" />
 		</Select.Trigger>
 		<Select.Content>
 			{#each limits as limit}
-				<Select.Item value={limit}>{limit}</Select.Item>
+				<Select.Item value={limit} label={limit.toString()}>{limit}</Select.Item>
 			{/each}
 		</Select.Content>
 	</Select.Root>
@@ -32,7 +34,7 @@
 			perPage={perPage?.value ?? 10}
 			let:pages
 			let:currentPage
-			onPageChange={(page) => changePage(page)}
+			onPageChange={(page) => (currentPage = page)}
 		>
 			<Pagination.Content>
 				<Pagination.Item>
