@@ -19,13 +19,6 @@ const (
 	RepoURL = "https://api.github.com/repos/MizuchiLabs/mantrae"
 )
 
-var (
-	Version   = "unknown"
-	BuildDate string
-	Commit    string
-	Branch    string
-)
-
 type releaseAsset struct {
 	Name        string `json:"name"`
 	DownloadURL string `json:"browser_download_url"`

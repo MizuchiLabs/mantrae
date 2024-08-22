@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"flag"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -37,8 +38,14 @@ func init() {
 }
 
 func main() {
+	version := flag.Bool("version", false, "Print version and exit")
 	port := flag.Int("port", 3000, "Port to listen on")
 	flag.Parse()
+
+	if *version {
+		fmt.Println(util.Version)
+		os.Exit(0)
+	}
 
 	mux := api.Routes()
 	middle := api.Chain(api.Log, api.Cors)
@@ -55,8 +62,9 @@ func main() {
 	go traefik.Sync()
 
 	srv := &http.Server{
-		Addr:    ":" + strconv.Itoa(*port),
-		Handler: middle(mux),
+		Addr:              ":" + strconv.Itoa(*port),
+		Handler:           middle(mux),
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	slog.Info("Listening on port", "port", *port)

@@ -1,3 +1,4 @@
+// Package util contains various utility functions
 package util
 
 import (
@@ -42,7 +43,7 @@ func GenerateCreds() error {
 			return err
 		}
 
-		if err := os.WriteFile(credsPath, jsonCreds, 0644); err != nil {
+		if err := os.WriteFile(credsPath, jsonCreds, 0600); err != nil {
 			return err
 		}
 

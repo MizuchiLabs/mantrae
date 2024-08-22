@@ -9,6 +9,8 @@
 *.so
 *.dylib
 /bin
+/builds
+mantrae
 
 # Test binary, built with `go test -c`
 *.test

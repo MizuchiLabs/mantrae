@@ -14,7 +14,7 @@ before:
 builds:
   - id: app
     binary: mantrae
-    ldflags: -s -w -X github.com/MizuchiLabs/mantrae/util/updater.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/util/updater.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/util/updater.Commit={{.Commit}}
+    ldflags: -s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/pkg/util.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:
@@ -27,13 +27,10 @@ builds:
 
 dockers:
   - image_templates:
-      - ghcr.io/mizuchilabs/mantrae:{{ .Version }}
+      - ghcr.io/mizuchilabs/mantrae:{{ .Tag }}
       - ghcr.io/mizuchilabs/mantrae:latest
-    dockerfile: Dockerfile
-    use: buildx
+    use: docker
     build_flag_templates:
-      - --platform=linux/amd64
-      - --platform=linux/arm64
       - --label=org.opencontainers.image.vendor=Mizuchi Labs
       - --label=org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae
       - --label=org.opencontainers.image.description=A traefik web UI
@@ -41,7 +38,6 @@ dockers:
       - --label=org.opencontainers.image.title={{ .ProjectName }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.version={{ .Version }}
-
 
 upx:
   - enabled: true

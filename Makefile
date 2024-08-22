@@ -5,13 +5,13 @@ DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/tools/updater.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/tools/updater.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/tools/updater.Commit=${COMMIT}"
+LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/pkg/util.Commit=${COMMIT}"
 
 all: clean build
 
 .PHONY: clean
 clean:
-	rm -rf $(PWD)/bin/ $(PWD)/web/build
+	rm -rf $(PWD)/$(BIN) $(PWD)/web/build $(PWD)/builds
 
 .PHONY: audit
 audit:
@@ -24,12 +24,12 @@ audit:
 	- staticcheck -checks=all -f=stylish ./...
 
 .PHONY: build
-build: audit
+build:
 	cd web && pnpm install && pnpm run build
-	go build $(LDFLAGS) -o bin/$(BIN) main.go && upx bin/$(BIN)
+	go build $(LDFLAGS) -o $(BIN) main.go && upx $(BIN)
 
 build-fast:
-	go build $(LDFLAGS) -o bin/$(BIN) main.go
+	go build $(LDFLAGS) -o $(BIN) main.go
 
 .PHONY: docker
 docker:
