@@ -26,13 +26,10 @@ audit:
 .PHONY: build
 build:
 	cd web && pnpm install && pnpm run build
-	go build $(LDFLAGS) -o $(BIN) main.go && upx $(BIN)
-
-build-fast:
 	go build $(LDFLAGS) -o $(BIN) main.go
 
 .PHONY: docker
-docker:
+docker: build
 	docker build \
 		--label "org.opencontainers.image.vendor=Mizuchi Labs" \
 		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \

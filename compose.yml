@@ -1,0 +1,48 @@
+# Example docker-compose.yml file for mantrae
+# Check the mantrae logs after first start for the admin password
+services:
+  mantrae:
+    image: ghcr.io/MizuchiLabs/mantrae:latest
+    container_name: mantrae
+    ports:
+      - 3000:3000
+    networks:
+      - proxy
+    restart: always
+
+  traefik:
+    image: docker.io/traefik:latest
+    container_name: traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik:/etc/traefik
+    networks:
+      - proxy
+    command:
+      - --log.level=INFO
+      - --api.dashboard=true
+      - --api.insecure=true # Remove me later
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.asDefault=true
+      - --serversTransport.insecureSkipVerify=true
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.watch=true
+      - --providers.http=true
+      - --providers.http.endpoint=http://mantrae:3000
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=PathPrefix(`/api`) || PathPrefix(`/dashboard`)
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.entrypoints=websecure
+    restart: always
+
+networks:
+  proxy:
