@@ -1,6 +1,6 @@
 BIN=mantrae
 
-VERSION=$(shell git describe --tags)
+VERSION=$(shell git describe --tags --abbrev=0)
 DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
@@ -27,6 +27,7 @@ audit:
 build:
 	cd web && pnpm install && pnpm run build
 	go build $(LDFLAGS) -o $(BIN) main.go
+	upx $(BIN)
 
 .PHONY: docker
 docker: build
@@ -38,9 +39,13 @@ docker: build
 		--label "org.opencontainers.image.version=${VERSION}" \
 		--label "org.opencontainers.image.revision=${COMMIT}" \
 		--label "org.opencontainers.image.created=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-		--label "org.opencontainers.image.licenses=Apache-2.0" \
+		--label "org.opencontainers.image.licenses=MIT" \
 		-t ghcr.io/mizuchilabs/mantrae:${VERSION} .
 	docker tag ghcr.io/mizuchilabs/mantrae:${VERSION} ghcr.io/mizuchilabs/mantrae:latest
+
+docker-push:
+	docker push ghcr.io/mizuchilabs/mantrae:${VERSION}
+	docker push ghcr.io/mizuchilabs/mantrae:latest
 
 .PHONY: upgrade
 upgrade:
