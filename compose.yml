@@ -2,7 +2,7 @@
 # Check the mantrae logs after first start for the admin password
 services:
   mantrae:
-    image: ghcr.io/MizuchiLabs/mantrae:latest
+    image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
     ports:
       - 3000:3000
