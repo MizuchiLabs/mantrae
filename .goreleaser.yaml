@@ -1,0 +1,69 @@
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+version: 2
+project_name: mantrae
+dist: builds
+
+before:
+  hooks:
+    - go fmt ./...
+    - go vet ./...
+    - go mod tidy
+    - go mod verify
+    - cd web && pnpm install && pnpm run build
+
+builds:
+  - id: app
+    binary: mantrae
+    ldflags: -s -w -X github.com/MizuchiLabs/mantrae/util/updater.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/util/updater.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/util/updater.Commit={{.Commit}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+dockers:
+  - image_templates:
+      - ghcr.io/mizuchilabs/mantrae:{{ .Version }}
+      - ghcr.io/mizuchilabs/mantrae:latest
+    dockerfile: Dockerfile
+    use: buildx
+    build_flag_templates:
+      - --platform=linux/amd64
+      - --platform=linux/arm64
+      - --label=org.opencontainers.image.vendor=Mizuchi Labs
+      - --label=org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae
+      - --label=org.opencontainers.image.description=A traefik web UI
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.version={{ .Version }}
+
+
+upx:
+  - enabled: true
+
+release:
+  draft: true
+  mode: replace
+
+
+archives:
+  - format: binary
+    name_template: >-
+      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+snapshot:
+  name_template: '{{ incpatch .Version }}-next'
+
+report_sizes: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^web:'

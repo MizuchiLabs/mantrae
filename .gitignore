@@ -22,3 +22,5 @@
 # Go workspace file
 go.work
 *.json
+
+dist/

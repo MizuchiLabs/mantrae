@@ -34,8 +34,10 @@ build-fast:
 .PHONY: docker
 docker:
 	docker build \
+		--label "org.opencontainers.image.vendor=Mizuchi Labs" \
 		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \
-		--label "org.opencontainers.image.description=Mantrae" \
+		--label "org.opencontainers.image.title=Mantrae" \
+		--label "org.opencontainers.image.description=A traefik web UI" \
 		--label "org.opencontainers.image.version=${VERSION}" \
 		--label "org.opencontainers.image.revision=${COMMIT}" \
 		--label "org.opencontainers.image.created=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')" \
