@@ -30,7 +30,7 @@
 1. **Access the Web UI**:
    Open your web browser and navigate to `http://localhost:3000`
 
-1. Or use docker `docker run -p 3000:3000 ghcr.io/mizuchilabs/mantrae:latest`
+1. Or use docker `docker run --name mantrae -d -p 3000:3000 ghcr.io/mizuchilabs/mantrae:latest`
 
 1. You can also use the example docker-compose.yml file to run mantrae and traefik together
 
