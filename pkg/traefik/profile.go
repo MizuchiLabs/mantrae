@@ -78,6 +78,24 @@ func (p *Profiles) Save() error {
 	return nil
 }
 
+func (p *Profiles) SetDefaultProfile(url, username, password string) error {
+	if err := p.Load(); err != nil {
+		return fmt.Errorf("failed to load profiles: %w", err)
+	}
+	if len(p.Profiles) == 0 {
+		p.Profiles = make(map[string]Profile)
+	}
+
+	p.Profiles["default"] = Profile{
+		Name:     "default",
+		URL:      url,
+		Username: username,
+		Password: password,
+	}
+
+	return p.Save()
+}
+
 func Move(source, destination string) error {
 	err := os.Rename(source, destination)
 	if err != nil && strings.Contains(err.Error(), "invalid cross-device link") {

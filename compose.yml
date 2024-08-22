@@ -4,6 +4,10 @@ services:
   mantrae:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
+    command:
+      - --url=http://traefik:8080
+      - --username=admin
+      - --password=admin
     ports:
       - 3000:3000
     networks:

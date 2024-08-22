@@ -40,11 +40,34 @@ func init() {
 func main() {
 	version := flag.Bool("version", false, "Print version and exit")
 	port := flag.Int("port", 3000, "Port to listen on")
+	url := flag.String(
+		"url",
+		"",
+		"Specify the URL of the Traefik instance (e.g. http://localhost:8080)",
+	)
+	username := flag.String(
+		"username",
+		"",
+		"Specify the username for the Traefik instance",
+	)
+	password := flag.String(
+		"password",
+		"",
+		"Specify the password for the Traefik instance",
+	)
 	flag.Parse()
 
 	if *version {
 		fmt.Println(util.Version)
 		os.Exit(0)
+	}
+
+	if *url != "" {
+		var profiles traefik.Profiles
+		if err := profiles.SetDefaultProfile(*url, *username, *password); err != nil {
+			slog.Error("Failed to add default profile", "error", err)
+			return
+		}
 	}
 
 	mux := api.Routes()

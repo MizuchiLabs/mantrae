@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 func (p *Profile) Verify() error {
@@ -49,6 +51,11 @@ func (s *Service) Verify() error {
 }
 
 func isValidURL(u string) bool {
+	// If no scheme is provided, prepend "http://"
+	if !strings.Contains(u, "://") {
+		u = "http://" + u
+	}
+
 	parsedURL, err := url.Parse(u)
 	if err != nil || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
 		return false
@@ -62,18 +69,23 @@ func isValidURL(u string) bool {
 		}
 	}
 
+	// Check if it's an IP address (including loopback)
 	ip := net.ParseIP(host)
 	if ip != nil {
 		return true
 	}
 
-	if host != "localhost" {
-		domainRegex := `^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`
-		matched, err := regexp.MatchString(domainRegex, host)
-		if err != nil {
-			return false
-		}
-		return matched
+	// Check if it's localhost
+	if !strings.Contains(host, ".") {
+		_, err = strconv.Atoi(host)
+		return err != nil // Valid if it's not just a number
 	}
-	return true
+
+	// Check if it's a valid domain name
+	domainRegex := `^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$`
+	matched, err := regexp.MatchString(domainRegex, host)
+	if err != nil {
+		return false
+	}
+	return matched
 }
