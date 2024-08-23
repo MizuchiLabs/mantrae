@@ -4,33 +4,31 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
-	import {
-		profile,
-		entrypoints,
-		middlewares,
-		updateRouter,
-		updateService,
-		profiles
-	} from '$lib/api';
+	import { profile, routers, entrypoints, middlewares, updateRouter, profiles } from '$lib/api';
 	import { newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
+	import Service from '../forms/service.svelte';
 
 	export let router: Router;
-	let service = $profiles[$profile]?.dynamic?.services?.[router.name];
+	let service = $profiles[$profile]?.dynamic?.services?.[router.name] ?? newService();
+	let routerCompare = $routers.filter((r) => r.name !== router.name);
 
 	let open = false;
 	const update = () => {
-		if (service === undefined) return;
+		if (service === undefined) {
+			service = newService();
+			service.serviceType = router.routerType;
+		}
+		if (router.service === '' || isNameTaken) return;
 		let oldName = router.name;
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
 		service.serviceType = router.routerType;
-		updateRouter($profile, router, oldName);
-		updateService($profile, service, oldName);
+		updateRouter($profile, oldName, router, service);
 		open = false;
 	};
 
@@ -55,19 +53,9 @@
 		return list ?? [];
 	};
 
-	const addServer = () => {
-		if (service?.loadBalancer?.servers === undefined) {
-			service = newService();
-			return;
-		}
-		service.loadBalancer.servers = [...service.loadBalancer.servers, { url: '' }];
-	};
-	const removeServer = (index: number) => {
-		if (service?.loadBalancer?.servers === undefined) return;
-		if (service.loadBalancer.servers.length > 1) {
-			service.loadBalancer.servers = service.loadBalancer.servers.filter((_, i) => i !== index);
-		}
-	};
+	// Check if router name is taken unless self
+	let isNameTaken = false;
+	$: isNameTaken = routerCompare.some((r) => r.service === router.service);
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -91,7 +79,17 @@
 			<Tabs.Content value="router">
 				<Card.Root>
 					<Card.Header>
-						<Card.Title>Router</Card.Title>
+						<Card.Title class="flex items-center justify-between gap-1">
+							<span>Router</span>
+							<div>
+								<Badge variant="secondary" class="bg-blue-400">
+									Type: {router.routerType}
+								</Badge>
+								<Badge variant="secondary" class="bg-green-400">
+									Provider: {router.provider}
+								</Badge>
+							</div>
+						</Card.Title>
 						<Card.Description>
 							Make changes to your Router here. Click save when you're done.
 						</Card.Description>
@@ -103,7 +101,9 @@
 								id="name"
 								name="name"
 								type="text"
-								class="col-span-3"
+								class={isNameTaken
+									? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
+									: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
 								bind:value={router.service}
 								placeholder="Name of the router"
 								on:keydown={onKeydown}
@@ -167,55 +167,7 @@
 				</Card.Root>
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Service</Card.Title>
-						<Card.Description>
-							Make changes to your Service here. Click save when you're done.
-						</Card.Description>
-					</Card.Header>
-					<Card.Content class="space-y-2">
-						{#if router.routerType === 'http' && service?.loadBalancer !== undefined}
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
-								<Switch
-									id="passHostHeader"
-									class="col-span-3"
-									bind:checked={service.loadBalancer.passHostHeader}
-								/>
-							</div>
-						{/if}
-						<div class="grid grid-cols-4 items-center gap-4">
-							<Label for="url" class="text-right">Load Balancer</Label>
-							<div class="col-span-3 space-y-2">
-								{#each service?.loadBalancer?.servers || [] as server, idx}
-									<div class="flex flex-row items-center justify-end gap-1">
-										<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
-											<Button
-												class="h-8 w-4 rounded-full bg-red-400 text-black"
-												on:click={() => addServer()}
-											>
-												<iconify-icon icon="fa6-solid:plus" />
-											</Button>
-											{#if (service?.loadBalancer?.servers?.length || 0) > 1 && idx >= 1}
-												<Button on:click={() => removeServer(idx)} class="h-8 w-4 rounded-full ">
-													<iconify-icon icon="fa6-solid:minus" />
-												</Button>
-											{/if}
-										</div>
-										<Input
-											id="url"
-											type="text"
-											bind:value={server.url}
-											class="focus-visible:ring-0 focus-visible:ring-offset-0"
-											placeholder="URL"
-										/>
-									</div>
-								{/each}
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
+				<Service bind:service />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Dialog.Close class="w-full">

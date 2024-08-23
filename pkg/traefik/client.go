@@ -249,7 +249,6 @@ type HTTPMiddleware struct {
 	Compress          *dynamic.Compress          `json:"compress,omitempty"`
 	PassTLSClientCert *dynamic.PassTLSClientCert `json:"passTLSClientCert,omitempty"`
 	Retry             *dynamic.Retry             `json:"retry,omitempty"`
-	ContentType       *dynamic.ContentType       `json:"contentType,omitempty"`
 }
 
 type TCPMiddleware struct {
@@ -291,7 +290,6 @@ func (m HTTPMiddleware) ToMiddleware() *Middleware {
 		Compress:          m.Compress,
 		PassTLSClientCert: m.PassTLSClientCert,
 		Retry:             m.Retry,
-		ContentType:       m.ContentType,
 	}
 }
 

@@ -104,7 +104,6 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 				Compress:          middleware.Compress,
 				PassTLSClientCert: middleware.PassTLSClientCert,
 				Retry:             middleware.Retry,
-				ContentType:       middleware.ContentType,
 			}
 			config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
 				InFlightConn: middleware.InFlightConn,

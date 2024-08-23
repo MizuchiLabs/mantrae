@@ -121,35 +121,25 @@ export async function deleteProfile(name: string): Promise<void> {
 // Routers --------------------------------------------------------------------
 export async function updateRouter(
 	profileName: string,
+	oldName: string,
 	router: Router,
-	oldRouter: string
+	service: Service | undefined
 ): Promise<void> {
-	const response = await handleRequest(`/routers/${profileName}/${oldRouter}`, 'PUT', router);
+	// If service is undefined, create a new one
+	if (service === undefined) service = newService();
+	service.name = router.service + '@' + router.provider;
+	service.serviceType = router.routerType;
+	await handleRequest(`/routers/${profileName}/${oldName}`, 'PUT', router);
+	const response = await handleRequest(`/services/${profileName}/${oldName}`, 'PUT', service);
 	profiles.set(response);
 	toast.success(`Router ${router.name} updated`);
 }
 
-export async function deleteRouter(profileName: string, routerName: string): Promise<void> {
-	const response = await handleRequest(`/routers/${profileName}/${routerName}`, 'DELETE');
+export async function deleteRouter(profileName: string, name: string): Promise<void> {
+	await handleRequest(`/routers/${profileName}/${name}`, 'DELETE');
+	const response = await handleRequest(`/services/${profileName}/${name}`, 'DELETE');
 	profiles.set(response);
-	toast.success(`Router ${routerName} deleted`);
-}
-
-// Services -------------------------------------------------------------------
-export async function updateService(
-	profileName: string,
-	service: Service,
-	oldService: string
-): Promise<void> {
-	const response = await handleRequest(`/services/${profileName}/${oldService}`, 'PUT', service);
-	profiles.set(response);
-	toast.success(`Service ${service.name} updated`);
-}
-
-export async function deleteService(profileName: string, serviceName: string): Promise<void> {
-	const response = await handleRequest(`/services/${profileName}/${serviceName}`, 'DELETE');
-	profiles.set(response);
-	toast.success(`Service ${serviceName} deleted`);
+	toast.success(`Router ${name} deleted`);
 }
 
 // Middlewares ----------------------------------------------------------------

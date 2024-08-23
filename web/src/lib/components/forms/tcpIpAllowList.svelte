@@ -3,7 +3,13 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
-	middleware.tcpIpAllowList = middleware.tcpIpAllowList ?? { sourceRange: [] };
+	middleware.tcpIpAllowList = { sourceRange: [], ...middleware.tcpIpAllowList };
 </script>
 
-<ArrayInput bind:items={middleware.tcpIpAllowList.sourceRange} label="Source Range" />
+{#if middleware.tcpIpAllowList}
+	<ArrayInput
+		bind:items={middleware.tcpIpAllowList.sourceRange}
+		label="Source Range"
+		placeholder="192.168.1.1/32"
+	/>
+{/if}

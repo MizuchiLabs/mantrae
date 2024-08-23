@@ -381,6 +381,28 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		profile.Dynamic.Middlewares = make(map[string]traefik.Middleware)
 	}
 
+	if middleware.BasicAuth != nil {
+		for i, u := range middleware.BasicAuth.Users {
+			hash, err := util.HashPassword(u)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			middleware.BasicAuth.Users[i] = hash
+		}
+	}
+
+	if middleware.DigestAuth != nil {
+		for i, u := range middleware.DigestAuth.Users {
+			hash, err := util.HashPassword(u)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			middleware.DigestAuth.Users[i] = hash
+		}
+	}
+
 	profile.Dynamic.Middlewares[middleware.Name] = middleware
 	p.Profiles[profileName] = profile // Update the profile in the map
 	if err := p.Save(); err != nil {

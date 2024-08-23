@@ -6,50 +6,57 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
-	middleware.digestAuth = middleware.digestAuth ?? {
+	middleware.digestAuth = {
 		users: [],
 		usersFile: '',
 		realm: '',
 		removeHeader: false,
-		headerField: ''
+		headerField: '',
+		...middleware.digestAuth
 	};
 </script>
 
-<ArrayInput bind:items={middleware.digestAuth.users} label="Users" />
-<div class="grid grid-cols-4 items-center gap-4">
-	<Label for="users-file" class="text-right">Users File</Label>
-	<Input
-		id="users-file"
-		name="users-file"
-		type="text"
-		bind:value={middleware.digestAuth.usersFile}
-		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-		placeholder="Users File"
-	/>
-</div>
-<div class="grid grid-cols-4 items-center gap-4">
-	<Label for="realm" class="text-right">Realm</Label>
-	<Input
-		id="realm"
-		name="realm"
-		type="text"
-		bind:value={middleware.digestAuth.realm}
-		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-		placeholder="Realm"
-	/>
-</div>
-<div class="grid grid-cols-4 items-center gap-4">
-	<Label for="remove-header" class="text-right">Remove Header</Label>
-	<Switch id="remove-header" bind:checked={middleware.digestAuth.removeHeader} class="col-span-3" />
-</div>
-<div class="grid grid-cols-4 items-center gap-4">
-	<Label for="header-field" class="text-right">Header Field</Label>
-	<Input
-		id="header-field"
-		name="header-field"
-		type="text"
-		bind:value={middleware.digestAuth.headerField}
-		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-		placeholder="Header Field"
-	/>
-</div>
+{#if middleware.digestAuth}
+	<ArrayInput bind:items={middleware.digestAuth.users} label="Users" placeholder="user:password" />
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="users-file" class="text-right">Users File</Label>
+		<Input
+			id="users-file"
+			name="users-file"
+			type="text"
+			bind:value={middleware.digestAuth.usersFile}
+			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+			placeholder="/path/to/my/usersfile"
+		/>
+	</div>
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="realm" class="text-right">Realm</Label>
+		<Input
+			id="realm"
+			name="realm"
+			type="text"
+			bind:value={middleware.digestAuth.realm}
+			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+			placeholder="traefik"
+		/>
+	</div>
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="remove-header" class="text-right">Remove Header</Label>
+		<Switch
+			id="remove-header"
+			bind:checked={middleware.digestAuth.removeHeader}
+			class="col-span-3"
+		/>
+	</div>
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="header-field" class="text-right">Header Field</Label>
+		<Input
+			id="header-field"
+			name="header-field"
+			type="text"
+			bind:value={middleware.digestAuth.headerField}
+			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+			placeholder="X-WebAuth-User"
+		/>
+	</div>
+{/if}

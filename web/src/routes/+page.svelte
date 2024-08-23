@@ -5,6 +5,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import {
 		profile,
+		profiles,
 		deleteRouter,
 		entrypoints,
 		middlewares,
@@ -82,12 +83,14 @@
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
-		updateRouter($profile, router, router.name);
+		let service = $profiles[$profile]?.dynamic?.services?.[router.name];
+		updateRouter($profile, router.name, router, service);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
-		updateRouter($profile, router, router.name);
+		let service = $profiles[$profile]?.dynamic?.services?.[router.name];
+		updateRouter($profile, router.name, router, service);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {

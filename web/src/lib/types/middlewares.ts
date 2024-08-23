@@ -31,7 +31,6 @@ export interface Middleware {
 	compress?: Compress;
 	passTLSClientCert?: PassTLSClientCert;
 	retry?: Retry;
-	contentType?: ContentType;
 
 	// TCP-specific fields
 	inFlightConn?: TCPInFlightConn;
@@ -60,6 +59,14 @@ export interface BasicAuth {
 	headerField?: string;
 }
 
+export interface DigestAuth {
+	users?: string[];
+	usersFile?: string;
+	removeHeader?: boolean;
+	realm?: string;
+	headerField?: string;
+}
+
 export interface Buffering {
 	maxRequestBodyBytes?: number;
 	memRequestBodyBytes?: number;
@@ -77,23 +84,14 @@ export interface CircuitBreaker {
 	checkPeriod?: string;
 	fallbackDuration?: string;
 	recoveryDuration?: string;
+	responseCode?: number;
 }
 
 export interface Compress {
 	excludedContentTypes?: string[];
+	includeContentTypes?: string[];
 	minResponseBodyBytes?: number;
-}
-
-export interface ContentType {
-	autoDetect?: boolean;
-}
-
-export interface DigestAuth {
-	users?: string[];
-	usersFile?: string;
-	removeHeader?: boolean;
-	realm?: string;
-	headerField?: string;
+	defaultEncoding?: string;
 }
 
 export interface ErrorPage {
@@ -109,6 +107,7 @@ export interface ForwardAuth {
 	authResponseHeaders?: string[];
 	authResponseHeadersRegex?: string;
 	authRequestHeaders?: string[];
+	addAuthCookiesToResponse?: string[];
 }
 
 export interface Headers {

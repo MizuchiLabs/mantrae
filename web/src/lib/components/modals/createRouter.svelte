@@ -6,30 +6,33 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { profile, entrypoints, middlewares, updateRouter, updateService } from '$lib/api';
+	import { profile, routers, entrypoints, middlewares, updateRouter } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
+	import Service from '../forms/service.svelte';
 
 	let router = newRouter();
 	let service = newService();
 
-	const create = () => {
+	const create = async () => {
+		if (router.service === '' || isNameTaken) return;
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider;
 		service.serviceType = router.routerType;
-		updateRouter($profile, router, router.name);
-		updateService($profile, service, service.name);
+		await updateRouter($profile, router.name, router, service);
 
 		router = newRouter();
 		service = newService();
 	};
 
 	let routerType: Selected<string> | undefined = { label: 'HTTP', value: 'http' };
-	const changeRouterType = (serviceType: Selected<string> | undefined) => {
+	const changeType = (serviceType: Selected<string> | undefined) => {
 		if (serviceType === undefined) return;
+		router = newRouter();
+		service = newService();
 		router.routerType = serviceType.value;
+		service.serviceType = serviceType.value;
 		routerType = { label: serviceType.label || '', value: serviceType.value };
 	};
 
@@ -54,16 +57,9 @@
 		return list ?? [];
 	};
 
-	const addServer = () => {
-		if (service?.loadBalancer?.servers === undefined) return;
-		service.loadBalancer.servers = [...service.loadBalancer.servers, { url: '' }];
-	};
-	const removeServer = (index: number) => {
-		if (service?.loadBalancer?.servers === undefined) return;
-		if (service.loadBalancer.servers.length > 1) {
-			service.loadBalancer.servers = service.loadBalancer.servers.filter((_, i) => i !== index);
-		}
-	};
+	// Check if router name is taken
+	let isNameTaken = false;
+	$: isNameTaken = $routers.some((r) => r.service === router.service);
 </script>
 
 <Dialog.Root>
@@ -92,7 +88,7 @@
 					<Card.Content class="space-y-2">
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="current" class="text-right">Type</Label>
-							<Select.Root onSelectedChange={changeRouterType} selected={routerType}>
+							<Select.Root onSelectedChange={changeType} selected={routerType}>
 								<Select.Trigger class="col-span-3">
 									<Select.Value placeholder="Select a type" />
 								</Select.Trigger>
@@ -110,7 +106,9 @@
 								name="name"
 								type="text"
 								bind:value={router.service}
-								class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+								class={isNameTaken
+									? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
+									: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
 								placeholder="Name of the router"
 								required
 							/>
@@ -173,55 +171,7 @@
 				</Card.Root>
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Service</Card.Title>
-						<Card.Description>
-							Make changes to your Service here. Click save when you're done.
-						</Card.Description>
-					</Card.Header>
-					<Card.Content class="space-y-2">
-						{#if routerType?.value === 'http' && service?.loadBalancer !== undefined}
-							<div class="grid grid-cols-4 items-center gap-4">
-								<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
-								<Switch
-									id="passHostHeader"
-									class="col-span-3"
-									bind:checked={service.loadBalancer.passHostHeader}
-								/>
-							</div>
-						{/if}
-						<div class="grid grid-cols-4 items-center gap-4">
-							<Label for="url" class="text-right">Load Balancer</Label>
-							<div class="col-span-3 space-y-2">
-								{#each service?.loadBalancer?.servers || [] as server, idx}
-									<div class="flex flex-row items-center justify-end gap-1">
-										<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
-											<Button
-												class="h-8 w-4 rounded-full bg-red-400 text-black"
-												on:click={() => addServer()}
-											>
-												<iconify-icon icon="fa6-solid:plus" />
-											</Button>
-											{#if (service?.loadBalancer?.servers?.length ?? 0) > 1 && idx >= 1}
-												<Button on:click={() => removeServer(idx)} class="h-8 w-4 rounded-full ">
-													<iconify-icon icon="fa6-solid:minus" />
-												</Button>
-											{/if}
-										</div>
-										<Input
-											id="url"
-											type="text"
-											bind:value={server.url}
-											class="focus-visible:ring-0 focus-visible:ring-offset-0"
-											placeholder="URL"
-										/>
-									</div>
-								{/each}
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
+				<Service bind:service />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Dialog.Close class="w-full">

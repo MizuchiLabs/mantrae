@@ -157,7 +157,7 @@
 								? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
 								: 'hidden'}
 						>
-							{middleware.name}
+							{middleware.name.split('@')[0]}
 						</Table.Cell>
 						<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
 							<span

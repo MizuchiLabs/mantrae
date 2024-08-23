@@ -7,19 +7,21 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { profile, updateMiddleware } from '$lib/api';
-	import { newMiddleware } from '$lib/types/middlewares';
+	import { profile, updateMiddleware, middlewares } from '$lib/api';
+	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 
 	let middleware = newMiddleware();
 	let isHTTP = middleware.middlewareType === 'http';
 
 	const create = () => {
-		if (middleware.type === '') return;
+		if (middleware.type === '' || middleware.name === '' || isNameTaken) return;
 		middleware.name = middleware.name + '@' + middleware.provider;
 		if (isHTTP) middleware.middlewareType = 'http';
 		else middleware.middlewareType = 'tcp';
 
 		updateMiddleware($profile, middleware, middleware.name);
+		middleware = newMiddleware();
+		middlewareType = HTTPMiddlewareTypes[0];
 	};
 
 	const HTTPMiddlewareTypes: Selected<string>[] = [
@@ -43,8 +45,7 @@
 		{ label: 'Circuit Breaker', value: 'circuitBreaker' },
 		{ label: 'Compress', value: 'compress' },
 		//{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
-		{ label: 'Retry', value: 'retry' },
-		{ label: 'Content Type', value: 'contentType' }
+		{ label: 'Retry', value: 'retry' }
 	];
 	const TCPMiddlewareTypes: Selected<string>[] = [
 		{ label: 'In Flight Conn', value: 'inFlightConn' },
@@ -74,7 +75,6 @@
 		compress: () => import('$lib/components/forms/compress.svelte'),
 		// passTLSClientCert: () => import('$lib/components/forms/passTLSClientCert.svelte'),
 		retry: () => import('$lib/components/forms/retry.svelte'),
-		contentType: () => import('$lib/components/forms/contentType.svelte'),
 
 		// TCP-specific
 		inFlightConn: () => import('$lib/components/forms/inFlightConn.svelte'),
@@ -101,6 +101,10 @@
 		}
 	};
 
+	// Check if middleware name is taken
+	let isNameTaken = false;
+	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
+
 	// Load the initial form component
 	loadMiddlewareFormComponent(middlewareType);
 </script>
@@ -114,7 +118,7 @@
 			</Button>
 		</div>
 	</Dialog.Trigger>
-	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[520px]">
+	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[600px]">
 		<Card.Root class="mt-4">
 			<Card.Header>
 				<Card.Title>Middleware</Card.Title>
@@ -160,7 +164,9 @@
 						name="name"
 						type="text"
 						bind:value={middleware.name}
-						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+						class={isNameTaken
+							? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
+							: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
 						placeholder="Name of the middleware"
 						required
 					/>
