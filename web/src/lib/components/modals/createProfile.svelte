@@ -1,15 +1,16 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { createProfile } from '$lib/api';
+	import { profiles, createProfile } from '$lib/api';
 	import { newProfile } from '$lib/types/dynamic';
 
 	let profile = newProfile();
 
 	const create = () => {
-		if (profile.name === '') return;
+		if (profile.name === '' || isNameTaken) return;
 		// Strip trailing slashes
 		if (profile.url.endsWith('/')) {
 			profile.url = profile.url.slice(0, -1);
@@ -17,6 +18,9 @@
 		createProfile(profile);
 		profile = newProfile();
 	};
+
+	let isNameTaken = false;
+	$: isNameTaken = Object.keys($profiles).some((p) => p === profile.name);
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -34,7 +38,7 @@
 			</Button>
 		</div>
 	</Dialog.Trigger>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="sm:max-w-[450px]">
 		<Dialog.Header>
 			<Dialog.Title>New profile</Dialog.Title>
 			<Dialog.Description>Create a new profile to manage your Traefik clients.</Dialog.Description>
@@ -45,8 +49,10 @@
 				<Input
 					name="name"
 					type="text"
-					class="col-span-3"
 					bind:value={profile.name}
+					class={isNameTaken
+						? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
+						: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
 					placeholder="Your profile name"
 					required
 				/>
@@ -83,6 +89,10 @@
 					placeholder="Password of your client"
 					required
 				/>
+			</div>
+			<div class="flex items-center justify-end gap-4">
+				<Label for="tls" class="text-right">Verify Certificate?</Label>
+				<Switch name="tls" bind:checked={profile.tls} required />
 			</div>
 		</div>
 		<Dialog.Close class="w-full">

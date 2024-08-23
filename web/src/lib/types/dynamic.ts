@@ -7,6 +7,7 @@ export interface Profile {
 	url: string;
 	username: string;
 	password: string;
+	tls: boolean;
 	dynamic?: Dynamic;
 }
 
@@ -40,6 +41,7 @@ export const newProfile = (): Profile => {
 		url: '',
 		username: '',
 		password: '',
+		tls: false,
 		dynamic: {}
 	};
 };

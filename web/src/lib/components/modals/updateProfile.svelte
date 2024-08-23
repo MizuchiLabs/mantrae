@@ -3,10 +3,12 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { deleteProfile, profiles, updateProfile } from '$lib/api';
 
 	export let name: string;
 	let open = false;
+	let profileCompare = Object.keys($profiles).filter((p) => p !== name);
 
 	const update = () => {
 		// Strip trailing slashes
@@ -16,7 +18,8 @@
 		updateProfile(name, $profiles[name]);
 		open = false;
 	};
-
+	let isNameTaken = false;
+	$: isNameTaken = profileCompare.some((p) => p === $profiles[name].name);
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
 			update();
@@ -78,6 +81,10 @@
 					placeholder="Password of your client"
 					required
 				/>
+			</div>
+			<div class="flex items-center justify-end gap-4">
+				<Label for="tls" class="text-right">Verify Certificate?</Label>
+				<Switch name="tls" bind:checked={$profiles[name].tls} required />
 			</div>
 		</div>
 		<Dialog.Close class="flex w-full flex-row gap-2">

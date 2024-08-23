@@ -436,11 +436,11 @@ func (p Profile) fetch(endpoint string) (io.ReadCloser, error) {
 	}
 
 	apiURL := p.URL + endpoint
-	client := http.Client{
-		Timeout: time.Second * 10,
-		Transport: &http.Transport{
+	client := http.Client{Timeout: time.Second * 10}
+	if !p.TLS {
+		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
+		}
 	}
 
 	req, err := http.NewRequest("GET", apiURL, nil)

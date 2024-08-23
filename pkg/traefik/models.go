@@ -18,6 +18,7 @@ type Profile struct {
 	URL      string  `json:"url"`
 	Username string  `json:"username,omitempty"`
 	Password string  `json:"password,omitempty"`
+	TLS      bool    `json:"tls,omitempty"`
 	Dynamic  Dynamic `json:"dynamic,omitempty"`
 }
 

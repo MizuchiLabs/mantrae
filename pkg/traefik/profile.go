@@ -91,6 +91,7 @@ func (p *Profiles) SetDefaultProfile(url, username, password string) error {
 		URL:      url,
 		Username: username,
 		Password: password,
+		TLS:      false,
 	}
 
 	return p.Save()
