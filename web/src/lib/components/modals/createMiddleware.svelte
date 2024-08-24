@@ -8,7 +8,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
 	import { profile, updateMiddleware, middlewares } from '$lib/api';
-	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
+	import { newMiddleware } from '$lib/types/middlewares';
 
 	let middleware = newMiddleware();
 	let isHTTP = middleware.middlewareType === 'http';
@@ -84,15 +84,10 @@
 	let MiddlewareFormComponent: any = null;
 	let middlewareType: Selected<string> | undefined = HTTPMiddlewareTypes[0];
 
-	const changeMiddlewareType = async (serviceType: Selected<string> | undefined) => {
-		if (serviceType === undefined) return;
-		middlewareType = { label: serviceType.label || '', value: serviceType.value };
-		middleware.type = serviceType.value.toLowerCase();
-		await loadMiddlewareFormComponent(serviceType);
-	};
-
 	const loadMiddlewareFormComponent = async (serviceType: Selected<string> | undefined) => {
 		if (serviceType && middlewareForms[serviceType.value as keyof typeof middlewareForms]) {
+			middlewareType = { label: serviceType.label || '', value: serviceType.value };
+			middleware = newMiddleware();
 			middleware.type = serviceType.value.toLowerCase();
 			const module = await middlewareForms[serviceType.value as keyof typeof middlewareForms]();
 			MiddlewareFormComponent = module.default;
@@ -136,7 +131,7 @@
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4 space-y-2">
 					<Label for="current" class="text-right">Type</Label>
-					<Select.Root onSelectedChange={changeMiddlewareType} selected={middlewareType}>
+					<Select.Root onSelectedChange={loadMiddlewareFormComponent} selected={middlewareType}>
 						<Select.Trigger class="col-span-3">
 							<Select.Value placeholder="Select a type" />
 						</Select.Trigger>

@@ -11,29 +11,36 @@ import (
 	"strings"
 )
 
-func profilePath() string {
+// Global profiles variable, only loaded once
+var ProfileData = Profiles{
+	Profiles: make(map[string]Profile),
+}
+
+func init() {
+	if err := ProfileData.Load(); err != nil {
+		log.Fatalf("Failed to load profiles: %v", err)
+	}
+}
+
+func (p *Profiles) Load() error {
+	p.mu.RLock()
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return filepath.Join(cwd, "profiles.json")
-}
-
-func (p *Profiles) Load() error {
-	p.mu.RLock()
-
-	if _, err := os.Stat(profilePath()); os.IsNotExist(err) {
+	path := filepath.Join(cwd, "profiles.json")
+	if _, err = os.Stat(path); os.IsNotExist(err) {
 		p.Profiles = make(map[string]Profile)
 		p.Profiles["default"] = Profile{Name: "default"}
 		p.mu.RUnlock()
-		if err := p.Save(); err != nil {
+		if err = p.Save(); err != nil {
 			slog.Error("Failed to save profiles", "error", err)
 		}
 		return nil
 	}
 
-	file, err := os.ReadFile(profilePath())
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read profiles file: %w", err)
 	}
@@ -49,6 +56,12 @@ func (p *Profiles) Load() error {
 func (p *Profiles) Save() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	path := filepath.Join(cwd, "profiles.json")
 
 	tmpFile, err := os.CreateTemp(os.TempDir(), "profiles-*.json")
 	if err != nil {
@@ -71,7 +84,7 @@ func (p *Profiles) Save() error {
 	}
 	tmpFile.Close()
 
-	if err := Move(tmpFile.Name(), profilePath()); err != nil {
+	if err := Move(tmpFile.Name(), path); err != nil {
 		return fmt.Errorf("failed to move temp file: %w", err)
 	}
 
