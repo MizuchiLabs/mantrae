@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.circuitBreaker = {
 		expression: '',
 		checkPeriod: '',
@@ -23,6 +24,7 @@
 			bind:value={middleware.circuitBreaker.expression}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="LatencyAtQuantileMS(50.0) > 100"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -34,6 +36,7 @@
 			bind:value={middleware.circuitBreaker.checkPeriod}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="100ms"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -45,6 +48,7 @@
 			bind:value={middleware.circuitBreaker.fallbackDuration}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="10s"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -56,6 +60,7 @@
 			bind:value={middleware.circuitBreaker.recoveryDuration}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="10s"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -67,6 +72,7 @@
 			bind:value={middleware.circuitBreaker.responseCode}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="503"
+			{disabled}
 		/>
 	</div>
 {/if}

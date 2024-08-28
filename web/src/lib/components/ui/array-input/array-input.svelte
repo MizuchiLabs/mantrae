@@ -8,6 +8,7 @@
 	export let label: string;
 	export let placeholder: string;
 	export let items: string[] | undefined;
+	export let disabled = false;
 	const dispatch = createEventDispatcher();
 
 	const addItem = () => {
@@ -31,16 +32,18 @@
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
 		{#each items ?? [] as _, index}
 			<li class="flex flex-row items-center justify-end gap-1">
-				<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
-					<Button class="h-8 w-4 rounded-full bg-red-400 text-black" on:click={() => addItem()}>
-						<iconify-icon icon="fa6-solid:plus" />
-					</Button>
-					{#if (items?.length ?? 0) > 1 && index >= 1}
-						<Button on:click={() => removeItem(index)} class="h-8 w-4 rounded-full ">
-							<iconify-icon icon="fa6-solid:minus" />
+				{#if !disabled}
+					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
+						<Button class="h-8 w-4 rounded-full bg-red-400 text-black" on:click={() => addItem()}>
+							<iconify-icon icon="fa6-solid:plus" />
 						</Button>
-					{/if}
-				</div>
+						{#if (items?.length ?? 0) > 1 && index >= 1}
+							<Button on:click={() => removeItem(index)} class="h-8 w-4 rounded-full ">
+								<iconify-icon icon="fa6-solid:minus" />
+							</Button>
+						{/if}
+					</div>
+				{/if}
 				{#if items}
 					<Input
 						id="item"
@@ -48,6 +51,7 @@
 						bind:value={items[index]}
 						placeholder={`${placeholder}`}
 						class="focus-visible:ring-0 focus-visible:ring-offset-0"
+						{disabled}
 					/>
 				{/if}
 			</li>

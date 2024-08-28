@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.rateLimit = {
 		period: '',
 		sourceCriterion: {
@@ -27,6 +28,7 @@
 			bind:value={middleware.rateLimit.average}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="0"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -38,6 +40,7 @@
 			bind:value={middleware.rateLimit.period}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1s"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -49,6 +52,7 @@
 			bind:value={middleware.rateLimit.burst}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1"
+			{disabled}
 		/>
 	</div>
 
@@ -64,6 +68,7 @@
 				bind:value={middleware.rateLimit.sourceCriterion.ipStrategy.depth}
 				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 				placeholder="0"
+				{disabled}
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-2">
@@ -75,6 +80,7 @@
 				bind:value={middleware.rateLimit.sourceCriterion.requestHeaderName}
 				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 				placeholder="username"
+				{disabled}
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-2">
@@ -83,12 +89,14 @@
 				id="request-host"
 				bind:checked={middleware.rateLimit.sourceCriterion.requestHost}
 				class="col-span-3"
+				{disabled}
 			/>
 		</div>
 		<ArrayInput
 			bind:items={middleware.rateLimit.sourceCriterion.ipStrategy.excludedIPs}
 			label="Excluded IPs"
 			placeholder="192.168.1.1"
+			{disabled}
 		/>
 	{/if}
 {/if}

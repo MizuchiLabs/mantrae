@@ -5,12 +5,11 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import CreateProfile from '../modals/createProfile.svelte';
 	import UpdateProfile from '../modals/updateProfile.svelte';
-	import { profiles, profile } from '$lib/api';
+	import { profiles, profile, getProfile } from '$lib/api';
 
 	let open = false;
 	function handleProfileClick(name: string) {
-		profile.set(name);
-		localStorage.setItem('profile', name);
+		getProfile(name);
 		open = false;
 	}
 </script>
@@ -24,7 +23,7 @@
 			aria-expanded={open}
 			class="w-[200px] justify-between"
 		>
-			{$profile || 'Select a profile'}
+			{$profile?.name ?? 'Select a profile'}
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>

@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.basicAuth = {
 		users: [],
 		realm: '',
@@ -16,7 +17,12 @@
 </script>
 
 {#if middleware.basicAuth}
-	<ArrayInput bind:items={middleware.basicAuth.users} label="Users" placeholder="user:password" />
+	<ArrayInput
+		bind:items={middleware.basicAuth.users}
+		label="Users"
+		placeholder="user:password"
+		{disabled}
+	/>
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="users-file" class="text-right">Users File</Label>
 		<Input
@@ -26,6 +32,7 @@
 			bind:value={middleware.basicAuth.usersFile}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="/path/to/my/usersfile"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -37,6 +44,7 @@
 			bind:value={middleware.basicAuth.realm}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="traefik"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -45,6 +53,7 @@
 			id="remove-header"
 			bind:checked={middleware.basicAuth.removeHeader}
 			class="col-span-3"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -56,6 +65,7 @@
 			bind:value={middleware.basicAuth.headerField}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="X-WebAuth-User"
+			{disabled}
 		/>
 	</div>
 {/if}

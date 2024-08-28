@@ -11,6 +11,7 @@
 	import type { Middleware } from '$lib/types/middlewares';
 	import { Input } from '$lib/components/ui/input';
 	import { onMount } from 'svelte';
+	import ShowMiddleware from '$lib/components/modals/showMiddleware.svelte';
 
 	let search = '';
 	let count = 0;
@@ -19,7 +20,7 @@
 	let perPage: Selected<number> | undefined = JSON.parse(
 		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
 	);
-	$: search, $middlewares, currentPage, searchMiddleware();
+	$: search, $middlewares, currentPage, perPage, searchMiddleware();
 
 	// Reset the page to 1 when the search input changes
 	$: {
@@ -177,18 +178,20 @@
 								{middleware.type}
 							</span>
 						</Table.Cell>
-						{#if middleware.provider === 'http'}
-							<Table.Cell class="min-w-[100px]">
+						<Table.Cell class="min-w-[100px]">
+							{#if middleware.provider === 'http'}
 								<UpdateMiddleware {middleware} />
 								<Button
 									variant="ghost"
 									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteMiddleware($profile, middleware.name)}
+									on:click={() => deleteMiddleware(middleware.name)}
 								>
 									<iconify-icon icon="fa6-solid:xmark" />
 								</Button>
-							</Table.Cell>
-						{/if}
+							{:else}
+								<ShowMiddleware {middleware} />
+							{/if}
+						</Table.Cell>
 					</Table.Row>
 				{/each}
 			</Table.Body>

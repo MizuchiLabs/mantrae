@@ -140,7 +140,6 @@ export interface Headers {
 	contentSecurityPolicy?: string;
 	publicKey?: string;
 	referrerPolicy?: string;
-	featurePolicy?: string;
 	permissionsPolicy?: string;
 	isDevelopment?: boolean;
 }

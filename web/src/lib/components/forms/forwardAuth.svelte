@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.forwardAuth = {
 		address: '',
 		tls: { insecureSkipVerify: false, ca: '', cert: '', key: '' },
@@ -28,6 +29,7 @@
 			bind:value={middleware.forwardAuth.address}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="https://example.com/auth"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -36,6 +38,7 @@
 			id="trust-forward-header"
 			bind:checked={middleware.forwardAuth.trustForwardHeader}
 			class="col-span-3"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -47,6 +50,7 @@
 			bind:value={middleware.forwardAuth.authResponseHeadersRegex}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="^X-"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -58,21 +62,25 @@
 			bind:value={middleware.forwardAuth.authRequestHeaders}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="X-CustomHeader"
+			{disabled}
 		/>
 	</div>
 	<ArrayInput
 		bind:items={middleware.forwardAuth.authResponseHeaders}
 		label="Auth Response Headers"
 		placeholder="X-Auth-User"
+		{disabled}
 	/>
 	<ArrayInput
 		bind:items={middleware.forwardAuth.authRequestHeaders}
 		label="Auth Request Headers"
 		placeholder="Accept"
+		{disabled}
 	/>
 	<ArrayInput
 		bind:items={middleware.forwardAuth.addAuthCookiesToResponse}
 		label="Add Auth Cookies To Response"
 		placeholder="Session-Cookie"
+		{disabled}
 	/>
 {/if}

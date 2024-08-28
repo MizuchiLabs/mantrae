@@ -12,7 +12,6 @@
 		sslHost: '',
 		sslProxyHeaders: {},
 		sslForceHost: false,
-		stsSeconds: 0,
 		stsIncludeSubdomains: false,
 		stsPreload: false,
 		addVaryHeader: false,
@@ -33,38 +32,37 @@
 		accessControlAllowOriginList: [],
 		accessControlAllowOriginListRegex: [],
 		accessControlExposeHeaders: [],
-		accessControlMaxAge: 0,
 		publicKey: '',
 		referrerPolicy: '',
-		featurePolicy: '',
 		permissionsPolicy: '',
 		...middleware.headers
 	};
 </script>
 
+<!-- TODO: Add support for custom request headers -->
 {#if middleware.headers}
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="custom-request-headers" class="text-right">Custom Request Headers</Label>
-		<Input
-			id="custom-request-headers"
-			name="custom-request-headers"
-			type="text"
-			bind:value={middleware.headers.customRequestHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Custom Request Headers"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="custom-response-headers" class="text-right">Custom Response Headers</Label>
-		<Input
-			id="custom-response-headers"
-			name="custom-response-headers"
-			type="text"
-			bind:value={middleware.headers.customResponseHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Custom Response Headers"
-		/>
-	</div>
+	<!-- <div class="grid grid-cols-4 items-center gap-4"> -->
+	<!-- 	<Label for="custom-request-headers" class="text-right">Custom Request Headers</Label> -->
+	<!-- 	<Input -->
+	<!-- 		id="custom-request-headers" -->
+	<!-- 		name="custom-request-headers" -->
+	<!-- 		type="text" -->
+	<!-- 		bind:value={middleware.headers.customRequestHeaders} -->
+	<!-- 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0" -->
+	<!-- 		placeholder="Custom Request Headers" -->
+	<!-- 	/> -->
+	<!-- </div> -->
+	<!-- <div class="grid grid-cols-4 items-center gap-4"> -->
+	<!-- 	<Label for="custom-response-headers" class="text-right">Custom Response Headers</Label> -->
+	<!-- 	<Input -->
+	<!-- 		id="custom-response-headers" -->
+	<!-- 		name="custom-response-headers" -->
+	<!-- 		type="text" -->
+	<!-- 		bind:value={middleware.headers.customResponseHeaders} -->
+	<!-- 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0" -->
+	<!-- 		placeholder="Custom Response Headers" -->
+	<!-- 	/> -->
+	<!-- </div> -->
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="access-control-allow-credentials" class="text-right"
 			>Access Control Allow Credentials</Label
@@ -75,69 +73,31 @@
 			class="col-span-3"
 		/>
 	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="access-control-allow-headers" class="text-right">Access Control Allow Headers</Label
-		>
-		<Input
-			id="access-control-allow-headers"
-			name="access-control-allow-headers"
-			type="text"
-			bind:value={middleware.headers.accessControlAllowHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Allow Headers"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="access-control-allow-methods" class="text-right">Access Control Allow Methods</Label
-		>
-		<Input
-			id="access-control-allow-methods"
-			name="access-control-allow-methods"
-			type="text"
-			bind:value={middleware.headers.accessControlAllowMethods}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Allow Methods"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="access-control-allow-origin-list" class="text-right"
-			>Access Control Allow Origin List</Label
-		>
-		<Input
-			id="access-control-allow-origin-list"
-			name="access-control-allow-origin-list"
-			type="text"
-			bind:value={middleware.headers.accessControlAllowOriginList}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Allow Origin List"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="access-control-allow-origin-list-regex" class="text-right"
-			>Access Control Allow Origin List Regex</Label
-		>
-		<Input
-			id="access-control-allow-origin-list-regex"
-			name="access-control-allow-origin-list-regex"
-			type="text"
-			bind:value={middleware.headers.accessControlAllowOriginListRegex}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Allow Origin List Regex"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="access-control-expose-headers" class="text-right"
-			>Access Control Expose Headers</Label
-		>
-		<Input
-			id="access-control-expose-headers"
-			name="access-control-expose-headers"
-			type="text"
-			bind:value={middleware.headers.accessControlExposeHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Expose Headers"
-		/>
-	</div>
+	<ArrayInput
+		bind:items={middleware.headers.accessControlAllowHeaders}
+		placeholder="Authorization"
+		label="Access Control Allow Headers"
+	/>
+	<ArrayInput
+		bind:items={middleware.headers.accessControlAllowMethods}
+		placeholder="GET, POST, PUT, DELETE, OPTIONS"
+		label="Access Control Allow Methods"
+	/>
+	<ArrayInput
+		bind:items={middleware.headers.accessControlAllowOriginList}
+		placeholder="*"
+		label="Access Control Allow Origin List"
+	/>
+	<ArrayInput
+		bind:items={middleware.headers.accessControlAllowOriginListRegex}
+		placeholder="example\\.com"
+		label="Access Control Allow Origin List Regex"
+	/>
+	<ArrayInput
+		bind:items={middleware.headers.accessControlExposeHeaders}
+		placeholder="Authorization"
+		label="Access Control Expose Headers"
+	/>
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="access-control-max-age" class="text-right">Access Control Max Age</Label>
 		<Input
@@ -146,7 +106,7 @@
 			type="number"
 			bind:value={middleware.headers.accessControlMaxAge}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Access Control Max Age"
+			placeholder="0"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -157,28 +117,16 @@
 			class="col-span-3"
 		/>
 	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="allowed-hosts" class="text-right">Allowed Hosts</Label>
-		<Input
-			id="allowed-hosts"
-			name="allowed-hosts"
-			type="text"
-			bind:value={middleware.headers.allowedHosts}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Allowed Hosts"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="hosts-proxy-headers" class="text-right">Hosts Proxy Headers</Label>
-		<Input
-			id="hosts-proxy-headers"
-			name="hosts-proxy-headers"
-			type="text"
-			bind:value={middleware.headers.hostsProxyHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Hosts Proxy Headers"
-		/>
-	</div>
+	<ArrayInput
+		bind:items={middleware.headers.allowedHosts}
+		placeholder="example.com"
+		label="Allowed Hosts"
+	/>
+	<ArrayInput
+		bind:items={middleware.headers.hostsProxyHeaders}
+		placeholder="X-Forwarded-Host"
+		label="Hosts Proxy Headers"
+	/>
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="ssl-redirect" class="text-right">SSL Redirect</Label>
 		<Switch id="ssl-redirect" bind:checked={middleware.headers.sslRedirect} class="col-span-3" />
@@ -199,20 +147,20 @@
 			type="text"
 			bind:value={middleware.headers.sslHost}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="SSL Host"
+			placeholder="example.com"
 		/>
 	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="ssl-proxy-headers" class="text-right">SSL Proxy Headers</Label>
-		<Input
-			id="ssl-proxy-headers"
-			name="ssl-proxy-headers"
-			type="text"
-			bind:value={middleware.headers.sslProxyHeaders}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="SSL Proxy Headers"
-		/>
-	</div>
+	<!-- <div class="grid grid-cols-4 items-center gap-4"> -->
+	<!-- 	<Label for="ssl-proxy-headers" class="text-right">SSL Proxy Headers</Label> -->
+	<!-- 	<Input -->
+	<!-- 		id="ssl-proxy-headers" -->
+	<!-- 		name="ssl-proxy-headers" -->
+	<!-- 		type="text" -->
+	<!-- 		bind:value={middleware.headers.sslProxyHeaders} -->
+	<!-- 		class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0" -->
+	<!-- 		placeholder="SSL Proxy Headers" -->
+	<!-- 	/> -->
+	<!-- </div> -->
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="ssl-force-host" class="text-right">SSL Force Host</Label>
 		<Switch id="ssl-force-host" bind:checked={middleware.headers.sslForceHost} class="col-span-3" />
@@ -225,7 +173,7 @@
 			type="number"
 			bind:value={middleware.headers.stsSeconds}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="STS Seconds"
+			placeholder="86400"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -260,7 +208,7 @@
 			type="text"
 			bind:value={middleware.headers.customFrameOptionsValue}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Custom Frame Options Value"
+			placeholder="SAMEORIGIN"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -287,7 +235,7 @@
 			type="text"
 			bind:value={middleware.headers.customBrowserXSSValue}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Custom Browser XSS Value"
+			placeholder="1; mode=block"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -298,7 +246,7 @@
 			type="text"
 			bind:value={middleware.headers.contentSecurityPolicy}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Content Security Policy"
+			placeholder="default-src 'self'; script-src 'self' 'unsafe-inline';"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -309,7 +257,7 @@
 			type="text"
 			bind:value={middleware.headers.publicKey}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Public Key"
+			placeholder="MIIBIjANBgkqhkiG9w0BAQEFAA..."
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -320,18 +268,7 @@
 			type="text"
 			bind:value={middleware.headers.referrerPolicy}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Referrer Policy"
-		/>
-	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="feature-policy" class="text-right">Feature Policy</Label>
-		<Input
-			id="feature-policy"
-			name="feature-policy"
-			type="text"
-			bind:value={middleware.headers.featurePolicy}
-			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Feature Policy"
+			placeholder="no-referrer"
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -342,7 +279,7 @@
 			type="text"
 			bind:value={middleware.headers.permissionsPolicy}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-			placeholder="Permissions Policy"
+			placeholder="geolocation 'none'; microphone 'none';"
 		/>
 	</div>
 {/if}

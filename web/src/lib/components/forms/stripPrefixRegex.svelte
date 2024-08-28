@@ -3,6 +3,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.stripPrefixRegex = { regex: [], ...middleware.stripPrefixRegex };
 </script>
 
@@ -11,5 +12,6 @@
 		bind:items={middleware.stripPrefixRegex.regex}
 		label="Regex"
 		placeholder="/foo/[a-z0-9]+/[0-9]+/"
+			{disabled}
 	/>
 {/if}

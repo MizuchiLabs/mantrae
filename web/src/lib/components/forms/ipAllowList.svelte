@@ -5,6 +5,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.ipAllowList = {
 		sourceRange: [],
 		ipStrategy: { excludedIPs: [] },
@@ -22,16 +23,19 @@
 			bind:value={middleware.ipAllowList.ipStrategy.depth}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="0"
+			{disabled}
 		/>
 	</div>
 	<ArrayInput
 		bind:items={middleware.ipAllowList.sourceRange}
 		label="Source Range"
 		placeholder="192.168.1.1/32"
+		{disabled}
 	/>
 	<ArrayInput
 		bind:items={middleware.ipAllowList.ipStrategy.excludedIPs}
 		label="Excluded IPs"
 		placeholder="192.168.1.1"
+		{disabled}
 	/>
 {/if}

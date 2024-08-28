@@ -5,7 +5,6 @@
 	import * as Select from '$lib/components/ui/select';
 	import {
 		profile,
-		profiles,
 		deleteRouter,
 		entrypoints,
 		middlewares,
@@ -20,6 +19,7 @@
 	import type { Selected } from 'bits-ui';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { onMount } from 'svelte';
+	import ShowRouter from '$lib/components/modals/showRouter.svelte';
 
 	let search = '';
 	let count = 0;
@@ -65,7 +65,8 @@
 		{ value: 'type', label: 'Type' },
 		{ value: 'rule', label: 'Rule' },
 		{ value: 'entrypoints', label: 'Entrypoints' },
-		{ value: 'middlewares', label: 'Middlewares' }
+		{ value: 'middlewares', label: 'Middlewares' },
+		{ value: 'serviceStatus', label: 'Service Status' }
 	];
 	let selectedColumns: string[] = JSON.parse(
 		localStorage.getItem('router-columns') ??
@@ -83,14 +84,14 @@
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
-		let service = $profiles[$profile]?.dynamic?.services?.[router.name];
-		updateRouter($profile, router.name, router, service);
+		let service = $profile?.dynamic?.services?.[router.name];
+		updateRouter(router.name, router, service);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
-		let service = $profiles[$profile]?.dynamic?.services?.[router.name];
-		updateRouter($profile, router.name, router, service);
+		let service = $profile?.dynamic?.services?.[router.name];
+		updateRouter(router.name, router, service);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
@@ -128,7 +129,7 @@
 </script>
 
 <svelte:head>
-	<title>Routers {$profile ? `| ${$profile}` : ''}</title>
+	<title>Routers {$profile ? `| ${$profile.name}` : ''}</title>
 	<meta name="description" content="Traefik Web UI" />
 </svelte:head>
 
@@ -312,10 +313,12 @@
 								<Button
 									variant="ghost"
 									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteRouter($profile, router.name)}
+									on:click={() => deleteRouter(router.name)}
 								>
 									<iconify-icon icon="fa6-solid:xmark" />
 								</Button>
+							{:else}
+								<ShowRouter {router} />
 							{/if}
 						</Table.Cell>
 					</Table.Row>

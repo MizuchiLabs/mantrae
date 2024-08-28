@@ -5,6 +5,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.compress = {
 		excludedContentTypes: [],
 		includeContentTypes: [],
@@ -23,6 +24,7 @@
 			bind:value={middleware.compress.minResponseBodyBytes}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1024"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -34,16 +36,19 @@
 			bind:value={middleware.compress.defaultEncoding}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="gzip"
+			{disabled}
 		/>
 	</div>
 	<ArrayInput
 		bind:items={middleware.compress.excludedContentTypes}
 		label="Excluded Content Types"
 		placeholder="text/event-stream"
+		{disabled}
 	/>
 	<ArrayInput
 		bind:items={middleware.compress.includeContentTypes}
 		label="Include Content Types"
 		placeholder="application/json"
+		{disabled}
 	/>
 {/if}

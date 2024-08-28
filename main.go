@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"embed"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -19,9 +17,6 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )
-
-//go:embed all:web/build
-var webFS embed.FS
 
 // Set up global logger with specified configuration
 func init() {
@@ -70,23 +65,12 @@ func main() {
 		}
 	}
 
-	mux := api.Routes()
-	middle := api.Chain(api.Log, api.Cors)
-
-	staticContent, err := fs.Sub(webFS, "web/build")
-	if err != nil {
-		slog.Error("Sub", "error", err)
-		return
-	}
-
-	mux.Handle("/", http.FileServer(http.FS(staticContent)))
-
 	// Start the background sync process
 	go traefik.Sync()
 
 	srv := &http.Server{
 		Addr:              ":" + strconv.Itoa(*port),
-		Handler:           middle(mux),
+		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

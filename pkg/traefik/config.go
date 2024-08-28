@@ -82,32 +82,36 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 	for _, middleware := range d.Middlewares {
 		name := strings.Split(middleware.Name, "@")[0]
 		if middleware.Provider == "http" {
-			config.HTTP.Middlewares[name] = &dynamic.Middleware{
-				AddPrefix:         middleware.AddPrefix,
-				StripPrefix:       middleware.StripPrefix,
-				StripPrefixRegex:  middleware.StripPrefixRegex,
-				ReplacePath:       middleware.ReplacePath,
-				ReplacePathRegex:  middleware.ReplacePathRegex,
-				Chain:             middleware.Chain,
-				IPAllowList:       middleware.IPAllowList,
-				Headers:           middleware.Headers,
-				Errors:            middleware.Errors,
-				RateLimit:         middleware.RateLimit,
-				RedirectRegex:     middleware.RedirectRegex,
-				RedirectScheme:    middleware.RedirectScheme,
-				BasicAuth:         middleware.BasicAuth,
-				DigestAuth:        middleware.DigestAuth,
-				ForwardAuth:       middleware.ForwardAuth,
-				InFlightReq:       middleware.InFlightReq,
-				Buffering:         middleware.Buffering,
-				CircuitBreaker:    middleware.CircuitBreaker,
-				Compress:          middleware.Compress,
-				PassTLSClientCert: middleware.PassTLSClientCert,
-				Retry:             middleware.Retry,
-			}
-			config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
-				InFlightConn: middleware.InFlightConn,
-				IPAllowList:  middleware.TCPIPAllowList,
+			switch middleware.MiddlewareType {
+			case "http":
+				config.HTTP.Middlewares[name] = &dynamic.Middleware{
+					AddPrefix:         middleware.AddPrefix,
+					StripPrefix:       middleware.StripPrefix,
+					StripPrefixRegex:  middleware.StripPrefixRegex,
+					ReplacePath:       middleware.ReplacePath,
+					ReplacePathRegex:  middleware.ReplacePathRegex,
+					Chain:             middleware.Chain,
+					IPAllowList:       middleware.IPAllowList,
+					Headers:           middleware.Headers,
+					Errors:            middleware.Errors,
+					RateLimit:         middleware.RateLimit,
+					RedirectRegex:     middleware.RedirectRegex,
+					RedirectScheme:    middleware.RedirectScheme,
+					BasicAuth:         middleware.BasicAuth,
+					DigestAuth:        middleware.DigestAuth,
+					ForwardAuth:       middleware.ForwardAuth,
+					InFlightReq:       middleware.InFlightReq,
+					Buffering:         middleware.Buffering,
+					CircuitBreaker:    middleware.CircuitBreaker,
+					Compress:          middleware.Compress,
+					PassTLSClientCert: middleware.PassTLSClientCert,
+					Retry:             middleware.Retry,
+				}
+			case "tcp":
+				config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
+					InFlightConn: middleware.InFlightConn,
+					IPAllowList:  middleware.TCPIPAllowList,
+				}
 			}
 		}
 	}

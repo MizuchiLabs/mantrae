@@ -4,6 +4,7 @@
 	import { ValidateRule } from './ruleString';
 
 	export let rule: string;
+	export let disabled = false;
 
 	const rules = [
 		'Header(`key`, `value`)',
@@ -155,6 +156,7 @@
 				class="w-full border-0 font-mono text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
 				on:input={handleRuleInput}
 				on:keydown={handleRuleKeys}
+				{disabled}
 			/>
 			{#if showDropdown}
 				<ul
@@ -173,31 +175,35 @@
 				</ul>
 			{/if}
 		</div>
-		<div
-			class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground dark:border-gray-600"
-		>
-			{#if valid}
-				<p>Valid</p>
-				<iconify-icon icon="fa6-solid:circle-check" />
-			{:else}
-				<p>Invalid</p>
-				<iconify-icon icon="fa6-solid:circle-xmark" />
-			{/if}
-		</div>
+		{#if !disabled}
+			<div
+				class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground dark:border-gray-600"
+			>
+				{#if valid}
+					<p>Valid</p>
+					<iconify-icon icon="fa6-solid:circle-check" />
+				{:else}
+					<p>Invalid</p>
+					<iconify-icon icon="fa6-solid:circle-xmark" />
+				{/if}
+			</div>
+		{/if}
 	</div>
-	<div class="ml-2 flex items-center justify-between">
-		<div class="text-xs text-muted-foreground">
-			<span class="font-bold">Rule Examples:</span>
-			<ul class="list-inside list-disc">
-				<li>Host(`example.com`)</li>
-				<li>Path(`/hello`)</li>
-				<li>PathPrefix(`/hello`)</li>
-				<li>PathRegexp(`/hello/[0-9]+`)</li>
-				<li>Method(`GET`)</li>
-				<li>Header(`X-Forwarded-For`, `.*`)</li>
-				<li>Query(`page`, `[0-9]+`)</li>
-				<li>QueryRegexp(`page`, `[0-9]+`)</li>
-			</ul>
+	{#if !disabled}
+		<div class="ml-2 flex items-center justify-between">
+			<div class="text-xs text-muted-foreground">
+				<span class="font-bold">Rule Examples:</span>
+				<ul class="list-inside list-disc">
+					<li>Host(`example.com`)</li>
+					<li>Path(`/hello`)</li>
+					<li>PathPrefix(`/hello`)</li>
+					<li>PathRegexp(`/hello/[0-9]+`)</li>
+					<li>Method(`GET`)</li>
+					<li>Header(`X-Forwarded-For`, `.*`)</li>
+					<li>Query(`page`, `[0-9]+`)</li>
+					<li>QueryRegexp(`page`, `[0-9]+`)</li>
+				</ul>
+			</div>
 		</div>
-	</div>
+	{/if}
 </div>

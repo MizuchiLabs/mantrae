@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.buffering = {
 		retryExpression: '',
 		...middleware.buffering
@@ -20,6 +21,7 @@
 			bind:value={middleware.buffering.maxRequestBodyBytes}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="0"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -31,6 +33,7 @@
 			bind:value={middleware.buffering.memRequestBodyBytes}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1048576"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -42,6 +45,7 @@
 			bind:value={middleware.buffering.maxResponseBodyBytes}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="0"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -53,6 +57,7 @@
 			bind:value={middleware.buffering.memResponseBodyBytes}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1048576"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -64,6 +69,7 @@
 			bind:value={middleware.buffering.retryExpression}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="IsNetworkError() && Attempts() < 2"
+			{disabled}
 		/>
 	</div>
 {/if}

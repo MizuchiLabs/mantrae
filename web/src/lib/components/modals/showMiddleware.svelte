@@ -5,33 +5,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { deleteMiddleware, updateMiddleware, middlewares } from '$lib/api';
 	import type { Middleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
-	import { onMount, type SvelteComponent } from 'svelte';
+	import { onMount, SvelteComponent } from 'svelte';
 
 	export let middleware: Middleware;
 	let name = middleware.name.split('@')[0];
-	let middlewareCompare = $middlewares.filter((m) => m.name !== middleware.name);
-
-	let open = false;
-	const update = () => {
-		if (middleware.name === '' || isNameTaken) return;
-		let oldName = middleware.name;
-		middleware.name = name + '@' + middleware.provider;
-		updateMiddleware(middleware, oldName);
-		open = false;
-	};
-
-	// Check if middleware name is taken unless self
-	let isNameTaken = false;
-	$: isNameTaken = middlewareCompare.some((m) => m.name === name + '@' + middleware.provider);
-
-	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			update();
-		}
-	};
 
 	let form: typeof SvelteComponent | null = null;
 	onMount(async () => {
@@ -39,10 +18,10 @@
 	});
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root>
 	<Dialog.Trigger>
-		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
-			<iconify-icon icon="fa6-solid:pencil" />
+		<Button variant="ghost" class="h-8 w-4 rounded-full bg-green-400">
+			<iconify-icon icon="fa6-solid:eye" />
 		</Button>
 	</Dialog.Trigger>
 	<Dialog.Content class="sm:max-w-[600px]">
@@ -70,25 +49,21 @@
 						id="name"
 						name="name"
 						type="text"
-						bind:value={name}
-						on:keydown={onKeydown}
-						class={isNameTaken
-							? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
-							: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
+						value={name}
+						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 						placeholder="Name of the middleware"
-						required
+						disabled
 					/>
 				</div>
 				{#if form !== null}
 					<div class="mt-6 space-y-2">
-						<svelte:component this={form} bind:middleware />
+						<svelte:component this={form} bind:middleware disabled={true} />
 					</div>
 				{/if}
 			</Card.Content>
 		</Card.Root>
-		<Dialog.Close class="grid grid-cols-2 items-center justify-between gap-2">
-			<Button class="bg-red-400" on:click={() => deleteMiddleware(middleware.name)}>Delete</Button>
-			<Button type="submit" on:click={() => update()}>Save</Button>
+		<Dialog.Close class="w-full">
+			<Button class="w-full">Close</Button>
 		</Dialog.Close>
 	</Dialog.Content>
 </Dialog.Root>

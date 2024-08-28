@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Selected } from 'bits-ui';
-	import { profile, routers, entrypoints, middlewares, updateRouter } from '$lib/api';
+	import { routers, entrypoints, middlewares, updateRouter } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import Service from '../forms/service.svelte';
@@ -20,7 +20,7 @@
 		router.name = router.service + '@' + router.provider;
 		service.name = router.service + '@' + router.provider;
 		service.serviceType = router.routerType;
-		await updateRouter($profile, router.name, router, service);
+		await updateRouter(router.name, router, service);
 
 		router = newRouter();
 		service = newService();

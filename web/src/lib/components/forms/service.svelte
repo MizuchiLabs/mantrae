@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let service: Service;
+	export let disabled = false;
 	let servers = service.loadBalancer?.servers?.map((s) => s.url ?? '') ?? [];
 	let tcpServers = service.tcpLoadBalancer?.servers?.map((s) => s.address ?? '') ?? [];
 	let udpServers = service.udpLoadBalancer?.servers?.map((s) => s.address ?? '') ?? [];
@@ -43,15 +44,16 @@
 						id="passHostHeader"
 						class="col-span-3"
 						bind:checked={service.loadBalancer.passHostHeader}
+						{disabled}
 					/>
 				</div>
-				<ArrayInput bind:items={servers} label="Servers" placeholder="192.168.1.1" />
+				<ArrayInput bind:items={servers} label="Servers" placeholder="192.168.1.1" {disabled} />
 			{/if}
 			{#if service.serviceType === 'tcp'}
-				<ArrayInput bind:items={tcpServers} label="Servers" placeholder="192.168.1.1" />
+				<ArrayInput bind:items={tcpServers} label="Servers" placeholder="192.168.1.1" {disabled} />
 			{/if}
 			{#if service.serviceType === 'udp'}
-				<ArrayInput bind:items={udpServers} label="Servers" placeholder="192.168.1.1" />
+				<ArrayInput bind:items={udpServers} label="Servers" placeholder="192.168.1.1" {disabled} />
 			{/if}
 		{/if}
 	</Card.Content>

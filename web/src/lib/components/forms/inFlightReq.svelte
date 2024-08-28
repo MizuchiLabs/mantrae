@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.inFlightReq = {
 		sourceCriterion: {
 			ipStrategy: { excludedIPs: [] },
@@ -26,6 +27,7 @@
 			bind:value={middleware.inFlightReq.amount}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="50"
+			{disabled}
 		/>
 	</div>
 
@@ -40,6 +42,7 @@
 				bind:value={middleware.inFlightReq.sourceCriterion.ipStrategy.depth}
 				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 				placeholder="0"
+				{disabled}
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-2">
@@ -51,6 +54,7 @@
 				bind:value={middleware.inFlightReq.sourceCriterion.requestHeaderName}
 				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 				placeholder="X-CustomHeader"
+				{disabled}
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-2">
@@ -59,12 +63,14 @@
 				id="request-host"
 				bind:checked={middleware.inFlightReq.sourceCriterion.requestHost}
 				class="col-span-3"
+				{disabled}
 			/>
 		</div>
 		<ArrayInput
 			bind:items={middleware.inFlightReq.sourceCriterion.ipStrategy.excludedIPs}
 			label="Excluded IPs"
 			placeholder="192.168.1.1"
+			{disabled}
 		/>
 	{/if}
 {/if}

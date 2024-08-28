@@ -6,6 +6,7 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.digestAuth = {
 		users: [],
 		usersFile: '',
@@ -27,6 +28,7 @@
 			bind:value={middleware.digestAuth.usersFile}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="/path/to/my/usersfile"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -38,6 +40,7 @@
 			bind:value={middleware.digestAuth.realm}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="traefik"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -46,6 +49,7 @@
 			id="remove-header"
 			bind:checked={middleware.digestAuth.removeHeader}
 			class="col-span-3"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -57,6 +61,7 @@
 			bind:value={middleware.digestAuth.headerField}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="X-WebAuth-User"
+			{disabled}
 		/>
 	</div>
 {/if}

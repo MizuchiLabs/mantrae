@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.addPrefix = { prefix: '', ...middleware.addPrefix };
 </script>
 
@@ -16,6 +17,7 @@
 			placeholder="/foo"
 			bind:value={middleware.addPrefix.prefix}
 			class="col-span-3"
+			{disabled}
 		/>
 	{/if}
 </div>

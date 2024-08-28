@@ -7,8 +7,10 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { profile, updateMiddleware, middlewares } from '$lib/api';
+	import { updateMiddleware, middlewares } from '$lib/api';
 	import { newMiddleware } from '$lib/types/middlewares';
+	import { LoadMiddlewareForm } from '../utils/middlewareModules';
+	import { onMount, SvelteComponent } from 'svelte';
 
 	let middleware = newMiddleware();
 	let isHTTP = middleware.middlewareType === 'http';
@@ -19,7 +21,7 @@
 		if (isHTTP) middleware.middlewareType = 'http';
 		else middleware.middlewareType = 'tcp';
 
-		updateMiddleware($profile, middleware, middleware.name);
+		updateMiddleware(middleware, middleware.name);
 		middleware = newMiddleware();
 		middlewareType = HTTPMiddlewareTypes[0];
 	};
@@ -52,56 +54,25 @@
 		{ label: 'IP Allow List', value: 'tcpIpAllowList' }
 	];
 
-	// Dynamic imports based on middleware type
-	const middlewareForms = {
-		addPrefix: () => import('$lib/components/forms/addPrefix.svelte'),
-		stripPrefix: () => import('$lib/components/forms/stripPrefix.svelte'),
-		stripPrefixRegex: () => import('$lib/components/forms/stripPrefixRegex.svelte'),
-		replacePath: () => import('$lib/components/forms/replacePath.svelte'),
-		replacePathRegex: () => import('$lib/components/forms/replacePathRegex.svelte'),
-		chain: () => import('$lib/components/forms/chain.svelte'),
-		ipAllowList: () => import('$lib/components/forms/ipAllowList.svelte'),
-		headers: () => import('$lib/components/forms/headers.svelte'),
-		errors: () => import('$lib/components/forms/errorPage.svelte'),
-		rateLimit: () => import('$lib/components/forms/rateLimit.svelte'),
-		redirectRegex: () => import('$lib/components/forms/redirectRegex.svelte'),
-		redirectScheme: () => import('$lib/components/forms/redirectScheme.svelte'),
-		basicAuth: () => import('$lib/components/forms/basicAuth.svelte'),
-		digestAuth: () => import('$lib/components/forms/digestAuth.svelte'),
-		forwardAuth: () => import('$lib/components/forms/forwardAuth.svelte'),
-		inFlightReq: () => import('$lib/components/forms/inFlightReq.svelte'),
-		buffering: () => import('$lib/components/forms/buffering.svelte'),
-		circuitBreaker: () => import('$lib/components/forms/circuitBreaker.svelte'),
-		compress: () => import('$lib/components/forms/compress.svelte'),
-		// passTLSClientCert: () => import('$lib/components/forms/passTLSClientCert.svelte'),
-		retry: () => import('$lib/components/forms/retry.svelte'),
-
-		// TCP-specific
-		inFlightConn: () => import('$lib/components/forms/inFlightConn.svelte'),
-		tcpIpAllowList: () => import('$lib/components/forms/tcpIpAllowList.svelte')
-	};
-
-	let MiddlewareFormComponent: any = null;
+	// Load the initial form component
+	let form: typeof SvelteComponent | null = null;
 	let middlewareType: Selected<string> | undefined = HTTPMiddlewareTypes[0];
-
-	const loadMiddlewareFormComponent = async (serviceType: Selected<string> | undefined) => {
-		if (serviceType && middlewareForms[serviceType.value as keyof typeof middlewareForms]) {
-			middlewareType = { label: serviceType.label || '', value: serviceType.value };
-			middleware = newMiddleware();
-			middleware.type = serviceType.value.toLowerCase();
-			const module = await middlewareForms[serviceType.value as keyof typeof middlewareForms]();
-			MiddlewareFormComponent = module.default;
-		} else {
-			MiddlewareFormComponent = null;
-		}
+	const setMiddlewareType = async (type: Selected<string> | undefined) => {
+		if (type === undefined) return;
+		middlewareType = type;
+		middleware = newMiddleware();
+		middleware.type = type.value.toLowerCase();
+		form = await LoadMiddlewareForm(middleware);
 	};
 
 	// Check if middleware name is taken
 	let isNameTaken = false;
 	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
 
-	// Load the initial form component
-	loadMiddlewareFormComponent(middlewareType);
+	onMount(async () => {
+		form = await LoadMiddlewareForm(middleware);
+		await setMiddlewareType(middlewareType);
+	});
 </script>
 
 <Dialog.Root>
@@ -131,7 +102,7 @@
 				</div>
 				<div class="grid grid-cols-4 items-center gap-4 space-y-2">
 					<Label for="current" class="text-right">Type</Label>
-					<Select.Root onSelectedChange={loadMiddlewareFormComponent} selected={middlewareType}>
+					<Select.Root onSelectedChange={setMiddlewareType} selected={middlewareType}>
 						<Select.Trigger class="col-span-3">
 							<Select.Value placeholder="Select a type" />
 						</Select.Trigger>
@@ -166,9 +137,14 @@
 						required
 					/>
 				</div>
-				{#if MiddlewareFormComponent}
+				{#if form !== null}
+					{#if middleware.type === 'basicauth' || middleware.type === 'digestauth'}
+						<header class="mt-4 text-right text-sm font-semibold">
+							Password will be hashed automatically.<br /> You will not be able to see the password again!
+						</header>
+					{/if}
 					<div class="mt-6 space-y-2">
-						<svelte:component this={MiddlewareFormComponent} bind:middleware />
+						<svelte:component this={form} bind:middleware />
 					</div>
 				{/if}
 			</Card.Content>

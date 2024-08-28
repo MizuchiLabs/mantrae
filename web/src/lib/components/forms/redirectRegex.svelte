@@ -5,6 +5,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.redirectRegex = {
 		regex: '',
 		replacement: '',
@@ -16,7 +17,12 @@
 {#if middleware.redirectRegex}
 	<div class="grid grid-cols-4 items-center gap-2">
 		<Label for="permanent" class="text-right">Permanent</Label>
-		<Switch id="permanent" bind:checked={middleware.redirectRegex.permanent} class="col-span-3" />
+		<Switch
+			id="permanent"
+			bind:checked={middleware.redirectRegex.permanent}
+			class="col-span-3"
+			{disabled}
+		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="regex" class="text-right">Regex</Label>
@@ -27,6 +33,7 @@
 			bind:value={middleware.redirectRegex.regex}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="^http://localhost/(.*)"
+			{disabled}
 		/>
 	</div>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -38,6 +45,7 @@
 			bind:value={middleware.redirectRegex.replacement}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="http://mydomain/$1"
+			{disabled}
 		/>
 	</div>
 {/if}

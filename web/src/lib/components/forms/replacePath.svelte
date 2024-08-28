@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.replacePath = { path: '', ...middleware.replacePath };
 </script>
 
@@ -17,6 +18,7 @@
 			bind:value={middleware.replacePath.path}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="/foo"
+			{disabled}
 		/>
 	</div>
 {/if}

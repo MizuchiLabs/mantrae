@@ -7,39 +7,15 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { routers, entrypoints, middlewares, updateRouter, getService } from '$lib/api';
-	import { newService, type Router } from '$lib/types/config';
+	import { entrypoints, middlewares, getService } from '$lib/api';
+	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
-	let service = getService(router.name);
-	let routerCompare = $routers.filter((r) => r.name !== router.name);
+	let service = getService(router.service + '@' + router.provider);
 
-	let open = false;
-	const update = () => {
-		if (service === undefined) {
-			service = newService();
-			service.serviceType = router.routerType;
-		}
-		if (router.service === '' || isNameTaken) return;
-		let oldName = router.name;
-		router.name = router.service + '@' + router.provider;
-		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
-		service.serviceType = router.routerType;
-		updateRouter(oldName, router, service);
-		open = false;
-	};
-
-	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.entrypoints = item.map((i) => i.value) as string[];
-	};
-	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.middlewares = item.map((i) => i.value) as string[];
-	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };
@@ -52,22 +28,12 @@
 		});
 		return list ?? [];
 	};
-
-	// Check if router name is taken unless self
-	let isNameTaken = false;
-	$: isNameTaken = routerCompare.some((r) => r.service === router.service);
-
-	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			update();
-		}
-	};
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root>
 	<Dialog.Trigger>
-		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
-			<iconify-icon icon="fa6-solid:pencil" />
+		<Button variant="ghost" class="h-8 w-4 rounded-full bg-green-400">
+			<iconify-icon icon="fa6-solid:eye" />
 		</Button>
 	</Dialog.Trigger>
 	<Dialog.Content class="sm:max-w-[520px]">
@@ -101,22 +67,15 @@
 								id="name"
 								name="name"
 								type="text"
-								class={isNameTaken
-									? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
-									: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
-								bind:value={router.service}
+								class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+								value={router.service}
 								placeholder="Name of the router"
-								on:keydown={onKeydown}
-								required
+								disabled
 							/>
 						</div>
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="entrypoints" class="text-right">Entrypoints</Label>
-							<Select.Root
-								multiple={true}
-								selected={getSelectedEntrypoints(router)}
-								onSelectedChange={(value) => toggleEntrypoint(router, value)}
-							>
+							<Select.Root multiple={true} selected={getSelectedEntrypoints(router)}>
 								<Select.Trigger class="col-span-3">
 									<Select.Value placeholder="Select an entrypoint" />
 								</Select.Trigger>
@@ -141,11 +100,7 @@
 							class:hidden={router.routerType === 'udp'}
 						>
 							<Label for="middlewares" class="text-right">Middlewares</Label>
-							<Select.Root
-								multiple={true}
-								selected={getSelectedMiddlewares(router)}
-								onSelectedChange={(value) => toggleMiddleware(router, value)}
-							>
+							<Select.Root multiple={true} selected={getSelectedMiddlewares(router)}>
 								<Select.Trigger class="col-span-3">
 									<Select.Value placeholder="Select a middleware" />
 								</Select.Trigger>
@@ -161,17 +116,17 @@
 							</Select.Root>
 						</div>
 						<div class:hidden={router.routerType === 'udp'}>
-							<RuleEditor bind:rule={router.rule} />
+							<RuleEditor bind:rule={router.rule} disabled={true} />
 						</div>
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<Service bind:service />
+				<Service bind:service disabled={true} />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Dialog.Close class="w-full">
-			<Button class="w-full" on:click={() => update()}>Save</Button>
+			<Button class="w-full">Close</Button>
 		</Dialog.Close>
 	</Dialog.Content>
 </Dialog.Root>

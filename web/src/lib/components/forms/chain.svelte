@@ -6,6 +6,7 @@
 	import { middlewares } from '$lib/api';
 
 	export let middleware: Middleware;
+	export let disabled = false;
 	middleware.chain = { middlewares: [], ...middleware.chain };
 
 	let selectedMiddlewares: Selected<string>[] | undefined = middleware.chain.middlewares?.map(
