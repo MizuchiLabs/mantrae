@@ -9,7 +9,10 @@ services:
       - --username=admin # use if you want to enable basicauth on traefik
       - --password=admin
     ports:
-      - 3000:3000
+      - 3000:3000 # remove this if you want to use traefik 
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
     networks:
       - proxy
     restart: always
