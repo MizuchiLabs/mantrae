@@ -34,9 +34,10 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 	for _, router := range d.Routers {
 		// Only add routers by our provider
 		if router.Provider == "http" {
+			name := strings.Split(router.Name, "@")[0]
 			switch router.RouterType {
 			case "http":
-				config.HTTP.Routers[router.Service] = &dynamic.Router{
+				config.HTTP.Routers[name] = &dynamic.Router{
 					EntryPoints: router.Entrypoints,
 					Middlewares: router.Middlewares,
 					Service:     router.Service,
@@ -45,7 +46,7 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 					TLS: router.TLS,
 				}
 			case "tcp":
-				config.TCP.Routers[router.Service] = &dynamic.TCPRouter{
+				config.TCP.Routers[name] = &dynamic.TCPRouter{
 					EntryPoints: router.Entrypoints,
 					Middlewares: router.Middlewares,
 					Service:     router.Service,
@@ -53,7 +54,7 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 					Rule: router.Rule,
 				}
 			case "udp":
-				config.UDP.Routers[router.Service] = &dynamic.UDPRouter{
+				config.UDP.Routers[name] = &dynamic.UDPRouter{
 					EntryPoints: router.Entrypoints,
 					Service:     router.Service,
 				}

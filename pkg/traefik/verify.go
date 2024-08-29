@@ -31,18 +31,13 @@ func (r *Router) Verify() error {
 	if r.Name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
+	if r.RouterType == "" {
+		return fmt.Errorf("router type cannot be empty")
+	}
 	if r.Rule == "" && r.RouterType != "udp" {
 		return fmt.Errorf("rule cannot be empty")
 	}
-	if r.RouterType == "" {
-		r.RouterType = "http"
-	}
-	if r.Provider == "" {
-		r.Provider = "http"
-	}
-	if r.Service == "" {
-		r.Service = r.Name
-	}
+	r.Provider = "http"
 	r.Name = validateName(r.Name, r.Provider)
 	r.Service = validateName(r.Name, r.Provider)
 	return nil
@@ -53,11 +48,10 @@ func (s *Service) Verify() error {
 		return fmt.Errorf("service name cannot be empty")
 	}
 	if s.ServiceType == "" {
-		s.ServiceType = "http"
+		return fmt.Errorf("service type cannot be empty")
 	}
-	if s.Provider == "" {
-		s.Provider = "http"
-	}
+
+	s.Provider = "http"
 	s.Name = validateName(s.Name, s.Provider)
 	return nil
 }
@@ -66,12 +60,14 @@ func (m *Middleware) Verify() error {
 	if m.Name == "" {
 		return fmt.Errorf("middleware name cannot be empty")
 	}
-	if m.Provider == "" {
-		m.Provider = "http"
-	}
 	if m.Type == "" {
 		return fmt.Errorf("type cannot be empty")
 	}
+	if m.MiddlewareType == "" {
+		return fmt.Errorf("middleware type cannot be empty")
+	}
+
+	m.Provider = "http"
 	m.Name = validateName(m.Name, m.Provider)
 
 	// Hashes the password strings in the middleware
