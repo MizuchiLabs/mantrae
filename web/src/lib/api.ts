@@ -125,16 +125,22 @@ export async function deleteProfile(name: string): Promise<void> {
 export async function updateRouter(
 	oldName: string,
 	router: Router,
-	service: Service | undefined
+	service: Service
 ): Promise<void> {
 	if (!get(profile)) return;
-	if (service === undefined) service = newService();
-	service.name = router.service + '@' + router.provider;
-	service.serviceType = router.routerType;
-	await handleRequest(`/routers/${get(profile).name}/${oldName}`, 'PUT', router);
-	const response = await handleRequest(`/services/${get(profile).name}/${oldName}`, 'PUT', service);
-	profile.set(response);
-	toast.success(`Router ${router.name} updated`);
+
+	const resRouter = await handleRequest(`/routers/${get(profile).name}/${oldName}`, 'PUT', router);
+	if (resRouter) {
+		const resService = await handleRequest(
+			`/services/${get(profile).name}/${oldName}`,
+			'PUT',
+			service
+		);
+		if (resService) {
+			profile.set(resService);
+			toast.success(`Router ${router.name} updated`);
+		}
+	}
 }
 
 export async function deleteRouter(name: string): Promise<void> {

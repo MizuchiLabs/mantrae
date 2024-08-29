@@ -16,10 +16,8 @@
 	let service = newService();
 
 	const create = async () => {
-		if (router.service === '' || isNameTaken) return;
-		router.name = router.service + '@' + router.provider;
-		service.name = router.service + '@' + router.provider;
-		service.serviceType = router.routerType;
+		if (router.name === '' || isNameTaken) return;
+		service.name = router.name.split('@')[0] + '@' + router.provider;
 		await updateRouter(router.name, router, service);
 
 		router = newRouter();
@@ -59,7 +57,9 @@
 
 	// Check if router name is taken
 	let isNameTaken = false;
-	$: isNameTaken = $routers.some((r) => r.service === router.service);
+	$: isNameTaken = $routers.some(
+		(r) => r.name.split('@')[0].toLowerCase() === router.name.split('@')[0].toLowerCase()
+	);
 </script>
 
 <Dialog.Root>
@@ -105,7 +105,7 @@
 								id="name"
 								name="name"
 								type="text"
-								bind:value={router.service}
+								bind:value={router.name}
 								class={isNameTaken
 									? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
 									: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}

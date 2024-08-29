@@ -123,7 +123,7 @@ func getRouters[T Routerable](p Profile, endpoint string) map[string]Router {
 		return nil
 	}
 
-	routers := make(map[string]Router)
+	routers := make(map[string]Router, len(routerables))
 	for _, r := range routerables {
 		newRouter := r.ToRouter()
 		routers[newRouter.Name] = *newRouter
@@ -216,7 +216,7 @@ func getServices[T Serviceable](p Profile, endpoint string) map[string]Service {
 		return nil
 	}
 
-	services := make(map[string]Service)
+	services := make(map[string]Service, len(serviceables))
 	for _, s := range serviceables {
 		newService := s.ToService()
 		services[newService.Name] = *newService
@@ -319,7 +319,7 @@ func getMiddlewares[T Middlewareable](p Profile, endpoint string) map[string]Mid
 		return nil
 	}
 
-	middlewares := make(map[string]Middleware)
+	middlewares := make(map[string]Middleware, len(middlewareables))
 	for _, m := range middlewareables {
 		newMiddleware := m.ToMiddleware()
 		middlewares[newMiddleware.Name] = *newMiddleware
@@ -346,7 +346,10 @@ func GetTraefikConfig() {
 			getRouters[HTTPRouter](profile, HTTPRouterAPI),
 			getRouters[TCPRouter](profile, TCPRouterAPI),
 			getRouters[UDPRouter](profile, UDPRouterAPI),
-			profile.Dynamic.Routers,
+			filterByLocalProvider(
+				profile.Dynamic.Routers,
+				func(r Router) string { return r.Provider },
+			),
 		)
 
 		// Retrieve services
@@ -354,14 +357,20 @@ func GetTraefikConfig() {
 			getServices[HTTPService](profile, HTTPServiceAPI),
 			getServices[TCPService](profile, TCPServiceAPI),
 			getServices[UDPService](profile, UDPServiceAPI),
-			profile.Dynamic.Services,
+			filterByLocalProvider(
+				profile.Dynamic.Services,
+				func(s Service) string { return s.Provider },
+			),
 		)
 
 		// Fetch middlewares
 		d.Middlewares = merge(
 			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI),
 			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI),
-			profile.Dynamic.Middlewares,
+			filterByLocalProvider(
+				profile.Dynamic.Middlewares,
+				func(m Middleware) string { return m.Provider },
+			),
 		)
 
 		// Retrieve entrypoints
@@ -412,6 +421,17 @@ func Sync() {
 	for range ticker.C {
 		GetTraefikConfig()
 	}
+}
+
+// Filter http provider
+func filterByLocalProvider[T any](items map[string]T, getProvider func(T) string) map[string]T {
+	filteredItems := make(map[string]T)
+	for key, item := range items {
+		if getProvider(item) == "http" {
+			filteredItems[key] = item
+		}
+	}
+	return filteredItems
 }
 
 func merge[T any](maps ...map[string]T) map[string]T {

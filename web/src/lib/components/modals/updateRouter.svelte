@@ -14,21 +14,15 @@
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
-	let service = getService(router.name);
+	let service = getService(router.name) ?? newService();
 	let routerCompare = $routers.filter((r) => r.name !== router.name);
 
 	let open = false;
 	const update = () => {
-		if (service === undefined) {
-			service = newService();
-			service.serviceType = router.routerType;
-		}
-		if (router.service === '' || isNameTaken) return;
-		let oldName = router.name;
-		router.name = router.service + '@' + router.provider;
-		service.name = router.service + '@' + router.provider; // Extra check in case router name changed
-		service.serviceType = router.routerType;
-		updateRouter(oldName, router, service);
+		if (router.name === '' || isNameTaken) return;
+		// Extra check in case router name changed
+		service.name = router.name.split('@')[0] + '@' + router.provider;
+		updateRouter(router.service, router, service);
 		open = false;
 	};
 
@@ -55,7 +49,9 @@
 
 	// Check if router name is taken unless self
 	let isNameTaken = false;
-	$: isNameTaken = routerCompare.some((r) => r.service === router.service);
+	$: isNameTaken = routerCompare.some(
+		(r) => r.name.split('@')[0].toLowerCase() === router.name.split('@')[0].toLowerCase()
+	);
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -104,7 +100,7 @@
 								class={isNameTaken
 									? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
 									: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
-								bind:value={router.service}
+								bind:value={router.name}
 								placeholder="Name of the router"
 								on:keydown={onKeydown}
 								required

@@ -5,8 +5,8 @@ services:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
     command:
-      - --url=http://traefik:8080
-      - --username=admin
+      - --url=http://traefik:8080 # if traefik is running on the same host
+      - --username=admin # use if you want to enable basicauth on traefik
       - --password=admin
     ports:
       - 3000:3000
@@ -25,7 +25,7 @@ services:
       - ./traefik:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - CF_DNS_API_TOKEN=xxx
+      - CF_DNS_API_TOKEN=xxx # Set cloudflare token
     networks:
       - proxy
     command:
@@ -37,6 +37,7 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
       - --entrypoints.websecure.address=:443
       - --entrypoints.websecure.asDefault=true
+      - --entrypoints.websecure.http.tls.certresolver=letsencrypt # Set the default cert resolver
       - --serversTransport.insecureSkipVerify=true
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
@@ -48,7 +49,7 @@ services:
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.delaybeforecheck=0
     labels:
       - traefik.enable=true
-      - traefik.http.routers.dashboard.rule=PathPrefix(`/api`) || PathPrefix(`/dashboard`)
+      - traefik.http.routers.dashboard.rule=Host(`traefik.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
       - traefik.http.routers.dashboard.service=api@internal
       - traefik.http.routers.dashboard.entrypoints=websecure
     restart: always

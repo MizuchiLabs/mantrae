@@ -351,6 +351,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updateName(profile.Dynamic.Middlewares, middlewareName, middleware.Name)
+
 	if err := middleware.Verify(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

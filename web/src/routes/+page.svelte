@@ -10,7 +10,8 @@
 		middlewares,
 		routers,
 		services,
-		updateRouter
+		updateRouter,
+		getService
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -84,13 +85,13 @@
 	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
-		let service = $profile?.dynamic?.services?.[router.name];
+		let service = getService(router.name);
 		updateRouter(router.name, router, service);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
-		let service = $profile?.dynamic?.services?.[router.name];
+		let service = getService(router.name);
 		updateRouter(router.name, router, service);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
@@ -213,7 +214,7 @@
 				{#each fRouters as router}
 					<Table.Row>
 						<Table.Cell class={showColumn('name') ? 'font-medium' : 'hidden'}>
-							{router.service}
+							{router.name.split('@')[0]}
 						</Table.Cell>
 						<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
 							<span
