@@ -329,13 +329,7 @@ func getMiddlewares[T Middlewareable](p Profile, endpoint string) map[string]Mid
 }
 
 func GetTraefikConfig() {
-	var p Profiles
-	if err := p.Load(); err != nil {
-		slog.Error("Failed to load profiles", "error", err)
-		return
-	}
-
-	for i, profile := range p.Profiles {
+	for i, profile := range ProfileData.Profiles {
 		if profile.URL == "" {
 			continue
 		}
@@ -402,10 +396,10 @@ func GetTraefikConfig() {
 		d.Version = v.Version
 
 		profile.Dynamic = d
-		p.Profiles[i] = profile
+		ProfileData.Profiles[i] = profile
 	}
 
-	if err := p.Save(); err != nil {
+	if err := ProfileData.Save(); err != nil {
 		slog.Error("Failed to save profiles", "error", err)
 	}
 }

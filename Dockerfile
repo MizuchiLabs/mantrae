@@ -1,5 +1,10 @@
-FROM cgr.dev/chainguard/static:latest
+FROM alpine:latest
+
+COPY entrypoint.sh /
+COPY mantrae /usr/local/bin/mantrae
+RUN chmod +x /entrypoint.sh /usr/local/bin/mantrae
+
 WORKDIR /app
-COPY mantrae .
 EXPOSE 3000
-CMD ["./mantrae"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["mantrae"]
