@@ -17,11 +17,11 @@
 ### Prerequisites
 
 - **Traefik**: Ensure you have Traefik set up with a static configuration file that defines your entrypoints, certificates, and any other necessary static settings.
-- **Docker**: Optionally, use Docker for easier deployment.
+- **Docker**: Optionally, use Docker for easier deployment. (See [Docker Compose](#docker-compose) for an example)
 
 ### Installation
 
-1. Download the latest release from the [releases page](https://github.com/MizuchiLabs/traefik-web/releases)
+1. Download the latest release from the [releases page](https://github.com/MizuchiLabs/mantrae/releases)
 
 1. Extract the downloaded file
 
@@ -42,7 +42,7 @@
 
 1. Navigate to the "Routers" section in the web UI.
 1. Click "Create Router" to define a new router.
-1. Assign a name, service, and rule to the router. Optionally, set entrypoints, middlewares, and other advanced settings.
+1. Assign a name, service, and rule to the router. Optionally, set entrypoints, middlewares, and other settings.
 1. Save your router to apply the changes.
 
 ### Managing Middlewares
@@ -51,14 +51,18 @@
 1. Create new middleware by defining its type and associated settings.
 1. Save the middleware and attach it to your routers as needed.
 
-### Example Workflow
-
-1. **Create a Router**: Set up a router that directs traffic to the service based on specific rules (e.g., domain names).
-1. **Attach Middlewares**: Apply any required middlewares to the router, such as authentication or headers.
-
 ## Static Configuration
 
-Please note that some aspects, such as Let's Encrypt certificates, need to be configured via Traefik's static configuration. Traefik Web UI focuses solely on managing dynamic configurations like routers, services, and middlewares.
+Please note that some aspects, such as Let's Encrypt certificates, need to be configured via Traefik's static configuration. Mantrae focuses solely on managing dynamic configurations like routers, services, and middlewares.
+
+Also Traefik doesn't support multiple DNS Challenge providers, so you have to use CNAME records to manage multiple accounts.
+E.g. if you have a domain `example.com` on account "Foo" and a domain `example.org` on account "Bar", you can add the API Key for account "Foo" normally, but to get letsencrypt certificates for `example.org` you need add a CNAME record for `example.org` with these values:
+
+- Type: `CNAME`
+- Name: `_acme-challenge.example.org`
+- Target: `_acme-challenge.example.com`
+
+Now you can request certificates for `sub.example.org` as well.
 
 ### Example Static Configuration
 
