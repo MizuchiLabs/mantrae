@@ -4,46 +4,37 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
+	"net"
 
 	"github.com/cloudflare/cloudflare-go"
 )
 
 type CloudflareProvider struct {
-	Container *cloudflare.ResourceContainer
-	Client    *cloudflare.API
+	Client     *cloudflare.API
+	ManagedTXT string
+	ExternalIP string
 }
 
-func NewCloudflareDNSProvider(key, id string) *CloudflareProvider {
+func NewCloudflareProvider(key, ip string) *CloudflareProvider {
 	client, err := cloudflare.NewWithAPIToken(key)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return &CloudflareProvider{
-		Container: cloudflare.AccountIdentifier(id),
-		Client:    client,
+		Client:     client,
+		ManagedTXT: "managed-by=mantrae",
+		ExternalIP: ip,
 	}
 }
 
 // CreateRecord creates a new DNS record for the given subdomain and IP address
 // and adds a TXT record to keep track of the subdomain
-func (c *CloudflareProvider) CreateRecord(subdomain, ip string) error {
-	recordType, err := RecordType(ip)
+func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
+	recordType, err := cfRecordType(c.ExternalIP)
 	if err != nil {
 		return err
-	}
-
-	recordA := cloudflare.CreateDNSRecordParams{
-		Type:    recordType,
-		Name:    subdomain,
-		Content: ip,
-		Proxied: BoolPointer(false),
-	}
-
-	recordTXT := cloudflare.CreateDNSRecordParams{
-		Type:    "TXT",
-		Name:    "_mantrae-" + subdomain,
-		Content: "managed-by=mantrae",
 	}
 
 	// Check if the record already exists
@@ -56,43 +47,107 @@ func (c *CloudflareProvider) CreateRecord(subdomain, ip string) error {
 	if err != nil {
 		return err
 	}
-
-	// If the record doesn't exist, create it, or if it's managed by us, update it
-	if len(records) == 0 || managed {
-		_, err := c.Client.CreateDNSRecord(context.Background(), c.Container, recordA)
-		if err != nil {
-			return err
-		}
-
-		_, err = c.Client.CreateDNSRecord(context.Background(), c.Container, recordTXT)
-		if err != nil {
-			return err
-		}
-	} else {
+	if len(records) > 0 && !managed {
 		return fmt.Errorf("record not managed by Mantrae")
 	}
 
-	return nil
-}
-
-func (c *CloudflareProvider) UpdateRecord(subdomain, ip string) error {
-	recordType, err := RecordType(ip)
+	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
 	if err != nil {
 		return err
 	}
 
-	paramsA := cloudflare.UpdateDNSRecordParams{
-		Type:    recordType,
-		Name:    subdomain,
-		Content: ip,
-		Proxied: BoolPointer(false),
-	}
-	paramsTXT := cloudflare.UpdateDNSRecordParams{
-		Type:    "TXT",
-		Name:    "_mantrae-" + subdomain,
-		Content: "managed-by=mantrae",
+	// Create the record if it doesn't exist
+	if len(records) == 0 {
+		_, err = c.Client.CreateDNSRecord(
+			context.Background(),
+			cloudflare.ZoneIdentifier(zoneID),
+			cloudflare.CreateDNSRecordParams{
+				Type:    recordType,
+				Name:    subdomain,
+				Content: c.ExternalIP,
+				Proxied: boolPointer(true),
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		_, err = c.Client.CreateDNSRecord(
+			context.Background(),
+			cloudflare.ZoneIdentifier(zoneID),
+			cloudflare.CreateDNSRecordParams{
+				Type:    "TXT",
+				Name:    "_mantrae-" + subdomain,
+				Content: c.ManagedTXT,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		slog.Info(
+			"Created record",
+			"subdomain",
+			subdomain,
+			"type",
+			recordType,
+			"content",
+			c.ExternalIP,
+		)
 	}
 
+	// If the record doesn't exist, create it, or if it's managed by us, update it
+	if len(records) > 0 {
+		for _, record := range records {
+			if record.Type == "A" {
+				_, err = c.Client.UpdateDNSRecord(
+					context.Background(),
+					cloudflare.ZoneIdentifier(zoneID),
+					cloudflare.UpdateDNSRecordParams{
+						ID:      record.ID,
+						Type:    recordType,
+						Name:    subdomain,
+						Content: c.ExternalIP,
+						Proxied: boolPointer(true),
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+
+			if record.Type == "TXT" {
+				_, err = c.Client.UpdateDNSRecord(
+					context.Background(),
+					cloudflare.ZoneIdentifier(zoneID),
+					cloudflare.UpdateDNSRecordParams{
+						ID:      record.ID,
+						Type:    "TXT",
+						Name:    "_mantrae-" + subdomain,
+						Content: c.ManagedTXT,
+					},
+				)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		slog.Info(
+			"Updated record",
+			"subdomain",
+			subdomain,
+			"type",
+			recordType,
+			"content",
+			c.ExternalIP,
+		)
+	}
+
+	return nil
+}
+
+func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 	records, err := c.ListRecords(subdomain)
 	if err != nil {
 		return err
@@ -109,69 +164,108 @@ func (c *CloudflareProvider) UpdateRecord(subdomain, ip string) error {
 		return fmt.Errorf("record not managed by mantrae")
 	}
 
-	_, err = c.Client.UpdateDNSRecord(context.Background(), c.Container, paramsA)
+	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
 	if err != nil {
 		return err
-	}
-	_, err = c.Client.UpdateDNSRecord(context.Background(), c.Container, paramsTXT)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *CloudflareProvider) DeleteRecord(subdomain, ip string) error {
-	records, err := c.ListRecords(subdomain)
-	if err != nil {
-		return err
-	}
-	if len(records) == 0 {
-		return fmt.Errorf("no records found")
-	}
-
-	managed, err := c.CheckRecord(subdomain)
-	if err != nil {
-		return err
-	}
-	if !managed {
-		return fmt.Errorf("record not managed by mantrae")
 	}
 
 	for _, record := range records {
-		if err := c.Client.DeleteDNSRecord(context.Background(), c.Container, record.ID); err != nil {
+		if err := c.Client.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
 			return err
 		}
+
+		slog.Info(
+			"Deleted record",
+			"subdomain",
+			subdomain,
+			"type",
+			record.Type,
+			"content",
+			record.Content,
+		)
 	}
+
 	return nil
 }
 
-func (c *CloudflareProvider) ListRecords(subdomain string) ([]cloudflare.DNSRecord, error) {
-	params := cloudflare.ListDNSRecordsParams{Name: subdomain}
+func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	if err != nil {
+		return nil, fmt.Errorf("error getting zone ID for subdomain %s: %w", subdomain, err)
+	}
 
-	records, _, err := c.Client.ListDNSRecords(context.Background(), c.Container, params)
+	recordsA, _, err := c.Client.ListDNSRecords(
+		context.Background(),
+		cloudflare.ZoneIdentifier(zoneID),
+		cloudflare.ListDNSRecordsParams{Name: subdomain},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error listing A records for subdomain %s: %w", subdomain, err)
 	}
 
-	return records, nil
+	recordsTXT, _, err := c.Client.ListDNSRecords(
+		context.Background(),
+		cloudflare.ZoneIdentifier(zoneID),
+		cloudflare.ListDNSRecordsParams{
+			Type: "TXT",
+			Name: "_mantrae-" + subdomain,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error listing TXT records for subdomain %s: %w", subdomain, err)
+	}
+
+	var dnsRecords []DNSRecord
+	for _, record := range append(recordsA, recordsTXT...) {
+		dnsRecords = append(dnsRecords, DNSRecord{
+			ID:      record.ID,
+			Name:    record.Name,
+			Type:    record.Type,
+			Content: record.Content,
+		})
+	}
+
+	return dnsRecords, nil
 }
 
 func (c *CloudflareProvider) CheckRecord(subdomain string) (bool, error) {
-	params := cloudflare.ListDNSRecordsParams{
-		Type: "TXT",
-		Name: "_mantrae-" + subdomain,
+	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	if err != nil {
+		return false, fmt.Errorf("error getting zone ID for subdomain %s: %w", subdomain, err)
 	}
 
-	records, _, err := c.Client.ListDNSRecords(context.Background(), c.Container, params)
+	records, _, err := c.Client.ListDNSRecords(
+		context.Background(),
+		cloudflare.ZoneIdentifier(zoneID),
+		cloudflare.ListDNSRecordsParams{
+			Type: "TXT",
+			Name: "_mantrae-" + subdomain,
+		},
+	)
 	if err != nil {
 		return false, fmt.Errorf("error checking TXT record for subdomain %s: %w", subdomain, err)
 	}
 
 	for _, record := range records {
-		if record.Content == "managed-by=mantrae" {
+		if record.Content == c.ManagedTXT {
 			return true, nil
 		}
 	}
 
 	return false, nil
+}
+
+func boolPointer(b bool) *bool {
+	return &b
+}
+
+func cfRecordType(ip string) (string, error) {
+	if net.ParseIP(ip) == nil {
+		return "", fmt.Errorf("invalid IP address")
+	}
+
+	if net.ParseIP(ip).To4() != nil {
+		return "A", nil
+	}
+	return "AAAA", nil
 }

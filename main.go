@@ -65,8 +65,9 @@ func main() {
 		}
 	}
 
-	// Start the background sync process
+	// Start the background sync processes
 	go traefik.Sync()
+	// go dns.Sync()
 
 	srv := &http.Server{
 		Addr:              ":" + strconv.Itoa(*port),

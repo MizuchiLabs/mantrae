@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
@@ -135,6 +136,11 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 
 // UpdateProfile updates a single profile
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	if len(traefik.ProfileData.Profiles) == 0 {
+		http.Error(w, "no profiles configured", http.StatusBadRequest)
+		return
+	}
+
 	profileName := r.PathValue("name")
 	if profileName == "" {
 		http.Error(w, "profile name cannot be empty", http.StatusBadRequest)
@@ -149,11 +155,6 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	if err := profile.Verify(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if len(traefik.ProfileData.Profiles) == 0 {
-		http.Error(w, "no profiles configured", http.StatusBadRequest)
 		return
 	}
 
@@ -188,6 +189,75 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, traefik.ProfileData.Profiles)
+}
+
+func GetProviders(w http.ResponseWriter, r *http.Request) {
+	var providers dns.Providers
+	if err := providers.Load(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, providers.Providers)
+}
+
+func UpdateProvider(w http.ResponseWriter, r *http.Request) {
+	var provider dns.Provider
+	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := provider.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	providerName := r.PathValue("name")
+	if providerName == "" {
+		http.Error(w, "provider name cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	var providers dns.Providers
+	if err := providers.Load(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if providers.Providers == nil {
+		providers.Providers = make(map[string]dns.Provider)
+	}
+
+	updateName(providers.Providers, providerName, provider.Name)
+	providers.Providers[provider.Name] = provider
+	if err := providers.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, providers.Providers)
+}
+
+func DeleteProvider(w http.ResponseWriter, r *http.Request) {
+	providerName := r.PathValue("name")
+	if providerName == "" {
+		http.Error(w, "provider name cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	var providers dns.Providers
+	if err := providers.Load(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	delete(providers.Providers, providerName)
+	if err := providers.Save(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, providers.Providers)
 }
 
 // UpdateRouter updates or creates a router
@@ -230,6 +300,8 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	go dns.UpdateDNS()
 	writeJSON(w, profile)
 }
 
@@ -247,6 +319,9 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "profile not found", http.StatusNotFound)
 		return
 	}
+
+	// Delete the DNS record
+	go dns.DeleteDNS(profile.Dynamic.Routers[routerName])
 
 	delete(profile.Dynamic.Routers, routerName)
 	delete(profile.Dynamic.Services, routerName)

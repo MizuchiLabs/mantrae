@@ -4,7 +4,7 @@
 	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { profile, API_URL, getProfiles, loggedIn } from '$lib/api';
+	import { profile, API_URL, getProfiles, loggedIn, getProviders } from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
@@ -12,6 +12,7 @@
 	onMount(async () => {
 		if (!$loggedIn) return;
 		await getProfiles();
+		await getProviders();
 	});
 </script>
 

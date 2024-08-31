@@ -4,10 +4,12 @@ import type { Profile } from './types/dynamic';
 import type { Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { newRouter, newService, type Router, type Service } from './types/config';
+import type { Provider } from './types/provider';
 
 export const loggedIn = writable(false);
 export const profile: Writable<Profile> = writable();
 export const profiles: Writable<Record<string, Profile>> = writable();
+export const provider: Writable<Record<string, Provider>> = writable();
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 export const routers = derived(profile, ($profile) =>
@@ -119,6 +121,24 @@ export async function deleteProfile(name: string): Promise<void> {
 			localStorage.removeItem('profile');
 		}
 	}
+}
+
+// Providers ------------------------------------------------------------------
+export async function getProviders() {
+	const response = await handleRequest('/providers', 'GET');
+	provider.set(response);
+}
+
+export async function updateProvider(oldName: string, p: Provider): Promise<void> {
+	const response = await handleRequest(`/providers/${oldName}`, 'PUT', p);
+	provider.set(response);
+	toast.success(`Provider ${p.name} updated`);
+}
+
+export async function deleteProvider(name: string): Promise<void> {
+	const response = await handleRequest(`/providers/${name}`, 'DELETE');
+	provider.set(response);
+	toast.success(`Provider ${name} deleted`);
 }
 
 // Routers --------------------------------------------------------------------

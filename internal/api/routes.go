@@ -20,6 +20,10 @@ func Routes() http.Handler {
 	mux.HandleFunc("PUT /api/profiles/{name}", JWT(UpdateProfile))
 	mux.HandleFunc("DELETE /api/profiles/{name}", JWT(DeleteProfile))
 
+	mux.HandleFunc("GET /api/providers", JWT(GetProviders))
+	mux.HandleFunc("PUT /api/providers/{name}", JWT(UpdateProvider))
+	mux.HandleFunc("DELETE /api/providers/{name}", JWT(DeleteProvider))
+
 	mux.HandleFunc("PUT /api/routers/{profile}/{router}", JWT(UpdateRouter))
 	mux.HandleFunc("DELETE /api/routers/{profile}/{router}", JWT(DeleteRouter))
 
