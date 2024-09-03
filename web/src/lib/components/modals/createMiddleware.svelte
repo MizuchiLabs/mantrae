@@ -7,7 +7,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { updateMiddleware, middlewares } from '$lib/api';
+	import { upsertMiddleware, middlewares } from '$lib/api';
 	import { newMiddleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
 	import { onMount, SvelteComponent } from 'svelte';
@@ -15,13 +15,12 @@
 	let middleware = newMiddleware();
 	let isHTTP = middleware.middlewareType === 'http';
 
-	const create = () => {
+	const create = async () => {
 		if (middleware.type === '' || middleware.name === '' || isNameTaken) return;
-		middleware.name = middleware.name + '@' + middleware.provider;
 		if (isHTTP) middleware.middlewareType = 'http';
 		else middleware.middlewareType = 'tcp';
 
-		updateMiddleware(middleware, middleware.name);
+		await upsertMiddleware(middleware.name, middleware);
 		middleware = newMiddleware();
 		middlewareType = HTTPMiddlewareTypes[0];
 	};

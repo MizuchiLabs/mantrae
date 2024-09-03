@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,6 +11,8 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/api"
+	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
@@ -22,60 +22,30 @@ import (
 func init() {
 	logger := slog.New(tint.NewHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
-	if err := util.GenerateCreds(); err != nil {
-		slog.Error("Failed to generate creds", "error", err)
-	}
-	var profiles traefik.Profiles
-	if err := profiles.Load(); err != nil {
-		slog.Error("Failed to get traefik config", "error", err)
-	}
-	go traefik.GetTraefikConfig()
 }
 
 func main() {
-	version := flag.Bool("version", false, "Print version and exit")
-	port := flag.Int("port", 3000, "Port to listen on")
-	url := flag.String(
-		"url",
-		"",
-		"Specify the URL of the Traefik instance (e.g. http://localhost:8080)",
-	)
-	username := flag.String(
-		"username",
-		"",
-		"Specify the username for the Traefik instance",
-	)
-	password := flag.String(
-		"password",
-		"",
-		"Specify the password for the Traefik instance",
-	)
-	flag.Parse()
-
-	if *version {
-		fmt.Println(util.Version)
-		os.Exit(0)
+	db, err := db.InitDB()
+	if err != nil {
+		slog.Error("Failed to initialize database", "error", err)
+		return
 	}
+	defer db.Close() // Close the database connection when the program exits
 
-	if *url != "" {
-		var profiles traefik.Profiles
-		if err := profiles.SetDefaultProfile(*url, *username, *password); err != nil {
-			slog.Error("Failed to add default profile", "error", err)
-			return
-		}
-	}
+	flags := config.ParseFlags() // Parse command-line flags
+	util.SetDefaultAdminUser()   // Set default admin user
 
 	// Start the background sync processes
 	go traefik.Sync()
 	// go dns.Sync()
 
 	srv := &http.Server{
-		Addr:              ":" + strconv.Itoa(*port),
+		Addr:              ":" + strconv.Itoa(flags.Port),
 		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	slog.Info("Listening on port", "port", *port)
+	slog.Info("Listening on port", "port", flags.Port)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("ListenAndServe", "error", err)

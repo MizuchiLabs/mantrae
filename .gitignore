@@ -24,5 +24,8 @@ mantrae
 # Go workspace file
 go.work
 *.json
-
+*.db
+*.db-shm
+*.db-wal
+.envrc
 dist/

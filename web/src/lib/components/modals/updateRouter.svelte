@@ -7,22 +7,29 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { routers, entrypoints, middlewares, updateRouter, getService } from '$lib/api';
-	import { newService, type Router } from '$lib/types/config';
+	import {
+		routers,
+		entrypoints,
+		middlewares,
+		getService,
+		upsertRouter,
+		deleteRouter
+	} from '$lib/api';
+	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
-	let service = getService(router.name) ?? newService();
+	let originalName = router.name;
+	let service = getService(router.name);
 	let routerCompare = $routers.filter((r) => r.name !== router.name);
 
 	let open = false;
-	const update = () => {
+	const update = async () => {
 		if (router.name === '' || isNameTaken) return;
-		// Extra check in case router name changed
-		service.name = router.name.split('@')[0] + '@' + router.provider;
-		updateRouter(router.service, router, service);
+		await upsertRouter(originalName, router, service);
+		originalName = router.name;
 		open = false;
 	};
 
@@ -166,8 +173,9 @@
 				<Service bind:service />
 			</Tabs.Content>
 		</Tabs.Root>
-		<Dialog.Close class="w-full">
-			<Button class="w-full" on:click={() => update()}>Save</Button>
+		<Dialog.Close class="grid grid-cols-2 items-center justify-between gap-2">
+			<Button class="bg-red-400" on:click={() => deleteRouter(router.name)}>Delete</Button>
+			<Button type="submit" on:click={() => update()}>Save</Button>
 		</Dialog.Close>
 	</Dialog.Content>
 </Dialog.Root>

@@ -3,26 +3,11 @@
 package traefik
 
 import (
-	"sync"
-
 	"github.com/traefik/genconf/dynamic"
 )
 
-type Profiles struct {
-	Profiles map[string]Profile `json:"profiles,omitempty"`
-	mu       sync.RWMutex
-}
-
-type Profile struct {
-	Name     string  `json:"name"`
-	URL      string  `json:"url"`
-	Username string  `json:"username,omitempty"`
-	Password string  `json:"password,omitempty"`
-	TLS      bool    `json:"tls,omitempty"`
-	Dynamic  Dynamic `json:"dynamic,omitempty"`
-}
-
 type Dynamic struct {
+	ProfileID   int64                 `json:"profile_id,omitempty"`
 	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
 	Routers     map[string]Router     `json:"routers,omitempty"`
 	Services    map[string]Service    `json:"services,omitempty"`

@@ -28,7 +28,7 @@
 			>
 				<div class="mb-6 flex flex-row items-center justify-between">
 					<Profile />
-					<Button variant="default" href={`${API_URL}/${$profile?.name}`}>
+					<Button variant="default" href={`${API_URL}/${$profile?.id}`}>
 						Download Config
 						<iconify-icon icon="fa6-solid:download" class="ml-2" />
 					</Button>

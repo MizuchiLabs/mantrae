@@ -12,12 +12,12 @@
 		},
 		{
 			name: 'Middlewares',
-			path: '/middlewares',
+			path: '/middlewares/',
 			icon: 'fa6-solid:layer-group'
 		},
 		{
 			name: 'DNS',
-			path: '/dns',
+			path: '/dns/',
 			icon: 'fa6-solid:earth-americas'
 		}
 	];

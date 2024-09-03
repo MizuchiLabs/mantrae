@@ -1,11 +1,13 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"regexp"
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 )
 
@@ -53,10 +55,28 @@ func UpdateDNS() {
 		return
 	}
 
+	profiles, err := db.Query.ListProfiles(context.Background())
+	if err != nil {
+		slog.Error("Failed to get profiles", "error", err)
+		return
+	}
+
 	// Get all local
 	domains := make(map[string]string)
-	for _, profile := range traefik.ProfileData.Profiles {
-		for _, router := range profile.Dynamic.Routers {
+	for _, profile := range profiles {
+		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
+		if err != nil {
+			slog.Error("Failed to get config", "error", err)
+			return
+		}
+
+		data, err := traefik.DecodeConfig(config)
+		if err != nil {
+			slog.Error("Failed to decode config", "error", err)
+			return
+		}
+
+		for _, router := range data.Routers {
 			if router.Provider == "http" {
 				domain, err := extractDomainFromRule(router.Rule)
 				if err != nil {

@@ -8,8 +8,8 @@
 	import { profiles, profile, getProfile } from '$lib/api';
 
 	let open = false;
-	function handleProfileClick(name: string) {
-		getProfile(name);
+	function handleProfileClick(id: number) {
+		getProfile(id);
 		open = false;
 	}
 </script>
@@ -32,12 +32,12 @@
 			<Command.Input placeholder="Search profile..." />
 			<Command.Empty>No profile found.</Command.Empty>
 			<Command.Group>
-				{#each Object.keys($profiles) ?? [] as name}
+				{#each $profiles ?? [] as profile}
 					<Command.Item class="flex w-full flex-row items-center justify-between">
-						<span class="w-full py-2" on:click={() => handleProfileClick(name)} aria-hidden
-							>{name}</span
+						<span class="w-full py-2" on:click={() => handleProfileClick(profile.id)} aria-hidden
+							>{profile.name}</span
 						>
-						<UpdateProfile {name} />
+						<UpdateProfile {profile} />
 					</Command.Item>
 				{/each}
 				<Command.Item>

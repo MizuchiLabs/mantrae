@@ -7,7 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { newProvider, type Provider } from '$lib/types/provider';
 	import type { Selected } from 'bits-ui';
-	import { updateProvider } from '$lib/api';
+	import { createProvider } from '$lib/api';
 
 	let provider: Provider = newProvider();
 	const providerTypes: Selected<string>[] = [
@@ -15,15 +15,15 @@
 		{ label: 'PowerDNS', value: 'powerdns' }
 	];
 
-	const create = () => {
+	const create = async () => {
 		if (
 			provider.name === '' ||
 			provider.type === '' ||
-			provider.key === '' ||
-			provider.externalIP === ''
+			provider.api_key === '' ||
+			provider.external_ip === ''
 		)
 			return;
-		updateProvider(provider.name, provider);
+		await createProvider(provider);
 		provider = newProvider();
 		providerType = providerTypes[0];
 	};
@@ -84,7 +84,7 @@
 						type="text"
 						placeholder="The public IP address of the traefik instance"
 						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-						bind:value={provider.externalIP}
+						bind:value={provider.external_ip}
 						required
 					/>
 				</div>
@@ -96,7 +96,7 @@
 							type="text"
 							placeholder="http://127.0.0.1:8081"
 							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-							bind:value={provider.url}
+							bind:value={provider.api_url}
 							required
 						/>
 					</div>
@@ -107,7 +107,7 @@
 						name="key"
 						type="password"
 						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-						bind:value={provider.key}
+						bind:value={provider.api_key}
 						placeholder="API Key of the provider"
 						required
 					/>

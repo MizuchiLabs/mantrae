@@ -5,27 +5,26 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { deleteMiddleware, updateMiddleware, middlewares } from '$lib/api';
+	import { deleteMiddleware, upsertMiddleware, middlewares } from '$lib/api';
 	import type { Middleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
 	import { onMount, type SvelteComponent } from 'svelte';
 
 	export let middleware: Middleware;
-	let name = middleware.name.split('@')[0];
+	let originalName = middleware.name;
 	let middlewareCompare = $middlewares.filter((m) => m.name !== middleware.name);
 
 	let open = false;
-	const update = () => {
+	const update = async () => {
 		if (middleware.name === '' || isNameTaken) return;
-		let oldName = middleware.name;
-		middleware.name = name + '@' + middleware.provider;
-		updateMiddleware(middleware, oldName);
+		await upsertMiddleware(originalName, middleware);
+		originalName = middleware.name;
 		open = false;
 	};
 
 	// Check if middleware name is taken unless self
 	let isNameTaken = false;
-	$: isNameTaken = middlewareCompare.some((m) => m.name === name + '@' + middleware.provider);
+	$: isNameTaken = middlewareCompare.some((m) => m.name === middleware.name);
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -70,7 +69,7 @@
 						id="name"
 						name="name"
 						type="text"
-						bind:value={name}
+						bind:value={middleware.name}
 						on:keydown={onKeydown}
 						class={isNameTaken
 							? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'

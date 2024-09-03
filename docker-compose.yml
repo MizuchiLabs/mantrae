@@ -4,6 +4,8 @@ services:
   mantrae:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
+    environment:
+      - SECRET=<secret> # generate a secret with openssl rand -hex 32
     command:
       - --url=http://traefik:8080 # if traefik is running on the same host
       - --username=admin # use if you want to enable basicauth on traefik

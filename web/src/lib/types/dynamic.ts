@@ -3,12 +3,21 @@ import type { Middleware } from './middlewares';
 import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
+	id: number;
 	name: string;
 	url: string;
 	username: string;
 	password: string;
 	tls: boolean;
-	dynamic?: Dynamic;
+}
+
+export interface Config {
+	profile_id: number;
+	entrypoints?: Entrypoint[];
+	routers?: Record<string, Router>;
+	services?: Record<string, Service>;
+	middlewares?: Record<string, Middleware>;
+	version?: string;
 }
 
 export interface Dynamic {
@@ -37,11 +46,11 @@ export interface TLSConfiguration {
 
 export const newProfile = (): Profile => {
 	return {
+		id: 0,
 		name: '',
 		url: '',
 		username: '',
 		password: '',
-		tls: false,
-		dynamic: {}
+		tls: false
 	};
 };

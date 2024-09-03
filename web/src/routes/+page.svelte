@@ -10,8 +10,8 @@
 		middlewares,
 		routers,
 		services,
-		updateRouter,
-		getService
+		getService,
+		upsertRouter
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -47,7 +47,7 @@
 					? router.provider?.toLowerCase() === part.split(':')[1]
 					: part.startsWith('@type:')
 						? router.routerType.toLowerCase() === part.split(':')[1]
-						: router.service.toLowerCase().includes(part)
+						: router.name.toLowerCase().includes(part)
 			);
 		});
 
@@ -86,13 +86,13 @@
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
 		let service = getService(router.name);
-		updateRouter(router.name, router, service);
+		upsertRouter(router.name, router, service);
 	};
 	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
 		let service = getService(router.name);
-		updateRouter(router.name, router, service);
+		upsertRouter(router.name, router, service);
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {

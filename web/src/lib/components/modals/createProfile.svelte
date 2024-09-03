@@ -4,23 +4,20 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { profiles, createProfile } from '$lib/api';
+	import { createProfile } from '$lib/api';
 	import { newProfile } from '$lib/types/dynamic';
 
 	let profile = newProfile();
 
-	const create = () => {
-		if (profile.name === '' || isNameTaken) return;
+	const create = async () => {
+		if (profile.name === '') return;
 		// Strip trailing slashes
 		if (profile.url.endsWith('/')) {
 			profile.url = profile.url.slice(0, -1);
 		}
-		createProfile(profile);
+		await createProfile(profile);
 		profile = newProfile();
 	};
-
-	let isNameTaken = false;
-	$: isNameTaken = Object.keys($profiles).some((p) => p === profile.name);
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -50,9 +47,7 @@
 					name="name"
 					type="text"
 					bind:value={profile.name}
-					class={isNameTaken
-						? 'col-span-3 border-red-400 focus-visible:ring-0 focus-visible:ring-offset-0'
-						: 'col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0'}
+					class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 					placeholder="Your profile name"
 					required
 				/>

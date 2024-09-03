@@ -6,11 +6,11 @@
 
 ## Features
 
-- **Domain Management**: Easily manage your domains and assign them to specific hosts via the web interface.
+- **Simplified UI**: A clean and intuitive interface that keeps the complexity to a minimum.
 - **Router Configuration**: Create and manage Traefik routers with custom rules, entrypoints, and middleware configurations.
 - **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
 - **Service Status**: Monitor the status of your services and see their health information.
-- **Simplified UI**: A clean and intuitive interface that keeps the complexity to a minimum.
+- **DNS Providers**: Support for multiple DNS providers (currently Cloudflare and PowerDNS) for automatic DNS record updates.
 
 ## Getting Started
 
@@ -21,20 +21,16 @@
 
 ### Installation
 
-1. Download the latest release from the [releases page](https://github.com/MizuchiLabs/mantrae/releases)
+1. Generate a random secret with `openssl rand -hex 32`
 
-1. Extract the downloaded file
+1. Use docker `docker run --name mantrae -e SECRET=<secret> -d -p 3000:3000 ghcr.io/mizuchilabs/mantrae:latest`
 
-1. Run the application `./mantrae`
+1. Or use the example docker-compose.yml file to run mantrae and traefik together
 
 1. **Access the Web UI**:
    Open your web browser and navigate to `http://localhost:3000`
 
-1. Or use docker `docker run --name mantrae -d -p 3000:3000 ghcr.io/mizuchilabs/mantrae:latest`
-
-1. You can also use the example docker-compose.yml file to run mantrae and traefik together
-
-1. Use the admin password, which will be printed in the logs after the first start
+1. Use the admin password, which will be printed in the logs after the first start. You won't be able to access the password afterwards!
 
 ## Usage
 
@@ -87,6 +83,13 @@ providers:
   http:
     endpoint: "<endpoint where mantrae is running>"
 ```
+
+## Roadmap
+
+- Add support for multiple DNS providers and better handling.
+- Backup and restore functionality (S3)
+- Support multiple database providers (currently only supports SQLite)
+- Better credentials management and multi-user support.
 
 ## Contributing
 

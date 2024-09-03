@@ -1,12 +1,13 @@
 package api
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/db"
 )
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code
@@ -78,13 +79,13 @@ func BasicAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		var valid util.Credentials
-		if err := valid.GetCreds(); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		creds, err := db.Query.GetCredentialByUsername(context.Background(), username)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
 
-		if username != valid.Username || password != valid.Password {
+		if password != creds.Password {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

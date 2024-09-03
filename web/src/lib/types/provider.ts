@@ -1,17 +1,19 @@
 export interface Provider {
+	id: number;
 	name: string;
 	type: string;
-	externalIP: string;
-	key?: string;
-	url?: string;
+	external_ip: string;
+	api_key?: string;
+	api_url?: string;
 }
 
 export function newProvider(): Provider {
 	return {
+		id: 0,
 		name: '',
 		type: 'cloudflare',
-		externalIP: '',
-		key: '',
-		url: ''
+		external_ip: '',
+		api_key: '',
+		api_url: ''
 	};
 }

@@ -14,26 +14,22 @@ func Routes() http.Handler {
 	mux.HandleFunc("POST /api/login", Login)
 	mux.HandleFunc("POST /api/verify", VerifyToken)
 
-	mux.HandleFunc("GET /api/profiles", JWT(GetProfiles))
-	mux.HandleFunc("GET /api/profile/{name}", JWT(GetProfile))
-	mux.HandleFunc("POST /api/profiles", JWT(CreateProfile))
-	mux.HandleFunc("PUT /api/profiles/{name}", JWT(UpdateProfile))
-	mux.HandleFunc("DELETE /api/profiles/{name}", JWT(DeleteProfile))
+	mux.HandleFunc("GET /api/profile", JWT(GetProfiles))
+	mux.HandleFunc("GET /api/profile/{id}", JWT(GetProfile))
+	mux.HandleFunc("POST /api/profile", JWT(CreateProfile))
+	mux.HandleFunc("PUT /api/profile", JWT(UpdateProfile))
+	mux.HandleFunc("DELETE /api/profile/{id}", JWT(DeleteProfile))
 
-	mux.HandleFunc("GET /api/providers", JWT(GetProviders))
-	mux.HandleFunc("PUT /api/providers/{name}", JWT(UpdateProvider))
-	mux.HandleFunc("DELETE /api/providers/{name}", JWT(DeleteProvider))
+	mux.HandleFunc("GET /api/provider", JWT(GetProviders))
+	mux.HandleFunc("GET /api/provider/{id}", JWT(GetProvider))
+	mux.HandleFunc("POST /api/provider", JWT(CreateProvider))
+	mux.HandleFunc("PUT /api/provider", JWT(UpdateProvider))
+	mux.HandleFunc("DELETE /api/provider/{id}", JWT(DeleteProvider))
 
-	mux.HandleFunc("PUT /api/routers/{profile}/{router}", JWT(UpdateRouter))
-	mux.HandleFunc("DELETE /api/routers/{profile}/{router}", JWT(DeleteRouter))
+	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
+	mux.HandleFunc("PUT /api/config/{id}", JWT(UpdateConfig))
 
-	mux.HandleFunc("PUT /api/services/{profile}/{service}", JWT(UpdateService))
-	mux.HandleFunc("DELETE /api/services/{profile}/{service}", JWT(DeleteService))
-
-	mux.HandleFunc("PUT /api/middlewares/{profile}/{middleware}", JWT(UpdateMiddleware))
-	mux.HandleFunc("DELETE /api/middlewares/{profile}/{middleware}", JWT(DeleteMiddleware))
-
-	mux.HandleFunc("GET /api/{name}", GetConfig)
+	mux.HandleFunc("GET /api/{id}", GetTraefikConfig)
 
 	staticContent, err := fs.Sub(web.StaticFS, "build")
 	if err != nil {

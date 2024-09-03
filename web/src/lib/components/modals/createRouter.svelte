@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Selected } from 'bits-ui';
-	import { routers, entrypoints, middlewares, updateRouter } from '$lib/api';
+	import { routers, entrypoints, middlewares, upsertRouter } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import Service from '../forms/service.svelte';
@@ -17,8 +17,7 @@
 
 	const create = async () => {
 		if (router.name === '' || isNameTaken) return;
-		service.name = router.name.split('@')[0] + '@' + router.provider;
-		await updateRouter(router.name, router, service);
+		await upsertRouter(router.name, router, service);
 
 		router = newRouter();
 		service = newService();
