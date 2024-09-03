@@ -23,9 +23,14 @@
 				<Card.Header>
 					<Card.Title class="flex items-center justify-between gap-2">
 						<span>{p.name}</span>
-						<Badge variant="secondary" class="bg-blue-400">
-							{p.type}
-						</Badge>
+						<div class="flex items-center gap-2">
+							<Badge variant="secondary" class="bg-blue-400">
+								{p.type}
+							</Badge>
+							{#if p.is_active}
+								<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
+							{/if}
+						</div>
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-2"></Card.Content>

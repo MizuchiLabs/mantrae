@@ -20,14 +20,6 @@ export interface Config {
 	version?: string;
 }
 
-export interface Dynamic {
-	entrypoints?: Entrypoint[];
-	routers?: Record<string, Router>;
-	services?: Record<string, Service>;
-	middlewares?: Record<string, Middleware>;
-	version?: string;
-}
-
 export interface Entrypoint {
 	name: string;
 	address: string;

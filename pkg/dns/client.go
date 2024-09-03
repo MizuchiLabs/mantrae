@@ -3,12 +3,15 @@ package dns
 import (
 	"context"
 	"fmt"
+	"log"
 	"log/slog"
+	"net/url"
 	"regexp"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"golang.org/x/net/publicsuffix"
 )
 
 type DNSProvider interface {
@@ -25,36 +28,31 @@ type DNSRecord struct {
 	Content string
 }
 
-func getProvider() DNSProvider {
-	var p Providers
-	if err := p.Load(); err != nil {
-		slog.Error("Failed to load providers", "error", err)
-	}
+type DomainProvider struct {
+	Domain   string
+	Provider DNSProvider
+}
 
-	if p.Providers == nil {
+func getProvider(name string) DNSProvider {
+	provider, err := db.Query.GetProviderByName(context.Background(), name)
+	if err != nil {
+		slog.Error("Failed to get providers", "error", err)
 		return nil
 	}
 
-	for _, provider := range p.Providers {
-		switch provider.Type {
-		case "cloudflare":
-			return NewCloudflareProvider(provider.APIKey, provider.ExternalIP)
-		case "powerdns":
-			return NewPowerDNSProvider(provider.APIURL, provider.APIKey, provider.ExternalIP)
-		default:
-			slog.Error("Unknown provider type", "type", provider.Type)
-		}
+	switch provider.Type {
+	case "cloudflare":
+		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp)
+	case "powerdns":
+		return NewPowerDNSProvider(*provider.ApiUrl, provider.ApiKey, provider.ExternalIp)
+	default:
+		slog.Error("Unknown provider type", "type", provider.Type)
 	}
 	return nil
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
 func UpdateDNS() {
-	dnsProvider := getProvider()
-	if dnsProvider == nil {
-		return
-	}
-
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
 		slog.Error("Failed to get profiles", "error", err)
@@ -62,7 +60,10 @@ func UpdateDNS() {
 	}
 
 	// Get all local
-	domains := make(map[string]string)
+	domainProviderMap := make(map[string]struct {
+		Domain   string
+		Provider DNSProvider
+	})
 	for _, profile := range profiles {
 		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
 		if err != nil {
@@ -77,25 +78,34 @@ func UpdateDNS() {
 		}
 
 		for _, router := range data.Routers {
-			if router.Provider == "http" {
+			if router.Provider == "http" && router.DNSProvider != "" {
+				provider := getProvider(router.DNSProvider)
+				if provider == nil {
+					continue
+				}
+
 				domain, err := extractDomainFromRule(router.Rule)
 				if err != nil {
 					slog.Error("Failed to extract domain from rule", "error", err)
 					continue
 				}
-				domains[router.Name] = domain
+				domainProviderMap[domain] = DomainProvider{
+					Domain:   domain,
+					Provider: provider,
+				}
 			}
 		}
 	}
-	for _, domain := range domains {
-		if err := dnsProvider.UpsertRecord(domain); err != nil {
+
+	for _, dp := range domainProviderMap {
+		if err := dp.Provider.UpsertRecord(dp.Domain); err != nil {
 			slog.Error("Failed to upsert record", "error", err)
 		}
 	}
 }
 
 func DeleteDNS(router traefik.Router) {
-	dnsProvider := getProvider()
+	dnsProvider := getProvider(router.DNSProvider)
 	if dnsProvider == nil {
 		slog.Error("No DNS provider found")
 		return
@@ -130,4 +140,25 @@ func extractDomainFromRule(rule string) (string, error) {
 		return "", fmt.Errorf("no domain found in rule")
 	}
 	return matches[1], nil
+}
+
+func getBaseDomain(subdomain string) string {
+	u, err := url.Parse(subdomain)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// If the URL doesn't have a scheme, url.Parse might put the whole string in Path
+	if u.Host == "" {
+		u, err = url.Parse("http://" + subdomain)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	baseDomain, err := publicsuffix.EffectiveTLDPlusOne(u.Hostname())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return baseDomain
 }

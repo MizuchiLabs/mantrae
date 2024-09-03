@@ -21,18 +21,6 @@ func writeJSON(w http.ResponseWriter, data any) {
 	}
 }
 
-// Helper function to update maps in case of name changes
-func updateName[K comparable, V any](m map[K]V, oldName, newName K) {
-	if oldName == newName {
-		return
-	}
-
-	if _, ok := m[oldName]; ok {
-		m[newName] = m[oldName]
-		delete(m, oldName)
-	}
-}
-
 // Authentication -------------------------------------------------------------
 
 // Login verifies the user credentials
@@ -117,9 +105,18 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := profile.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data, err := db.Query.CreateProfile(context.Background(), profile)
 	if err != nil {
-		http.Error(w, "Failed to create profile", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to create profile: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -134,9 +131,18 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := profile.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data, err := db.Query.UpdateProfile(context.Background(), profile)
 	if err != nil {
-		http.Error(w, "Failed to update profile", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update profile: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -153,7 +159,11 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := db.Query.DeleteProfileByID(context.Background(), id); err != nil {
-		http.Error(w, "Failed to delete profile", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to delete profile: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -197,9 +207,18 @@ func CreateProvider(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := provider.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data, err := db.Query.CreateProvider(context.Background(), provider)
 	if err != nil {
-		http.Error(w, "Failed to create provider", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to create provider: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -214,9 +233,18 @@ func UpdateProvider(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := provider.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	data, err := db.Query.UpdateProvider(context.Background(), provider)
 	if err != nil {
-		http.Error(w, "Failed to update profile", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update profile: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -231,7 +259,11 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := db.Query.DeleteProviderByID(context.Background(), id); err != nil {
-		http.Error(w, "Failed to delete provider", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to delete provider: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -254,7 +286,11 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := traefik.DecodeConfig(config)
 	if err != nil {
-		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -269,7 +305,11 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := traefik.UpdateConfig(config.ProfileID, &config); err != nil {
-		http.Error(w, "Failed to update config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -283,6 +323,12 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
+	profile, err := db.Query.GetProfileByID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+
 	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
 	if err != nil {
 		http.Error(w, "Profile not found", http.StatusNotFound)
@@ -302,7 +348,7 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/yaml")
 	w.Header().
-		Set("Content-Disposition", fmt.Sprintf("attachment; filename=dynamic.yaml"))
+		Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.yaml", profile.Name))
 
 	if _, err := w.Write(yamlConfig); err != nil {
 		http.Error(w, "Failed to write traefik config", http.StatusInternalServerError)

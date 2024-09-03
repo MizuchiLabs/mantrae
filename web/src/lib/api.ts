@@ -4,13 +4,13 @@ import type { Config, Profile } from './types/dynamic';
 import { newMiddleware, type Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { newRouter, newService, type Router, type Service } from './types/config';
-import type { Provider } from './types/provider';
+import type { DNSProvider } from './types/provider';
 
 export const loggedIn = writable(false);
 export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
 export const profiles: Writable<Profile[]> = writable();
-export const provider: Writable<Provider[]> = writable();
+export const provider: Writable<DNSProvider[]> = writable();
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
@@ -158,31 +158,33 @@ export async function getProviders() {
 	}
 }
 
-export async function getProvider(id: number): Promise<Provider> {
+export async function getProvider(id: number): Promise<DNSProvider> {
 	const response = await handleRequest(`/provider/${id}`, 'GET');
 	if (response) {
 		let data = await response.json();
 		return data;
 	}
-	return {} as Provider;
+	return {} as DNSProvider;
 }
 
-export async function createProvider(p: Provider): Promise<void> {
+export async function createProvider(p: DNSProvider): Promise<void> {
 	const response = await handleRequest('/provider', 'POST', p);
 	if (response) {
 		let data = await response.json();
 		provider.update((items) => [...(items ?? []), data]);
 		toast.success(`Provider ${data.name} created`);
 	}
+	await getProviders();
 }
 
-export async function updateProvider(p: Provider): Promise<void> {
+export async function updateProvider(p: DNSProvider): Promise<void> {
 	const response = await handleRequest(`/provider`, 'PUT', p);
 	if (response) {
 		let data = await response.json();
 		provider.update((items) => items.map((i) => (i.id === p.id ? data : i)));
 		toast.success(`Provider ${data.name} updated`);
 	}
+	await getProviders();
 }
 
 export async function deleteProvider(id: number): Promise<void> {

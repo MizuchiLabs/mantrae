@@ -27,10 +27,11 @@ type Entrypoint struct {
 
 type Router struct {
 	// Common fields
-	Name       string `json:"name,omitempty"`
-	Provider   string `json:"provider,omitempty"`
-	Status     string `json:"status,omitempty"`
-	RouterType string `json:"routerType,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Provider    string `json:"provider,omitempty"`
+	Status      string `json:"status,omitempty"`
+	RouterType  string `json:"routerType,omitempty"`
+	DNSProvider string `json:"dnsProvider,omitempty"`
 
 	Entrypoints []string `json:"entrypoints,omitempty"` // http, tcp, udp
 	Middlewares []string `json:"middlewares,omitempty"` // http, tcp

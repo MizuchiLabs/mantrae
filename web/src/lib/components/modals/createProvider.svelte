@@ -2,14 +2,15 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Button } from '$lib/components/ui/button';
-	import { newProvider, type Provider } from '$lib/types/provider';
+	import { newProvider, type DNSProvider } from '$lib/types/provider';
 	import type { Selected } from 'bits-ui';
 	import { createProvider } from '$lib/api';
 
-	let provider: Provider = newProvider();
+	let provider: DNSProvider = newProvider();
 	const providerTypes: Selected<string>[] = [
 		{ label: 'Cloudflare', value: 'cloudflare' },
 		{ label: 'PowerDNS', value: 'powerdns' }
@@ -23,6 +24,7 @@
 			provider.external_ip === ''
 		)
 			return;
+		console.log(provider);
 		await createProvider(provider);
 		provider = newProvider();
 		providerType = providerTypes[0];
@@ -111,6 +113,10 @@
 						placeholder="API Key of the provider"
 						required
 					/>
+				</div>
+				<div class="grid grid-cols-4 items-center gap-4">
+					<Label for="is_active" class="text-right">Default</Label>
+					<Switch name="is_active" class="col-span-3" bind:checked={provider.is_active} required />
 				</div>
 			</Card.Content>
 		</Card.Root>

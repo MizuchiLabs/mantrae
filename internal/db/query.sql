@@ -153,9 +153,16 @@ FROM
 
 -- name: CreateProvider :one
 INSERT INTO
-  providers (name, type, external_ip, api_key, api_url)
+  providers (
+    name,
+    type,
+    external_ip,
+    api_key,
+    api_url,
+    is_active
+  )
 VALUES
-  (?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateProvider :one
 UPDATE providers
@@ -164,7 +171,8 @@ SET
   type = ?,
   external_ip = ?,
   api_key = ?,
-  api_url = ?
+  api_url = ?,
+  is_active = ?
 WHERE
   id = ? RETURNING *;
 

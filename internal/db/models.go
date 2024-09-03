@@ -35,4 +35,5 @@ type Provider struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	IsActive   bool    `json:"is_active"`
 }

@@ -1,14 +1,15 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import { Switch } from '$lib/components/ui/switch';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import type { Provider } from '$lib/types/provider';
+	import type { DNSProvider } from '$lib/types/provider';
 	import { updateProvider } from '$lib/api';
 
-	export let p: Provider;
+	export let p: DNSProvider;
 	let open = false;
 
 	const update = async () => {
@@ -43,10 +44,13 @@
 			<Card.Header>
 				<Card.Title class="flex items-center justify-between gap-2">
 					<span>DNS Provider</span>
-					<div>
+					<div class="flex items-center gap-2">
 						<Badge variant="secondary" class="bg-blue-400">
 							{p.type}
 						</Badge>
+						{#if p.is_active}
+							<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
+						{/if}
 					</div>
 				</Card.Title>
 				<Card.Description>Update your DNS provider.</Card.Description>
@@ -98,6 +102,10 @@
 							placeholder="API Key of the provider"
 							required
 						/>
+					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="is_active" class="text-right">Default</Label>
+						<Switch name="is_active" class="col-span-3" bind:checked={p.is_active} required />
 					</div>
 				</div>
 			</Card.Content>

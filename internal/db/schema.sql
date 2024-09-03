@@ -5,7 +5,7 @@ CREATE TABLE profiles (
   url TEXT NOT NULL,
   username VARCHAR(100),
   password TEXT,
-  tls BOOLEAN NOT NULL
+  tls BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE config (
@@ -24,7 +24,8 @@ CREATE TABLE providers (
   type VARCHAR(50) NOT NULL,
   external_ip TEXT NOT NULL,
   api_key TEXT NOT NULL,
-  api_url TEXT
+  api_url TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE credentials (
@@ -34,10 +35,30 @@ CREATE TABLE credentials (
 );
 
 -- Trigger to create an empty config when inserting a profile
-CREATE TRIGGER add_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
+CREATE TRIGGER add_profile_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
 INSERT INTO
   config (profile_id)
 VALUES
   (NEW.id);
+
+END;
+
+-- Triggers to ensure only one provider is active at a time
+CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
+UPDATE providers
+SET
+  is_active = 0
+WHERE
+  is_active = 1;
+
+END;
+
+CREATE TRIGGER ensure_single_active_update BEFORE
+UPDATE ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
+UPDATE providers
+SET
+  is_active = 0
+WHERE
+  is_active = 1;
 
 END;

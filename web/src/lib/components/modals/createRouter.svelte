@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Selected } from 'bits-ui';
-	import { routers, entrypoints, middlewares, upsertRouter } from '$lib/api';
+	import { routers, entrypoints, middlewares, upsertRouter, provider } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import Service from '../forms/service.svelte';
@@ -17,7 +17,9 @@
 
 	const create = async () => {
 		if (router.name === '' || isNameTaken) return;
-		await upsertRouter(router.name, router, service);
+		router.dnsProvider = router.dnsProvider === 'none' ? '' : router.dnsProvider;
+		console.log(router.dnsProvider);
+		//await upsertRouter(router.name, router, service);
 
 		router = newRouter();
 		service = newService();
@@ -41,6 +43,10 @@
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
 	};
+	const toggleDNSProvider = (router: Router, item: Selected<unknown> | undefined) => {
+		if (item === undefined) return;
+		router.dnsProvider = (item.value as string) ?? '';
+	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };
@@ -52,6 +58,22 @@
 			return { value: middleware, label: middleware };
 		});
 		return list ?? [];
+	};
+	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
+		let dnsProvider = $provider?.find((p) => p.is_active)?.name ?? '';
+		if (dnsProvider !== '' && router.dnsProvider !== 'none') {
+			router.dnsProvider = dnsProvider;
+			return {
+				value: dnsProvider,
+				label: dnsProvider
+			};
+		} else {
+			router.dnsProvider = 'none';
+			return {
+				value: 'none',
+				label: 'None'
+			};
+		}
 	};
 
 	// Check if router name is taken
@@ -162,6 +184,30 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
+						{#if $provider}
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="provider" class="text-right">DNS Provider</Label>
+								<Select.Root
+									selected={getSelectedDNSProvider(router)}
+									onSelectedChange={(value) => toggleDNSProvider(router, value)}
+								>
+									<Select.Trigger class="col-span-3">
+										<Select.Value placeholder="Select a dns provider" />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="none" label="None" />
+										{#each $provider as provider}
+											<Select.Item value={provider.name} class="flex items-center gap-2">
+												{provider.name} ({provider.type})
+												{#if provider.is_active}
+													<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
+												{/if}
+											</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							</div>
+						{/if}
 						<!-- Insane hacky editor for traefik rules -->
 						<div class:hidden={router.routerType === 'udp'}>
 							<RuleEditor bind:rule={router.rule} />

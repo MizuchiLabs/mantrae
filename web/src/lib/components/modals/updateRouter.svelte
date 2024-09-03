@@ -13,7 +13,8 @@
 		middlewares,
 		getService,
 		upsertRouter,
-		deleteRouter
+		deleteRouter,
+		provider
 	} from '$lib/api';
 	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
@@ -41,6 +42,9 @@
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
 	};
+	const toggleDNSProvider = (router: Router, item: Selected<unknown> | undefined) => {
+		router.dnsProvider = (item?.value as string) ?? '';
+	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };
@@ -52,6 +56,11 @@
 			return { value: middleware, label: middleware };
 		});
 		return list ?? [];
+	};
+	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
+		return router?.dnsProvider
+			? { value: router.dnsProvider, label: router.dnsProvider }
+			: undefined;
 	};
 
 	// Check if router name is taken unless self
@@ -163,6 +172,30 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
+						{#if $provider}
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="provider" class="text-right">DNS Provider</Label>
+								<Select.Root
+									selected={getSelectedDNSProvider(router)}
+									onSelectedChange={(value) => toggleDNSProvider(router, value)}
+								>
+									<Select.Trigger class="col-span-3">
+										<Select.Value placeholder="Select a dns provider" />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="" label="None" />
+										{#each $provider as provider}
+											<Select.Item value={provider.name} class="flex items-center gap-2">
+												{provider.name} ({provider.type})
+												{#if provider.is_active}
+													<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
+												{/if}
+											</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							</div>
+						{/if}
 						<div class:hidden={router.routerType === 'udp'}>
 							<RuleEditor bind:rule={router.rule} />
 						</div>

@@ -35,10 +35,6 @@ func (s *Service) Verify() error {
 	if s.ServiceType == "" {
 		return fmt.Errorf("service type cannot be empty")
 	}
-	if len(s.LoadBalancer.Servers) == 0 || len(s.TCPLoadBalancer.Servers) == 0 ||
-		len(s.UDPLoadBalancer.Servers) == 0 {
-		return fmt.Errorf("servers cannot be empty")
-	}
 
 	s.Provider = "http"
 	s.Name = validateName(s.Name, s.Provider)
