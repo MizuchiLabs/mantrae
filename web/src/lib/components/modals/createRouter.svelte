@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Selected } from 'bits-ui';
-	import { routers, entrypoints, middlewares, upsertRouter, provider } from '$lib/api';
+	import { routers, entrypoints, middlewares, provider, upsertRouter } from '$lib/api';
 	import { newRouter, newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import Service from '../forms/service.svelte';
@@ -17,9 +17,7 @@
 
 	const create = async () => {
 		if (router.name === '' || isNameTaken) return;
-		router.dnsProvider = router.dnsProvider === 'none' ? '' : router.dnsProvider;
-		console.log(router.dnsProvider);
-		//await upsertRouter(router.name, router, service);
+		await upsertRouter(router.name, router, service);
 
 		router = newRouter();
 		service = newService();
@@ -35,17 +33,17 @@
 		routerType = { label: serviceType.label || '', value: serviceType.value };
 	};
 
-	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
+	const toggleEntrypoint = async (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.entrypoints = item.map((i) => i.value) as string[];
 	};
-	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
+
+	const toggleMiddleware = async (router: Router, item: Selected<unknown>[] | undefined) => {
 		if (item === undefined) return;
 		router.middlewares = item.map((i) => i.value) as string[];
 	};
-	const toggleDNSProvider = (router: Router, item: Selected<unknown> | undefined) => {
-		if (item === undefined) return;
-		router.dnsProvider = (item.value as string) ?? '';
+	const toggleDNSProvider = async (router: Router, item: Selected<unknown> | undefined) => {
+		router.dnsProvider = (item?.value as string) ?? '';
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
@@ -195,7 +193,8 @@
 										<Select.Value placeholder="Select a dns provider" />
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="none" label="None" />
+										<Select.Item value="" label="">None</Select.Item>
+
 										{#each $provider as provider}
 											<Select.Item value={provider.name} class="flex items-center gap-2">
 												{provider.name} ({provider.type})

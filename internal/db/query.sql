@@ -186,62 +186,54 @@ DELETE FROM providers
 WHERE
   name = ?;
 
--- name: GetCredentialByID :one
+-- name: GetUserByID :one
 SELECT
   *
 FROM
-  credentials
+  users
 WHERE
   id = ?
 LIMIT
   1;
 
--- name: GetCredentialByUsername :one
+-- name: GetUserByUsername :one
 SELECT
   *
 FROM
-  credentials
+  users
 WHERE
   username = ?
 LIMIT
   1;
 
--- name: ListCredentials :many
+-- name: ListUsers :many
 SELECT
   *
 FROM
-  credentials;
+  users;
 
--- name: CreateCredential :exec
+-- name: CreateUser :one
 INSERT INTO
-  credentials (username, password)
+  users (username, password, email, type)
 VALUES
-  (?, ?);
+  (?, ?, ?, ?) RETURNING *;
 
--- name: UpdateCredential :exec
-UPDATE credentials
+-- name: UpdateUser :one
+UPDATE users
 SET
   username = ?,
-  password = ?
+  password = ?,
+  email = ?,
+  type = ?
+WHERE
+  id = ? RETURNING *;
+
+-- name: DeleteUserByID :exec
+DELETE FROM users
 WHERE
   id = ?;
 
--- name: DeleteCredentialByID :exec
-DELETE FROM credentials
-WHERE
-  id = ?;
-
--- name: DeleteCredentialByUsername :exec
-DELETE FROM credentials
+-- name: DeleteUserByUsername :exec
+DELETE FROM users
 WHERE
   username = ?;
-
--- name: ValidateAuth :one
-SELECT
-  id,
-  username
-FROM
-  credentials
-WHERE
-  username = ?
-  AND password = ?;

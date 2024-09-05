@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code
@@ -16,9 +17,18 @@ type statusRecorder struct {
 	statusCode int
 }
 
+// WriteHeader captures the status code and writes the header
 func (rec *statusRecorder) WriteHeader(code int) {
 	rec.statusCode = code
 	rec.ResponseWriter.WriteHeader(code)
+}
+
+// Implement the http.Flusher interface to forward Flush calls to the underlying ResponseWriter
+func (rec *statusRecorder) Flush() {
+	// Check if the underlying ResponseWriter supports flushing
+	if flusher, ok := rec.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
 }
 
 // Log middleware to log HTTP requests
@@ -79,14 +89,14 @@ func BasicAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		creds, err := db.Query.GetCredentialByUsername(context.Background(), username)
+		user, err := db.Query.GetUserByUsername(context.Background(), username)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
 
-		if password != creds.Password {
-			w.WriteHeader(http.StatusUnauthorized)
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			return
 		}
 

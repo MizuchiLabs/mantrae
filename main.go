@@ -13,8 +13,8 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/api"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )
 
@@ -25,19 +25,21 @@ func init() {
 }
 
 func main() {
-	db, err := db.InitDB()
-	if err != nil {
+	if err := db.InitDB(); err != nil {
 		slog.Error("Failed to initialize database", "error", err)
 		return
 	}
-	defer db.Close() // Close the database connection when the program exits
+	defer db.DB.Close() // Close the database connection when the program exits
 
 	flags := config.ParseFlags() // Parse command-line flags
-	util.SetDefaultAdminUser()   // Set default admin user
+	config.SetDefaultAdminUser() // Set default admin user
+
+	// Create a context that will be used to signal background processes to stop
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// Start the background sync processes
-	go traefik.Sync()
-	// go dns.Sync()
+	go traefik.Sync(ctx)
+	go dns.Sync(ctx)
 
 	srv := &http.Server{
 		Addr:              ":" + strconv.Itoa(flags.Port),
@@ -57,10 +59,11 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("Shutting down server...")
+	cancel()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	ctxShutdown, cancelShutdown := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelShutdown()
+	if err := srv.Shutdown(ctxShutdown); err != nil {
 		slog.Error("Server forced to shutdown:", "error", err)
 	}
 }

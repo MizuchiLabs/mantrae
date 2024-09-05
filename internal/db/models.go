@@ -13,12 +13,6 @@ type Config struct {
 	Version     *string     `json:"version"`
 }
 
-type Credential struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type Profile struct {
 	ID       int64   `json:"id"`
 	Name     string  `json:"name"`
@@ -36,4 +30,12 @@ type Provider struct {
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
 	IsActive   bool    `json:"is_active"`
+}
+
+type User struct {
+	ID       int64   `json:"id"`
+	Username string  `json:"username"`
+	Password string  `json:"password"`
+	Email    *string `json:"email"`
+	Type     string  `json:"type"`
 }

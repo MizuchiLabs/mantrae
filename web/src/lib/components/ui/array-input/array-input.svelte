@@ -4,7 +4,10 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import autoAnimate from '@formkit/auto-animate';
+	import { cn } from '$lib/utils';
 
+	let className: string | undefined | null = undefined;
+	export { className as class };
 	export let label: string;
 	export let placeholder: string;
 	export let items: string[] | undefined;
@@ -27,7 +30,7 @@
 	});
 </script>
 
-<div class="grid grid-cols-4 items-center gap-4">
+<div class={cn('grid grid-cols-4 items-center gap-4', className)}>
 	<Label for="item" class="text-right">{label}</Label>
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
 		{#each items ?? [] as _, index}

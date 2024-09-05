@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/traefik/genconf/dynamic"
 )
 
@@ -37,7 +38,8 @@ type BaseFields struct {
 
 type HTTPRouter struct {
 	BaseFields
-	RouterType  string                   `json:"routerType,omitempty"`
+	RouterType  string                   `json:"routerType"`
+	DNSProvider string                   `json:"dnsProvider"`
 	Entrypoints []string                 `json:"entrypoints,omitempty"`
 	Middlewares []string                 `json:"middlewares,omitempty"`
 	Rule        string                   `json:"rule,omitempty"`
@@ -48,7 +50,8 @@ type HTTPRouter struct {
 
 type TCPRouter struct {
 	BaseFields
-	RouterType  string                      `json:"routerType,omitempty"`
+	RouterType  string                      `json:"routerType"`
+	DNSProvider string                      `json:"dnsProvider"`
 	Entrypoints []string                    `json:"entrypoints,omitempty"`
 	Middlewares []string                    `json:"middlewares,omitempty"`
 	Rule        string                      `json:"rule,omitempty"`
@@ -59,7 +62,8 @@ type TCPRouter struct {
 
 type UDPRouter struct {
 	BaseFields
-	RouterType  string   `json:"routerType,omitempty"`
+	RouterType  string   `json:"routerType"`
+	DNSProvider string   `json:"dnsProvider"`
 	Entrypoints []string `json:"entrypoints,omitempty"`
 	Service     string   `json:"service,omitempty"`
 }
@@ -365,34 +369,25 @@ func GetTraefikConfig() {
 
 		// Fetch routers
 		data.Routers = merge(
+			data.Routers,
 			getRouters[HTTPRouter](profile, HTTPRouterAPI),
 			getRouters[TCPRouter](profile, TCPRouterAPI),
 			getRouters[UDPRouter](profile, UDPRouterAPI),
-			filterByLocalProvider(
-				data.Routers,
-				func(r Router) string { return r.Provider },
-			),
 		)
 
 		// Fetch services
 		data.Services = merge(
+			data.Services,
 			getServices[HTTPService](profile, HTTPServiceAPI),
 			getServices[TCPService](profile, TCPServiceAPI),
 			getServices[UDPService](profile, UDPServiceAPI),
-			filterByLocalProvider(
-				data.Services,
-				func(s Service) string { return s.Provider },
-			),
 		)
 
 		// Fetch middlewares
 		data.Middlewares = merge(
+			data.Middlewares,
 			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI),
 			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI),
-			filterByLocalProvider(
-				data.Middlewares,
-				func(m Middleware) string { return m.Provider },
-			),
 		)
 
 		// Retrieve entrypoints
@@ -430,37 +425,77 @@ func GetTraefikConfig() {
 			return
 		}
 	}
+
+	// Broadcast the update to all clients
+	util.Broadcast <- "profiles"
 }
 
 // Sync periodically syncs the Traefik configuration
-func Sync() {
+func Sync(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * 60)
 	defer ticker.Stop()
 
 	GetTraefikConfig()
-	for range ticker.C {
-		GetTraefikConfig()
-	}
-}
-
-// Filter http provider
-func filterByLocalProvider[T any](items map[string]T, getProvider func(T) string) map[string]T {
-	filteredItems := make(map[string]T)
-	for key, item := range items {
-		if getProvider(item) == "http" {
-			filteredItems[key] = item
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			GetTraefikConfig()
 		}
 	}
-	return filteredItems
 }
 
-func merge[T any](maps ...map[string]T) map[string]T {
+func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	merged := make(map[string]T)
-	for _, m := range maps {
-		for k, v := range m {
-			merged[k] = v
+
+	// Copy local map to merged map first
+	for k, v := range local {
+		merged[k] = v
+	}
+
+	for _, external := range externals {
+		for k, v := range external {
+			if existing, found := merged[k]; found {
+				// If the local version exists update it
+				switch existingItem := any(existing).(type) {
+				case Router:
+					if newRouter, ok := any(v).(Router); ok {
+						// Preserve DNSProvider for the local router
+						newRouter.DNSProvider = existingItem.DNSProvider
+						merged[k] = any(newRouter).(T)
+					}
+				case Service:
+					if newService, ok := any(v).(Service); ok {
+						merged[k] = any(newService).(T)
+					}
+				case Middleware:
+					if newMiddleware, ok := any(v).(Middleware); ok {
+						merged[k] = any(newMiddleware).(T)
+					}
+				}
+			} else {
+				// If the item doesn't exist locally, add it if it's not from our "http" provider
+				switch newItem := any(v).(type) {
+				case Router:
+					if newItem.Provider != "http" {
+						merged[k] = v
+					}
+				case Service:
+					if newItem.Provider != "http" {
+						merged[k] = v
+					}
+				case Middleware:
+					if newItem.Provider != "http" {
+						merged[k] = v
+					}
+				default:
+					merged[k] = v // for any other types
+				}
+			}
 		}
 	}
+
 	return merged
 }
 

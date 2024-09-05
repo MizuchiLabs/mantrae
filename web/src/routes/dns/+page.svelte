@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import CreateProvider from '$lib/components/modals/createProvider.svelte';
 	import UpdateProvider from '$lib/components/modals/updateProvider.svelte';
+	import powerdns from '$lib/images/powerdns.svg';
 	import { deleteProvider, getProviders, provider } from '$lib/api';
 	import { onMount } from 'svelte';
 
@@ -24,9 +24,12 @@
 					<Card.Title class="flex items-center justify-between gap-2">
 						<span>{p.name}</span>
 						<div class="flex items-center gap-2">
-							<Badge variant="secondary" class="bg-blue-400">
-								{p.type}
-							</Badge>
+							{#if p.type === 'cloudflare'}
+								<iconify-icon icon="devicon:cloudflare" width="26" />
+							{:else if p.type === 'powerdns'}
+								<img src={powerdns} alt="PowerDNS" width="26" />
+							{/if}
+
 							{#if p.is_active}
 								<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
 							{/if}

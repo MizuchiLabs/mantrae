@@ -16,9 +16,19 @@
 			icon: 'fa6-solid:layer-group'
 		},
 		{
+			name: 'Users',
+			path: '/users/',
+			icon: 'fa6-solid:user-group'
+		},
+		{
 			name: 'DNS',
 			path: '/dns/',
 			icon: 'fa6-solid:earth-americas'
+		},
+		{
+			name: 'Settings',
+			path: '/settings/',
+			icon: 'fa6-solid:gear'
 		}
 	];
 </script>

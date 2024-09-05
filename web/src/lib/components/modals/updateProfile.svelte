@@ -5,7 +5,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { deleteProfile, updateProfile } from '$lib/api';
-	import type { Profile } from '$lib/types/dynamic';
+	import type { Profile } from '$lib/types/base';
 
 	export let profile: Profile;
 	let open = false;

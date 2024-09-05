@@ -27,26 +27,20 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createConfigStmt, err = db.PrepareContext(ctx, createConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateConfig: %w", err)
 	}
-	if q.createCredentialStmt, err = db.PrepareContext(ctx, createCredential); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateCredential: %w", err)
-	}
 	if q.createProfileStmt, err = db.PrepareContext(ctx, createProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProfile: %w", err)
 	}
 	if q.createProviderStmt, err = db.PrepareContext(ctx, createProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProvider: %w", err)
 	}
+	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
+	}
 	if q.deleteConfigByProfileIDStmt, err = db.PrepareContext(ctx, deleteConfigByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteConfigByProfileID: %w", err)
 	}
 	if q.deleteConfigByProfileNameStmt, err = db.PrepareContext(ctx, deleteConfigByProfileName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteConfigByProfileName: %w", err)
-	}
-	if q.deleteCredentialByIDStmt, err = db.PrepareContext(ctx, deleteCredentialByID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteCredentialByID: %w", err)
-	}
-	if q.deleteCredentialByUsernameStmt, err = db.PrepareContext(ctx, deleteCredentialByUsername); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteCredentialByUsername: %w", err)
 	}
 	if q.deleteProfileByIDStmt, err = db.PrepareContext(ctx, deleteProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfileByID: %w", err)
@@ -60,17 +54,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteProviderByNameStmt, err = db.PrepareContext(ctx, deleteProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProviderByName: %w", err)
 	}
+	if q.deleteUserByIDStmt, err = db.PrepareContext(ctx, deleteUserByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUserByID: %w", err)
+	}
+	if q.deleteUserByUsernameStmt, err = db.PrepareContext(ctx, deleteUserByUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUserByUsername: %w", err)
+	}
 	if q.getConfigByProfileIDStmt, err = db.PrepareContext(ctx, getConfigByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfigByProfileID: %w", err)
 	}
 	if q.getConfigByProfileNameStmt, err = db.PrepareContext(ctx, getConfigByProfileName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfigByProfileName: %w", err)
-	}
-	if q.getCredentialByIDStmt, err = db.PrepareContext(ctx, getCredentialByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetCredentialByID: %w", err)
-	}
-	if q.getCredentialByUsernameStmt, err = db.PrepareContext(ctx, getCredentialByUsername); err != nil {
-		return nil, fmt.Errorf("error preparing query GetCredentialByUsername: %w", err)
 	}
 	if q.getProfileByIDStmt, err = db.PrepareContext(ctx, getProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfileByID: %w", err)
@@ -84,11 +78,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProviderByNameStmt, err = db.PrepareContext(ctx, getProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProviderByName: %w", err)
 	}
+	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
+	}
+	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
+	}
 	if q.listConfigsStmt, err = db.PrepareContext(ctx, listConfigs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListConfigs: %w", err)
-	}
-	if q.listCredentialsStmt, err = db.PrepareContext(ctx, listCredentials); err != nil {
-		return nil, fmt.Errorf("error preparing query ListCredentials: %w", err)
 	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
@@ -96,11 +93,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProvidersStmt, err = db.PrepareContext(ctx, listProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProviders: %w", err)
 	}
+	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
 	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
-	}
-	if q.updateCredentialStmt, err = db.PrepareContext(ctx, updateCredential); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateCredential: %w", err)
 	}
 	if q.updateProfileStmt, err = db.PrepareContext(ctx, updateProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProfile: %w", err)
@@ -108,8 +105,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateProviderStmt, err = db.PrepareContext(ctx, updateProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProvider: %w", err)
 	}
-	if q.validateAuthStmt, err = db.PrepareContext(ctx, validateAuth); err != nil {
-		return nil, fmt.Errorf("error preparing query ValidateAuth: %w", err)
+	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
 	}
 	return &q, nil
 }
@@ -119,11 +116,6 @@ func (q *Queries) Close() error {
 	if q.createConfigStmt != nil {
 		if cerr := q.createConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createConfigStmt: %w", cerr)
-		}
-	}
-	if q.createCredentialStmt != nil {
-		if cerr := q.createCredentialStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createCredentialStmt: %w", cerr)
 		}
 	}
 	if q.createProfileStmt != nil {
@@ -136,6 +128,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createProviderStmt: %w", cerr)
 		}
 	}
+	if q.createUserStmt != nil {
+		if cerr := q.createUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
+		}
+	}
 	if q.deleteConfigByProfileIDStmt != nil {
 		if cerr := q.deleteConfigByProfileIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteConfigByProfileIDStmt: %w", cerr)
@@ -144,16 +141,6 @@ func (q *Queries) Close() error {
 	if q.deleteConfigByProfileNameStmt != nil {
 		if cerr := q.deleteConfigByProfileNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteConfigByProfileNameStmt: %w", cerr)
-		}
-	}
-	if q.deleteCredentialByIDStmt != nil {
-		if cerr := q.deleteCredentialByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteCredentialByIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteCredentialByUsernameStmt != nil {
-		if cerr := q.deleteCredentialByUsernameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteCredentialByUsernameStmt: %w", cerr)
 		}
 	}
 	if q.deleteProfileByIDStmt != nil {
@@ -176,6 +163,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteProviderByNameStmt: %w", cerr)
 		}
 	}
+	if q.deleteUserByIDStmt != nil {
+		if cerr := q.deleteUserByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUserByIDStmt: %w", cerr)
+		}
+	}
+	if q.deleteUserByUsernameStmt != nil {
+		if cerr := q.deleteUserByUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUserByUsernameStmt: %w", cerr)
+		}
+	}
 	if q.getConfigByProfileIDStmt != nil {
 		if cerr := q.getConfigByProfileIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getConfigByProfileIDStmt: %w", cerr)
@@ -184,16 +181,6 @@ func (q *Queries) Close() error {
 	if q.getConfigByProfileNameStmt != nil {
 		if cerr := q.getConfigByProfileNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getConfigByProfileNameStmt: %w", cerr)
-		}
-	}
-	if q.getCredentialByIDStmt != nil {
-		if cerr := q.getCredentialByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getCredentialByIDStmt: %w", cerr)
-		}
-	}
-	if q.getCredentialByUsernameStmt != nil {
-		if cerr := q.getCredentialByUsernameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getCredentialByUsernameStmt: %w", cerr)
 		}
 	}
 	if q.getProfileByIDStmt != nil {
@@ -216,14 +203,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProviderByNameStmt: %w", cerr)
 		}
 	}
+	if q.getUserByIDStmt != nil {
+		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
+		}
+	}
+	if q.getUserByUsernameStmt != nil {
+		if cerr := q.getUserByUsernameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
+		}
+	}
 	if q.listConfigsStmt != nil {
 		if cerr := q.listConfigsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listConfigsStmt: %w", cerr)
-		}
-	}
-	if q.listCredentialsStmt != nil {
-		if cerr := q.listCredentialsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listCredentialsStmt: %w", cerr)
 		}
 	}
 	if q.listProfilesStmt != nil {
@@ -236,14 +228,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProvidersStmt: %w", cerr)
 		}
 	}
+	if q.listUsersStmt != nil {
+		if cerr := q.listUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
+		}
+	}
 	if q.updateConfigStmt != nil {
 		if cerr := q.updateConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
-		}
-	}
-	if q.updateCredentialStmt != nil {
-		if cerr := q.updateCredentialStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateCredentialStmt: %w", cerr)
 		}
 	}
 	if q.updateProfileStmt != nil {
@@ -256,9 +248,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateProviderStmt: %w", cerr)
 		}
 	}
-	if q.validateAuthStmt != nil {
-		if cerr := q.validateAuthStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing validateAuthStmt: %w", cerr)
+	if q.updateUserStmt != nil {
+		if cerr := q.updateUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
 		}
 	}
 	return err
@@ -298,71 +290,69 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                             DBTX
-	tx                             *sql.Tx
-	createConfigStmt               *sql.Stmt
-	createCredentialStmt           *sql.Stmt
-	createProfileStmt              *sql.Stmt
-	createProviderStmt             *sql.Stmt
-	deleteConfigByProfileIDStmt    *sql.Stmt
-	deleteConfigByProfileNameStmt  *sql.Stmt
-	deleteCredentialByIDStmt       *sql.Stmt
-	deleteCredentialByUsernameStmt *sql.Stmt
-	deleteProfileByIDStmt          *sql.Stmt
-	deleteProfileByNameStmt        *sql.Stmt
-	deleteProviderByIDStmt         *sql.Stmt
-	deleteProviderByNameStmt       *sql.Stmt
-	getConfigByProfileIDStmt       *sql.Stmt
-	getConfigByProfileNameStmt     *sql.Stmt
-	getCredentialByIDStmt          *sql.Stmt
-	getCredentialByUsernameStmt    *sql.Stmt
-	getProfileByIDStmt             *sql.Stmt
-	getProfileByNameStmt           *sql.Stmt
-	getProviderByIDStmt            *sql.Stmt
-	getProviderByNameStmt          *sql.Stmt
-	listConfigsStmt                *sql.Stmt
-	listCredentialsStmt            *sql.Stmt
-	listProfilesStmt               *sql.Stmt
-	listProvidersStmt              *sql.Stmt
-	updateConfigStmt               *sql.Stmt
-	updateCredentialStmt           *sql.Stmt
-	updateProfileStmt              *sql.Stmt
-	updateProviderStmt             *sql.Stmt
-	validateAuthStmt               *sql.Stmt
+	db                            DBTX
+	tx                            *sql.Tx
+	createConfigStmt              *sql.Stmt
+	createProfileStmt             *sql.Stmt
+	createProviderStmt            *sql.Stmt
+	createUserStmt                *sql.Stmt
+	deleteConfigByProfileIDStmt   *sql.Stmt
+	deleteConfigByProfileNameStmt *sql.Stmt
+	deleteProfileByIDStmt         *sql.Stmt
+	deleteProfileByNameStmt       *sql.Stmt
+	deleteProviderByIDStmt        *sql.Stmt
+	deleteProviderByNameStmt      *sql.Stmt
+	deleteUserByIDStmt            *sql.Stmt
+	deleteUserByUsernameStmt      *sql.Stmt
+	getConfigByProfileIDStmt      *sql.Stmt
+	getConfigByProfileNameStmt    *sql.Stmt
+	getProfileByIDStmt            *sql.Stmt
+	getProfileByNameStmt          *sql.Stmt
+	getProviderByIDStmt           *sql.Stmt
+	getProviderByNameStmt         *sql.Stmt
+	getUserByIDStmt               *sql.Stmt
+	getUserByUsernameStmt         *sql.Stmt
+	listConfigsStmt               *sql.Stmt
+	listProfilesStmt              *sql.Stmt
+	listProvidersStmt             *sql.Stmt
+	listUsersStmt                 *sql.Stmt
+	updateConfigStmt              *sql.Stmt
+	updateProfileStmt             *sql.Stmt
+	updateProviderStmt            *sql.Stmt
+	updateUserStmt                *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                             tx,
-		tx:                             tx,
-		createConfigStmt:               q.createConfigStmt,
-		createCredentialStmt:           q.createCredentialStmt,
-		createProfileStmt:              q.createProfileStmt,
-		createProviderStmt:             q.createProviderStmt,
-		deleteConfigByProfileIDStmt:    q.deleteConfigByProfileIDStmt,
-		deleteConfigByProfileNameStmt:  q.deleteConfigByProfileNameStmt,
-		deleteCredentialByIDStmt:       q.deleteCredentialByIDStmt,
-		deleteCredentialByUsernameStmt: q.deleteCredentialByUsernameStmt,
-		deleteProfileByIDStmt:          q.deleteProfileByIDStmt,
-		deleteProfileByNameStmt:        q.deleteProfileByNameStmt,
-		deleteProviderByIDStmt:         q.deleteProviderByIDStmt,
-		deleteProviderByNameStmt:       q.deleteProviderByNameStmt,
-		getConfigByProfileIDStmt:       q.getConfigByProfileIDStmt,
-		getConfigByProfileNameStmt:     q.getConfigByProfileNameStmt,
-		getCredentialByIDStmt:          q.getCredentialByIDStmt,
-		getCredentialByUsernameStmt:    q.getCredentialByUsernameStmt,
-		getProfileByIDStmt:             q.getProfileByIDStmt,
-		getProfileByNameStmt:           q.getProfileByNameStmt,
-		getProviderByIDStmt:            q.getProviderByIDStmt,
-		getProviderByNameStmt:          q.getProviderByNameStmt,
-		listConfigsStmt:                q.listConfigsStmt,
-		listCredentialsStmt:            q.listCredentialsStmt,
-		listProfilesStmt:               q.listProfilesStmt,
-		listProvidersStmt:              q.listProvidersStmt,
-		updateConfigStmt:               q.updateConfigStmt,
-		updateCredentialStmt:           q.updateCredentialStmt,
-		updateProfileStmt:              q.updateProfileStmt,
-		updateProviderStmt:             q.updateProviderStmt,
-		validateAuthStmt:               q.validateAuthStmt,
+		db:                            tx,
+		tx:                            tx,
+		createConfigStmt:              q.createConfigStmt,
+		createProfileStmt:             q.createProfileStmt,
+		createProviderStmt:            q.createProviderStmt,
+		createUserStmt:                q.createUserStmt,
+		deleteConfigByProfileIDStmt:   q.deleteConfigByProfileIDStmt,
+		deleteConfigByProfileNameStmt: q.deleteConfigByProfileNameStmt,
+		deleteProfileByIDStmt:         q.deleteProfileByIDStmt,
+		deleteProfileByNameStmt:       q.deleteProfileByNameStmt,
+		deleteProviderByIDStmt:        q.deleteProviderByIDStmt,
+		deleteProviderByNameStmt:      q.deleteProviderByNameStmt,
+		deleteUserByIDStmt:            q.deleteUserByIDStmt,
+		deleteUserByUsernameStmt:      q.deleteUserByUsernameStmt,
+		getConfigByProfileIDStmt:      q.getConfigByProfileIDStmt,
+		getConfigByProfileNameStmt:    q.getConfigByProfileNameStmt,
+		getProfileByIDStmt:            q.getProfileByIDStmt,
+		getProfileByNameStmt:          q.getProfileByNameStmt,
+		getProviderByIDStmt:           q.getProviderByIDStmt,
+		getProviderByNameStmt:         q.getProviderByNameStmt,
+		getUserByIDStmt:               q.getUserByIDStmt,
+		getUserByUsernameStmt:         q.getUserByUsernameStmt,
+		listConfigsStmt:               q.listConfigsStmt,
+		listProfilesStmt:              q.listProfilesStmt,
+		listProvidersStmt:             q.listProvidersStmt,
+		listUsersStmt:                 q.listUsersStmt,
+		updateConfigStmt:              q.updateConfigStmt,
+		updateProfileStmt:             q.updateProfileStmt,
+		updateProviderStmt:            q.updateProviderStmt,
+		updateUserStmt:                q.updateUserStmt,
 	}
 }

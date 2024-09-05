@@ -12,15 +12,18 @@ import (
 //go:embed schema.sql
 var ddl string
 
-var Query *Queries
+var (
+	DB    *sql.DB
+	Query *Queries
+)
 
-func InitDB() (*sql.DB, error) {
+func InitDB() error {
 	ctx := context.Background()
 
 	db, err := sql.Open("sqlite3", "file:mantrae.db?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL")
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("failed to open database: %w", err)
+		return fmt.Errorf("failed to open database: %w", err)
 	}
 
 	// Check if the database is empty
@@ -28,16 +31,17 @@ func InitDB() (*sql.DB, error) {
 	err = db.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").Scan(&count)
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("failed to check database: %w", err)
+		return fmt.Errorf("failed to check database: %w", err)
 	}
 
 	if count == 0 {
 		if _, err := db.ExecContext(ctx, ddl); err != nil {
 			db.Close()
-			return nil, fmt.Errorf("failed to execute schema: %w", err)
+			return fmt.Errorf("failed to execute schema: %w", err)
 		}
 	}
 
+	DB = db
 	Query = New(db)
-	return db, nil
+	return nil
 }

@@ -11,6 +11,17 @@ export interface Profile {
 	tls: boolean;
 }
 
+export const newProfile = (): Profile => {
+	return {
+		id: 0,
+		name: '',
+		url: '',
+		username: '',
+		password: '',
+		tls: false
+	};
+};
+
 export interface Config {
 	profile_id: number;
 	entrypoints?: Entrypoint[];
@@ -18,6 +29,46 @@ export interface Config {
 	services?: Record<string, Service>;
 	middlewares?: Record<string, Middleware>;
 	version?: string;
+}
+
+export interface User {
+	id: number;
+	username: string;
+	password: string;
+	email: string;
+	type: string;
+}
+
+export function newUser(): User {
+	return {
+		id: 0,
+		username: '',
+		password: '',
+		email: '',
+		type: 'user'
+	};
+}
+
+export interface DNSProvider {
+	id: number;
+	name: string;
+	type: string;
+	external_ip: string;
+	api_key?: string;
+	api_url?: string;
+	is_active: boolean;
+}
+
+export function newProvider(): DNSProvider {
+	return {
+		id: 0,
+		name: '',
+		type: 'cloudflare',
+		external_ip: '',
+		api_key: '',
+		api_url: '',
+		is_active: false
+	};
 }
 
 export interface Entrypoint {
@@ -35,14 +86,3 @@ export interface TLSConfiguration {
 	options?: Record<string, Options>;
 	stores?: Record<string, Store>;
 }
-
-export const newProfile = (): Profile => {
-	return {
-		id: 0,
-		name: '',
-		url: '',
-		username: '',
-		password: '',
-		tls: false
-	};
-};

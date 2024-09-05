@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { createProfile } from '$lib/api';
-	import { newProfile } from '$lib/types/dynamic';
+	import { newProfile } from '$lib/types/base';
 
 	let profile = newProfile();
 

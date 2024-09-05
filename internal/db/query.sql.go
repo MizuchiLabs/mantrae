@@ -53,23 +53,6 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 	return i, err
 }
 
-const createCredential = `-- name: CreateCredential :exec
-INSERT INTO
-  credentials (username, password)
-VALUES
-  (?, ?)
-`
-
-type CreateCredentialParams struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func (q *Queries) CreateCredential(ctx context.Context, arg CreateCredentialParams) error {
-	_, err := q.exec(ctx, q.createCredentialStmt, createCredential, arg.Username, arg.Password)
-	return err
-}
-
 const createProfile = `-- name: CreateProfile :one
 INSERT INTO
   profiles (name, url, username, password, tls)
@@ -150,6 +133,38 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 	return i, err
 }
 
+const createUser = `-- name: CreateUser :one
+INSERT INTO
+  users (username, password, email, type)
+VALUES
+  (?, ?, ?, ?) RETURNING id, username, password, email, type
+`
+
+type CreateUserParams struct {
+	Username string  `json:"username"`
+	Password string  `json:"password"`
+	Email    *string `json:"email"`
+	Type     string  `json:"type"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.queryRow(ctx, q.createUserStmt, createUser,
+		arg.Username,
+		arg.Password,
+		arg.Email,
+		arg.Type,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Type,
+	)
+	return i, err
+}
+
 const deleteConfigByProfileID = `-- name: DeleteConfigByProfileID :exec
 DELETE FROM config
 WHERE
@@ -176,28 +191,6 @@ WHERE
 
 func (q *Queries) DeleteConfigByProfileName(ctx context.Context, name string) error {
 	_, err := q.exec(ctx, q.deleteConfigByProfileNameStmt, deleteConfigByProfileName, name)
-	return err
-}
-
-const deleteCredentialByID = `-- name: DeleteCredentialByID :exec
-DELETE FROM credentials
-WHERE
-  id = ?
-`
-
-func (q *Queries) DeleteCredentialByID(ctx context.Context, id int64) error {
-	_, err := q.exec(ctx, q.deleteCredentialByIDStmt, deleteCredentialByID, id)
-	return err
-}
-
-const deleteCredentialByUsername = `-- name: DeleteCredentialByUsername :exec
-DELETE FROM credentials
-WHERE
-  username = ?
-`
-
-func (q *Queries) DeleteCredentialByUsername(ctx context.Context, username string) error {
-	_, err := q.exec(ctx, q.deleteCredentialByUsernameStmt, deleteCredentialByUsername, username)
 	return err
 }
 
@@ -242,6 +235,28 @@ WHERE
 
 func (q *Queries) DeleteProviderByName(ctx context.Context, name string) error {
 	_, err := q.exec(ctx, q.deleteProviderByNameStmt, deleteProviderByName, name)
+	return err
+}
+
+const deleteUserByID = `-- name: DeleteUserByID :exec
+DELETE FROM users
+WHERE
+  id = ?
+`
+
+func (q *Queries) DeleteUserByID(ctx context.Context, id int64) error {
+	_, err := q.exec(ctx, q.deleteUserByIDStmt, deleteUserByID, id)
+	return err
+}
+
+const deleteUserByUsername = `-- name: DeleteUserByUsername :exec
+DELETE FROM users
+WHERE
+  username = ?
+`
+
+func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) error {
+	_, err := q.exec(ctx, q.deleteUserByUsernameStmt, deleteUserByUsername, username)
 	return err
 }
 
@@ -299,42 +314,6 @@ func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Conf
 		&i.Middlewares,
 		&i.Version,
 	)
-	return i, err
-}
-
-const getCredentialByID = `-- name: GetCredentialByID :one
-SELECT
-  id, username, password
-FROM
-  credentials
-WHERE
-  id = ?
-LIMIT
-  1
-`
-
-func (q *Queries) GetCredentialByID(ctx context.Context, id int64) (Credential, error) {
-	row := q.queryRow(ctx, q.getCredentialByIDStmt, getCredentialByID, id)
-	var i Credential
-	err := row.Scan(&i.ID, &i.Username, &i.Password)
-	return i, err
-}
-
-const getCredentialByUsername = `-- name: GetCredentialByUsername :one
-SELECT
-  id, username, password
-FROM
-  credentials
-WHERE
-  username = ?
-LIMIT
-  1
-`
-
-func (q *Queries) GetCredentialByUsername(ctx context.Context, username string) (Credential, error) {
-	row := q.queryRow(ctx, q.getCredentialByUsernameStmt, getCredentialByUsername, username)
-	var i Credential
-	err := row.Scan(&i.ID, &i.Username, &i.Password)
 	return i, err
 }
 
@@ -440,6 +419,54 @@ func (q *Queries) GetProviderByName(ctx context.Context, name string) (Provider,
 	return i, err
 }
 
+const getUserByID = `-- name: GetUserByID :one
+SELECT
+  id, username, password, email, type
+FROM
+  users
+WHERE
+  id = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
+	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Type,
+	)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT
+  id, username, password, email, type
+FROM
+  users
+WHERE
+  username = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByUsernameStmt, getUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Type,
+	)
+	return i, err
+}
+
 const listConfigs = `-- name: ListConfigs :many
 SELECT
   profile_id, entrypoints, routers, services, middlewares, version
@@ -464,36 +491,6 @@ func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
 			&i.Middlewares,
 			&i.Version,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listCredentials = `-- name: ListCredentials :many
-SELECT
-  id, username, password
-FROM
-  credentials
-`
-
-func (q *Queries) ListCredentials(ctx context.Context) ([]Credential, error) {
-	rows, err := q.query(ctx, q.listCredentialsStmt, listCredentials)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Credential
-	for rows.Next() {
-		var i Credential
-		if err := rows.Scan(&i.ID, &i.Username, &i.Password); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -582,6 +579,42 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 	return items, nil
 }
 
+const listUsers = `-- name: ListUsers :many
+SELECT
+  id, username, password, email, type
+FROM
+  users
+`
+
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Password,
+			&i.Email,
+			&i.Type,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateConfig = `-- name: UpdateConfig :one
 UPDATE config
 SET
@@ -622,26 +655,6 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 		&i.Version,
 	)
 	return i, err
-}
-
-const updateCredential = `-- name: UpdateCredential :exec
-UPDATE credentials
-SET
-  username = ?,
-  password = ?
-WHERE
-  id = ?
-`
-
-type UpdateCredentialParams struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	ID       int64  `json:"id"`
-}
-
-func (q *Queries) UpdateCredential(ctx context.Context, arg UpdateCredentialParams) error {
-	_, err := q.exec(ctx, q.updateCredentialStmt, updateCredential, arg.Username, arg.Password, arg.ID)
-	return err
 }
 
 const updateProfile = `-- name: UpdateProfile :one
@@ -732,30 +745,40 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 	return i, err
 }
 
-const validateAuth = `-- name: ValidateAuth :one
-SELECT
-  id,
-  username
-FROM
-  credentials
+const updateUser = `-- name: UpdateUser :one
+UPDATE users
+SET
+  username = ?,
+  password = ?,
+  email = ?,
+  type = ?
 WHERE
-  username = ?
-  AND password = ?
+  id = ? RETURNING id, username, password, email, type
 `
 
-type ValidateAuthParams struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+type UpdateUserParams struct {
+	Username string  `json:"username"`
+	Password string  `json:"password"`
+	Email    *string `json:"email"`
+	Type     string  `json:"type"`
+	ID       int64   `json:"id"`
 }
 
-type ValidateAuthRow struct {
-	ID       int64  `json:"id"`
-	Username string `json:"username"`
-}
-
-func (q *Queries) ValidateAuth(ctx context.Context, arg ValidateAuthParams) (ValidateAuthRow, error) {
-	row := q.queryRow(ctx, q.validateAuthStmt, validateAuth, arg.Username, arg.Password)
-	var i ValidateAuthRow
-	err := row.Scan(&i.ID, &i.Username)
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
+		arg.Username,
+		arg.Password,
+		arg.Email,
+		arg.Type,
+		arg.ID,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Type,
+	)
 	return i, err
 }

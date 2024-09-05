@@ -6,7 +6,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Button } from '$lib/components/ui/button';
-	import { newProvider, type DNSProvider } from '$lib/types/provider';
+	import { newProvider, type DNSProvider } from '$lib/types/base';
 	import type { Selected } from 'bits-ui';
 	import { createProvider } from '$lib/api';
 
@@ -24,7 +24,6 @@
 			provider.external_ip === ''
 		)
 			return;
-		console.log(provider);
 		await createProvider(provider);
 		provider = newProvider();
 		providerType = providerTypes[0];

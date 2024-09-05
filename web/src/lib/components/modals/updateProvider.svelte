@@ -6,7 +6,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import type { DNSProvider } from '$lib/types/provider';
+	import type { DNSProvider } from '$lib/types/base';
 	import { updateProvider } from '$lib/api';
 
 	export let p: DNSProvider;

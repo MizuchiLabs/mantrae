@@ -28,10 +28,12 @@ CREATE TABLE providers (
   is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE credentials (
+CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username VARCHAR(100) NOT NULL UNIQUE,
-  password TEXT NOT NULL
+  password TEXT NOT NULL,
+  email VARCHAR(100) UNIQUE,
+  type VARCHAR(50) NOT NULL
 );
 
 -- Trigger to create an empty config when inserting a profile

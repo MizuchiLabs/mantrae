@@ -7,26 +7,20 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { entrypoints, middlewares, getService } from '$lib/api';
+	import { getService, provider, toggleDNSProvider } from '$lib/api';
 	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 	import Service from '../forms/service.svelte';
+	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let router: Router;
 	let service = getService(router.service + '@' + router.provider);
 
-	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
-		let list = router?.entrypoints?.map((entrypoint) => {
-			return { value: entrypoint, label: entrypoint };
-		});
-		return list ?? [];
-	};
-	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
-		let list = router?.middlewares?.map((middleware) => {
-			return { value: middleware, label: middleware };
-		});
-		return list ?? [];
+	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
+		return router?.dnsProvider
+			? { value: router.dnsProvider, label: router.dnsProvider }
+			: undefined;
 	};
 </script>
 
@@ -60,7 +54,7 @@
 							Make changes to your Router here. Click save when you're done.
 						</Card.Description>
 					</Card.Header>
-					<Card.Content class="space-y-2">
+					<Card.Content class="space-y-4">
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="name" class="text-right">Name</Label>
 							<Input
@@ -73,48 +67,43 @@
 								disabled
 							/>
 						</div>
-						<div class="grid grid-cols-4 items-center gap-4">
-							<Label for="entrypoints" class="text-right">Entrypoints</Label>
-							<Select.Root multiple={true} selected={getSelectedEntrypoints(router)}>
-								<Select.Trigger class="col-span-3">
-									<Select.Value placeholder="Select an entrypoint" />
-								</Select.Trigger>
-								<Select.Content>
-									{#each $entrypoints || [] as entrypoint}
-										<Select.Item value={entrypoint.name}>
-											<div class="flex flex-row items-center gap-2">
-												{entrypoint.name}
-												{#if entrypoint.http}
-													{#if 'tls' in entrypoint.http}
-														<iconify-icon icon="fa6-solid:lock" class=" text-green-400" />
-													{/if}
+						<ArrayInput
+							items={router.entrypoints}
+							label="Entrypoints"
+							placeholder=""
+							disabled={true}
+						/>
+						<ArrayInput
+							items={router.middlewares}
+							label="Middlewares"
+							placeholder=""
+							disabled={true}
+						/>
+						{#if $provider}
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="provider" class="text-right">DNS Provider</Label>
+								<Select.Root
+									selected={getSelectedDNSProvider(router)}
+									onSelectedChange={(value) => toggleDNSProvider(router, value)}
+								>
+									<Select.Trigger class="col-span-3">
+										<Select.Value placeholder="Select a dns provider" />
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="" label="">None</Select.Item>
+
+										{#each $provider as provider}
+											<Select.Item value={provider.name} class="flex items-center gap-2">
+												{provider.name} ({provider.type})
+												{#if provider.is_active}
+													<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
 												{/if}
-											</div>
-										</Select.Item>
-									{/each}
-								</Select.Content>
-							</Select.Root>
-						</div>
-						<div
-							class="grid grid-cols-4 items-center gap-4"
-							class:hidden={router.routerType === 'udp'}
-						>
-							<Label for="middlewares" class="text-right">Middlewares</Label>
-							<Select.Root multiple={true} selected={getSelectedMiddlewares(router)}>
-								<Select.Trigger class="col-span-3">
-									<Select.Value placeholder="Select a middleware" />
-								</Select.Trigger>
-								<Select.Content>
-									{#each $middlewares as middleware}
-										{#if router.routerType === middleware.middlewareType}
-											<Select.Item value={middleware.name}>
-												{middleware.name}
 											</Select.Item>
-										{/if}
-									{/each}
-								</Select.Content>
-							</Select.Root>
-						</div>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							</div>
+						{/if}
 						<div class:hidden={router.routerType === 'udp'}>
 							<RuleEditor bind:rule={router.rule} disabled={true} />
 						</div>

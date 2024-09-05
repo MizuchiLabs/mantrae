@@ -14,7 +14,10 @@
 		getService,
 		upsertRouter,
 		deleteRouter,
-		provider
+		provider,
+		toggleEntrypoint,
+		toggleMiddleware,
+		toggleDNSProvider
 	} from '$lib/api';
 	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
@@ -34,17 +37,6 @@
 		open = false;
 	};
 
-	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.entrypoints = item.map((i) => i.value) as string[];
-	};
-	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.middlewares = item.map((i) => i.value) as string[];
-	};
-	const toggleDNSProvider = (router: Router, item: Selected<unknown> | undefined) => {
-		router.dnsProvider = (item?.value as string) ?? '';
-	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };

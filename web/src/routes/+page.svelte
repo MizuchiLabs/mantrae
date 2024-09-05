@@ -10,8 +10,8 @@
 		middlewares,
 		routers,
 		services,
-		getService,
-		upsertRouter
+		toggleEntrypoint,
+		toggleMiddleware
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -47,7 +47,9 @@
 					? router.provider?.toLowerCase() === part.split(':')[1]
 					: part.startsWith('@type:')
 						? router.routerType.toLowerCase() === part.split(':')[1]
-						: router.name.toLowerCase().includes(part)
+						: part.startsWith('@dns:')
+							? router.dnsProvider?.toLowerCase() === part.split(':')[1]
+							: router.name.toLowerCase().includes(part)
 			);
 		});
 
@@ -63,6 +65,7 @@
 	let columns: Selected<string>[] | undefined = [
 		{ value: 'name', label: 'Name' },
 		{ value: 'provider', label: 'Provider' },
+		{ value: 'dns', label: 'DNS' },
 		{ value: 'type', label: 'Type' },
 		{ value: 'rule', label: 'Rule' },
 		{ value: 'entrypoints', label: 'Entrypoints' },
@@ -82,18 +85,6 @@
 		localStorage.setItem('router-columns', JSON.stringify(selectedColumns));
 	};
 
-	const toggleEntrypoint = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.entrypoints = item.map((i) => i.value) as string[];
-		let service = getService(router.name);
-		upsertRouter(router.name, router, service);
-	};
-	const toggleMiddleware = (router: Router, item: Selected<unknown>[] | undefined) => {
-		if (item === undefined) return;
-		router.middlewares = item.map((i) => i.value) as string[];
-		let service = getService(router.name);
-		upsertRouter(router.name, router, service);
-	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };
@@ -190,6 +181,9 @@
 					{#if showColumn('provider')}
 						<Table.Head>Provider</Table.Head>
 					{/if}
+					{#if showColumn('dns')}
+						<Table.Head>DNS</Table.Head>
+					{/if}
 					{#if showColumn('type')}
 						<Table.Head>Type</Table.Head>
 					{/if}
@@ -223,6 +217,17 @@
 								aria-hidden
 							>
 								{router.provider}
+							</span>
+						</Table.Cell>
+						<Table.Cell class={showColumn('dns') ? 'font-medium' : 'hidden'}>
+							<span
+								class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
+								class:bg-green-300={router.dnsProvider}
+								class:bg-blue-300={!router.dnsProvider}
+								on:click={() => (search = `@dns:${router.dnsProvider}`)}
+								aria-hidden
+							>
+								{router.dnsProvider ? router.dnsProvider : 'None'}
 							</span>
 						</Table.Cell>
 						<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>

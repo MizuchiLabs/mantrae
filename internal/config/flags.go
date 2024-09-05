@@ -76,3 +76,45 @@ func SetDefaultProfile(url, username, password string) {
 		}
 	}
 }
+
+func SetDefaultAdminUser() {
+	// check if default admin user exists
+	creds, err := db.Query.GetUserByUsername(context.Background(), "admin")
+	if err != nil {
+		password := util.GenPassword(32)
+		hash, err := util.HashPassword(password)
+		if err != nil {
+			slog.Error("Failed to hash password", "error", err)
+			return
+		}
+
+		if _, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
+			Username: "admin",
+			Password: hash,
+			Type:     "user",
+		}); err != nil {
+			slog.Error("Failed to create default admin user", "error", err)
+		}
+		slog.Info("Generated default admin user", "username", "admin", "password", password)
+		return
+	}
+
+	// Validate credentials
+	if creds.Username != "admin" || creds.Password == "" {
+		password := util.GenPassword(32)
+		hash, err := util.HashPassword(password)
+		if err != nil {
+			slog.Error("Failed to hash password", "error", err)
+			return
+		}
+		slog.Info("Invalid credentials, regenerating...")
+		if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
+			Username: "admin",
+			Password: hash,
+			Type:     "user",
+		}); err != nil {
+			slog.Error("Failed to update default admin user", "error", err)
+		}
+		slog.Info("Generated default admin user", "username", "admin", "password", password)
+	}
+}

@@ -78,7 +78,7 @@ func UpdateDNS() {
 		}
 
 		for _, router := range data.Routers {
-			if router.Provider == "http" && router.DNSProvider != "" {
+			if router.DNSProvider != "" {
 				provider := getProvider(router.DNSProvider)
 				if provider == nil {
 					continue
@@ -123,12 +123,18 @@ func DeleteDNS(router traefik.Router) {
 }
 
 // Sync periodically syncs the DNS records
-func Sync() {
+func Sync(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * 300)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		UpdateDNS()
+	UpdateDNS()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			UpdateDNS()
+		}
 	}
 }
 

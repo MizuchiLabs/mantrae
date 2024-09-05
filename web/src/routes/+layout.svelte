@@ -4,10 +4,26 @@
 	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { profile, API_URL, getProfiles, loggedIn, getProviders } from '$lib/api';
+	import { profile, API_URL, getProfiles, loggedIn, getProviders, getUsers } from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
+
+	// Realtime updates
+	const eventSource = new EventSource(`${API_URL}/events`);
+	eventSource.onmessage = (event) => {
+		switch (event.data) {
+			case 'profiles':
+				getProfiles();
+				break;
+			case 'users':
+				getUsers();
+				break;
+			case 'providers':
+				getProviders();
+				break;
+		}
+	};
 
 	onMount(async () => {
 		if (!$loggedIn) return;

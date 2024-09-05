@@ -10,34 +10,33 @@ import (
 
 type Querier interface {
 	CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error)
-	CreateCredential(ctx context.Context, arg CreateCredentialParams) error
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteConfigByProfileID(ctx context.Context, profileID int64) error
 	DeleteConfigByProfileName(ctx context.Context, name string) error
-	DeleteCredentialByID(ctx context.Context, id int64) error
-	DeleteCredentialByUsername(ctx context.Context, username string) error
 	DeleteProfileByID(ctx context.Context, id int64) error
 	DeleteProfileByName(ctx context.Context, name string) error
 	DeleteProviderByID(ctx context.Context, id int64) error
 	DeleteProviderByName(ctx context.Context, name string) error
+	DeleteUserByID(ctx context.Context, id int64) error
+	DeleteUserByUsername(ctx context.Context, username string) error
 	GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error)
 	GetConfigByProfileName(ctx context.Context, name string) (Config, error)
-	GetCredentialByID(ctx context.Context, id int64) (Credential, error)
-	GetCredentialByUsername(ctx context.Context, username string) (Credential, error)
 	GetProfileByID(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetProviderByID(ctx context.Context, id int64) (Provider, error)
 	GetProviderByName(ctx context.Context, name string) (Provider, error)
+	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListConfigs(ctx context.Context) ([]Config, error)
-	ListCredentials(ctx context.Context) ([]Credential, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListProviders(ctx context.Context) ([]Provider, error)
+	ListUsers(ctx context.Context) ([]User, error)
 	UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error)
-	UpdateCredential(ctx context.Context, arg UpdateCredentialParams) error
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
-	ValidateAuth(ctx context.Context, arg ValidateAuthParams) (ValidateAuthRow, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)
