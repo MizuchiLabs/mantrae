@@ -40,7 +40,7 @@ func Routes() http.Handler {
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
 
-	mux.HandleFunc("GET /api/{id}", GetTraefikConfig)
+	mux.HandleFunc("GET /api/{name}", GetTraefikConfig)
 
 	staticContent, err := fs.Sub(web.StaticFS, "build")
 	if err != nil {

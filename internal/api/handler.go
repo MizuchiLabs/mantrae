@@ -461,18 +461,13 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 
 // GetTraefikConfig returns the traefik config
 func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	profile, err := db.Query.GetProfileByID(context.Background(), id)
+	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
 	if err != nil {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
 
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
 	if err != nil {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return

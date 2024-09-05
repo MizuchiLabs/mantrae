@@ -81,8 +81,8 @@ func GenerateConfig(d Dynamic) ([]byte, error) {
 		}
 	}
 	for _, middleware := range d.Middlewares {
-		name := strings.Split(middleware.Name, "@")[0]
 		if middleware.Provider == "http" {
+			name := strings.Split(middleware.Name, "@")[0]
 			switch middleware.MiddlewareType {
 			case "http":
 				config.HTTP.Middlewares[name] = &dynamic.Middleware{
