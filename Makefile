@@ -24,13 +24,14 @@ audit:
 	- staticcheck -checks=all -f=stylish ./...
 
 .PHONY: build
-build:
+build: audit
 	cd web && pnpm install && pnpm run build
-	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BIN) main.go
+	go build $(LDFLAGS) -o $(BIN) main.go
 	upx $(BIN)
 
 .PHONY: docker
 docker:
+	cd web && pnpm install && pnpm run build
 	docker build \
 		--label "org.opencontainers.image.vendor=Mizuchi Labs" \
 		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \

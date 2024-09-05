@@ -96,8 +96,10 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 		)
 	}
 
+	shouldUpdate := verifyRecords(records, subdomain, c.ExternalIP)
+
 	// If the record doesn't exist, create it, or if it's managed by us, update it
-	if len(records) > 0 {
+	if len(records) > 0 && shouldUpdate {
 		for _, record := range records {
 			if record.Type == "A" {
 				_, err = c.Client.UpdateDNSRecord(

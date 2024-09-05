@@ -168,3 +168,31 @@ func getBaseDomain(subdomain string) string {
 
 	return baseDomain
 }
+
+func verifyRecords(records []DNSRecord, subdomain string, content string) bool {
+	update := false
+
+L:
+	for _, record := range records {
+		switch record.Type {
+		case "A":
+			if record.Content != content {
+				update = true
+				break L
+			}
+		case "AAAA":
+			if record.Content != content {
+				update = true
+				break L
+			}
+		case "TXT":
+			if record.Name != "_mantrae-"+subdomain {
+				update = true
+				break L
+			}
+		default:
+			return false
+		}
+	}
+	return update
+}

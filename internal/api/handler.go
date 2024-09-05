@@ -13,6 +13,7 @@ import (
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
@@ -435,6 +436,7 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// UpdateConfig updates the config for a single profile
 func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	var config traefik.Dynamic
 	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
@@ -450,6 +452,9 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
+	// Update the DNS records immediately
+	go dns.UpdateDNS()
 
 	writeJSON(w, config)
 }

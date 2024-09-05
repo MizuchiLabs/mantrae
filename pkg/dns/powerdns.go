@@ -85,8 +85,11 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 		)
 	}
 
+	// Check if the record needs to be updated
+	shouldUpdate := verifyRecords(existingRecords, subdomain, p.ExternalIP)
+
 	// Update the record if it exists
-	if len(existingRecords) > 0 {
+	if len(existingRecords) > 0 && shouldUpdate {
 		err = p.Client.Records.Change(
 			context.Background(),
 			getBaseDomain(subdomain),

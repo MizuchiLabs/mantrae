@@ -9,9 +9,9 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joeig/go-powerdns/v3 v3.12.0
 	github.com/lmittmann/tint v1.0.5
-	github.com/mattn/go-sqlite3 v1.14.22
-	golang.org/x/crypto v0.26.0
-	golang.org/x/net v0.28.0
+	github.com/mattn/go-sqlite3 v1.14.23
+	golang.org/x/crypto v0.27.0
+	golang.org/x/net v0.29.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
@@ -19,6 +19,6 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 )
