@@ -7,15 +7,15 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { getService, provider, toggleDNSProvider } from '$lib/api';
-	import { type Router } from '$lib/types/config';
+	import { config, provider, toggleDNSProvider } from '$lib/api';
+	import { newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 	import Service from '../forms/service.svelte';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
 	export let router: Router;
-	let service = getService(router.service + '@' + router.provider);
+	let service = $config?.services?.[router.service + '@' + router.provider] ?? newService();
 
 	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
 		return router?.dnsProvider

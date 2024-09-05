@@ -455,6 +455,11 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 		case Router:
 			if v.Provider == "http" {
 				merged[k] = any(v).(T)
+			} else {
+				// Preserve DNSProvider even if it's not our provider
+				if v.DNSProvider != "" {
+					merged[k] = any(v).(T)
+				}
 			}
 		case Service:
 			if v.Provider == "http" {

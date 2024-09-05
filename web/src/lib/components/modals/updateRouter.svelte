@@ -11,27 +11,28 @@
 		routers,
 		entrypoints,
 		middlewares,
-		getService,
 		upsertRouter,
 		deleteRouter,
 		provider,
 		toggleEntrypoint,
 		toggleMiddleware,
-		toggleDNSProvider
+		toggleDNSProvider,
+		config
 	} from '$lib/api';
-	import { type Router } from '$lib/types/config';
+	import { newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import type { Selected } from 'bits-ui';
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
+	let service = $config?.services?.[router.service + '@' + router.provider] ?? newService();
 	let originalName = router.name;
-	let service = getService(router.name);
 	let routerCompare = $routers.filter((r) => r.name !== router.name);
 
 	let open = false;
 	const update = async () => {
 		if (router.name === '' || isNameTaken) return;
+		if (service === undefined) return;
 		await upsertRouter(originalName, router, service);
 		originalName = router.name;
 		open = false;

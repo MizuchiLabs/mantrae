@@ -252,6 +252,15 @@ export async function updateConfig(c: Config): Promise<void> {
 	}
 }
 
+export async function deleteRouterDNS(r: Router): Promise<void> {
+	const response = await handleRequest(`/dns`, 'POST', r);
+	if (response) {
+		let data = await response.json();
+		config.set(data);
+		toast.success(`DNS record of router ${r.name} deleted`);
+	}
+}
+
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {
 	const response = await handleRequest('/backup', 'GET');
@@ -281,19 +290,6 @@ export async function uploadBackup(file: File) {
 }
 
 // Helper functions -----------------------------------------------------------
-export function getRouter(routerName: string): Router {
-	const router = get(config)?.routers?.[routerName];
-	return router ?? newRouter();
-}
-export function getService(serviceName: string): Service {
-	const service = get(config)?.services?.[serviceName];
-	return service ?? newService();
-}
-export function getMiddleware(middlewareName: string): Middleware {
-	const middleware = get(config)?.middlewares?.[middlewareName];
-	return middleware ?? newMiddleware();
-}
-
 // Create or update a router and its service
 export async function upsertRouter(name: string, router: Router, service: Service): Promise<void> {
 	let data = get(config);
@@ -329,6 +325,7 @@ export async function upsertMiddleware(name: string, middleware: Middleware): Pr
 export async function deleteRouter(name: string): Promise<void> {
 	let data = get(config);
 	if (!data.routers || !data.services) return;
+	await deleteRouterDNS(data.routers[name]);
 	delete data.routers[name];
 	delete data.services[name];
 	await updateConfig(data);
@@ -346,19 +343,26 @@ export async function deleteMiddleware(name: string): Promise<void> {
 export async function toggleEntrypoint(router: Router, item: Selected<unknown>[] | undefined) {
 	if (item === undefined) return;
 	router.entrypoints = item.map((i) => i.value) as string[];
-	let service = getService(router.name);
+	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }
 
 export async function toggleMiddleware(router: Router, item: Selected<unknown>[] | undefined) {
 	if (item === undefined) return;
 	router.middlewares = item.map((i) => i.value) as string[];
-	let service = getService(router.name);
+	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }
 
 export async function toggleDNSProvider(router: Router, item: Selected<unknown> | undefined) {
-	router.dnsProvider = (item?.value as string) ?? '';
-	let service = getService(router.name);
+	let newProvider = (item?.value as string) ?? '';
+	if (newProvider === '' && router.dnsProvider !== '') {
+		deleteRouterDNS(router);
+	}
+	router.dnsProvider = newProvider;
+	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }

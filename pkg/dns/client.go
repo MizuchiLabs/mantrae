@@ -51,30 +51,26 @@ func getProvider(name string) DNSProvider {
 	return nil
 }
 
-// UpdateDNS updates the DNS records for all locally managed domains
-func UpdateDNS() {
+func getDomainProviderMap() map[string]DomainProvider {
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
 		slog.Error("Failed to get profiles", "error", err)
-		return
+		return nil
 	}
 
 	// Get all local
-	domainProviderMap := make(map[string]struct {
-		Domain   string
-		Provider DNSProvider
-	})
+	domainProviderMap := make(map[string]DomainProvider)
 	for _, profile := range profiles {
 		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
 		if err != nil {
 			slog.Error("Failed to get config", "error", err)
-			return
+			return nil
 		}
 
 		data, err := traefik.DecodeConfig(config)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
-			return
+			return nil
 		}
 
 		for _, router := range data.Routers {
@@ -97,29 +93,41 @@ func UpdateDNS() {
 		}
 	}
 
-	for _, dp := range domainProviderMap {
+	return domainProviderMap
+}
+
+// UpdateDNS updates the DNS records for all locally managed domains
+func UpdateDNS() {
+	dpMap := getDomainProviderMap()
+	if dpMap == nil {
+		return
+	}
+
+	// Update all DNS records
+	for _, dp := range dpMap {
 		if err := dp.Provider.UpsertRecord(dp.Domain); err != nil {
 			slog.Error("Failed to upsert record", "error", err)
 		}
 	}
 }
 
-func DeleteDNS(router traefik.Router) {
+// DeleteDNS deletes the DNS record for a router if it's managed by us
+func DeleteDNS(router traefik.Router) error {
 	dnsProvider := getProvider(router.DNSProvider)
 	if dnsProvider == nil {
-		slog.Error("No DNS provider found")
-		return
+		return fmt.Errorf("no DNS provider found")
 	}
 
 	subdomain, err := extractDomainFromRule(router.Rule)
 	if err != nil {
-		slog.Error("Failed to extract domain from rule", "error", err)
-		return
+		return fmt.Errorf("failed to extract domain from rule: %w", err)
 	}
 
 	if err := dnsProvider.DeleteRecord(subdomain); err != nil {
-		slog.Error("Failed to delete record", "error", err)
+		return fmt.Errorf("failed to delete record: %w", err)
 	}
+
+	return nil
 }
 
 // Sync periodically syncs the DNS records

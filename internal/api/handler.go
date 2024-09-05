@@ -459,6 +459,21 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, config)
 }
 
+func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
+	var router traefik.Router
+	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	if err := dns.DeleteDNS(router); err != nil {
+		http.Error(w, "Failed to delete DNS record", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 // GetTraefikConfig returns the traefik config
 func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
