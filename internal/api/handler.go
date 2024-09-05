@@ -44,7 +44,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	dbUser, err := db.Query.GetUserByUsername(context.Background(), user.Username)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
 
