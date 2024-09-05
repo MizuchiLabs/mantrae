@@ -12,9 +12,10 @@ func (p *CreateProfileParams) Verify() error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	if p.Url == "" {
-		if !util.IsValidURL(p.Url) {
-			return fmt.Errorf("url is not valid")
-		}
+		return fmt.Errorf("url cannot be empty")
+	}
+	if !util.IsValidURL(p.Url) {
+		return fmt.Errorf("url is not valid")
 	}
 	return nil
 }
@@ -24,9 +25,10 @@ func (p *UpdateProfileParams) Verify() error {
 		return fmt.Errorf("name cannot be empty")
 	}
 	if p.Url == "" {
-		if !util.IsValidURL(p.Url) {
-			return fmt.Errorf("url is not valid")
-		}
+		return fmt.Errorf("url cannot be empty")
+	}
+	if !util.IsValidURL(p.Url) {
+		return fmt.Errorf("url is not valid")
 	}
 	return nil
 }
