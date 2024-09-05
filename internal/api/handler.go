@@ -594,8 +594,11 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 		}
 		defer outFile.Close()
 
+		// CWE-409
+		limitedReader := io.LimitReader(tarReader, 5<<30) // 5GB
+
 		// Copy the decompressed data to the database file.
-		if _, err = io.Copy(outFile, tarReader); err != nil {
+		if _, err = io.Copy(outFile, limitedReader); err != nil {
 			http.Error(w, "Failed to restore database", http.StatusInternalServerError)
 			return
 		}

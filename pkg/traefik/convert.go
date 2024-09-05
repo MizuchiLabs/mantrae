@@ -3,6 +3,7 @@ package traefik
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
@@ -46,17 +47,17 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 func UpdateConfig(profileID int64, data *Dynamic) error {
 	for _, r := range data.Routers {
 		if err := r.Verify(); err != nil {
-			return err
+			return fmt.Errorf("router %s: %w", r.Name, err)
 		}
 	}
 	for _, s := range data.Services {
 		if err := s.Verify(); err != nil {
-			return err
+			return fmt.Errorf("service %s: %w", s.Name, err)
 		}
 	}
 	for _, m := range data.Middlewares {
 		if err := m.Verify(); err != nil {
-			return err
+			return fmt.Errorf("middleware %s: %w", m.Name, err)
 		}
 	}
 

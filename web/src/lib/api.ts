@@ -294,11 +294,6 @@ export function getMiddleware(middlewareName: string): Middleware {
 	return middleware ?? newMiddleware();
 }
 
-function nameCheck(name: string, provider: string | undefined): string {
-	if (provider === undefined) return name.split('@')[0].toLowerCase() + '@http';
-	return name.split('@')[0].toLowerCase() + '@' + provider;
-}
-
 // Create or update a router and its service
 export async function upsertRouter(name: string, router: Router, service: Service): Promise<void> {
 	let data = get(config);
@@ -309,8 +304,10 @@ export async function upsertRouter(name: string, router: Router, service: Servic
 		delete data.routers[name];
 		delete data.services[name];
 	}
-	router.name = nameCheck(router.name, router.provider);
+	// Ensure the service name is the same as the router name
+	router.service = router.name;
 	service.name = router.name;
+
 	data.routers[router.name] = router;
 	data.services[router.name] = service;
 	await updateConfig(data);
@@ -323,7 +320,7 @@ export async function upsertMiddleware(name: string, middleware: Middleware): Pr
 	if (middleware.name !== name) {
 		delete data.middlewares[name];
 	}
-	middleware.name = nameCheck(middleware.name, middleware.provider);
+
 	data.middlewares[middleware.name] = middleware;
 	await updateConfig(data);
 }

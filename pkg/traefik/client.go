@@ -449,9 +449,22 @@ func Sync(ctx context.Context) {
 func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	merged := make(map[string]T)
 
-	// Copy local map to merged map first
+	// Copy local map to merged map first and only add items by our provider
 	for k, v := range local {
-		merged[k] = v
+		switch v := any(v).(type) {
+		case Router:
+			if v.Provider == "http" {
+				merged[k] = any(v).(T)
+			}
+		case Service:
+			if v.Provider == "http" {
+				merged[k] = any(v).(T)
+			}
+		case Middleware:
+			if v.Provider == "http" {
+				merged[k] = any(v).(T)
+			}
+		}
 	}
 
 	for _, external := range externals {
