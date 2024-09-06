@@ -19,7 +19,7 @@
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import type { Router } from '$lib/types/config';
-	import type { Selected } from 'bits-ui';
+	import type { CustomEventHandler, Selected } from 'bits-ui';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { onMount } from 'svelte';
 	import ShowRouter from '$lib/components/modals/showRouter.svelte';
@@ -77,8 +77,7 @@
 		{ value: 'serviceStatus', label: 'Service Status' }
 	];
 	let selectedColumns: string[] = JSON.parse(
-		localStorage.getItem('router-columns') ??
-			'["name", "provider", "type", "rule", "entrypoints", "middlewares"]'
+		localStorage.getItem('router-columns') ?? JSON.stringify(columns.map((c) => c.value))
 	);
 	$: showColumn = (column: string): boolean => {
 		return selectedColumns.includes(column);
@@ -124,32 +123,55 @@
 	let bulkEntrypoints: Selected<unknown>[] | undefined = [];
 	let bulkMiddlewares: Selected<unknown>[] | undefined = [];
 	let bulkDnsProvider: Selected<string> | undefined = undefined;
+	let lastSelectedIndex: number | null = null;
+	let shiftKeyPressed = false;
 
 	const toggleRouterSelection = (router: Router) => {
-		if (selectedRouters.includes(router)) {
-			selectedRouters = selectedRouters.filter((r) => r !== router);
+		const currentIndex = fRouters.findIndex((r) => r.name === router.name);
+
+		// Check if shift key is held
+		if (shiftKeyPressed && lastSelectedIndex !== null) {
+			const start = Math.min(lastSelectedIndex, currentIndex);
+			const end = Math.max(lastSelectedIndex, currentIndex);
+
+			// Select all routers between the last selected and the current one
+			const rangeToSelect = fRouters.slice(start, end + 1);
+			const allSelected = rangeToSelect.every((r) => selectedRouters.includes(r));
+
+			// If all routers in range are selected, deselect them, otherwise select them
+			rangeToSelect.forEach((r) => {
+				if (allSelected) {
+					selectedRouters = selectedRouters.filter((sr) => sr !== r); // Deselect if already selected
+				} else {
+					if (!selectedRouters.includes(r)) {
+						selectedRouters = [...selectedRouters, r]; // Select if not selected
+					}
+				}
+			});
 		} else {
-			selectedRouters = [...selectedRouters, router];
+			if (selectedRouters.includes(router)) {
+				selectedRouters = selectedRouters.filter((r) => r !== router);
+			} else {
+				selectedRouters = [...selectedRouters, router];
+			}
 		}
+		lastSelectedIndex = currentIndex; // Update the last selected index
 	};
 
 	const applyBulkChanges = () => {
 		selectedRouters.forEach((router) => {
-			if (bulkEntrypoints) {
+			if (bulkEntrypoints && router.provider === 'http') {
 				if (bulkEntrypoints?.length > 0) {
-					console.log(bulkEntrypoints);
-					//toggleEntrypoint(router, bulkEntrypoints);
+					toggleEntrypoint(router, bulkEntrypoints);
 				}
 			}
-			if (bulkMiddlewares) {
+			if (bulkMiddlewares && router.provider === 'http') {
 				if (bulkMiddlewares?.length > 0) {
-					console.log(bulkMiddlewares);
-					//toggleMiddleware(router, bulkMiddlewares);
+					toggleMiddleware(router, bulkMiddlewares);
 				}
 			}
 			if (bulkDnsProvider) {
-				console.log(bulkDnsProvider);
-				//router.dnsProvider = bulkDnsProvider.value;
+				router.dnsProvider = bulkDnsProvider.value;
 			}
 		});
 		// Reset after applying changes
@@ -228,6 +250,7 @@
 							onCheckedChange={() => {
 								allChecked = !allChecked;
 								selectedRouters = allChecked ? [...fRouters] : [];
+								lastSelectedIndex = null;
 							}}
 						/>
 					</Table.Head>
@@ -264,11 +287,17 @@
 				{#each fRouters as router}
 					<Table.Row>
 						<Table.Cell class="min-w-[2rem]">
-							<Checkbox
-								id={router.name}
-								checked={selectedRouters.includes(router)}
-								onCheckedChange={() => toggleRouterSelection(router)}
-							/>
+							<div
+								on:keydown={(e) => (e.key === 'Shift' ? (shiftKeyPressed = true) : null)}
+								on:keyup={(e) => (e.key === 'Shift' ? (shiftKeyPressed = false) : null)}
+								aria-hidden
+							>
+								<Checkbox
+									id={router.name}
+									checked={selectedRouters.includes(router)}
+									onCheckedChange={() => toggleRouterSelection(router)}
+								/>
+							</div>
 						</Table.Cell>
 						<Table.Cell class={showColumn('name') ? 'font-medium' : 'hidden'}>
 							{router.name.split('@')[0]}
@@ -407,61 +436,61 @@
 
 <!-- Bulk Edit Footer -->
 {#if selectedRouters.length > 0}
-	<div
-		class="sticky bottom-2 flex w-full flex-row items-center justify-between border-slate-700 bg-white p-4 shadow-md"
-	>
-		<div class="flex flex-row items-center justify-start gap-4">
-			<span class="space-x-2 text-sm">Edit {selectedRouters.length} routers</span>
+	<Card.Root class="fixed bottom-2 w-2/3">
+		<Card.Content class="flex flex-row items-center justify-between gap-4 p-4 shadow-md">
+			<div class="flex flex-col items-center justify-start gap-4 md:flex-row">
+				<!-- Bulk update entrypoints -->
+				<Select.Root
+					multiple={true}
+					selected={bulkEntrypoints}
+					onSelectedChange={(value) => (bulkEntrypoints = value)}
+				>
+					<Select.Trigger class="w-[200px]">
+						<Select.Value placeholder="EntryPoints" />
+					</Select.Trigger>
+					<Select.Content>
+						{#each $entrypoints as entrypoint}
+							<Select.Item value={entrypoint.name}>{entrypoint.name}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 
-			<!-- Bulk update entrypoints -->
-			<Select.Root
-				multiple={true}
-				selected={bulkEntrypoints}
-				onSelectedChange={(value) => (bulkEntrypoints = value)}
-			>
-				<Select.Trigger class="w-[150px]">
-					<Select.Value placeholder="EntryPoints" />
-				</Select.Trigger>
-				<Select.Content>
-					{#each $entrypoints as entrypoint}
-						<Select.Item value={entrypoint.name}>{entrypoint.name}</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
+				<!-- Bulk update middlewares -->
+				<Select.Root
+					multiple={true}
+					selected={bulkMiddlewares}
+					onSelectedChange={(value) => (bulkMiddlewares = value)}
+				>
+					<Select.Trigger class="w-[200px]">
+						<Select.Value placeholder="Middlewares" />
+					</Select.Trigger>
+					<Select.Content>
+						{#each $middlewares as middleware}
+							<Select.Item value={middleware.name}>{middleware.name}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 
-			<!-- Bulk update middlewares -->
-			<Select.Root
-				multiple={true}
-				selected={bulkMiddlewares}
-				onSelectedChange={(value) => (bulkMiddlewares = value)}
-			>
-				<Select.Trigger class="w-[150px]">
-					<Select.Value placeholder="Middlewares" />
-				</Select.Trigger>
-				<Select.Content>
-					{#each $middlewares as middleware}
-						<Select.Item value={middleware.name}>{middleware.name}</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
+				<!-- Bulk update DNS Provider -->
+				<Select.Root
+					selected={bulkDnsProvider}
+					onSelectedChange={(value) => (bulkDnsProvider = value)}
+				>
+					<Select.Trigger class="w-[200px]">
+						<Select.Value placeholder="DNS Provider" />
+					</Select.Trigger>
+					<Select.Content>
+						{#each $provider as p}
+							<Select.Item value={p.name}>{p.name}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
 
-			<!-- Bulk update DNS Provider -->
-			<Select.Root
-				selected={bulkDnsProvider}
-				onSelectedChange={(value) => (bulkDnsProvider = value)}
-			>
-				<Select.Trigger class="w-[150px]">
-					<Select.Value placeholder="DNS Provider" />
-				</Select.Trigger>
-				<Select.Content>
-					{#each $provider as p}
-						<Select.Item value={p.name}>{p.name}</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
-
-			<!-- Apply changes button -->
-		</div>
-		<Button variant="default" on:click={applyBulkChanges}>Apply Changes</Button>
-	</div>
+			<div class="flex flex-row items-center gap-2">
+				<Button variant="secondary" on:click={() => (selectedRouters = [])}>Clear</Button>
+				<Button on:click={applyBulkChanges}>Apply Changes</Button>
+			</div>
+		</Card.Content>
+	</Card.Root>
 {/if}

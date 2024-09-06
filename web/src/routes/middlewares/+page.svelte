@@ -57,7 +57,7 @@
 		{ value: 'type', label: 'Type' }
 	];
 	let selectedColumns: string[] = JSON.parse(
-		localStorage.getItem('middleware-columns') ?? '["name", "provider", "type"]'
+		localStorage.getItem('middleware-columns') ?? JSON.stringify(columns.map((c) => c.value))
 	);
 	$: showColumn = (column: string): boolean => {
 		return selectedColumns.includes(column);
