@@ -19,12 +19,10 @@
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import type { Router } from '$lib/types/config';
-	import type { CustomEventHandler, Selected } from 'bits-ui';
+	import type { Selected } from 'bits-ui';
 	import Input from '$lib/components/ui/input/input.svelte';
-	import { onMount } from 'svelte';
 	import ShowRouter from '$lib/components/modals/showRouter.svelte';
-	import type { Entrypoint } from '$lib/types/base';
-	import type { Middleware } from '$lib/types/middlewares';
+	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -436,61 +434,63 @@
 
 <!-- Bulk Edit Footer -->
 {#if selectedRouters.length > 0}
-	<Card.Root class="fixed bottom-2 w-2/3">
-		<Card.Content class="flex flex-row items-center justify-between gap-4 p-4 shadow-md">
-			<div class="flex flex-col items-center justify-start gap-4 md:flex-row">
-				<!-- Bulk update entrypoints -->
-				<Select.Root
-					multiple={true}
-					selected={bulkEntrypoints}
-					onSelectedChange={(value) => (bulkEntrypoints = value)}
-				>
-					<Select.Trigger class="w-[200px]">
-						<Select.Value placeholder="EntryPoints" />
-					</Select.Trigger>
-					<Select.Content>
-						{#each $entrypoints as entrypoint}
-							<Select.Item value={entrypoint.name}>{entrypoint.name}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
+	<div class="fixed bottom-2 flex flex-row items-center justify-between">
+		<Card.Root>
+			<Card.Content class="flex flex-row items-center justify-between gap-4 p-4 shadow-md">
+				<div class="flex flex-col items-center justify-start gap-4 md:flex-row">
+					<!-- Bulk update entrypoints -->
+					<Select.Root
+						multiple={true}
+						selected={bulkEntrypoints}
+						onSelectedChange={(value) => (bulkEntrypoints = value)}
+					>
+						<Select.Trigger class="w-[200px]">
+							<Select.Value placeholder="EntryPoints" />
+						</Select.Trigger>
+						<Select.Content>
+							{#each $entrypoints as entrypoint}
+								<Select.Item value={entrypoint.name}>{entrypoint.name}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 
-				<!-- Bulk update middlewares -->
-				<Select.Root
-					multiple={true}
-					selected={bulkMiddlewares}
-					onSelectedChange={(value) => (bulkMiddlewares = value)}
-				>
-					<Select.Trigger class="w-[200px]">
-						<Select.Value placeholder="Middlewares" />
-					</Select.Trigger>
-					<Select.Content>
-						{#each $middlewares as middleware}
-							<Select.Item value={middleware.name}>{middleware.name}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
+					<!-- Bulk update middlewares -->
+					<Select.Root
+						multiple={true}
+						selected={bulkMiddlewares}
+						onSelectedChange={(value) => (bulkMiddlewares = value)}
+					>
+						<Select.Trigger class="w-[200px]">
+							<Select.Value placeholder="Middlewares" />
+						</Select.Trigger>
+						<Select.Content>
+							{#each $middlewares as middleware}
+								<Select.Item value={middleware.name}>{middleware.name}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 
-				<!-- Bulk update DNS Provider -->
-				<Select.Root
-					selected={bulkDnsProvider}
-					onSelectedChange={(value) => (bulkDnsProvider = value)}
-				>
-					<Select.Trigger class="w-[200px]">
-						<Select.Value placeholder="DNS Provider" />
-					</Select.Trigger>
-					<Select.Content>
-						{#each $provider as p}
-							<Select.Item value={p.name}>{p.name}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
+					<!-- Bulk update DNS Provider -->
+					<Select.Root
+						selected={bulkDnsProvider}
+						onSelectedChange={(value) => (bulkDnsProvider = value)}
+					>
+						<Select.Trigger class="w-[200px]">
+							<Select.Value placeholder="DNS Provider" />
+						</Select.Trigger>
+						<Select.Content>
+							{#each $provider as p}
+								<Select.Item value={p.name}>{p.name}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
 
-			<div class="flex flex-row items-center gap-2">
-				<Button variant="secondary" on:click={() => (selectedRouters = [])}>Clear</Button>
-				<Button on:click={applyBulkChanges}>Apply Changes</Button>
-			</div>
-		</Card.Content>
-	</Card.Root>
+				<div class="flex flex-row items-center gap-2">
+					<Button variant="secondary" on:click={() => (selectedRouters = [])}>Clear</Button>
+					<Button on:click={applyBulkChanges}>Apply Changes</Button>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</div>
 {/if}

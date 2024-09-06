@@ -17,7 +17,7 @@
 		toggleEntrypoint,
 		toggleMiddleware,
 		toggleDNSProvider,
-		config
+		getService
 	} from '$lib/api';
 	import { newService, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
@@ -25,7 +25,7 @@
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
-	let service = $config?.services?.[router.service + '@' + router.provider] ?? newService();
+	let service = getService(router) ?? newService();
 	let originalName = router.name;
 	let routerCompare = $routers.filter((r) => r.name !== router.name);
 
@@ -176,7 +176,7 @@
 										<Select.Value placeholder="Select a dns provider" />
 									</Select.Trigger>
 									<Select.Content>
-										<Select.Item value="" label="None" />
+										<Select.Item value="" label="">None</Select.Item>
 										{#each $provider as provider}
 											<Select.Item value={provider.name} class="flex items-center gap-2">
 												{provider.name} ({provider.type})

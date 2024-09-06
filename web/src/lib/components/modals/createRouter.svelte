@@ -59,17 +59,17 @@
 	};
 	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
 		let dnsProvider = $provider?.find((p) => p.is_active)?.name ?? '';
-		if (dnsProvider !== '' && router.dnsProvider !== 'none') {
+		if (dnsProvider !== '' && router.dnsProvider !== '') {
 			router.dnsProvider = dnsProvider;
 			return {
 				value: dnsProvider,
 				label: dnsProvider
 			};
 		} else {
-			router.dnsProvider = 'none';
+			router.dnsProvider = '';
 			return {
-				value: 'none',
-				label: 'None'
+				value: '',
+				label: ''
 			};
 		}
 	};

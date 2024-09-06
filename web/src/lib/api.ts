@@ -1,9 +1,9 @@
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import type { Config, Profile, DNSProvider, User } from './types/base';
-import { newMiddleware, type Middleware } from './types/middlewares';
+import { type Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
-import { newRouter, newService, type Router, type Service } from './types/config';
+import { type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
 
 // Global state variables
@@ -93,21 +93,16 @@ export async function getProfiles() {
 }
 
 export async function getProfile(id: number) {
-	const respProfile = await handleRequest(`/profile/${id}`, 'GET');
-	if (respProfile) {
-		let data = await respProfile.json();
+	const response = await handleRequest(`/profile/${id}`, 'GET');
+	if (response) {
+		let data = await response.json();
 		profile.set(data);
 		localStorage.setItem('profile', data.id.toString());
 	} else {
 		localStorage.removeItem('profile');
 		return;
 	}
-
-	const respConfig = await handleRequest(`/config/${id}`, 'GET');
-	if (respConfig) {
-		let data = await respConfig.json();
-		config.set(data);
-	}
+	await getConfig();
 }
 
 export async function createProfile(p: Profile): Promise<void> {
@@ -243,6 +238,15 @@ export async function deleteProvider(id: number): Promise<void> {
 }
 
 // Config ---------------------------------------------------------------------
+export async function getConfig() {
+	const response = await handleRequest(`/config/${get(profile).id}`, 'GET');
+	if (response) {
+		let data = await response.json();
+		config.set(data);
+		console.log(data.entrypoints);
+	}
+}
+
 export async function updateConfig(c: Config): Promise<void> {
 	const response = await handleRequest(`/config/${get(profile).id}`, 'PUT', c);
 	if (response) {
@@ -339,11 +343,21 @@ export async function deleteMiddleware(name: string): Promise<void> {
 	await updateConfig(data);
 }
 
+// TODO: Handle this differently
+export const getService = (router: Router): Service | undefined => {
+	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	if (service === undefined) {
+		service = get(config)?.services?.[router.service];
+		if (service === undefined) return undefined;
+	}
+	return service;
+};
+
 // Toggle functions -----------------------------------------------------------
 export async function toggleEntrypoint(router: Router, item: Selected<unknown>[] | undefined) {
 	if (item === undefined) return;
 	router.entrypoints = item.map((i) => i.value) as string[];
-	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	let service = getService(router);
 	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }
@@ -351,7 +365,7 @@ export async function toggleEntrypoint(router: Router, item: Selected<unknown>[]
 export async function toggleMiddleware(router: Router, item: Selected<unknown>[] | undefined) {
 	if (item === undefined) return;
 	router.middlewares = item.map((i) => i.value) as string[];
-	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	let service = getService(router);
 	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }
@@ -362,7 +376,7 @@ export async function toggleDNSProvider(router: Router, item: Selected<unknown> 
 		deleteRouterDNS(router);
 	}
 	router.dnsProvider = newProvider;
-	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	let service = getService(router);
 	if (service === undefined) return;
 	upsertRouter(router.name, router, service);
 }

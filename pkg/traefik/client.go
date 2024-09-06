@@ -398,10 +398,12 @@ func GetTraefikConfig() {
 		}
 		defer entrypoints.Close()
 
-		if err = json.NewDecoder(entrypoints).Decode(&data.Entrypoints); err != nil {
+		var dataEntrypoints []Entrypoint
+		if err = json.NewDecoder(entrypoints).Decode(&dataEntrypoints); err != nil {
 			slog.Error("Failed to decode entrypoints", "error", err)
 			return
 		}
+		data.Entrypoints = dataEntrypoints
 
 		// Fetch version
 		version, err := fetch(profile, VersionAPI)
