@@ -243,7 +243,6 @@ export async function getConfig() {
 	if (response) {
 		let data = await response.json();
 		config.set(data);
-		console.log(data.entrypoints);
 	}
 }
 
