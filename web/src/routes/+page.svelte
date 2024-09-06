@@ -3,6 +3,7 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import {
 		profile,
 		deleteRouter,
@@ -11,7 +12,8 @@
 		routers,
 		services,
 		toggleEntrypoint,
-		toggleMiddleware
+		toggleMiddleware,
+		provider
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -21,6 +23,8 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { onMount } from 'svelte';
 	import ShowRouter from '$lib/components/modals/showRouter.svelte';
+	import type { Entrypoint } from '$lib/types/base';
+	import type { Middleware } from '$lib/types/middlewares';
 
 	let search = '';
 	let count = 0;
@@ -114,6 +118,48 @@
 		localStorage.setItem('local-provider', localProvider.toString());
 	};
 
+	// Add reactive variables for bulk actions
+	let allChecked = false;
+	let selectedRouters: Router[] = [];
+	let bulkEntrypoints: Selected<unknown>[] | undefined = [];
+	let bulkMiddlewares: Selected<unknown>[] | undefined = [];
+	let bulkDnsProvider: Selected<string> | undefined = undefined;
+
+	const toggleRouterSelection = (router: Router) => {
+		if (selectedRouters.includes(router)) {
+			selectedRouters = selectedRouters.filter((r) => r !== router);
+		} else {
+			selectedRouters = [...selectedRouters, router];
+		}
+	};
+
+	const applyBulkChanges = () => {
+		selectedRouters.forEach((router) => {
+			if (bulkEntrypoints) {
+				if (bulkEntrypoints?.length > 0) {
+					console.log(bulkEntrypoints);
+					//toggleEntrypoint(router, bulkEntrypoints);
+				}
+			}
+			if (bulkMiddlewares) {
+				if (bulkMiddlewares?.length > 0) {
+					console.log(bulkMiddlewares);
+					//toggleMiddleware(router, bulkMiddlewares);
+				}
+			}
+			if (bulkDnsProvider) {
+				console.log(bulkDnsProvider);
+				//router.dnsProvider = bulkDnsProvider.value;
+			}
+		});
+		// Reset after applying changes
+		selectedRouters = [];
+		bulkEntrypoints = [];
+		bulkMiddlewares = [];
+		bulkDnsProvider = undefined;
+		allChecked = false;
+	};
+
 	onMount(() => {
 		search = localProvider ? '@provider:http' : '';
 		searchRouter();
@@ -175,6 +221,16 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
+					<Table.Head>
+						<Checkbox
+							id="routers"
+							checked={allChecked}
+							onCheckedChange={() => {
+								allChecked = !allChecked;
+								selectedRouters = allChecked ? [...fRouters] : [];
+							}}
+						/>
+					</Table.Head>
 					{#if showColumn('name')}
 						<Table.Head>Name</Table.Head>
 					{/if}
@@ -207,6 +263,13 @@
 			<Table.Body>
 				{#each fRouters as router}
 					<Table.Row>
+						<Table.Cell class="min-w-[2rem]">
+							<Checkbox
+								id={router.name}
+								checked={selectedRouters.includes(router)}
+								onCheckedChange={() => toggleRouterSelection(router)}
+							/>
+						</Table.Cell>
 						<Table.Cell class={showColumn('name') ? 'font-medium' : 'hidden'}>
 							{router.name.split('@')[0]}
 						</Table.Cell>
@@ -341,3 +404,64 @@
 </Card.Root>
 
 <Pagination {count} bind:perPage bind:currentPage />
+
+<!-- Bulk Edit Footer -->
+{#if selectedRouters.length > 0}
+	<div
+		class="sticky bottom-2 flex w-full flex-row items-center justify-between border-slate-700 bg-white p-4 shadow-md"
+	>
+		<div class="flex flex-row items-center justify-start gap-4">
+			<span class="space-x-2 text-sm">Edit {selectedRouters.length} routers</span>
+
+			<!-- Bulk update entrypoints -->
+			<Select.Root
+				multiple={true}
+				selected={bulkEntrypoints}
+				onSelectedChange={(value) => (bulkEntrypoints = value)}
+			>
+				<Select.Trigger class="w-[150px]">
+					<Select.Value placeholder="EntryPoints" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each $entrypoints as entrypoint}
+						<Select.Item value={entrypoint.name}>{entrypoint.name}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+
+			<!-- Bulk update middlewares -->
+			<Select.Root
+				multiple={true}
+				selected={bulkMiddlewares}
+				onSelectedChange={(value) => (bulkMiddlewares = value)}
+			>
+				<Select.Trigger class="w-[150px]">
+					<Select.Value placeholder="Middlewares" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each $middlewares as middleware}
+						<Select.Item value={middleware.name}>{middleware.name}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+
+			<!-- Bulk update DNS Provider -->
+			<Select.Root
+				selected={bulkDnsProvider}
+				onSelectedChange={(value) => (bulkDnsProvider = value)}
+			>
+				<Select.Trigger class="w-[150px]">
+					<Select.Value placeholder="DNS Provider" />
+				</Select.Trigger>
+				<Select.Content>
+					{#each $provider as p}
+						<Select.Item value={p.name}>{p.name}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+
+			<!-- Apply changes button -->
+		</div>
+		<Button variant="default" on:click={applyBulkChanges}>Apply Changes</Button>
+	</div>
+{/if}

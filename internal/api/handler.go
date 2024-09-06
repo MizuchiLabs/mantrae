@@ -161,6 +161,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go traefik.GetTraefikConfig()
 	writeJSON(w, data)
 }
 
