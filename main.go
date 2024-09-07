@@ -33,6 +33,12 @@ func main() {
 
 	flags := config.ParseFlags() // Parse command-line flags
 	config.SetDefaultAdminUser() // Set default admin user
+	config.SetDefaultSettings()  // Set default settings
+
+	// Schedule backups
+	if err := config.ScheduleBackups(); err != nil {
+		slog.Error("Failed to schedule backups", "error", err)
+	}
 
 	// Create a context that will be used to signal background processes to stop
 	ctx, cancel := context.WithCancel(context.Background())

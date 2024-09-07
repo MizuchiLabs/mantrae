@@ -8,12 +8,21 @@
 	import { updateUser } from '$lib/api';
 
 	export let u: User;
+	let newPassword = '';
+	let newPasswordConfirm = '';
 	let open = false;
 
 	const update = async () => {
 		if (u.username === '' || u.password === '') return;
+		if (newPassword !== '') {
+			if (newPassword === newPasswordConfirm) {
+				u.password = newPassword;
+			}
+		}
 		await updateUser(u);
 		open = false;
+		newPassword = '';
+		newPasswordConfirm = '';
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -40,7 +49,7 @@
 				</Card.Title>
 			</Card.Header>
 			<Card.Content>
-				<div class="space-y-2" on:keydown={onKeydown} aria-hidden>
+				<div class="flex flex-col gap-2" on:keydown={onKeydown} aria-hidden>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="Username" class="text-right">Username</Label>
 						<Input
@@ -53,17 +62,6 @@
 						/>
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="Password" class="text-right">Password</Label>
-						<Input
-							name="Password"
-							type="password"
-							bind:value={u.password}
-							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-							placeholder="Password"
-							required
-						/>
-					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="Email" class="text-right">Email</Label>
 						<Input
 							name="Email"
@@ -71,6 +69,31 @@
 							bind:value={u.email}
 							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 							placeholder="Email"
+						/>
+					</div>
+					<div class="mt-4 flex flex-row items-center justify-end text-sm">
+						Leave blank to keep the same
+					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="Password" class="text-right">Password</Label>
+						<Input
+							name="Password"
+							type="password"
+							bind:value={newPassword}
+							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+							placeholder="New Password"
+							required
+						/>
+					</div>
+					<div class="grid grid-cols-4 items-center gap-4">
+						<Label for="Password" class="text-right">Confirm Password</Label>
+						<Input
+							name="Password"
+							type="password"
+							bind:value={newPasswordConfirm}
+							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+							placeholder="Confirm Password"
+							required
 						/>
 					</div>
 				</div>

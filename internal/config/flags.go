@@ -46,8 +46,6 @@ func ParseFlags() *Flags {
 		SetDefaultProfile(flags.URL, flags.Username, flags.Password)
 	}
 
-	SetDefaultSettings()
-
 	return &flags
 }
 

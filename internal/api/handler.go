@@ -460,51 +460,53 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, config)
 }
 
-func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
-	var router traefik.Router
-	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+// Settings -------------------------------------------------------------------
+
+// GetSettings returns all settings
+func GetSettings(w http.ResponseWriter, r *http.Request) {
+	settings, err := db.Query.ListSettings(context.Background())
+	if err != nil {
+		http.Error(w, "Failed to get settings", http.StatusInternalServerError)
 		return
 	}
-
-	go dns.DeleteDNS(router)
-
-	w.WriteHeader(http.StatusOK)
+	writeJSON(w, settings)
 }
 
-// GetTraefikConfig returns the traefik config
-func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
-	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
+// GetSetting returns a single setting
+func GetSetting(w http.ResponseWriter, r *http.Request) {
+	key := r.PathValue("key")
+	setting, err := db.Query.GetSettingByKey(context.Background(), key)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, "Setting not found", http.StatusNotFound)
+		return
+	}
+	writeJSON(w, setting)
+}
+
+// UpdateSetting updates a single setting
+func UpdateSetting(w http.ResponseWriter, r *http.Request) {
+	var setting db.UpdateSettingParams
+	if err := json.NewDecoder(r.Body).Decode(&setting); err != nil {
+		http.Error(w, "Failed to decode setting", http.StatusBadRequest)
 		return
 	}
 
-	config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeConfig(config)
-	if err != nil {
-		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
+	if err := setting.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	yamlConfig, err := traefik.GenerateConfig(*data)
+	data, err := db.Query.UpdateSetting(context.Background(), setting)
 	if err != nil {
-		http.Error(w, "Failed to generate traefik config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update setting: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/yaml")
-	w.Header().
-		Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.yaml", profile.Name))
-
-	if _, err := w.Write(yamlConfig); err != nil {
-		http.Error(w, "Failed to write traefik config", http.StatusInternalServerError)
-		return
-	}
+	writeJSON(w, data)
 }
 
 // Backup ---------------------------------------------------------------------
@@ -629,6 +631,54 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if _, err = w.Write([]byte("Database restored successfully")); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
+}
+
+// Extra ---------------------------------------------------------------------
+
+// DeleteRouterDNS deletes the DNS records for a router
+func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
+	var router traefik.Router
+	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	go dns.DeleteDNS(router)
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// GetTraefikConfig returns the traefik config
+func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
+	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+
+	config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
+		return
+	}
+
+	yamlConfig, err := traefik.GenerateConfig(*data)
+	if err != nil {
+		http.Error(w, "Failed to generate traefik config", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/yaml")
+
+	if _, err := w.Write(yamlConfig); err != nil {
+		http.Error(w, "Failed to write traefik config", http.StatusInternalServerError)
 		return
 	}
 }

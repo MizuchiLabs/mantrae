@@ -38,6 +38,10 @@ func Routes() http.Handler {
 	mux.HandleFunc("DELETE /api/provider/{id}", JWT(DeleteProvider))
 	mux.HandleFunc("POST /api/dns", JWT(DeleteRouterDNS)) // Extra route for deleting DNS records
 
+	mux.HandleFunc("GET /api/settings", JWT(GetSettings))
+	mux.HandleFunc("GET /api/settings/{key}", JWT(GetSetting))
+	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
+
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
 

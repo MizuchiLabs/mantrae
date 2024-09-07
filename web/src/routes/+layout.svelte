@@ -2,9 +2,8 @@
 	import '../app.css';
 	import Profile from '$lib/components/nav/profile.svelte';
 	import Sidebar from '$lib/components/nav/sidebar.svelte';
-	import { Button } from '$lib/components/ui/button';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { profile, API_URL, getProfiles, loggedIn, getProviders, getUsers } from '$lib/api';
+	import { API_URL, getProfiles, loggedIn, getProviders, getUsers } from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
@@ -44,10 +43,6 @@
 			>
 				<div class="mb-6 flex flex-row items-center justify-between">
 					<Profile />
-					<Button variant="default" href={`${API_URL}/${$profile?.name}`}>
-						Download Config
-						<iconify-icon icon="fa6-solid:download" class="ml-2" />
-					</Button>
 				</div>
 				<slot />
 			</main>

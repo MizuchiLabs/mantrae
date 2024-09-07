@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
-import type { Config, Profile, DNSProvider, User } from './types/base';
+import type { Config, Profile, DNSProvider, User, Setting } from './types/base';
 import { type Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { type Router, type Service } from './types/config';
@@ -13,6 +13,7 @@ export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
+export const settings: Writable<Setting[]> = writable();
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 // Derived stores
@@ -264,6 +265,33 @@ export async function deleteRouterDNS(r: Router): Promise<void> {
 	}
 }
 
+// Settings -------------------------------------------------------------------
+export async function getSettings() {
+	const response = await handleRequest('/settings', 'GET');
+	if (response) {
+		let data = await response.json();
+		settings.set(data);
+	}
+}
+
+export async function getSetting(key: string) {
+	const response = await handleRequest(`/settings/${key}`, 'GET');
+	if (response) {
+		let data = await response.json();
+		return data;
+	}
+	return {} as Setting;
+}
+
+export async function updateSetting(s: Setting): Promise<void> {
+	const response = await handleRequest(`/settings`, 'PUT', s);
+	if (response) {
+		let data = await response.json();
+		settings.update((items) => items.map((i) => (i.key === s.key ? data : i)));
+		toast.success(`Setting ${s.key} updated`);
+	}
+}
+
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {
 	const response = await handleRequest('/backup', 'GET');
@@ -290,6 +318,15 @@ export async function uploadBackup(file: File) {
 		headers: { Authorization: `Bearer ${token}` }
 	});
 	toast.success('Backup restored!');
+}
+
+export async function getTraefikConfig(): Promise<string> {
+	const response = await handleRequest(`/${get(profile).name}`, 'GET');
+	if (response) {
+		let data = await response.text();
+		return data;
+	}
+	return '';
 }
 
 // Helper functions -----------------------------------------------------------
