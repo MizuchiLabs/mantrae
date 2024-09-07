@@ -8,6 +8,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
 
+// DecodeConfig decodes the config from the database into our Dynamic struct
 func DecodeConfig(config db.Config) (*Dynamic, error) {
 	data := &Dynamic{
 		ProfileID:   config.ProfileID,
@@ -44,6 +45,7 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 	return data, nil
 }
 
+// UpdateConfig updates and verifies the data coming in
 func UpdateConfig(profileID int64, data *Dynamic) error {
 	for key, r := range data.Routers {
 		if err := r.Verify(); err != nil {

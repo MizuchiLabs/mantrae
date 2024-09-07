@@ -14,9 +14,14 @@
 
 	let router = newRouter();
 	let service = newService();
+	let certResolver = '';
 
 	const create = async () => {
 		if (router.name === '' || isNameTaken) return;
+		if (certResolver !== '') {
+			router.tls = router.tls ?? {};
+			router.tls.certResolver = certResolver;
+		}
 		await upsertRouter(router.name, router, service);
 
 		router = newRouter();
@@ -209,6 +214,17 @@
 						{/if}
 						<!-- Insane hacky editor for traefik rules -->
 						<div class:hidden={router.routerType === 'udp'}>
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="certresolver" class="text-right">CertResolver</Label>
+								<Input
+									id="certresolver"
+									name="certresolver"
+									type="text"
+									class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+									bind:value={certResolver}
+									placeholder="Certificate resolver"
+								/>
+							</div>
 							<RuleEditor bind:rule={router.rule} />
 						</div>
 					</Card.Content>

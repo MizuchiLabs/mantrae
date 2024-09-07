@@ -106,10 +106,10 @@ providers:
 
 ## Roadmap
 
-- Add support for multiple DNS providers and better handling.
-- Backup and restore functionality (S3)
+- Add support for more DNS providers
+- Backup scheduler (local or S3)
 - Support multiple database providers (currently only supports SQLite)
-- Better credentials management and multi-user support.
+- User management and permissions system
 
 ## Contributing
 

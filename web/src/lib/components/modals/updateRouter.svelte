@@ -25,6 +25,7 @@
 	import Service from '../forms/service.svelte';
 
 	export let router: Router;
+	let certResolver = router.tls?.certResolver ?? '';
 	let service = getService(router) ?? newService();
 	let originalName = router.name;
 	let routerCompare = $routers.filter((r) => r.name !== router.name);
@@ -33,6 +34,10 @@
 	const update = async () => {
 		if (router.name === '' || isNameTaken) return;
 		if (service === undefined) return;
+		if (certResolver !== '') {
+			router.tls = router.tls ?? {};
+			router.tls.certResolver = certResolver;
+		}
 		await upsertRouter(originalName, router, service);
 		originalName = router.name;
 		open = false;
@@ -190,6 +195,17 @@
 							</div>
 						{/if}
 						<div class:hidden={router.routerType === 'udp'}>
+							<div class="grid grid-cols-4 items-center gap-4">
+								<Label for="certresolver" class="text-right">CertResolver</Label>
+								<Input
+									id="certresolver"
+									name="certresolver"
+									type="text"
+									class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
+									bind:value={certResolver}
+									placeholder="Certificate resolver"
+								/>
+							</div>
 							<RuleEditor bind:rule={router.rule} />
 						</div>
 					</Card.Content>
