@@ -256,10 +256,10 @@ export async function updateConfig(c: Config): Promise<void> {
 }
 
 export async function deleteRouterDNS(r: Router): Promise<void> {
+	if (!r.dnsProvider) return;
+
 	const response = await handleRequest(`/dns`, 'POST', r);
 	if (response) {
-		let data = await response.json();
-		config.set(data);
 		toast.success(`DNS record of router ${r.name} deleted`);
 	}
 }
@@ -344,7 +344,8 @@ export async function deleteMiddleware(name: string): Promise<void> {
 
 // TODO: Handle this differently
 export const getService = (router: Router): Service | undefined => {
-	let service = get(config)?.services?.[router.service + '@' + router.provider];
+	let baseName = router.service.split('@')[0];
+	let service = get(config)?.services?.[baseName + '@' + router.provider];
 	if (service === undefined) {
 		service = get(config)?.services?.[router.service];
 		if (service === undefined) return undefined;

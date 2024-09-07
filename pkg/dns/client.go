@@ -34,6 +34,10 @@ type DomainProvider struct {
 }
 
 func getProvider(name string) DNSProvider {
+	if name == "" {
+		return nil
+	}
+
 	provider, err := db.Query.GetProviderByName(context.Background(), name)
 	if err != nil {
 		slog.Error("Failed to get providers", "error", err)
@@ -112,22 +116,22 @@ func UpdateDNS() {
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(router traefik.Router) error {
+func DeleteDNS(router traefik.Router) {
 	dnsProvider := getProvider(router.DNSProvider)
 	if dnsProvider == nil {
-		return fmt.Errorf("no DNS provider found")
+		return
 	}
 
 	subdomain, err := extractDomainFromRule(router.Rule)
 	if err != nil {
-		return fmt.Errorf("failed to extract domain from rule: %w", err)
+		slog.Error("Failed to extract domain from rule", "error", err)
+		return
 	}
 
 	if err := dnsProvider.DeleteRecord(subdomain); err != nil {
-		return fmt.Errorf("failed to delete record: %w", err)
+		slog.Error("Failed to delete record", "error", err)
+		return
 	}
-
-	return nil
 }
 
 // Sync periodically syncs the DNS records

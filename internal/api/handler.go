@@ -467,10 +467,7 @@ func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := dns.DeleteDNS(router); err != nil {
-		http.Error(w, "Failed to delete DNS record", http.StatusInternalServerError)
-		return
-	}
+	go dns.DeleteDNS(router)
 
 	w.WriteHeader(http.StatusOK)
 }

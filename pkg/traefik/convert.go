@@ -45,20 +45,32 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 }
 
 func UpdateConfig(profileID int64, data *Dynamic) error {
-	for _, r := range data.Routers {
+	for key, r := range data.Routers {
 		if err := r.Verify(); err != nil {
 			return fmt.Errorf("router %s: %w", r.Name, err)
 		}
+		if key != r.Name {
+			delete(data.Routers, key)
+		}
+		data.Routers[r.Name] = r
 	}
-	for _, s := range data.Services {
+	for key, s := range data.Services {
 		if err := s.Verify(); err != nil {
 			return fmt.Errorf("service %s: %w", s.Name, err)
 		}
+		if key != s.Name {
+			delete(data.Services, key)
+		}
+		data.Services[s.Name] = s
 	}
-	for _, m := range data.Middlewares {
+	for key, m := range data.Middlewares {
 		if err := m.Verify(); err != nil {
 			return fmt.Errorf("middleware %s: %w", m.Name, err)
 		}
+		if key != m.Name {
+			delete(data.Middlewares, key)
+		}
+		data.Middlewares[m.Name] = m
 	}
 
 	entrypoints, err := json.Marshal(data.Entrypoints)

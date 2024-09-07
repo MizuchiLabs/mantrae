@@ -13,7 +13,8 @@
 		services,
 		toggleEntrypoint,
 		toggleMiddleware,
-		provider
+		provider,
+		getService
 	} from '$lib/api';
 	import CreateRouter from '$lib/components/modals/createRouter.svelte';
 	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
@@ -101,7 +102,7 @@
 
 	// Show how many services are up and total services
 	const getServiceStatus = (router: Router) => {
-		let service = $services.find((s) => s.name === `${router.service}@${router.provider}`);
+		let service = getService(router);
 		let total = service?.loadBalancer?.servers?.length || 0;
 		let up = Object.values(service?.serverStatus || {}).filter((status) => status === 'UP').length;
 		return { status: `${up}/${total}`, ok: up === total };
