@@ -32,6 +32,12 @@ type Provider struct {
 	IsActive   bool    `json:"is_active"`
 }
 
+type Setting struct {
+	ID    int64  `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 type User struct {
 	ID       int64   `json:"id"`
 	Username string  `json:"username"`

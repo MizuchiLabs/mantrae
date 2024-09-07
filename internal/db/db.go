@@ -33,6 +33,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createProviderStmt, err = db.PrepareContext(ctx, createProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProvider: %w", err)
 	}
+	if q.createSettingStmt, err = db.PrepareContext(ctx, createSetting); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateSetting: %w", err)
+	}
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
 	}
@@ -53,6 +56,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteProviderByNameStmt, err = db.PrepareContext(ctx, deleteProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProviderByName: %w", err)
+	}
+	if q.deleteSettingByKeyStmt, err = db.PrepareContext(ctx, deleteSettingByKey); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteSettingByKey: %w", err)
 	}
 	if q.deleteUserByIDStmt, err = db.PrepareContext(ctx, deleteUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUserByID: %w", err)
@@ -78,6 +84,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProviderByNameStmt, err = db.PrepareContext(ctx, getProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProviderByName: %w", err)
 	}
+	if q.getSettingByKeyStmt, err = db.PrepareContext(ctx, getSettingByKey); err != nil {
+		return nil, fmt.Errorf("error preparing query GetSettingByKey: %w", err)
+	}
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
@@ -93,6 +102,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProvidersStmt, err = db.PrepareContext(ctx, listProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProviders: %w", err)
 	}
+	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
+		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
+	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
@@ -104,6 +116,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateProviderStmt, err = db.PrepareContext(ctx, updateProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProvider: %w", err)
+	}
+	if q.updateSettingStmt, err = db.PrepareContext(ctx, updateSetting); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateSetting: %w", err)
 	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
@@ -126,6 +141,11 @@ func (q *Queries) Close() error {
 	if q.createProviderStmt != nil {
 		if cerr := q.createProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createProviderStmt: %w", cerr)
+		}
+	}
+	if q.createSettingStmt != nil {
+		if cerr := q.createSettingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createSettingStmt: %w", cerr)
 		}
 	}
 	if q.createUserStmt != nil {
@@ -161,6 +181,11 @@ func (q *Queries) Close() error {
 	if q.deleteProviderByNameStmt != nil {
 		if cerr := q.deleteProviderByNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteProviderByNameStmt: %w", cerr)
+		}
+	}
+	if q.deleteSettingByKeyStmt != nil {
+		if cerr := q.deleteSettingByKeyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteSettingByKeyStmt: %w", cerr)
 		}
 	}
 	if q.deleteUserByIDStmt != nil {
@@ -203,6 +228,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProviderByNameStmt: %w", cerr)
 		}
 	}
+	if q.getSettingByKeyStmt != nil {
+		if cerr := q.getSettingByKeyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getSettingByKeyStmt: %w", cerr)
+		}
+	}
 	if q.getUserByIDStmt != nil {
 		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
@@ -228,6 +258,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProvidersStmt: %w", cerr)
 		}
 	}
+	if q.listSettingsStmt != nil {
+		if cerr := q.listSettingsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listSettingsStmt: %w", cerr)
+		}
+	}
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
@@ -246,6 +281,11 @@ func (q *Queries) Close() error {
 	if q.updateProviderStmt != nil {
 		if cerr := q.updateProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateProviderStmt: %w", cerr)
+		}
+	}
+	if q.updateSettingStmt != nil {
+		if cerr := q.updateSettingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateSettingStmt: %w", cerr)
 		}
 	}
 	if q.updateUserStmt != nil {
@@ -295,6 +335,7 @@ type Queries struct {
 	createConfigStmt              *sql.Stmt
 	createProfileStmt             *sql.Stmt
 	createProviderStmt            *sql.Stmt
+	createSettingStmt             *sql.Stmt
 	createUserStmt                *sql.Stmt
 	deleteConfigByProfileIDStmt   *sql.Stmt
 	deleteConfigByProfileNameStmt *sql.Stmt
@@ -302,6 +343,7 @@ type Queries struct {
 	deleteProfileByNameStmt       *sql.Stmt
 	deleteProviderByIDStmt        *sql.Stmt
 	deleteProviderByNameStmt      *sql.Stmt
+	deleteSettingByKeyStmt        *sql.Stmt
 	deleteUserByIDStmt            *sql.Stmt
 	deleteUserByUsernameStmt      *sql.Stmt
 	getConfigByProfileIDStmt      *sql.Stmt
@@ -310,15 +352,18 @@ type Queries struct {
 	getProfileByNameStmt          *sql.Stmt
 	getProviderByIDStmt           *sql.Stmt
 	getProviderByNameStmt         *sql.Stmt
+	getSettingByKeyStmt           *sql.Stmt
 	getUserByIDStmt               *sql.Stmt
 	getUserByUsernameStmt         *sql.Stmt
 	listConfigsStmt               *sql.Stmt
 	listProfilesStmt              *sql.Stmt
 	listProvidersStmt             *sql.Stmt
+	listSettingsStmt              *sql.Stmt
 	listUsersStmt                 *sql.Stmt
 	updateConfigStmt              *sql.Stmt
 	updateProfileStmt             *sql.Stmt
 	updateProviderStmt            *sql.Stmt
+	updateSettingStmt             *sql.Stmt
 	updateUserStmt                *sql.Stmt
 }
 
@@ -329,6 +374,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createConfigStmt:              q.createConfigStmt,
 		createProfileStmt:             q.createProfileStmt,
 		createProviderStmt:            q.createProviderStmt,
+		createSettingStmt:             q.createSettingStmt,
 		createUserStmt:                q.createUserStmt,
 		deleteConfigByProfileIDStmt:   q.deleteConfigByProfileIDStmt,
 		deleteConfigByProfileNameStmt: q.deleteConfigByProfileNameStmt,
@@ -336,6 +382,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteProfileByNameStmt:       q.deleteProfileByNameStmt,
 		deleteProviderByIDStmt:        q.deleteProviderByIDStmt,
 		deleteProviderByNameStmt:      q.deleteProviderByNameStmt,
+		deleteSettingByKeyStmt:        q.deleteSettingByKeyStmt,
 		deleteUserByIDStmt:            q.deleteUserByIDStmt,
 		deleteUserByUsernameStmt:      q.deleteUserByUsernameStmt,
 		getConfigByProfileIDStmt:      q.getConfigByProfileIDStmt,
@@ -344,15 +391,18 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProfileByNameStmt:          q.getProfileByNameStmt,
 		getProviderByIDStmt:           q.getProviderByIDStmt,
 		getProviderByNameStmt:         q.getProviderByNameStmt,
+		getSettingByKeyStmt:           q.getSettingByKeyStmt,
 		getUserByIDStmt:               q.getUserByIDStmt,
 		getUserByUsernameStmt:         q.getUserByUsernameStmt,
 		listConfigsStmt:               q.listConfigsStmt,
 		listProfilesStmt:              q.listProfilesStmt,
 		listProvidersStmt:             q.listProvidersStmt,
+		listSettingsStmt:              q.listSettingsStmt,
 		listUsersStmt:                 q.listUsersStmt,
 		updateConfigStmt:              q.updateConfigStmt,
 		updateProfileStmt:             q.updateProfileStmt,
 		updateProviderStmt:            q.updateProviderStmt,
+		updateSettingStmt:             q.updateSettingStmt,
 		updateUserStmt:                q.updateUserStmt,
 	}
 }

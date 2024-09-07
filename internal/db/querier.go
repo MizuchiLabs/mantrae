@@ -12,6 +12,7 @@ type Querier interface {
 	CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
+	CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteConfigByProfileID(ctx context.Context, profileID int64) error
 	DeleteConfigByProfileName(ctx context.Context, name string) error
@@ -19,6 +20,7 @@ type Querier interface {
 	DeleteProfileByName(ctx context.Context, name string) error
 	DeleteProviderByID(ctx context.Context, id int64) error
 	DeleteProviderByName(ctx context.Context, name string) error
+	DeleteSettingByKey(ctx context.Context, key string) error
 	DeleteUserByID(ctx context.Context, id int64) error
 	DeleteUserByUsername(ctx context.Context, username string) error
 	GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error)
@@ -27,15 +29,18 @@ type Querier interface {
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetProviderByID(ctx context.Context, id int64) (Provider, error)
 	GetProviderByName(ctx context.Context, name string) (Provider, error)
+	GetSettingByKey(ctx context.Context, key string) (Setting, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListConfigs(ctx context.Context) ([]Config, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListProviders(ctx context.Context) ([]Provider, error)
+	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
+	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

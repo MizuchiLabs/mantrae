@@ -1,3 +1,5 @@
+// Package config provides functions for parsing command-line flags and
+// setting up the application's default settings.
 package config
 
 import (
@@ -44,37 +46,9 @@ func ParseFlags() *Flags {
 		SetDefaultProfile(flags.URL, flags.Username, flags.Password)
 	}
 
-	return &flags
-}
+	SetDefaultSettings()
 
-func SetDefaultProfile(url, username, password string) {
-	profile, err := db.Query.GetProfileByName(context.Background(), "default")
-	if err != nil {
-		_, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{
-			Name:     "default",
-			Url:      url,
-			Username: &username,
-			Password: &password,
-			Tls:      false,
-		})
-		if err != nil {
-			slog.Error("Failed to create default profile", "error", err)
-		}
-		slog.Info("Generated default profile", "url", url)
-		return
-	}
-	if profile.Url != url || profile.Username != &username || profile.Password != &password {
-		if _, err := db.Query.UpdateProfile(context.Background(), db.UpdateProfileParams{
-			ID:       profile.ID,
-			Name:     "default",
-			Url:      url,
-			Username: &username,
-			Password: &password,
-			Tls:      false,
-		}); err != nil {
-			slog.Error("Failed to update default profile", "error", err)
-		}
-	}
+	return &flags
 }
 
 func SetDefaultAdminUser() {
@@ -116,5 +90,59 @@ func SetDefaultAdminUser() {
 			slog.Error("Failed to update default admin user", "error", err)
 		}
 		slog.Info("Generated default admin user", "username", "admin", "password", password)
+	}
+}
+
+func SetDefaultProfile(url, username, password string) {
+	profile, err := db.Query.GetProfileByName(context.Background(), "default")
+	if err != nil {
+		_, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{
+			Name:     "default",
+			Url:      url,
+			Username: &username,
+			Password: &password,
+			Tls:      false,
+		})
+		if err != nil {
+			slog.Error("Failed to create default profile", "error", err)
+		}
+		slog.Info("Generated default profile", "url", url)
+		return
+	}
+	if profile.Url != url || profile.Username != &username || profile.Password != &password {
+		if _, err := db.Query.UpdateProfile(context.Background(), db.UpdateProfileParams{
+			ID:       profile.ID,
+			Name:     "default",
+			Url:      url,
+			Username: &username,
+			Password: &password,
+			Tls:      false,
+		}); err != nil {
+			slog.Error("Failed to update default profile", "error", err)
+		}
+	}
+}
+
+func SetDefaultSettings() {
+	baseSettings := []db.Setting{
+		{
+			Key:   "backup-schedule",
+			Value: "0 2 * * 1", // Weekly at 02:00 AM on Monday
+		},
+		{
+			Key:   "backup-keep",
+			Value: "3", // Keep 3 backups
+		},
+	}
+
+	for _, setting := range baseSettings {
+		if _, err := db.Query.GetSettingByKey(context.Background(), setting.Key); err != nil {
+			if _, err := db.Query.CreateSetting(context.Background(), db.CreateSettingParams{
+				Key:   setting.Key,
+				Value: setting.Value,
+			}); err != nil {
+				slog.Error("Failed to create setting", "error", err)
+			}
+		}
 	}
 }

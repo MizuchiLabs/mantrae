@@ -36,6 +36,12 @@ CREATE TABLE users (
   type VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE settings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key VARCHAR(100) NOT NULL UNIQUE,
+  value TEXT NOT NULL
+);
+
 -- Trigger to create an empty config when inserting a profile
 CREATE TRIGGER add_profile_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
 INSERT INTO

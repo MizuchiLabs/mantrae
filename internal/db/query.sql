@@ -237,3 +237,37 @@ WHERE
 DELETE FROM users
 WHERE
   username = ?;
+
+-- name: GetSettingByKey :one
+SELECT
+  *
+FROM
+  settings
+WHERE
+  key = ?
+LIMIT
+  1;
+
+-- name: ListSettings :many
+SELECT
+  *
+FROM
+  settings;
+
+-- name: CreateSetting :one
+INSERT INTO
+  settings (key, value)
+VALUES
+  (?, ?) RETURNING *;
+
+-- name: UpdateSetting :one
+UPDATE settings
+SET
+  value = ?
+WHERE
+  key = ? RETURNING *;
+
+-- name: DeleteSettingByKey :exec
+DELETE FROM settings
+WHERE
+  key = ?;

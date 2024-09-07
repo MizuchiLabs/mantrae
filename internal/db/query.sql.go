@@ -133,6 +133,25 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 	return i, err
 }
 
+const createSetting = `-- name: CreateSetting :one
+INSERT INTO
+  settings (key, value)
+VALUES
+  (?, ?) RETURNING id, "key", value
+`
+
+type CreateSettingParams struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func (q *Queries) CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error) {
+	row := q.queryRow(ctx, q.createSettingStmt, createSetting, arg.Key, arg.Value)
+	var i Setting
+	err := row.Scan(&i.ID, &i.Key, &i.Value)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO
   users (username, password, email, type)
@@ -235,6 +254,17 @@ WHERE
 
 func (q *Queries) DeleteProviderByName(ctx context.Context, name string) error {
 	_, err := q.exec(ctx, q.deleteProviderByNameStmt, deleteProviderByName, name)
+	return err
+}
+
+const deleteSettingByKey = `-- name: DeleteSettingByKey :exec
+DELETE FROM settings
+WHERE
+  key = ?
+`
+
+func (q *Queries) DeleteSettingByKey(ctx context.Context, key string) error {
+	_, err := q.exec(ctx, q.deleteSettingByKeyStmt, deleteSettingByKey, key)
 	return err
 }
 
@@ -419,6 +449,24 @@ func (q *Queries) GetProviderByName(ctx context.Context, name string) (Provider,
 	return i, err
 }
 
+const getSettingByKey = `-- name: GetSettingByKey :one
+SELECT
+  id, "key", value
+FROM
+  settings
+WHERE
+  key = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetSettingByKey(ctx context.Context, key string) (Setting, error) {
+	row := q.queryRow(ctx, q.getSettingByKeyStmt, getSettingByKey, key)
+	var i Setting
+	err := row.Scan(&i.ID, &i.Key, &i.Value)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT
   id, username, password, email, type
@@ -566,6 +614,36 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 			&i.ApiUrl,
 			&i.IsActive,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSettings = `-- name: ListSettings :many
+SELECT
+  id, "key", value
+FROM
+  settings
+`
+
+func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
+	rows, err := q.query(ctx, q.listSettingsStmt, listSettings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Setting
+	for rows.Next() {
+		var i Setting
+		if err := rows.Scan(&i.ID, &i.Key, &i.Value); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -742,6 +820,26 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 		&i.ApiUrl,
 		&i.IsActive,
 	)
+	return i, err
+}
+
+const updateSetting = `-- name: UpdateSetting :one
+UPDATE settings
+SET
+  value = ?
+WHERE
+  key = ? RETURNING id, "key", value
+`
+
+type UpdateSettingParams struct {
+	Value string `json:"value"`
+	Key   string `json:"key"`
+}
+
+func (q *Queries) UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error) {
+	row := q.queryRow(ctx, q.updateSettingStmt, updateSetting, arg.Value, arg.Key)
+	var i Setting
+	err := row.Scan(&i.ID, &i.Key, &i.Value)
 	return i, err
 }
 

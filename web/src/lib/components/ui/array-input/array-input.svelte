@@ -52,7 +52,7 @@
 						id="item"
 						type="text"
 						bind:value={items[index]}
-						placeholder={`${placeholder}`}
+						placeholder={disabled ? '' : placeholder}
 						class="focus-visible:ring-0 focus-visible:ring-offset-0"
 						{disabled}
 					/>

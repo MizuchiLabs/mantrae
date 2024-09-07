@@ -92,3 +92,13 @@ func IsValidURL(u string) bool {
 	}
 	return matched
 }
+
+// IsValidEmail checks if an email is valid
+func IsValidEmail(email string) bool {
+	emailRegex := `^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`
+	matched, err := regexp.MatchString(emailRegex, email)
+	if err != nil {
+		return false
+	}
+	return matched
+}
