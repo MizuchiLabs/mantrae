@@ -2,6 +2,7 @@ package config
 
 import (
 	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -33,11 +34,14 @@ func BackupDatabase() error {
 		return nil
 	}
 
-	// Use tar to compress the database into a .tar.gz file
-	gzipWriter, err := os.Create(backupPath)
+	// Create the .tar.gz file and gzip writer
+	gzipFile, err := os.Create(backupPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create tar.gz file: %w", err)
 	}
+	defer gzipFile.Close()
+
+	gzipWriter := gzip.NewWriter(gzipFile)
 	defer gzipWriter.Close()
 
 	tarWriter := tar.NewWriter(gzipWriter)
@@ -100,18 +104,19 @@ func CleanupBackups() error {
 		return nil
 	}
 
-	// Sort the backup files by modification time
+	// Sort the backup files by modification time (oldest to newest)
 	sort.Slice(files, func(i, j int) bool {
 		iInfo, _ := os.Stat(files[i])
 		jInfo, _ := os.Stat(files[j])
 		return iInfo.ModTime().Before(jInfo.ModTime())
 	})
 
-	// Delete the oldest backup files
-	for i := len(files) - keep; i < len(files); i++ {
+	// Delete the oldest backup files (the first N - keep files)
+	for i := 0; i < len(files)-keep; i++ {
 		if err := os.Remove(files[i]); err != nil {
 			return fmt.Errorf("failed to delete backup file: %w", err)
 		}
+		slog.Info("Deleted old backup file", "file", files[i])
 	}
 
 	return nil
