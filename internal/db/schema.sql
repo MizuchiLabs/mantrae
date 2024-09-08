@@ -10,6 +10,7 @@ CREATE TABLE profiles (
 
 CREATE TABLE config (
   profile_id INTEGER NOT NULL,
+  overview JSONB,
   entrypoints JSONB,
   routers JSONB,
   services JSONB,

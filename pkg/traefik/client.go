@@ -25,6 +25,7 @@ const (
 	UDPServiceAPI      = "/api/udp/services"
 	HTTPMiddlewaresAPI = "/api/http/middlewares"
 	TCPMiddlewaresAPI  = "/api/tcp/middlewares"
+	OverviewAPI        = "/api/overview"
 	EntrypointsAPI     = "/api/entrypoints"
 	VersionAPI         = "/api/version"
 )
@@ -389,6 +390,21 @@ func GetTraefikConfig() {
 			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI),
 			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI),
 		)
+
+		// Fetch overview
+		overview, err := fetch(profile, OverviewAPI)
+		if err != nil {
+			slog.Error("Failed to get overview", "error", err)
+			return
+		}
+		defer overview.Close()
+
+		var dataOverview Overview
+		if err = json.NewDecoder(overview).Decode(&dataOverview); err != nil {
+			slog.Error("Failed to decode overview", "error", err)
+			return
+		}
+		data.Overview = &dataOverview
 
 		// Retrieve entrypoints
 		entrypoints, err := fetch(profile, EntrypointsAPI)

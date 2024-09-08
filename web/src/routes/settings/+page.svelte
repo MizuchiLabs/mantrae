@@ -2,19 +2,11 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import {
-		downloadBackup,
-		getSettings,
-		uploadBackup,
-		settings,
-		updateSetting,
-		getTraefikConfig
-	} from '$lib/api';
+	import { downloadBackup, getSettings, uploadBackup, settings, updateSetting } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { Input } from '$lib/components/ui/input';
 	import type { Setting } from '$lib/types/base';
-	import ShowTraefikConfig from '$lib/components/modals/showTraefikConfig.svelte';
 
 	let fileInput: HTMLInputElement;
 	const handleFileUpload = (event: Event) => {
@@ -50,7 +42,6 @@
 		<Card.Header>
 			<Card.Title class="flex flex-row items-center justify-between gap-2 text-lg font-bold">
 				Settings
-				<ShowTraefikConfig />
 			</Card.Title>
 		</Card.Header>
 		<Card.Content class="mt-4 flex flex-col gap-4">

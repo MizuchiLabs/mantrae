@@ -27,7 +27,7 @@
 	}
 </script>
 
-<Button variant="ghost" on:click={handleSwitchDarkMode}>
+<Button variant="ghost" on:click={handleSwitchDarkMode} class="mb-2 h-12 w-12 rounded-full">
 	{#if darkMode}
 		<iconify-icon icon="line-md:sunny-outline-to-moon-loop-transition" width="20" height="20" />
 	{:else}

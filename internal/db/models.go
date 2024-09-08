@@ -6,6 +6,7 @@ package db
 
 type Config struct {
 	ProfileID   int64       `json:"profile_id"`
+	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`

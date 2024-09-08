@@ -13,6 +13,7 @@ const createConfig = `-- name: CreateConfig :one
 INSERT INTO
   config (
     profile_id,
+    overview,
     entrypoints,
     routers,
     services,
@@ -20,11 +21,12 @@ INSERT INTO
     version
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING profile_id, entrypoints, routers, services, middlewares, version
+  (?, ?, ?, ?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, routers, services, middlewares, version
 `
 
 type CreateConfigParams struct {
 	ProfileID   int64       `json:"profile_id"`
+	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`
@@ -35,6 +37,7 @@ type CreateConfigParams struct {
 func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error) {
 	row := q.queryRow(ctx, q.createConfigStmt, createConfig,
 		arg.ProfileID,
+		arg.Overview,
 		arg.Entrypoints,
 		arg.Routers,
 		arg.Services,
@@ -44,6 +47,7 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 	var i Config
 	err := row.Scan(
 		&i.ProfileID,
+		&i.Overview,
 		&i.Entrypoints,
 		&i.Routers,
 		&i.Services,
@@ -292,7 +296,7 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 
 const getConfigByProfileID = `-- name: GetConfigByProfileID :one
 SELECT
-  profile_id, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, version
 FROM
   config
 WHERE
@@ -306,6 +310,7 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 	var i Config
 	err := row.Scan(
 		&i.ProfileID,
+		&i.Overview,
 		&i.Entrypoints,
 		&i.Routers,
 		&i.Services,
@@ -317,7 +322,7 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 
 const getConfigByProfileName = `-- name: GetConfigByProfileName :one
 SELECT
-  profile_id, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, version
 FROM
   config
 WHERE
@@ -338,6 +343,7 @@ func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Conf
 	var i Config
 	err := row.Scan(
 		&i.ProfileID,
+		&i.Overview,
 		&i.Entrypoints,
 		&i.Routers,
 		&i.Services,
@@ -517,7 +523,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listConfigs = `-- name: ListConfigs :many
 SELECT
-  profile_id, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, version
 FROM
   config
 `
@@ -533,6 +539,7 @@ func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
 		var i Config
 		if err := rows.Scan(
 			&i.ProfileID,
+			&i.Overview,
 			&i.Entrypoints,
 			&i.Routers,
 			&i.Services,
@@ -696,16 +703,18 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 const updateConfig = `-- name: UpdateConfig :one
 UPDATE config
 SET
+  overview = ?,
   entrypoints = ?,
   routers = ?,
   services = ?,
   middlewares = ?,
   version = ?
 WHERE
-  profile_id = ? RETURNING profile_id, entrypoints, routers, services, middlewares, version
+  profile_id = ? RETURNING profile_id, overview, entrypoints, routers, services, middlewares, version
 `
 
 type UpdateConfigParams struct {
+	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`
@@ -716,6 +725,7 @@ type UpdateConfigParams struct {
 
 func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error) {
 	row := q.queryRow(ctx, q.updateConfigStmt, updateConfig,
+		arg.Overview,
 		arg.Entrypoints,
 		arg.Routers,
 		arg.Services,
@@ -726,6 +736,7 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 	var i Config
 	err := row.Scan(
 		&i.ProfileID,
+		&i.Overview,
 		&i.Entrypoints,
 		&i.Routers,
 		&i.Services,

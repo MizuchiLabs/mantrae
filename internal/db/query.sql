@@ -88,6 +88,7 @@ FROM
 INSERT INTO
   config (
     profile_id,
+    overview,
     entrypoints,
     routers,
     services,
@@ -95,11 +96,12 @@ INSERT INTO
     version
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateConfig :one
 UPDATE config
 SET
+  overview = ?,
   entrypoints = ?,
   routers = ?,
   services = ?,

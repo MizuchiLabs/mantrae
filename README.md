@@ -121,5 +121,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-- **Traefik**: For providing the powerful reverse proxy that powers this application.
-- **Nginx Proxy Manager**: For inspiration on building a simple and effective web UI for managing reverse proxies.
+- [**Traefik**](https://traefik.io/): For providing the powerful reverse proxy that powers this application.
+- [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager): For inspiration on building a simple and effective web UI for managing reverse proxies.
+- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple and effective DNS management system for Kubernetes.

@@ -12,6 +12,7 @@ import (
 func DecodeConfig(config db.Config) (*Dynamic, error) {
 	data := &Dynamic{
 		ProfileID:   config.ProfileID,
+		Overview:    nil,
 		Entrypoints: make([]Entrypoint, 0),
 		Routers:     make(map[string]Router),
 		Services:    make(map[string]Service),
@@ -19,6 +20,11 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 		Version:     "",
 	}
 
+	if config.Overview != nil {
+		if err := json.Unmarshal(config.Overview.([]byte), &data.Overview); err != nil {
+			return nil, err
+		}
+	}
 	if config.Entrypoints != nil {
 		if err := json.Unmarshal(config.Entrypoints.([]byte), &data.Entrypoints); err != nil {
 			return nil, err
@@ -75,6 +81,10 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 		data.Middlewares[m.Name] = m
 	}
 
+	overview, err := json.Marshal(data.Overview)
+	if err != nil {
+		return err
+	}
 	entrypoints, err := json.Marshal(data.Entrypoints)
 	if err != nil {
 		return err
@@ -93,6 +103,7 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 	}
 	if _, err := db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
 		ProfileID:   profileID,
+		Overview:    overview,
 		Entrypoints: entrypoints,
 		Routers:     routers,
 		Services:    services,

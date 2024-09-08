@@ -1,5 +1,6 @@
 import type { Router, Service } from './config';
 import type { Middleware } from './middlewares';
+import type { Overview } from './overview';
 import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
@@ -24,6 +25,7 @@ export const newProfile = (): Profile => {
 
 export interface Config {
 	profile_id: number;
+	overview?: Overview;
 	entrypoints?: Entrypoint[];
 	routers?: Record<string, Router>;
 	services?: Record<string, Service>;

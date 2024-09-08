@@ -8,6 +8,7 @@ import (
 
 type Dynamic struct {
 	ProfileID   int64                 `json:"profile_id,omitempty"`
+	Overview    *Overview             `json:"overview,omitempty"`
 	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
 	Routers     map[string]Router     `json:"routers,omitempty"`
 	Services    map[string]Service    `json:"services,omitempty"`
@@ -100,4 +101,39 @@ type Middleware struct {
 	// TCP-specific fields
 	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
 	TCPIPAllowList *dynamic.TCPIPAllowList  `json:"tcpIpAllowList,omitempty"`
+}
+
+type Overview struct {
+	HTTP     HTTPOverview `json:"http,omitempty"`
+	TCP      TCPOverview  `json:"tcp,omitempty"`
+	UDP      UDPOverview  `json:"udp,omitempty"`
+	Features struct {
+		Tracing   string `json:"tracing,omitempty"`
+		Metrics   string `json:"metrics,omitempty"`
+		AccessLog bool   `json:"accessLog,omitempty"`
+	} `json:"features,omitempty"`
+	Providers []string `json:"providers,omitempty"`
+}
+
+type BasicOverview struct {
+	Total    int `json:"total,omitempty"`
+	Warnings int `json:"warnings,omitempty"`
+	Errors   int `json:"errors,omitempty"`
+}
+
+type HTTPOverview struct {
+	Routers    BasicOverview `json:"routers,omitempty"`
+	Services   BasicOverview `json:"services,omitempty"`
+	Middleware BasicOverview `json:"middlewares,omitempty"`
+}
+
+type TCPOverview struct {
+	Routers    BasicOverview `json:"routers,omitempty"`
+	Services   BasicOverview `json:"services,omitempty"`
+	Middleware BasicOverview `json:"middlewares,omitempty"`
+}
+
+type UDPOverview struct {
+	Routers  BasicOverview `json:"routers,omitempty"`
+	Services BasicOverview `json:"services,omitempty"`
 }

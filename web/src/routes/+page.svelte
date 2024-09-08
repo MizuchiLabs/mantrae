@@ -10,7 +10,6 @@
 		entrypoints,
 		middlewares,
 		routers,
-		services,
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,

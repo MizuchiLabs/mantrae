@@ -8,7 +8,7 @@
 	export let count: number;
 	export let perPage: Selected<number> | undefined;
 	export let currentPage: number;
-	const limits = [10, 25, 50, 100];
+	const limits = [5, 10, 25, 50, 100];
 	const changeLimit = (limit: Selected<number> | undefined) => {
 		if (limit === undefined) return;
 		perPage = limit;

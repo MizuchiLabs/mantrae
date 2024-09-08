@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import logo from '$lib/images/logo.png';
 	import Mode from './mode.svelte';
 
 	$: active = $page.url.pathname;
@@ -34,13 +35,15 @@
 </script>
 
 <nav
-	class="fixed hidden h-full w-16 flex-col items-center justify-between border-r bg-background sm:flex"
+	class="fixed hidden h-screen w-16 flex-col items-center justify-between border-r bg-background sm:flex"
 >
-	<div class="flex flex-col">
+	<div class="flex flex-col items-center gap-6 p-4">
+		<img src={logo} alt="Mantrae Logo" class="mb-4 w-8" />
+
 		{#each routes as route}
 			<a
 				href={route.path}
-				class="p-4 hover:text-red-300"
+				class="hover:text-red-300"
 				class:text-gray-600={active !== `${route.path}`}
 				class:text-red-400={active === `${route.path}`}
 			>
@@ -49,7 +52,6 @@
 			</a>
 		{/each}
 	</div>
-	<div class="mb-2">
-		<Mode />
-	</div>
+
+	<Mode />
 </nav>
