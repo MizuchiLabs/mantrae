@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./web/src/lib/images/logo.png" width="80">
+<img src="./web/src/lib/images/logo.svg" width="80">
 <br><br>
 <img alt="GitHub Tag" src="https://img.shields.io/github/v/tag/MizuchiLabs/mantrae?label=Version">
 <img alt="GitHub License" src="https://img.shields.io/github/license/MizuchiLabs/mantrae">

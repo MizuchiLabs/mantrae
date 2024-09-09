@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import logo from '$lib/images/logo.png';
+	import logo from '$lib/images/logo.svg';
 	import Mode from './mode.svelte';
 
 	$: active = $page.url.pathname;
