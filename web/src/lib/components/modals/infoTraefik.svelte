@@ -36,9 +36,11 @@
 						<div class="my-4 grid grid-cols-4 items-center gap-2">
 							<span class="col-span-1">Version</span>
 							<div class="col-span-3 space-x-2">
-								<Badge variant="secondary" class="bg-red-300">
-									v{$config?.version}
-								</Badge>
+								{#if $config?.version}
+									<Badge variant="secondary" class="bg-red-300">
+										v{$config?.version}
+									</Badge>
+								{/if}
 							</div>
 						</div>
 
