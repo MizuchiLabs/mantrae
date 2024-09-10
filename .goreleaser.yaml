@@ -25,27 +25,12 @@ builds:
       - amd64
       - arm64
 
-dockers:
-  - image_templates:
-      - ghcr.io/mizuchilabs/mantrae:{{ .Tag }}
-      - ghcr.io/mizuchilabs/mantrae:latest
-    use: docker
-    build_flag_templates:
-      - --label=org.opencontainers.image.vendor=Mizuchi Labs
-      - --label=org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae
-      - --label=org.opencontainers.image.description=A traefik web UI
-      - --label=org.opencontainers.image.created={{ .Date }}
-      - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.revision={{ .FullCommit }}
-      - --label=org.opencontainers.image.version={{ .Version }}
-
 upx:
   - enabled: true
 
 release:
   draft: true
   mode: replace
-
 
 archives:
   - format: binary
@@ -54,7 +39,7 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
 snapshot:
-  name_template: '{{ incpatch .Version }}-next'
+  version_template: '{{ incpatch .Version }}-next'
 
 report_sizes: true
 

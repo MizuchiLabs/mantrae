@@ -50,7 +50,7 @@ docker-push:
 
 .PHONY: release
 release:
-	goreleaser release --clean
+	goreleaser release --clean --skip=validate
 
 .PHONY: snapshot
 snapshot:
