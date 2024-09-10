@@ -36,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd web
-          npm Install
+          npm install
           npm run build
 
       - name: Login to GitHub Container Registry
