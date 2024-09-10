@@ -18,8 +18,8 @@
 	};
 
 	// Settings
-	let backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
-	let backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
+	let backupKeep: string;
+	let backupSchedule: string;
 
 	const update = async (s: Setting) => {
 		await updateSetting(s);
@@ -34,6 +34,8 @@
 
 	onMount(async () => {
 		await getSettings();
+		backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
+		backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
 	});
 </script>
 

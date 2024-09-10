@@ -14,13 +14,13 @@ export const config: Writable<Config> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
+export const version = writable('');
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 // Derived stores
 export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
 export const services = derived(config, ($config) => Object.values($config?.services ?? []));
 export const middlewares = derived(config, ($config) => Object.values($config?.middlewares ?? []));
-export const version = derived(config, ($config) => $config?.version ?? '');
 export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
 
 async function handleRequest(
@@ -320,8 +320,18 @@ export async function uploadBackup(file: File) {
 	toast.success('Backup restored!');
 }
 
+export async function getVersion() {
+	const response = await handleRequest('/version', 'GET');
+	if (response) {
+		let data = await response.text();
+		version.set(data);
+	}
+}
+
 export async function getTraefikConfig(): Promise<string> {
-	const response = await handleRequest(`/${get(profile).name}`, 'GET');
+	if (!get(profile)) return '';
+
+	const response = await handleRequest(`/${get(profile)?.name}`, 'GET');
 	if (response) {
 		let data = await response.text();
 		return data;

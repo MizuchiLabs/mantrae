@@ -14,6 +14,7 @@ func Routes() http.Handler {
 	mux.HandleFunc("POST /api/login", Login)
 	mux.HandleFunc("POST /api/verify", VerifyToken)
 
+	mux.HandleFunc("GET /api/version", GetVersion)
 	mux.HandleFunc("GET /api/events", GetEvents)
 
 	mux.HandleFunc("GET /api/profile", JWT(GetProfiles))

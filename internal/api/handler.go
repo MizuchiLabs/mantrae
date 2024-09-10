@@ -80,6 +80,17 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Version --------------------------------------------------------------------
+
+// GetVersion returns the current version of Mantrae
+func GetVersion(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write([]byte(util.Version)); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
+}
+
 // Events ---------------------------------------------------------------------
 
 func GetEvents(w http.ResponseWriter, r *http.Request) {
