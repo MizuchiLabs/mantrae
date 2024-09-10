@@ -52,6 +52,9 @@ jobs:
         with:
           images: |
             ghcr.io/{{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
 
       - name: Build and push
         uses: docker/build-push-action@v6
