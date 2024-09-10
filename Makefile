@@ -48,6 +48,14 @@ docker-push:
 	docker push ghcr.io/mizuchilabs/mantrae:${VERSION}
 	docker push ghcr.io/mizuchilabs/mantrae:latest
 
+.PHONY: release
+release:
+	goreleaser release --clean
+
+.PHONY: snapshot
+snapshot:
+	goreleaser release --snapshot --clean
+
 .PHONY: upgrade
 upgrade:
 	go get -u && go mod tidy
