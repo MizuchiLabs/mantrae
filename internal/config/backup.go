@@ -24,7 +24,7 @@ func BackupDatabase() error {
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
 	if _, err := os.Stat(backupDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(backupDir, 0755); err != nil {
+		if err := os.MkdirAll(backupDir, 0750); err != nil {
 			return fmt.Errorf("failed to create backup directory: %w", err)
 		}
 	}

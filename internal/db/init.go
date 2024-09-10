@@ -1,16 +1,16 @@
 package db
 
 import (
-	"context"
 	"database/sql"
-	_ "embed"
+	"embed"
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose/v3"
 )
 
-//go:embed schema.sql
-var ddl string
+//go:embed migrations/*.sql
+var migrations embed.FS
 
 var (
 	DB    *sql.DB
@@ -18,27 +18,22 @@ var (
 )
 
 func InitDB() error {
-	ctx := context.Background()
-
 	db, err := sql.Open("sqlite3", "file:mantrae.db?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL")
 	if err != nil {
 		db.Close()
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// Check if the database is empty
-	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").Scan(&count)
-	if err != nil {
+	goose.SetBaseFS(migrations)
+	goose.SetLogger(goose.NopLogger())
+	if err := goose.SetDialect("sqlite3"); err != nil {
 		db.Close()
-		return fmt.Errorf("failed to check database: %w", err)
+		return fmt.Errorf("failed to set dialect: %w", err)
 	}
 
-	if count == 0 {
-		if _, err := db.ExecContext(ctx, ddl); err != nil {
-			db.Close()
-			return fmt.Errorf("failed to execute schema: %w", err)
-		}
+	if err := goose.Up(db, "migrations"); err != nil {
+		db.Close()
+		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
 	DB = db

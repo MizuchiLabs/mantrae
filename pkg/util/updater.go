@@ -36,9 +36,7 @@ type release struct {
 	ID        int             `json:"id"`
 }
 
-func UpdateSelf(version string, update bool) {
-	slog.Info("Fetching release information...")
-
+func UpdateSelf(update bool) {
 	latest, err := fetchLatestRelease()
 	if err != nil {
 		slog.Error("Update failed", "Error", err)
@@ -47,13 +45,13 @@ func UpdateSelf(version string, update bool) {
 
 	if !update {
 		if compareVersions(
-			strings.TrimPrefix(version, "v"),
+			strings.TrimPrefix(Version, "v"),
 			strings.TrimPrefix(latest.Tag, "v"),
 		) <= 0 {
 			slog.Info("You are running the latest version!")
 			return
 		}
-		slog.Info("New version available!", "latest", latest.Tag, "current", version)
+		slog.Info("New version available!", "latest", latest.Tag, "current", Version)
 		return
 	}
 

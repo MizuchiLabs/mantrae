@@ -1,4 +1,4 @@
--- db/schema.sql
+-- +goose Up
 CREATE TABLE profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(100) NOT NULL UNIQUE,
@@ -43,7 +43,7 @@ CREATE TABLE settings (
   value TEXT NOT NULL
 );
 
--- Trigger to create an empty config when inserting a profile
+-- +goose StatementBegin
 CREATE TRIGGER add_profile_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
 INSERT INTO
   config (profile_id)
@@ -52,7 +52,8 @@ VALUES
 
 END;
 
--- Triggers to ensure only one provider is active at a time
+-- +goose StatementEnd
+-- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
 UPDATE providers
 SET
@@ -62,6 +63,8 @@ WHERE
 
 END;
 
+-- +goose StatementEnd
+-- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_update BEFORE
 UPDATE ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
 UPDATE providers
@@ -71,3 +74,21 @@ WHERE
   is_active = 1;
 
 END;
+
+-- +goose StatementEnd
+-- +goose Down
+DROP TABLE profiles;
+
+DROP TABLE config;
+
+DROP TABLE providers;
+
+DROP TABLE users;
+
+DROP TABLE settings;
+
+DROP TRIGGER add_profile_config;
+
+DROP TRIGGER ensure_single_active_insert;
+
+DROP TRIGGER ensure_single_active_update;

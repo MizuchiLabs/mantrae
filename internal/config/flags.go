@@ -19,6 +19,7 @@ type Flags struct {
 	URL      string
 	Username string
 	Password string
+	Update   bool
 }
 
 func ParseFlags() *Flags {
@@ -34,6 +35,7 @@ func ParseFlags() *Flags {
 	)
 	flag.StringVar(&flags.Username, "username", "", "Specify the username for the Traefik instance")
 	flag.StringVar(&flags.Password, "password", "", "Specify the password for the Traefik instance")
+	flag.BoolVar(&flags.Update, "update", false, "Update the application")
 
 	flag.Parse()
 
@@ -45,6 +47,8 @@ func ParseFlags() *Flags {
 	if flags.URL != "" {
 		SetDefaultProfile(flags.URL, flags.Username, flags.Password)
 	}
+
+	util.UpdateSelf(flags.Update)
 
 	return &flags
 }
