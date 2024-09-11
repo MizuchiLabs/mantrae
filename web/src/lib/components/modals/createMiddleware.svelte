@@ -61,6 +61,7 @@
 		middlewareType = type;
 		middleware = newMiddleware();
 		middleware.type = type.value.toLowerCase();
+		form = null;
 		form = await LoadMiddlewareForm(middleware);
 	};
 
