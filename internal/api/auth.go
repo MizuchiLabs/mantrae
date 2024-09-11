@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -22,8 +23,17 @@ func GenerateJWT(username string) (string, error) {
 		},
 	}
 
+	if username == "" {
+		return "", nil
+	}
+
+	secret := os.Getenv("SECRET")
+	if secret == "" {
+		return "", fmt.Errorf("SECRET environment variable is not set")
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv("SECRET")))
+	return token.SignedString([]byte(secret))
 }
 
 // ValidateJWT validates a JWT token

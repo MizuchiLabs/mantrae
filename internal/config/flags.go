@@ -1,4 +1,4 @@
-// Package config provides functions for parsing command-line flags and
+// Package config provides functions for parsing command-line f and
 // setting up the application's default settings.
 package config
 
@@ -23,51 +23,58 @@ type Flags struct {
 	Reset    bool
 }
 
-func ParseFlags() *Flags {
-	var flags Flags
-
-	flag.BoolVar(&flags.Version, "version", false, "Print version and exit")
-	flag.IntVar(&flags.Port, "port", 3000, "Port to listen on")
+func (f *Flags) Parse() error {
+	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
+	flag.IntVar(&f.Port, "port", 3000, "Port to listen on")
 	flag.StringVar(
-		&flags.URL,
+		&f.URL,
 		"url",
 		"",
 		"Specify the URL of the Traefik instance (e.g. http://localhost:8080)",
 	)
-	flag.StringVar(&flags.Username, "username", "", "Specify the username for the Traefik instance")
-	flag.StringVar(&flags.Password, "password", "", "Specify the password for the Traefik instance")
-	flag.BoolVar(&flags.Update, "update", false, "Update the application")
-	flag.BoolVar(&flags.Reset, "reset", false, "Reset the default admin password")
+	flag.StringVar(&f.Username, "username", "", "Specify the username for the Traefik instance")
+	flag.StringVar(&f.Password, "password", "", "Specify the password for the Traefik instance")
+	flag.BoolVar(&f.Update, "update", false, "Update the application")
+	flag.BoolVar(&f.Reset, "reset", false, "Reset the default admin password")
 
 	flag.Parse()
+	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
-	if flags.Version {
+	if f.Version {
 		fmt.Println(util.Version)
 		os.Exit(0)
 	}
-
-	if flags.URL != "" {
-		SetDefaultProfile(flags.URL, flags.Username, flags.Password)
+	if err := SetDefaultAdminUser(); err != nil {
+		return err
+	}
+	if err := SetDefaultSettings(); err != nil {
+		return err
 	}
 
-	if flags.Reset {
-		ResetAdminUser()
+	if f.URL != "" {
+		if err := SetDefaultProfile(f.URL, f.Username, f.Password); err != nil {
+			return err
+		}
+	}
+	if f.Reset {
+		if err := ResetAdminUser(); err != nil {
+			return err
+		}
 	}
 
-	util.UpdateSelf(flags.Update)
+	util.UpdateSelf(f.Update)
 
-	return &flags
+	return nil
 }
 
-func SetDefaultAdminUser() {
+func SetDefaultAdminUser() error {
 	// check if default admin user exists
 	creds, err := db.Query.GetUserByUsername(context.Background(), "admin")
 	if err != nil {
 		password := util.GenPassword(32)
 		hash, err := util.HashPassword(password)
 		if err != nil {
-			slog.Error("Failed to hash password", "error", err)
-			return
+			return fmt.Errorf("failed to hash password: %w", err)
 		}
 
 		if _, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
@@ -75,10 +82,10 @@ func SetDefaultAdminUser() {
 			Password: hash,
 			Type:     "user",
 		}); err != nil {
-			slog.Error("Failed to create default admin user", "error", err)
+			return fmt.Errorf("failed to create default admin user: %w", err)
 		}
 		slog.Info("Generated default admin user", "username", "admin", "password", password)
-		return
+		return nil
 	}
 
 	// Validate credentials
@@ -86,8 +93,7 @@ func SetDefaultAdminUser() {
 		password := util.GenPassword(32)
 		hash, err := util.HashPassword(password)
 		if err != nil {
-			slog.Error("Failed to hash password", "error", err)
-			return
+			return fmt.Errorf("failed to hash password: %w", err)
 		}
 		slog.Info("Invalid credentials, regenerating...")
 		if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
@@ -95,13 +101,14 @@ func SetDefaultAdminUser() {
 			Password: hash,
 			Type:     "user",
 		}); err != nil {
-			slog.Error("Failed to update default admin user", "error", err)
+			return fmt.Errorf("failed to update default admin user: %w", err)
 		}
 		slog.Info("Generated default admin user", "username", "admin", "password", password)
 	}
+	return nil
 }
 
-func SetDefaultProfile(url, username, password string) {
+func SetDefaultProfile(url, username, password string) error {
 	profile, err := db.Query.GetProfileByName(context.Background(), "default")
 	if err != nil {
 		_, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{
@@ -112,12 +119,13 @@ func SetDefaultProfile(url, username, password string) {
 			Tls:      false,
 		})
 		if err != nil {
-			slog.Error("Failed to create default profile", "error", err)
+			return fmt.Errorf("failed to create default profile: %w", err)
 		}
-		slog.Info("Generated default profile", "url", url)
-		return
+		slog.Info("Created default profile", "url", url, "username", username, "password", password)
+		return nil
 	}
-	if profile.Url != url || profile.Username != &username || profile.Password != &password {
+
+	if profile.Url != url || *profile.Username != username || *profile.Password != password {
 		if _, err := db.Query.UpdateProfile(context.Background(), db.UpdateProfileParams{
 			ID:       profile.ID,
 			Name:     "default",
@@ -126,12 +134,15 @@ func SetDefaultProfile(url, username, password string) {
 			Password: &password,
 			Tls:      false,
 		}); err != nil {
-			slog.Error("Failed to update default profile", "error", err)
+			return fmt.Errorf("failed to update default profile: %w", err)
 		}
+		slog.Info("Updated default profile", "url", url, "username", username, "password", password)
 	}
+
+	return nil
 }
 
-func SetDefaultSettings() {
+func SetDefaultSettings() error {
 	baseSettings := []db.Setting{
 		{
 			Key:   "backup-enabled",
@@ -153,25 +164,24 @@ func SetDefaultSettings() {
 				Key:   setting.Key,
 				Value: setting.Value,
 			}); err != nil {
-				slog.Error("Failed to create setting", "error", err)
+				return fmt.Errorf("failed to create setting: %w", err)
 			}
 		}
 	}
+	return nil
 }
 
 // ResetAdminUser resets the default admin user with a new password.
-func ResetAdminUser() {
+func ResetAdminUser() error {
 	creds, err := db.Query.GetUserByUsername(context.Background(), "admin")
 	if err != nil {
-		slog.Error("Failed to get default admin user", "error", err)
-		return
+		return fmt.Errorf("failed to get default admin user: %w", err)
 	}
 
 	password := util.GenPassword(32)
 	hash, err := util.HashPassword(password)
 	if err != nil {
-		slog.Error("Failed to hash password", "error", err)
-		return
+		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
 	if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
@@ -180,7 +190,8 @@ func ResetAdminUser() {
 		Password: hash,
 		Type:     "user",
 	}); err != nil {
-		slog.Error("Failed to update default admin user", "error", err)
+		return fmt.Errorf("failed to update default admin user: %w", err)
 	}
 	slog.Info("Generated new admin password", "password", password)
+	return nil
 }

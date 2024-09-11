@@ -20,19 +20,26 @@ import (
 var backupCron *cron.Cron
 
 func BackupDatabase() error {
+	// Open the database file
+	file, err := os.Open("mantrae.db")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
 	timestamp := time.Now().Format("2006-01-02")
 	backupPath := fmt.Sprintf("backups/backup-%s.tar.gz", timestamp)
 
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
-	if _, err := os.Stat(backupDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(backupDir, 0750); err != nil {
+	if _, err = os.Stat(backupDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(backupDir, 0750); err != nil {
 			return fmt.Errorf("failed to create backup directory: %w", err)
 		}
 	}
 
 	// Check if the backup file already exists
-	if _, err := os.Stat(backupPath); err == nil {
+	if _, err = os.Stat(backupPath); err == nil {
 		return nil
 	}
 
@@ -48,13 +55,6 @@ func BackupDatabase() error {
 
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer tarWriter.Close()
-
-	// Open the database file
-	file, err := os.Open("mantrae.db")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {

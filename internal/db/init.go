@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"os"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
@@ -17,11 +19,27 @@ var (
 	Query *Queries
 )
 
+// isTest returns true if the current program is running in a test environment
+func isTest() bool {
+	return strings.HasSuffix(os.Args[0], ".test")
+}
+
 func InitDB() error {
-	db, err := sql.Open("sqlite3", "file:mantrae.db?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL")
-	if err != nil {
-		db.Close()
-		return fmt.Errorf("failed to open database: %w", err)
+	var db *sql.DB
+	var err error
+
+	if isTest() {
+		db, err = sql.Open("sqlite3", "file:mantrae_test.db?mode=memory")
+		if err != nil {
+			db.Close()
+			return fmt.Errorf("failed to open database: %w", err)
+		}
+	} else {
+		db, err = sql.Open("sqlite3", "file:mantrae.db?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL")
+		if err != nil {
+			db.Close()
+			return fmt.Errorf("failed to open database: %w", err)
+		}
 	}
 
 	goose.SetBaseFS(migrations)

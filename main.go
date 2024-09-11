@@ -31,9 +31,12 @@ func main() {
 	}
 	defer db.DB.Close() // Close the database connection when the program exits
 
-	flags := config.ParseFlags() // Parse command-line flags
-	config.SetDefaultAdminUser() // Set default admin user
-	config.SetDefaultSettings()  // Set default settings
+	// Parse command-line flags and set default settings
+	var flags config.Flags
+	if err := flags.Parse(); err != nil {
+		slog.Error("Failed to parse flags", "error", err)
+		return
+	}
 
 	// Schedule backups
 	if err := config.ScheduleBackups(); err != nil {

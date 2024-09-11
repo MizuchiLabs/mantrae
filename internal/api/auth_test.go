@@ -10,38 +10,60 @@ import (
 )
 
 func TestGenerateJWT(t *testing.T) {
-	os.Setenv("SECRET", "dummy-secret") // Set the secret environment variable
-
 	type args struct {
 		username string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
+		name       string
+		args       args
+		emptyToken bool
+		wantErr    bool
+		setEnv     bool
 	}{
 		{
 			name: "Valid Username",
 			args: args{
 				username: "testuser",
 			},
-			wantErr: false,
+			emptyToken: false,
+			wantErr:    false,
+			setEnv:     true,
 		},
 		{
 			name: "Empty Username",
 			args: args{
 				username: "",
 			},
-			wantErr: false, // A token can still be generated for an empty username
+			emptyToken: true,
+			wantErr:    false,
+			setEnv:     true,
+		},
+		{
+			name: "Without Secret",
+			args: args{
+				username: "testuser",
+			},
+			emptyToken: false,
+			wantErr:    true,
+			setEnv:     false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := GenerateJWT(tt.args.username)
+			if tt.setEnv {
+				os.Setenv("SECRET", "dummy-secret") // Set the secret environment variable
+			} else {
+				os.Unsetenv("SECRET")
+			}
+			token, err := GenerateJWT(tt.args.username)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateJWT() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if tt.emptyToken {
+				if token != "" {
+					t.Errorf("GenerateJWT() = %v, want empty string", token)
+				}
 			}
 		})
 	}
@@ -60,6 +82,7 @@ func TestValidateJWT(t *testing.T) {
 		args    args
 		want    *Claims
 		wantErr bool
+		setEnv  bool
 	}{
 		{
 			name: "Valid Token",
@@ -73,6 +96,7 @@ func TestValidateJWT(t *testing.T) {
 				},
 			},
 			wantErr: false,
+			setEnv:  true,
 		},
 		{
 			name: "Invalid Token",
@@ -81,6 +105,7 @@ func TestValidateJWT(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+			setEnv:  true,
 		},
 		{
 			name: "Expired Token",
@@ -99,10 +124,25 @@ func TestValidateJWT(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+			setEnv:  true,
+		},
+		{
+			name: "Without Secret",
+			args: args{
+				tokenString: "invalidTokenString",
+			},
+			want:    nil,
+			wantErr: true,
+			setEnv:  false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.setEnv {
+				os.Setenv("SECRET", "dummy-secret") // Set the secret environment variable
+			} else {
+				os.Unsetenv("SECRET")
+			}
 			got, err := ValidateJWT(tt.args.tokenString)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateJWT() error = %v, wantErr %v", err, tt.wantErr)

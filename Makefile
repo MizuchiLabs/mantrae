@@ -23,6 +23,10 @@ audit:
 	- govulncheck -show=color ./...
 	- staticcheck -checks=all -f=stylish ./...
 
+.PHONY: test
+test:
+	go test -v ./...
+
 .PHONY: build
 build: audit
 	cd web && pnpm install && pnpm run build
