@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
@@ -515,6 +516,14 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError,
 		)
 		return
+	}
+
+	// Check if the updated setting affects the backup configuration
+	if setting.Key == "backup-enabled" || setting.Key == "backup-schedule" {
+		if err := config.ScheduleBackups(); err != nil {
+			http.Error(w, "Failed to reconfigure backup", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	writeJSON(w, data)

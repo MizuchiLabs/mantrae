@@ -17,6 +17,8 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+var backupCron *cron.Cron
+
 func BackupDatabase() error {
 	timestamp := time.Now().Format("2006-01-02")
 	backupPath := fmt.Sprintf("backups/backup-%s.tar.gz", timestamp)
@@ -123,16 +125,26 @@ func CleanupBackups() error {
 }
 
 func ScheduleBackups() error {
+	enabled, err := db.Query.GetSettingByKey(context.Background(), "backup-enabled")
+	if err != nil {
+		return fmt.Errorf("failed to get backup enabled setting: %w", err)
+	}
+	if enabled.Value != "true" {
+		stopBackupCron()
+		return nil
+	}
+
 	schedule, err := db.Query.GetSettingByKey(context.Background(), "backup-schedule")
 	if err != nil {
 		return fmt.Errorf("failed to get backup schedule: %w", err)
 	}
 	if schedule.Value == "" {
+		stopBackupCron()
 		return nil
 	}
 
-	c := cron.New()
-	if _, err := c.AddFunc(schedule.Value, func() {
+	backupCron = cron.New()
+	if _, err := backupCron.AddFunc(schedule.Value, func() {
 		if err := BackupDatabase(); err != nil {
 			slog.Error("Failed to backup database", "error", err)
 		}
@@ -142,8 +154,14 @@ func ScheduleBackups() error {
 	}); err != nil {
 		return fmt.Errorf("failed to schedule backup: %w", err)
 	}
-
-	c.Start()
+	backupCron.Start()
 
 	return nil
+}
+
+func stopBackupCron() {
+	if backupCron != nil {
+		backupCron.Stop()
+		backupCron = nil
+	}
 }

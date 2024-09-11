@@ -1,7 +1,7 @@
 <script>
 	import * as Avatar from '$lib/components/ui/avatar/index';
 	import { Button } from '$lib/components/ui/button/index';
-	import { logout, profiles, config } from '$lib/api';
+	import { logout, profiles } from '$lib/api';
 	import Profile from './profile.svelte';
 	import { goto } from '$app/navigation';
 	import InfoTraefik from '../modals/infoTraefik.svelte';
@@ -12,7 +12,7 @@
 	};
 </script>
 
-<nav class="flex h-16 items-center justify-between border-b bg-background">
+<nav class="flex h-16 items-center justify-between border-b bg-primary-foreground">
 	<div class="ml-6 flex flex-row items-center gap-1">
 		<Profile />
 		{#if !$profiles}

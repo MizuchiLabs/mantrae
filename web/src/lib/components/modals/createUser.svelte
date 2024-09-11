@@ -31,7 +31,7 @@
 
 <Dialog.Root>
 	<Dialog.Trigger>
-		<div class="flex w-full flex-row items-center justify-between">
+		<div class="mt-8 flex w-full flex-row items-center justify-between px-4">
 			<Button class="flex items-center gap-2 bg-red-400 text-black">
 				<span>Add User</span>
 				<iconify-icon icon="fa6-solid:plus" />

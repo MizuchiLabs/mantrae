@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -101,4 +102,11 @@ func IsValidEmail(email string) bool {
 		return false
 	}
 	return matched
+}
+
+func IsRunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
 }

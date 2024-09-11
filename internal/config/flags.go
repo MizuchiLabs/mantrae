@@ -20,6 +20,7 @@ type Flags struct {
 	Username string
 	Password string
 	Update   bool
+	Reset    bool
 }
 
 func ParseFlags() *Flags {
@@ -36,6 +37,7 @@ func ParseFlags() *Flags {
 	flag.StringVar(&flags.Username, "username", "", "Specify the username for the Traefik instance")
 	flag.StringVar(&flags.Password, "password", "", "Specify the password for the Traefik instance")
 	flag.BoolVar(&flags.Update, "update", false, "Update the application")
+	flag.BoolVar(&flags.Reset, "reset", false, "Reset the default admin password")
 
 	flag.Parse()
 
@@ -46,6 +48,10 @@ func ParseFlags() *Flags {
 
 	if flags.URL != "" {
 		SetDefaultProfile(flags.URL, flags.Username, flags.Password)
+	}
+
+	if flags.Reset {
+		ResetAdminUser()
 	}
 
 	util.UpdateSelf(flags.Update)
@@ -128,6 +134,10 @@ func SetDefaultProfile(url, username, password string) {
 func SetDefaultSettings() {
 	baseSettings := []db.Setting{
 		{
+			Key:   "backup-enabled",
+			Value: "true",
+		},
+		{
 			Key:   "backup-schedule",
 			Value: "0 2 * * 1", // Weekly at 02:00 AM on Monday
 		},
@@ -147,4 +157,30 @@ func SetDefaultSettings() {
 			}
 		}
 	}
+}
+
+// ResetAdminUser resets the default admin user with a new password.
+func ResetAdminUser() {
+	creds, err := db.Query.GetUserByUsername(context.Background(), "admin")
+	if err != nil {
+		slog.Error("Failed to get default admin user", "error", err)
+		return
+	}
+
+	password := util.GenPassword(32)
+	hash, err := util.HashPassword(password)
+	if err != nil {
+		slog.Error("Failed to hash password", "error", err)
+		return
+	}
+
+	if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
+		ID:       creds.ID,
+		Username: creds.Username,
+		Password: hash,
+		Type:     "user",
+	}); err != nil {
+		slog.Error("Failed to update default admin user", "error", err)
+	}
+	slog.Info("Generated new admin password", "password", password)
 }

@@ -55,6 +55,11 @@ func UpdateSelf(update bool) {
 		return
 	}
 
+	if IsRunningInDocker() {
+		slog.Info("Running in docker, skipping update")
+		return
+	}
+
 	asset := latest.findBinary(filepath.Base(os.Args[0]))
 	if asset == nil {
 		slog.Info("Unsupported platform", "platform", runtime.GOOS+"/"+runtime.GOARCH)

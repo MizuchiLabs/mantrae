@@ -45,7 +45,7 @@ func (u *CreateUserParams) Verify() error {
 	if u.Type == "" {
 		return fmt.Errorf("user type cannot be empty")
 	}
-	if u.Email != nil {
+	if *u.Email != "" {
 		if !util.IsValidEmail(*u.Email) {
 			return fmt.Errorf("email is not valid")
 		}
@@ -69,7 +69,7 @@ func (u *UpdateUserParams) Verify() error {
 	if u.Type == "" {
 		return fmt.Errorf("user type cannot be empty")
 	}
-	if u.Email != nil {
+	if *u.Email != "" {
 		if !util.IsValidEmail(*u.Email) {
 			return fmt.Errorf("email is not valid")
 		}

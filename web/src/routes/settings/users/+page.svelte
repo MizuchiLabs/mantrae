@@ -15,7 +15,7 @@
 
 <CreateUser />
 
-<div class="flex flex-row items-center gap-2">
+<div class="flex flex-row gap-4 px-4">
 	{#if $users}
 		{#each $users as u}
 			<Card.Root class="w-[400px]">

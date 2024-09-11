@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { DNSProvider } from '$lib/types/base';
-	import { updateProvider } from '$lib/api';
+	import { profile, updateProvider } from '$lib/api';
 
 	export let p: DNSProvider;
 	let open = false;
@@ -57,6 +57,10 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-2" on:keydown={onKeydown} aria-hidden>
+					<div class="mb-4 flex items-center justify-end gap-2">
+						<Label for="is_active" class="text-right">Default</Label>
+						<Switch name="is_active" bind:checked={p.is_active} required />
+					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
 						<Label for="name" class="text-right">Name</Label>
 						<Input
@@ -69,15 +73,20 @@
 						/>
 					</div>
 					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="externalIP" class="text-right">External IP</Label>
-						<Input
-							name="externalIP"
-							type="text"
-							placeholder="The public IP address of the traefik instance"
-							class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-							bind:value={p.external_ip}
-							required
-						/>
+						<Label for="externalIP" class="col-span-1 text-right">External IP</Label>
+						<div class="col-span-3 flex items-center gap-2">
+							<Input
+								name="externalIP"
+								type="text"
+								placeholder="IP address of Traefik"
+								class="focus-visible:ring-0 focus-visible:ring-offset-0"
+								bind:value={p.external_ip}
+								required
+							/>
+							<Button variant="secondary" on:click={() => (p.external_ip = $profile.url)}>
+								<iconify-icon icon="fa6-solid:clone" />
+							</Button>
+						</div>
 					</div>
 					{#if p.type === 'powerdns'}
 						<div class="grid grid-cols-4 items-center gap-4">
@@ -102,10 +111,6 @@
 							placeholder="API Key of the provider"
 							required
 						/>
-					</div>
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="is_active" class="text-right">Default</Label>
-						<Switch name="is_active" class="col-span-3" bind:checked={p.is_active} required />
 					</div>
 				</div>
 			</Card.Content>

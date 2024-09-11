@@ -7,6 +7,7 @@
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	// Realtime updates
 	const eventSource = new EventSource(`${API_URL}/events`);
@@ -24,6 +25,8 @@
 		}
 	};
 
+	$: settingsPath = $page.url.pathname.includes('/settings/');
+
 	onMount(async () => {
 		if (!$loggedIn) return;
 		await getProfiles();
@@ -37,9 +40,9 @@
 <div class="app flex min-h-screen flex-col">
 	{#if $loggedIn}
 		<Sidebar />
-		<div class="flex flex-1 flex-col sm:pl-14">
+		<div class="flex flex-1 flex-col sm:pl-14" class:sm:pl-64={settingsPath}>
 			<Header />
-			<main class="flex flex-grow flex-col gap-4 py-8 sm:px-6" use:autoAnimate={{ duration: 100 }}>
+			<main class="flex flex-grow flex-col gap-4 sm:px-2" use:autoAnimate={{ duration: 100 }}>
 				<slot />
 			</main>
 			<Footer />

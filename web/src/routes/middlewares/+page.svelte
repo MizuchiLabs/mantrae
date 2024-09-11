@@ -83,127 +83,129 @@
 </script>
 
 <svelte:head>
-	<title>Middlewares | {$profile}</title>
+	<title>Middlewares</title>
 </svelte:head>
 
-<div class="flex flex-row items-center justify-between">
-	<div class="flex flex-row items-center gap-1">
-		<Input
-			type="text"
-			placeholder="Search..."
-			class="w-80 focus-visible:ring-0 focus-visible:ring-offset-0"
-			bind:value={search}
-		/>
-		<Button variant="outline" on:click={() => (search = '')} aria-hidden>
-			<iconify-icon icon="fa6-solid:xmark" />
-		</Button>
-		<button
-			class={buttonVariants({ variant: 'outline' })}
-			class:bg-primary={localProvider}
-			class:text-primary-foreground={localProvider}
-			on:click={toggleProvider}
+<div class="mt-4 flex flex-col gap-4 p-4">
+	<div class="flex flex-row items-center justify-between">
+		<div class="flex flex-row items-center gap-1">
+			<Input
+				type="text"
+				placeholder="Search..."
+				class="w-80 focus-visible:ring-0 focus-visible:ring-offset-0"
+				bind:value={search}
+			/>
+			<Button variant="outline" on:click={() => (search = '')} aria-hidden>
+				<iconify-icon icon="fa6-solid:xmark" />
+			</Button>
+			<button
+				class={buttonVariants({ variant: 'outline' })}
+				class:bg-primary={localProvider}
+				class:text-primary-foreground={localProvider}
+				on:click={toggleProvider}
+			>
+				Local Only
+			</button>
+		</div>
+		<Select.Root
+			multiple
+			selected={selectedColumns.map((c) => ({ value: c, label: c }))}
+			onSelectedChange={changeColumns}
 		>
-			Local Only
-		</button>
-	</div>
-	<Select.Root
-		multiple
-		selected={selectedColumns.map((c) => ({ value: c, label: c }))}
-		onSelectedChange={changeColumns}
-	>
-		<Select.Trigger class="w-[180px]">
-			<Select.Value placeholder="Columns" />
-		</Select.Trigger>
-		<Select.Content>
-			{#each columns as column}
-				<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
-			{/each}
-		</Select.Content>
-	</Select.Root>
-</div>
-
-<Card.Root>
-	<Card.Header class="grid grid-cols-2 items-center justify-between">
-		<div>
-			<Card.Title>Middlewares</Card.Title>
-			<Card.Description>Manage your Middlewares.</Card.Description>
-		</div>
-		<div class="justify-self-end">
-			<CreateMiddleware />
-		</div>
-	</Card.Header>
-	<Card.Content>
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					{#if showColumn('name')}
-						<Table.Head>Name</Table.Head>
-					{/if}
-					{#if showColumn('provider')}
-						<Table.Head>Provider</Table.Head>
-					{/if}
-					{#if showColumn('type')}
-						<Table.Head class="hidden md:table-cell">Type</Table.Head>
-					{/if}
-					<Table.Head>
-						<span class="sr-only">Delete</span>
-					</Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				{#each fMiddlewares as middleware}
-					<Table.Row>
-						<Table.Cell
-							class={showColumn('name')
-								? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
-								: 'hidden'}
-						>
-							{middleware.name.split('@')[0]}
-						</Table.Cell>
-						<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
-							<span
-								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-								on:click={() => (search = `@provider:${middleware.provider}`)}
-								aria-hidden
-							>
-								{middleware.provider}
-							</span>
-						</Table.Cell>
-						<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
-							<span
-								class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-								on:click={() => (search = `@type:${middleware.type}`)}
-								aria-hidden
-							>
-								{middleware.type}
-							</span>
-						</Table.Cell>
-						<Table.Cell class="min-w-[100px]">
-							{#if middleware.provider === 'http'}
-								<UpdateMiddleware {middleware} />
-								<Button
-									variant="ghost"
-									class="h-8 w-4 rounded-full bg-red-400"
-									on:click={() => deleteMiddleware(middleware.name)}
-								>
-									<iconify-icon icon="fa6-solid:xmark" />
-								</Button>
-							{:else}
-								<ShowMiddleware {middleware} />
-							{/if}
-						</Table.Cell>
-					</Table.Row>
+			<Select.Trigger class="w-[180px]">
+				<Select.Value placeholder="Columns" />
+			</Select.Trigger>
+			<Select.Content>
+				{#each columns as column}
+					<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
 				{/each}
-			</Table.Body>
-		</Table.Root>
-	</Card.Content>
-	<Card.Footer>
-		<div class="text-xs text-muted-foreground">
-			Showing <strong>{fMiddlewares.length > 0 ? 1 : 0}-{fMiddlewares.length}</strong>
-			of
-			<strong>{$middlewares.length}</strong> middlewares
-		</div>
-	</Card.Footer>
-</Card.Root>
+			</Select.Content>
+		</Select.Root>
+	</div>
 
-<Pagination {count} bind:perPage bind:currentPage />
+	<Card.Root>
+		<Card.Header class="grid grid-cols-2 items-center justify-between">
+			<div>
+				<Card.Title>Middlewares</Card.Title>
+				<Card.Description>Manage your Middlewares.</Card.Description>
+			</div>
+			<div class="justify-self-end">
+				<CreateMiddleware />
+			</div>
+		</Card.Header>
+		<Card.Content>
+			<Table.Root>
+				<Table.Header>
+					<Table.Row>
+						{#if showColumn('name')}
+							<Table.Head>Name</Table.Head>
+						{/if}
+						{#if showColumn('provider')}
+							<Table.Head>Provider</Table.Head>
+						{/if}
+						{#if showColumn('type')}
+							<Table.Head class="hidden md:table-cell">Type</Table.Head>
+						{/if}
+						<Table.Head>
+							<span class="sr-only">Delete</span>
+						</Table.Head>
+					</Table.Row>
+				</Table.Header>
+				<Table.Body>
+					{#each fMiddlewares as middleware}
+						<Table.Row>
+							<Table.Cell
+								class={showColumn('name')
+									? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
+									: 'hidden'}
+							>
+								{middleware.name.split('@')[0]}
+							</Table.Cell>
+							<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
+								<span
+									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
+									on:click={() => (search = `@provider:${middleware.provider}`)}
+									aria-hidden
+								>
+									{middleware.provider}
+								</span>
+							</Table.Cell>
+							<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
+								<span
+									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
+									on:click={() => (search = `@type:${middleware.type}`)}
+									aria-hidden
+								>
+									{middleware.type}
+								</span>
+							</Table.Cell>
+							<Table.Cell class="min-w-[100px]">
+								{#if middleware.provider === 'http'}
+									<UpdateMiddleware {middleware} />
+									<Button
+										variant="ghost"
+										class="h-8 w-4 rounded-full bg-red-400"
+										on:click={() => deleteMiddleware(middleware.name)}
+									>
+										<iconify-icon icon="fa6-solid:xmark" />
+									</Button>
+								{:else}
+									<ShowMiddleware {middleware} />
+								{/if}
+							</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		</Card.Content>
+		<Card.Footer>
+			<div class="text-xs text-muted-foreground">
+				Showing <strong>{fMiddlewares.length > 0 ? 1 : 0}-{fMiddlewares.length}</strong>
+				of
+				<strong>{$middlewares.length}</strong> middlewares
+			</div>
+		</Card.Footer>
+	</Card.Root>
+
+	<Pagination {count} bind:perPage bind:currentPage />
+</div>
