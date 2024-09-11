@@ -16,10 +16,10 @@
 
 <CreateProvider />
 
-<div class="flex flex-row items-center gap-2">
+<div class="flex flex-col gap-4 px-4 md:flex-row">
 	{#if $provider}
 		{#each $provider as p}
-			<Card.Root class="w-[400px]">
+			<Card.Root class="w-full md:w-[400px]">
 				<Card.Header>
 					<Card.Title class="flex items-center justify-between gap-2">
 						<span>{p.name}</span>

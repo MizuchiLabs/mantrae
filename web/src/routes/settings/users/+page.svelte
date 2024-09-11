@@ -15,10 +15,10 @@
 
 <CreateUser />
 
-<div class="flex flex-row gap-4 px-4">
+<div class="flex flex-col gap-4 px-4 md:flex-row">
 	{#if $users}
 		{#each $users as u}
-			<Card.Root class="w-[400px]">
+			<Card.Root class="w-full md:w-[400px]">
 				<Card.Header>
 					<Card.Title class="flex items-center justify-between gap-2">
 						<span>{u.username}</span>

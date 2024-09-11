@@ -127,7 +127,10 @@
 		<Card.Header class="grid grid-cols-2 items-center justify-between">
 			<div>
 				<Card.Title>Middlewares</Card.Title>
-				<Card.Description>Manage your Middlewares.</Card.Description>
+				<Card.Description
+					>Total middlewares managed by Mantrae {$middlewares.filter((m) => m.provider === 'http')
+						.length}</Card.Description
+				>
 			</div>
 			<div class="justify-self-end">
 				<CreateMiddleware />

@@ -47,8 +47,8 @@
 </svelte:head>
 
 <div class="mt-4 flex flex-col gap-4 p-4">
-	<div class="container mx-auto flex flex-col items-center justify-center gap-4 py-4">
-		<Card.Root class="w-[800px]">
+	<div class="container flex flex-col items-center justify-center gap-4 py-4">
+		<Card.Root class="w-full sm:w-3/4 md:w-2/3">
 			<Card.Header>
 				<Card.Title class="flex flex-row items-center justify-between gap-2 text-xl font-bold">
 					Settings

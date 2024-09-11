@@ -115,6 +115,15 @@
 		localStorage.setItem('local-provider', localProvider.toString());
 	};
 
+	const hasTLS = (router: Router): boolean => {
+		if (router.entrypoints === undefined) return false;
+
+		return router.entrypoints.some((e) => {
+			let entrypoint = $entrypoints.find((ep) => ep.name === e);
+			return entrypoint?.http?.tls !== undefined;
+		});
+	};
+
 	// Add reactive variables for bulk actions
 	let allChecked = false;
 	let selectedRouters: Router[] = [];
@@ -230,7 +239,9 @@
 		<Card.Header class="grid grid-cols-2 items-center justify-between">
 			<div>
 				<Card.Title>Routers</Card.Title>
-				<Card.Description>Manage your Routers and view their status.</Card.Description>
+				<Card.Description>
+					Total routers managed by Mantrae {$routers.filter((r) => r.provider === 'http').length}
+				</Card.Description>
 			</div>
 			<div class="justify-self-end">
 				<CreateRouter />
@@ -282,7 +293,7 @@
 				</Table.Header>
 				<Table.Body>
 					{#each fRouters as router}
-						<Table.Row>
+						<Table.Row class={hasTLS(router) ? 'bg-green-100/40 dark:bg-green-800/40' : ''}>
 							<Table.Cell class="min-w-[2rem]">
 								<div
 									on:keydown={(e) => (e.key === 'Shift' ? (shiftKeyPressed = true) : null)}
