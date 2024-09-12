@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import {
-		profile,
 		deleteRouter,
 		entrypoints,
 		middlewares,
@@ -20,9 +19,8 @@
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import type { Router } from '$lib/types/config';
 	import type { Selected } from 'bits-ui';
-	import Input from '$lib/components/ui/input/input.svelte';
 	import ShowRouter from '$lib/components/modals/showRouter.svelte';
-	import { onMount } from 'svelte';
+	import Search from '$lib/components/tables/search.svelte';
 
 	let search = '';
 	let count = 0;
@@ -42,7 +40,6 @@
 
 	const searchRouter = () => {
 		let items = $routers.filter((router) => {
-			if (localProvider && router.provider !== 'http') return false;
 			const searchParts = search.toLowerCase().split(' ');
 			return searchParts.every((part) =>
 				part.startsWith('@provider:')
@@ -74,17 +71,9 @@
 		{ value: 'middlewares', label: 'Middlewares' },
 		{ value: 'serviceStatus', label: 'Service Status' }
 	];
-	let selectedColumns: string[] = JSON.parse(
+	let fColumns: string[] = JSON.parse(
 		localStorage.getItem('router-columns') ?? JSON.stringify(columns.map((c) => c.value))
 	);
-	$: showColumn = (column: string): boolean => {
-		return selectedColumns.includes(column);
-	};
-	const changeColumns = (columns: Selected<string>[] | undefined) => {
-		if (columns === undefined) return;
-		selectedColumns = columns.map((c) => c.value);
-		localStorage.setItem('router-columns', JSON.stringify(selectedColumns));
-	};
 
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
@@ -105,14 +94,6 @@
 		let total = service?.loadBalancer?.servers?.length || 0;
 		let up = Object.values(service?.serverStatus || {}).filter((status) => status === 'UP').length;
 		return { status: `${up}/${total}`, ok: up === total };
-	};
-
-	// Only show local routers not external ones
-	let localProvider = localStorage.getItem('local-provider') === 'true';
-	const toggleProvider = () => {
-		localProvider = !localProvider;
-		search = localProvider ? '@provider:http' : '';
-		localStorage.setItem('local-provider', localProvider.toString());
 	};
 
 	const hasTLS = (router: Router): boolean => {
@@ -188,11 +169,6 @@
 		bulkDnsProvider = undefined;
 		allChecked = false;
 	};
-
-	onMount(() => {
-		search = localProvider ? '@provider:http' : '';
-		searchRouter();
-	});
 </script>
 
 <svelte:head>
@@ -200,41 +176,8 @@
 </svelte:head>
 
 <div class="mt-4 flex flex-col gap-4 p-4">
-	<div class="flex flex-row items-center justify-between">
-		<div class="flex flex-row items-center gap-1">
-			<Input
-				type="text"
-				placeholder="Search..."
-				class="w-80 focus-visible:ring-0 focus-visible:ring-offset-0"
-				bind:value={search}
-			/>
-			<Button variant="outline" on:click={() => (search = '')} aria-hidden>
-				<iconify-icon icon="fa6-solid:xmark" />
-			</Button>
-			<button
-				class={buttonVariants({ variant: 'outline' })}
-				class:bg-primary={localProvider}
-				class:text-primary-foreground={localProvider}
-				on:click={toggleProvider}
-			>
-				Local Only
-			</button>
-		</div>
-		<Select.Root
-			multiple
-			selected={selectedColumns.map((c) => ({ value: c, label: c }))}
-			onSelectedChange={changeColumns}
-		>
-			<Select.Trigger class="w-[180px]">
-				<Select.Value placeholder="Columns" />
-			</Select.Trigger>
-			<Select.Content>
-				{#each columns as column}
-					<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-	</div>
+	<Search bind:search {columns} columnName="router-columns" bind:fColumns />
+
 	<Card.Root>
 		<Card.Header class="grid grid-cols-2 items-center justify-between">
 			<div>
@@ -262,28 +205,28 @@
 								}}
 							/>
 						</Table.Head>
-						{#if showColumn('name')}
+						{#if fColumns.includes('name')}
 							<Table.Head>Name</Table.Head>
 						{/if}
-						{#if showColumn('provider')}
+						{#if fColumns.includes('provider')}
 							<Table.Head>Provider</Table.Head>
 						{/if}
-						{#if showColumn('dns')}
+						{#if fColumns.includes('dns')}
 							<Table.Head>DNS</Table.Head>
 						{/if}
-						{#if showColumn('type')}
+						{#if fColumns.includes('type')}
 							<Table.Head>Type</Table.Head>
 						{/if}
-						{#if showColumn('rule')}
+						{#if fColumns.includes('rule')}
 							<Table.Head class="hidden lg:table-cell">Rule</Table.Head>
 						{/if}
-						{#if showColumn('entrypoints')}
+						{#if fColumns.includes('entrypoints')}
 							<Table.Head class="hidden lg:table-cell">Entrypoints</Table.Head>
 						{/if}
-						{#if showColumn('middlewares')}
+						{#if fColumns.includes('middlewares')}
 							<Table.Head class="hidden lg:table-cell">Middlewares</Table.Head>
 						{/if}
-						{#if showColumn('serviceStatus')}
+						{#if fColumns.includes('serviceStatus')}
 							<Table.Head>Service Status</Table.Head>
 						{/if}
 						<Table.Head>
@@ -307,10 +250,10 @@
 									/>
 								</div>
 							</Table.Cell>
-							<Table.Cell class={showColumn('name') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('name') ? 'font-medium' : 'hidden'}>
 								{router.name.split('@')[0]}
 							</Table.Cell>
-							<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									on:click={() => (search = `@provider:${router.provider}`)}
@@ -319,7 +262,7 @@
 									{router.provider}
 								</span>
 							</Table.Cell>
-							<Table.Cell class={showColumn('dns') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('dns') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									class:bg-green-300={router.dnsProvider}
@@ -330,7 +273,7 @@
 									{router.dnsProvider ? router.dnsProvider : 'None'}
 								</span>
 							</Table.Cell>
-							<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									class:bg-green-300={router.routerType === 'http'}
@@ -343,7 +286,7 @@
 								</span>
 							</Table.Cell>
 							<Table.Cell
-								class={showColumn('rule')
+								class={fColumns.includes('rule')
 									? 'hidden max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap lg:table-cell'
 									: 'hidden'}
 							>
@@ -355,7 +298,9 @@
 									{/if}
 								{/if}
 							</Table.Cell>
-							<Table.Cell class={showColumn('entrypoints') ? 'hidden lg:table-cell' : 'hidden'}>
+							<Table.Cell
+								class={fColumns.includes('entrypoints') ? 'hidden lg:table-cell' : 'hidden'}
+							>
 								<Select.Root
 									multiple={true}
 									selected={getSelectedEntrypoints(router)}
@@ -381,7 +326,9 @@
 									</Select.Content>
 								</Select.Root>
 							</Table.Cell>
-							<Table.Cell class={showColumn('middlewares') ? 'hidden lg:table-cell' : 'hidden'}>
+							<Table.Cell
+								class={fColumns.includes('middlewares') ? 'hidden lg:table-cell' : 'hidden'}
+							>
 								<div class:hidden={router.routerType === 'udp'}>
 									<Select.Root
 										multiple={true}
@@ -404,7 +351,7 @@
 									</Select.Root>
 								</div>
 							</Table.Cell>
-							<Table.Cell class={showColumn('serviceStatus') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('serviceStatus') ? 'font-medium' : 'hidden'}>
 								<span
 									class="rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
 									class:bg-green-300={getServiceStatus(router).ok}

@@ -32,7 +32,7 @@
 			<Tabs.Content value="overview">
 				<Card.Root>
 					<Card.Content class="flex flex-col gap-2">
-						<span class="mt-2 border-b border-gray-200 pb-2 font-bold">Information</span>
+						<span class="mt-4 border-b border-gray-200 pb-2 font-bold">Information</span>
 
 						<!-- Version -->
 						<div class="my-4 grid grid-cols-4 items-center gap-2">

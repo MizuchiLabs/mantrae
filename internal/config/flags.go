@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
@@ -109,6 +110,10 @@ func SetDefaultAdminUser() error {
 }
 
 func SetDefaultProfile(url, username, password string) error {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
+
 	profile, err := db.Query.GetProfileByName(context.Background(), "default")
 	if err != nil {
 		_, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{

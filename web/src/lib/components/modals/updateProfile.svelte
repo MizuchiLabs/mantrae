@@ -70,8 +70,8 @@
 				<Checkbox name="tls" bind:checked={profile.tls} required />
 			</div>
 
-			<span class="mt-2 flex flex-row items-center gap-1 border-b border-gray-200 pb-2 font-bold">
-				Basic Authentication
+			<span class="mt-2 flex flex-row items-center gap-1 border-b border-gray-200 pb-2">
+				<span class="font-bold">Basic Authentication</span>
 				<HoverInfo
 					text="If your Traefik instance requires basic authentication, you can enter your username and password here."
 				/>

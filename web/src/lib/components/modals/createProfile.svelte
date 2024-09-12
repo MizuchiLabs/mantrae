@@ -40,7 +40,7 @@
 	<Dialog.Content class="sm:max-w-[450px]">
 		<Dialog.Header>
 			<Dialog.Title>New profile</Dialog.Title>
-			<Dialog.Description>Create a new profile to manage your Traefik clients.</Dialog.Description>
+			<Dialog.Description>Create a new profile to manage your Traefik instance.</Dialog.Description>
 		</Dialog.Header>
 		<div class="grid gap-4 py-4" on:keydown={onKeydown} aria-hidden>
 			<div class="grid grid-cols-4 items-center gap-4">
@@ -75,8 +75,8 @@
 				<Checkbox name="tls" bind:checked={profile.tls} required />
 			</div>
 
-			<span class="mt-2 flex flex-row items-center gap-1 border-b border-gray-200 pb-2 font-bold">
-				Basic Authentication
+			<span class="mt-2 flex flex-row items-center gap-1 border-b border-gray-200 pb-2">
+				<span class="font-bold">Basic Authentication</span>
 				<HoverInfo
 					text="If your Traefik instance requires basic authentication, you can enter your username and password here."
 				/>

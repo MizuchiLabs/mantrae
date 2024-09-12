@@ -5,13 +5,12 @@
 	import * as Select from '$lib/components/ui/select';
 	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import { Button } from '$lib/components/ui/button';
 	import UpdateMiddleware from '$lib/components/modals/updateMiddleware.svelte';
 	import type { Selected } from 'bits-ui';
 	import type { Middleware } from '$lib/types/middlewares';
-	import { Input } from '$lib/components/ui/input';
-	import { onMount } from 'svelte';
 	import ShowMiddleware from '$lib/components/modals/showMiddleware.svelte';
+	import Search from '$lib/components/tables/search.svelte';
 
 	let search = '';
 	let count = 0;
@@ -31,7 +30,6 @@
 
 	function searchMiddleware() {
 		let items = $middlewares.filter((middleware) => {
-			if (localProvider && middleware.provider !== 'http') return false;
 			const searchParts = search.toLowerCase().split(' ');
 			return searchParts.every((part) =>
 				part.startsWith('@provider:')
@@ -56,30 +54,9 @@
 		{ value: 'provider', label: 'Provider' },
 		{ value: 'type', label: 'Type' }
 	];
-	let selectedColumns: string[] = JSON.parse(
+	let fColumns: string[] = JSON.parse(
 		localStorage.getItem('middleware-columns') ?? JSON.stringify(columns.map((c) => c.value))
 	);
-	$: showColumn = (column: string): boolean => {
-		return selectedColumns.includes(column);
-	};
-	const changeColumns = (columns: Selected<string>[] | undefined) => {
-		if (columns === undefined) return;
-		selectedColumns = columns.map((c) => c.value);
-		localStorage.setItem('middleware-columns', JSON.stringify(selectedColumns));
-	};
-
-	// Only show local middlewares not external ones
-	let localProvider = localStorage.getItem('local-provider') === 'true';
-	const toggleProvider = () => {
-		localProvider = !localProvider;
-		search = localProvider ? '@provider:http' : '';
-		localStorage.setItem('local-provider', localProvider.toString());
-	};
-
-	onMount(() => {
-		search = localProvider ? '@provider:http' : '';
-		searchMiddleware();
-	});
 </script>
 
 <svelte:head>
@@ -87,41 +64,7 @@
 </svelte:head>
 
 <div class="mt-4 flex flex-col gap-4 p-4">
-	<div class="flex flex-row items-center justify-between">
-		<div class="flex flex-row items-center gap-1">
-			<Input
-				type="text"
-				placeholder="Search..."
-				class="w-80 focus-visible:ring-0 focus-visible:ring-offset-0"
-				bind:value={search}
-			/>
-			<Button variant="outline" on:click={() => (search = '')} aria-hidden>
-				<iconify-icon icon="fa6-solid:xmark" />
-			</Button>
-			<button
-				class={buttonVariants({ variant: 'outline' })}
-				class:bg-primary={localProvider}
-				class:text-primary-foreground={localProvider}
-				on:click={toggleProvider}
-			>
-				Local Only
-			</button>
-		</div>
-		<Select.Root
-			multiple
-			selected={selectedColumns.map((c) => ({ value: c, label: c }))}
-			onSelectedChange={changeColumns}
-		>
-			<Select.Trigger class="w-[180px]">
-				<Select.Value placeholder="Columns" />
-			</Select.Trigger>
-			<Select.Content>
-				{#each columns as column}
-					<Select.Item value={column.value} label={column.label}>{column.label}</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-	</div>
+	<Search bind:search {columns} columnName="middleware-columns" bind:fColumns />
 
 	<Card.Root>
 		<Card.Header class="grid grid-cols-2 items-center justify-between">
@@ -140,13 +83,13 @@
 			<Table.Root>
 				<Table.Header>
 					<Table.Row>
-						{#if showColumn('name')}
+						{#if fColumns.includes('name')}
 							<Table.Head>Name</Table.Head>
 						{/if}
-						{#if showColumn('provider')}
+						{#if fColumns.includes('provider')}
 							<Table.Head>Provider</Table.Head>
 						{/if}
-						{#if showColumn('type')}
+						{#if fColumns.includes('type')}
 							<Table.Head class="hidden md:table-cell">Type</Table.Head>
 						{/if}
 						<Table.Head>
@@ -158,13 +101,13 @@
 					{#each fMiddlewares as middleware}
 						<Table.Row>
 							<Table.Cell
-								class={showColumn('name')
+								class={fColumns.includes('name')
 									? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
 									: 'hidden'}
 							>
 								{middleware.name.split('@')[0]}
 							</Table.Cell>
-							<Table.Cell class={showColumn('provider') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									on:click={() => (search = `@provider:${middleware.provider}`)}
@@ -173,7 +116,7 @@
 									{middleware.provider}
 								</span>
 							</Table.Cell>
-							<Table.Cell class={showColumn('type') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									on:click={() => (search = `@type:${middleware.type}`)}

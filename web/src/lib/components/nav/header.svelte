@@ -13,10 +13,10 @@
 </script>
 
 <nav class="flex h-16 items-center justify-between border-b bg-primary-foreground">
-	<div class="ml-6 flex flex-row items-center gap-4">
+	<div class="ml-6 flex flex-row items-center">
 		<Profile />
 		{#if $profiles?.length === 0 || !$profiles}
-			<span class="flex items-center gap-1 text-sm text-muted-foreground">
+			<span class="ml-4 flex items-center gap-1 text-sm text-muted-foreground">
 				<iconify-icon icon="fa6-solid:arrow-left" />
 				No profiles configured, create one here
 			</span>
