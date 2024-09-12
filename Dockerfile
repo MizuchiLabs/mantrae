@@ -5,13 +5,9 @@ ENV CGO_ENABLED=1
 RUN apk update && apk add --no-cache gcc musl-dev
 
 WORKDIR /app
-
-COPY go.mod go.sum ./
-RUN go mod download
-
 COPY . .
 
-RUN go build -o mantrae main.go
+RUN go build -o mantrae .
 
 # Final Stage
 FROM alpine:latest
@@ -27,7 +23,5 @@ RUN chmod +x /entrypoint.sh
 WORKDIR /app
 EXPOSE 3000
 
-# Define entrypoint and default command
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["mantrae"]
+ENTRYPOINT ["/usr/local/bin/mantrae"]
 
