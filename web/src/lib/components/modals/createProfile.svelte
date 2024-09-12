@@ -6,6 +6,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { createProfile } from '$lib/api';
 	import { newProfile } from '$lib/types/base';
+	import { Plus } from 'lucide-svelte';
 
 	let profile = newProfile();
 
