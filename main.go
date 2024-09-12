@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/api"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
@@ -55,7 +56,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":" + flags.Port,
-		Handler:           &http.ServeMux{},
+		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
