@@ -6,11 +6,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/api"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
@@ -49,21 +47,22 @@ func main() {
 
 	// Create a context that will be used to signal background processes to stop
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Start the background sync processes
 	go traefik.Sync(ctx)
 	go dns.Sync(ctx)
 
 	srv := &http.Server{
-		Addr:              ":" + strconv.Itoa(flags.Port),
-		Handler:           api.Routes(),
+		Addr:              ":" + flags.Port,
+		Handler:           &http.ServeMux{},
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	slog.Info("Listening on port", "port", flags.Port)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("ListenAndServe", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -72,7 +71,6 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("Shutting down server...")
-	cancel()
 
 	ctxShutdown, cancelShutdown := context.WithTimeout(ctx, 5*time.Second)
 	defer cancelShutdown()

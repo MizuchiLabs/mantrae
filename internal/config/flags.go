@@ -16,7 +16,7 @@ import (
 
 type Flags struct {
 	Version  bool
-	Port     int
+	Port     string
 	URL      string
 	Username string
 	Password string
@@ -26,7 +26,7 @@ type Flags struct {
 
 func (f *Flags) Parse() error {
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
-	flag.IntVar(&f.Port, "port", 3000, "Port to listen on")
+	flag.StringVar(&f.Port, "port", "3000", "Port to listen on")
 	flag.StringVar(
 		&f.URL,
 		"url",
