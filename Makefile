@@ -45,8 +45,7 @@ docker:
 		--label "org.opencontainers.image.revision=${COMMIT}" \
 		--label "org.opencontainers.image.created=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')" \
 		--label "org.opencontainers.image.licenses=MIT" \
-		-t ghcr.io/mizuchilabs/mantrae:${VERSION} .
-	docker tag ghcr.io/mizuchilabs/mantrae:${VERSION} ghcr.io/mizuchilabs/mantrae:latest
+		-t ghcr.io/mizuchilabs/mantrae:latest .
 
 docker-push:
 	docker push ghcr.io/mizuchilabs/mantrae:${VERSION}

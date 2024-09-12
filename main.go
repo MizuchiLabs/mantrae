@@ -29,7 +29,6 @@ func main() {
 		slog.Error("SECRET environment variable not set")
 		return
 	}
-
 	if err := db.InitDB(); err != nil {
 		slog.Error("Failed to initialize database", "error", err)
 		return

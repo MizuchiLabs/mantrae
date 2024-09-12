@@ -37,6 +37,11 @@ type release struct {
 }
 
 func UpdateSelf(update bool) {
+	if IsRunningInDocker() {
+		slog.Info("Running in docker, skipping update")
+		return
+	}
+
 	latest, err := fetchLatestRelease()
 	if err != nil {
 		slog.Error("Update failed", "Error", err)
@@ -52,11 +57,6 @@ func UpdateSelf(update bool) {
 			return
 		}
 		slog.Info("New version available!", "latest", latest.Tag, "current", Version)
-		return
-	}
-
-	if IsRunningInDocker() {
-		slog.Info("Running in docker, skipping update")
 		return
 	}
 
