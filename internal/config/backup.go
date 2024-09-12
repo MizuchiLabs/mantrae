@@ -95,6 +95,10 @@ func CleanupBackups() error {
 	if err != nil {
 		return fmt.Errorf("failed to parse backup-keep setting: %w", err)
 	}
+	// If keep is 0, do not delete any backups
+	if keep == 0 {
+		return nil
+	}
 
 	// Get the list of backup files
 	files, err := filepath.Glob("backups/backup-*.tar.gz")

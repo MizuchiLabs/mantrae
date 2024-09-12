@@ -17,6 +17,7 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 		Routers:     make(map[string]Router),
 		Services:    make(map[string]Service),
 		Middlewares: make(map[string]Middleware),
+		TLS:         nil,
 		Version:     "",
 	}
 
@@ -42,6 +43,11 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 	}
 	if config.Middlewares != nil {
 		if err := json.Unmarshal(config.Middlewares.([]byte), &data.Middlewares); err != nil {
+			return nil, err
+		}
+	}
+	if config.Tls != nil {
+		if err := json.Unmarshal(config.Tls.([]byte), &data.TLS); err != nil {
 			return nil, err
 		}
 	}
@@ -101,6 +107,10 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 	if err != nil {
 		return err
 	}
+	tls, err := json.Marshal(data.TLS)
+	if err != nil {
+		return err
+	}
 	if _, err := db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
 		ProfileID:   profileID,
 		Overview:    overview,
@@ -108,6 +118,7 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 		Routers:     routers,
 		Services:    services,
 		Middlewares: middlewares,
+		Tls:         tls,
 		Version:     &data.Version,
 	}); err != nil {
 		return err

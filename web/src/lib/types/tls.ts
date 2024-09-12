@@ -1,3 +1,18 @@
+export interface Store {
+	defaultCertificate?: Certificate;
+	defaultGeneratedCert?: GeneratedCert;
+}
+
+export interface Certificate {
+	certFile?: string;
+	keyFile?: string;
+}
+
+export interface GeneratedCert {
+	resolver?: string;
+	domain?: Domain;
+}
+
 export interface Domain {
 	main?: string;
 	sans?: string[];
@@ -15,16 +30,6 @@ export interface CertAndStores {
 	stores?: string[];
 }
 
-export interface ClientAuth {
-	caFiles?: string[];
-	clientAuthType?: string;
-}
-
-export interface GeneratedCert {
-	resolver?: string;
-	domain?: Domain;
-}
-
 export interface Options {
 	minVersion?: string;
 	maxVersion?: string;
@@ -36,12 +41,7 @@ export interface Options {
 	alpnProtocols?: string[];
 }
 
-export interface Store {
-	defaultCertificate?: Certificate;
-	defaultGeneratedCert?: GeneratedCert;
-}
-
-export interface Certificate {
-	certFile?: string;
-	keyFile?: string;
+export interface ClientAuth {
+	caFiles?: string[];
+	clientAuthType?: string;
 }

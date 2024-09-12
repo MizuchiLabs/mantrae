@@ -11,6 +11,7 @@ type Config struct {
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`
 	Middlewares interface{} `json:"middlewares"`
+	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 }
 

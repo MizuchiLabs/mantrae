@@ -7,13 +7,14 @@ import (
 )
 
 type Dynamic struct {
-	ProfileID   int64                 `json:"profile_id,omitempty"`
-	Overview    *Overview             `json:"overview,omitempty"`
-	Entrypoints []Entrypoint          `json:"entrypoints,omitempty"`
-	Routers     map[string]Router     `json:"routers,omitempty"`
-	Services    map[string]Service    `json:"services,omitempty"`
-	Middlewares map[string]Middleware `json:"middlewares,omitempty"`
-	Version     string                `json:"version,omitempty"`
+	ProfileID   int64                     `json:"profile_id,omitempty"`
+	Overview    *Overview                 `json:"overview,omitempty"`
+	Entrypoints []Entrypoint              `json:"entrypoints,omitempty"`
+	Routers     map[string]Router         `json:"routers,omitempty"`
+	Services    map[string]Service        `json:"services,omitempty"`
+	Middlewares map[string]Middleware     `json:"middlewares,omitempty"`
+	TLS         *dynamic.TLSConfiguration `json:"tls,omitempty"`
+	Version     string                    `json:"version,omitempty"`
 }
 
 type Entrypoint struct {

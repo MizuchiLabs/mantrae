@@ -93,10 +93,11 @@ INSERT INTO
     routers,
     services,
     middlewares,
+    tls,
     version
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateConfig :one
 UPDATE config
@@ -106,6 +107,7 @@ SET
   routers = ?,
   services = ?,
   middlewares = ?,
+  tls = ?,
   version = ?
 WHERE
   profile_id = ? RETURNING *;

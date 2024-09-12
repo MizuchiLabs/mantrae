@@ -32,6 +32,8 @@
 			<Tabs.Content value="overview">
 				<Card.Root>
 					<Card.Content class="flex flex-col gap-2">
+						<span class="mt-2 border-b border-gray-200 pb-2 font-bold">Information</span>
+
 						<!-- Version -->
 						<div class="my-4 grid grid-cols-4 items-center gap-2">
 							<span class="col-span-1">Version</span>
@@ -90,7 +92,8 @@
 							</div>
 						</div>
 
-						<header class="my-4 font-bold">Router Overview</header>
+						<span class="mt-2 border-b border-gray-200 pb-2 font-bold"> Router Overview </span>
+
 						<!-- HTTP Overview -->
 						<div class="grid grid-cols-4 items-center gap-2">
 							<span class="col-span-1 font-mono">HTTP</span>
@@ -143,7 +146,7 @@
 					<Card.Header>
 						<Card.Title class="flex items-center justify-between gap-2">Dynamic Config</Card.Title>
 						<Card.Description>
-							This is the current dynamic configuration your traefik instance is using.
+							This is the current dynamic configuration your Traefik instance is using.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content>

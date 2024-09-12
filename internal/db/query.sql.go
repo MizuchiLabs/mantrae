@@ -18,10 +18,11 @@ INSERT INTO
     routers,
     services,
     middlewares,
+    tls,
     version
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, routers, services, middlewares, version
+  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
 `
 
 type CreateConfigParams struct {
@@ -31,6 +32,7 @@ type CreateConfigParams struct {
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`
 	Middlewares interface{} `json:"middlewares"`
+	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 }
 
@@ -42,6 +44,7 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 		arg.Routers,
 		arg.Services,
 		arg.Middlewares,
+		arg.Tls,
 		arg.Version,
 	)
 	var i Config
@@ -52,6 +55,7 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 		&i.Routers,
 		&i.Services,
 		&i.Middlewares,
+		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -296,7 +300,7 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 
 const getConfigByProfileID = `-- name: GetConfigByProfileID :one
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
 FROM
   config
 WHERE
@@ -315,6 +319,7 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 		&i.Routers,
 		&i.Services,
 		&i.Middlewares,
+		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -322,7 +327,7 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 
 const getConfigByProfileName = `-- name: GetConfigByProfileName :one
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
 FROM
   config
 WHERE
@@ -348,6 +353,7 @@ func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Conf
 		&i.Routers,
 		&i.Services,
 		&i.Middlewares,
+		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -523,7 +529,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listConfigs = `-- name: ListConfigs :many
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, version
+  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
 FROM
   config
 `
@@ -544,6 +550,7 @@ func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
 			&i.Routers,
 			&i.Services,
 			&i.Middlewares,
+			&i.Tls,
 			&i.Version,
 		); err != nil {
 			return nil, err
@@ -708,9 +715,10 @@ SET
   routers = ?,
   services = ?,
   middlewares = ?,
+  tls = ?,
   version = ?
 WHERE
-  profile_id = ? RETURNING profile_id, overview, entrypoints, routers, services, middlewares, version
+  profile_id = ? RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
 `
 
 type UpdateConfigParams struct {
@@ -719,6 +727,7 @@ type UpdateConfigParams struct {
 	Routers     interface{} `json:"routers"`
 	Services    interface{} `json:"services"`
 	Middlewares interface{} `json:"middlewares"`
+	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 	ProfileID   int64       `json:"profile_id"`
 }
@@ -730,6 +739,7 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 		arg.Routers,
 		arg.Services,
 		arg.Middlewares,
+		arg.Tls,
 		arg.Version,
 		arg.ProfileID,
 	)
@@ -741,6 +751,7 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 		&i.Routers,
 		&i.Services,
 		&i.Middlewares,
+		&i.Tls,
 		&i.Version,
 	)
 	return i, err

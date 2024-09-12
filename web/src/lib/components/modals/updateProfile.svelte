@@ -3,9 +3,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { deleteProfile, updateProfile } from '$lib/api';
 	import type { Profile } from '$lib/types/base';
+	import HoverInfo from '../utils/hoverInfo.svelte';
+	import { Pencil } from 'lucide-svelte';
 
 	export let profile: Profile;
 	let open = false;
@@ -27,8 +29,8 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger class="flex flex-row justify-end">
-		<Button variant="ghost" class="h-8 w-4 rounded-full bg-orange-400">
-			<iconify-icon icon="fa6-solid:pencil" />
+		<Button variant="ghost" class="h-8 w-8 rounded-full bg-orange-400" size="icon">
+			<Pencil size="1rem" />
 		</Button>
 	</Dialog.Trigger>
 	<Dialog.Content class="sm:max-w-[425px]">
@@ -58,6 +60,23 @@
 					required
 				/>
 			</div>
+			<div class="flex flex-row items-center justify-end gap-2">
+				<Label for="tls" class="flex items-center gap-0.5">
+					Verify Certificate
+					<HoverInfo
+						text="If your Traefik instance uses a self-signed certificate, you can enable/disable certificate verification here."
+					/>
+				</Label>
+				<Checkbox name="tls" bind:checked={profile.tls} required />
+			</div>
+
+			<span class="mt-2 flex flex-row items-center gap-1 border-b border-gray-200 pb-2 font-bold">
+				Basic Authentication
+				<HoverInfo
+					text="If your Traefik instance requires basic authentication, you can enter your username and password here."
+				/>
+			</span>
+
 			<div class="grid grid-cols-4 items-center gap-4">
 				<Label for="username" class="text-right">Username</Label>
 				<Input
@@ -65,7 +84,7 @@
 					type="text"
 					class="col-span-3"
 					bind:value={profile.username}
-					placeholder="Username of your client"
+					placeholder="Basic auth username"
 					required
 				/>
 			</div>
@@ -76,20 +95,16 @@
 					type="password"
 					class="col-span-3"
 					bind:value={profile.password}
-					placeholder="Password of your client"
+					placeholder="Basic auth password"
 					required
 				/>
-			</div>
-			<div class="flex items-center justify-end gap-4">
-				<Label for="tls" class="text-right">Verify Certificate?</Label>
-				<Switch name="tls" bind:checked={profile.tls} required />
 			</div>
 		</div>
 		<Dialog.Close class="flex w-full flex-row gap-2">
 			<Button type="submit" class="w-full bg-red-400" on:click={() => deleteProfile(profile)}>
 				Delete
 			</Button>
-			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
+			<Button type="submit" class="w-full" on:click={() => update()}>Update</Button>
 		</Dialog.Close>
 	</Dialog.Content>
 </Dialog.Root>

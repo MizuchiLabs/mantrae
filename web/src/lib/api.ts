@@ -7,6 +7,7 @@ import { type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
 
 // Global state variables
+export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
@@ -15,13 +16,12 @@ export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
 export const version = writable('');
-export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
 
 // Derived stores
+export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
 export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
 export const services = derived(config, ($config) => Object.values($config?.services ?? []));
 export const middlewares = derived(config, ($config) => Object.values($config?.middlewares ?? []));
-export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
 
 async function handleRequest(
 	endpoint: string,

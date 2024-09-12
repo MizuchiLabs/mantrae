@@ -15,6 +15,7 @@ CREATE TABLE config (
   routers JSONB,
   services JSONB,
   middlewares JSONB,
+  tls JSONB,
   version TEXT,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );

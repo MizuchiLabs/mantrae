@@ -30,6 +30,7 @@ export interface Config {
 	routers?: Record<string, Router>;
 	services?: Record<string, Service>;
 	middlewares?: Record<string, Middleware>;
+	tls?: TLSConfiguration;
 	version?: string;
 }
 

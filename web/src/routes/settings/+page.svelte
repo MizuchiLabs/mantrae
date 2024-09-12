@@ -8,6 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Input } from '$lib/components/ui/input';
 	import type { Setting } from '$lib/types/base';
+	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
 
 	let fileInput: HTMLInputElement;
 	const handleFileUpload = (event: Event) => {
@@ -67,7 +68,10 @@
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup-keep" class="col-span-1">Retention</Label>
+					<Label for="backup-keep" class="col-span-1 flex items-center gap-0.5">
+						Retention
+						<HoverInfo text="How many backups to keep. Set to 0 to keep all backups." />
+					</Label>
 					<Input
 						name="backup-keep"
 						type="text"
@@ -78,7 +82,10 @@
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup-schedule" class="col-span-1">Schedule</Label>
+					<Label for="backup-schedule" class="col-span-1 flex items-center gap-0.5">
+						Schedule
+						<HoverInfo text="Cron expression for the backup schedule." />
+					</Label>
 					<Input
 						name="backup-schedule"
 						type="text"
@@ -90,7 +97,10 @@
 				</div>
 
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup" class="col-span-1">Backup & Restore</Label>
+					<Label for="backup" class="col-span-1 flex items-center gap-0.5">
+						Backup & Restore
+						<HoverInfo text="Manually backup and restore the database." />
+					</Label>
 					<div class="col-span-3 flex w-full gap-2">
 						<input
 							type="file"

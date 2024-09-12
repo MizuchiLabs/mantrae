@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { profile, deleteMiddleware, middlewares } from '$lib/api';
+	import { deleteMiddleware, middlewares } from '$lib/api';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
