@@ -16,9 +16,6 @@ RUN apk update && apk add --no-cache bash sqlite
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/mantrae /usr/local/bin/mantrae
-COPY entrypoint.sh /
-
-RUN chmod +x /entrypoint.sh
 
 WORKDIR /app
 EXPOSE 3000
