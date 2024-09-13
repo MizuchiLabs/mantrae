@@ -24,22 +24,30 @@
 		dispatch('update', items);
 	};
 
+	const update = (index: number, value: string) => {
+		items = items?.map((_, i) => (i === index ? value : _));
+		dispatch('update', items);
+	};
+
 	onMount(() => {
-		if (!items) items = [''];
-		items = items.length > 0 ? items : [''];
+		if (!items || items.length === 0) {
+			items = [''];
+		}
 	});
 </script>
 
 <div class={cn('grid grid-cols-4 items-center gap-4', className)}>
 	<Label for="item" class="text-right">{label}</Label>
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
-		{#each items ?? [] as _, index}
+		{#each items ?? [] as item, index}
 			<li class="flex flex-row items-center justify-end gap-1">
 				{#if !disabled}
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
-						<Button class="h-8 w-4 rounded-full bg-red-400 text-black" on:click={() => addItem()}>
-							<iconify-icon icon="fa6-solid:plus" />
-						</Button>
+						{#if index === 0}
+							<Button class="h-8 w-4 rounded-full bg-red-400 text-black" on:click={() => addItem()}>
+								<iconify-icon icon="fa6-solid:plus" />
+							</Button>
+						{/if}
 						{#if (items?.length ?? 0) > 1 && index >= 1}
 							<Button on:click={() => removeItem(index)} class="h-8 w-4 rounded-full ">
 								<iconify-icon icon="fa6-solid:minus" />
@@ -53,6 +61,7 @@
 						type="text"
 						bind:value={items[index]}
 						placeholder={disabled ? '' : placeholder}
+						on:input={() => update(index, item)}
 						class="focus-visible:ring-0 focus-visible:ring-offset-0"
 						{disabled}
 					/>

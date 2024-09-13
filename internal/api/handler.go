@@ -2,15 +2,15 @@
 package api
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -533,48 +533,34 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 
 // DownloadBackup returns a backup of the database
 func DownloadBackup(w http.ResponseWriter, r *http.Request) {
-	file, err := os.Open("mantrae.db")
+	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".dump")
+	sqlFile, err := os.CreateTemp("", "backup-*.sql")
 	if err != nil {
-		http.Error(w, "Failed to read database", http.StatusInternalServerError)
+		http.Error(w, "Failed to create SQL file", http.StatusInternalServerError)
+	}
+	defer os.Remove(sqlFile.Name())
+
+	cmd.Stdout = sqlFile
+	if err := cmd.Run(); err != nil {
+		http.Error(w, "Failed to run sqlite3 command", http.StatusInternalServerError)
 		return
 	}
-	defer file.Close()
 
-	info, err := file.Stat()
-	if err != nil {
-		http.Error(w, "Failed to get file info", http.StatusInternalServerError)
+	// Reopen the temp file to start reading from the beginning
+	if _, err := sqlFile.Seek(0, 0); err != nil {
+		http.Error(w, "Failed to seek SQL file", http.StatusInternalServerError)
 		return
 	}
 
 	content := fmt.Sprintf(
-		"attachment; filename=backup-%s.tar.gz",
-		info.ModTime().Format("2006-01-02"),
+		"attachment; filename=backup-%s.sql",
+		time.Now().Format("2006-01-02"),
 	)
-	w.Header().Set("Content-Type", "application/gzip")
+	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Disposition", content)
 
-	gzipWriter := gzip.NewWriter(w)
-	defer gzipWriter.Close()
-
-	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
-
-	// Write the database file to the tar archive
-	header := &tar.Header{
-		Name:    "mantrae.db",
-		Size:    info.Size(),
-		Mode:    int64(info.Mode()),
-		ModTime: info.ModTime(),
-	}
-
-	if err := tarWriter.WriteHeader(header); err != nil {
-		http.Error(w, "Failed to write tar header", http.StatusInternalServerError)
-		return
-	}
-
-	if _, err := io.Copy(tarWriter, file); err != nil {
-		http.Error(w, "Failed to write file to tar", http.StatusInternalServerError)
-		return
+	if _, err := io.Copy(w, sqlFile); err != nil {
+		http.Error(w, "Failed to write file to response", http.StatusInternalServerError)
 	}
 }
 
@@ -595,50 +581,38 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Open the gzip reader.
-	gzipReader, err := gzip.NewReader(file)
+	restoreFile, err := os.CreateTemp("", "restore-*.sql")
 	if err != nil {
-		http.Error(w, "Failed to read gzip file", http.StatusInternalServerError)
+		http.Error(w, "Failed to create SQL file", http.StatusInternalServerError)
 		return
 	}
-	defer gzipReader.Close()
+	defer restoreFile.Close()
+	defer os.Remove(restoreFile.Name())
 
-	// Open tar reader
-	tarReader := tar.NewReader(gzipReader)
-
-	// Extract the database file from the tar archive
-	for {
-		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			http.Error(w, "Failed to read tar header", http.StatusInternalServerError)
-			return
-		}
-
-		if header.Name != "mantrae.db" {
-			continue
-		}
-
-		// Create or overwrite the existing database file.
-		outFile, err := os.Create("mantrae.db")
-		if err != nil {
-			http.Error(w, "Failed to restore database", http.StatusInternalServerError)
-			return
-		}
-		defer outFile.Close()
-
-		// CWE-409
-		limitedReader := io.LimitReader(tarReader, 5<<30) // 5GB
-
-		// Copy the decompressed data to the database file.
-		if _, err = io.Copy(outFile, limitedReader); err != nil {
-			http.Error(w, "Failed to restore database", http.StatusInternalServerError)
-			return
-		}
+	if _, err = io.Copy(restoreFile, file); err != nil {
+		http.Error(w, "Failed to copy file to content", http.StatusInternalServerError)
+		return
 	}
 
+	// Reopen the temp file to start reading from the beginning
+	if _, err = restoreFile.Seek(0, 0); err != nil {
+		http.Error(w, "Failed to seek SQL file", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete Database
+	if err = os.Remove(util.Path(util.DBName)); err != nil && !os.IsNotExist(err) {
+		http.Error(w, "Failed to delete existing database", http.StatusInternalServerError)
+		return
+	}
+
+	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".read "+restoreFile.Name())
+	if err = cmd.Run(); err != nil {
+		http.Error(w, "Failed to run sqlite3 command", http.StatusInternalServerError)
+		return
+	}
+
+	// Reopen the database connection
 	if err = db.InitDB(); err != nil {
 		http.Error(w, "Failed to initialize database", http.StatusInternalServerError)
 		return

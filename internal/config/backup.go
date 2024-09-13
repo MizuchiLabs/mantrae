@@ -1,80 +1,78 @@
 package config
 
 import (
-	"archive/tar"
 	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/robfig/cron/v3"
 )
 
 var backupCron *cron.Cron
 
 func BackupDatabase() error {
-	// Open the database file
-	file, err := os.Open("mantrae.db")
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	timestamp := time.Now().Format("2006-01-02")
-	backupPath := fmt.Sprintf("backups/backup-%s.tar.gz", timestamp)
+	backupPath := fmt.Sprintf("%s/backup-%s.sql.gz", util.Path(util.BackupDir), timestamp)
 
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
-	if _, err = os.Stat(backupDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(backupDir, 0750); err != nil {
+	if _, err := os.Stat(backupDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(backupDir, 0750); err != nil {
 			return fmt.Errorf("failed to create backup directory: %w", err)
 		}
 	}
 
 	// Check if the backup file already exists
-	if _, err = os.Stat(backupPath); err == nil {
+	if _, err := os.Stat(backupPath); err == nil {
 		return nil
 	}
 
-	// Create the .tar.gz file and gzip writer
+	sqlFile, err := os.Create(backupPath)
+	if err != nil {
+		return fmt.Errorf("failed to create SQL file: %w", err)
+	}
+	defer sqlFile.Close()
+
+	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".dump")
+	sqlPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create pipe: %w", err)
+	}
+
+	// Create the gzip file
 	gzipFile, err := os.Create(backupPath)
 	if err != nil {
-		return fmt.Errorf("failed to create tar.gz file: %w", err)
+		return fmt.Errorf("failed to create gzip file: %w", err)
 	}
 	defer gzipFile.Close()
 
+	// Create a gzip writer
 	gzipWriter := gzip.NewWriter(gzipFile)
 	defer gzipWriter.Close()
 
-	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
-
-	info, err := file.Stat()
-	if err != nil {
-		return err
+	// Start the sqlite3 command
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start sqlite3 command: %w", err)
 	}
 
-	// Write the database file to the tar archive
-	header := &tar.Header{
-		Name:    "mantrae.db",
-		Size:    info.Size(),
-		Mode:    int64(info.Mode()),
-		ModTime: info.ModTime(),
+	// Pipe the SQL dump into the gzip writer
+	if _, err := io.Copy(gzipWriter, sqlPipe); err != nil {
+		return fmt.Errorf("failed to compress SQL dump: %w", err)
 	}
 
-	if err := tarWriter.WriteHeader(header); err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(tarWriter, file); err != nil {
-		return err
+	// Wait for the sqlite3 command to finish
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("sqlite3 command failed: %w", err)
 	}
 
 	slog.Info("Database backup created", "file", backupPath)
@@ -101,7 +99,8 @@ func CleanupBackups() error {
 	}
 
 	// Get the list of backup files
-	files, err := filepath.Glob("backups/backup-*.tar.gz")
+
+	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.sql.gz", util.Path(util.BackupDir)))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)
 	}

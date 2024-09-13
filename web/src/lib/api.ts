@@ -3,7 +3,7 @@ import { toast } from 'svelte-sonner';
 import type { Config, Profile, DNSProvider, User, Setting } from './types/base';
 import { type Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
-import { type Router, type Service } from './types/config';
+import { newService, type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
 
 // Global state variables
@@ -15,6 +15,7 @@ export const config: Writable<Config> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
+export const dynamic = writable('');
 export const version = writable('');
 
 // Derived stores
@@ -77,7 +78,7 @@ export async function logout() {
 export async function getProfiles() {
 	const response = await handleRequest('/profile', 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		profiles.set(data);
 
 		// Get saved profile
@@ -96,7 +97,7 @@ export async function getProfiles() {
 export async function getProfile(id: number) {
 	const response = await handleRequest(`/profile/${id}`, 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		profile.set(data);
 		localStorage.setItem('profile', data.id.toString());
 	} else {
@@ -109,7 +110,7 @@ export async function getProfile(id: number) {
 export async function createProfile(p: Profile): Promise<void> {
 	const response = await handleRequest('/profile', 'POST', p);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		profiles.update((items) => [...(items ?? []), data]);
 		toast.success(`Profile ${data.name} created`);
 
@@ -124,7 +125,7 @@ export async function createProfile(p: Profile): Promise<void> {
 export async function updateProfile(p: Profile): Promise<void> {
 	const response = await handleRequest(`/profile`, 'PUT', p);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		profile.set(data);
 		profiles.update((items) => items.map((i) => (i.id === p.id ? data : i)));
 		toast.success(`Profile ${data.name} updated`);
@@ -152,7 +153,7 @@ export async function deleteProfile(p: Profile): Promise<void> {
 export async function getUsers() {
 	const response = await handleRequest('/user', 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		users.set(data);
 	}
 }
@@ -160,7 +161,7 @@ export async function getUsers() {
 export async function getUser(id: number): Promise<User> {
 	const response = await handleRequest(`/user/${id}`, 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		return data;
 	}
 	return {} as User;
@@ -169,7 +170,7 @@ export async function getUser(id: number): Promise<User> {
 export async function createUser(u: User): Promise<void> {
 	const response = await handleRequest('/user', 'POST', u);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		users.update((items) => [...(items ?? []), data]);
 		toast.success(`User ${data.username} created`);
 	}
@@ -178,7 +179,7 @@ export async function createUser(u: User): Promise<void> {
 export async function updateUser(u: User): Promise<void> {
 	const response = await handleRequest(`/user`, 'PUT', u);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		users.update((items) => items.map((i) => (i.id === u.id ? data : i)));
 		toast.success(`User ${data.username} updated`);
 	}
@@ -196,7 +197,7 @@ export async function deleteUser(id: number): Promise<void> {
 export async function getProviders() {
 	const response = await handleRequest('/provider', 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		provider.set(data);
 	}
 }
@@ -204,7 +205,7 @@ export async function getProviders() {
 export async function getProvider(id: number): Promise<DNSProvider> {
 	const response = await handleRequest(`/provider/${id}`, 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		return data;
 	}
 	return {} as DNSProvider;
@@ -213,7 +214,7 @@ export async function getProvider(id: number): Promise<DNSProvider> {
 export async function createProvider(p: DNSProvider): Promise<void> {
 	const response = await handleRequest('/provider', 'POST', p);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		provider.update((items) => [...(items ?? []), data]);
 		toast.success(`Provider ${data.name} created`);
 	}
@@ -223,7 +224,7 @@ export async function createProvider(p: DNSProvider): Promise<void> {
 export async function updateProvider(p: DNSProvider): Promise<void> {
 	const response = await handleRequest(`/provider`, 'PUT', p);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		provider.update((items) => items.map((i) => (i.id === p.id ? data : i)));
 		toast.success(`Provider ${data.name} updated`);
 	}
@@ -242,7 +243,7 @@ export async function deleteProvider(id: number): Promise<void> {
 export async function getConfig() {
 	const response = await handleRequest(`/config/${get(profile).id}`, 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		config.set(data);
 	}
 }
@@ -250,7 +251,7 @@ export async function getConfig() {
 export async function updateConfig(c: Config): Promise<void> {
 	const response = await handleRequest(`/config/${get(profile).id}`, 'PUT', c);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		config.set(data);
 		toast.success(`Config updated`);
 	}
@@ -269,7 +270,7 @@ export async function deleteRouterDNS(r: Router): Promise<void> {
 export async function getSettings() {
 	const response = await handleRequest('/settings', 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		settings.set(data);
 	}
 }
@@ -277,7 +278,7 @@ export async function getSettings() {
 export async function getSetting(key: string) {
 	const response = await handleRequest(`/settings/${key}`, 'GET');
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		return data;
 	}
 	return {} as Setting;
@@ -286,7 +287,7 @@ export async function getSetting(key: string) {
 export async function updateSetting(s: Setting): Promise<void> {
 	const response = await handleRequest(`/settings`, 'PUT', s);
 	if (response) {
-		let data = await response.json();
+		const data = await response.json();
 		settings.update((items) => items.map((i) => (i.key === s.key ? data : i)));
 		toast.success(`Setting ${s.key} updated`);
 	}
@@ -300,7 +301,7 @@ export async function downloadBackup() {
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
-		link.download = `backup-${new Date().toISOString().split('T')[0]}.tar.gz`;
+		link.download = `backup-${new Date().toISOString().split('T')[0]}.sql`;
 		document.body.appendChild(link);
 		link.click();
 		URL.revokeObjectURL(url);
@@ -323,26 +324,29 @@ export async function uploadBackup(file: File) {
 export async function getVersion() {
 	const response = await handleRequest('/version', 'GET');
 	if (response) {
-		let data = await response.text();
+		const data = await response.text();
 		version.set(data);
 	}
 }
 
-export async function getTraefikConfig(): Promise<string> {
+export async function getTraefikConfig() {
 	if (!get(profile)) return '';
 
 	const response = await handleRequest(`/${get(profile)?.name}`, 'GET');
 	if (response) {
-		let data = await response.text();
-		return data;
+		const data = await response.text();
+		dynamic.set(data);
 	}
-	return '';
 }
 
 // Helper functions -----------------------------------------------------------
 // Create or update a router and its service
-export async function upsertRouter(name: string, router: Router, service: Service): Promise<void> {
-	let data = get(config);
+export async function upsertRouter(
+	name: string,
+	router: Router,
+	service: Service | undefined
+): Promise<void> {
+	const data = get(config);
 	if (!data.routers) data.routers = {};
 	if (!data.services) data.services = {};
 
@@ -350,9 +354,14 @@ export async function upsertRouter(name: string, router: Router, service: Servic
 		delete data.routers[name];
 		delete data.services[name];
 	}
+	if (service === undefined) {
+		service = getService(router);
+	}
+
 	// Ensure the service name is the same as the router name
 	router.service = router.name;
 	service.name = router.name;
+	service.serviceType = router.routerType;
 
 	data.routers[router.name] = router;
 	data.services[router.name] = service;
@@ -361,7 +370,7 @@ export async function upsertRouter(name: string, router: Router, service: Servic
 
 // Create or update a middleware
 export async function upsertMiddleware(name: string, middleware: Middleware): Promise<void> {
-	let data = get(config);
+	const data = get(config);
 	if (!data.middlewares) data.middlewares = {};
 	if (middleware.name !== name) {
 		delete data.middlewares[name];
@@ -373,7 +382,7 @@ export async function upsertMiddleware(name: string, middleware: Middleware): Pr
 
 // Delete a router with its service by name
 export async function deleteRouter(name: string): Promise<void> {
-	let data = get(config);
+	const data = get(config);
 	if (!data.routers || !data.services) return;
 	await deleteRouterDNS(data.routers[name]);
 	delete data.routers[name];
@@ -383,47 +392,64 @@ export async function deleteRouter(name: string): Promise<void> {
 
 // Delete a middleware by name
 export async function deleteMiddleware(name: string): Promise<void> {
-	let data = get(config);
+	const data = get(config);
 	if (!data.middlewares) return;
 	delete data.middlewares[name];
 	await updateConfig(data);
 }
 
 // TODO: Handle this differently
-export const getService = (router: Router): Service | undefined => {
-	let baseName = router.service.split('@')[0];
+export const getService = (router: Router): Service => {
+	if (router === undefined) return newService();
+
+	const baseName = router.service.split('@')[0];
 	let service = get(config)?.services?.[baseName + '@' + router.provider];
 	if (service === undefined) {
 		service = get(config)?.services?.[router.service];
-		if (service === undefined) return undefined;
+		if (service === undefined) return newService();
 	}
 	return service;
 };
 
 // Toggle functions -----------------------------------------------------------
-export async function toggleEntrypoint(router: Router, item: Selected<unknown>[] | undefined) {
+export async function toggleEntrypoint(
+	router: Router,
+	item: Selected<unknown>[] | undefined,
+	update: boolean
+) {
 	if (item === undefined) return;
 	router.entrypoints = item.map((i) => i.value) as string[];
-	let service = getService(router);
-	if (service === undefined) return;
-	upsertRouter(router.name, router, service);
+
+	if (update) {
+		upsertRouter(router.name, router, undefined);
+	}
 }
 
-export async function toggleMiddleware(router: Router, item: Selected<unknown>[] | undefined) {
+export async function toggleMiddleware(
+	router: Router,
+	item: Selected<unknown>[] | undefined,
+	update: boolean
+) {
 	if (item === undefined) return;
 	router.middlewares = item.map((i) => i.value) as string[];
-	let service = getService(router);
-	if (service === undefined) return;
-	upsertRouter(router.name, router, service);
+
+	if (update) {
+		upsertRouter(router.name, router, undefined);
+	}
 }
 
-export async function toggleDNSProvider(router: Router, item: Selected<unknown> | undefined) {
-	let newProvider = (item?.value as string) ?? '';
+export async function toggleDNSProvider(
+	router: Router,
+	item: Selected<unknown> | undefined,
+	update: boolean
+) {
+	const newProvider = (item?.value as string) ?? '';
 	if (newProvider === '' && router.dnsProvider !== '') {
 		deleteRouterDNS(router);
 	}
 	router.dnsProvider = newProvider;
-	let service = getService(router);
-	if (service === undefined) return;
-	upsertRouter(router.name, router, service);
+
+	if (update) {
+		upsertRouter(router.name, router, undefined);
+	}
 }

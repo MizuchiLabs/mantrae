@@ -2,15 +2,13 @@
 	import { deleteMiddleware, middlewares } from '$lib/api';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
-	import * as Select from '$lib/components/ui/select';
-	import CreateMiddleware from '$lib/components/modals/createMiddleware.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import UpdateMiddleware from '$lib/components/modals/updateMiddleware.svelte';
 	import type { Selected } from 'bits-ui';
-	import type { Middleware } from '$lib/types/middlewares';
-	import ShowMiddleware from '$lib/components/modals/showMiddleware.svelte';
+	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import Search from '$lib/components/tables/search.svelte';
+	import MiddlewareModal from '$lib/components/modals/middlewareModal.svelte';
+	import { Eye, Pencil, X } from 'lucide-svelte';
 
 	let search = '';
 	let count = 0;
@@ -49,6 +47,24 @@
 		return middlewares.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 	};
 
+	let middleware = newMiddleware();
+	let openModal = false;
+	let disabled = false;
+	const createModal = async () => {
+		middleware = newMiddleware();
+		disabled = false;
+		openModal = true;
+	};
+	const updateModal = async (m: Middleware) => {
+		if (m.provider === 'http') {
+			disabled = false;
+		} else {
+			disabled = true;
+		}
+		middleware = m;
+		openModal = true;
+	};
+
 	let columns: Selected<string>[] | undefined = [
 		{ value: 'name', label: 'Name' },
 		{ value: 'provider', label: 'Provider' },
@@ -63,6 +79,8 @@
 	<title>Middlewares</title>
 </svelte:head>
 
+<MiddlewareModal {middleware} bind:open={openModal} bind:disabled />
+
 <div class="mt-4 flex flex-col gap-4 p-4">
 	<Search bind:search {columns} columnName="middleware-columns" bind:fColumns />
 
@@ -76,7 +94,14 @@
 				>
 			</div>
 			<div class="justify-self-end">
-				<CreateMiddleware />
+				<Button
+					variant="secondary"
+					class="flex items-center gap-2 bg-red-400 text-black"
+					on:click={createModal}
+				>
+					<span>Create Middleware</span>
+					<iconify-icon icon="fa6-solid:plus" />
+				</Button>
 			</div>
 		</Card.Header>
 		<Card.Content>
@@ -127,16 +152,31 @@
 							</Table.Cell>
 							<Table.Cell class="min-w-[100px]">
 								{#if middleware.provider === 'http'}
-									<UpdateMiddleware {middleware} />
 									<Button
 										variant="ghost"
-										class="h-8 w-4 rounded-full bg-red-400"
+										class="h-8 w-8 rounded-full bg-orange-400"
+										size="icon"
+										on:click={() => updateModal(middleware)}
+									>
+										<Pencil size="1rem" />
+									</Button>
+									<Button
+										variant="ghost"
+										class="h-8 w-8 rounded-full bg-red-400"
+										size="icon"
 										on:click={() => deleteMiddleware(middleware.name)}
 									>
-										<iconify-icon icon="fa6-solid:xmark" />
+										<X size="1rem" />
 									</Button>
 								{:else}
-									<ShowMiddleware {middleware} />
+									<Button
+										variant="ghost"
+										class="h-8 w-8 rounded-full bg-green-400"
+										size="icon"
+										on:click={() => updateModal(middleware)}
+									>
+										<Eye size="1rem" />
+									</Button>
 								{/if}
 							</Table.Cell>
 						</Table.Row>

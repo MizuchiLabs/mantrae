@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 )
@@ -35,7 +36,8 @@ func InitDB() error {
 			return fmt.Errorf("failed to open database: %w", err)
 		}
 	} else {
-		db, err = sql.Open("sqlite3", "file:mantrae.db?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL")
+		dsn := fmt.Sprintf("file:%s?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL", util.Path(util.DBName))
+		db, err = sql.Open("sqlite3", dsn)
 		if err != nil {
 			db.Close()
 			return fmt.Errorf("failed to open database: %w", err)

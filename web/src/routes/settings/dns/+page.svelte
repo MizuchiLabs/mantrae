@@ -1,20 +1,39 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button';
-	import CreateProvider from '$lib/components/modals/createProvider.svelte';
-	import UpdateProvider from '$lib/components/modals/updateProvider.svelte';
+	import ProviderModal from '$lib/components/modals/providerModal.svelte';
 	import powerdns from '$lib/images/powerdns.svg';
 	import { deleteProvider, getProviders, provider } from '$lib/api';
+	import { newProvider, type DNSProvider } from '$lib/types/base';
 	import { onMount } from 'svelte';
 
-	onMount(() => {
+	let dnsProvider: DNSProvider;
+	let openModal = false;
+
+	const createModal = () => {
+		dnsProvider = newProvider();
+		openModal = true;
+	};
+	const updateModal = (p: DNSProvider) => {
+		dnsProvider = p;
+		openModal = true;
+	};
+
+	onMount(async () => {
 		if ($provider === undefined) {
-			getProviders();
+			await getProviders();
 		}
 	});
 </script>
 
-<CreateProvider />
+<ProviderModal bind:dnsProvider bind:open={openModal} />
+
+<div class="flex flex-col gap-4 px-4 md:flex-row">
+	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={createModal}>
+		<span>Add Provider</span>
+		<iconify-icon icon="fa6-solid:plus" />
+	</Button>
+</div>
 
 <div class="flex flex-col gap-4 px-4 md:flex-row">
 	{#if $provider}
@@ -38,10 +57,12 @@
 				</Card.Header>
 				<Card.Content class="space-y-2"></Card.Content>
 				<Card.Footer class="grid grid-cols-2 items-center gap-2">
-					<Button variant="ghost" class="w-full bg-red-400" on:click={() => deleteProvider(p.id)}
-						>Delete</Button
-					>
-					<UpdateProvider {p} />
+					<Button variant="ghost" class="w-full bg-red-400" on:click={() => deleteProvider(p.id)}>
+						Delete
+					</Button>
+					<Button variant="ghost" class="w-full bg-orange-400" on:click={() => updateModal(p)}>
+						Update
+					</Button>
 				</Card.Footer>
 			</Card.Root>
 		{/each}

@@ -84,7 +84,9 @@
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="backup-schedule" class="col-span-1 flex items-center gap-0.5">
 						Schedule
-						<HoverInfo text="Cron expression for the backup schedule." />
+						<HoverInfo
+							text="Cron expression for the backup schedule (e.g., * * * * *, or special keywords: @yearly, @annually, @monthly, @weekly, @daily"
+						/>
 					</Label>
 					<Input
 						name="backup-schedule"
@@ -104,7 +106,7 @@
 					<div class="col-span-3 flex w-full gap-2">
 						<input
 							type="file"
-							accept=".tar.gz"
+							accept=".sql"
 							class="hidden"
 							on:change={handleFileUpload}
 							bind:this={fileInput}

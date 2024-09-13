@@ -12,7 +12,7 @@
 
 	export const routes = [
 		{
-			name: 'Routers',
+			name: 'Router',
 			path: '/',
 			icon: Route,
 			subRoutes: []

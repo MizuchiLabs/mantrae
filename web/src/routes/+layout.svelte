@@ -8,6 +8,7 @@
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	// Realtime updates
 	const eventSource = new EventSource(`${API_URL}/events`);
@@ -36,6 +37,7 @@
 </script>
 
 <Toaster />
+<CommandCenter />
 
 <div class="app flex min-h-screen flex-col">
 	{#if $loggedIn}

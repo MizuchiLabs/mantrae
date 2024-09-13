@@ -12,15 +12,16 @@
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,
-		getService
+		getService,
+		services
 	} from '$lib/api';
-	import CreateRouter from '$lib/components/modals/createRouter.svelte';
-	import UpdateRouter from '$lib/components/modals/updateRouter.svelte';
 	import Pagination from '$lib/components/tables/pagination.svelte';
-	import type { Router } from '$lib/types/config';
+	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
 	import type { Selected } from 'bits-ui';
-	import ShowRouter from '$lib/components/modals/showRouter.svelte';
+	import RouterModal from '$lib/components/modals/routerModal.svelte';
 	import Search from '$lib/components/tables/search.svelte';
+	import { page } from '$app/stores';
+	import { Eye, Pencil, X } from 'lucide-svelte';
 
 	let search = '';
 	let count = 0;
@@ -30,6 +31,12 @@
 		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
 	);
 	$: search, $routers, currentPage, perPage, searchRouter();
+
+	page.subscribe((p) => {
+		if (p.url.searchParams.get('search')) {
+			search = p.url.searchParams.get('search') ?? '';
+		}
+	});
 
 	// Reset the page to 1 when the search input changes
 	$: {
@@ -59,6 +66,28 @@
 	const paginate = (routers: Router[]) => {
 		const itemsPerPage = perPage?.value ?? 10;
 		return routers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+	};
+
+	// Open the modal for the selected router
+	let router: Router;
+	let service: Service;
+	let openModal = false;
+	let disabled = false;
+	const createModal = () => {
+		router = newRouter();
+		service = newService();
+		disabled = false;
+		openModal = true;
+	};
+	const updateModal = (r: Router) => {
+		if (r.provider === 'http') {
+			disabled = false;
+		} else {
+			disabled = true;
+		}
+		router = r;
+		service = getService(router);
+		openModal = true;
 	};
 
 	let columns: Selected<string>[] | undefined = [
@@ -150,12 +179,12 @@
 		selectedRouters.forEach((router) => {
 			if (bulkEntrypoints && router.provider === 'http') {
 				if (bulkEntrypoints?.length > 0) {
-					toggleEntrypoint(router, bulkEntrypoints);
+					toggleEntrypoint(router, bulkEntrypoints, true);
 				}
 			}
 			if (bulkMiddlewares && router.provider === 'http') {
 				if (bulkMiddlewares?.length > 0) {
-					toggleMiddleware(router, bulkMiddlewares);
+					toggleMiddleware(router, bulkMiddlewares, true);
 				}
 			}
 			if (bulkDnsProvider) {
@@ -175,6 +204,8 @@
 	<title>Routers</title>
 </svelte:head>
 
+<RouterModal bind:router bind:service bind:open={openModal} bind:disabled />
+
 <div class="mt-4 flex flex-col gap-4 p-4">
 	<Search bind:search {columns} columnName="router-columns" bind:fColumns />
 
@@ -187,7 +218,14 @@
 				</Card.Description>
 			</div>
 			<div class="justify-self-end">
-				<CreateRouter />
+				<Button
+					variant="secondary"
+					class="flex items-center gap-2 bg-red-400 text-black"
+					on:click={createModal}
+				>
+					<span>Create Router</span>
+					<iconify-icon icon="fa6-solid:plus" />
+				</Button>
 			</div>
 		</Card.Header>
 		<Card.Content>
@@ -304,7 +342,7 @@
 								<Select.Root
 									multiple={true}
 									selected={getSelectedEntrypoints(router)}
-									onSelectedChange={(value) => toggleEntrypoint(router, value)}
+									onSelectedChange={(value) => toggleEntrypoint(router, value, true)}
 									disabled={router.provider !== 'http'}
 								>
 									<Select.Trigger class="w-[150px]">
@@ -333,7 +371,7 @@
 									<Select.Root
 										multiple={true}
 										selected={getSelectedMiddlewares(router)}
-										onSelectedChange={(value) => toggleMiddleware(router, value)}
+										onSelectedChange={(value) => toggleMiddleware(router, value, true)}
 										disabled={router.provider !== 'http'}
 									>
 										<Select.Trigger class="w-[180px]">
@@ -361,17 +399,32 @@
 								</span>
 							</Table.Cell>
 							<Table.Cell class="min-w-[100px]">
-								{#if router.provider === 'http' || router.provider === undefined}
-									<UpdateRouter {router} />
+								{#if router.provider === 'http'}
 									<Button
 										variant="ghost"
-										class="h-8 w-4 rounded-full bg-red-400"
+										class="h-8 w-8 rounded-full bg-orange-400"
+										size="icon"
+										on:click={() => updateModal(router)}
+									>
+										<Pencil size="1rem" />
+									</Button>
+									<Button
+										variant="ghost"
+										class="h-8 w-8 rounded-full bg-red-400"
+										size="icon"
 										on:click={() => deleteRouter(router.name)}
 									>
-										<iconify-icon icon="fa6-solid:xmark" />
+										<X size="1rem" />
 									</Button>
 								{:else}
-									<ShowRouter {router} />
+									<Button
+										variant="ghost"
+										class="h-8 w-8 rounded-full bg-green-400"
+										size="icon"
+										on:click={() => updateModal(router)}
+									>
+										<Eye size="1rem" />
+									</Button>
 								{/if}
 							</Table.Cell>
 						</Table.Row>
@@ -428,19 +481,21 @@
 						</Select.Root>
 
 						<!-- Bulk update DNS Provider -->
-						<Select.Root
-							selected={bulkDnsProvider}
-							onSelectedChange={(value) => (bulkDnsProvider = value)}
-						>
-							<Select.Trigger class="w-[200px]">
-								<Select.Value placeholder="DNS Provider" />
-							</Select.Trigger>
-							<Select.Content>
-								{#each $provider as p}
-									<Select.Item value={p.name}>{p.name}</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
+						{#if $provider}
+							<Select.Root
+								selected={bulkDnsProvider}
+								onSelectedChange={(value) => (bulkDnsProvider = value)}
+							>
+								<Select.Trigger class="w-[200px]">
+									<Select.Value placeholder="DNS Provider" />
+								</Select.Trigger>
+								<Select.Content>
+									{#each $provider as p}
+										<Select.Item value={p.name}>{p.name}</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
+						{/if}
 					</div>
 
 					<div class="flex flex-row items-center gap-2">

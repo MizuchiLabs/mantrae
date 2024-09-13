@@ -9,7 +9,7 @@
 	<Tooltip.Trigger>
 		<CircleHelp size="1rem" />
 	</Tooltip.Trigger>
-	<Tooltip.Content side="top" align="center" class="w-max">
+	<Tooltip.Content side="top" align="center" class="w-full max-w-sm">
 		{text}
 	</Tooltip.Content>
 </Tooltip.Root>

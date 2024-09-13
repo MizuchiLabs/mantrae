@@ -13,7 +13,7 @@ export interface Router {
 	service: string;
 	rule: string;
 	priority?: number;
-	tls?: TLSConfig;
+	tls: TLSConfig;
 	tcpTLS?: TCPTLSConfig;
 }
 
@@ -28,7 +28,12 @@ export function newRouter(): Router {
 		middlewares: [],
 		rule: '',
 		service: '',
-		priority: 0
+		priority: 0,
+		tls: {
+			options: '',
+			certResolver: '',
+			domains: []
+		}
 	};
 }
 
@@ -63,12 +68,7 @@ export function newService(): Service {
 		type: '',
 		status: '',
 		serviceType: 'http',
-		serverStatus: {},
-		loadBalancer: {
-			servers: [{ url: '' }],
-			passHostHeader: true,
-			responseForwarding: { flushInterval: '100ms' }
-		}
+		serverStatus: {}
 	};
 }
 

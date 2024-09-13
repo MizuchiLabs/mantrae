@@ -5,15 +5,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { getTraefikConfig, config } from '$lib/api';
+	import { getTraefikConfig, config, dynamic } from '$lib/api';
 	import { onMount } from 'svelte';
 
-	let dynamic = '';
-	let rows = 10;
-
 	onMount(async () => {
-		dynamic = await getTraefikConfig();
-		rows = dynamic.split('\n').length;
+		await getTraefikConfig();
 	});
 </script>
 
@@ -151,9 +147,9 @@
 					</Card.Header>
 					<Card.Content>
 						<Textarea
-							value={dynamic}
-							{rows}
-							class="focus-visible:ring-0 focus-visible:ring-offset-0"
+							value={$dynamic}
+							rows={$dynamic.split('\n').length ?? 10}
+							class="code focus-visible:ring-0 focus-visible:ring-offset-0"
 							on:click={(e) => e.target?.select()}
 							readonly
 						/>
