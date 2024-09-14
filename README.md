@@ -63,6 +63,13 @@
 
 1. Various settings will be added here in the future. Currently you can use it to backup and restore your database.
 
+### Screenshots
+
+![Routers](./.github/screenshots/routers.png)
+![Middleware](./.github/screenshots/middlewares.png)
+![Settings](./.github/screenshots/settings.png)
+![CommandCenter](./.github/screenshots/command_center.png)
+
 ## FAQ
 
 ### Why would use this? Traefik already has configuration discovery.
