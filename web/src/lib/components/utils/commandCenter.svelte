@@ -1,13 +1,13 @@
 <script lang="ts">
+	import * as Command from '$lib/components/ui/command';
 	import { goto } from '$app/navigation';
 	import { getService, middlewares, routers } from '$lib/api';
-	import * as Command from '$lib/components/ui/command';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
-	import { Earth, Layers, Plus, Route, Settings, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import RouterModal from '../modals/routerModal.svelte';
+	import RouterModal from '../modals/router.svelte';
+	import MiddlewareModal from '../modals/middleware.svelte';
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
-	import MiddlewareModal from '../modals/middlewareModal.svelte';
+	import { Earth, Layers, Route, Settings, Users } from 'lucide-svelte';
 
 	let open = false;
 	let searchQuery = '';
