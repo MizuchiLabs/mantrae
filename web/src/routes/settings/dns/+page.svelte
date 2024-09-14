@@ -28,7 +28,7 @@
 
 <ProviderModal bind:dnsProvider bind:open={openModal} />
 
-<div class="flex flex-col gap-4 px-4 md:flex-row">
+<div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
 	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={createModal}>
 		<span>Add Provider</span>
 		<iconify-icon icon="fa6-solid:plus" />

@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import HoverInfo from '../utils/hoverInfo.svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
@@ -21,6 +22,7 @@
 		bind:items={middleware.basicAuth.users}
 		label="Users"
 		placeholder="user:password"
+		helpText="Username and password are separated by a colon. Password will be hashed automatically. You will not be able to see the password again!"
 		{disabled}
 	/>
 	<div class="grid grid-cols-4 items-center gap-4">

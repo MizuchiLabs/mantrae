@@ -2,11 +2,10 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { getService, upsertRouter, config } from '$lib/api';
-	import { newService, type Router, type Service } from '$lib/types/config';
+	import { upsertRouter } from '$lib/api';
+	import { type Router, type Service } from '$lib/types/config';
 	import ServiceForm from '../forms/service.svelte';
 	import RouterForm from '../forms/router.svelte';
-	import { onMount } from 'svelte';
 
 	export let router: Router;
 	export let service: Service;
@@ -38,7 +37,7 @@
 				<ServiceForm bind:service {disabled} />
 			</Tabs.Content>
 		</Tabs.Root>
-		<Dialog.Close class="w-full">
+		<Dialog.Close>
 			<Button class="w-full" on:click={() => update()}>Save</Button>
 		</Dialog.Close>
 	</Dialog.Content>

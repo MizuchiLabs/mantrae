@@ -1,30 +1,50 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { getService, routers } from '$lib/api';
+	import { getService, middlewares, routers } from '$lib/api';
 	import * as Command from '$lib/components/ui/command';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
-	import { Layers, Route, Settings } from 'lucide-svelte';
+	import { Earth, Layers, Route, Settings, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import RouterModal from '../modals/routerModal.svelte';
+	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
+	import MiddlewareModal from '../modals/middlewareModal.svelte';
 
 	let open = false;
 	let searchQuery = '';
-	$: filteredRouters = $routers.filter((router: Router) =>
-		router.name.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	let timeout: NodeJS.Timeout;
+	let fRouters: Router[] = [];
+	let fMiddlewares: Middleware[] = [];
+
+	// Debounced search function
+	function debounceSearch() {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			// Ensure stores are available before filtering
+			fRouters = $routers.filter((router) =>
+				router.name.toLowerCase().includes(searchQuery.toLowerCase())
+			);
+			fMiddlewares = $middlewares.filter((middleware) =>
+				middleware.name.toLowerCase().includes(searchQuery.toLowerCase())
+			);
+		}, 300);
+	}
+
+	$: debounceSearch(); // Trigger debounce on every searchQuery change
 
 	let router: Router;
 	let service: Service;
+	let middleware: Middleware;
 	let disabled = false;
-	let openModal = false;
+	let openRouterModal = false;
+	let openMiddlewareModal = false;
 
-	const createModal = async () => {
+	const createRouter = async () => {
 		router = newRouter();
 		service = newService();
 		disabled = false;
-		openModal = true;
+		openRouterModal = true;
 	};
-	const updateModal = async (r: Router) => {
+	const updateRouter = async (r: Router) => {
 		open = false;
 		if (r.provider === 'http') {
 			disabled = false;
@@ -33,12 +53,33 @@
 		}
 		router = r;
 		service = getService(router);
-		openModal = true;
+		openRouterModal = true;
 	};
+
+	const createMiddleware = async () => {
+		open = false;
+		middleware = newMiddleware();
+		disabled = false;
+		openMiddlewareModal = true;
+	};
+	const updateMiddleware = async (m: Middleware) => {
+		open = false;
+		middleware = m;
+		disabled = false;
+		openMiddlewareModal = true;
+	};
+
+	const routes = [
+		{ name: 'Routers', path: '/', icon: Route },
+		{ name: 'Middlewares', path: '/middlewares/', icon: Layers },
+		{ name: 'Settings', path: '/settings/', icon: Settings },
+		{ name: 'Users', path: '/settings/users/', icon: Users },
+		{ name: 'DNS', path: '/settings/dns/', icon: Earth }
+	];
 
 	onMount(() => {
 		function handleKeydown(e: KeyboardEvent) {
-			// Check if the focused element is an input, textarea, or contenteditable element
+			// Check if the focused element is an input or textarea
 			const focusedElement = document.activeElement;
 			const isEditableElement =
 				focusedElement?.tagName === 'INPUT' || focusedElement?.tagName === 'TEXTAREA';
@@ -48,7 +89,6 @@
 				return;
 			}
 
-			//const currentTime = new Date().getTime(); // Current timestamp
 			if (e.key === '/') {
 				open = !open;
 				e.preventDefault();
@@ -61,10 +101,6 @@
 					case 'k':
 						open = !open;
 						break;
-					case 'n':
-						createModal();
-						open = false;
-						break;
 					case 'r':
 						goto('/');
 						open = false;
@@ -75,6 +111,14 @@
 						break;
 					case 's':
 						goto('/settings/');
+						open = false;
+						break;
+					case 'u':
+						goto('/settings/users/');
+						open = false;
+						break;
+					case 'd':
+						goto('/settings/dns/');
 						open = false;
 						break;
 				}
@@ -89,55 +133,51 @@
 </script>
 
 <div class="hidden">
-	<RouterModal {router} {service} {disabled} bind:open={openModal} />
+	<RouterModal {router} {service} {disabled} bind:open={openRouterModal} />
+	<MiddlewareModal {middleware} {disabled} bind:open={openMiddlewareModal} />
 </div>
 
 <Command.Dialog bind:open>
-	<Command.Input placeholder="Type a command or search..." bind:value={searchQuery} />
-	<Command.List class="max-h-[800px] overflow-y-auto overflow-x-hidden">
-		<Command.Empty>No results found.</Command.Empty>
-		{#if searchQuery !== ''}
-			<Command.Group heading="Routers">
-				{#each filteredRouters as router}
-					<Command.Item onSelect={() => updateModal(router)}>
-						<Route class="mr-2 h-4 w-4" />
-						<span>{router.name}</span>
+	<Command.Root>
+		<Command.Input placeholder="Type a command or search..." bind:value={searchQuery} />
+		<Command.List class="max-h-[800px] overflow-y-auto overflow-x-hidden">
+			{#if searchQuery !== ''}
+				<Command.Group heading="Routers">
+					<Command.Empty>No results found.</Command.Empty>
+					{#each fRouters as router}
+						<Command.Item onSelect={() => updateRouter(router)} value={router.name}>
+							<Route class="mr-2 h-4 w-4" />
+							<span>{router.name}</span>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+				<Command.Separator />
+				<Command.Group heading="Middlewares">
+					<Command.Empty>No results found.</Command.Empty>
+					{#each fMiddlewares as middleware}
+						<Command.Item onSelect={() => updateMiddleware(middleware)} value={middleware.name}>
+							<Layers class="mr-2 h-4 w-4" />
+							<span>{middleware.name}</span>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			{/if}
+			<Command.Separator />
+			<Command.Group heading="Jump to">
+				<Command.Empty>No results found.</Command.Empty>
+				{#each routes as route}
+					<Command.Item
+						onSelect={() => {
+							open = false;
+							goto(route.path);
+						}}
+					>
+						<svelte:component this={route.icon} class="mr-2 h-4 w-4" />
+						<span>{route.name}</span>
+						<Command.Shortcut>⌘{route.name[0]}</Command.Shortcut>
 					</Command.Item>
 				{/each}
 			</Command.Group>
-		{/if}
-		<Command.Separator />
-		<Command.Group heading="Jump to">
-			<Command.Item
-				onSelect={() => {
-					open = false;
-					goto('/');
-				}}
-			>
-				<Route class="mr-2 h-4 w-4" />
-				<span>Router</span>
-				<Command.Shortcut>⌘R</Command.Shortcut>
-			</Command.Item>
-			<Command.Item
-				onSelect={() => {
-					open = false;
-					goto('/middlewares/');
-				}}
-			>
-				<Layers class="mr-2 h-4 w-4" />
-				<span>Middlewares</span>
-				<Command.Shortcut>⌘M</Command.Shortcut>
-			</Command.Item>
-			<Command.Item
-				onSelect={() => {
-					open = false;
-					goto('/settings/');
-				}}
-			>
-				<Settings class="mr-2 h-4 w-4" />
-				<span>Settings</span>
-				<Command.Shortcut>⌘S</Command.Shortcut>
-			</Command.Item>
-		</Command.Group>
-	</Command.List>
+		</Command.List>
+	</Command.Root>
 </Command.Dialog>

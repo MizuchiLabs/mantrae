@@ -92,12 +92,10 @@
 		</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		<div class="flex justify-end space-y-2">
-			<div class="flex items-center space-x-2">
-				<Label for="middleware-type">TCP</Label>
-				<Switch id="middleware-type" bind:checked={isHTTP} />
-				<Label for="middleware-type">HTTP</Label>
-			</div>
+		<div class="flex items-center justify-end gap-2">
+			<Label for="middleware-type">TCP</Label>
+			<Switch id="middleware-type" bind:checked={isHTTP} />
+			<Label for="middleware-type">HTTP</Label>
 		</div>
 
 		<!-- Type -->
@@ -144,11 +142,6 @@
 
 		<!-- Dynamic Form -->
 		{#if form !== null}
-			{#if middleware.type === 'basicauth' || middleware.type === 'digestauth'}
-				<header class="mt-4 text-right text-sm font-semibold">
-					Password will be hashed automatically.<br /> You will not be able to see the password again!
-				</header>
-			{/if}
 			<div class="mt-6 space-y-2">
 				<svelte:component this={form} bind:middleware {disabled} />
 			</div>

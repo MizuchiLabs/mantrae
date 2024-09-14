@@ -5,6 +5,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { cn } from '$lib/utils';
+	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
 
 	let className: string | undefined | null = undefined;
 	export { className as class };
@@ -12,6 +13,7 @@
 	export let placeholder: string;
 	export let items: string[] | undefined;
 	export let disabled = false;
+	export let helpText: string | undefined = undefined;
 	const dispatch = createEventDispatcher();
 
 	const addItem = () => {
@@ -37,7 +39,12 @@
 </script>
 
 <div class={cn('grid grid-cols-4 items-center gap-4', className)}>
-	<Label for="item" class="text-right">{label}</Label>
+	<Label for="item" class="col-span-1 flex items-center justify-end gap-0.5">
+		{label}
+		{#if helpText}
+			<HoverInfo text={helpText} />
+		{/if}
+	</Label>
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
 		{#each items ?? [] as item, index}
 			<li class="flex flex-row items-center justify-end gap-1">
