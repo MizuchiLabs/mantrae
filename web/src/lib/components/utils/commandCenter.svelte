@@ -3,7 +3,7 @@
 	import { getService, middlewares, routers } from '$lib/api';
 	import * as Command from '$lib/components/ui/command';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
-	import { Earth, Layers, Route, Settings, Users } from 'lucide-svelte';
+	import { Earth, Layers, Plus, Route, Settings, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import RouterModal from '../modals/routerModal.svelte';
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
@@ -39,6 +39,7 @@
 	let openMiddlewareModal = false;
 
 	const createRouter = async () => {
+		open = false;
 		router = newRouter();
 		service = newService();
 		disabled = false;
@@ -138,7 +139,7 @@
 </div>
 
 <Command.Dialog bind:open>
-	<Command.Root>
+	<Command.Root loop>
 		<Command.Input placeholder="Type a command or search..." bind:value={searchQuery} />
 		<Command.List class="max-h-[800px] overflow-y-auto overflow-x-hidden">
 			{#if searchQuery !== ''}
@@ -162,6 +163,17 @@
 					{/each}
 				</Command.Group>
 			{/if}
+			<Command.Separator />
+			<Command.Group heading="Create">
+				<Command.Item onSelect={() => createRouter()}>
+					<Route class="mr-2 h-4 w-4" />
+					<span>Create Router</span>
+				</Command.Item>
+				<Command.Item onSelect={() => createMiddleware()}>
+					<Layers class="mr-2 h-4 w-4" />
+					<span>Create Middleware</span>
+				</Command.Item>
+			</Command.Group>
 			<Command.Separator />
 			<Command.Group heading="Jump to">
 				<Command.Empty>No results found.</Command.Empty>
