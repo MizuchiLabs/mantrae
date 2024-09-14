@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button';
-	import ProviderModal from '$lib/components/modals/providerModal.svelte';
+	import DNSModal from '$lib/components/modals/dns.svelte';
 	import powerdns from '$lib/images/powerdns.svg';
 	import { deleteProvider, getProviders, provider } from '$lib/api';
 	import { newProvider, type DNSProvider } from '$lib/types/base';
@@ -26,7 +26,7 @@
 	});
 </script>
 
-<ProviderModal bind:dnsProvider bind:open={openModal} />
+<DNSModal bind:dnsProvider bind:open={openModal} />
 
 <div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
 	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={createModal}>

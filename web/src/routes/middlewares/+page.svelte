@@ -7,7 +7,7 @@
 	import type { Selected } from 'bits-ui';
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import Search from '$lib/components/tables/search.svelte';
-	import MiddlewareModal from '$lib/components/modals/middlewareModal.svelte';
+	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import { Eye, Pencil, X } from 'lucide-svelte';
 
 	let search = '';

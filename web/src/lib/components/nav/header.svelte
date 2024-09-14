@@ -4,7 +4,7 @@
 	import { logout, profiles } from '$lib/api';
 	import Profile from './profile.svelte';
 	import { goto } from '$app/navigation';
-	import InfoTraefik from '../modals/infoTraefik.svelte';
+	import InfoModal from '../modals/info.svelte';
 
 	const handleLogout = () => {
 		logout();
@@ -21,7 +21,7 @@
 				No profiles configured, create one here
 			</span>
 		{:else}
-			<InfoTraefik />
+			<InfoModal />
 		{/if}
 	</div>
 

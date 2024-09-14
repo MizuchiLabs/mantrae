@@ -12,13 +12,12 @@
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,
-		getService,
-		services
+		getService
 	} from '$lib/api';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
 	import type { Selected } from 'bits-ui';
-	import RouterModal from '$lib/components/modals/routerModal.svelte';
+	import RouterModal from '$lib/components/modals/router.svelte';
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
 	import { Eye, Pencil, X } from 'lucide-svelte';
