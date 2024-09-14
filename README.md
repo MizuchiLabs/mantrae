@@ -65,10 +65,10 @@
 
 ### Screenshots
 
-![Routers](./.github/screenshots/routers.png)
-![Middleware](./.github/screenshots/middlewares.png)
-![Settings](./.github/screenshots/settings.png)
-![CommandCenter](./.github/screenshots/command_center.png)
+![Routers](./.github/screenshots/routers.png "Routers")
+![Middleware](./.github/screenshots/middlewares.png "Middleware")
+![Settings](./.github/screenshots/settings.png "Settings")
+![CommandCenter](./.github/screenshots/command_center.png "CommandCenter")
 
 ## FAQ
 
@@ -130,4 +130,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [**Traefik**](https://traefik.io/): For providing the powerful reverse proxy that powers this application.
 - [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager): For inspiration on building a simple and effective web UI for managing reverse proxies.
-- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple and effective DNS management system for Kubernetes.
+- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple and effective DNS management system.
