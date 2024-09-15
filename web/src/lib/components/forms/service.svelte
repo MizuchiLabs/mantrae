@@ -4,12 +4,47 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { type Service } from '$lib/types/config';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import { z } from 'zod';
 	import { onMount } from 'svelte';
 
 	export let service: Service;
 	export let disabled = false;
 	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
 	let servers: string[] = [];
+
+	let errors: Record<any, string[] | undefined> = {};
+	const formSchema = z.object({
+		serviceType: z
+			.string()
+			.toLowerCase()
+			.regex(/^(http|tcp|udp)$/),
+		loadBalancer: z.object({
+			servers: z.array(z.object({ url: z.string().trim() })).optional()
+		}),
+		tcpLoadBalancer: z.object({
+			servers: z.array(z.object({ address: z.string().trim() })).optional()
+		}),
+		udpLoadBalancer: z.object({
+			servers: z.array(z.object({ address: z.string().trim() })).optional()
+		})
+	});
+	export const validate = () => {
+		try {
+			formSchema.parse({
+				serviceType: service.serviceType,
+				loadBalancer: service.loadBalancer,
+				tcpLoadBalancer: service.tcpLoadBalancer,
+				udpLoadBalancer: service.udpLoadBalancer
+			});
+			errors = {};
+			return true;
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				errors = err.flatten().fieldErrors;
+			}
+			return false;
+		}
+	};
 
 	const update = () => {
 		if (service.loadBalancer === undefined) service.loadBalancer = { servers: [] };

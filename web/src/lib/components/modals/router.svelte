@@ -13,12 +13,17 @@
 	export let disabled = false;
 	let originalName = router?.name;
 
+	let routerForm: RouterForm;
+	let serviceForm: ServiceForm;
+
 	const update = async () => {
-		if (router.name === '') return;
-		if (service === undefined) return;
-		await upsertRouter(originalName, router, service);
-		originalName = router.name;
-		open = false;
+		const routerValied = routerForm.validate();
+		const serviceValied = serviceForm.validate();
+		if (routerValied && serviceValied) {
+			await upsertRouter(originalName, router, service);
+			originalName = router.name;
+			open = false;
+		}
 	};
 </script>
 
@@ -31,14 +36,12 @@
 				<Tabs.Trigger value="service">Service</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="router">
-				<RouterForm bind:router {disabled} />
+				<RouterForm bind:router {disabled} bind:this={routerForm} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service {disabled} />
+				<ServiceForm bind:service {disabled} bind:this={serviceForm} />
 			</Tabs.Content>
 		</Tabs.Root>
-		<Dialog.Close>
-			<Button class="w-full" on:click={() => update()}>Save</Button>
-		</Dialog.Close>
+		<Button class="w-full" on:click={() => update()}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

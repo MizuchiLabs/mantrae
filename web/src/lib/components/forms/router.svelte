@@ -15,11 +15,40 @@
 	} from '$lib/api';
 	import { newRouter, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
-	import type { Selected } from 'bits-ui';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import { z } from 'zod';
+	import type { Selected } from 'bits-ui';
 
 	export let router: Router;
 	export let disabled = false;
+
+	let errors: Record<any, string[] | undefined> = {};
+	const formSchema = z.object({
+		name: z.string({ required_error: 'Name is required' }).min(3).max(255),
+		routerType: z
+			.string()
+			.toLowerCase()
+			.regex(/^(http|tcp|udp)$/),
+		tls: z.object({
+			certResolver: z.string().trim().optional()
+		})
+	});
+	export const validate = () => {
+		try {
+			formSchema.parse({
+				name: router.name,
+				routerType: router.routerType,
+				tls: router.tls
+			});
+			errors = {};
+			return true;
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				errors = err.flatten().fieldErrors;
+			}
+			return false;
+		}
+	};
 
 	let routerType: Selected<string> | undefined = router.routerType
 		? { label: router.routerType.toUpperCase(), value: router.routerType }
@@ -74,8 +103,8 @@
 	<Card.Content class="space-y-2">
 		<!-- Type -->
 		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-4">
-				<Label for="current" class="text-right">Type</Label>
+			<div class="grid grid-cols-4 items-center gap-1">
+				<Label for="current" class="mr-2 text-right">Type</Label>
 				<Select.Root onSelectedChange={changeType} selected={routerType}>
 					<Select.Trigger class="col-span-3">
 						<Select.Value placeholder="Select a type" />
@@ -90,8 +119,8 @@
 		{/if}
 
 		<!-- Name -->
-		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="name" class="text-right">Name</Label>
+		<div class="grid grid-cols-4 items-center gap-1">
+			<Label for="name" class="mr-2 text-right">Name</Label>
 			<Input
 				id="name"
 				name="name"
@@ -102,12 +131,15 @@
 				required
 				{disabled}
 			/>
+			{#if errors.name}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.name}</div>
+			{/if}
 		</div>
 
 		<!-- Entrypoints -->
 		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-4">
-				<Label for="entrypoints" class="text-right">Entrypoints</Label>
+			<div class="grid grid-cols-4 items-center gap-1">
+				<Label for="entrypoints" class="mr-2 text-right">Entrypoints</Label>
 				<Select.Root
 					multiple={true}
 					selected={getSelectedEntrypoints(router)}
@@ -138,8 +170,8 @@
 
 		<!-- Middlewares -->
 		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-4" class:hidden={router.routerType === 'udp'}>
-				<Label for="middlewares" class="text-right">Middlewares</Label>
+			<div class="grid grid-cols-4 items-center gap-1" class:hidden={router.routerType === 'udp'}>
+				<Label for="middlewares" class="mr-2 text-right">Middlewares</Label>
 				<Select.Root
 					multiple={true}
 					selected={getSelectedMiddlewares(router)}
@@ -170,8 +202,8 @@
 
 		<!-- DNS Provider -->
 		{#if $provider}
-			<div class="grid grid-cols-4 items-center gap-4">
-				<Label for="provider" class="text-right">DNS Provider</Label>
+			<div class="grid grid-cols-4 items-center gap-1">
+				<Label for="provider" class="mr-2 text-right">DNS Provider</Label>
 				<Select.Root
 					selected={getSelectedDNSProvider(router)}
 					onSelectedChange={(value) => toggleDNSProvider(router, value, false)}
@@ -197,8 +229,8 @@
 		<!-- CertResolver -->
 		{#if router.provider === 'http'}
 			<div class:hidden={router.routerType === 'udp'}>
-				<div class="grid grid-cols-4 items-center gap-4">
-					<Label for="certresolver" class="text-right">CertResolver</Label>
+				<div class="grid grid-cols-4 items-center gap-1">
+					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
 					<Input
 						id="certresolver"
 						name="certresolver"
