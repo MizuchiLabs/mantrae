@@ -20,6 +20,7 @@ type Flags struct {
 	URL      string
 	Username string
 	Password string
+	Config   string
 	Update   bool
 	Reset    bool
 }
@@ -35,6 +36,7 @@ func (f *Flags) Parse() error {
 	)
 	flag.StringVar(&f.Username, "username", "", "Specify the username for the Traefik instance")
 	flag.StringVar(&f.Password, "password", "", "Specify the password for the Traefik instance")
+	flag.StringVar(&f.Config, "config", "", "Specify the path to the config file")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
 	flag.BoolVar(&f.Reset, "reset", false, "Reset the default admin password")
 
@@ -61,6 +63,9 @@ func (f *Flags) Parse() error {
 		if err := ResetAdminUser(); err != nil {
 			return err
 		}
+	}
+	if f.Config != "" {
+		util.MainDir = f.Config
 	}
 
 	util.UpdateSelf(f.Update)

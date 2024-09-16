@@ -29,7 +29,7 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger />
-	<Dialog.Content>
+	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-xl overflow-y-auto">
 		<Tabs.Root value="router" class="mt-4">
 			<Tabs.List class="grid w-full grid-cols-2">
 				<Tabs.Trigger value="router">Router</Tabs.Trigger>

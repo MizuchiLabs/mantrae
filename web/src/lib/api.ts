@@ -79,17 +79,19 @@ export async function getProfiles() {
 	const response = await handleRequest('/profile', 'GET');
 	if (response) {
 		const data = await response.json();
-		profiles.set(data);
+		if (data) {
+			profiles.set(data);
 
-		// Get saved profile
-		const profileID = parseInt(localStorage.getItem('profile') ?? '');
-		if (profileID) {
-			getProfile(profileID);
-			return;
-		}
-		if (data === undefined) return;
-		if (!get(profile) && data.length > 0) {
-			getProfile(data[0].id);
+			// Get saved profile
+			const profileID = parseInt(localStorage.getItem('profile') ?? '');
+			if (profileID) {
+				getProfile(profileID);
+				return;
+			}
+			if (data === undefined) return;
+			if (!get(profile) && data.length > 0) {
+				getProfile(data[0].id);
+			}
 		}
 	}
 }
