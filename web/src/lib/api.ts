@@ -349,24 +349,37 @@ export async function upsertRouter(
 	service: Service | undefined
 ): Promise<void> {
 	const data = get(config);
+
+	// Ensure routers and services exist
 	if (!data.routers) data.routers = {};
 	if (!data.services) data.services = {};
 
-	if (router.name !== name) {
-		delete data.routers[name];
-		delete data.services[name];
-	}
+	// Ensure the service name is the same as the router name
 	if (service === undefined) {
 		service = getService(router);
 	}
-
-	// Ensure the service name is the same as the router name
 	router.service = router.name;
 	service.name = router.name;
 	service.serviceType = router.routerType;
 
-	data.routers[router.name] = router;
-	data.services[router.name] = service;
+	// Handle name changes
+	if (router.name !== name) {
+		// Safely update without deleting unrelated routers/services
+		data.routers[router.name] = router;
+		data.services[router.name] = service;
+
+		// Only delete the old router/service if they exist under the old name
+		if (data.routers[name]) {
+			delete data.routers[name];
+		}
+		if (data.services[name]) {
+			delete data.services[name];
+		}
+	} else {
+		// Simply update the existing router and service
+		data.routers[router.name] = router;
+		data.services[router.name] = service;
+	}
 	await updateConfig(data);
 }
 

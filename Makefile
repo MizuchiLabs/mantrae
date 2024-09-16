@@ -48,7 +48,6 @@ docker:
 		-t ghcr.io/mizuchilabs/mantrae:latest .
 
 docker-push:
-	docker push ghcr.io/mizuchilabs/mantrae:${VERSION}
 	docker push ghcr.io/mizuchilabs/mantrae:latest
 
 .PHONY: release

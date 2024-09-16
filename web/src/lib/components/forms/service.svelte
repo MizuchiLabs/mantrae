@@ -58,10 +58,10 @@
 				tcpLoadBalancer: service.tcpLoadBalancer,
 				udpLoadBalancer: service.udpLoadBalancer
 			});
+
 			errors = {};
 			return true;
 		} catch (err) {
-			console.log(err);
 			if (err instanceof z.ZodError) {
 				errors = err.flatten().fieldErrors;
 			}
@@ -137,7 +137,7 @@
 		<ArrayInput
 			bind:items={servers}
 			label="Servers"
-			placeholder="192.168.1.1"
+			placeholder="http://192.168.1.1:8080"
 			on:update={update}
 			{disabled}
 		/>

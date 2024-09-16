@@ -19,7 +19,6 @@
 	const update = async () => {
 		const routerValied = routerForm.validate();
 		const serviceValied = serviceForm.validate();
-		console.log(routerValied, serviceValied);
 		if (routerValied && serviceValied) {
 			await upsertRouter(originalName, router, service);
 			originalName = router.name;
