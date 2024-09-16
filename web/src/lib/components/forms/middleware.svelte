@@ -15,27 +15,27 @@
 	export let disabled = false;
 
 	const HTTPMiddlewareTypes: Selected<string>[] = [
+		{ label: 'Rate Limit', value: 'rateLimit' },
+		{ label: 'Headers', value: 'headers' },
+		{ label: 'Compress', value: 'compress' },
+		{ label: 'Retry', value: 'retry' },
+		{ label: 'Whitelist', value: 'ipAllowList' },
+		{ label: 'Basic Auth', value: 'basicAuth' },
+		{ label: 'Forward Auth', value: 'forwardAuth' },
+		{ label: 'Digest Auth', value: 'digestAuth' },
+		{ label: 'Chain', value: 'chain' },
+		{ label: 'Redirect Scheme', value: 'redirectScheme' },
+		{ label: 'Redirect Regex', value: 'redirectRegex' },
 		{ label: 'Add Prefix', value: 'addPrefix' },
 		{ label: 'Strip Prefix', value: 'stripPrefix' },
 		{ label: 'Strip Prefix Regex', value: 'stripPrefixRegex' },
 		{ label: 'Replace Path', value: 'replacePath' },
 		{ label: 'Replace Path Regex', value: 'replacePathRegex' },
-		{ label: 'Chain', value: 'chain' },
-		{ label: 'IP Allow List', value: 'ipAllowList' },
-		{ label: 'Headers', value: 'headers' },
-		{ label: 'Errors', value: 'errors' },
-		{ label: 'Rate Limit', value: 'rateLimit' },
-		{ label: 'Redirect Regex', value: 'redirectRegex' },
-		{ label: 'Redirect Scheme', value: 'redirectScheme' },
-		{ label: 'Basic Auth', value: 'basicAuth' },
-		{ label: 'Digest Auth', value: 'digestAuth' },
-		{ label: 'Forward Auth', value: 'forwardAuth' },
 		{ label: 'InFlightReq', value: 'inFlightReq' },
-		{ label: 'Buffering', value: 'buffering' },
 		{ label: 'Circuit Breaker', value: 'circuitBreaker' },
-		{ label: 'Compress', value: 'compress' },
+		{ label: 'Buffering', value: 'buffering' },
+		{ label: 'Errors', value: 'errors' }
 		//{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
-		{ label: 'Retry', value: 'retry' }
 	];
 	const TCPMiddlewareTypes: Selected<string>[] = [
 		{ label: 'In Flight Conn', value: 'inFlightConn' },

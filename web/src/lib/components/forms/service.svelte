@@ -13,21 +13,43 @@
 	let servers: string[] = [];
 
 	let errors: Record<any, string[] | undefined> = {};
-	const formSchema = z.object({
-		serviceType: z
-			.string()
-			.toLowerCase()
-			.regex(/^(http|tcp|udp)$/),
-		loadBalancer: z.object({
-			servers: z.array(z.object({ url: z.string().trim() })).optional()
-		}),
-		tcpLoadBalancer: z.object({
-			servers: z.array(z.object({ address: z.string().trim() })).optional()
-		}),
-		udpLoadBalancer: z.object({
-			servers: z.array(z.object({ address: z.string().trim() })).optional()
+	const formSchema = z
+		.object({
+			serviceType: z
+				.string()
+				.toLowerCase()
+				.regex(/^(http|tcp|udp)$/),
+			loadBalancer: z
+				.object({
+					servers: z.array(z.object({ url: z.string().trim() })).optional()
+				})
+				.nullable()
+				.optional(),
+			tcpLoadBalancer: z
+				.object({
+					servers: z.array(z.object({ address: z.string().trim() })).optional()
+				})
+				.nullable()
+				.optional(),
+			udpLoadBalancer: z
+				.object({
+					servers: z.array(z.object({ address: z.string().trim() })).optional()
+				})
+				.nullable()
+				.optional()
 		})
-	});
+		.refine(
+			(data) =>
+				!!data.loadBalancer?.servers?.length ||
+				!!data.tcpLoadBalancer?.servers?.length ||
+				!!data.udpLoadBalancer?.servers?.length,
+			{
+				message:
+					"Exactly one of 'loadBalancer', 'tcpLoadBalancer', or 'udpLoadBalancer' must be provided.",
+				path: ['loadBalancer', 'tcpLoadBalancer', 'udpLoadBalancer']
+			}
+		);
+
 	export const validate = () => {
 		try {
 			formSchema.parse({
@@ -39,6 +61,7 @@
 			errors = {};
 			return true;
 		} catch (err) {
+			console.log(err);
 			if (err instanceof z.ZodError) {
 				errors = err.flatten().fieldErrors;
 			}
