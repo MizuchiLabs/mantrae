@@ -25,6 +25,10 @@
 		if (type === undefined) return;
 		provider.type = type.value.toLowerCase();
 	};
+
+	const insertTraefikURL = () => {
+		provider.external_ip = $profile.url.replace(/^https?:\/\//, '').replace(/:\d+/, '');
+	};
 </script>
 
 <Card.Root class="mt-4">
@@ -79,18 +83,14 @@
 				<Input
 					name="externalIP"
 					type="text"
-					placeholder="IP address of Traefik"
+					placeholder="Public IP address of Traefik"
 					class="focus-visible:ring-0 focus-visible:ring-offset-0"
 					bind:value={provider.external_ip}
 					required
 				/>
 				<Tooltip.Root openDelay={500}>
 					<Tooltip.Trigger>
-						<Button
-							variant="secondary"
-							size="icon"
-							on:click={() => (provider.external_ip = $profile.url)}
-						>
+						<Button variant="secondary" size="icon" on:click={insertTraefikURL}>
 							<Copy size="1rem" />
 						</Button>
 					</Tooltip.Trigger>

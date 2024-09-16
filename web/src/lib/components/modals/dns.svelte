@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { DNSProvider } from '$lib/types/base';
 	import { updateProvider, createProvider, provider } from '$lib/api';
-	import ProviderForm from '../forms/provider.svelte';
+	import DNSForm from '../forms/dns.svelte';
 
 	export let dnsProvider: DNSProvider;
 	export let open = false;
@@ -38,7 +38,7 @@
 <Dialog.Root bind:open>
 	<Dialog.Trigger />
 	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[500px]">
-		<ProviderForm bind:provider={dnsProvider} />
+		<DNSForm bind:provider={dnsProvider} />
 		<Dialog.Close class="w-full">
 			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
 		</Dialog.Close>
