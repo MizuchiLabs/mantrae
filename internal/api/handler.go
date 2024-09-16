@@ -147,6 +147,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
+
 	writeJSON(w, profile)
 }
 

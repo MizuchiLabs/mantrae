@@ -467,51 +467,41 @@ func Sync(ctx context.Context) {
 func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	merged := make(map[string]T)
 
-	// Copy local map to merged map first and only add items by our provider
+	// Add local provider ("http") and DNSProvider-preserving routers to merged
 	for k, v := range local {
-		switch v := any(v).(type) {
+		switch item := any(v).(type) {
 		case Router:
-			if v.Provider == "http" {
-				merged[k] = any(v).(T)
-			} else {
-				// Preserve DNSProvider even if it's not our provider
-				if v.DNSProvider != "" {
-					merged[k] = any(v).(T)
-				}
+			if item.Provider == "http" || item.DNSProvider != "" {
+				merged[k] = v
 			}
 		case Service:
-			if v.Provider == "http" {
-				merged[k] = any(v).(T)
+			if item.Provider == "http" {
+				merged[k] = v
 			}
 		case Middleware:
-			if v.Provider == "http" {
-				merged[k] = any(v).(T)
+			if item.Provider == "http" {
+				merged[k] = v
 			}
 		}
 	}
 
+	// Merge in external data without overwriting local "http" provider entries
 	for _, external := range externals {
 		for k, v := range external {
 			if existing, found := merged[k]; found {
-				// If the local version exists update it
+				// If exists, check and update for specific fields (e.g., DNSProvider)
 				switch existingItem := any(existing).(type) {
 				case Router:
 					if newRouter, ok := any(v).(Router); ok {
-						// Preserve DNSProvider for the local router
 						newRouter.DNSProvider = existingItem.DNSProvider
 						merged[k] = any(newRouter).(T)
 					}
-				case Service:
-					if newService, ok := any(v).(Service); ok {
-						merged[k] = any(newService).(T)
-					}
-				case Middleware:
-					if newMiddleware, ok := any(v).(Middleware); ok {
-						merged[k] = any(newMiddleware).(T)
-					}
+				default:
+					// Services or Middleware might not need this DNSProvider logic
+					merged[k] = v
 				}
 			} else {
-				// If the item doesn't exist locally, add it if it's not from our "http" provider
+				// Add non-http provider entries
 				switch newItem := any(v).(type) {
 				case Router:
 					if newItem.Provider != "http" {
@@ -526,7 +516,7 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 						merged[k] = v
 					}
 				default:
-					merged[k] = v // for any other types
+					merged[k] = v
 				}
 			}
 		}

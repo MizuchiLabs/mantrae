@@ -59,30 +59,26 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 
 // UpdateConfig updates and verifies the data coming in
 func UpdateConfig(profileID int64, data *Dynamic) error {
-	for key, r := range data.Routers {
+	// Verify and handle routers
+	for _, r := range data.Routers {
 		if err := r.Verify(); err != nil {
 			return fmt.Errorf("router %s: %w", r.Name, err)
 		}
-		if key != r.Name {
-			delete(data.Routers, key)
-		}
 		data.Routers[r.Name] = r
 	}
-	for key, s := range data.Services {
+
+	// Verify and handle services
+	for _, s := range data.Services {
 		if err := s.Verify(); err != nil {
 			return fmt.Errorf("service %s: %w", s.Name, err)
 		}
-		if key != s.Name {
-			delete(data.Services, key)
-		}
 		data.Services[s.Name] = s
 	}
-	for key, m := range data.Middlewares {
+
+	// Verify and handle middlewares
+	for _, m := range data.Middlewares {
 		if err := m.Verify(); err != nil {
 			return fmt.Errorf("middleware %s: %w", m.Name, err)
-		}
-		if key != m.Name {
-			delete(data.Middlewares, key)
 		}
 		data.Middlewares[m.Name] = m
 	}
