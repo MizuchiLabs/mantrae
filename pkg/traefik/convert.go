@@ -3,7 +3,7 @@ package traefik
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log/slog"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
@@ -62,7 +62,8 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 	// Verify and handle routers
 	for _, r := range data.Routers {
 		if err := r.Verify(); err != nil {
-			return fmt.Errorf("router %s: %w", r.Name, err)
+			slog.Error("Router error", "error", err)
+			continue
 		}
 		data.Routers[r.Name] = r
 	}
@@ -70,7 +71,8 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 	// Verify and handle services
 	for _, s := range data.Services {
 		if err := s.Verify(); err != nil {
-			return fmt.Errorf("service %s: %w", s.Name, err)
+			slog.Error("Service error", "error", err)
+			continue
 		}
 		data.Services[s.Name] = s
 	}
@@ -78,7 +80,8 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 	// Verify and handle middlewares
 	for _, m := range data.Middlewares {
 		if err := m.Verify(); err != nil {
-			return fmt.Errorf("middleware %s: %w", m.Name, err)
+			slog.Error("Middleware error", "error", err)
+			continue
 		}
 		data.Middlewares[m.Name] = m
 	}
