@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"sync"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
+
+var mutex sync.Mutex
 
 // DecodeConfig decodes the config from the database into our Dynamic struct
 func DecodeConfig(config db.Config) (*Dynamic, error) {
@@ -58,7 +61,10 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 }
 
 // UpdateConfig updates and verifies the data coming in
-func UpdateConfig(profileID int64, data *Dynamic) error {
+func UpdateConfig(profileID int64, data *Dynamic) (*Dynamic, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	// Verify and handle routers
 	for _, r := range data.Routers {
 		if err := r.Verify(); err != nil {
@@ -88,29 +94,29 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 
 	overview, err := json.Marshal(data.Overview)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	entrypoints, err := json.Marshal(data.Entrypoints)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	routers, err := json.Marshal(data.Routers)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	services, err := json.Marshal(data.Services)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	middlewares, err := json.Marshal(data.Middlewares)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	tls, err := json.Marshal(data.TLS)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if _, err := db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
+	config, err := db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
 		ProfileID:   profileID,
 		Overview:    overview,
 		Entrypoints: entrypoints,
@@ -119,9 +125,10 @@ func UpdateConfig(profileID int64, data *Dynamic) error {
 		Middlewares: middlewares,
 		Tls:         tls,
 		Version:     &data.Version,
-	}); err != nil {
-		return err
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return DecodeConfig(config)
 }

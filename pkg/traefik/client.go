@@ -438,7 +438,7 @@ func GetTraefikConfig() {
 			return
 		}
 		data.Version = v.Version
-		if err := UpdateConfig(config.ProfileID, data); err != nil {
+		if _, err := UpdateConfig(config.ProfileID, data); err != nil {
 			slog.Error("Failed to update config", "error", err)
 			return
 		}

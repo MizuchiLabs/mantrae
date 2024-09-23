@@ -25,6 +25,8 @@ func Routes() http.Handler {
 
 	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
 	mux.HandleFunc("PUT /api/config/{id}", JWT(UpdateConfig))
+	mux.HandleFunc("PUT /api/router/{id}", JWT(UpdateRouter))
+	mux.HandleFunc("PUT /api/service/{id}", JWT(UpdateService))
 
 	mux.HandleFunc("GET /api/user", JWT(GetUsers))
 	mux.HandleFunc("GET /api/user/{id}", JWT(GetUser))

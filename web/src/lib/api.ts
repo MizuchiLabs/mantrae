@@ -259,6 +259,24 @@ export async function updateConfig(c: Config): Promise<void> {
 	}
 }
 
+export async function updateRouter(r: Router): Promise<void> {
+	const response = await handleRequest(`/router/${get(profile).id}`, 'PUT', r);
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Router ${r.name} updated`);
+	}
+}
+
+export async function updateService(s: Service): Promise<void> {
+	const response = await handleRequest(`/service/${get(profile).id}`, 'PUT', s);
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Service ${s.name} updated`);
+	}
+}
+
 export async function deleteRouterDNS(r: Router): Promise<void> {
 	if (!r.dnsProvider) return;
 
@@ -343,44 +361,34 @@ export async function getTraefikConfig() {
 
 // Helper functions -----------------------------------------------------------
 // Create or update a router and its service
+function nameCheck(router: Router) {
+	let name = router.name?.trim().toLowerCase();
+	let provider = router.provider?.trim().toLowerCase() ?? 'http';
+	let parts = name.split('@');
+	return parts[0] + '@' + provider;
+}
 export async function upsertRouter(
 	name: string,
 	router: Router,
 	service: Service | undefined
 ): Promise<void> {
-	const data = get(config);
-
-	// Ensure routers and services exist
-	if (!data.routers) data.routers = {};
-	if (!data.services) data.services = {};
+	if (name === '' || router.name === '') return;
 
 	// Ensure the service name is the same as the router name
 	if (service === undefined) {
 		service = getService(router);
 	}
-	router.service = router.name;
-	service.name = router.name;
+	router.name = nameCheck(router);
+	router.service = nameCheck(router);
+	service.name = nameCheck(router);
 	service.serviceType = router.routerType;
 
 	// Handle name changes
 	if (router.name !== name) {
-		// Safely update without deleting unrelated routers/services
-		data.routers[router.name] = router;
-		data.services[router.name] = service;
-
-		// Only delete the old router/service if they exist under the old name
-		if (data.routers[name]) {
-			delete data.routers[name];
-		}
-		if (data.services[name]) {
-			delete data.services[name];
-		}
-	} else {
-		// Simply update the existing router and service
-		data.routers[router.name] = router;
-		data.services[router.name] = service;
+		await deleteRouter(name);
 	}
-	await updateConfig(data);
+	await updateRouter(router);
+	await updateService(service);
 }
 
 // Create or update a middleware

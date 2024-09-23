@@ -458,7 +458,7 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := traefik.UpdateConfig(config.ProfileID, &config); err != nil {
+	if _, err := traefik.UpdateConfig(config.ProfileID, &config); err != nil {
 		http.Error(
 			w,
 			fmt.Sprintf("Failed to update config: %s", err.Error()),
@@ -471,6 +471,102 @@ func UpdateConfig(w http.ResponseWriter, r *http.Request) {
 	go dns.UpdateDNS()
 
 	writeJSON(w, config)
+}
+
+// UpdateConfig updates the config for a single profile
+func UpdateRouter(w http.ResponseWriter, r *http.Request) {
+	var router traefik.Router
+	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	if err := router.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	data.Routers[router.Name] = router
+	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// Update the DNS records immediately
+	go dns.UpdateDNS()
+
+	writeJSON(w, newConfig)
+}
+
+func UpdateService(w http.ResponseWriter, r *http.Request) {
+	var service traefik.Service
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	if err := service.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	data.Services[service.Name] = service
+	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, newConfig)
 }
 
 // Settings -------------------------------------------------------------------
