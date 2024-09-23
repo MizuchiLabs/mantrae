@@ -123,6 +123,21 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
 	}
+	if q.upsertConfigStmt, err = db.PrepareContext(ctx, upsertConfig); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertConfig: %w", err)
+	}
+	if q.upsertProfileStmt, err = db.PrepareContext(ctx, upsertProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertProfile: %w", err)
+	}
+	if q.upsertProviderStmt, err = db.PrepareContext(ctx, upsertProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertProvider: %w", err)
+	}
+	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
+	}
+	if q.upsertUserStmt, err = db.PrepareContext(ctx, upsertUser); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertUser: %w", err)
+	}
 	return &q, nil
 }
 
@@ -293,6 +308,31 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
 		}
 	}
+	if q.upsertConfigStmt != nil {
+		if cerr := q.upsertConfigStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertConfigStmt: %w", cerr)
+		}
+	}
+	if q.upsertProfileStmt != nil {
+		if cerr := q.upsertProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertProfileStmt: %w", cerr)
+		}
+	}
+	if q.upsertProviderStmt != nil {
+		if cerr := q.upsertProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertProviderStmt: %w", cerr)
+		}
+	}
+	if q.upsertSettingStmt != nil {
+		if cerr := q.upsertSettingStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertSettingStmt: %w", cerr)
+		}
+	}
+	if q.upsertUserStmt != nil {
+		if cerr := q.upsertUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertUserStmt: %w", cerr)
+		}
+	}
 	return err
 }
 
@@ -365,6 +405,11 @@ type Queries struct {
 	updateProviderStmt            *sql.Stmt
 	updateSettingStmt             *sql.Stmt
 	updateUserStmt                *sql.Stmt
+	upsertConfigStmt              *sql.Stmt
+	upsertProfileStmt             *sql.Stmt
+	upsertProviderStmt            *sql.Stmt
+	upsertSettingStmt             *sql.Stmt
+	upsertUserStmt                *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -404,5 +449,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateProviderStmt:            q.updateProviderStmt,
 		updateSettingStmt:             q.updateSettingStmt,
 		updateUserStmt:                q.updateUserStmt,
+		upsertConfigStmt:              q.upsertConfigStmt,
+		upsertProfileStmt:             q.upsertProfileStmt,
+		upsertProviderStmt:            q.upsertProviderStmt,
+		upsertSettingStmt:             q.upsertSettingStmt,
+		upsertUserStmt:                q.upsertUserStmt,
 	}
 }

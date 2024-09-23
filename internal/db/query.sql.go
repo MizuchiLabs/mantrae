@@ -913,3 +913,233 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	)
 	return i, err
 }
+
+const upsertConfig = `-- name: UpsertConfig :one
+INSERT INTO
+  config (
+    profile_id,
+    overview,
+    entrypoints,
+    routers,
+    services,
+    middlewares,
+    tls,
+    version
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO
+UPDATE
+SET
+  overview = EXCLUDED.overview,
+  entrypoints = EXCLUDED.entrypoints,
+  routers = EXCLUDED.routers,
+  services = EXCLUDED.services,
+  middlewares = EXCLUDED.middlewares,
+  tls = EXCLUDED.tls,
+  version = EXCLUDED.version RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+`
+
+type UpsertConfigParams struct {
+	ProfileID   int64       `json:"profile_id"`
+	Overview    interface{} `json:"overview"`
+	Entrypoints interface{} `json:"entrypoints"`
+	Routers     interface{} `json:"routers"`
+	Services    interface{} `json:"services"`
+	Middlewares interface{} `json:"middlewares"`
+	Tls         interface{} `json:"tls"`
+	Version     *string     `json:"version"`
+}
+
+func (q *Queries) UpsertConfig(ctx context.Context, arg UpsertConfigParams) (Config, error) {
+	row := q.queryRow(ctx, q.upsertConfigStmt, upsertConfig,
+		arg.ProfileID,
+		arg.Overview,
+		arg.Entrypoints,
+		arg.Routers,
+		arg.Services,
+		arg.Middlewares,
+		arg.Tls,
+		arg.Version,
+	)
+	var i Config
+	err := row.Scan(
+		&i.ProfileID,
+		&i.Overview,
+		&i.Entrypoints,
+		&i.Routers,
+		&i.Services,
+		&i.Middlewares,
+		&i.Tls,
+		&i.Version,
+	)
+	return i, err
+}
+
+const upsertProfile = `-- name: UpsertProfile :one
+INSERT INTO
+  profiles (id, name, url, username, password, tls)
+VALUES
+  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  name = EXCLUDED.name,
+  url = EXCLUDED.url,
+  username = EXCLUDED.username,
+  password = EXCLUDED.password,
+  tls = EXCLUDED.tls RETURNING id, name, url, username, password, tls
+`
+
+type UpsertProfileParams struct {
+	ID       int64   `json:"id"`
+	Name     string  `json:"name"`
+	Url      string  `json:"url"`
+	Username *string `json:"username"`
+	Password *string `json:"password"`
+	Tls      bool    `json:"tls"`
+}
+
+func (q *Queries) UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error) {
+	row := q.queryRow(ctx, q.upsertProfileStmt, upsertProfile,
+		arg.ID,
+		arg.Name,
+		arg.Url,
+		arg.Username,
+		arg.Password,
+		arg.Tls,
+	)
+	var i Profile
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Url,
+		&i.Username,
+		&i.Password,
+		&i.Tls,
+	)
+	return i, err
+}
+
+const upsertProvider = `-- name: UpsertProvider :one
+INSERT INTO
+  providers (
+    id,
+    name,
+    type,
+    external_ip,
+    api_key,
+    api_url,
+    proxied,
+    is_active
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  name = EXCLUDED.name,
+  type = EXCLUDED.type,
+  external_ip = EXCLUDED.external_ip,
+  api_key = EXCLUDED.api_key,
+  api_url = EXCLUDED.api_url,
+  proxied = EXCLUDED.proxied,
+  is_active = EXCLUDED.is_active RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
+`
+
+type UpsertProviderParams struct {
+	ID         int64   `json:"id"`
+	Name       string  `json:"name"`
+	Type       string  `json:"type"`
+	ExternalIp string  `json:"external_ip"`
+	ApiKey     string  `json:"api_key"`
+	ApiUrl     *string `json:"api_url"`
+	Proxied    bool    `json:"proxied"`
+	IsActive   bool    `json:"is_active"`
+}
+
+func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error) {
+	row := q.queryRow(ctx, q.upsertProviderStmt, upsertProvider,
+		arg.ID,
+		arg.Name,
+		arg.Type,
+		arg.ExternalIp,
+		arg.ApiKey,
+		arg.ApiUrl,
+		arg.Proxied,
+		arg.IsActive,
+	)
+	var i Provider
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.ExternalIp,
+		&i.ApiKey,
+		&i.ApiUrl,
+		&i.Proxied,
+		&i.IsActive,
+	)
+	return i, err
+}
+
+const upsertSetting = `-- name: UpsertSetting :one
+INSERT INTO
+  settings (id, key, value)
+VALUES
+  (?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  key = EXCLUDED.key,
+  value = EXCLUDED.value RETURNING id, "key", value
+`
+
+type UpsertSettingParams struct {
+	ID    int64  `json:"id"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+func (q *Queries) UpsertSetting(ctx context.Context, arg UpsertSettingParams) (Setting, error) {
+	row := q.queryRow(ctx, q.upsertSettingStmt, upsertSetting, arg.ID, arg.Key, arg.Value)
+	var i Setting
+	err := row.Scan(&i.ID, &i.Key, &i.Value)
+	return i, err
+}
+
+const upsertUser = `-- name: UpsertUser :one
+INSERT INTO
+  users (id, username, password, email, type)
+VALUES
+  (?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  username = EXCLUDED.username,
+  password = EXCLUDED.password,
+  email = EXCLUDED.email,
+  type = EXCLUDED.type RETURNING id, username, password, email, type
+`
+
+type UpsertUserParams struct {
+	ID       int64   `json:"id"`
+	Username string  `json:"username"`
+	Password string  `json:"password"`
+	Email    *string `json:"email"`
+	Type     string  `json:"type"`
+}
+
+func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
+	row := q.queryRow(ctx, q.upsertUserStmt, upsertUser,
+		arg.ID,
+		arg.Username,
+		arg.Password,
+		arg.Email,
+		arg.Type,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.Type,
+	)
+	return i, err
+}

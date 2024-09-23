@@ -20,6 +20,80 @@ import (
 
 var backupCron *cron.Cron
 
+// BackupData is the structure for the full manual backup
+type BackupData struct {
+	Profiles  []db.Profile  `json:"profiles"`
+	Configs   []db.Config   `json:"configs"`
+	Providers []db.Provider `json:"providers"`
+	Settings  []db.Setting  `json:"settings"`
+	Users     []db.User     `json:"users"`
+}
+
+func DumpBackup(ctx context.Context) (*BackupData, error) {
+	var data BackupData
+	var err error
+
+	data.Profiles, err = db.Query.ListProfiles(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get profiles: %w", err)
+	}
+
+	data.Configs, err = db.Query.ListConfigs(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get configs: %w", err)
+	}
+
+	data.Providers, err = db.Query.ListProviders(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get providers: %w", err)
+	}
+
+	data.Settings, err = db.Query.ListSettings(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get settings: %w", err)
+	}
+
+	data.Users, err = db.Query.ListUsers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get users: %w", err)
+	}
+
+	return &data, nil
+}
+
+func RestoreBackup(ctx context.Context, data *BackupData) error {
+	for _, profile := range data.Profiles {
+		if _, err := db.Query.UpsertProfile(ctx, db.UpsertProfileParams(profile)); err != nil {
+			return fmt.Errorf("failed to create profile: %w", err)
+		}
+	}
+
+	for _, config := range data.Configs {
+		if _, err := db.Query.UpsertConfig(ctx, db.UpsertConfigParams(config)); err != nil {
+			return fmt.Errorf("failed to create config: %w", err)
+		}
+	}
+
+	for _, provider := range data.Providers {
+		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams(provider)); err != nil {
+			return fmt.Errorf("failed to create provider: %w", err)
+		}
+	}
+
+	for _, setting := range data.Settings {
+		if _, err := db.Query.UpsertSetting(ctx, db.UpsertSettingParams(setting)); err != nil {
+			return fmt.Errorf("failed to create setting: %w", err)
+		}
+	}
+
+	for _, user := range data.Users {
+		if _, err := db.Query.UpsertUser(ctx, db.UpsertUserParams(user)); err != nil {
+			return fmt.Errorf("failed to create user: %w", err)
+		}
+	}
+	return nil
+}
+
 func BackupDatabase() error {
 	timestamp := time.Now().Format("2006-01-02")
 	backupPath := fmt.Sprintf("%s/backup-%s.sql.gz", util.Path(util.BackupDir), timestamp)
@@ -99,7 +173,6 @@ func CleanupBackups() error {
 	}
 
 	// Get the list of backup files
-
 	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.sql.gz", util.Path(util.BackupDir)))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)

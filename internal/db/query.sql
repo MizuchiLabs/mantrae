@@ -41,6 +41,19 @@ SET
 WHERE
   id = ? RETURNING *;
 
+-- name: UpsertProfile :one
+INSERT INTO
+  profiles (id, name, url, username, password, tls)
+VALUES
+  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  name = EXCLUDED.name,
+  url = EXCLUDED.url,
+  username = EXCLUDED.username,
+  password = EXCLUDED.password,
+  tls = EXCLUDED.tls RETURNING *;
+
 -- name: DeleteProfileByID :exec
 DELETE FROM profiles
 WHERE
@@ -112,6 +125,30 @@ SET
 WHERE
   profile_id = ? RETURNING *;
 
+-- name: UpsertConfig :one
+INSERT INTO
+  config (
+    profile_id,
+    overview,
+    entrypoints,
+    routers,
+    services,
+    middlewares,
+    tls,
+    version
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO
+UPDATE
+SET
+  overview = EXCLUDED.overview,
+  entrypoints = EXCLUDED.entrypoints,
+  routers = EXCLUDED.routers,
+  services = EXCLUDED.services,
+  middlewares = EXCLUDED.middlewares,
+  tls = EXCLUDED.tls,
+  version = EXCLUDED.version RETURNING *;
+
 -- name: DeleteConfigByProfileID :exec
 DELETE FROM config
 WHERE
@@ -182,6 +219,30 @@ SET
 WHERE
   id = ? RETURNING *;
 
+-- name: UpsertProvider :one
+INSERT INTO
+  providers (
+    id,
+    name,
+    type,
+    external_ip,
+    api_key,
+    api_url,
+    proxied,
+    is_active
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  name = EXCLUDED.name,
+  type = EXCLUDED.type,
+  external_ip = EXCLUDED.external_ip,
+  api_key = EXCLUDED.api_key,
+  api_url = EXCLUDED.api_url,
+  proxied = EXCLUDED.proxied,
+  is_active = EXCLUDED.is_active RETURNING *;
+
 -- name: DeleteProviderByID :exec
 DELETE FROM providers
 WHERE
@@ -234,6 +295,18 @@ SET
 WHERE
   id = ? RETURNING *;
 
+-- name: UpsertUser :one
+INSERT INTO
+  users (id, username, password, email, type)
+VALUES
+  (?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  username = EXCLUDED.username,
+  password = EXCLUDED.password,
+  email = EXCLUDED.email,
+  type = EXCLUDED.type RETURNING *;
+
 -- name: DeleteUserByID :exec
 DELETE FROM users
 WHERE
@@ -272,6 +345,16 @@ SET
   value = ?
 WHERE
   key = ? RETURNING *;
+
+-- name: UpsertSetting :one
+INSERT INTO
+  settings (id, key, value)
+VALUES
+  (?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  key = EXCLUDED.key,
+  value = EXCLUDED.value RETURNING *;
 
 -- name: DeleteSettingByKey :exec
 DELETE FROM settings
