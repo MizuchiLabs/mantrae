@@ -27,6 +27,7 @@ CREATE TABLE providers (
   external_ip TEXT NOT NULL,
   api_key TEXT NOT NULL,
   api_url TEXT,
+  proxied BOOLEAN NOT NULL DEFAULT FALSE,
   is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 

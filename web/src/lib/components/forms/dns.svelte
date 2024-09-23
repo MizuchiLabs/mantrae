@@ -50,6 +50,14 @@
 			<Label for="is_active" class="text-right">Default</Label>
 			<Switch name="is_active" bind:checked={provider.is_active} required />
 		</div>
+
+		{#if provider.type === 'cloudflare'}
+			<div class="flex items-center justify-end gap-2">
+				<Label for="proxied" class="text-right">Proxied</Label>
+				<Switch name="proxied" bind:checked={provider.proxied} required />
+			</div>
+		{/if}
+
 		<div class="grid grid-cols-4 items-center gap-4 space-y-2">
 			<Label for="current" class="text-right">Type</Label>
 			<Select.Root onSelectedChange={setProviderType} selected={providerType}>

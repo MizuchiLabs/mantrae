@@ -278,7 +278,7 @@ export async function updateService(s: Service): Promise<void> {
 }
 
 export async function deleteRouterDNS(r: Router): Promise<void> {
-	if (!r.dnsProvider) return;
+	if (!r || !r.dnsProvider) return;
 
 	const response = await handleRequest(`/dns`, 'POST', r);
 	if (response) {
@@ -383,10 +383,6 @@ export async function upsertRouter(
 	service.name = nameCheck(router);
 	service.serviceType = router.routerType;
 
-	// Handle name changes
-	if (router.name !== name) {
-		await deleteRouter(name);
-	}
 	await updateRouter(router);
 	await updateService(service);
 }

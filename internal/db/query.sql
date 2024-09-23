@@ -163,10 +163,11 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateProvider :one
 UPDATE providers
@@ -176,6 +177,7 @@ SET
   external_ip = ?,
   api_key = ?,
   api_url = ?,
+  proxied = ?,
   is_active = ?
 WHERE
   id = ? RETURNING *;

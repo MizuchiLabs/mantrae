@@ -20,7 +20,7 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
-	import { Eye, Pencil, X } from 'lucide-svelte';
+	import { Eye, Pencil, X, SquareArrowOutUpRight } from 'lucide-svelte';
 
 	let search = '';
 	let count = 0;
@@ -132,6 +132,23 @@
 			return entrypoint?.http?.tls !== undefined;
 		});
 	};
+
+	function getHost(router: Router): string {
+		const hostRegex = /Host\(`([^`]+)`\)/;
+		const pathPrefixRegex = /PathPrefix\(`([^`]+)`\)/;
+		const schema = router.tls?.certResolver ? 'https' : 'http';
+
+		const match = router.rule?.match(hostRegex);
+		const matchPath = router.rule?.match(pathPrefixRegex);
+		let link = '';
+		if (match && match[1]) {
+			link = `${schema}://${match[1]}`;
+			if (matchPath && matchPath[1]) {
+				link = `${link}${matchPath[1]}`;
+			}
+		}
+		return link;
+	}
 
 	// Add reactive variables for bulk actions
 	let allChecked = false;
@@ -288,7 +305,19 @@
 								</div>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('name') ? 'font-medium' : 'hidden'}>
-								{router.name.split('@')[0]}
+								{#if getHost(router)}
+									<a
+										href={getHost(router)}
+										target="_blank"
+										rel="noreferrer"
+										class="flex flex-row items-center gap-1 text-blue-600"
+									>
+										{router.name.split('@')[0]}
+										<SquareArrowOutUpRight size="1rem" />
+									</a>
+								{:else}
+									{router.name.split('@')[0]}
+								{/if}
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
 								<span

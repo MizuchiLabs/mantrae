@@ -104,10 +104,11 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING id, name, type, external_ip, api_key, api_url, is_active
+  (?, ?, ?, ?, ?, ?, ?) RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
 `
 
 type CreateProviderParams struct {
@@ -116,6 +117,7 @@ type CreateProviderParams struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
 }
 
@@ -126,6 +128,7 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 		arg.ExternalIp,
 		arg.ApiKey,
 		arg.ApiUrl,
+		arg.Proxied,
 		arg.IsActive,
 	)
 	var i Provider
@@ -136,6 +139,7 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 		&i.ExternalIp,
 		&i.ApiKey,
 		&i.ApiUrl,
+		&i.Proxied,
 		&i.IsActive,
 	)
 	return i, err
@@ -411,7 +415,7 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 
 const getProviderByID = `-- name: GetProviderByID :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active
 FROM
   providers
 WHERE
@@ -430,6 +434,7 @@ func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, erro
 		&i.ExternalIp,
 		&i.ApiKey,
 		&i.ApiUrl,
+		&i.Proxied,
 		&i.IsActive,
 	)
 	return i, err
@@ -437,7 +442,7 @@ func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, erro
 
 const getProviderByName = `-- name: GetProviderByName :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active
 FROM
   providers
 WHERE
@@ -456,6 +461,7 @@ func (q *Queries) GetProviderByName(ctx context.Context, name string) (Provider,
 		&i.ExternalIp,
 		&i.ApiKey,
 		&i.ApiUrl,
+		&i.Proxied,
 		&i.IsActive,
 	)
 	return i, err
@@ -605,7 +611,7 @@ func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
 
 const listProviders = `-- name: ListProviders :many
 SELECT
-  id, name, type, external_ip, api_key, api_url, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active
 FROM
   providers
 `
@@ -626,6 +632,7 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 			&i.ExternalIp,
 			&i.ApiKey,
 			&i.ApiUrl,
+			&i.Proxied,
 			&i.IsActive,
 		); err != nil {
 			return nil, err
@@ -807,9 +814,10 @@ SET
   external_ip = ?,
   api_key = ?,
   api_url = ?,
+  proxied = ?,
   is_active = ?
 WHERE
-  id = ? RETURNING id, name, type, external_ip, api_key, api_url, is_active
+  id = ? RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
 `
 
 type UpdateProviderParams struct {
@@ -818,6 +826,7 @@ type UpdateProviderParams struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
 	ID         int64   `json:"id"`
 }
@@ -829,6 +838,7 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 		arg.ExternalIp,
 		arg.ApiKey,
 		arg.ApiUrl,
+		arg.Proxied,
 		arg.IsActive,
 		arg.ID,
 	)
@@ -840,6 +850,7 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 		&i.ExternalIp,
 		&i.ApiKey,
 		&i.ApiUrl,
+		&i.Proxied,
 		&i.IsActive,
 	)
 	return i, err

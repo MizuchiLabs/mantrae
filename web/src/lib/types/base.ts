@@ -59,6 +59,7 @@ export interface DNSProvider {
 	external_ip: string;
 	api_key?: string;
 	api_url?: string;
+	proxied: boolean;
 	is_active: boolean;
 }
 
@@ -70,6 +71,7 @@ export function newProvider(): DNSProvider {
 		external_ip: '',
 		api_key: '',
 		api_url: '',
+		proxied: false,
 		is_active: false
 	};
 }

@@ -46,7 +46,7 @@ func getProvider(name string) DNSProvider {
 
 	switch provider.Type {
 	case "cloudflare":
-		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp)
+		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp, provider.Proxied)
 	case "powerdns":
 		return NewPowerDNSProvider(*provider.ApiUrl, provider.ApiKey, provider.ExternalIp)
 	default:

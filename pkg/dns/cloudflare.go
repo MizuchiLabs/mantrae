@@ -14,9 +14,10 @@ type CloudflareProvider struct {
 	Client     *cloudflare.API
 	ManagedTXT string
 	ExternalIP string
+	Proxied    *bool
 }
 
-func NewCloudflareProvider(key, ip string) *CloudflareProvider {
+func NewCloudflareProvider(key, ip string, proxied bool) *CloudflareProvider {
 	client, err := cloudflare.NewWithAPIToken(key)
 	if err != nil {
 		log.Fatal(err)
@@ -26,6 +27,7 @@ func NewCloudflareProvider(key, ip string) *CloudflareProvider {
 		Client:     client,
 		ManagedTXT: "managed-by=mantrae",
 		ExternalIP: ip,
+		Proxied:    &proxied,
 	}
 }
 
@@ -65,7 +67,7 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 				Type:    recordType,
 				Name:    subdomain,
 				Content: c.ExternalIP,
-				Proxied: boolPointer(true),
+				Proxied: c.Proxied,
 			},
 		)
 		if err != nil {
@@ -110,7 +112,7 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 						Type:    recordType,
 						Name:    subdomain,
 						Content: c.ExternalIP,
-						Proxied: boolPointer(true),
+						Proxied: c.Proxied,
 					},
 				)
 				if err != nil {
