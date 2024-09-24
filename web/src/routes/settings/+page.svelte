@@ -106,7 +106,7 @@
 					<div class="col-span-3 flex w-full gap-2">
 						<input
 							type="file"
-							accept=".sql"
+							accept=".json"
 							class="hidden"
 							on:change={handleFileUpload}
 							bind:this={fileInput}

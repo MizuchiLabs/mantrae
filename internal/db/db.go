@@ -123,9 +123,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
 	}
-	if q.upsertConfigStmt, err = db.PrepareContext(ctx, upsertConfig); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertConfig: %w", err)
-	}
 	if q.upsertProfileStmt, err = db.PrepareContext(ctx, upsertProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertProfile: %w", err)
 	}
@@ -308,11 +305,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
 		}
 	}
-	if q.upsertConfigStmt != nil {
-		if cerr := q.upsertConfigStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertConfigStmt: %w", cerr)
-		}
-	}
 	if q.upsertProfileStmt != nil {
 		if cerr := q.upsertProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertProfileStmt: %w", cerr)
@@ -405,7 +397,6 @@ type Queries struct {
 	updateProviderStmt            *sql.Stmt
 	updateSettingStmt             *sql.Stmt
 	updateUserStmt                *sql.Stmt
-	upsertConfigStmt              *sql.Stmt
 	upsertProfileStmt             *sql.Stmt
 	upsertProviderStmt            *sql.Stmt
 	upsertSettingStmt             *sql.Stmt
@@ -449,7 +440,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateProviderStmt:            q.updateProviderStmt,
 		updateSettingStmt:             q.updateSettingStmt,
 		updateUserStmt:                q.updateUserStmt,
-		upsertConfigStmt:              q.upsertConfigStmt,
 		upsertProfileStmt:             q.upsertProfileStmt,
 		upsertProviderStmt:            q.upsertProviderStmt,
 		upsertSettingStmt:             q.upsertSettingStmt,

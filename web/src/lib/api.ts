@@ -128,11 +128,11 @@ export async function updateProfile(p: Profile): Promise<void> {
 	const response = await handleRequest(`/profile`, 'PUT', p);
 	if (response) {
 		const data = await response.json();
-		profile.set(data);
 		profiles.update((items) => items.map((i) => (i.id === p.id ? data : i)));
 		toast.success(`Profile ${data.name} updated`);
 
-		if (get(profile).id === data.id) {
+		if (get(profile) && get(profile).id === data.id) {
+			profile.set(data);
 			localStorage.setItem('profile', data.id.toString());
 		}
 	}
@@ -316,12 +316,14 @@ export async function updateSetting(s: Setting): Promise<void> {
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {
 	const response = await handleRequest('/backup', 'GET');
-	if (response?.ok) {
-		const blob = await response.blob();
+	if (response) {
+		const data = await response.json();
+		const jsonString = JSON.stringify(data, null, 2);
+		const blob = new Blob([jsonString], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
-		link.download = `backup-${new Date().toISOString().split('T')[0]}.sql`;
+		link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
 		document.body.appendChild(link);
 		link.click();
 		URL.revokeObjectURL(url);
@@ -339,6 +341,11 @@ export async function uploadBackup(file: File) {
 		headers: { Authorization: `Bearer ${token}` }
 	});
 	toast.success('Backup restored!');
+	await getProfiles();
+	await getUsers();
+	await getProviders();
+	await getConfig();
+	await getSettings();
 }
 
 export async function getVersion() {

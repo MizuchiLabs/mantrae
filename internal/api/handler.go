@@ -5,12 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"os/exec"
 	"strconv"
-	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -630,35 +626,12 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 
 // DownloadBackup returns a backup of the database
 func DownloadBackup(w http.ResponseWriter, r *http.Request) {
-	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".dump")
-	sqlFile, err := os.CreateTemp("", "backup-*.sql")
+	data, err := config.DumpBackup(r.Context())
 	if err != nil {
-		http.Error(w, "Failed to create SQL file", http.StatusInternalServerError)
-	}
-	defer os.Remove(sqlFile.Name())
-
-	cmd.Stdout = sqlFile
-	if err := cmd.Run(); err != nil {
-		http.Error(w, "Failed to run sqlite3 command", http.StatusInternalServerError)
+		http.Error(w, "Failed to get backup", http.StatusInternalServerError)
 		return
 	}
-
-	// Reopen the temp file to start reading from the beginning
-	if _, err := sqlFile.Seek(0, 0); err != nil {
-		http.Error(w, "Failed to seek SQL file", http.StatusInternalServerError)
-		return
-	}
-
-	content := fmt.Sprintf(
-		"attachment; filename=backup-%s.sql",
-		time.Now().Format("2006-01-02"),
-	)
-	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Header().Set("Content-Disposition", content)
-
-	if _, err := io.Copy(w, sqlFile); err != nil {
-		http.Error(w, "Failed to write file to response", http.StatusInternalServerError)
-	}
+	writeJSON(w, data)
 }
 
 func UploadBackup(w http.ResponseWriter, r *http.Request) {
@@ -669,61 +642,21 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	if err = db.DB.Close(); err != nil {
+	var data config.BackupData
+	if err := json.NewDecoder(file).Decode(&data); err != nil {
+		http.Error(w, "Failed to decode backup data", http.StatusBadRequest)
+		return
+	}
+	if err := config.RestoreBackup(r.Context(), &data); err != nil {
 		http.Error(
 			w,
-			"Failed to close existing database connection",
+			fmt.Sprintf("Failed to restore backup: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	restoreFile, err := os.CreateTemp("", "restore-*.sql")
-	if err != nil {
-		http.Error(w, "Failed to create SQL file", http.StatusInternalServerError)
-		return
-	}
-	defer restoreFile.Close()
-	defer os.Remove(restoreFile.Name())
-
-	if _, err = io.Copy(restoreFile, file); err != nil {
-		http.Error(w, "Failed to copy file to content", http.StatusInternalServerError)
-		return
-	}
-
-	// Reopen the temp file to start reading from the beginning
-	if _, err = restoreFile.Seek(0, 0); err != nil {
-		http.Error(w, "Failed to seek SQL file", http.StatusInternalServerError)
-		return
-	}
-
-	// Delete Database
-	if err = os.Remove(util.Path(util.DBName)); err != nil && !os.IsNotExist(err) {
-		http.Error(w, "Failed to delete existing database", http.StatusInternalServerError)
-		return
-	}
-
-	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".read "+restoreFile.Name())
-	if err = cmd.Run(); err != nil {
-		http.Error(w, "Failed to run sqlite3 command", http.StatusInternalServerError)
-		return
-	}
-
-	// Reopen the database connection
-	if err = db.InitDB(); err != nil {
-		http.Error(w, "Failed to initialize database", http.StatusInternalServerError)
-		return
-	}
-
-	// Broadcast the update to all clients
-	util.Broadcast <- "profiles"
-
-	// Respond to the client that the restore was successful.
 	w.WriteHeader(http.StatusOK)
-	if _, err = w.Write([]byte("Database restored successfully")); err != nil {
-		http.Error(w, "Failed to write response", http.StatusInternalServerError)
-		return
-	}
 }
 
 // Extra ---------------------------------------------------------------------

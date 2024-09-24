@@ -7,13 +7,13 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/robfig/cron/v3"
 )
@@ -22,11 +22,11 @@ var backupCron *cron.Cron
 
 // BackupData is the structure for the full manual backup
 type BackupData struct {
-	Profiles  []db.Profile  `json:"profiles"`
-	Configs   []db.Config   `json:"configs"`
-	Providers []db.Provider `json:"providers"`
-	Settings  []db.Setting  `json:"settings"`
-	Users     []db.User     `json:"users"`
+	Profiles  []db.Profile       `json:"profiles"`
+	Configs   []*traefik.Dynamic `json:"configs"`
+	Providers []db.Provider      `json:"providers"`
+	Settings  []db.Setting       `json:"settings"`
+	Users     []db.User          `json:"users"`
 }
 
 func DumpBackup(ctx context.Context) (*BackupData, error) {
@@ -38,9 +38,16 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 		return nil, fmt.Errorf("failed to get profiles: %w", err)
 	}
 
-	data.Configs, err = db.Query.ListConfigs(ctx)
+	configs, err := db.Query.ListConfigs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get configs: %w", err)
+	}
+	for _, config := range configs {
+		dynamic, err := traefik.DecodeConfig(config)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode config: %w", err)
+		}
+		data.Configs = append(data.Configs, dynamic)
 	}
 
 	data.Providers, err = db.Query.ListProviders(ctx)
@@ -62,41 +69,55 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 }
 
 func RestoreBackup(ctx context.Context, data *BackupData) error {
+	var err error
+	db.DB.Close()
+
+	// Delete Database
+	if err = os.Remove(util.Path(util.DBName)); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to delete existing database: %w", err)
+	}
+
+	// Reopen the database connection
+	if err = db.InitDB(); err != nil {
+		return fmt.Errorf("failed to open database: %w", err)
+	}
+
 	for _, profile := range data.Profiles {
 		if _, err := db.Query.UpsertProfile(ctx, db.UpsertProfileParams(profile)); err != nil {
-			return fmt.Errorf("failed to create profile: %w", err)
+			return fmt.Errorf("failed to upsert profile: %w", err)
 		}
 	}
 
 	for _, config := range data.Configs {
-		if _, err := db.Query.UpsertConfig(ctx, db.UpsertConfigParams(config)); err != nil {
-			return fmt.Errorf("failed to create config: %w", err)
+		if _, err := traefik.UpdateConfig(config.ProfileID, config); err != nil {
+			return fmt.Errorf("failed to update config: %w", err)
 		}
 	}
 
 	for _, provider := range data.Providers {
 		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams(provider)); err != nil {
-			return fmt.Errorf("failed to create provider: %w", err)
+			return fmt.Errorf("failed to upsert provider: %w", err)
 		}
 	}
 
 	for _, setting := range data.Settings {
 		if _, err := db.Query.UpsertSetting(ctx, db.UpsertSettingParams(setting)); err != nil {
-			return fmt.Errorf("failed to create setting: %w", err)
+			return fmt.Errorf("failed to upsert setting: %w", err)
 		}
 	}
 
 	for _, user := range data.Users {
 		if _, err := db.Query.UpsertUser(ctx, db.UpsertUserParams(user)); err != nil {
-			return fmt.Errorf("failed to create user: %w", err)
+			return fmt.Errorf("failed to upsert user: %w", err)
 		}
 	}
+
 	return nil
 }
 
 func BackupDatabase() error {
 	timestamp := time.Now().Format("2006-01-02")
-	backupPath := fmt.Sprintf("%s/backup-%s.sql.gz", util.Path(util.BackupDir), timestamp)
+	backupPath := fmt.Sprintf("%s/backup-%s.db.gz", util.Path(util.BackupDir), timestamp)
 
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
@@ -108,20 +129,15 @@ func BackupDatabase() error {
 
 	// Check if the backup file already exists
 	if _, err := os.Stat(backupPath); err == nil {
-		return nil
+		return nil // Backup already exists
 	}
 
-	sqlFile, err := os.Create(backupPath)
+	// Open the original database file
+	dbFile, err := os.Open(util.Path(util.DBName))
 	if err != nil {
-		return fmt.Errorf("failed to create SQL file: %w", err)
+		return fmt.Errorf("failed to open original database file: %w", err)
 	}
-	defer sqlFile.Close()
-
-	cmd := exec.Command("sqlite3", util.Path(util.DBName), ".dump")
-	sqlPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("failed to create pipe: %w", err)
-	}
+	defer dbFile.Close()
 
 	// Create the gzip file
 	gzipFile, err := os.Create(backupPath)
@@ -134,19 +150,9 @@ func BackupDatabase() error {
 	gzipWriter := gzip.NewWriter(gzipFile)
 	defer gzipWriter.Close()
 
-	// Start the sqlite3 command
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start sqlite3 command: %w", err)
-	}
-
-	// Pipe the SQL dump into the gzip writer
-	if _, err := io.Copy(gzipWriter, sqlPipe); err != nil {
-		return fmt.Errorf("failed to compress SQL dump: %w", err)
-	}
-
-	// Wait for the sqlite3 command to finish
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("sqlite3 command failed: %w", err)
+	// Copy the original database file into the gzip writer
+	if _, err := io.Copy(gzipWriter, dbFile); err != nil {
+		return fmt.Errorf("failed to compress database file: %w", err)
 	}
 
 	slog.Info("Database backup created", "file", backupPath)
@@ -173,7 +179,7 @@ func CleanupBackups() error {
 	}
 
 	// Get the list of backup files
-	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.sql.gz", util.Path(util.BackupDir)))
+	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.db.gz", util.Path(util.BackupDir)))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)
 	}

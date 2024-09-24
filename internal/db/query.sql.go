@@ -914,67 +914,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	return i, err
 }
 
-const upsertConfig = `-- name: UpsertConfig :one
-INSERT INTO
-  config (
-    profile_id,
-    overview,
-    entrypoints,
-    routers,
-    services,
-    middlewares,
-    tls,
-    version
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO
-UPDATE
-SET
-  overview = EXCLUDED.overview,
-  entrypoints = EXCLUDED.entrypoints,
-  routers = EXCLUDED.routers,
-  services = EXCLUDED.services,
-  middlewares = EXCLUDED.middlewares,
-  tls = EXCLUDED.tls,
-  version = EXCLUDED.version RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
-`
-
-type UpsertConfigParams struct {
-	ProfileID   int64       `json:"profile_id"`
-	Overview    interface{} `json:"overview"`
-	Entrypoints interface{} `json:"entrypoints"`
-	Routers     interface{} `json:"routers"`
-	Services    interface{} `json:"services"`
-	Middlewares interface{} `json:"middlewares"`
-	Tls         interface{} `json:"tls"`
-	Version     *string     `json:"version"`
-}
-
-func (q *Queries) UpsertConfig(ctx context.Context, arg UpsertConfigParams) (Config, error) {
-	row := q.queryRow(ctx, q.upsertConfigStmt, upsertConfig,
-		arg.ProfileID,
-		arg.Overview,
-		arg.Entrypoints,
-		arg.Routers,
-		arg.Services,
-		arg.Middlewares,
-		arg.Tls,
-		arg.Version,
-	)
-	var i Config
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Overview,
-		&i.Entrypoints,
-		&i.Routers,
-		&i.Services,
-		&i.Middlewares,
-		&i.Tls,
-		&i.Version,
-	)
-	return i, err
-}
-
 const upsertProfile = `-- name: UpsertProfile :one
 INSERT INTO
   profiles (id, name, url, username, password, tls)

@@ -4,7 +4,7 @@ import type { Overview } from './overview';
 import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
-	id: number;
+	id?: number;
 	name: string;
 	url: string;
 	username: string;
@@ -14,7 +14,6 @@ export interface Profile {
 
 export const newProfile = (): Profile => {
 	return {
-		id: 0,
 		name: '',
 		url: '',
 		username: '',

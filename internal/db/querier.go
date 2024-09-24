@@ -42,7 +42,6 @@ type Querier interface {
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
 	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
-	UpsertConfig(ctx context.Context, arg UpsertConfigParams) (Config, error)
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 	UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error)
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) (Setting, error)

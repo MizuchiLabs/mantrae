@@ -125,30 +125,6 @@ SET
 WHERE
   profile_id = ? RETURNING *;
 
--- name: UpsertConfig :one
-INSERT INTO
-  config (
-    profile_id,
-    overview,
-    entrypoints,
-    routers,
-    services,
-    middlewares,
-    tls,
-    version
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO
-UPDATE
-SET
-  overview = EXCLUDED.overview,
-  entrypoints = EXCLUDED.entrypoints,
-  routers = EXCLUDED.routers,
-  services = EXCLUDED.services,
-  middlewares = EXCLUDED.middlewares,
-  tls = EXCLUDED.tls,
-  version = EXCLUDED.version RETURNING *;
-
 -- name: DeleteConfigByProfileID :exec
 DELETE FROM config
 WHERE
