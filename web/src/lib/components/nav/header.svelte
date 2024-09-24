@@ -13,7 +13,7 @@
 </script>
 
 <nav class="flex h-16 items-center justify-between border-b bg-primary-foreground">
-	<div class="ml-6 flex flex-row items-center">
+	<div class="ml-4 flex flex-row items-center gap-2">
 		<Profile />
 		{#if $profiles?.length === 0 || !$profiles}
 			<span class="ml-4 flex items-center gap-1 text-sm text-muted-foreground">

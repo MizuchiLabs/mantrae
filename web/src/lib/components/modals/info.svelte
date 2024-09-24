@@ -19,8 +19,8 @@
 			<iconify-icon icon="devicon:traefikproxy" width="24" />
 		</Button>
 	</Dialog.Trigger>
-	<Dialog.Content class="sm:max-w-[600px]">
-		<Tabs.Root value="overview" class="mt-4 sm:max-w-[600px]">
+	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
+		<Tabs.Root value="overview" class="mt-4 max-w-2xl">
 			<Tabs.List class="grid w-full grid-cols-2">
 				<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
 				<Tabs.Trigger value="config">Config</Tabs.Trigger>
