@@ -123,11 +123,7 @@ export interface Headers {
 	addVaryHeader?: boolean;
 	allowedHosts?: string[];
 	hostsProxyHeaders?: string[];
-	sslRedirect?: boolean;
-	sslTemporaryRedirect?: boolean;
-	sslHost?: string;
 	sslProxyHeaders?: Record<string, string>;
-	sslForceHost?: boolean;
 	stsSeconds?: number;
 	stsIncludeSubdomains?: boolean;
 	stsPreload?: boolean;

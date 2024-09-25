@@ -446,30 +446,6 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-// UpdateConfig updates the config for a single profile
-func UpdateConfig(w http.ResponseWriter, r *http.Request) {
-	var config traefik.Dynamic
-	if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
-		return
-	}
-
-	if _, err := traefik.UpdateConfig(config.ProfileID, &config); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Update the DNS records immediately
-	go dns.UpdateDNS()
-
-	writeJSON(w, config)
-}
-
-// UpdateConfig updates the config for a single profile
 func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 	var router traefik.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
@@ -552,6 +528,123 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Services[service.Name] = service
+	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, newConfig)
+}
+
+func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
+	var middleware traefik.Middleware
+	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	if err := middleware.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	data.Middlewares[middleware.Name] = middleware
+	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, newConfig)
+}
+
+func DeleteRouter(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	delete(data.Routers, r.PathValue("name"))
+	delete(data.Services, r.PathValue("name"))
+	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, newConfig)
+}
+
+func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeConfig(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	delete(data.Middlewares, r.PathValue("name"))
 	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
 	if err != nil {
 		http.Error(
@@ -659,7 +752,7 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Extra ---------------------------------------------------------------------
+// Utility --------------------------------------------------------------------
 
 // DeleteRouterDNS deletes the DNS records for a router
 func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
@@ -705,4 +798,13 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to write traefik config", http.StatusInternalServerError)
 		return
 	}
+}
+
+func GetPublicIP(w http.ResponseWriter, r *http.Request) {
+	ip, err := util.GetPublicIP()
+	if err != nil {
+		http.Error(w, "Failed to get public IP", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, map[string]string{"ip": ip})
 }

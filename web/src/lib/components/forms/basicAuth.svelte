@@ -4,7 +4,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
-	import HoverInfo from '../utils/hoverInfo.svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;

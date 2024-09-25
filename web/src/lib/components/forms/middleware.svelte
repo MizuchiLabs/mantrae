@@ -61,8 +61,8 @@
 	$: isHTTP, setType();
 	const setType = () => {
 		middleware.middlewareType = isHTTP ? 'http' : 'tcp';
-		if (isHTTP) middlewareType = HTTPMiddlewareTypes[0];
-		else middlewareType = TCPMiddlewareTypes[0];
+		if (isHTTP) setMiddlewareType(HTTPMiddlewareTypes[0]);
+		else setMiddlewareType(TCPMiddlewareTypes[0]);
 	};
 
 	// Check if middleware name is taken
@@ -107,7 +107,7 @@
 						<Select.Value placeholder="Select a type" />
 					</Select.Trigger>
 					<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-						{#if middleware.middlewareType === 'http'}
+						{#if isHTTP}
 							{#each HTTPMiddlewareTypes as type}
 								<Select.Item value={type.value} label={type.label}>
 									{type.label}
@@ -142,7 +142,7 @@
 
 		<!-- Dynamic Form -->
 		{#if form !== null}
-			<div class="mt-6 space-y-2">
+			<div class="mt-6 flex flex-col gap-2">
 				<svelte:component this={form} bind:middleware {disabled} />
 			</div>
 		{/if}

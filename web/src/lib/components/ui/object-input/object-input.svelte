@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
+	import { Input, type FormInputEvent } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import autoAnimate from '@formkit/auto-animate';
@@ -28,7 +28,9 @@
 		dispatch('update', items);
 	};
 
-	const updateKey = (oldKey: string, newKey: string) => {
+	const updateKey = (oldKey: string, e: FormInputEvent) => {
+		if (!e.target) return;
+		const newKey = (e.target as HTMLInputElement).value;
 		if (newKey !== oldKey) {
 			const { [oldKey]: value, ...rest } = items;
 			items = { ...rest, [newKey]: value };
@@ -36,14 +38,16 @@
 		}
 	};
 
-	const updateValue = (key: string, value: string) => {
+	const updateValue = (key: string, e: FormInputEvent) => {
+		if (!e.target) return;
+		const value = (e.target as HTMLInputElement).value;
 		items = { ...items, [key]: value };
 		dispatch('update', items);
 	};
 
 	onMount(() => {
-		if (Object.keys(items).length === 0) {
-			items = { '': '' }; // Initialize with an empty key-value pair
+		if (!items || typeof items !== 'object' || Object.keys(items).length === 0) {
+			items = { '': '' };
 		}
 	});
 </script>
@@ -56,7 +60,7 @@
 		{/if}
 	</Label>
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
-		{#each Object.entries(items) as [key, value], index}
+		{#each Object.entries(items || {}) as [key, value], index}
 			<li class="flex flex-row items-center justify-end gap-2">
 				{#if !disabled}
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
@@ -65,35 +69,32 @@
 								<iconify-icon icon="fa6-solid:plus" />
 							</Button>
 						{/if}
-						{#if Object.keys(items).length > 1}
+						{#if Object.keys(items).length > 1 && index >= 1}
 							<Button on:click={() => removeItem(key)} class="h-8 w-4 rounded-full">
 								<iconify-icon icon="fa6-solid:minus" />
 							</Button>
 						{/if}
 					</div>
 				{/if}
-				{#if items}
-					<Input
-						id="key"
-						type="text"
-						bind:value={key}
-						placeholder={disabled ? '' : keyPlaceholder}
-						on:input={(e) => updateKey(key, e.target.value)}
-						class="focus-visible:ring-0 focus-visible:ring-offset-0"
-						{disabled}
-					/>
-					<Input
-						id="value"
-						type="text"
-						bind:value
-						placeholder={disabled ? '' : valuePlaceholder}
-						on:input={(e) => updateValue(key, e.target.value)}
-						class="focus-visible:ring-0 focus-visible:ring-offset-0"
-						{disabled}
-					/>
-				{/if}
+				<Input
+					id="key"
+					type="text"
+					bind:value={key}
+					placeholder={disabled ? '' : keyPlaceholder}
+					on:input={(e) => updateKey(key, e)}
+					class="focus-visible:ring-0 focus-visible:ring-offset-0"
+					{disabled}
+				/>
+				<Input
+					id="value"
+					type="text"
+					bind:value
+					placeholder={disabled ? '' : valuePlaceholder}
+					on:input={(e) => updateValue(key, e)}
+					class="focus-visible:ring-0 focus-visible:ring-offset-0"
+					{disabled}
+				/>
 			</li>
 		{/each}
 	</ul>
 </div>
-

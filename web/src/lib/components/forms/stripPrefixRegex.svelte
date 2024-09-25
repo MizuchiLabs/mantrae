@@ -12,6 +12,6 @@
 		bind:items={middleware.stripPrefixRegex.regex}
 		label="Regex"
 		placeholder="/foo/[a-z0-9]+/[0-9]+/"
-			{disabled}
+		{disabled}
 	/>
 {/if}

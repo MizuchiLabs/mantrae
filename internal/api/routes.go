@@ -16,6 +16,7 @@ func Routes() http.Handler {
 
 	mux.HandleFunc("GET /api/version", GetVersion)
 	mux.HandleFunc("GET /api/events", GetEvents)
+	mux.HandleFunc("GET /api/public-ip", GetPublicIP)
 
 	mux.HandleFunc("GET /api/profile", JWT(GetProfiles))
 	mux.HandleFunc("GET /api/profile/{id}", JWT(GetProfile))
@@ -24,9 +25,11 @@ func Routes() http.Handler {
 	mux.HandleFunc("DELETE /api/profile/{id}", JWT(DeleteProfile))
 
 	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
-	mux.HandleFunc("PUT /api/config/{id}", JWT(UpdateConfig))
 	mux.HandleFunc("PUT /api/router/{id}", JWT(UpdateRouter))
 	mux.HandleFunc("PUT /api/service/{id}", JWT(UpdateService))
+	mux.HandleFunc("PUT /api/middleware/{id}", JWT(UpdateMiddleware))
+	mux.HandleFunc("DELETE /api/router/{id}/{name}", JWT(DeleteRouter))
+	mux.HandleFunc("DELETE /api/middleware/{id}/{name}", JWT(DeleteMiddleware))
 
 	mux.HandleFunc("GET /api/user", JWT(GetUsers))
 	mux.HandleFunc("GET /api/user/{id}", JWT(GetUser))

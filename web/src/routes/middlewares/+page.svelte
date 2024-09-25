@@ -99,7 +99,7 @@
 					class="flex items-center gap-2 bg-red-400 text-black"
 					on:click={createModal}
 				>
-					<span>Create Middleware</span>
+					<span>Add Middleware</span>
 					<iconify-icon icon="fa6-solid:plus" />
 				</Button>
 			</div>
@@ -164,7 +164,7 @@
 										variant="ghost"
 										class="h-8 w-8 rounded-full bg-red-400"
 										size="icon"
-										on:click={() => deleteMiddleware(middleware.name)}
+										on:click={() => deleteMiddleware(middleware)}
 									>
 										<X size="1rem" />
 									</Button>

@@ -440,7 +440,7 @@
 										variant="ghost"
 										class="h-8 w-8 rounded-full bg-red-400"
 										size="icon"
-										on:click={() => deleteRouter(router.name)}
+										on:click={() => deleteRouter(router)}
 									>
 										<X size="1rem" />
 									</Button>

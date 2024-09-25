@@ -32,9 +32,6 @@ export function ValidateRule(rule: string | undefined): boolean {
 export function RuleDescription(rules: string) {
 	if (rules === '' || rules === undefined) return 'No specific routing rules applied';
 	let description = '';
-	const hostRule = '';
-	const pathRules = [];
-	const otherConditions = [];
 
 	const rulePatterns = {
 		Host: /Host\(`(.*?)`\)/,
@@ -53,7 +50,7 @@ export function RuleDescription(rules: string) {
 	const conditions = rules.split(/(&&|\|\|)/);
 
 	// Handle specific combinations first
-	conditions.forEach((condition, index) => {
+	conditions.forEach((condition) => {
 		let formattedCondition = condition.trim();
 
 		// Check for negation

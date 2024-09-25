@@ -1,9 +1,11 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { badgeVariants } from '$lib/components/ui/badge';
 	import {
 		routers,
 		entrypoints,
@@ -76,6 +78,18 @@
 		return router?.dnsProvider
 			? { value: router.dnsProvider, label: router.dnsProvider }
 			: undefined;
+	};
+	const getCertResolver = () => {
+		const certResolvers = $routers
+			.filter((item) => item.tls && item.tls.certResolver)
+			.map((item) => item.tls.certResolver);
+
+		// Use a Set to remove duplicates and return as an array
+		return [...new Set(certResolvers)];
+	};
+	const setCertResolver = (resolver: string | undefined) => {
+		router.tls = router.tls || {};
+		router.tls.certResolver = resolver;
 	};
 
 	// Check if router name is taken unless self
@@ -228,7 +242,7 @@
 
 		<!-- CertResolver -->
 		{#if router.provider === 'http'}
-			<div class:hidden={router.routerType === 'udp'}>
+			<div class:hidden={router.routerType === 'udp'} class="space-y-0.5">
 				<div class="grid grid-cols-4 items-center gap-1">
 					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
 					<Input
@@ -239,6 +253,18 @@
 						bind:value={router.tls.certResolver}
 						placeholder="Certificate resolver"
 					/>
+				</div>
+				<div class="grid grid-cols-4 flex-wrap items-center gap-1">
+					<div></div>
+					<div class="col-span-3">
+						{#each getCertResolver() || [] as resolver}
+							{#if router.tls.certResolver !== resolver}
+								<div on:click={() => setCertResolver(resolver)} aria-hidden>
+									<Badge>{resolver}</Badge>
+								</div>
+							{/if}
+						{/each}
+					</div>
 				</div>
 			</div>
 		{/if}

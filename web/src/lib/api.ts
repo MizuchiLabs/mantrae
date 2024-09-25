@@ -250,15 +250,6 @@ export async function getConfig() {
 	}
 }
 
-export async function updateConfig(c: Config): Promise<void> {
-	const response = await handleRequest(`/config/${get(profile).id}`, 'PUT', c);
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Config updated`);
-	}
-}
-
 export async function updateRouter(r: Router): Promise<void> {
 	const response = await handleRequest(`/router/${get(profile).id}`, 'PUT', r);
 	if (response) {
@@ -274,6 +265,33 @@ export async function updateService(s: Service): Promise<void> {
 		const data = await response.json();
 		config.set(data);
 		toast.success(`Service ${s.name} updated`);
+	}
+}
+
+export async function updateMiddleware(m: Middleware): Promise<void> {
+	const response = await handleRequest(`/middleware/${get(profile).id}`, 'PUT', m);
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Middleware ${m.name} updated`);
+	}
+}
+
+export async function deleteRouter(r: Router): Promise<void> {
+	const response = await handleRequest(`/router/${get(profile).id}/${r.name}`, 'DELETE');
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Router ${r.name} deleted`);
+	}
+}
+
+export async function deleteMiddleware(m: Middleware): Promise<void> {
+	const response = await handleRequest(`/middleware/${get(profile).id}/${m.name}`, 'DELETE');
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Middleware ${m.name} deleted`);
 	}
 }
 
@@ -369,9 +387,9 @@ export async function getTraefikConfig() {
 // Helper functions -----------------------------------------------------------
 // Create or update a router and its service
 function nameCheck(router: Router) {
-	let name = router.name?.trim().toLowerCase();
-	let provider = router.provider?.trim().toLowerCase() ?? 'http';
-	let parts = name.split('@');
+	const name = router.name?.trim().toLowerCase();
+	const provider = router.provider?.trim().toLowerCase() ?? 'http';
+	const parts = name.split('@');
 	return parts[0] + '@' + provider;
 }
 export async function upsertRouter(
@@ -392,36 +410,6 @@ export async function upsertRouter(
 
 	await updateRouter(router);
 	await updateService(service);
-}
-
-// Create or update a middleware
-export async function upsertMiddleware(name: string, middleware: Middleware): Promise<void> {
-	const data = get(config);
-	if (!data.middlewares) data.middlewares = {};
-	if (middleware.name !== name) {
-		delete data.middlewares[name];
-	}
-
-	data.middlewares[middleware.name] = middleware;
-	await updateConfig(data);
-}
-
-// Delete a router with its service by name
-export async function deleteRouter(name: string): Promise<void> {
-	const data = get(config);
-	if (!data.routers || !data.services) return;
-	await deleteRouterDNS(data.routers[name]);
-	delete data.routers[name];
-	delete data.services[name];
-	await updateConfig(data);
-}
-
-// Delete a middleware by name
-export async function deleteMiddleware(name: string): Promise<void> {
-	const data = get(config);
-	if (!data.middlewares) return;
-	delete data.middlewares[name];
-	await updateConfig(data);
 }
 
 // TODO: Handle this differently

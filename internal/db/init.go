@@ -30,7 +30,7 @@ func InitDB() error {
 	var err error
 
 	if isTest() {
-		db, err = sql.Open("sqlite3", "file:mantrae_test.db?mode=memory")
+		db, err = sql.Open("sqlite3", "file:test.db?mode=memory")
 		if err != nil {
 			db.Close()
 			return fmt.Errorf("failed to open database: %w", err)
