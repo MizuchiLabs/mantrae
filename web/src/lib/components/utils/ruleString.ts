@@ -1,20 +1,23 @@
 // Regex patterns for traefik rules
 
-function validateSingleRule(rule: string): boolean {
-	const rulePatterns = {
-		Header: /^!?Header\(`[^`]+`,\s*`[^`]+`\)$/,
-		HeaderRegexp: /^!?HeaderRegexp\(`[^`]+`,\s*`[^`]+`\)$/,
-		Host: /^!?Host\(`[^`]+`\)$/,
-		HostRegexp: /^!?HostRegexp\(`[^`]+`\)$/,
-		Method: /^!?Method\(`[^`]+`\)$/,
-		Path: /^!?Path\(`[^`]+`\)$/,
-		PathPrefix: /^!?PathPrefix\(`[^`]+`\)$/,
-		PathRegexp: /^!?PathRegexp\(`[^`]+`\)$/,
-		Query: /^!?Query\(`[^`]+`,\s*`[^`]+`\)$/,
-		QueryRegexp: /^!?QueryRegexp\(`[^`]+`,\s*`[^`]+`\)$/,
-		ClientIP: /^!?ClientIP\(`[^`]+`\)$/
-	};
+const rulePatterns = {
+	Host: /Host\(`(.*?)`\)/,
+	HostSNI: /HostSNI\(`(.*?)`\)/,
+	HostRegexp: /HostRegexp\(`(.*?)`\)/,
+	HostSNIRegexp: /HostSNIRegexp\(`(.*?)`\)/,
+	Path: /Path\(`(.*?)`\)/,
+	PathPrefix: /PathPrefix\(`(.*?)`\)/,
+	PathRegexp: /PathRegexp\(`(.*?)`\)/,
+	Method: /Method\(`(.*?)`\)/,
+	Query: /Query\(`(.*?)`, `(.*?)`\)/,
+	QueryRegexp: /QueryRegexp\(`(.*?)`, `(.*?)`\)/,
+	ClientIP: /ClientIP\(`(.*?)`\)/,
+	Header: /Header\(`(.*?)`, `(.*?)`\)/,
+	HeaderRegexp: /HeaderRegexp\(`(.*?)`, `(.*?)`\)/,
+	ALPN: /ALPN\(`(.*?)`\)/
+};
 
+function validateSingleRule(rule: string): boolean {
 	for (const pattern of Object.values(rulePatterns)) {
 		if (pattern.test(rule.trim())) {
 			return true;
@@ -32,20 +35,6 @@ export function ValidateRule(rule: string | undefined): boolean {
 export function RuleDescription(rules: string) {
 	if (rules === '' || rules === undefined) return 'No specific routing rules applied';
 	let description = '';
-
-	const rulePatterns = {
-		Host: /Host\(`(.*?)`\)/,
-		HostRegexp: /HostRegexp\(`(.*?)`\)/,
-		Path: /Path\(`(.*?)`\)/,
-		PathPrefix: /PathPrefix\(`(.*?)`\)/,
-		PathRegexp: /PathRegexp\(`(.*?)`\)/,
-		Method: /Method\(`(.*?)`\)/,
-		Query: /Query\(`(.*?)`, `(.*?)`\)/,
-		QueryRegexp: /QueryRegexp\(`(.*?)`, `(.*?)`\)/,
-		ClientIP: /ClientIP\(`(.*?)`\)/,
-		Header: /Header\(`(.*?)`, `(.*?)`\)/,
-		HeaderRegexp: /HeaderRegexp\(`(.*?)`, `(.*?)`\)/
-	};
 
 	const conditions = rules.split(/(&&|\|\|)/);
 
@@ -65,6 +54,10 @@ export function RuleDescription(rules: string) {
 			if (match) {
 				let result;
 				switch (type) {
+					case 'HostSNI':
+					case 'HostSNIRegexp':
+						result = match[1] + (type === 'HostSNIRegexp' ? '*' : '');
+						break;
 					case 'Host':
 					case 'HostRegexp':
 						result = match[1] + (type === 'HostRegexp' ? '*' : '');
@@ -89,6 +82,8 @@ export function RuleDescription(rules: string) {
 					case 'HeaderRegexp':
 						result = `Header: ${match[1]}=${match[2]}` + (type === 'HeaderRegexp' ? '*' : '');
 						break;
+					case 'ALPN':
+						result = `ALPN: ${match[1]}`;
 					default:
 						result = formattedCondition;
 				}

@@ -16,6 +16,14 @@
 	export let helpText: string | undefined = undefined;
 	const dispatch = createEventDispatcher();
 
+	$: items, verifyArray();
+
+	const verifyArray = () => {
+		if (!items || items.length === 0) {
+			items = [''];
+		}
+	};
+
 	const addItem = () => {
 		items = [...(items ?? []), ''];
 		dispatch('update', items);
@@ -32,9 +40,7 @@
 	};
 
 	onMount(() => {
-		if (!items || items.length === 0) {
-			items = [''];
-		}
+		verifyArray();
 	});
 </script>
 
@@ -46,7 +52,7 @@
 		{/if}
 	</Label>
 	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
-		{#each items ?? [] as item, index}
+		{#each items || [] as item, index}
 			<li class="flex flex-row items-center justify-end gap-1">
 				{#if !disabled}
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
@@ -69,7 +75,6 @@
 						bind:value={items[index]}
 						placeholder={disabled ? '' : placeholder}
 						on:input={() => update(index, item)}
-						class="focus-visible:ring-0 focus-visible:ring-offset-0"
 						{disabled}
 					/>
 				{/if}

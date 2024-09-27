@@ -11,6 +11,27 @@ import (
 
 var mutex sync.Mutex
 
+func VerifyConfig(config *Dynamic) {
+	for _, r := range config.Routers {
+		if err := r.Verify(); err != nil {
+			slog.Error("Failed to verify router", "error", err)
+			delete(config.Routers, r.Name)
+		}
+	}
+	for _, s := range config.Services {
+		if err := s.Verify(); err != nil {
+			slog.Error("Failed to verify service", "error", err)
+			delete(config.Services, s.Name)
+		}
+	}
+	for _, m := range config.Middlewares {
+		if err := m.Verify(); err != nil {
+			slog.Error("Failed to verify middleware", "error", err)
+			delete(config.Middlewares, m.Name)
+		}
+	}
+}
+
 // DecodeConfig decodes the config from the database into our Dynamic struct
 func DecodeConfig(config db.Config) (*Dynamic, error) {
 	data := &Dynamic{
@@ -65,32 +86,7 @@ func UpdateConfig(profileID int64, data *Dynamic) (*Dynamic, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Verify and handle routers
-	for _, r := range data.Routers {
-		if err := r.Verify(); err != nil {
-			slog.Error("Router error", "error", err)
-			continue
-		}
-		data.Routers[r.Name] = r
-	}
-
-	// Verify and handle services
-	for _, s := range data.Services {
-		if err := s.Verify(); err != nil {
-			slog.Error("Service error", "error", err)
-			continue
-		}
-		data.Services[s.Name] = s
-	}
-
-	// Verify and handle middlewares
-	for _, m := range data.Middlewares {
-		if err := m.Verify(); err != nil {
-			slog.Error("Middleware error", "error", err)
-			continue
-		}
-		data.Middlewares[m.Name] = m
-	}
+	VerifyConfig(data)
 
 	overview, err := json.Marshal(data.Overview)
 	if err != nil {

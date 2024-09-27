@@ -4,9 +4,11 @@
 	import { ValidateRule } from './ruleString';
 
 	export let rule: string;
+	export let type: string;
 	export let disabled = false;
 
-	const rules = [
+	// HTTP Rules
+	const httpRules = [
 		'Header(`key`, `value`)',
 		'HeaderRegexp(`key`, `regexp`)',
 		'Host(`domain`)',
@@ -18,6 +20,13 @@
 		'Query(`key`, `value`)',
 		'QueryRegexp(`key`, `regexp`)',
 		'ClientIP(`ip`)'
+	];
+	// TCP Rules
+	const tcpRules = [
+		'HostSNI(`domain`)',
+		'HostSNIRegexp(`regexp`)',
+		'ClientIP(`ip`)',
+		'ALPN(`protocol`)'
 	];
 
 	let valid = true;
@@ -34,7 +43,15 @@
 
 		if (lastWord === undefined) return;
 		if (lastWord.length > 0) {
-			filteredRules = rules.filter((rule) => rule.toLowerCase().startsWith(lastWord.toLowerCase()));
+			if (type === 'http') {
+				filteredRules = httpRules.filter((rule) =>
+					rule.toLowerCase().startsWith(lastWord.toLowerCase())
+				);
+			} else if (type === 'tcp') {
+				filteredRules = tcpRules.filter((rule) =>
+					rule.toLowerCase().startsWith(lastWord.toLowerCase())
+				);
+			}
 			showDropdown = filteredRules.length > 0;
 			selectedRuleIndex = 0;
 		} else {
@@ -193,16 +210,25 @@
 		<div class="ml-2 flex items-center justify-between">
 			<div class="text-xs text-muted-foreground">
 				<span class="font-bold">Rule Examples:</span>
-				<ul class="list-inside list-disc">
-					<li>Host(`example.com`)</li>
-					<li>Path(`/hello`)</li>
-					<li>PathPrefix(`/hello`)</li>
-					<li>PathRegexp(`/hello/[0-9]+`)</li>
-					<li>Method(`GET`)</li>
-					<li>Header(`X-Forwarded-For`, `.*`)</li>
-					<li>Query(`page`, `[0-9]+`)</li>
-					<li>QueryRegexp(`page`, `[0-9]+`)</li>
-				</ul>
+				{#if type === 'http'}
+					<ul class="list-inside list-disc">
+						<li>Host(`example.com`)</li>
+						<li>Path(`/hello`)</li>
+						<li>PathPrefix(`/hello`)</li>
+						<li>PathRegexp(`/hello/[0-9]+`)</li>
+						<li>Method(`GET`)</li>
+						<li>Header(`X-Forwarded-For`, `.*`)</li>
+						<li>Query(`page`, `[0-9]+`)</li>
+						<li>QueryRegexp(`page`, `[0-9]+`)</li>
+					</ul>
+				{:else if type === 'tcp'}
+					<ul class="list-inside list-disc">
+						<li>HostSNI(`example.com`)</li>
+						<li>HostSNIRegexp(`^.+\.example\.com$`)</li>
+						<li>ClientIP(`10.76.105.11`)</li>
+						<li>ALPN(`h2`)</li>
+					</ul>
+				{/if}
 			</div>
 		</div>
 	{/if}

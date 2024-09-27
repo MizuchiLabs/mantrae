@@ -21,12 +21,12 @@ export const MiddlewareForms = {
 	buffering: import('$lib/components/forms/buffering.svelte'),
 	circuitBreaker: import('$lib/components/forms/circuitBreaker.svelte'),
 	compress: import('$lib/components/forms/compress.svelte'),
-	// passTLSClientCert: import('$lib/components/forms/passTLSClientCert.svelte')),
+	passTLSClientCert: import('$lib/components/forms/passTLSClientCert.svelte'),
 	retry: import('$lib/components/forms/retry.svelte'),
 
 	// TCP-specific
-	inFlightConn: import('$lib/components/forms/inFlightConn.svelte'),
-	tcpIpAllowList: import('$lib/components/forms/tcpIpAllowList.svelte')
+	inFlightConn: import('$lib/components/forms/inFlightConn.svelte')
+	//tcpIpAllowList: import('$lib/components/forms/tcpIpAllowList.svelte')
 };
 
 export const LoadMiddlewareForm = async (

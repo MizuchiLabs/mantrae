@@ -12,43 +12,70 @@
 	export let label: string;
 	export let keyPlaceholder: string;
 	export let valuePlaceholder: string;
-	export let items: Record<string, string> = {};
+	export let items: Record<string, string> | undefined;
 	export let disabled = false;
 	export let helpText: string | undefined = undefined;
+	let internalItems: { id: string; key: string; value: string }[] = [];
 	const dispatch = createEventDispatcher();
 
-	const addItem = () => {
-		items = { ...items, '': '' }; // Add an empty key-value pair
-		dispatch('update', items);
-	};
+	// Watch `items` prop and convert to array when it changes
+	$: items, convertToInternal();
 
-	const removeItem = (key: string) => {
-		const { [key]: _, ...rest } = items;
-		items = rest;
-		dispatch('update', items);
-	};
-
-	const updateKey = (oldKey: string, e: FormInputEvent) => {
-		if (!e.target) return;
-		const newKey = (e.target as HTMLInputElement).value;
-		if (newKey !== oldKey) {
-			const { [oldKey]: value, ...rest } = items;
-			items = { ...rest, [newKey]: value };
-			dispatch('update', items);
+	const convertToInternal = () => {
+		if (items && typeof items === 'object' && Object.keys(items).length > 0) {
+			internalItems = Object.entries(items).map(([key, value]) => ({
+				id: generateId(),
+				key,
+				value
+			}));
+		} else {
+			internalItems = [{ id: generateId(), key: '', value: '' }];
 		}
 	};
 
-	const updateValue = (key: string, e: FormInputEvent) => {
+	const generateId = () => Math.random().toString(36).slice(2, 11);
+
+	const addItem = () => {
+		internalItems = [...internalItems, { id: generateId(), key: '', value: '' }]; // Add an item with an empty key-value pair
+		dispatchConvert();
+	};
+
+	const removeItem = (id: string) => {
+		internalItems = internalItems.filter((item) => item.id !== id);
+		dispatchConvert();
+	};
+
+	const updateKey = (id: string, e: FormInputEvent) => {
 		if (!e.target) return;
-		const value = (e.target as HTMLInputElement).value;
-		items = { ...items, [key]: value };
-		dispatch('update', items);
+		const newKey = (e.target as HTMLInputElement).value;
+		internalItems = internalItems.map((item) => (item.id === id ? { ...item, key: newKey } : item));
+		dispatchConvert();
+	};
+
+	const updateValue = (id: string, e: FormInputEvent) => {
+		if (!e.target) return;
+		const newValue = (e.target as HTMLInputElement).value;
+		internalItems = internalItems.map((item) =>
+			item.id === id ? { ...item, value: newValue } : item
+		);
+		dispatchConvert();
+	};
+
+	const dispatchConvert = () => {
+		// Convert array of { id, key, value } back to Record<string, string>
+		const updatedItems = internalItems.reduce(
+			(acc, { key, value }) => {
+				if (key) acc[key] = value; // Only include items with non-empty keys
+				return acc;
+			},
+			{} as Record<string, string>
+		);
+
+		dispatch('update', updatedItems);
 	};
 
 	onMount(() => {
-		if (!items || typeof items !== 'object' || Object.keys(items).length === 0) {
-			items = { '': '' };
-		}
+		convertToInternal();
 	});
 </script>
 
@@ -59,18 +86,22 @@
 			<HoverInfo text={helpText} />
 		{/if}
 	</Label>
-	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
-		{#each Object.entries(items || {}) as [key, value], index}
+	<ul class="col-span-3 space-y-2">
+		{#each internalItems as { id, key, value }, index (id)}
 			<li class="flex flex-row items-center justify-end gap-2">
 				{#if !disabled}
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
 						{#if index === 0}
-							<Button class="h-8 w-4 rounded-full bg-red-400 text-black" on:click={addItem}>
+							<Button
+								class="h-8 w-4 rounded-full bg-red-400 text-black"
+								on:click={addItem}
+								tabindex={-1}
+							>
 								<iconify-icon icon="fa6-solid:plus" />
 							</Button>
 						{/if}
-						{#if Object.keys(items).length > 1 && index >= 1}
-							<Button on:click={() => removeItem(key)} class="h-8 w-4 rounded-full">
+						{#if internalItems.length > 1 && index >= 1}
+							<Button on:click={() => removeItem(id)} class="h-8 w-4 rounded-full" tabindex={-1}>
 								<iconify-icon icon="fa6-solid:minus" />
 							</Button>
 						{/if}
@@ -81,8 +112,7 @@
 					type="text"
 					bind:value={key}
 					placeholder={disabled ? '' : keyPlaceholder}
-					on:input={(e) => updateKey(key, e)}
-					class="focus-visible:ring-0 focus-visible:ring-offset-0"
+					on:input={(e) => updateKey(id, e)}
 					{disabled}
 				/>
 				<Input
@@ -90,8 +120,7 @@
 					type="text"
 					bind:value
 					placeholder={disabled ? '' : valuePlaceholder}
-					on:input={(e) => updateValue(key, e)}
-					class="focus-visible:ring-0 focus-visible:ring-offset-0"
+					on:input={(e) => updateValue(id, e)}
 					{disabled}
 				/>
 			</li>

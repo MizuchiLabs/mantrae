@@ -20,8 +20,12 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger />
-	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-3xl overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<MiddlewareForm bind:middleware {disabled} />
-		<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
+		{#if disabled}
+			<Button class="w-full" on:click={() => (open = false)}>Close</Button>
+		{:else}
+			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

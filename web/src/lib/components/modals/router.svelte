@@ -39,7 +39,12 @@
 				<RouterForm bind:router {disabled} bind:this={routerForm} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service {disabled} bind:this={serviceForm} />
+				<ServiceForm
+					bind:service
+					bind:type={router.routerType}
+					{disabled}
+					bind:this={serviceForm}
+				/>
 			</Tabs.Content>
 		</Tabs.Root>
 		<Button class="w-full" on:click={() => update()}>Save</Button>

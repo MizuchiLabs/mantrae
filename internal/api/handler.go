@@ -14,6 +14,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
+	"sigs.k8s.io/yaml"
 )
 
 // Helper function to write JSON response
@@ -785,18 +786,32 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
 		return
 	}
-
-	yamlConfig, err := traefik.GenerateConfig(*data)
+	dynamicConfig, err := traefik.GenerateConfig(*data)
 	if err != nil {
 		http.Error(w, "Failed to generate traefik config", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/yaml")
+	var outConfig []byte
+	acceptYAML := r.URL.Query().Get("yaml") == "true"
+	contentType := "application/json"
 
-	if _, err := w.Write(yamlConfig); err != nil {
-		http.Error(w, "Failed to write traefik config", http.StatusInternalServerError)
+	// Marshal the config as YAML if requested, otherwise default to JSON
+	if acceptYAML {
+		outConfig, err = yaml.Marshal(dynamicConfig)
+		contentType = "application/yaml"
+	} else {
+		outConfig, err = json.Marshal(dynamicConfig)
+	}
+	if err != nil {
+		http.Error(w, "Failed to marshal config", http.StatusInternalServerError)
 		return
+	}
+
+	// Set the appropriate content type and write the response
+	w.Header().Set("Content-Type", contentType)
+	if _, err := w.Write(outConfig); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 	}
 }
 

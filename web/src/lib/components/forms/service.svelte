@@ -8,56 +8,32 @@
 	import { onMount } from 'svelte';
 
 	export let service: Service;
+	export let type: string;
 	export let disabled = false;
 	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
 	let servers: string[] = [];
+	$: type, (service.serviceType = type);
+
+	const serviceSchema = z.object({
+		name: z.string().min(1, { message: 'Name is required' }),
+		provider: z.string().optional(),
+		type: z.string().optional(),
+		status: z.string().optional(),
+		serviceType: z
+			.string()
+			.toLowerCase()
+			.regex(/^(http|tcp|udp)$/),
+		serverStatus: z.record(z.string()).optional(),
+		loadBalancer: z.object({
+			servers: z.array(z.object({ url: z.string() }).or(z.object({ address: z.string() }))),
+			passHostHeader: z.boolean().optional()
+		})
+	});
 
 	let errors: Record<any, string[] | undefined> = {};
-	const formSchema = z
-		.object({
-			serviceType: z
-				.string()
-				.toLowerCase()
-				.regex(/^(http|tcp|udp)$/),
-			loadBalancer: z
-				.object({
-					servers: z.array(z.object({ url: z.string().trim() })).optional()
-				})
-				.nullable()
-				.optional(),
-			tcpLoadBalancer: z
-				.object({
-					servers: z.array(z.object({ address: z.string().trim() })).optional()
-				})
-				.nullable()
-				.optional(),
-			udpLoadBalancer: z
-				.object({
-					servers: z.array(z.object({ address: z.string().trim() })).optional()
-				})
-				.nullable()
-				.optional()
-		})
-		.refine(
-			(data) =>
-				!!data.loadBalancer?.servers?.length ||
-				!!data.tcpLoadBalancer?.servers?.length ||
-				!!data.udpLoadBalancer?.servers?.length,
-			{
-				message:
-					"Exactly one of 'loadBalancer', 'tcpLoadBalancer', or 'udpLoadBalancer' must be provided.",
-				path: ['loadBalancer', 'tcpLoadBalancer', 'udpLoadBalancer']
-			}
-		);
-
 	export const validate = () => {
 		try {
-			formSchema.parse({
-				serviceType: service.serviceType,
-				loadBalancer: service.loadBalancer,
-				tcpLoadBalancer: service.tcpLoadBalancer,
-				udpLoadBalancer: service.udpLoadBalancer
-			});
+			serviceSchema.parse({ ...service });
 
 			errors = {};
 			return true;
@@ -70,10 +46,10 @@
 	};
 
 	const update = () => {
+		validate();
 		if (service.loadBalancer === undefined) service.loadBalancer = { servers: [] };
-		if (service.tcpLoadBalancer === undefined) service.tcpLoadBalancer = { servers: [] };
-		if (service.udpLoadBalancer === undefined) service.udpLoadBalancer = { servers: [] };
 
+		service.loadBalancer.passHostHeader = passHostHeader;
 		switch (service.serviceType) {
 			case 'http':
 				service.loadBalancer.servers = servers.map((s) => {
@@ -81,12 +57,8 @@
 				});
 				break;
 			case 'tcp':
-				service.tcpLoadBalancer.servers = servers.map((s) => {
-					return { address: s };
-				});
-				break;
 			case 'udp':
-				service.udpLoadBalancer.servers = servers.map((s) => {
+				service.loadBalancer.servers = servers.map((s) => {
 					return { address: s };
 				});
 				break;
@@ -100,17 +72,8 @@
 	};
 
 	onMount(() => {
-		switch (service.serviceType) {
-			case 'http':
-				servers = service.loadBalancer?.servers?.map((s) => s.url ?? '') ?? [''];
-				break;
-			case 'tcp':
-				servers = service.tcpLoadBalancer?.servers?.map((s) => s.address ?? '') ?? [''];
-				break;
-			case 'udp':
-				servers = service.udpLoadBalancer?.servers?.map((s) => s.address ?? '') ?? [''];
-				break;
-		}
+		servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
+		update();
 	});
 </script>
 
@@ -141,5 +104,8 @@
 			on:update={update}
 			{disabled}
 		/>
+		{#if errors.loadBalancer}
+			<div class="col-span-4 text-right text-sm text-red-500">{errors.loadBalancer}</div>
+		{/if}
 	</Card.Content>
 </Card.Root>

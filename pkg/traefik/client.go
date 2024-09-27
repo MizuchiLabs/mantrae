@@ -39,14 +39,14 @@ type BaseFields struct {
 
 type HTTPRouter struct {
 	BaseFields
-	RouterType  string                   `json:"routerType"`
-	DNSProvider string                   `json:"dnsProvider"`
-	Entrypoints []string                 `json:"entrypoints,omitempty"`
-	Middlewares []string                 `json:"middlewares,omitempty"`
-	Rule        string                   `json:"rule,omitempty"`
-	Service     string                   `json:"service,omitempty"`
-	Priority    *big.Int                 `json:"priority,omitempty"`
-	TLS         *dynamic.RouterTLSConfig `json:"tls,omitempty"`
+	RouterType  string                      `json:"routerType"`
+	DNSProvider string                      `json:"dnsProvider"`
+	Entrypoints []string                    `json:"entrypoints,omitempty"`
+	Middlewares []string                    `json:"middlewares,omitempty"`
+	Rule        string                      `json:"rule,omitempty"`
+	Service     string                      `json:"service,omitempty"`
+	Priority    *big.Int                    `json:"priority,omitempty"`
+	TLS         *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"`
 }
 
 type TCPRouter struct {
@@ -99,7 +99,7 @@ func (r TCPRouter) ToRouter() *Router {
 		Rule:        r.Rule,
 		Service:     r.Service,
 		// Priority:    r.Priority,
-		TCPTLS: r.TLS,
+		TLS: r.TLS,
 	}
 }
 
@@ -143,28 +143,28 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) map[string]Ro
 
 type HTTPService struct {
 	BaseFields
-	ServiceType  string                       `json:"serviceType,omitempty"`
-	ServerStatus map[string]string            `json:"serverStatus,omitempty"`
-	LoadBalancer *dynamic.ServersLoadBalancer `json:"loadBalancer,omitempty"`
-	Weighted     *dynamic.WeightedRoundRobin  `json:"weighted,omitempty"`
-	Mirroring    *dynamic.Mirroring           `json:"mirroring,omitempty"`
-	Failover     *dynamic.Failover            `json:"failover,omitempty"`
+	ServiceType  string              `json:"serviceType,omitempty"`
+	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
+	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
+	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
+	Mirroring    *dynamic.Mirroring  `json:"mirroring,omitempty"`
+	Failover     *dynamic.Failover   `json:"failover,omitempty"`
 }
 
 type TCPService struct {
 	BaseFields
-	ServiceType  string                          `json:"serviceType,omitempty"`
-	ServerStatus map[string]string               `json:"serverStatus,omitempty"`
-	LoadBalancer *dynamic.TCPServersLoadBalancer `json:"loadBalancer,omitempty"`
-	Weighted     *dynamic.TCPWeightedRoundRobin  `json:"weighted,omitempty"`
+	ServiceType  string              `json:"serviceType,omitempty"`
+	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
+	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
+	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
 }
 
 type UDPService struct {
 	BaseFields
-	ServiceType  string                          `json:"serviceType,omitempty"`
-	ServerStatus map[string]string               `json:"serverStatus,omitempty"`
-	LoadBalancer *dynamic.UDPServersLoadBalancer `json:"loadBalancer,omitempty"`
-	Weighted     *dynamic.UDPWeightedRoundRobin  `json:"weighted,omitempty"`
+	ServiceType  string              `json:"serviceType,omitempty"`
+	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
+	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
+	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
 }
 
 type Serviceable interface {
@@ -188,27 +188,27 @@ func (s HTTPService) ToService() *Service {
 
 func (s TCPService) ToService() *Service {
 	return &Service{
-		Name:            s.Name,
-		Provider:        s.Provider,
-		Type:            s.Type,
-		Status:          s.Status,
-		ServiceType:     "tcp",
-		ServerStatus:    s.ServerStatus,
-		TCPLoadBalancer: s.LoadBalancer,
-		TCPWeighted:     s.Weighted,
+		Name:         s.Name,
+		Provider:     s.Provider,
+		Type:         s.Type,
+		Status:       s.Status,
+		ServiceType:  "tcp",
+		ServerStatus: s.ServerStatus,
+		LoadBalancer: s.LoadBalancer,
+		Weighted:     s.Weighted,
 	}
 }
 
 func (s UDPService) ToService() *Service {
 	return &Service{
-		Name:            s.Name,
-		Provider:        s.Provider,
-		Type:            s.Type,
-		Status:          s.Status,
-		ServiceType:     "udp",
-		ServerStatus:    s.ServerStatus,
-		UDPLoadBalancer: s.LoadBalancer,
-		UDPWeighted:     s.Weighted,
+		Name:         s.Name,
+		Provider:     s.Provider,
+		Type:         s.Type,
+		Status:       s.Status,
+		ServiceType:  "udp",
+		ServerStatus: s.ServerStatus,
+		LoadBalancer: s.LoadBalancer,
+		Weighted:     s.Weighted,
 	}
 }
 
@@ -268,7 +268,7 @@ type TCPMiddleware struct {
 	BaseFields
 	MiddlewareType string                   `json:"middlewareType,omitempty"`
 	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	IPAllowList    *dynamic.TCPIPAllowList  `json:"ipAllowList,omitempty"`
+	IPAllowList    *dynamic.IPAllowList     `json:"ipAllowList,omitempty"`
 }
 
 type Middlewareable interface {
@@ -314,7 +314,7 @@ func (m TCPMiddleware) ToMiddleware() *Middleware {
 		Status:         m.Status,
 		MiddlewareType: "tcp",
 		InFlightConn:   m.InFlightConn,
-		TCPIPAllowList: m.IPAllowList,
+		IPAllowList:    m.IPAllowList,
 	}
 }
 

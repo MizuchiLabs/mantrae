@@ -1,11 +1,9 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { badgeVariants } from '$lib/components/ui/badge';
 	import {
 		routers,
 		entrypoints,
@@ -18,6 +16,7 @@
 	import { newRouter, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import logo from '$lib/images/logo.svg';
 	import { z } from 'zod';
 	import type { Selected } from 'bits-ui';
 
@@ -104,14 +103,6 @@
 	<Card.Header>
 		<Card.Title class="flex items-center justify-between gap-1">
 			<span>Router</span>
-			<div>
-				<Badge variant="secondary" class="bg-blue-400">
-					Type: {router.routerType}
-				</Badge>
-				<Badge variant="secondary" class="bg-green-400">
-					Provider: {router.provider}
-				</Badge>
-			</div>
 		</Card.Title>
 	</Card.Header>
 	<Card.Content class="space-y-2">
@@ -135,16 +126,45 @@
 		<!-- Name -->
 		<div class="grid grid-cols-4 items-center gap-1">
 			<Label for="name" class="mr-2 text-right">Name</Label>
-			<Input
-				id="name"
-				name="name"
-				type="text"
-				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-				bind:value={router.name}
-				placeholder="Name of the router"
-				required
-				{disabled}
-			/>
+			<div class="relative col-span-3">
+				<Input
+					id="name"
+					name="name"
+					type="text"
+					bind:value={router.name}
+					placeholder="Name of the router"
+					required
+					{disabled}
+				/>
+				<!-- Icon based on provider -->
+				{#if router.provider !== ''}
+					<span
+						class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
+					>
+						{#if router.provider === 'http'}
+							<img src={logo} alt="HTTP" width="20" />
+						{/if}
+						{#if router.provider === 'internal' || router.provider === 'file'}
+							<iconify-icon icon="devicon:traefikproxy" height="20" />
+						{/if}
+						{#if router.provider?.includes('docker')}
+							<iconify-icon icon="logos:docker-icon" height="20" />
+						{/if}
+						{#if router.provider?.includes('kubernetes')}
+							<iconify-icon icon="logos:kubernetes" height="20" />
+						{/if}
+						{#if router.provider === 'consul'}
+							<iconify-icon icon="logos:consul" height="20" />
+						{/if}
+						{#if router.provider === 'nomad'}
+							<iconify-icon icon="logos:nomad-icon" height="20" />
+						{/if}
+						{#if router.provider === 'kv'}
+							<iconify-icon icon="logos:redis" height="20" />
+						{/if}
+					</span>
+				{/if}
+			</div>
 			{#if errors.name}
 				<div class="col-span-4 text-right text-sm text-red-500">{errors.name}</div>
 			{/if}
@@ -241,8 +261,8 @@
 		{/if}
 
 		<!-- CertResolver -->
-		{#if router.provider === 'http'}
-			<div class:hidden={router.routerType === 'udp'} class="space-y-0.5">
+		{#if router.provider === 'http' && router.routerType !== 'udp'}
+			<div class="space-y-0.5">
 				<div class="grid grid-cols-4 items-center gap-1">
 					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
 					<Input
@@ -258,7 +278,7 @@
 					<div></div>
 					<div class="col-span-3">
 						{#each getCertResolver() || [] as resolver}
-							{#if router.tls.certResolver !== resolver}
+							{#if router.tls?.certResolver !== resolver}
 								<div on:click={() => setCertResolver(resolver)} aria-hidden>
 									<Badge>{resolver}</Badge>
 								</div>
@@ -271,7 +291,7 @@
 
 		<!-- Rule -->
 		{#if router.routerType === 'http' || router.routerType === 'tcp'}
-			<RuleEditor bind:rule={router.rule} {disabled} />
+			<RuleEditor bind:rule={router.rule} bind:type={router.routerType} {disabled} />
 		{/if}
 	</Card.Content>
 </Card.Root>

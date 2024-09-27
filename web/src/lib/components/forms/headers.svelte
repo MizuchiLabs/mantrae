@@ -6,11 +6,13 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import ObjectInput from '../ui/object-input/object-input.svelte';
+	import { z } from 'zod';
+	import { CustomIPSchemaOptional } from '../utils/validation';
 
 	export let middleware: Middleware;
 	const emptyHeaders = {
 		// SSL and Security Headers (commonly used)
-		sslProxyHeaders: { '': '' },
+		sslProxyHeaders: {},
 
 		// Security and Privacy Policies (high importance)
 		contentSecurityPolicy: '',
@@ -22,12 +24,12 @@
 		permissionsPolicy: '',
 
 		// Access Control Headers (important for CORS and security)
-		accessControlAllowOriginList: [''],
-		accessControlAllowOriginListRegex: [''],
-		accessControlAllowHeaders: [''],
-		accessControlAllowMethods: [''],
+		accessControlAllowOriginList: [],
+		accessControlAllowOriginListRegex: [],
+		accessControlAllowHeaders: [],
+		accessControlAllowMethods: [],
 		accessControlAllowCredentials: false,
-		accessControlExposeHeaders: [''],
+		accessControlExposeHeaders: [],
 
 		// STS (HTTP Strict Transport Security)
 		stsIncludeSubdomains: false,
@@ -35,13 +37,13 @@
 		forceSTSHeader: false,
 
 		// Custom Headers (for custom configurations)
-		customRequestHeaders: { '': '' },
-		customResponseHeaders: { '': '' },
+		customRequestHeaders: {},
+		customResponseHeaders: {},
 
 		// Less frequently used security options
 		addVaryHeader: false,
-		allowedHosts: [''],
-		hostsProxyHeaders: [''],
+		allowedHosts: [],
+		hostsProxyHeaders: [],
 		publicKey: '',
 
 		// Miscellaneous
@@ -65,7 +67,6 @@
 		permissionsPolicy: 'geolocation=(), microphone=(), camera=(), fullscreen=(self)', // Restricts access to sensitive APIs
 
 		// Access Control Headers (CORS and Security)
-		accessControlAllowOriginList: ['https://yourdomain.com'], // Replace with trusted origins
 		accessControlAllowHeaders: ['Authorization', 'Content-Type'],
 		accessControlAllowMethods: ['GET', 'POST', 'OPTIONS'],
 		accessControlAllowCredentials: true, // Allow sending credentials
@@ -82,16 +83,60 @@
 		customResponseHeaders: {
 			'X-Content-Type-Options': 'nosniff',
 			'X-Frame-Options': 'DENY',
-			'X-XSS-Protection': '1; mode=block'
+			'X-XSS-Protection': '1; mode=block',
+			'X-Robots-Tag': 'none,noarchive,nosnippet,notranslate,noimageindex'
+		},
+		customRequestHeaders: {
+			'X-Forwarded-Proto': 'https',
+			'X-Permitted-Cross-Domain-Policies': 'none'
 		},
 
 		// Less frequently used security options
 		addVaryHeader: true, // Useful for caching and negotiation
-		allowedHosts: ['yourdomain.com'], // Protects against Host header attacks
 		hostsProxyHeaders: ['X-Forwarded-Host']
 	};
 
-	middleware.headers = { ...emptyHeaders, ...middleware.headers };
+	const headersSchema = z.object({
+		sslProxyHeaders: z.record(z.string(), z.string()).optional(),
+		contentSecurityPolicy: z.string().optional(),
+		contentTypeNosniff: z.boolean().optional(),
+		browserXssFilter: z.boolean().optional(),
+		frameDeny: z.boolean().optional(),
+		customFrameOptionsValue: z.string().optional(),
+		referrerPolicy: z.string().optional(),
+		permissionsPolicy: z.string().optional(),
+		accessControlAllowOriginList: z.array(CustomIPSchemaOptional).default([]).optional(),
+		accessControlAllowOriginListRegex: z.array(z.string()).default([]).optional(),
+		accessControlAllowHeaders: z.array(z.string()).default([]).optional(),
+		accessControlAllowMethods: z.array(z.string()).default([]).optional(),
+		accessControlAllowCredentials: z.boolean().default(false).optional(),
+		accessControlExposeHeaders: z.array(z.string()).default([]).optional(),
+		accessControlMaxAge: z.coerce.number().int().nonnegative().optional(),
+		stsSeconds: z.coerce.number().int().nonnegative().optional(),
+		stsIncludeSubdomains: z.boolean().default(false).optional(),
+		stsPreload: z.boolean().default(false).optional(),
+		forceSTSHeader: z.boolean().default(false).optional(),
+		customResponseHeaders: z.record(z.string(), z.string()).optional(),
+		customRequestHeaders: z.record(z.string(), z.string()).optional(),
+		addVaryHeader: z.boolean().default(true).optional(),
+		hostsProxyHeaders: z.array(z.string()).default([]).optional()
+	});
+	middleware.headers = headersSchema.parse({ ...middleware.headers });
+
+	let errors: Record<any, string[] | undefined> = {};
+	const validate = () => {
+		try {
+			middleware.headers = headersSchema.parse(middleware.headers);
+			console.log(middleware.headers.stsSeconds);
+			errors = {};
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				errors = err.flatten().fieldErrors;
+			}
+		}
+	};
+
+	//middleware.headers = { ...emptyHeaders, ...middleware.headers };
 	let isTemplate = false;
 	const toggleTemplate = () => {
 		isTemplate = !isTemplate;
@@ -100,6 +145,7 @@
 		} else {
 			middleware.headers = { ...emptyHeaders };
 		}
+		validate();
 	};
 </script>
 
@@ -116,8 +162,12 @@
 		label="SSL Proxy Headers"
 		keyPlaceholder="Header Name"
 		valuePlaceholder="Header Value"
+		on:update={validate}
 		class="my-4"
 	/>
+	{#if errors.sslProxyHeaders}
+		<span class="text-sm text-red-500">{errors.sslProxyHeaders}</span>
+	{/if}
 
 	<!-- Security and Privacy Policies (high importance) -->
 	<span class="my-4 border-b border-gray-200 pb-2 font-bold">Security and Privacy Policies</span>
@@ -128,6 +178,7 @@
 			name="content-security-policy"
 			type="text"
 			bind:value={middleware.headers.contentSecurityPolicy}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="default-src 'self'; script-src 'self' 'unsafe-inline';"
 		/>
@@ -139,6 +190,7 @@
 			name="custom-frame-options-value"
 			type="text"
 			bind:value={middleware.headers.customFrameOptionsValue}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="SAMEORIGIN"
 		/>
@@ -150,6 +202,7 @@
 			name="referrer-policy"
 			type="text"
 			bind:value={middleware.headers.referrerPolicy}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="no-referrer"
 		/>
@@ -161,6 +214,7 @@
 			name="permissions-policy"
 			type="text"
 			bind:value={middleware.headers.permissionsPolicy}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="geolocation 'none'; microphone 'none';"
 		/>
@@ -192,6 +246,7 @@
 		bind:items={middleware.headers.accessControlAllowOriginList}
 		placeholder="*"
 		label="Access Control Allow Origin List"
+		on:update={validate}
 		class="my-2"
 	/>
 	<ArrayInput
@@ -204,18 +259,21 @@
 		bind:items={middleware.headers.accessControlAllowHeaders}
 		placeholder="Authorization"
 		label="Access Control Allow Headers"
+		on:update={validate}
 		class="my-2"
 	/>
 	<ArrayInput
 		bind:items={middleware.headers.accessControlAllowMethods}
 		placeholder="GET, POST, PUT, DELETE, OPTIONS"
 		label="Access Control Allow Methods"
+		on:update={validate}
 		class="my-2"
 	/>
 	<ArrayInput
 		bind:items={middleware.headers.accessControlExposeHeaders}
 		placeholder="Authorization"
 		label="Access Control Expose Headers"
+		on:update={validate}
 		class="my-2"
 	/>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -225,6 +283,7 @@
 			name="access-control-max-age"
 			type="number"
 			bind:value={middleware.headers.accessControlMaxAge}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="0"
 		/>
@@ -249,6 +308,7 @@
 			name="sts-seconds"
 			type="number"
 			bind:value={middleware.headers.stsSeconds}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="86400"
 		/>
@@ -281,6 +341,7 @@
 		label="Custom Response Headers"
 		keyPlaceholder="Header Name"
 		valuePlaceholder="Header Value"
+		on:update={validate}
 		class="my-2"
 	/>
 	<ObjectInput
@@ -288,6 +349,7 @@
 		label="Custom Request Headers"
 		keyPlaceholder="Header Name"
 		valuePlaceholder="Header Value"
+		on:update={validate}
 		class="my-2"
 	/>
 
@@ -305,12 +367,14 @@
 		bind:items={middleware.headers.allowedHosts}
 		placeholder="example.com"
 		label="Allowed Hosts"
+		on:update={validate}
 		class="my-2"
 	/>
 	<ArrayInput
 		bind:items={middleware.headers.hostsProxyHeaders}
 		placeholder="X-Forwarded-Host"
 		label="Hosts Proxy Headers"
+		on:update={validate}
 		class="my-2"
 	/>
 	<div class="grid grid-cols-4 items-center gap-4">
@@ -320,6 +384,7 @@
 			name="public-key"
 			type="text"
 			bind:value={middleware.headers.publicKey}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="MIIBIjANBgkqhkiG9w0BAQEFAA..."
 		/>
@@ -331,6 +396,7 @@
 			name="custom-browser-xss-value"
 			type="text"
 			bind:value={middleware.headers.customBrowserXSSValue}
+			on:input={validate}
 			class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 			placeholder="1; mode=block"
 		/>

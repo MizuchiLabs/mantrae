@@ -14,7 +14,6 @@ export interface Router {
 	rule: string;
 	priority?: number;
 	tls: TLSConfig;
-	tcpTLS?: TCPTLSConfig;
 }
 
 export function newRouter(): Router {
@@ -30,6 +29,7 @@ export function newRouter(): Router {
 		service: '',
 		priority: 0,
 		tls: {
+			passthrough: false,
 			options: '',
 			certResolver: '',
 			domains: []
@@ -46,19 +46,10 @@ export interface Service {
 	serviceType: string;
 	serverStatus?: Record<string, string>;
 
-	// HTTP-specific fields
 	loadBalancer?: ServersLoadBalancer;
 	weighted?: WeightedRoundRobin;
 	mirroring?: Mirroring;
 	failover?: Failover;
-
-	// TCP-specific fields
-	tcpLoadBalancer?: TCPServersLoadBalancer;
-	tcpWeighted?: TCPWeightedRoundRobin;
-
-	// UDP-specific fields
-	udpLoadBalancer?: UDPServersLoadBalancer;
-	udpWeighted?: UDPWeightedRoundRobin;
 }
 
 export function newService(): Service {
@@ -73,49 +64,27 @@ export function newService(): Service {
 }
 
 export interface TLSConfig {
-	options?: string;
-	certResolver?: string;
-	domains?: Domain[];
-}
-
-export interface TCPTLSConfig {
-	passthrough?: boolean;
+	passthrough?: boolean; // TCP Router only
 	options?: string;
 	certResolver?: string;
 	domains?: Domain[];
 }
 
 export interface ServersLoadBalancer {
+	servers?: Server[]; // for every service type
 	sticky?: Sticky;
-	servers?: Server[];
 	healthCheck?: ServerHealthCheck;
 	passHostHeader?: boolean;
 	responseForwarding?: ResponseForwarding;
 	serversTransport?: string;
-}
-
-export interface TCPServersLoadBalancer {
-	terminationDelay?: number;
-	proxyProtocol?: ProxyProtocol;
-	servers?: TCPServer[];
-}
-
-export interface UDPServersLoadBalancer {
-	servers?: TCPServer[];
+	terminationDelay?: number; // TCP only
+	proxyProtocol?: ProxyProtocol; // TCP only
 }
 
 export interface WeightedRoundRobin {
-	services?: WRRService[];
-	sticky?: Sticky;
-	healthCheck?: Record<string, unknown>;
-}
-
-export interface TCPWeightedRoundRobin {
-	services?: WRRService[];
-}
-
-export interface UDPWeightedRoundRobin {
-	services?: WRRService[];
+	services?: WRRService[]; // for every service type
+	sticky?: Sticky; // HTTP only
+	healthCheck?: Record<string, unknown>; // HTTP only
 }
 
 export interface Cookie {
@@ -155,17 +124,8 @@ export interface ResponseForwarding {
 	flushInterval?: string;
 }
 
-export interface RouterTLSConfig {
-	options?: string;
-	certResolver?: string;
-	domains?: Domain[];
-}
-
 export interface Server {
 	url?: string;
-}
-
-export interface TCPServer {
 	address?: string;
 }
 

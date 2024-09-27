@@ -9,8 +9,9 @@
 	export let disabled = false;
 	middleware.basicAuth = {
 		users: [],
+		usersFile: '',
 		realm: '',
-		removeHeader: false,
+		removeHeader: true,
 		headerField: '',
 		...middleware.basicAuth
 	};

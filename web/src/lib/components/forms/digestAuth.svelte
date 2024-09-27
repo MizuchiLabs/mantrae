@@ -11,7 +11,7 @@
 		users: [],
 		usersFile: '',
 		realm: '',
-		removeHeader: false,
+		removeHeader: true,
 		headerField: '',
 		...middleware.digestAuth
 	};
@@ -23,6 +23,7 @@
 		label="Users"
 		placeholder="user:password"
 		helpText="Username and password are separated by a colon. Password will be hashed automatically. You will not be able to see the password again!"
+		{disabled}
 	/>
 	<div class="grid grid-cols-4 items-center gap-4">
 		<Label for="users-file" class="text-right">Users File</Label>

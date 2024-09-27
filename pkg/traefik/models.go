@@ -40,8 +40,7 @@ type Router struct {
 	Rule        string   `json:"rule,omitempty"`        // http, tcp
 	Service     string   `json:"service,omitempty"`     // http, tcp, udp
 	// Priority    *big.Int                    `json:"priority,omitempty"`
-	TLS    *dynamic.RouterTLSConfig    `json:"tls,omitempty"`    // http
-	TCPTLS *dynamic.RouterTCPTLSConfig `json:"tcpTLS,omitempty"` // tcp
+	TLS *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"` // Merge tcp and http
 }
 
 type Service struct {
@@ -53,19 +52,40 @@ type Service struct {
 	ServiceType  string            `json:"serviceType,omitempty"` // "http" or "tcp" or "udp"
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 
+	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
+	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
+
 	// HTTP-specific fields
-	LoadBalancer *dynamic.ServersLoadBalancer `json:"loadBalancer,omitempty"`
-	Weighted     *dynamic.WeightedRoundRobin  `json:"weighted,omitempty"`
-	Mirroring    *dynamic.Mirroring           `json:"mirroring,omitempty"`
-	Failover     *dynamic.Failover            `json:"failover,omitempty"`
+	Mirroring *dynamic.Mirroring `json:"mirroring,omitempty"`
+	Failover  *dynamic.Failover  `json:"failover,omitempty"`
+}
+
+type LoadBalancer struct {
+	Servers []Server `json:"servers,omitempty"`
+
+	// HTTP-specific fields
+	Sticky             *dynamic.Sticky             `json:"sticky,omitempty"`
+	PassHostHeader     *bool                       `json:"passHostHeader,omitempty"`
+	HealthCheck        *dynamic.ServerHealthCheck  `json:"healthCheck,omitempty"`
+	ResponseForwarding *dynamic.ResponseForwarding `json:"responseForwarding,omitempty"`
+	ServersTransport   string                      `json:"serversTransport,omitempty"`
 
 	// TCP-specific fields
-	TCPLoadBalancer *dynamic.TCPServersLoadBalancer `json:"tcpLoadBalancer,omitempty"`
-	TCPWeighted     *dynamic.TCPWeightedRoundRobin  `json:"tcpWeighted,omitempty"`
+	ProxyProtocol    *dynamic.ProxyProtocol `json:"proxyProtocol,omitempty"`
+	TerminationDelay *int                   `json:"terminationDelay,omitempty"`
+}
 
-	// UDP-specific fields
-	UDPLoadBalancer *dynamic.UDPServersLoadBalancer `json:"udpLoadBalancer,omitempty"`
-	UDPWeighted     *dynamic.UDPWeightedRoundRobin  `json:"udpWeighted,omitempty"`
+type Server struct {
+	URL     string `json:"url,omitempty"`
+	Address string `json:"address,omitempty"`
+}
+
+type WeightedRoundRobin struct {
+	Services []dynamic.WRRService `json:"services,omitempty"`
+
+	// HTTP-specific fields
+	Sticky      *dynamic.Sticky      `json:"sticky,omitempty"`
+	HealthCheck *dynamic.HealthCheck `json:"healthCheck,omitempty"`
 }
 
 type Middleware struct {
@@ -83,7 +103,7 @@ type Middleware struct {
 	ReplacePath       *dynamic.ReplacePath       `json:"replacePath,omitempty"`
 	ReplacePathRegex  *dynamic.ReplacePathRegex  `json:"replacePathRegex,omitempty"`
 	Chain             *dynamic.Chain             `json:"chain,omitempty"`
-	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"`
+	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"` // also for tcp
 	Headers           *dynamic.Headers           `json:"headers,omitempty"`
 	Errors            *dynamic.ErrorPage         `json:"errors,omitempty"`
 	RateLimit         *dynamic.RateLimit         `json:"rateLimit,omitempty"`
@@ -100,8 +120,7 @@ type Middleware struct {
 	Retry             *dynamic.Retry             `json:"retry,omitempty"`
 
 	// TCP-specific fields
-	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	TCPIPAllowList *dynamic.TCPIPAllowList  `json:"tcpIpAllowList,omitempty"`
+	InFlightConn *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
 }
 
 type Overview struct {

@@ -16,7 +16,7 @@ export interface Middleware {
 	replacePath?: ReplacePath;
 	replacePathRegex?: ReplacePathRegex;
 	chain?: Chain;
-	ipAllowList?: IPAllowList;
+	ipAllowList?: IPAllowList; // also for tcp
 	headers?: Headers;
 	errors?: ErrorPage;
 	rateLimit?: RateLimit;
@@ -34,7 +34,6 @@ export interface Middleware {
 
 	// TCP-specific fields
 	inFlightConn?: TCPInFlightConn;
-	tcpIpAllowList?: TCPIPAllowList;
 }
 
 export function newMiddleware(): Middleware {

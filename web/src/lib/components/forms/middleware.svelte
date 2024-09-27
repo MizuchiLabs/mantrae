@@ -10,6 +10,7 @@
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
 	import { onMount, SvelteComponent } from 'svelte';
+	import logo from '$lib/images/logo.svg';
 
 	export let middleware: Middleware;
 	export let disabled = false;
@@ -34,18 +35,17 @@
 		{ label: 'InFlightReq', value: 'inFlightReq' },
 		{ label: 'Circuit Breaker', value: 'circuitBreaker' },
 		{ label: 'Buffering', value: 'buffering' },
-		{ label: 'Errors', value: 'errors' }
-		//{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
+		{ label: 'Errors', value: 'errors' },
+		{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' }
 	];
 	const TCPMiddlewareTypes: Selected<string>[] = [
-		{ label: 'In Flight Conn', value: 'inFlightConn' },
-		{ label: 'IP Allow List', value: 'tcpIpAllowList' }
+		{ label: 'InFlightConn', value: 'inFlightConn' },
+		{ label: 'Whitelist', value: 'ipAllowList' }
 	];
 
 	// Load the initial form component
-	let middlewareType: Selected<string> | undefined = HTTPMiddlewareTypes.find(
-		(t) => t.value.toLowerCase() === middleware.type
-	);
+	let isHTTP = middleware.middlewareType == 'http' ? true : false;
+	let middlewareType: Selected<string> | undefined;
 
 	let form: typeof SvelteComponent | null = null;
 	const setMiddlewareType = async (type: Selected<string> | undefined) => {
@@ -53,16 +53,29 @@
 		middlewareType = type;
 		middleware = newMiddleware();
 		middleware.type = type.value.toLowerCase();
+		middleware.middlewareType = isHTTP ? 'http' : 'tcp';
 		form = null;
 		form = await LoadMiddlewareForm(middleware);
 	};
 
-	let isHTTP = middleware.middlewareType == 'http' ? true : false;
 	$: isHTTP, setType();
 	const setType = () => {
-		middleware.middlewareType = isHTTP ? 'http' : 'tcp';
 		if (isHTTP) setMiddlewareType(HTTPMiddlewareTypes[0]);
 		else setMiddlewareType(TCPMiddlewareTypes[0]);
+	};
+
+	const checkType = () => {
+		if (middleware.type === '') {
+			setMiddlewareType(HTTPMiddlewareTypes[0]);
+			return;
+		}
+
+		if (isHTTP) {
+			middlewareType = HTTPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);
+		}
+		if (!isHTTP) {
+			middlewareType = TCPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);
+		}
 	};
 
 	// Check if middleware name is taken
@@ -70,10 +83,9 @@
 	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
 
 	onMount(async () => {
+		console.log(middleware);
+		checkType();
 		form = await LoadMiddlewareForm(middleware);
-		if (middleware.type === '') {
-			setMiddlewareType(HTTPMiddlewareTypes[0]);
-		}
 	});
 </script>
 
@@ -128,16 +140,45 @@
 		<!-- Name -->
 		<div class="grid grid-cols-4 items-center gap-4 space-y-2">
 			<Label for="name" class="text-right">Name</Label>
-			<Input
-				id="name"
-				name="name"
-				type="text"
-				bind:value={middleware.name}
-				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-				placeholder="Name of the middleware"
-				required
-				{disabled}
-			/>
+			<div class="relative col-span-3">
+				<Input
+					id="name"
+					name="name"
+					type="text"
+					bind:value={middleware.name}
+					placeholder="Name of the middleware"
+					required
+					{disabled}
+				/>
+				<!-- Icon based on provider -->
+				{#if middleware.provider !== ''}
+					<span
+						class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
+					>
+						{#if middleware.provider === 'http'}
+							<img src={logo} alt="HTTP" width="20" />
+						{/if}
+						{#if middleware.provider === 'internal' || middleware.provider === 'file'}
+							<iconify-icon icon="devicon:traefikproxy" height="20" />
+						{/if}
+						{#if middleware.provider === 'docker' || middleware.provider === 'swarm'}
+							<iconify-icon icon="logos:docker-icon" height="20" />
+						{/if}
+						{#if middleware.provider === 'kubernetes' || middleware.provider === 'kubernetescrd'}
+							<iconify-icon icon="logos:kubernetes" height="20" />
+						{/if}
+						{#if middleware.provider === 'consul'}
+							<iconify-icon icon="logos:consul" height="20" />
+						{/if}
+						{#if middleware.provider === 'nomad'}
+							<iconify-icon icon="logos:nomad-icon" height="20" />
+						{/if}
+						{#if middleware.provider === 'kv'}
+							<iconify-icon icon="logos:redis" height="20" />
+						{/if}
+					</span>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Dynamic Form -->
