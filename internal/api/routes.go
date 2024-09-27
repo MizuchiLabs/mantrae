@@ -8,7 +8,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/web"
 )
 
-func Routes() http.Handler {
+func Routes(useAuth bool) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/login", Login)
@@ -51,7 +51,11 @@ func Routes() http.Handler {
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
 
-	mux.HandleFunc("GET /api/{name}", GetTraefikConfig)
+	if useAuth {
+		mux.HandleFunc("GET /api/{name}", BasicAuth(GetTraefikConfig))
+	} else {
+		mux.HandleFunc("GET /api/{name}", GetTraefikConfig)
+	}
 
 	staticContent, err := fs.Sub(web.StaticFS, "build")
 	if err != nil {

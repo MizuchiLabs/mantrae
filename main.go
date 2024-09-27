@@ -56,7 +56,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":" + flags.Port,
-		Handler:           api.Routes(),
+		Handler:           api.Routes(flags.UseAuth),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

@@ -21,6 +21,7 @@ type Flags struct {
 	Username string
 	Password string
 	Config   string
+	UseAuth  bool
 	Update   bool
 	Reset    bool
 }
@@ -36,7 +37,8 @@ func (f *Flags) Parse() error {
 	)
 	flag.StringVar(&f.Username, "username", "", "Specify the username for the Traefik instance")
 	flag.StringVar(&f.Password, "password", "", "Specify the password for the Traefik instance")
-	flag.StringVar(&f.Config, "config", "", "Specify the path to the config file")
+	flag.StringVar(&f.Config, "config", "", "Specify the path to the database location")
+	flag.BoolVar(&f.UseAuth, "auth", false, "Use basic authentication for the profile endpoint")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
 	flag.BoolVar(&f.Reset, "reset", false, "Reset the default admin password")
 

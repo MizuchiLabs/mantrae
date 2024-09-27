@@ -40,6 +40,25 @@
 
 ## Usage
 
+### CLI Options:
+
+1. `-version`: Print the version.
+1. `-config`: Specify the path where the database should be stored. (Default: `./mantrae.db`)
+1. `-port`: Set the port to listen on. (Default: `3000`)
+1. `-update`: Update mantrae to the latest version. (Will not work inside docker container!)
+1. `-reset`: Reset the admin password. Will generate a new one and print it to the console.
+1. `-auth`: Enable basic auth for the profile endpoint. (Default: `false`). This will protect the `/api/<profilename>` endpoint using BasicAuth. If you enable this you need to set the correct headers in Traefik so it can fetch the data. Example default mantrae user is `admin` and password is `supersecret`, use `echo -n "admin:supersecret" | base64` to generate the Credentials. After that you can configure the http provider in Traefik: `providers.http.headers.Authorization=Basic YWRtaW46c3VwZXJzZWNyZXQ=`
+
+**Optionally you can set the default profile by providing the flags below:**
+
+1. `-url`: Set the URL of the Traefik instance. (e.g.: `http://localhost:8080`)
+1. `-username`: Set the username for basic auth, if your Traefik instance uses basic auth. (e.g.: `admin`)
+1. `-password`: Set the password for basic auth. (e.g.: `supersecret`)
+
+**Set the secret!**
+
+Before starting mantrae it will look for a `SECRET` environment variable. Depending if you use container or binary you need to set it manually, e.g. `export SECRET=<somelongstring>`
+
 ### Managing Routers
 
 1. Navigate to the "Routers" section in the web UI.
@@ -67,7 +86,6 @@
 
 ![Routers](./.github/screenshots/routers.png "Routers")
 ![Middleware](./.github/screenshots/middlewares.png "Middleware")
-![Settings](./.github/screenshots/settings.png "Settings")
 ![CommandCenter](./.github/screenshots/command_center.png "CommandCenter")
 
 ## FAQ
