@@ -15,7 +15,6 @@
 	$: type, (service.serviceType = type);
 
 	const serviceSchema = z.object({
-		name: z.string().min(1, { message: 'Name is required' }),
 		provider: z.string().optional(),
 		type: z.string().optional(),
 		status: z.string().optional(),

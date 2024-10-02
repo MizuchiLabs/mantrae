@@ -25,7 +25,6 @@
 	export let router: Router;
 	export let disabled = false;
 
-	let errors: Record<any, string[] | undefined> = {};
 	const formSchema = z.object({
 		name: z.string({ required_error: 'Name is required' }).min(1).max(255),
 		provider: z.string().optional(),
@@ -37,15 +36,14 @@
 		dnsProvider: z.coerce.number().int().nonnegative().optional(),
 		entrypoints: z.array(z.string()).optional(),
 		middlewares: z.array(z.string()).optional(),
-		service: z
-			.string({ required_error: 'Service name is required' })
-			.min(1, { message: 'Service name is required' }),
 		rule: z.string({ required_error: 'Rule is required' }).min(1, { message: 'Rule is required' }),
 		priority: z.coerce.number().int().nonnegative().optional(),
 		tls: z.object({
 			certResolver: z.string().trim().optional()
 		})
 	});
+
+	let errors: Record<any, string[] | undefined> = {};
 	export const validate = () => {
 		try {
 			formSchema.parse({ ...router });
