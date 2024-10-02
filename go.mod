@@ -1,19 +1,21 @@
 module github.com/MizuchiLabs/mantrae
 
-go 1.22.5
+go 1.22.7
 
 require github.com/traefik/genconf v0.5.2
 
 require (
-	github.com/cloudflare/cloudflare-go v0.105.0
+	connectrpc.com/connect v1.17.0
+	github.com/cloudflare/cloudflare-go v0.106.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/joeig/go-powerdns/v3 v3.14.0
+	github.com/joeig/go-powerdns/v3 v3.14.1
 	github.com/lmittmann/tint v1.0.5
 	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/crypto v0.27.0
 	golang.org/x/net v0.29.0
+	google.golang.org/protobuf v1.34.2
 	sigs.k8s.io/yaml v1.4.0
 )
 

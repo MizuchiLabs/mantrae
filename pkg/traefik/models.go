@@ -33,7 +33,7 @@ type Router struct {
 	Provider    string `json:"provider,omitempty"`
 	Status      string `json:"status,omitempty"`
 	RouterType  string `json:"routerType"`
-	DNSProvider string `json:"dnsProvider"`
+	DNSProvider *int64 `json:"dnsProvider,omitempty"`
 
 	Entrypoints []string `json:"entrypoints,omitempty"` // http, tcp, udp
 	Middlewares []string `json:"middlewares,omitempty"` // http, tcp

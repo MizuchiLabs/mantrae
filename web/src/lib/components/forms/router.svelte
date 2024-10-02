@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
+	import { Toggle } from '$lib/components/ui/toggle';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -19,28 +20,35 @@
 	import logo from '$lib/images/logo.svg';
 	import { z } from 'zod';
 	import type { Selected } from 'bits-ui';
+	import autoAnimate from '@formkit/auto-animate';
 
 	export let router: Router;
 	export let disabled = false;
 
 	let errors: Record<any, string[] | undefined> = {};
 	const formSchema = z.object({
-		name: z.string({ required_error: 'Name is required' }).min(3).max(255),
+		name: z.string({ required_error: 'Name is required' }).min(1).max(255),
+		provider: z.string().optional(),
+		status: z.string().optional(),
 		routerType: z
 			.string()
 			.toLowerCase()
 			.regex(/^(http|tcp|udp)$/),
+		dnsProvider: z.coerce.number().int().nonnegative().optional(),
+		entrypoints: z.array(z.string()).optional(),
+		middlewares: z.array(z.string()).optional(),
+		service: z
+			.string({ required_error: 'Service name is required' })
+			.min(1, { message: 'Service name is required' }),
+		rule: z.string({ required_error: 'Rule is required' }).min(1, { message: 'Rule is required' }),
+		priority: z.coerce.number().int().nonnegative().optional(),
 		tls: z.object({
 			certResolver: z.string().trim().optional()
 		})
 	});
 	export const validate = () => {
 		try {
-			formSchema.parse({
-				name: router.name,
-				routerType: router.routerType,
-				tls: router.tls
-			});
+			formSchema.parse({ ...router });
 			errors = {};
 			return true;
 		} catch (err) {
@@ -49,16 +57,6 @@
 			}
 			return false;
 		}
-	};
-
-	let routerType: Selected<string> | undefined = router.routerType
-		? { label: router.routerType.toUpperCase(), value: router.routerType }
-		: { label: 'HTTP', value: 'http' };
-	const changeType = (serviceType: Selected<string> | undefined) => {
-		if (serviceType === undefined) return;
-		router = newRouter();
-		router.routerType = serviceType.value;
-		routerType = { label: serviceType.label || '', value: serviceType.value };
 	};
 
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
@@ -73,10 +71,9 @@
 		});
 		return list ?? [];
 	};
-	const getSelectedDNSProvider = (router: Router): Selected<unknown> | undefined => {
-		return router?.dnsProvider
-			? { value: router.dnsProvider, label: router.dnsProvider }
-			: undefined;
+	const getSelectedDNSProvider = (router: Router): Selected<number> | undefined => {
+		let name = $provider.find((p) => p.id === router.dnsProvider)?.name;
+		return router?.dnsProvider ? { value: router.dnsProvider, label: name } : undefined;
 	};
 	const getCertResolver = () => {
 		const certResolvers = $routers
@@ -101,25 +98,37 @@
 
 <Card.Root>
 	<Card.Header>
-		<Card.Title class="flex items-center justify-between gap-1">
-			<span>Router</span>
-		</Card.Title>
+		<Card.Title>Router</Card.Title>
+		<Card.Description>Configure your router settings</Card.Description>
 	</Card.Header>
-	<Card.Content class="space-y-2">
+	<Card.Content class="flex flex-col gap-2">
 		<!-- Type -->
 		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-1">
-				<Label for="current" class="mr-2 text-right">Type</Label>
-				<Select.Root onSelectedChange={changeType} selected={routerType}>
-					<Select.Trigger class="col-span-3">
-						<Select.Value placeholder="Select a type" />
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="http" label="HTTP">HTTP</Select.Item>
-						<Select.Item value="tcp" label="TCP">TCP</Select.Item>
-						<Select.Item value="udp" label="UDP">UDP</Select.Item>
-					</Select.Content>
-				</Select.Root>
+			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
+				<Toggle
+					size="sm"
+					pressed={router.routerType === 'http'}
+					onPressedChange={() => (router.routerType = 'http')}
+					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
+				>
+					HTTP
+				</Toggle>
+				<Toggle
+					size="sm"
+					pressed={router.routerType === 'tcp'}
+					onPressedChange={() => (router.routerType = 'tcp')}
+					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
+				>
+					TCP
+				</Toggle>
+				<Toggle
+					size="sm"
+					pressed={router.routerType === 'udp'}
+					onPressedChange={() => (router.routerType = 'udp')}
+					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
+				>
+					UDP
+				</Toggle>
 			</div>
 		{/if}
 
@@ -246,9 +255,9 @@
 						<Select.Value placeholder="Select a dns provider" />
 					</Select.Trigger>
 					<Select.Content>
-						<Select.Item value="" label="">None</Select.Item>
+						<Select.Item value={0} label="">None</Select.Item>
 						{#each $provider as provider}
-							<Select.Item value={provider.name} class="flex items-center gap-2">
+							<Select.Item value={provider.id} class="flex items-center gap-2">
 								{provider.name} ({provider.type})
 								{#if provider.is_active}
 									<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />

@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { darkMode } from '$lib/utils';
 	import Button from '../ui/button/button.svelte';
 
-	let darkMode = true;
-
 	function handleSwitchDarkMode() {
-		darkMode = !darkMode;
-		localStorage.setItem('mode', darkMode ? 'dark' : 'light');
+		darkMode.update((d) => !d);
+		localStorage.setItem('mode', $darkMode ? 'dark' : 'light');
 
-		darkMode
+		$darkMode
 			? document.documentElement.classList.add('dark')
 			: document.documentElement.classList.remove('dark');
 	}
@@ -19,10 +18,10 @@
 			(!('mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
 		) {
 			document.documentElement.classList.add('dark');
-			darkMode = true;
+			darkMode.set(true);
 		} else {
 			document.documentElement.classList.remove('dark');
-			darkMode = false;
+			darkMode.set(false);
 		}
 	}
 </script>

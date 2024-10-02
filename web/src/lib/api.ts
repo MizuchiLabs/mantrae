@@ -377,7 +377,7 @@ export async function getVersion() {
 export async function getTraefikConfig() {
 	if (!get(profile)) return '';
 
-	const response = await handleRequest(`/${get(profile)?.name}`, 'GET');
+	const response = await handleRequest(`/${get(profile)?.name}?yaml=true`, 'GET');
 	if (response) {
 		const data = await response.text();
 		dynamic.set(data);
@@ -457,11 +457,11 @@ export async function toggleDNSProvider(
 	item: Selected<unknown> | undefined,
 	update: boolean
 ) {
-	const newProvider = (item?.value as string) ?? '';
-	if (newProvider === '' && router.dnsProvider !== '') {
+	const providerID = (item?.value as number) ?? 0;
+	if (providerID === 0 && router.dnsProvider !== 0) {
 		deleteRouterDNS(router);
 	}
-	router.dnsProvider = newProvider;
+	router.dnsProvider = providerID;
 
 	if (update) {
 		upsertRouter(router.name, router, undefined);

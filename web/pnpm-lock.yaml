@@ -81,6 +81,9 @@ importers:
       globals:
         specifier: ^15.9.0
         version: 15.9.0
+      highlight.js:
+        specifier: ^11.10.0
+        version: 11.10.0
       postcss:
         specifier: ^8.4.47
         version: 8.4.47
@@ -99,6 +102,9 @@ importers:
       svelte-check:
         specifier: ^3.8.6
         version: 3.8.6(postcss-load-config@4.0.2(postcss@8.4.47))(postcss@8.4.47)(svelte@4.2.19)
+      svelte-highlight:
+        specifier: ^7.7.0
+        version: 7.7.0
       tailwindcss:
         specifier: ^3.4.13
         version: 3.4.13
@@ -953,6 +959,10 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
+  highlight.js@11.10.0:
+    resolution: {integrity: sha512-SYVnVFswQER+zu1laSya563s+F8VDGt7o35d4utbamowvUNLLMovFqwCLSocpZTz3MgaSRA1IbqRWZv97dtErQ==}
+    engines: {node: '>=12.0.0'}
+
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
@@ -1487,6 +1497,9 @@ packages:
     resolution: {integrity: sha512-dnDTaXW5CNzRUjHVbc/Hb0Zv80zU4VcIUnAja6OuZriXvim1AqcWYQCHPRzBGwqj1m3YEHHNvspSzY0o5HzA0A==}
     peerDependencies:
       svelte: ^4.0.0
+
+  svelte-highlight@7.7.0:
+    resolution: {integrity: sha512-umBiTz3fLbbNCA+wGlRhJOb54iC6ap8S/dxjauQ+g6a8oFGTOGQeOP2rJVoh/K1ssF7IjP4P0T3Yuiu+vtaG5Q==}
 
   svelte-hmr@0.16.0:
     resolution: {integrity: sha512-Gyc7cOS3VJzLlfj7wKS0ZnzDVdv3Pn2IuVeJPk9m2skfhcu5bq3wtIZyQGggr7/Iim5rH5cncyQft/kRLupcnA==}
@@ -2529,6 +2542,8 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  highlight.js@11.10.0: {}
+
   ignore@5.3.2: {}
 
   import-fresh@3.3.0:
@@ -2976,6 +2991,10 @@ snapshots:
       svelte-keyed: 2.0.0(svelte@4.2.19)
       svelte-render: 2.0.1(svelte@4.2.19)
       svelte-subscribe: 2.0.1(svelte@4.2.19)
+
+  svelte-highlight@7.7.0:
+    dependencies:
+      highlight.js: 11.10.0
 
   svelte-hmr@0.16.0(svelte@4.2.19):
     dependencies:

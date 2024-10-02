@@ -88,3 +88,31 @@
 		scrollbar-width: none; /* Firefox */
 	}
 }
+
+@font-face {
+  font-family: 'Victor Mono';
+  src: url('/fonts/VictorMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Victor Mono';
+  src: url('/fonts/VictorMono-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Victor Mono';
+  src: url('/fonts/VictorMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Victor Mono';
+  src: url('/fonts/VictorMono-BoldItalic.woff2') format('woff2');
+  font-weight: 700;
+  font-style: italic;
+}

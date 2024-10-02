@@ -26,8 +26,6 @@
 		}
 	};
 
-	$: settingsPath = $page.url.pathname.includes('/settings/');
-
 	onMount(async () => {
 		if (!$loggedIn) return;
 		await getProfiles();
@@ -42,7 +40,7 @@
 <div class="app flex min-h-screen flex-col">
 	{#if $loggedIn}
 		<Sidebar />
-		<div class="flex flex-1 flex-col sm:pl-14" class:sm:pl-64={settingsPath}>
+		<div class="flex flex-1 flex-col sm:pl-14">
 			<Header />
 			<main class="flex flex-grow flex-col gap-4 sm:px-2" use:autoAnimate={{ duration: 100 }}>
 				<slot />

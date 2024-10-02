@@ -471,7 +471,7 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	for k, v := range local {
 		switch item := any(v).(type) {
 		case Router:
-			if item.Provider == "http" || item.DNSProvider != "" {
+			if item.Provider == "http" || item.DNSProvider != nil {
 				merged[k] = v
 			}
 		case Service:

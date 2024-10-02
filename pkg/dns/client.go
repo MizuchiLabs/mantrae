@@ -33,12 +33,12 @@ type DomainProvider struct {
 	Provider DNSProvider
 }
 
-func getProvider(name string) DNSProvider {
-	if name == "" {
+func getProvider(id *int64) DNSProvider {
+	if id == nil {
 		return nil
 	}
 
-	provider, err := db.Query.GetProviderByName(context.Background(), name)
+	provider, err := db.Query.GetProviderByID(context.Background(), *id)
 	if err != nil {
 		slog.Error("Failed to get providers", "error", err)
 		return nil
@@ -78,7 +78,7 @@ func getDomainProviderMap() map[string]DomainProvider {
 		}
 
 		for _, router := range data.Routers {
-			if router.DNSProvider != "" {
+			if router.DNSProvider != nil {
 				provider := getProvider(router.DNSProvider)
 				if provider == nil {
 					continue

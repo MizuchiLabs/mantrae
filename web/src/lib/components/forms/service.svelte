@@ -80,11 +80,9 @@
 <Card.Root>
 	<Card.Header>
 		<Card.Title>Service</Card.Title>
-		<Card.Description>
-			Make changes to your Service here. Click save when you're done.
-		</Card.Description>
+		<Card.Description>Configure your {type} service</Card.Description>
 	</Card.Header>
-	<Card.Content class="space-y-2">
+	<Card.Content class="flex flex-col gap-2">
 		{#if service.serviceType === 'http'}
 			<div class="grid grid-cols-4 items-center gap-4">
 				<Label for="passHostHeader" class="text-right">Pass Host Header</Label>

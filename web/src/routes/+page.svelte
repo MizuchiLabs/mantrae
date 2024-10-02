@@ -53,7 +53,7 @@
 					: part.startsWith('@type:')
 						? router.routerType.toLowerCase() === part.split(':')[1]
 						: part.startsWith('@dns:')
-							? router.dnsProvider?.toLowerCase() === part.split(':')[1]
+							? getDNSProviderName(router)?.toLowerCase() === part.split(':')[1]
 							: router.name.toLowerCase().includes(part)
 			);
 		});
@@ -153,9 +153,9 @@
 	// Add reactive variables for bulk actions
 	let allChecked = false;
 	let selectedRouters: Router[] = [];
-	let bulkEntrypoints: Selected<unknown>[] | undefined = [];
-	let bulkMiddlewares: Selected<unknown>[] | undefined = [];
-	let bulkDnsProvider: Selected<string> | undefined = undefined;
+	let bulkEntrypoints: Selected<string>[] | undefined = [];
+	let bulkMiddlewares: Selected<string>[] | undefined = [];
+	let bulkDnsProvider: Selected<number> | undefined = undefined;
 	let lastSelectedIndex: number | null = null;
 	let shiftKeyPressed = false;
 
@@ -189,6 +189,10 @@
 			}
 		}
 		lastSelectedIndex = currentIndex; // Update the last selected index
+	};
+
+	const getDNSProviderName = (r: Router) => {
+		return $provider.find((p) => p.id === r.dnsProvider)?.name;
 	};
 
 	const applyBulkChanges = () => {
@@ -333,10 +337,10 @@
 									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
 									class:bg-green-300={router.dnsProvider}
 									class:bg-blue-300={!router.dnsProvider}
-									on:click={() => (search = `@dns:${router.dnsProvider}`)}
+									on:click={() => (search = `@dns:${getDNSProviderName(router)}`)}
 									aria-hidden
 								>
-									{router.dnsProvider ? router.dnsProvider : 'None'}
+									{router.dnsProvider ? getDNSProviderName(router) : 'None'}
 								</span>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
@@ -519,7 +523,7 @@
 								</Select.Trigger>
 								<Select.Content>
 									{#each $provider as p}
-										<Select.Item value={p.name}>{p.name}</Select.Item>
+										<Select.Item value={p.id}>{p.name}</Select.Item>
 									{/each}
 								</Select.Content>
 							</Select.Root>

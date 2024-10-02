@@ -6,7 +6,7 @@ export interface Router {
 	provider?: string;
 	status?: string;
 	routerType: string;
-	dnsProvider?: string;
+	dnsProvider?: number;
 
 	entrypoints?: string[];
 	middlewares?: string[];
@@ -22,7 +22,7 @@ export function newRouter(): Router {
 		provider: 'http',
 		status: '',
 		routerType: 'http',
-		dnsProvider: '',
+		dnsProvider: 0,
 		entrypoints: [],
 		middlewares: [],
 		rule: '',

@@ -4,14 +4,36 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { getTraefikConfig, config, dynamic } from '$lib/api';
 	import { onMount } from 'svelte';
+	import { darkMode } from '$lib/utils';
+	import Highlight, { LineNumbers } from 'svelte-highlight';
+	import yaml from 'svelte-highlight/languages/yaml';
+	import github from 'svelte-highlight/styles/github';
+	import githubDark from 'svelte-highlight/styles/github-dark';
+	import { Copy, CopyCheck } from 'lucide-svelte';
+
+	let copyText = 'Copy';
+	const copy = () => {
+		navigator.clipboard.writeText($dynamic);
+		copyText = 'Copied!';
+		setTimeout(() => {
+			copyText = 'Copy';
+		}, 2000);
+	};
 
 	onMount(async () => {
 		await getTraefikConfig();
 	});
 </script>
+
+<svelte:head>
+	{#if $darkMode}
+		{@html githubDark}
+	{:else}
+		{@html github}
+	{/if}
+</svelte:head>
 
 <Dialog.Root>
 	<Dialog.Trigger>
@@ -31,7 +53,7 @@
 						<span class="mt-4 border-b border-gray-200 pb-2 font-bold">Traefik Information</span>
 
 						<!-- Version -->
-						<div class="mt-2 grid grid-cols-4 items-center gap-2">
+						<div class="mt-2 grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Version</span>
 							<div class="col-span-3 space-x-2">
 								{#if $config?.version}
@@ -43,7 +65,7 @@
 						</div>
 
 						<!-- Entrypoints -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Entrypoints</span>
 							<div class="col-span-3 space-x-2">
 								{#each $config.entrypoints ?? [] as entrypoint}
@@ -59,7 +81,7 @@
 						</div>
 
 						<!-- Features -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Features</span>
 							<div class="col-span-3 space-x-2">
 								{#if $config.overview?.features.tracing}
@@ -75,7 +97,7 @@
 						</div>
 
 						<!-- Providers -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Providers</span>
 							<div class="col-span-3 space-x-2">
 								{#each $config.overview?.providers ?? [] as provider}
@@ -91,7 +113,7 @@
 						<span class="mt-2 border-b border-gray-200 pb-2 font-bold"> Router Overview </span>
 
 						<!-- HTTP Overview -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1 font-mono">HTTP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
@@ -107,7 +129,7 @@
 						</div>
 
 						<!-- TCP Overview -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1 font-mono">TCP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
@@ -123,7 +145,7 @@
 						</div>
 
 						<!-- UDP Overview -->
-						<div class="grid grid-cols-4 items-center gap-2">
+						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1 font-mono">UDP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
@@ -140,19 +162,35 @@
 			<Tabs.Content value="config">
 				<Card.Root>
 					<Card.Header>
-						<Card.Title class="flex items-center justify-between gap-2">Dynamic Config</Card.Title>
+						<Card.Title class="flex items-center justify-between gap-2">
+							Dynamic Config
+							<button
+								on:click={copy}
+								class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
+							>
+								{copyText}
+								{#if copyText === 'Copied!'}
+									<CopyCheck size="1rem" />
+								{:else}
+									<Copy size="1rem" />
+								{/if}
+							</button>
+						</Card.Title>
 						<Card.Description>
 							This is the current dynamic configuration your Traefik instance is using.
 						</Card.Description>
 					</Card.Header>
-					<Card.Content>
-						<Textarea
-							value={$dynamic}
-							rows={$dynamic.split('\n').length ?? 10}
-							class="code focus-visible:ring-0 focus-visible:ring-offset-0"
-							on:click={(e) => e.target?.select()}
-							readonly
-						/>
+					<Card.Content class="text-sm">
+						<Highlight code={$dynamic} language={yaml} let:highlighted>
+							<LineNumbers {highlighted} hideBorder wrapLines />
+						</Highlight>
+						<!-- <Textarea -->
+						<!-- 	value={$dynamic} -->
+						<!-- 	rows={30} -->
+						<!-- 	class="bg-gray-50 focus-visible:ring-0 focus-visible:ring-offset-0" -->
+						<!-- 	on:click={(e) => e.target?.select()} -->
+						<!-- 	readonly -->
+						<!-- /> -->
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>

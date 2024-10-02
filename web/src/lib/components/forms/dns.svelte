@@ -9,7 +9,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { DNSProvider } from '$lib/types/base';
 	import { profile } from '$lib/api';
-	import { Copy } from 'lucide-svelte';
+	import { Copy, Eye, EyeOff } from 'lucide-svelte';
 	import type { Selected } from 'bits-ui';
 
 	export let provider: DNSProvider;
@@ -29,6 +29,8 @@
 	const insertTraefikURL = () => {
 		provider.external_ip = $profile.url.replace(/^https?:\/\//, '').replace(/:\d+/, '');
 	};
+
+	let showAPIKey = false;
 </script>
 
 <Card.Root class="mt-4">
@@ -86,19 +88,23 @@
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="externalIP" class="col-span-1 text-right">External IP</Label>
-			<div class="col-span-3 flex items-center gap-2">
+			<Label for="externalIP" class="text-right">External IP</Label>
+			<div class="col-span-3 flex flex-row items-center justify-end gap-1">
 				<Input
 					name="externalIP"
 					type="text"
 					placeholder="Public IP address of Traefik"
-					class="focus-visible:ring-0 focus-visible:ring-offset-0"
 					bind:value={provider.external_ip}
 					required
 				/>
 				<Tooltip.Root openDelay={500}>
-					<Tooltip.Trigger>
-						<Button variant="secondary" size="icon" on:click={insertTraefikURL}>
+					<Tooltip.Trigger class="absolute">
+						<Button
+							variant="ghost"
+							size="icon"
+							on:click={insertTraefikURL}
+							class=" hover:bg-transparent hover:text-red-400"
+						>
 							<Copy size="1rem" />
 						</Button>
 					</Tooltip.Trigger>
@@ -123,14 +129,37 @@
 		{/if}
 		<div class="grid grid-cols-4 items-center gap-4">
 			<Label for="key" class="text-right">API Key</Label>
-			<Input
-				name="key"
-				type="password"
-				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-				bind:value={provider.api_key}
-				placeholder="API Key of the provider"
-				required
-			/>
+			<div class="col-span-3 flex flex-row items-center justify-end gap-1">
+				{#if showAPIKey}
+					<Input
+						name="key"
+						type="text"
+						bind:value={provider.api_key}
+						placeholder="API Key of the provider"
+						required
+					/>
+				{:else}
+					<Input
+						name="key"
+						type="password"
+						bind:value={provider.api_key}
+						placeholder="API Key of the provider"
+						required
+					/>
+				{/if}
+				<Button
+					variant="ghost"
+					size="icon"
+					class="absolute hover:bg-transparent hover:text-red-400"
+					on:click={() => (showAPIKey = !showAPIKey)}
+				>
+					{#if showAPIKey}
+						<Eye size="1rem" />
+					{:else}
+						<EyeOff size="1rem" />
+					{/if}
+				</Button>
+			</div>
 		</div>
 	</Card.Content>
 </Card.Root>

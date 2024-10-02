@@ -3,9 +3,8 @@
 	import logo from '$lib/images/logo.svg';
 	import Mode from './mode.svelte';
 	import { page } from '$app/stores';
-	import { slide } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import { Settings, Users, Route, Layers, Earth } from 'lucide-svelte';
 
 	$: active = $page.url.pathname;
@@ -14,25 +13,18 @@
 		{
 			name: 'Router',
 			path: '/',
-			icon: Route,
-			subRoutes: []
+			icon: Route
 		},
 		{
 			name: 'Middlewares',
 			path: '/middlewares/',
-			icon: Layers,
-			subRoutes: []
+			icon: Layers
 		},
 		{
 			name: 'Settings',
 			path: '/settings/',
 			icon: Settings,
 			subRoutes: [
-				{
-					name: 'General',
-					path: '/settings/',
-					icon: Settings
-				},
 				{
 					name: 'Users',
 					path: '/settings/users/',
@@ -65,6 +57,7 @@
 					>
 						<div
 							class:text-gray-600={active !== route.path}
+							class:dark:text-white={active !== route.path}
 							class:text-red-400={active === route.path}
 						>
 							<svelte:component this={route.icon} />
@@ -77,29 +70,34 @@
 			</Tooltip.Root>
 
 			<!-- Sub Routes -->
-			{#if route.subRoutes.length > 0 && active.includes(route.path)}
-				<nav
-					class="fixed left-16 top-0 hidden h-screen w-48 border-r bg-background text-left sm:flex"
-					transition:slide={{ delay: 100, duration: 200, easing: quintOut, axis: 'x' }}
-				>
-					<div class="flex w-full flex-col items-center justify-start">
-						<span class="mb-2 p-4 text-lg font-bold">Settings</span>
-						<div class="flex w-full flex-col gap-2 px-2">
-							{#each route.subRoutes as subRoute}
-								<Button variant="ghost" class="flex h-12 w-full justify-start" href={subRoute.path}>
-									<div
-										class="flex gap-2 hover:bg-accent/20 hover:text-red-300"
-										class:text-gray-600={active !== `${subRoute.path}`}
-										class:text-red-400={active === `${subRoute.path}`}
+			{#if route.subRoutes}
+				<Collapsible.Root open={active.includes(route.path)}>
+					<Collapsible.Content class="flex flex-col gap-2">
+						{#each route.subRoutes as subRoute}
+							<Tooltip.Root openDelay={500}>
+								<Tooltip.Trigger>
+									<Button
+										variant="ghost"
+										class="h-12 w-12 rounded-full hover:bg-foreground/5"
+										href={subRoute.path}
 									>
-										<svelte:component this={subRoute.icon} />
-										{subRoute.name}
-									</div>
-								</Button>
-							{/each}
-						</div>
-					</div>
-				</nav>
+										<div
+											class="hover:bg-accent/20 hover:text-red-300"
+											class:text-gray-600={active !== `${subRoute.path}`}
+											class:dark:text-white={active !== `${subRoute.path}`}
+											class:text-red-400={active === `${subRoute.path}`}
+										>
+											<svelte:component this={subRoute.icon} />
+										</div>
+									</Button>
+								</Tooltip.Trigger>
+								<Tooltip.Content side="right" align="center">
+									{subRoute.name}
+								</Tooltip.Content>
+							</Tooltip.Root>
+						{/each}
+					</Collapsible.Content>
+				</Collapsible.Root>
 			{/if}
 		{/each}
 	</div>
