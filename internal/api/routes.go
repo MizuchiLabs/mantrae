@@ -16,7 +16,6 @@ func Routes(useAuth bool) http.Handler {
 
 	mux.HandleFunc("GET /api/version", GetVersion)
 	mux.HandleFunc("GET /api/events", GetEvents)
-	mux.HandleFunc("GET /api/public-ip", GetPublicIP)
 
 	mux.HandleFunc("GET /api/profile", JWT(GetProfiles))
 	mux.HandleFunc("GET /api/profile/{id}", JWT(GetProfile))
@@ -48,6 +47,7 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("GET /api/settings/{key}", JWT(GetSetting))
 	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
 
+	mux.HandleFunc("GET /api/ip/{id}", JWT(GetPublicIP))
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
 

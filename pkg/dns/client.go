@@ -34,7 +34,7 @@ type DomainProvider struct {
 }
 
 func getProvider(id *int64) DNSProvider {
-	if id == nil {
+	if id == nil || *id == 0 {
 		return nil
 	}
 

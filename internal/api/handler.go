@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
@@ -815,7 +817,44 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetPublicIP tries to guess the public ip of the Traefik instance
 func GetPublicIP(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+
+	profile, err := db.Query.GetProfileByID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+
+	// Parse the URL
+	u, err := url.Parse(profile.Url)
+	if err != nil {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
+	}
+
+	// Check if it's an IP address
+	if net.ParseIP(u.Hostname()) != nil {
+		if !net.ParseIP(u.Hostname()).IsLoopback() {
+			writeJSON(w, map[string]string{"ip": u.Hostname()})
+			return
+		}
+	}
+
+	// If it's a valid hostname, resolve to IP
+	ips, err := net.LookupHost(u.Hostname())
+	if err == nil && len(ips) > 0 {
+		if !net.ParseIP(ips[0]).IsLoopback() {
+			writeJSON(w, map[string]string{"ip": ips[0]})
+			return
+		}
+	}
+
 	ip, err := util.GetPublicIP()
 	if err != nil {
 		http.Error(w, "Failed to get public IP", http.StatusInternalServerError)

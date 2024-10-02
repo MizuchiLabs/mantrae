@@ -8,7 +8,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { DNSProvider } from '$lib/types/base';
-	import { profile } from '$lib/api';
+	import { getPublicIP } from '$lib/api';
 	import { Copy, Eye, EyeOff } from 'lucide-svelte';
 	import type { Selected } from 'bits-ui';
 
@@ -24,10 +24,6 @@
 	const setProviderType = async (type: Selected<string> | undefined) => {
 		if (type === undefined) return;
 		provider.type = type.value.toLowerCase();
-	};
-
-	const insertTraefikURL = () => {
-		provider.external_ip = $profile.url.replace(/^https?:\/\//, '').replace(/:\d+/, '');
 	};
 
 	let showAPIKey = false;
@@ -102,7 +98,9 @@
 						<Button
 							variant="ghost"
 							size="icon"
-							on:click={insertTraefikURL}
+							on:click={async () => {
+								provider.external_ip = await getPublicIP();
+							}}
 							class=" hover:bg-transparent hover:text-red-400"
 						>
 							<Copy size="1rem" />

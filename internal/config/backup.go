@@ -1,8 +1,10 @@
 package config
 
 import (
+	"archive/tar"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -117,7 +119,8 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 
 func BackupDatabase() error {
 	timestamp := time.Now().Format("2006-01-02")
-	backupPath := fmt.Sprintf("%s/backup-%s.db.gz", util.Path(util.BackupDir), timestamp)
+	backupName := fmt.Sprintf("backup-%s.tar.gz", timestamp)
+	backupPath := fmt.Sprintf("%s/%s", util.Path(util.BackupDir), backupName)
 
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
@@ -150,9 +153,53 @@ func BackupDatabase() error {
 	gzipWriter := gzip.NewWriter(gzipFile)
 	defer gzipWriter.Close()
 
-	// Copy the original database file into the gzip writer
-	if _, err := io.Copy(gzipWriter, dbFile); err != nil {
-		return fmt.Errorf("failed to compress database file: %w", err)
+	// Create a tar writer
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
+
+	info, err := dbFile.Stat()
+	if err != nil {
+		return err
+	}
+
+	// Add the original database file to the tar archive
+	header, err := tar.FileInfoHeader(info, info.Name())
+	if err != nil {
+		return fmt.Errorf("failed to get file info header: %w", err)
+	}
+
+	header.Name = util.DBName
+	if err = tarWriter.WriteHeader(header); err != nil {
+		return fmt.Errorf("failed to write header: %w", err)
+	}
+	if _, err = io.Copy(tarWriter, dbFile); err != nil {
+		return fmt.Errorf("failed to copy database file: %w", err)
+	}
+
+	// Generate the JSON backup using DumpBackup
+	backupData, err := DumpBackup(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to dump backup data: %w", err)
+	}
+
+	// Marshal the JSON data
+	jsonData, err := json.MarshalIndent(backupData, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal backup data: %w", err)
+	}
+
+	// Add the JSON file to tar archive
+	jsonFileName := "backup.json"
+	jsonHeader := &tar.Header{
+		Name: jsonFileName,
+		Size: int64(len(jsonData)),
+		Mode: 0644,
+	}
+	if err := tarWriter.WriteHeader(jsonHeader); err != nil {
+		return fmt.Errorf("failed to write JSON header: %w", err)
+	}
+	if _, err := tarWriter.Write(jsonData); err != nil {
+		return fmt.Errorf("failed to write JSON data: %w", err)
 	}
 
 	slog.Info("Database backup created", "file", backupPath)
@@ -179,7 +226,7 @@ func CleanupBackups() error {
 	}
 
 	// Get the list of backup files
-	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.db.gz", util.Path(util.BackupDir)))
+	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.tar.gz", util.Path(util.BackupDir)))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)
 	}

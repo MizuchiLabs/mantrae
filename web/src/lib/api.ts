@@ -374,6 +374,15 @@ export async function getVersion() {
 	}
 }
 
+export async function getPublicIP() {
+	const response = await handleRequest(`/ip/${get(profile).id}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		return data.ip;
+	}
+	return '';
+}
+
 export async function getTraefikConfig() {
 	if (!get(profile)) return '';
 
