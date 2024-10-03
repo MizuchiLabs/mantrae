@@ -37,7 +37,7 @@ steps:
   - name: release
     image: goreleaser/goreleaser
     commands:
-      - goreleaser release
+      - goreleaser release --clean --skip=validate
     environment:
       GITHUB_TOKEN:
         from_secret: gh_token

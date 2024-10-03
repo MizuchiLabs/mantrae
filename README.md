@@ -18,6 +18,10 @@
 - **Service Status**: Monitor the status of your services and see their health information.
 - **DNS Providers**: Support for multiple DNS providers (currently Cloudflare and PowerDNS) for automatic DNS record updates.
 
+## 🚧 Disclaimer 🚧
+
+This project is still early in development and is not ready for production use. Expect a lot of breaking changes in meantime until the first stable release.
+
 ## Getting Started
 
 ### Prerequisites
