@@ -1,17 +1,14 @@
 # Builder Stage
 FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 ARG TARGETPLATFORM
-ENV CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETPLATFORM#linux/}
+ENV CGO_ENABLED=1 
 
-RUN apk update && apk add --no-cache gcc musl-dev \
-  && if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-  apk add --no-cache gcc-aarch64-linux-gnu; \
-  fi
+RUN xx-apk add musl-dev gcc
 
 WORKDIR /app
 COPY . .
 
-RUN go build -ldflags "-s -w" -o mantrae .
+RUN xx-go build -ldflags "-s -w" -o mantrae .
 
 # Final Stage
 FROM alpine:latest
