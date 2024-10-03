@@ -2,22 +2,48 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"connectrpc.com/connect"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
+	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
 type AgentServer struct {
-	mu     sync.Mutex
-	agents map[string]agentv1.GetContainerRequest
+	mu sync.Mutex
+}
+
+func (s *AgentServer) RefreshToken(
+	ctx context.Context,
+	req *connect.Request[agentv1.RefreshTokenRequest],
+) (*connect.Response[agentv1.RefreshTokenResponse], error) {
+	if err := validate(req.Header()); err != nil {
+		return nil, err
+	}
+
+	decoded, err := util.DecodeJWT(req.Msg.GetToken())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	token, err := util.EncodeAgentJWT(decoded.ServerURL)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&agentv1.RefreshTokenResponse{
+		Token: token,
+	}), nil
 }
 
 func (s *AgentServer) GetContainer(
@@ -28,22 +54,33 @@ func (s *AgentServer) GetContainer(
 		return nil, err
 	}
 
-	// Add agent
+	// Upsert agent
 	s.mu.Lock()
-	s.agents[req.Msg.GetId()] = agentv1.GetContainerRequest{
-		Id:         req.Msg.GetId(),
+	privateIpsJSON, err := json.Marshal(req.Msg.GetPrivateIps())
+	if err != nil {
+		s.mu.Unlock()
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	containersJSON, err := json.Marshal(req.Msg.GetContainers())
+	if err != nil {
+		s.mu.Unlock()
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	lastSeen := req.Msg.GetLastSeen().AsTime()
+	if _, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
+		ID:         req.Msg.GetId(),
 		Hostname:   req.Msg.GetHostname(),
-		Containers: req.Msg.GetContainers(),
-		LastSeen:   req.Msg.GetLastSeen(),
+		PublicIp:   &req.Msg.PublicIp,
+		PrivateIps: privateIpsJSON,
+		Containers: containersJSON,
+		LastSeen:   &lastSeen,
+	}); err != nil {
+		s.mu.Unlock()
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	s.mu.Unlock()
-	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
-}
 
-func (s *AgentServer) deleteAgent(id string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	delete(s.agents, id)
+	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 
 func validate(header http.Header) error {
@@ -54,10 +91,7 @@ func validate(header http.Header) error {
 	if !strings.HasPrefix(auth, "Bearer ") {
 		return connect.NewError(connect.CodeUnauthenticated, errors.New("missing bearer prefix"))
 	}
-
-	token := "test"
-
-	if strings.TrimSpace(string(token)) != strings.TrimPrefix(auth, "Bearer ") {
+	if strings.TrimSpace(os.Getenv("SECRET")) != strings.TrimPrefix(auth, "Bearer ") {
 		return connect.NewError(
 			connect.CodeUnauthenticated,
 			errors.New("failed to validate token"),
@@ -67,15 +101,35 @@ func validate(header http.Header) error {
 	return nil
 }
 
-func Server() {
+func Server(port string) {
 	agent := &AgentServer{}
 
 	mux := http.NewServeMux()
 	path, handler := agentv1connect.NewAgentServiceHandler(agent)
 	mux.Handle(path, handler)
 
-	http.ListenAndServe(
-		":8080",
-		h2c.NewHandler(mux, &http2.Server{}),
-	)
+	if port == "" {
+		port = ":8090"
+	} else if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+	srv := &http.Server{
+		Addr:              port,
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		MaxHeaderBytes:    1 << 20, // 1MB
+	}
+
+	slog.Info("gRPC server running on", "port", port)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			if err == http.ErrServerClosed {
+				slog.Info("gRPC server closed")
+				return
+			}
+			slog.Error("gRPC server error", "err", err)
+			return
+		}
+	}()
 }

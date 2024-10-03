@@ -4,6 +4,19 @@
 
 package db
 
+import (
+	"time"
+)
+
+type Agent struct {
+	ID         string      `json:"id"`
+	Hostname   string      `json:"hostname"`
+	PublicIp   *string     `json:"public_ip"`
+	PrivateIps interface{} `json:"private_ips"`
+	Containers interface{} `json:"containers"`
+	LastSeen   *time.Time  `json:"last_seen"`
+}
+
 type Config struct {
 	ProfileID   int64       `json:"profile_id"`
 	Overview    interface{} `json:"overview"`

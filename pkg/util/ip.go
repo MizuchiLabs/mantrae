@@ -7,7 +7,10 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 // Public IP APIs
@@ -68,4 +71,41 @@ func GetPublicIP() (string, error) {
 		slog.Warn("Failed to query API", "API", api, "Error", err)
 	}
 	return "", fmt.Errorf("failed to get public IP")
+}
+
+func GetPrivateIP() ([]string, error) {
+	var ips []string
+
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	excluded := []string{"lo", "docker", "br-", "veth", "kube", "cni"}
+	for _, iface := range interfaces {
+		if slices.ContainsFunc(excluded, func(s string) bool {
+			return strings.Contains(iface.Name, s)
+		}) || iface.Flags&net.FlagUp == 0 {
+			continue
+		} else {
+			addrs, err := iface.Addrs()
+			if err != nil {
+				return nil, err
+			}
+
+			for _, addr := range addrs {
+				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil {
+						ips = append(ips, ipnet.IP.String())
+					}
+				}
+			}
+		}
+	}
+
+	if len(ips) == 0 {
+		return nil, errors.New("no private IP addresses found")
+	}
+
+	return ips, nil
 }

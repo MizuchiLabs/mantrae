@@ -332,7 +332,92 @@ SET
   key = EXCLUDED.key,
   value = EXCLUDED.value RETURNING *;
 
+-- name: DeleteSettingByID :exec
+DELETE FROM settings
+WHERE
+  id = ?;
+
 -- name: DeleteSettingByKey :exec
 DELETE FROM settings
 WHERE
   key = ?;
+
+-- name: GetAgentByID :one
+SELECT
+  *
+FROM
+  agents
+WHERE
+  id = ?
+LIMIT
+  1;
+
+-- name: GetAgentByHostname :one
+SELECT
+  *
+FROM
+  agents
+WHERE
+  hostname = ?
+LIMIT
+  1;
+
+-- name: ListAgents :many
+SELECT
+  *
+FROM
+  agents;
+
+-- name: CreateAgent :one
+INSERT INTO
+  agents (
+    id,
+    hostname,
+    public_ip,
+    private_ips,
+    containers,
+    last_seen
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?) RETURNING *;
+
+-- name: UpdateAgent :one
+UPDATE agents
+SET
+  hostname = ?,
+  public_ip = ?,
+  private_ips = ?,
+  containers = ?,
+  last_seen = ?
+WHERE
+  id = ? RETURNING *;
+
+-- name: UpsertAgent :one
+INSERT INTO
+  agents (
+    id,
+    hostname,
+    public_ip,
+    private_ips,
+    containers,
+    last_seen
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  hostname = EXCLUDED.hostname,
+  public_ip = EXCLUDED.public_ip,
+  private_ips = EXCLUDED.private_ips,
+  containers = EXCLUDED.containers,
+  last_seen = EXCLUDED.last_seen RETURNING *;
+
+-- name: DeleteAgentByID :exec
+DELETE FROM agents
+WHERE
+  id = ?;
+
+-- name: DeleteAgentByHostname :exec
+DELETE FROM agents
+WHERE
+  hostname = ?;

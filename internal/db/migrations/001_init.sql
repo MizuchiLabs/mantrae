@@ -45,6 +45,15 @@ CREATE TABLE settings (
   value TEXT NOT NULL
 );
 
+CREATE TABLE agents (
+  id TEXT PRIMARY KEY,
+  hostname VARCHAR(100) NOT NULL,
+  public_ip TEXT,
+  private_ips JSONB,
+  containers JSONB,
+  last_seen DATETIME
+);
+
 -- +goose StatementBegin
 CREATE TRIGGER add_profile_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
 INSERT INTO
@@ -88,6 +97,10 @@ DROP TABLE providers;
 DROP TABLE users;
 
 DROP TABLE settings;
+
+DROP TABLE agents;
+
+DROP TABLE containers;
 
 DROP TRIGGER add_profile_config;
 

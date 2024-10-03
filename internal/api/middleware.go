@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -152,7 +153,7 @@ func JWT(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Validate JWT token
-		claims, err := ValidateJWT(token)
+		claims, err := util.DecodeJWT(token)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

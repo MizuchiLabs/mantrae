@@ -55,7 +55,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := GenerateJWT(user.Username)
+	token, err := util.EncodeUserJWT(user.Username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +71,7 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := ValidateJWT(tokenString[7:])
+	_, err := util.DecodeJWT(tokenString[7:])
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
@@ -119,6 +119,61 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// Agents ---------------------------------------------------------------------
+
+// GetAgents returns all agents
+func GetAgents(w http.ResponseWriter, r *http.Request) {
+	agents, err := db.Query.ListAgents(context.Background())
+	if err != nil {
+		http.Error(w, "Failed to get agents", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, agents)
+}
+
+// GetAgent returns an agent
+func GetAgent(w http.ResponseWriter, r *http.Request) {
+	agent, err := db.Query.GetAgentByID(context.Background(), r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Failed to get agent", http.StatusInternalServerError)
+		return
+	}
+	writeJSON(w, agent)
+}
+
+// DeleteAgent deletes an agent
+func DeleteAgent(w http.ResponseWriter, r *http.Request) {
+	if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
+		http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+// GetAgentToken returns an agent token
+func GetAgentToken(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		ServerURL string `json:"url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if data.ServerURL == "" {
+		http.Error(w, "Server URL cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	token, err := util.EncodeAgentJWT(data.ServerURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, map[string]string{"token": token})
 }
 
 // Profiles -------------------------------------------------------------------

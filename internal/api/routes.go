@@ -47,7 +47,13 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("GET /api/settings/{key}", JWT(GetSetting))
 	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
 
+	mux.HandleFunc("GET /api/agent", JWT(GetAgents))
+	mux.HandleFunc("GET /api/agent/{id}", JWT(GetAgent))
+	mux.HandleFunc("DELETE /api/agent", JWT(DeleteAgent))
+	mux.HandleFunc("GET /api/agent/token", JWT(GetAgentToken))
+
 	mux.HandleFunc("GET /api/ip/{id}", JWT(GetPublicIP))
+
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
 
