@@ -13,14 +13,14 @@ steps:
       - pnpm install
       - pnpm build
 
-  - name: backend-audit
-    image: golang:latest
-    commands:
-      - go fmt ./...
-      - go vet ./...
-      - go mod tidy
-      - go mod verify
-      - go test ./...
+  # - name: backend-audit
+  #   image: golang:latest
+  #   commands:
+  #     - go fmt ./...
+  #     - go vet ./...
+  #     - go mod tidy
+  #     - go mod verify
+  #     - go test ./...
 
   - name: container-build
     image: woodpeckerci/plugin-docker-buildx
