@@ -14,7 +14,7 @@
 		toggleMiddleware,
 		toggleDNSProvider
 	} from '$lib/api';
-	import { newRouter, type Router } from '$lib/types/config';
+	import { type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import logo from '$lib/images/logo.svg';
@@ -25,23 +25,39 @@
 	export let router: Router;
 	export let disabled = false;
 
-	const formSchema = z.object({
-		name: z.string({ required_error: 'Name is required' }).min(1).max(255),
-		provider: z.string().optional(),
-		status: z.string().optional(),
-		routerType: z
-			.string()
-			.toLowerCase()
-			.regex(/^(http|tcp|udp)$/),
-		dnsProvider: z.coerce.number().int().nonnegative().optional(),
-		entrypoints: z.array(z.string()).optional(),
-		middlewares: z.array(z.string()).optional(),
-		rule: z.string({ required_error: 'Rule is required' }).min(1, { message: 'Rule is required' }),
-		priority: z.coerce.number().int().nonnegative().optional(),
-		tls: z.object({
-			certResolver: z.string().trim().optional()
+	const formSchema = z
+		.object({
+			name: z.string().trim().min(1, 'Name is required').max(255),
+			provider: z.string().trim().optional(),
+			status: z.string().trim().optional(),
+			routerType: z
+				.string()
+				.toLowerCase()
+				.regex(/^(http|tcp|udp)$/),
+			dnsProvider: z.coerce.number().int().nonnegative().optional(),
+			entrypoints: z.array(z.string()).optional(),
+			middlewares: z.array(z.string()).optional(),
+			rule: z.string().trim().optional(),
+			priority: z.coerce.number().int().nonnegative().optional(),
+			tls: z
+				.object({
+					certResolver: z.string().trim().optional()
+				})
+				.optional()
 		})
-	});
+		.refine(
+			(data) => {
+				// Conditionally check if `rule` is required for `http` or `tcp`
+				if (['http', 'tcp'].includes(data.routerType) && !data.rule) {
+					return false;
+				}
+				return true;
+			},
+			{
+				message: 'Rule is required for HTTP and TCP routers',
+				path: ['rule'] // This points to the 'rule' field
+			}
+		);
 
 	let errors: Record<any, string[] | undefined> = {};
 	export const validate = () => {
@@ -298,6 +314,9 @@
 
 		<!-- Rule -->
 		{#if router.routerType === 'http' || router.routerType === 'tcp'}
+			{#if errors.rule}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.rule}</div>
+			{/if}
 			<RuleEditor bind:rule={router.rule} bind:type={router.routerType} {disabled} />
 		{/if}
 	</Card.Content>

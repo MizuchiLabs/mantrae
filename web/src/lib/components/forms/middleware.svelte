@@ -83,7 +83,6 @@
 	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
 
 	onMount(async () => {
-		console.log(middleware);
 		checkType();
 		form = await LoadMiddlewareForm(middleware);
 	});

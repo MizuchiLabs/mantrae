@@ -24,7 +24,19 @@
 			.regex(/^(http|tcp|udp)$/),
 		serverStatus: z.record(z.string()).optional(),
 		loadBalancer: z.object({
-			servers: z.array(z.object({ url: z.string() }).or(z.object({ address: z.string() }))),
+			servers: z
+				.array(
+					z
+						.object({
+							url: z.string().trim().optional(),
+							address: z.string().trim().optional()
+						})
+						.refine((data) => data.url || data.address, {
+							message: 'At least one server is required',
+							path: ['servers'] // Points to the 'servers' array in case of error
+						})
+				)
+				.nonempty('At least one server is required'),
 			passHostHeader: z.boolean().optional()
 		})
 	});
@@ -33,7 +45,6 @@
 	export const validate = () => {
 		try {
 			serviceSchema.parse({ ...service });
-
 			errors = {};
 			return true;
 		} catch (err) {
@@ -45,7 +56,6 @@
 	};
 
 	const update = () => {
-		validate();
 		if (service.loadBalancer === undefined) service.loadBalancer = { servers: [] };
 
 		service.loadBalancer.passHostHeader = passHostHeader;

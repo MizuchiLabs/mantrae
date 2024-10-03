@@ -450,7 +450,7 @@ func GetTraefikConfig() {
 
 // Sync periodically syncs the Traefik configuration
 func Sync(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * 60)
+	ticker := time.NewTicker(time.Second * 10)
 	defer ticker.Stop()
 
 	GetTraefikConfig()

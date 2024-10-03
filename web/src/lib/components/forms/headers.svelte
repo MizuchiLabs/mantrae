@@ -127,7 +127,6 @@
 	const validate = () => {
 		try {
 			middleware.headers = headersSchema.parse(middleware.headers);
-			console.log(middleware.headers.stsSeconds);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {

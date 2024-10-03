@@ -25,10 +25,10 @@ var backupCron *cron.Cron
 // BackupData is the structure for the full manual backup
 type BackupData struct {
 	Profiles  []db.Profile       `json:"profiles"`
-	Configs   []*traefik.Dynamic `json:"configs"`
 	Providers []db.Provider      `json:"providers"`
 	Settings  []db.Setting       `json:"settings"`
 	Users     []db.User          `json:"users"`
+	Configs   []*traefik.Dynamic `json:"configs"`
 }
 
 func DumpBackup(ctx context.Context) (*BackupData, error) {
@@ -44,12 +44,37 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get configs: %w", err)
 	}
+
+	// We're only interested in the our local provider
 	for _, config := range configs {
 		dynamic, err := traefik.DecodeConfig(config)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode config: %w", err)
 		}
-		data.Configs = append(data.Configs, dynamic)
+
+		newDynamic := &traefik.Dynamic{
+			ProfileID:   config.ProfileID,
+			Routers:     make(map[string]traefik.Router),
+			Services:    make(map[string]traefik.Service),
+			Middlewares: make(map[string]traefik.Middleware),
+		}
+		for i, router := range dynamic.Routers {
+			if router.Provider == "http" {
+				newDynamic.Routers[i] = router
+			}
+		}
+		for i, service := range dynamic.Services {
+			if service.Provider == "http" {
+				newDynamic.Services[i] = service
+			}
+		}
+		for i, middleware := range dynamic.Middlewares {
+			if middleware.Provider == "http" {
+				newDynamic.Middlewares[i] = middleware
+			}
+		}
+
+		data.Configs = append(data.Configs, newDynamic)
 	}
 
 	data.Providers, err = db.Query.ListProviders(ctx)
