@@ -1,8 +1,13 @@
+name: ghcr.io cleanup
+
 jobs:
-  - name: ghcr.io cleanup action
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1
+      - name: ghcr.io cleanup action
+        uses: dataaxiom/ghcr-cleanup-action@v1
         with:
           delete-untagged: true
           token: ${{ secrets.GITHUB_TOKEN }}
