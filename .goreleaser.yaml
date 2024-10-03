@@ -12,7 +12,8 @@ before:
     - cd web && pnpm install && pnpm run build
 
 builds:
-  - id: app
+  - id: server
+    main: main.go
     binary: mantrae
     ldflags: -s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/pkg/util.Commit={{.Commit}}
     env:
@@ -21,6 +22,16 @@ builds:
       - linux
       - darwin
       - windows
+    goarch:
+      - amd64
+      - arm64
+
+  - id: agent
+    main: ./agent/cmd/main.go
+    binary: mantrae-agent
+    ldflags: -s -w -X github.com/MizuchiLabs/mantrae/agent/client.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/agent/client.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/agent/client.Commit={{.Commit}}
+    goos:
+      - linux
     goarch:
       - amd64
       - arm64

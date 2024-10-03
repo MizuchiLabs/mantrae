@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -25,6 +25,11 @@ func main() {
 
 	flag.Parse()
 
+	if *version {
+		fmt.Println(client.Version)
+		return
+	}
+
 	if *token == "" {
 		*token = client.LoadToken()
 		if len(*token) == 0 {
@@ -33,11 +38,6 @@ func main() {
 		}
 	} else {
 		client.SaveToken(*token)
-	}
-
-	if *version {
-		log.Println("v0.0.1")
-		return
 	}
 
 	quit := make(chan os.Signal, 1)
