@@ -3,7 +3,10 @@ FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 ARG TARGETPLATFORM
 ENV CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETPLATFORM#linux/}
 
-RUN apk update && apk add --no-cache gcc musl-dev
+RUN apk update && apk add --no-cache gcc musl-dev \
+  && if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+  apk add --no-cache gcc-aarch64-linux-gnu; \
+  fi
 
 WORKDIR /app
 COPY . .
