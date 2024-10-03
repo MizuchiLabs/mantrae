@@ -1,6 +1,7 @@
 # Builder Stage
-FROM golang:alpine AS builder
-ENV CGO_ENABLED=1
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+ARG TARGETPLATFORM
+ENV CGO_ENABLED=1 GOOS=linux GOARCH=${TARGETPLATFORM#linux/}
 
 RUN apk update && apk add --no-cache gcc musl-dev
 
