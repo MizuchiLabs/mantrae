@@ -78,6 +78,7 @@ func (f *Flags) Parse() error {
 		if err := ResetAdminUser(); err != nil {
 			return err
 		}
+		os.Exit(0)
 	}
 
 	util.UpdateSelf(f.Update)
