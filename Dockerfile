@@ -1,3 +1,6 @@
+# Add xx wrapper
+FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
+
 # Builder Stage
 FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 ARG TARGETPLATFORM
