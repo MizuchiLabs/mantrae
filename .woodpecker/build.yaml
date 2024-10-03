@@ -26,7 +26,10 @@ steps:
     image: woodpeckerci/plugin-docker-buildx
     settings:
       repo: ghcr.io/${CI_REPO_OWNER}/${CI_REPO_NAME}
+      registry: ghcr.io
       platforms: linux/amd64, linux/arm64
       username: ${CI_REPO_OWNER}
+      auto_tag: true
+      auto_labels: true
       password:
         from_secret: ghcr_password
