@@ -32,4 +32,12 @@ steps:
       auto_tag: true
       auto_labels: true
       password:
-        from_secret: ghcr_password
+        from_secret: gh_token
+
+  - name: release
+    image: goreleaser/goreleaser
+    commands:
+      - goreleaser release
+    secrets: [gh_token]
+    when:
+      event: tag

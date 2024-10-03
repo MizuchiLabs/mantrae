@@ -41,6 +41,7 @@ upx:
 
 release:
   draft: true
+  replace_existing_draft: true
   mode: replace
 
 archives:
