@@ -38,6 +38,8 @@ steps:
     image: goreleaser/goreleaser
     commands:
       - goreleaser release
-    secrets: [gh_token]
+    environment:
+      GITHUB_TOKEN:
+        from_secret: gh_token
     when:
       event: tag
