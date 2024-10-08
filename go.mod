@@ -8,12 +8,12 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joeig/go-powerdns/v3 v3.14.1
 	github.com/lmittmann/tint v1.0.5
-	github.com/mattn/go-sqlite3 v1.14.23
+	github.com/ncruces/go-sqlite3 v0.19.0
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/traefik/paerser v0.2.1
 	github.com/traefik/traefik/v3 v3.1.5
-	golang.org/x/crypto v0.27.0
+	golang.org/x/crypto v0.28.0
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 	golang.org/x/net v0.29.0
 	google.golang.org/protobuf v1.34.2
@@ -43,6 +43,7 @@ require (
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/miekg/dns v1.1.59 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
+	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
@@ -50,6 +51,7 @@ require (
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/rs/zerolog v1.29.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
+	github.com/tetratelabs/wazero v1.8.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.55.0 // indirect
 	go.opentelemetry.io/otel v1.30.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.30.0 // indirect
@@ -59,7 +61,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
