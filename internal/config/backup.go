@@ -47,7 +47,7 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 
 	// We're only interested in the our local provider
 	for _, config := range configs {
-		dynamic, err := traefik.DecodeConfig(config)
+		dynamic, err := traefik.DecodeFromDB(config)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode config: %w", err)
 		}
@@ -116,13 +116,23 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 	}
 
 	for _, config := range data.Configs {
-		if _, err := traefik.UpdateConfig(config.ProfileID, config); err != nil {
+		if _, err := traefik.EncodeToDB(config.ProfileID, config); err != nil {
 			return fmt.Errorf("failed to update config: %w", err)
 		}
 	}
 
 	for _, provider := range data.Providers {
-		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams(provider)); err != nil {
+		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams{
+			ID:         provider.ID,
+			Name:       provider.Name,
+			Type:       provider.Type,
+			ExternalIp: provider.ExternalIp,
+			ApiKey:     provider.ApiKey,
+			ApiUrl:     provider.ApiUrl,
+			ZoneType:   provider.ZoneType,
+			Proxied:    provider.Proxied,
+			IsActive:   provider.IsActive,
+		}); err != nil {
 			return fmt.Errorf("failed to upsert provider: %w", err)
 		}
 	}

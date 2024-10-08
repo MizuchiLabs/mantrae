@@ -11,11 +11,15 @@
 	import { getPublicIP } from '$lib/api';
 	import { Copy, Eye, EyeOff } from 'lucide-svelte';
 	import type { Selected } from 'bits-ui';
+	import HoverInfo from '../utils/hoverInfo.svelte';
+	import { Toggle } from '../ui/toggle';
+	import autoAnimate from '@formkit/auto-animate';
 
 	export let provider: DNSProvider;
 	const providerTypes: Selected<string>[] = [
 		{ label: 'Cloudflare', value: 'cloudflare' },
-		{ label: 'PowerDNS', value: 'powerdns' }
+		{ label: 'PowerDNS', value: 'powerdns' },
+		{ label: 'Technitium', value: 'technitium' }
 	];
 
 	let providerType: Selected<string> | undefined = providerTypes.find(
@@ -24,6 +28,9 @@
 	const setProviderType = async (type: Selected<string> | undefined) => {
 		if (type === undefined) return;
 		provider.type = type.value.toLowerCase();
+		if (provider.type === 'technitium') {
+			provider.zone_type = 'primary';
+		}
 	};
 
 	let showAPIKey = false;
@@ -56,6 +63,27 @@
 			</div>
 		{/if}
 
+		{#if provider.type === 'technitium'}
+			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
+				<Toggle
+					size="sm"
+					pressed={provider.zone_type === 'primary'}
+					onPressedChange={() => (provider.zone_type = 'primary')}
+					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
+				>
+					Primary
+				</Toggle>
+				<Toggle
+					size="sm"
+					pressed={provider.zone_type === 'forwarder'}
+					onPressedChange={() => (provider.zone_type = 'forwarder')}
+					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
+				>
+					Forwarder
+				</Toggle>
+			</div>
+		{/if}
+
 		<div class="grid grid-cols-4 items-center gap-4 space-y-2">
 			<Label for="current" class="text-right">Type</Label>
 			<Select.Root onSelectedChange={setProviderType} selected={providerType}>
@@ -84,10 +112,13 @@
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="externalIP" class="text-right">External IP</Label>
+			<Label for="external-ip" class="col-span-1 flex items-center justify-end gap-0.5">
+				IP Address
+				<HoverInfo text="Use the public IP of your Traefik instance. (No schema or port)" />
+			</Label>
 			<div class="col-span-3 flex flex-row items-center justify-end gap-1">
 				<Input
-					name="externalIP"
+					name="external-ip"
 					type="text"
 					placeholder="Public IP address of Traefik"
 					bind:value={provider.external_ip}
@@ -112,13 +143,18 @@
 				</Tooltip.Root>
 			</div>
 		</div>
-		{#if provider.type === 'powerdns'}
+		{#if provider.type === 'powerdns' || provider.type === 'technitium'}
 			<div class="grid grid-cols-4 items-center gap-4">
-				<Label for="url" class="text-right">PowerDNS URL</Label>
+				<Label for="url" class="col-span-1 flex items-center justify-end gap-0.5">
+					Endpoint
+					<HoverInfo text="The API endpoint of the provider" />
+				</Label>
 				<Input
 					name="url"
 					type="text"
-					placeholder="http://127.0.0.1:8081"
+					placeholder={provider.type === 'powerdns'
+						? 'http://127.0.0.1:8081'
+						: 'http://127.0.0.1:5380'}
 					class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 					bind:value={provider.api_url}
 					required

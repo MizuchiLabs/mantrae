@@ -176,11 +176,12 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    zone_type,
     proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateProvider :one
 UPDATE providers
@@ -190,6 +191,7 @@ SET
   external_ip = ?,
   api_key = ?,
   api_url = ?,
+  zone_type = ?,
   proxied = ?,
   is_active = ?
 WHERE
@@ -204,11 +206,12 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    zone_type,
     proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
   name = EXCLUDED.name,
@@ -216,6 +219,7 @@ SET
   external_ip = EXCLUDED.external_ip,
   api_key = EXCLUDED.api_key,
   api_url = EXCLUDED.api_url,
+  zone_type = EXCLUDED.zone_type,
   proxied = EXCLUDED.proxied,
   is_active = EXCLUDED.is_active RETURNING *;
 

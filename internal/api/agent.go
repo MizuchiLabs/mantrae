@@ -16,6 +16,7 @@ import (
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
@@ -80,6 +81,10 @@ func (s *AgentServer) GetContainer(
 	}
 	s.mu.Unlock()
 
+	_, err = traefik.DecodeFromLabels(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 

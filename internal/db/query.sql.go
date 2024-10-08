@@ -149,11 +149,12 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    zone_type,
     proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?) RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
+  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 `
 
 type CreateProviderParams struct {
@@ -162,6 +163,7 @@ type CreateProviderParams struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	ZoneType   *string `json:"zone_type"`
 	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
 }
@@ -173,6 +175,7 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 		arg.ExternalIp,
 		arg.ApiKey,
 		arg.ApiUrl,
+		arg.ZoneType,
 		arg.Proxied,
 		arg.IsActive,
 	)
@@ -186,6 +189,7 @@ func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) 
 		&i.ApiUrl,
 		&i.Proxied,
 		&i.IsActive,
+		&i.ZoneType,
 	)
 	return i, err
 }
@@ -543,7 +547,7 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 
 const getProviderByID = `-- name: GetProviderByID :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, proxied, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 FROM
   providers
 WHERE
@@ -564,13 +568,14 @@ func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, erro
 		&i.ApiUrl,
 		&i.Proxied,
 		&i.IsActive,
+		&i.ZoneType,
 	)
 	return i, err
 }
 
 const getProviderByName = `-- name: GetProviderByName :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, proxied, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 FROM
   providers
 WHERE
@@ -591,6 +596,7 @@ func (q *Queries) GetProviderByName(ctx context.Context, name string) (Provider,
 		&i.ApiUrl,
 		&i.Proxied,
 		&i.IsActive,
+		&i.ZoneType,
 	)
 	return i, err
 }
@@ -776,7 +782,7 @@ func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
 
 const listProviders = `-- name: ListProviders :many
 SELECT
-  id, name, type, external_ip, api_key, api_url, proxied, is_active
+  id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 FROM
   providers
 `
@@ -799,6 +805,7 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 			&i.ApiUrl,
 			&i.Proxied,
 			&i.IsActive,
+			&i.ZoneType,
 		); err != nil {
 			return nil, err
 		}
@@ -1021,10 +1028,11 @@ SET
   external_ip = ?,
   api_key = ?,
   api_url = ?,
+  zone_type = ?,
   proxied = ?,
   is_active = ?
 WHERE
-  id = ? RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
+  id = ? RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 `
 
 type UpdateProviderParams struct {
@@ -1033,6 +1041,7 @@ type UpdateProviderParams struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	ZoneType   *string `json:"zone_type"`
 	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
 	ID         int64   `json:"id"`
@@ -1045,6 +1054,7 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 		arg.ExternalIp,
 		arg.ApiKey,
 		arg.ApiUrl,
+		arg.ZoneType,
 		arg.Proxied,
 		arg.IsActive,
 		arg.ID,
@@ -1059,6 +1069,7 @@ func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) 
 		&i.ApiUrl,
 		&i.Proxied,
 		&i.IsActive,
+		&i.ZoneType,
 	)
 	return i, err
 }
@@ -1225,11 +1236,12 @@ INSERT INTO
     external_ip,
     api_key,
     api_url,
+    zone_type,
     proxied,
     is_active
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
   name = EXCLUDED.name,
@@ -1237,8 +1249,9 @@ SET
   external_ip = EXCLUDED.external_ip,
   api_key = EXCLUDED.api_key,
   api_url = EXCLUDED.api_url,
+  zone_type = EXCLUDED.zone_type,
   proxied = EXCLUDED.proxied,
-  is_active = EXCLUDED.is_active RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active
+  is_active = EXCLUDED.is_active RETURNING id, name, type, external_ip, api_key, api_url, proxied, is_active, zone_type
 `
 
 type UpsertProviderParams struct {
@@ -1248,6 +1261,7 @@ type UpsertProviderParams struct {
 	ExternalIp string  `json:"external_ip"`
 	ApiKey     string  `json:"api_key"`
 	ApiUrl     *string `json:"api_url"`
+	ZoneType   *string `json:"zone_type"`
 	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
 }
@@ -1260,6 +1274,7 @@ func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) 
 		arg.ExternalIp,
 		arg.ApiKey,
 		arg.ApiUrl,
+		arg.ZoneType,
 		arg.Proxied,
 		arg.IsActive,
 	)
@@ -1273,6 +1288,7 @@ func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) 
 		&i.ApiUrl,
 		&i.Proxied,
 		&i.IsActive,
+		&i.ZoneType,
 	)
 	return i, err
 }

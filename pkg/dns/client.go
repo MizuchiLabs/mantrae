@@ -18,7 +18,7 @@ type DNSProvider interface {
 	UpsertRecord(subdomain string) error
 	DeleteRecord(subdomain string) error
 	ListRecords(subdomain string) ([]DNSRecord, error)
-	CheckRecord(subdomain string) (bool, error)
+	// CheckRecord(subdomain string) (bool, error)
 }
 
 type DNSRecord struct {
@@ -32,6 +32,8 @@ type DomainProvider struct {
 	Domain   string
 	Provider DNSProvider
 }
+
+var ManagedTXT = "\"managed-by=mantrae\""
 
 func getProvider(id *int64) DNSProvider {
 	if id == nil || *id == 0 {
@@ -49,6 +51,13 @@ func getProvider(id *int64) DNSProvider {
 		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp, provider.Proxied)
 	case "powerdns":
 		return NewPowerDNSProvider(*provider.ApiUrl, provider.ApiKey, provider.ExternalIp)
+	case "technitium":
+		return NewTechnitiumProvider(
+			*provider.ApiUrl,
+			provider.ApiKey,
+			provider.ExternalIp,
+			*provider.ZoneType,
+		)
 	default:
 		slog.Error("Unknown provider type", "type", provider.Type)
 	}
@@ -71,7 +80,7 @@ func getDomainProviderMap() map[string]DomainProvider {
 			return nil
 		}
 
-		data, err := traefik.DecodeConfig(config)
+		data, err := traefik.DecodeFromDB(config)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
 			return nil
@@ -182,29 +191,24 @@ func getBaseDomain(subdomain string) string {
 }
 
 func verifyRecords(records []DNSRecord, subdomain string, content string) bool {
-	update := false
-
-L:
 	for _, record := range records {
 		switch record.Type {
 		case "A":
 			if record.Content != content {
-				update = true
-				break L
+				return true
 			}
 		case "AAAA":
 			if record.Content != content {
-				update = true
-				break L
+				return true
 			}
 		case "TXT":
 			if record.Name != "_mantrae-"+subdomain {
-				update = true
-				break L
+				return true
 			}
 		default:
 			return false
 		}
 	}
-	return update
+
+	return false
 }

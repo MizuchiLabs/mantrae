@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(100) NOT NULL UNIQUE,
   url TEXT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE profiles (
   tls BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE config (
+CREATE TABLE IF NOT EXISTS config (
   profile_id INTEGER NOT NULL,
   overview JSONB,
   entrypoints JSONB,
@@ -20,7 +20,7 @@ CREATE TABLE config (
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
-CREATE TABLE providers (
+CREATE TABLE IF NOT EXISTS providers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(100) NOT NULL UNIQUE,
   type VARCHAR(50) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE providers (
   is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username VARCHAR(100) NOT NULL UNIQUE,
   password TEXT NOT NULL,
@@ -39,13 +39,13 @@ CREATE TABLE users (
   type VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE settings (
+CREATE TABLE IF NOT EXISTS settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   key VARCHAR(100) NOT NULL UNIQUE,
   value TEXT NOT NULL
 );
 
-CREATE TABLE agents (
+CREATE TABLE IF NOT EXISTS agents (
   id TEXT PRIMARY KEY,
   hostname VARCHAR(100) NOT NULL,
   public_ip TEXT,
@@ -88,22 +88,20 @@ END;
 
 -- +goose StatementEnd
 -- +goose Down
-DROP TABLE profiles;
+DROP TABLE IF EXISTS profiles;
 
-DROP TABLE config;
+DROP TABLE IF EXISTS config;
 
-DROP TABLE providers;
+DROP TABLE IF EXISTS providers;
 
-DROP TABLE users;
+DROP TABLE IF EXISTS users;
 
-DROP TABLE settings;
+DROP TABLE IF EXISTS settings;
 
-DROP TABLE agents;
+DROP TABLE IF EXISTS agents;
 
-DROP TABLE containers;
+DROP TRIGGER IF EXISTS add_profile_config;
 
-DROP TRIGGER add_profile_config;
+DROP TRIGGER IF EXISTS ensure_single_active_insert;
 
-DROP TRIGGER ensure_single_active_insert;
-
-DROP TRIGGER ensure_single_active_update;
+DROP TRIGGER IF EXISTS ensure_single_active_update;

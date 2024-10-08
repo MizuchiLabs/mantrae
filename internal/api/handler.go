@@ -491,7 +491,7 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -526,7 +526,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -537,7 +537,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Routers[router.Name] = router
-	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
 	if err != nil {
 		http.Error(
 			w,
@@ -575,7 +575,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -586,7 +586,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Services[service.Name] = service
-	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
 	if err != nil {
 		http.Error(
 			w,
@@ -621,7 +621,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -632,7 +632,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Middlewares[middleware.Name] = middleware
-	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
 	if err != nil {
 		http.Error(
 			w,
@@ -656,7 +656,7 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -668,7 +668,7 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 
 	delete(data.Routers, r.PathValue("name"))
 	delete(data.Services, r.PathValue("name"))
-	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
 	if err != nil {
 		http.Error(
 			w,
@@ -692,7 +692,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(
 			w,
@@ -703,7 +703,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	delete(data.Middlewares, r.PathValue("name"))
-	newConfig, err := traefik.UpdateConfig(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
 	if err != nil {
 		http.Error(
 			w,
@@ -838,7 +838,7 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Profile not found", http.StatusNotFound)
 		return
 	}
-	data, err := traefik.DecodeConfig(config)
+	data, err := traefik.DecodeFromDB(config)
 	if err != nil {
 		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
 		return

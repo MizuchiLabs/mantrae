@@ -3,8 +3,8 @@ package traefik
 import (
 	"strings"
 
-	"github.com/traefik/genconf/dynamic"
-	ttls "github.com/traefik/genconf/dynamic/tls"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	ttls "github.com/traefik/traefik/v3/pkg/tls"
 )
 
 func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
@@ -49,19 +49,21 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 				config.HTTP.Routers[name] = &dynamic.Router{
 					EntryPoints: router.Entrypoints,
 					Middlewares: router.Middlewares,
-					Service:     router.Service,
 					Rule:        router.Rule,
-					// Priority:    int(router.Priority.Int64()),
-					TLS: tlsConfig,
+					RuleSyntax:  router.RuleSyntax,
+					Service:     router.Service,
+					Priority:    router.Priority,
+					TLS:         tlsConfig,
 				}
 			case "tcp":
 				config.TCP.Routers[name] = &dynamic.TCPRouter{
 					EntryPoints: router.Entrypoints,
 					Middlewares: router.Middlewares,
+					Rule:        router.Rule,
+					RuleSyntax:  router.RuleSyntax,
 					Service:     router.Service,
-					// Priority:    int(router.Priority.Int64()),
-					Rule: router.Rule,
-					TLS:  router.TLS,
+					Priority:    router.Priority,
+					TLS:         router.TLS,
 				}
 			case "udp":
 				config.UDP.Routers[name] = &dynamic.UDPRouter{
@@ -249,7 +251,10 @@ func (wrr *WeightedRoundRobin) ToTCPWeightedRoundRobin() *dynamic.TCPWeightedRou
 
 	var tcpServices []dynamic.TCPWRRService
 	for _, service := range wrr.Services {
-		tcpServices = append(tcpServices, dynamic.TCPWRRService(service))
+		tcpServices = append(tcpServices, dynamic.TCPWRRService{
+			Name:   service.Name,
+			Weight: service.Weight,
+		})
 	}
 
 	return &dynamic.TCPWeightedRoundRobin{
@@ -264,7 +269,10 @@ func (wrr *WeightedRoundRobin) ToUDPWeightedRoundRobin() *dynamic.UDPWeightedRou
 
 	var udpServices []dynamic.UDPWRRService
 	for _, service := range wrr.Services {
-		udpServices = append(udpServices, dynamic.UDPWRRService(service))
+		udpServices = append(udpServices, dynamic.UDPWRRService{
+			Name:   service.Name,
+			Weight: service.Weight,
+		})
 	}
 
 	return &dynamic.UDPWeightedRoundRobin{

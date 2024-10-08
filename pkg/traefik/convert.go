@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
-	"sync"
+	"strings"
 
+	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-)
 
-var mutex sync.Mutex
+	"github.com/traefik/paerser/parser"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+)
 
 func VerifyConfig(config *Dynamic) {
 	for _, r := range config.Routers {
@@ -32,8 +34,8 @@ func VerifyConfig(config *Dynamic) {
 	}
 }
 
-// DecodeConfig decodes the config from the database into our Dynamic struct
-func DecodeConfig(config db.Config) (*Dynamic, error) {
+// DecodeFromDB decodes the config from the database into our Dynamic struct
+func DecodeFromDB(config db.Config) (*Dynamic, error) {
 	data := &Dynamic{
 		ProfileID:   config.ProfileID,
 		Overview:    nil,
@@ -81,11 +83,8 @@ func DecodeConfig(config db.Config) (*Dynamic, error) {
 	return data, nil
 }
 
-// UpdateConfig updates and verifies the data coming in
-func UpdateConfig(profileID int64, data *Dynamic) (*Dynamic, error) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
+// EncodeToDB encodes the config from our Dynamic struct into the database
+func EncodeToDB(profileID int64, data *Dynamic) (*Dynamic, error) {
 	VerifyConfig(data)
 
 	overview, err := json.Marshal(data.Overview)
@@ -126,5 +125,125 @@ func UpdateConfig(profileID int64, data *Dynamic) (*Dynamic, error) {
 		return nil, err
 	}
 
-	return DecodeConfig(config)
+	return DecodeFromDB(config)
+}
+
+// DecodeFromLabels uses the traefik parses to decode the config from the labels into our Dynamic struct
+func DecodeFromLabels(id string) (*Dynamic, error) {
+	agent, err := db.Query.GetAgentByID(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+	var containers []agentv1.Container
+	if err := json.Unmarshal(agent.Containers.([]byte), &containers); err != nil {
+		return nil, err
+	}
+
+	dbConfig, err := db.Query.GetConfigByProfileID(context.Background(), 1)
+	if err != nil {
+		return nil, err
+	}
+
+	dynamicConfig, err := DecodeFromDB(dbConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// delete all by agent id
+	for _, router := range dynamicConfig.Routers {
+		if router.AgentID == id {
+			delete(dynamicConfig.Routers, router.Name)
+		}
+	}
+	for _, service := range dynamicConfig.Services {
+		if service.AgentID == id {
+			delete(dynamicConfig.Services, service.Name)
+		}
+	}
+	for _, middleware := range dynamicConfig.Middlewares {
+		if middleware.AgentID == id {
+			delete(dynamicConfig.Middlewares, middleware.Name)
+		}
+	}
+
+	for i := range containers {
+		// Convert labels to official traefik types
+		config := &dynamic.Configuration{
+			HTTP: &dynamic.HTTPConfiguration{},
+			TCP:  &dynamic.TCPConfiguration{},
+			UDP:  &dynamic.UDPConfiguration{},
+			TLS:  &dynamic.TLSConfiguration{},
+		}
+		if err := parser.Decode(
+			containers[i].Labels,
+			config,
+			parser.DefaultRootName,
+			"traefik.http",
+			"traefik.tcp",
+			"traefik.udp",
+			"traefik.tls.stores.default",
+		); err != nil {
+			return nil, err
+		}
+
+		// Add to our dynamic config
+		for i, router := range config.HTTP.Routers {
+			var tlsConfig *dynamic.RouterTCPTLSConfig
+			if router.TLS != nil {
+				tlsConfig = &dynamic.RouterTCPTLSConfig{
+					Options:      router.TLS.Options,
+					CertResolver: router.TLS.CertResolver,
+					Domains:      router.TLS.Domains,
+				}
+			}
+			name := strings.Split(i, "@")[0] + "@http"
+			dynamicConfig.Routers[name] = Router{
+				Name:       name,
+				Provider:   "http",
+				RouterType: "http",
+				// DNSProvider: new(int64),
+				AgentID:     id,
+				Entrypoints: router.EntryPoints,
+				Middlewares: router.Middlewares,
+				Rule:        router.Rule,
+				RuleSyntax:  router.RuleSyntax,
+				Service:     router.Service,
+				Priority:    router.Priority,
+				TLS:         tlsConfig,
+			}
+		}
+
+		for i, router := range config.TCP.Routers {
+			name := strings.Split(i, "@")[0] + "@http"
+			dynamicConfig.Routers[name] = Router{
+				Name:       name,
+				Provider:   "http",
+				RouterType: "tcp",
+				// DNSProvider: new(int64),
+				AgentID:     id,
+				Entrypoints: router.EntryPoints,
+				Middlewares: router.Middlewares,
+				Rule:        router.Rule,
+				RuleSyntax:  router.RuleSyntax,
+				Service:     router.Service,
+				Priority:    router.Priority,
+				TLS:         router.TLS,
+			}
+		}
+
+		for i, router := range config.UDP.Routers {
+			name := strings.Split(i, "@")[0] + "@http"
+			dynamicConfig.Routers[name] = Router{
+				Name:       name,
+				Provider:   "http",
+				RouterType: "udp",
+				// DNSProvider: new(int64),
+				AgentID:     id,
+				Entrypoints: router.EntryPoints,
+				Service:     router.Service,
+			}
+		}
+	}
+
+	return nil, nil
 }

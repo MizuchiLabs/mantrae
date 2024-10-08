@@ -11,16 +11,14 @@ import (
 
 type PowerDNSProvider struct {
 	Client     *powerdns.Client
-	ManagedTXT string
 	ExternalIP string
 }
 
 func NewPowerDNSProvider(URL, key, ip string) *PowerDNSProvider {
-	client := powerdns.NewClient(URL, "", map[string]string{"X-API-Key": key}, nil)
+	client := powerdns.New(URL, "", powerdns.WithAPIKey(key))
 
 	return &PowerDNSProvider{
 		Client:     client,
-		ManagedTXT: "\"managed-by=mantrae\"",
 		ExternalIP: ip,
 	}
 }
@@ -68,7 +66,7 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 			"_mantrae-"+subdomain,
 			powerdns.RRTypeTXT,
 			60,
-			[]string{p.ManagedTXT},
+			[]string{ManagedTXT},
 		)
 		if err != nil {
 			return err
@@ -108,7 +106,7 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 			"_mantrae-"+subdomain,
 			powerdns.RRTypeTXT,
 			60,
-			[]string{p.ManagedTXT},
+			[]string{ManagedTXT},
 		)
 		if err != nil {
 			return err
@@ -218,7 +216,7 @@ func (p *PowerDNSProvider) CheckRecord(subdomain string) (bool, error) {
 	for _, rrset := range records {
 		if *rrset.Name == name {
 			for _, record := range rrset.Records {
-				if *record.Content == p.ManagedTXT {
+				if *record.Content == ManagedTXT {
 					return true, nil
 				}
 			}

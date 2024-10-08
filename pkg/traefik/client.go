@@ -7,13 +7,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"math/big"
 	"net/http"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
-	"github.com/traefik/genconf/dynamic"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 const (
@@ -30,6 +29,7 @@ const (
 	VersionAPI         = "/api/version"
 )
 
+// Extra fields from the API endpoint
 type BaseFields struct {
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`
@@ -37,36 +37,26 @@ type BaseFields struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+// Extended routers
 type HTTPRouter struct {
 	BaseFields
-	RouterType  string                      `json:"routerType"`
-	DNSProvider string                      `json:"dnsProvider"`
-	Entrypoints []string                    `json:"entrypoints,omitempty"`
-	Middlewares []string                    `json:"middlewares,omitempty"`
-	Rule        string                      `json:"rule,omitempty"`
-	Service     string                      `json:"service,omitempty"`
-	Priority    *big.Int                    `json:"priority,omitempty"`
-	TLS         *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"`
+	RouterType  string `json:"routerType"`
+	DNSProvider string `json:"dnsProvider"`
+	dynamic.Router
 }
 
 type TCPRouter struct {
 	BaseFields
-	RouterType  string                      `json:"routerType"`
-	DNSProvider string                      `json:"dnsProvider"`
-	Entrypoints []string                    `json:"entrypoints,omitempty"`
-	Middlewares []string                    `json:"middlewares,omitempty"`
-	Rule        string                      `json:"rule,omitempty"`
-	Service     string                      `json:"service,omitempty"`
-	Priority    *big.Int                    `json:"priority,omitempty"`
-	TLS         *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"`
+	RouterType  string `json:"routerType"`
+	DNSProvider string `json:"dnsProvider"`
+	dynamic.TCPRouter
 }
 
 type UDPRouter struct {
 	BaseFields
-	RouterType  string   `json:"routerType"`
-	DNSProvider string   `json:"dnsProvider"`
-	Entrypoints []string `json:"entrypoints,omitempty"`
-	Service     string   `json:"service,omitempty"`
+	RouterType  string `json:"routerType"`
+	DNSProvider string `json:"dnsProvider"`
+	dynamic.UDPRouter
 }
 
 type Routerable interface {
@@ -74,17 +64,28 @@ type Routerable interface {
 }
 
 func (r HTTPRouter) ToRouter() *Router {
+	var tlsConfig *dynamic.RouterTCPTLSConfig
+
+	if r.TLS != nil {
+		tlsConfig = &dynamic.RouterTCPTLSConfig{
+			Options:      r.TLS.Options,
+			CertResolver: r.TLS.CertResolver,
+			Domains:      r.TLS.Domains,
+		}
+	}
+
 	return &Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
 		Status:      r.Status,
 		RouterType:  "http",
-		Entrypoints: r.Entrypoints,
+		Entrypoints: r.EntryPoints,
 		Middlewares: r.Middlewares,
 		Rule:        r.Rule,
+		RuleSyntax:  r.RuleSyntax,
 		Service:     r.Service,
-		// Priority:    r.Priority,
-		TLS: r.TLS,
+		Priority:    r.Priority,
+		TLS:         tlsConfig,
 	}
 }
 
@@ -94,12 +95,13 @@ func (r TCPRouter) ToRouter() *Router {
 		Provider:    r.Provider,
 		Status:      r.Status,
 		RouterType:  "tcp",
-		Entrypoints: r.Entrypoints,
+		Entrypoints: r.EntryPoints,
 		Middlewares: r.Middlewares,
 		Rule:        r.Rule,
+		RuleSyntax:  r.RuleSyntax,
 		Service:     r.Service,
-		// Priority:    r.Priority,
-		TLS: r.TLS,
+		Priority:    r.Priority,
+		TLS:         r.TLS,
 	}
 }
 
@@ -109,7 +111,7 @@ func (r UDPRouter) ToRouter() *Router {
 		Provider:    r.Provider,
 		Status:      r.Status,
 		RouterType:  "udp",
-		Entrypoints: r.Entrypoints,
+		Entrypoints: r.EntryPoints,
 		Service:     r.Service,
 	}
 }
@@ -143,28 +145,23 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) map[string]Ro
 
 type HTTPService struct {
 	BaseFields
-	ServiceType  string              `json:"serviceType,omitempty"`
-	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
-	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
-	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
-	Mirroring    *dynamic.Mirroring  `json:"mirroring,omitempty"`
-	Failover     *dynamic.Failover   `json:"failover,omitempty"`
+	ServiceType  string            `json:"serviceType,omitempty"`
+	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+	dynamic.Service
 }
 
 type TCPService struct {
 	BaseFields
-	ServiceType  string              `json:"serviceType,omitempty"`
-	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
-	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
-	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
+	ServiceType  string            `json:"serviceType,omitempty"`
+	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+	dynamic.TCPService
 }
 
 type UDPService struct {
 	BaseFields
-	ServiceType  string              `json:"serviceType,omitempty"`
-	ServerStatus map[string]string   `json:"serverStatus,omitempty"`
-	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
-	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
+	ServiceType  string            `json:"serviceType,omitempty"`
+	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+	dynamic.UDPService
 }
 
 type Serviceable interface {
@@ -172,6 +169,34 @@ type Serviceable interface {
 }
 
 func (s HTTPService) ToService() *Service {
+	var lb *LoadBalancer
+	var servers []Server
+	if s.LoadBalancer != nil {
+		if s.LoadBalancer.Servers != nil {
+			servers = make([]Server, len(s.LoadBalancer.Servers))
+			for i, server := range s.LoadBalancer.Servers {
+				servers[i] = Server{URL: server.URL}
+			}
+		}
+		lb = &LoadBalancer{
+			Servers:            servers,
+			Sticky:             s.LoadBalancer.Sticky,
+			PassHostHeader:     s.LoadBalancer.PassHostHeader,
+			HealthCheck:        s.LoadBalancer.HealthCheck,
+			ResponseForwarding: s.LoadBalancer.ResponseForwarding,
+			ServersTransport:   s.LoadBalancer.ServersTransport,
+		}
+	}
+
+	var weighted *WeightedRoundRobin
+	if s.Weighted != nil {
+		weighted = &WeightedRoundRobin{
+			Services:    s.Weighted.Services,
+			Sticky:      s.Weighted.Sticky,
+			HealthCheck: s.Weighted.HealthCheck,
+		}
+	}
+
 	return &Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
@@ -179,14 +204,44 @@ func (s HTTPService) ToService() *Service {
 		Status:       s.Status,
 		ServiceType:  "http",
 		ServerStatus: s.ServerStatus,
-		LoadBalancer: s.LoadBalancer,
-		Weighted:     s.Weighted,
+		LoadBalancer: lb,
+		Weighted:     weighted,
 		Mirroring:    s.Mirroring,
 		Failover:     s.Failover,
 	}
 }
 
 func (s TCPService) ToService() *Service {
+	var lb *LoadBalancer
+	var servers []Server
+	if s.LoadBalancer != nil {
+		if s.LoadBalancer.Servers != nil {
+			servers = make([]Server, len(s.LoadBalancer.Servers))
+			for i, server := range s.LoadBalancer.Servers {
+				servers[i] = Server{Address: server.Address}
+			}
+		}
+
+		lb = &LoadBalancer{
+			Servers:          servers,
+			ServersTransport: s.LoadBalancer.ServersTransport,
+			ProxyProtocol:    s.LoadBalancer.ProxyProtocol,
+			TerminationDelay: s.LoadBalancer.TerminationDelay,
+		}
+	}
+
+	var weighted *WeightedRoundRobin
+	var services []dynamic.WRRService
+	if s.Weighted != nil && s.Weighted.Services != nil {
+		for _, service := range s.Weighted.Services {
+			services = append(services, dynamic.WRRService{
+				Name:   service.Name,
+				Weight: service.Weight,
+			})
+		}
+
+		weighted = &WeightedRoundRobin{Services: services}
+	}
 	return &Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
@@ -194,12 +249,41 @@ func (s TCPService) ToService() *Service {
 		Status:       s.Status,
 		ServiceType:  "tcp",
 		ServerStatus: s.ServerStatus,
-		LoadBalancer: s.LoadBalancer,
-		Weighted:     s.Weighted,
+		LoadBalancer: lb,
+		Weighted:     weighted,
 	}
 }
 
 func (s UDPService) ToService() *Service {
+	var lb *LoadBalancer
+	var servers []Server
+	if s.LoadBalancer != nil && s.LoadBalancer.Servers != nil {
+		if s.LoadBalancer.Servers != nil {
+			servers = make([]Server, len(s.LoadBalancer.Servers))
+			for i, server := range s.LoadBalancer.Servers {
+				servers[i] = Server{
+					Address: server.Address,
+				}
+			}
+		}
+		lb = &LoadBalancer{
+			Servers: servers,
+		}
+	}
+
+	var weighted *WeightedRoundRobin
+	var services []dynamic.WRRService
+	if s.Weighted != nil && s.Weighted.Services != nil {
+		for _, service := range s.Weighted.Services {
+			services = append(services, dynamic.WRRService{
+				Name:   service.Name,
+				Weight: service.Weight,
+			})
+		}
+
+		weighted = &WeightedRoundRobin{Services: services}
+	}
+
 	return &Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
@@ -207,8 +291,8 @@ func (s UDPService) ToService() *Service {
 		Status:       s.Status,
 		ServiceType:  "udp",
 		ServerStatus: s.ServerStatus,
-		LoadBalancer: s.LoadBalancer,
-		Weighted:     s.Weighted,
+		LoadBalancer: lb,
+		Weighted:     weighted,
 	}
 }
 
@@ -240,35 +324,14 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) map[string]
 
 type HTTPMiddleware struct {
 	BaseFields
-	MiddlewareType    string                     `json:"middlewareType,omitempty"`
-	AddPrefix         *dynamic.AddPrefix         `json:"addPrefix,omitempty"`
-	StripPrefix       *dynamic.StripPrefix       `json:"stripPrefix,omitempty"`
-	StripPrefixRegex  *dynamic.StripPrefixRegex  `json:"stripPrefixRegex,omitempty"`
-	ReplacePath       *dynamic.ReplacePath       `json:"replacePath,omitempty"`
-	ReplacePathRegex  *dynamic.ReplacePathRegex  `json:"replacePathRegex,omitempty"`
-	Chain             *dynamic.Chain             `json:"chain,omitempty"`
-	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"`
-	Headers           *dynamic.Headers           `json:"headers,omitempty"`
-	Errors            *dynamic.ErrorPage         `json:"errors,omitempty"`
-	RateLimit         *dynamic.RateLimit         `json:"rateLimit,omitempty"`
-	RedirectRegex     *dynamic.RedirectRegex     `json:"redirectRegex,omitempty"`
-	RedirectScheme    *dynamic.RedirectScheme    `json:"redirectScheme,omitempty"`
-	BasicAuth         *dynamic.BasicAuth         `json:"basicAuth,omitempty"`
-	DigestAuth        *dynamic.DigestAuth        `json:"digestAuth,omitempty"`
-	ForwardAuth       *dynamic.ForwardAuth       `json:"forwardAuth,omitempty"`
-	InFlightReq       *dynamic.InFlightReq       `json:"inFlightReq,omitempty"`
-	Buffering         *dynamic.Buffering         `json:"buffering,omitempty"`
-	CircuitBreaker    *dynamic.CircuitBreaker    `json:"circuitBreaker,omitempty"`
-	Compress          *dynamic.Compress          `json:"compress,omitempty"`
-	PassTLSClientCert *dynamic.PassTLSClientCert `json:"passTLSClientCert,omitempty"`
-	Retry             *dynamic.Retry             `json:"retry,omitempty"`
+	MiddlewareType string `json:"middlewareType,omitempty"`
+	dynamic.Middleware
 }
 
 type TCPMiddleware struct {
 	BaseFields
-	MiddlewareType string                   `json:"middlewareType,omitempty"`
-	InFlightConn   *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`
-	IPAllowList    *dynamic.IPAllowList     `json:"ipAllowList,omitempty"`
+	MiddlewareType string `json:"middlewareType,omitempty"`
+	dynamic.TCPMiddleware
 }
 
 type Middlewareable interface {
@@ -307,6 +370,13 @@ func (m HTTPMiddleware) ToMiddleware() *Middleware {
 }
 
 func (m TCPMiddleware) ToMiddleware() *Middleware {
+	var allowList *dynamic.IPAllowList
+	if m.IPAllowList != nil {
+		allowList = &dynamic.IPAllowList{
+			SourceRange: m.IPAllowList.SourceRange,
+		}
+	}
+
 	return &Middleware{
 		Name:           m.Name,
 		Provider:       m.Provider,
@@ -314,7 +384,7 @@ func (m TCPMiddleware) ToMiddleware() *Middleware {
 		Status:         m.Status,
 		MiddlewareType: "tcp",
 		InFlightConn:   m.InFlightConn,
-		IPAllowList:    m.IPAllowList,
+		IPAllowList:    allowList,
 	}
 }
 
@@ -362,7 +432,7 @@ func GetTraefikConfig() {
 			return
 		}
 
-		data, err := DecodeConfig(config)
+		data, err := DecodeFromDB(config)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
 			return
@@ -438,7 +508,7 @@ func GetTraefikConfig() {
 			return
 		}
 		data.Version = v.Version
-		if _, err := UpdateConfig(config.ProfileID, data); err != nil {
+		if _, err := EncodeToDB(config.ProfileID, data); err != nil {
 			slog.Error("Failed to update config", "error", err)
 			return
 		}

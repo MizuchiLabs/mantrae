@@ -37,7 +37,7 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger />
-	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[500px]">
+	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[550px]">
 		<DNSForm bind:provider={dnsProvider} />
 		<Dialog.Close class="w-full">
 			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>

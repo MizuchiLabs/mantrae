@@ -3,7 +3,7 @@
 package traefik
 
 import (
-	"github.com/traefik/genconf/dynamic"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Dynamic struct {
@@ -34,13 +34,15 @@ type Router struct {
 	Status      string `json:"status,omitempty"`
 	RouterType  string `json:"routerType"`
 	DNSProvider *int64 `json:"dnsProvider,omitempty"`
+	AgentID     string `json:"agentID,omitempty"`
 
-	Entrypoints []string `json:"entrypoints,omitempty"` // http, tcp, udp
-	Middlewares []string `json:"middlewares,omitempty"` // http, tcp
-	Rule        string   `json:"rule,omitempty"`        // http, tcp
-	Service     string   `json:"service,omitempty"`     // http, tcp, udp
-	// Priority    *big.Int                    `json:"priority,omitempty"`
-	TLS *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"` // Merge tcp and http
+	Entrypoints []string                    `json:"entrypoints,omitempty"` // http, tcp, udp
+	Middlewares []string                    `json:"middlewares,omitempty"` // http, tcp
+	Rule        string                      `json:"rule,omitempty"`        // http, tcp
+	RuleSyntax  string                      `json:"ruleSyntax,omitempty"`
+	Service     string                      `json:"service,omitempty"` // http, tcp, udp
+	Priority    int                         `json:"priority,omitempty"`
+	TLS         *dynamic.RouterTCPTLSConfig `json:"tls,omitempty"` // Merge tcp and http
 }
 
 type Service struct {
@@ -51,6 +53,7 @@ type Service struct {
 	Status       string            `json:"status,omitempty"`
 	ServiceType  string            `json:"serviceType,omitempty"` // "http" or "tcp" or "udp"
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+	AgentID      string            `json:"agentID,omitempty"`
 
 	LoadBalancer *LoadBalancer       `json:"loadBalancer,omitempty"`
 	Weighted     *WeightedRoundRobin `json:"weighted,omitempty"`
@@ -95,6 +98,7 @@ type Middleware struct {
 	Type           string `json:"type,omitempty"`
 	Status         string `json:"status,omitempty"`
 	MiddlewareType string `json:"middlewareType,omitempty"` // "http" or "tcp"
+	AgentID        string `json:"agentID,omitempty"`
 
 	// HTTP-specific fields
 	AddPrefix         *dynamic.AddPrefix         `json:"addPrefix,omitempty"`

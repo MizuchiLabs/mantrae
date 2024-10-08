@@ -58,6 +58,7 @@ export interface DNSProvider {
 	external_ip: string;
 	api_key?: string;
 	api_url?: string;
+	zone_type?: string;
 	proxied: boolean;
 	is_active: boolean;
 }

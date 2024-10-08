@@ -46,6 +46,7 @@ type Provider struct {
 	ApiUrl     *string `json:"api_url"`
 	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"is_active"`
+	ZoneType   *string `json:"zone_type"`
 }
 
 type Setting struct {
