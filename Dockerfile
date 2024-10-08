@@ -1,10 +1,13 @@
 # Builder Stage
 FROM golang:latest AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 WORKDIR /app
 COPY . .
 
-RUN go build -ldflags "-s -w" -o mantrae .
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-s -w" -o mantrae .
 
 # Final Stage
 FROM gcr.io/distroless/base-debian12:debug
