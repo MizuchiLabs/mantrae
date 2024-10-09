@@ -8,9 +8,8 @@ import (
 	"strings"
 
 	"github.com/MizuchiLabs/mantrae/pkg/util"
-	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
 	"github.com/pressly/goose/v3"
+	_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
@@ -33,14 +32,12 @@ func InitDB() error {
 	if isTest() {
 		db, err = sql.Open("sqlite3", "file:test.db?mode=memory")
 		if err != nil {
-			db.Close()
 			return fmt.Errorf("failed to open database: %w", err)
 		}
 	} else {
 		dsn := fmt.Sprintf("file:%s?mode=rwc&_journal=WAL&_fk=1&_sync=NORMAL", util.Path(util.DBName))
-		db, err = sql.Open("sqlite3", dsn)
+		db, err = sql.Open("sqlite", dsn)
 		if err != nil {
-			db.Close()
 			return fmt.Errorf("failed to open database: %w", err)
 		}
 	}
@@ -48,12 +45,10 @@ func InitDB() error {
 	goose.SetBaseFS(migrations)
 	goose.SetLogger(goose.NopLogger())
 	if err := goose.SetDialect("sqlite3"); err != nil {
-		db.Close()
 		return fmt.Errorf("failed to set dialect: %w", err)
 	}
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		db.Close()
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 

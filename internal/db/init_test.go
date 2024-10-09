@@ -3,8 +3,7 @@ package db
 import (
 	"testing"
 
-	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
+	_ "modernc.org/sqlite"
 )
 
 func TestInitDB(t *testing.T) {
