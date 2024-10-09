@@ -35,7 +35,7 @@ build: audit
 
 .PHONY: docker
 docker:
-	#cd web && pnpm install && pnpm run build
+	cd web && pnpm install && pnpm run build
 	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o mantrae-linux-amd64 main.go
 	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o mantrae-linux-arm64 main.go
 	docker buildx build \

@@ -57,9 +57,9 @@ export async function login(username: string, password: string) {
 		const { token } = await response.json();
 		localStorage.setItem('token', token);
 		loggedIn.set(true);
-		await getProfiles();
 		goto('/');
 		toast.success('Login successful');
+		await getProfiles();
 	} else {
 		toast.error('Login failed', {
 			description: await response.text(),
