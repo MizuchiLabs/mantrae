@@ -60,6 +60,7 @@ export async function login(username: string, password: string) {
 		goto('/');
 		toast.success('Login successful');
 		await getProfiles();
+		await getProviders();
 	} else {
 		toast.error('Login failed', {
 			description: await response.text(),

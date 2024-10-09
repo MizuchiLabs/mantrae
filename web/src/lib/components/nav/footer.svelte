@@ -6,7 +6,7 @@
 	class="bottom-0 left-16 right-0 mx-4 flex flex-row items-center justify-between gap-2 bg-background p-2"
 >
 	<div class="flex flex-row items-center gap-1 text-xs text-gray-700/50">
-		{#if $version}
+		{#if $version && $version !== 'unknown'}
 			Mantrae
 			{$version}
 		{/if}
