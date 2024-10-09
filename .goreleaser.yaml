@@ -38,10 +38,14 @@ builds:
 upx:
   - enabled: true
 
+source:
+  enabled: true
+
 release:
   draft: true
   replace_existing_draft: true
-  mode: replace
+  replace_existing_artifacts: true
+  mode: keep-existing
 
 archives:
   - format: binary
