@@ -122,6 +122,7 @@
 					type="text"
 					placeholder="Public IP address of Traefik"
 					bind:value={provider.external_ip}
+					class="pr-10"
 					required
 				/>
 				<Tooltip.Root openDelay={500}>
@@ -170,6 +171,7 @@
 						type="text"
 						bind:value={provider.api_key}
 						placeholder="API Key of the provider"
+						class="pr-10"
 						required
 					/>
 				{:else}
@@ -178,6 +180,7 @@
 						type="password"
 						bind:value={provider.api_key}
 						placeholder="API Key of the provider"
+						class="pr-10"
 						required
 					/>
 				{/if}

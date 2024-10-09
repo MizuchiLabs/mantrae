@@ -54,8 +54,9 @@ func main() {
 	go traefik.Sync(ctx)
 	go dns.Sync(ctx)
 
+	// TODO: Later
 	// Start the grpc server
-	go api.Server(flags.Agent.Port)
+	// go api.Server(flags.Agent.Port)
 
 	// Start the WebUI server
 	srv := &http.Server{
@@ -64,6 +65,7 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
+	slog.Info("Server running on", "port", flags.Port)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("ListenAndServe", "error", err)
