@@ -16,7 +16,7 @@
 - **Router Configuration**: Create and manage Traefik routers with custom rules, entrypoints, and middleware configurations.
 - **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
 - **Service Status**: Monitor the status of your services and see their health information.
-- **DNS Providers**: Support for multiple DNS providers (currently Cloudflare and PowerDNS) for automatic DNS record updates.
+- **DNS Providers**: Support for multiple DNS providers (currently Cloudflare, PowerDNS, Technitium) for automatic DNS record updates.
 
 ## 🚧 Disclaimer 🚧
 
@@ -79,7 +79,7 @@ Before starting mantrae it will look for a `SECRET` environment variable. Depend
 ### Managing DNS providers
 
 1. Open the "DNS Providers" section.
-1. Create new DNS provider by defining its type and associated settings. (Currently only Cloudflare and PowerDNS are supported)
+1. Create new DNS provider by defining its type and associated settings.
 1. You can choose a default DNS provider for newly created routers.
 
 ### Settings
@@ -155,4 +155,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [**Traefik**](https://traefik.io/): For providing the powerful reverse proxy that powers this application.
 - [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager): For inspiration on building a simple and effective web UI for managing reverse proxies.
-- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple and effective DNS management system.
+- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple DNS management system.

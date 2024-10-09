@@ -30,109 +30,89 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 	}
 
 	// Check if the record is managed by us
-	managed, err := p.CheckRecord(subdomain)
-	if err != nil {
+	if err := p.checkRecord(subdomain); err != nil {
 		return err
 	}
 
 	// Fetch existing records
-	existingRecords, err := p.ListRecords(subdomain)
+	records, err := p.ListRecords(subdomain)
 	if err != nil {
 		return err
 	}
 
-	// If not managed by us and records exist, return an error
-	if len(existingRecords) > 0 && !managed {
-		return fmt.Errorf("record not managed by Mantrae")
+	shouldUpdate := verifyRecords(records, subdomain, p.ExternalIP)
+	if len(records) <= 1 {
+		if err := p.createRecord(subdomain, recordType); err != nil {
+			return err
+		}
+		slog.Info("Created record", "name", subdomain, "type", recordType, "content", p.ExternalIP)
+	} else if shouldUpdate {
+		for _, record := range records {
+			if record.Type != "TXT" {
+				if err := p.updateRecord(record.ID, recordType, subdomain); err != nil {
+					return err
+				}
+				slog.Info("Updated record", "name", record.Name, "type", record.Type, "content", record.Content)
+			}
+		}
 	}
 
-	// Create the record if it doesn't exist
-	if len(existingRecords) == 0 {
-		err = p.Client.Records.Add(
-			context.Background(),
-			getBaseDomain(subdomain),
-			subdomain,
-			recordType,
-			60,
-			[]string{p.ExternalIP},
-		)
-		if err != nil {
-			return err
-		}
+	return nil
+}
 
-		err = p.Client.Records.Add(
-			context.Background(),
-			getBaseDomain(subdomain),
-			"_mantrae-"+subdomain,
-			powerdns.RRTypeTXT,
-			60,
-			[]string{ManagedTXT},
-		)
-		if err != nil {
-			return err
-		}
-
-		slog.Info(
-			"Created record",
-			"subdomain",
-			subdomain,
-			"type",
-			recordType,
-			"content",
-			p.ExternalIP,
-		)
+func (p *PowerDNSProvider) createRecord(subdomain string, recordType powerdns.RRType) error {
+	// Create the A/AAAA record
+	err := p.Client.Records.Add(
+		context.Background(),
+		getBaseDomain(subdomain),
+		subdomain,
+		recordType,
+		60,
+		[]string{p.ExternalIP},
+	)
+	if err != nil {
+		return err
 	}
 
-	// Check if the record needs to be updated
-	shouldUpdate := verifyRecords(existingRecords, subdomain, p.ExternalIP)
+	// Create the TXT record
+	err = p.Client.Records.Add(
+		context.Background(),
+		getBaseDomain(subdomain),
+		"_mantrae-"+subdomain,
+		powerdns.RRTypeTXT,
+		60,
+		[]string{managedTXT},
+	)
+	if err != nil {
+		return err
+	}
 
-	// Update the record if it exists
-	if len(existingRecords) > 0 && shouldUpdate {
-		err = p.Client.Records.Change(
-			context.Background(),
-			getBaseDomain(subdomain),
-			subdomain,
-			recordType,
-			60,
-			[]string{p.ExternalIP},
-		)
-		if err != nil {
-			return err
-		}
+	return nil
+}
 
-		err = p.Client.Records.Change(
-			context.Background(),
-			getBaseDomain(subdomain),
-			"_mantrae-"+subdomain,
-			powerdns.RRTypeTXT,
-			60,
-			[]string{ManagedTXT},
-		)
-		if err != nil {
-			return err
-		}
-
-		slog.Info(
-			"Updated record",
-			"subdomain",
-			subdomain,
-			"type",
-			recordType,
-			"content",
-			p.ExternalIP,
-		)
+func (p *PowerDNSProvider) updateRecord(
+	recordID string,
+	recordType powerdns.RRType,
+	subdomain string,
+) error {
+	err := p.Client.Records.Change(
+		context.Background(),
+		getBaseDomain(subdomain),
+		subdomain,
+		recordType,
+		60,
+		[]string{p.ExternalIP},
+	)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
-	managed, err := p.CheckRecord(subdomain)
-	if err != nil {
+	if err := p.checkRecord(subdomain); err != nil {
 		return err
-	}
-	if !managed {
-		return fmt.Errorf("record not managed by Mantrae")
 	}
 
 	records, err := p.ListRecords(subdomain)
@@ -201,7 +181,7 @@ func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
 	return dnsRecords, nil
 }
 
-func (p *PowerDNSProvider) CheckRecord(subdomain string) (bool, error) {
+func (p *PowerDNSProvider) checkRecord(subdomain string) error {
 	records, err := p.Client.Records.Get(
 		context.Background(),
 		getBaseDomain(subdomain),
@@ -209,21 +189,25 @@ func (p *PowerDNSProvider) CheckRecord(subdomain string) (bool, error) {
 		powerdns.RRTypePtr(powerdns.RRTypeTXT),
 	)
 	if err != nil {
-		return false, fmt.Errorf("failed to retrieve records for %s: %w", subdomain, err)
+		return err
+	}
+
+	if len(records) == 0 {
+		return nil
 	}
 
 	name := "_mantrae-" + subdomain + "."
 	for _, rrset := range records {
 		if *rrset.Name == name {
 			for _, record := range rrset.Records {
-				if *record.Content == ManagedTXT {
-					return true, nil
+				if *record.Content == managedTXT {
+					return nil
 				}
 			}
 		}
 	}
 
-	return false, nil
+	return fmt.Errorf("record not managed by Mantrae")
 }
 
 func pdnsRecordType(ip string) (powerdns.RRType, error) {

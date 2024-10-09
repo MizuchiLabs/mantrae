@@ -69,6 +69,10 @@ func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
 		return err
 	}
 
+	if err := t.checkRecord(subdomain); err != nil {
+		return err
+	}
+
 	shouldUpdate := verifyRecords(records, subdomain, t.ExternalIP)
 	if len(records) <= 1 { // At least 2 records must exist TXT+A/AAAA
 		if err := t.createRecord(subdomain, recordType); err != nil {
@@ -89,11 +93,69 @@ func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
 	return nil
 }
 
-func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
-	if !t.CheckRecord(subdomain) {
-		return fmt.Errorf("record not managed by Mantrae")
+func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
+	if err := t.checkRecord(subdomain); err != nil {
+		return err
 	}
 
+	records, err := t.ListRecords(subdomain)
+	if err != nil {
+		return err
+	}
+
+	for _, record := range records {
+		endpoint := fmt.Sprintf(
+			"/api/zones/records/delete?token=%s&zone=%s&type=%s",
+			t.APIKey,
+			getBaseDomain(subdomain),
+			record.Type,
+		)
+
+		if t.ZoneType == "forwarder" {
+			endpoint = endpoint + "&forwarder=true"
+		}
+		if record.Type == "A" || record.Type == "AAAA" {
+			endpoint = endpoint + "&domain=" + subdomain + "&ipAddress=" + record.Content
+		}
+		if record.Type == "TXT" {
+			endpoint = endpoint + "&domain=_mantrae-" + subdomain + "&text=" + url.QueryEscape(
+				record.Content,
+			)
+		}
+
+		resp, err := t.doRequest(
+			context.Background(),
+			http.MethodPost,
+			endpoint,
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			return fmt.Errorf("failed to delete record: %s", string(bodyBytes))
+		}
+
+		if record.Type != "TXT" {
+			slog.Info(
+				"Deleted record",
+				"name",
+				record.Name,
+				"type",
+				record.Type,
+				"content",
+				record.Content,
+			)
+		}
+	}
+
+	return nil
+}
+
+func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/add?token=%s&zone=%s",
 		t.APIKey,
@@ -135,7 +197,7 @@ func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 			"%s&type=TXT&domain=_mantrae-%s&text=%s",
 			endpoint,
 			subdomain,
-			url.QueryEscape(ManagedTXT),
+			url.QueryEscape(managedTXT),
 		),
 		nil,
 	)
@@ -152,10 +214,6 @@ func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 }
 
 func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
-	if !t.CheckRecord(subdomain) {
-		return fmt.Errorf("record not managed by Mantrae")
-	}
-
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/update?token=%s&zone=%s&type=%s&ipAddress=%s",
 		t.APIKey,
@@ -223,7 +281,7 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	var records []DNSRecord
 	for _, record := range tRecords.Response.Records {
 		if record.Name == "_mantrae-"+subdomain && record.Type == "TXT" &&
-			record.RData.Text == ManagedTXT {
+			record.RData.Text == managedTXT {
 			records = append(records, DNSRecord{
 				Name:    record.Name,
 				Type:    record.Type,
@@ -249,84 +307,22 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	return records, nil
 }
 
-func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
-	if !t.CheckRecord(subdomain) {
-		return fmt.Errorf("record not managed by Mantrae")
-	}
-
+func (t *TechnitiumProvider) checkRecord(subdomain string) error {
 	records, err := t.ListRecords(subdomain)
 	if err != nil {
 		return err
 	}
 
-	for _, record := range records {
-		endpoint := fmt.Sprintf(
-			"/api/zones/records/delete?token=%s&zone=%s&type=%s",
-			t.APIKey,
-			getBaseDomain(subdomain),
-			record.Type,
-		)
-
-		if t.ZoneType == "forwarder" {
-			endpoint = endpoint + "&forwarder=true"
-		}
-		if record.Type == "A" || record.Type == "AAAA" {
-			endpoint = endpoint + "&domain=" + subdomain + "&ipAddress=" + record.Content
-		}
-		if record.Type == "TXT" {
-			endpoint = endpoint + "&domain=_mantrae-" + subdomain + "&text=" + url.QueryEscape(
-				record.Content,
-			)
-		}
-
-		resp, err := t.doRequest(
-			context.Background(),
-			http.MethodPost,
-			endpoint,
-			nil,
-		)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			bodyBytes, _ := io.ReadAll(resp.Body)
-			return fmt.Errorf("failed to delete record: %s", string(bodyBytes))
-		}
-
-		if record.Type != "TXT" {
-			slog.Info(
-				"Deleted record",
-				"name",
-				record.Name,
-				"type",
-				record.Type,
-				"content",
-				record.Content,
-			)
-		}
-	}
-
-	return nil
-}
-
-func (t *TechnitiumProvider) CheckRecord(subdomain string) bool {
-	records, err := t.ListRecords(subdomain)
-	if err != nil {
-		return false
-	}
-
 	if len(records) == 0 {
-		return true
+		return nil
 	}
 
 	for _, record := range records {
 		if record.Name == "_mantrae-"+subdomain && record.Type == "TXT" &&
-			record.Content == ManagedTXT {
-			return true
+			record.Content == managedTXT {
+			return nil
 		}
 	}
 
-	return false
+	return fmt.Errorf("record not managed by Mantrae")
 }

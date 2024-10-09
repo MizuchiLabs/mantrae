@@ -9,7 +9,6 @@ before:
     - go vet ./...
     - go mod tidy
     - go mod verify
-    - cd web && pnpm install && pnpm run build
 
 builds:
   - id: server

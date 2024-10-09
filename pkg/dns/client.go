@@ -18,7 +18,6 @@ type DNSProvider interface {
 	UpsertRecord(subdomain string) error
 	DeleteRecord(subdomain string) error
 	ListRecords(subdomain string) ([]DNSRecord, error)
-	// CheckRecord(subdomain string) (bool, error)
 }
 
 type DNSRecord struct {
@@ -33,7 +32,7 @@ type DomainProvider struct {
 	Provider DNSProvider
 }
 
-var ManagedTXT = "\"managed-by=mantrae\""
+var managedTXT = "\"managed-by=mantrae\""
 
 func getProvider(id *int64) DNSProvider {
 	if id == nil || *id == 0 {
