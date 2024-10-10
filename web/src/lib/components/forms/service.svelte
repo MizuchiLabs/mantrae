@@ -12,7 +12,6 @@
 	export let disabled = false;
 	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
 	let servers: string[] = [];
-	$: type, (service.serviceType = type);
 
 	const serviceSchema = z.object({
 		provider: z.string().optional(),
@@ -72,6 +71,13 @@
 				});
 				break;
 		}
+	};
+
+	$: type, changeServiceType();
+	const changeServiceType = () => {
+		servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
+		service.serviceType = type;
+		update();
 	};
 
 	const onSwitchChange = () => {

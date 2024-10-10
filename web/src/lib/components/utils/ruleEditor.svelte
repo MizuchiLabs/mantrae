@@ -1,7 +1,10 @@
 <script lang="ts">
+	import * as Tabs from '$lib/components/ui/tabs';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ValidateRule } from './ruleString';
+	import { onMount } from 'svelte';
 
 	export let rule: string;
 	export let type: string;
@@ -159,77 +162,167 @@
 			}
 		}
 	}
+
+	// Simple mode handler
+	let host =
+		type === 'http' ? rule?.match(/Host\(`(.*?)`\)/)?.[1] : rule?.match(/HostSNI\(`(.*?)`\)/)?.[1];
+	let path = rule?.match(/Path\(`(.*?)`\)/)?.[1];
+	$: type, handleSimpleInput();
+	$: rule, checkConditions();
+	const handleSimpleInput = () => {
+		if (type === 'http') {
+			if (host && path) {
+				rule = `Host(\`${host}\`) && Path(\`${path}\`)`;
+			} else if (host) {
+				rule = `Host(\`${host}\`)`;
+			} else if (path) {
+				rule = `Path(\`${path}\`)`;
+			}
+		}
+		if (type === 'tcp') {
+			if (host) {
+				rule = `HostSNI(\`${host}\`)`;
+			}
+		}
+	};
+	let simpleDisabled = false;
+	let currentTab = 'simple';
+	const TAB_STORAGE_KEY = 'rule-editor-tab';
+
+	const checkConditions = () => {
+		let conditions = rule.split(/(&&|\|\|)/);
+		if (conditions.length > 3) {
+			simpleDisabled = true;
+			return;
+		}
+		let countHosts = conditions.filter((condition) => condition.includes('Host')).length;
+		let countPaths = conditions.filter((condition) => condition.includes('Path')).length;
+		if (countHosts > 1 || countPaths > 1) {
+			simpleDisabled = true;
+			return;
+		}
+		simpleDisabled = false;
+	};
+
+	onMount(() => {
+		// Load tab state from localStorage
+		const savedTab = localStorage.getItem(TAB_STORAGE_KEY) as 'simple' | 'advanced' | null;
+		if (savedTab && !simpleDisabled) {
+			currentTab = savedTab;
+		} else {
+			currentTab = simpleDisabled ? 'advanced' : 'simple';
+		}
+		checkConditions();
+	});
 </script>
 
-<div class="space-y-1">
-	<Label for="rule">Rules</Label>
-	<div class="mb-4 rounded-lg border border-gray-200">
-		<div class="rounded-t-lg">
-			<Textarea
-				placeholder="Add rules here"
-				rows={3}
-				id="rulesTextarea"
-				bind:value={rule}
-				class="w-full border-0 font-mono text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-				on:input={handleRuleInput}
-				on:keydown={handleRuleKeys}
+<!-- Simple and advanced mode-->
+<Tabs.Root
+	value={currentTab}
+	onValueChange={(value) => value && localStorage.setItem(TAB_STORAGE_KEY, value)}
+	class="flex flex-col gap-2"
+>
+	<div class="flex justify-end">
+		<Tabs.List class="h-8">
+			<Tabs.Trigger value="simple" class="px-2 py-0.5 font-bold" disabled={simpleDisabled}>
+				Simple
+			</Tabs.Trigger>
+			<Tabs.Trigger value="advanced" class="px-2 py-0.5 font-bold">Advanced</Tabs.Trigger>
+		</Tabs.List>
+	</div>
+	<Tabs.Content value="simple">
+		<div class="grid grid-cols-8 items-center gap-2">
+			<Label for="host" class="col-span-1 text-right">Domain</Label>
+			<Input
+				id="host"
+				bind:value={host}
+				on:input={handleSimpleInput}
+				placeholder="example.com"
+				class={type === 'http' ? 'col-span-5' : 'col-span-7'}
 				{disabled}
 			/>
-			{#if showDropdown}
-				<ul
-					class="absolute mt-1 flex max-h-48 w-80 flex-col gap-2 overflow-y-auto rounded-lg border bg-white p-2 dark:bg-gray-800"
+			{#if type === 'http'}
+				<Input
+					id="path"
+					bind:value={path}
+					on:input={handleSimpleInput}
+					placeholder="/path"
+					class="col-span-2"
+					{disabled}
+				/>
+			{/if}
+		</div>
+	</Tabs.Content>
+	<Tabs.Content value="advanced">
+		<Label for="rule">Rules</Label>
+		<div class="mb-4 rounded-lg border border-gray-200">
+			<div class="rounded-t-lg">
+				<Textarea
+					placeholder="Add rules here"
+					rows={3}
+					id="rulesTextarea"
+					bind:value={rule}
+					class="w-full border-0 font-mono text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+					on:input={handleRuleInput}
+					on:keydown={handleRuleKeys}
+					{disabled}
+				/>
+				{#if showDropdown}
+					<ul
+						class="absolute mt-1 flex max-h-48 w-80 flex-col gap-2 overflow-y-auto rounded-lg border bg-white p-2 dark:bg-gray-800"
+					>
+						{#each filteredRules as rule, i}
+							<li
+								class="cursor-pointer font-mono text-sm hover:bg-gray-200"
+								class:bg-gray-200={i === selectedRuleIndex}
+								on:click={() => insertRule(rule)}
+								aria-hidden
+							>
+								{rule}
+							</li>
+						{/each}
+					</ul>
+				{/if}
+			</div>
+			{#if !disabled}
+				<div
+					class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground dark:border-gray-600"
 				>
-					{#each filteredRules as rule, i}
-						<li
-							class="cursor-pointer font-mono text-sm hover:bg-gray-200"
-							class:bg-gray-200={i === selectedRuleIndex}
-							on:click={() => insertRule(rule)}
-							aria-hidden
-						>
-							{rule}
-						</li>
-					{/each}
-				</ul>
+					{#if valid}
+						<p>Valid</p>
+						<iconify-icon icon="fa6-solid:circle-check" />
+					{:else}
+						<p>Invalid</p>
+						<iconify-icon icon="fa6-solid:circle-xmark" />
+					{/if}
+				</div>
 			{/if}
 		</div>
 		{#if !disabled}
-			<div
-				class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground dark:border-gray-600"
-			>
-				{#if valid}
-					<p>Valid</p>
-					<iconify-icon icon="fa6-solid:circle-check" />
-				{:else}
-					<p>Invalid</p>
-					<iconify-icon icon="fa6-solid:circle-xmark" />
-				{/if}
+			<div class="ml-2 flex items-center justify-between">
+				<div class="text-xs text-muted-foreground">
+					<span class="font-bold">Rule Examples:</span>
+					{#if type === 'http'}
+						<ul class="list-inside list-disc">
+							<li>Host(`example.com`)</li>
+							<li>Path(`/hello`)</li>
+							<li>PathPrefix(`/hello`)</li>
+							<li>PathRegexp(`/hello/[0-9]+`)</li>
+							<li>Method(`GET`)</li>
+							<li>Header(`X-Forwarded-For`, `.*`)</li>
+							<li>Query(`page`, `[0-9]+`)</li>
+							<li>QueryRegexp(`page`, `[0-9]+`)</li>
+						</ul>
+					{:else if type === 'tcp'}
+						<ul class="list-inside list-disc">
+							<li>HostSNI(`example.com`)</li>
+							<li>HostSNIRegexp(`^.+\.example\.com$`)</li>
+							<li>ClientIP(`10.76.105.11`)</li>
+							<li>ALPN(`h2`)</li>
+						</ul>
+					{/if}
+				</div>
 			</div>
 		{/if}
-	</div>
-	{#if !disabled}
-		<div class="ml-2 flex items-center justify-between">
-			<div class="text-xs text-muted-foreground">
-				<span class="font-bold">Rule Examples:</span>
-				{#if type === 'http'}
-					<ul class="list-inside list-disc">
-						<li>Host(`example.com`)</li>
-						<li>Path(`/hello`)</li>
-						<li>PathPrefix(`/hello`)</li>
-						<li>PathRegexp(`/hello/[0-9]+`)</li>
-						<li>Method(`GET`)</li>
-						<li>Header(`X-Forwarded-For`, `.*`)</li>
-						<li>Query(`page`, `[0-9]+`)</li>
-						<li>QueryRegexp(`page`, `[0-9]+`)</li>
-					</ul>
-				{:else if type === 'tcp'}
-					<ul class="list-inside list-disc">
-						<li>HostSNI(`example.com`)</li>
-						<li>HostSNIRegexp(`^.+\.example\.com$`)</li>
-						<li>ClientIP(`10.76.105.11`)</li>
-						<li>ALPN(`h2`)</li>
-					</ul>
-				{/if}
-			</div>
-		</div>
-	{/if}
-</div>
+	</Tabs.Content>
+</Tabs.Root>

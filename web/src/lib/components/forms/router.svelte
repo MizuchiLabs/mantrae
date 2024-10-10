@@ -14,7 +14,7 @@
 		toggleMiddleware,
 		toggleDNSProvider
 	} from '$lib/api';
-	import { type Router } from '$lib/types/config';
+	import { newRouter, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import logo from '$lib/images/logo.svg';
@@ -73,6 +73,16 @@
 		}
 	};
 
+	const changeRouterType = (value: string, oldRouter: Router) => {
+		router = newRouter();
+		router.name = oldRouter.name;
+		router.entrypoints = oldRouter.entrypoints;
+		router.middlewares = oldRouter.middlewares;
+		router.dnsProvider = oldRouter.dnsProvider;
+		router.priority = oldRouter.priority;
+		router.tls = oldRouter.tls;
+		router.routerType = value;
+	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
 			return { value: entrypoint, label: entrypoint };
@@ -122,7 +132,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.routerType === 'http'}
-					onPressedChange={() => (router.routerType = 'http')}
+					onPressedChange={() => changeRouterType('http', router)}
 					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
 				>
 					HTTP
@@ -130,7 +140,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.routerType === 'tcp'}
-					onPressedChange={() => (router.routerType = 'tcp')}
+					onPressedChange={() => changeRouterType('tcp', router)}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
 					TCP
@@ -138,7 +148,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.routerType === 'udp'}
-					onPressedChange={() => (router.routerType = 'udp')}
+					onPressedChange={() => changeRouterType('udp', router)}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
 					UDP
