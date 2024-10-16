@@ -150,6 +150,18 @@ func cleanStruct(v interface{}) {
 			if field.String() == "" {
 				field.Set(reflect.Zero(field.Type()))
 			}
+		case reflect.Map:
+			cleanedMap := reflect.MakeMap(field.Type())
+			for _, key := range field.MapKeys() {
+				value := field.MapIndex(key)
+				if value.Kind() == reflect.String && value.String() == "" {
+					// Skip empty string values
+					continue
+				}
+				// Set the non-empty entry in the new map
+				cleanedMap.SetMapIndex(key, value)
+			}
+			field.Set(cleanedMap)
 		case reflect.Slice:
 			if field.Len() == 0 {
 				field.Set(reflect.Zero(field.Type()))

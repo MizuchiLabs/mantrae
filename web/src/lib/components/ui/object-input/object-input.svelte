@@ -23,8 +23,8 @@
 
 	const convertToInternal = () => {
 		if (items && typeof items === 'object' && Object.keys(items).length > 0) {
-			internalItems = Object.entries(items).map(([key, value]) => ({
-				id: generateId(),
+			internalItems = Object.entries(items).map(([key, value], index) => ({
+				id: internalItems[index]?.id || generateId(),
 				key,
 				value
 			}));
@@ -62,16 +62,12 @@
 	};
 
 	const dispatchConvert = () => {
-		// Convert array of { id, key, value } back to Record<string, string>
-		const updatedItems = internalItems.reduce(
-			(acc, { key, value }) => {
-				if (key) acc[key] = value; // Only include items with non-empty keys
-				return acc;
-			},
-			{} as Record<string, string>
+		items = internalItems.reduce(
+			(obj: Record<string, string>, item) => ((obj[item.key] = item.value), obj),
+			{}
 		);
 
-		dispatch('update', updatedItems);
+		dispatch('update', items);
 	};
 
 	onMount(() => {
@@ -86,7 +82,7 @@
 			<HoverInfo text={helpText} />
 		{/if}
 	</Label>
-	<ul class="col-span-3 space-y-2">
+	<ul class="col-span-3 space-y-2" use:autoAnimate={{ duration: 100 }}>
 		{#each internalItems as { id, key, value }, index (id)}
 			<li class="flex flex-row items-center justify-end gap-2">
 				{#if !disabled}
