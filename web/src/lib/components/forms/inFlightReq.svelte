@@ -24,7 +24,7 @@
 						excludedIPs: z.array(CustomIPSchemaOptional).optional()
 					})
 					.default({}),
-				requestHeaderName: z.string().optional(),
+				requestHeaderName: z.string().trim().optional(),
 				requestHost: z.boolean().optional()
 			})
 			.default({})

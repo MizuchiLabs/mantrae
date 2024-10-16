@@ -4,6 +4,7 @@
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import type { Selected } from 'bits-ui';
+	import { LIMIT_SK } from '$lib/store';
 
 	export let count: number;
 	export let perPage: Selected<number> | undefined;
@@ -12,7 +13,7 @@
 	const changeLimit = (limit: Selected<number> | undefined) => {
 		if (limit === undefined) return;
 		perPage = limit;
-		localStorage.setItem('limit', JSON.stringify(limit));
+		localStorage.setItem(LIMIT_SK, JSON.stringify(limit));
 	};
 </script>
 

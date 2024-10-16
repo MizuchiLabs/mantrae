@@ -82,38 +82,8 @@ func (m *Middleware) Verify() error {
 	}
 
 	// Make sure the correct fields are set in the new middleware
-	newMiddleware := &Middleware{
-		Name:           m.Name,
-		Provider:       m.Provider,
-		Type:           m.Type,
-		Status:         m.Status,
-		MiddlewareType: m.MiddlewareType,
-	}
-
-	// Reflect on the original middleware struct
-	v := reflect.ValueOf(m)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	// Find and set the field that matches the Type
-	for i := 0; i < v.NumField(); i++ {
-		fieldName := v.Type().Field(i).Name
-		if strings.EqualFold(fieldName, m.Type) {
-			if reflect.ValueOf(newMiddleware).Kind() == reflect.Ptr {
-				newField := reflect.ValueOf(newMiddleware).Elem().FieldByName(fieldName)
-				if newField.CanSet() {
-					newField.Set(v.Field(i))
-				}
-			} else {
-				newField := reflect.ValueOf(newMiddleware).FieldByName(fieldName)
-				if newField.CanSet() {
-					newField.Set(v.Field(i))
-				}
-			}
-			break
-		}
-	}
-	*m = *newMiddleware
+	setMiddlewareByType(m)
+	cleanStruct(m)
 	return nil
 }
 
@@ -128,4 +98,112 @@ func validateName(s, p string) string {
 	}
 
 	return name
+}
+
+// Dynamically set the correct middleware field based on the type
+func setMiddlewareByType(m *Middleware) {
+	newMiddleware := &Middleware{
+		Name:           m.Name,
+		Provider:       m.Provider,
+		Type:           m.Type,
+		Status:         m.Status,
+		MiddlewareType: m.MiddlewareType,
+	}
+
+	// Reflect on the original middleware struct
+	v := reflect.ValueOf(m)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	newV := reflect.ValueOf(newMiddleware).Elem()
+
+	for i := 0; i < v.NumField(); i++ {
+		fieldName := v.Type().Field(i).Name
+
+		// Check if the field name matches m.Type using case-insensitive comparison
+		if strings.EqualFold(fieldName, m.Type) {
+			originalField := v.Field(i)
+			newField := newV.FieldByName(fieldName)
+
+			if newField.CanSet() && originalField.IsValid() {
+				newField.Set(originalField) // Set the field's value
+			}
+			break
+		}
+	}
+
+	*m = *newMiddleware
+}
+
+func cleanStruct(v interface{}) {
+	val := reflect.ValueOf(v).Elem()
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+
+		if !field.CanSet() {
+			continue
+		}
+
+		switch field.Kind() {
+		case reflect.String:
+			if field.String() == "" {
+				field.Set(reflect.Zero(field.Type()))
+			}
+		case reflect.Slice:
+			if field.Len() == 0 {
+				field.Set(reflect.Zero(field.Type()))
+			} else {
+				cleanSlice(field) // Clean individual elements inside the slice
+			}
+		case reflect.Ptr:
+			if !field.IsNil() {
+				cleanStruct(field.Interface())
+				if reflect.DeepEqual(
+					field.Elem().Interface(),
+					reflect.Zero(field.Elem().Type()).Interface(),
+				) {
+					field.Set(reflect.Zero(field.Type()))
+				}
+			}
+		case reflect.Struct:
+			cleanStruct(field.Addr().Interface())
+		}
+	}
+}
+
+func cleanSlice(slice reflect.Value) {
+	if slice.Kind() != reflect.Slice {
+		return
+	}
+
+	// Create a new slice and filter out empty or zero-value elements
+	newSlice := reflect.MakeSlice(slice.Type(), 0, slice.Len())
+
+	for i := 0; i < slice.Len(); i++ {
+		elem := slice.Index(i)
+		switch elem.Kind() {
+		case reflect.String:
+			if elem.String() != "" { // Remove empty strings
+				newSlice = reflect.Append(newSlice, elem)
+			}
+		case reflect.Ptr, reflect.Struct:
+			// Recursively clean elements inside the slice
+			if elem.Kind() == reflect.Ptr && !elem.IsNil() {
+				cleanStruct(elem.Interface())
+			} else if elem.Kind() == reflect.Struct {
+				cleanStruct(elem.Addr().Interface())
+			}
+
+			// Check if the struct/pointer is non-zero after cleaning
+			if !reflect.DeepEqual(elem.Interface(), reflect.Zero(elem.Type()).Interface()) {
+				newSlice = reflect.Append(newSlice, elem)
+			}
+		default:
+			newSlice = reflect.Append(newSlice, elem)
+		}
+	}
+
+	// Set the cleaned slice back
+	slice.Set(newSlice)
 }

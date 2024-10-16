@@ -21,13 +21,14 @@
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
 	import { Eye, Pencil, X, SquareArrowOutUpRight } from 'lucide-svelte';
+	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
 	let search = '';
 	let count = 0;
 	let currentPage = 1;
 	let fRouters: Router[] = [];
 	let perPage: Selected<number> | undefined = JSON.parse(
-		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
+		localStorage.getItem(LIMIT_SK) ?? '{"value": 10, "label": "10"}'
 	);
 	$: search, $routers, currentPage, perPage, searchRouter();
 
@@ -100,7 +101,7 @@
 		{ value: 'serviceStatus', label: 'Service Status' }
 	];
 	let fColumns: string[] = JSON.parse(
-		localStorage.getItem('router-columns') ?? JSON.stringify(columns.map((c) => c.value))
+		localStorage.getItem(ROUTER_COLUMN_SK) ?? JSON.stringify(columns.map((c) => c.value))
 	);
 
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {

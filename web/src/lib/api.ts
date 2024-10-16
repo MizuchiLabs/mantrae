@@ -5,6 +5,7 @@ import { type Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { newService, type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
+import { PROFILE_SK, TOKEN_SK } from './store';
 
 // Global state variables
 export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
@@ -31,7 +32,7 @@ async function handleRequest(
 ): Promise<Response | undefined> {
 	if (!get(loggedIn)) return;
 
-	const token = localStorage.getItem('token');
+	const token = localStorage.getItem(TOKEN_SK);
 	const response = await fetch(`${API_URL}${endpoint}`, {
 		method: method,
 		body: body ? JSON.stringify(body) : undefined,
@@ -55,7 +56,7 @@ export async function login(username: string, password: string) {
 	});
 	if (response.status === 200) {
 		const { token } = await response.json();
-		localStorage.setItem('token', token);
+		localStorage.setItem(TOKEN_SK, token);
 		loggedIn.set(true);
 		goto('/');
 		toast.success('Login successful');
@@ -71,7 +72,7 @@ export async function login(username: string, password: string) {
 }
 
 export async function logout() {
-	localStorage.removeItem('token');
+	localStorage.removeItem(TOKEN_SK);
 	loggedIn.set(false);
 }
 
@@ -84,7 +85,7 @@ export async function getProfiles() {
 			profiles.set(data);
 
 			// Get saved profile
-			const profileID = parseInt(localStorage.getItem('profile') ?? '');
+			const profileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
 			if (profileID) {
 				getProfile(profileID);
 				return;
@@ -102,9 +103,9 @@ export async function getProfile(id: number) {
 	if (response) {
 		const data = await response.json();
 		profile.set(data);
-		localStorage.setItem('profile', data.id.toString());
+		localStorage.setItem(PROFILE_SK, data.id.toString());
 	} else {
-		localStorage.removeItem('profile');
+		localStorage.removeItem(PROFILE_SK);
 		return;
 	}
 	await getConfig();
@@ -117,9 +118,9 @@ export async function createProfile(p: Profile): Promise<void> {
 		profiles.update((items) => [...(items ?? []), data]);
 		toast.success(`Profile ${data.name} created`);
 
-		const profileID = parseInt(localStorage.getItem('profile') ?? '');
+		const profileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
 		if (!profileID) {
-			localStorage.setItem('profile', data.id.toString());
+			localStorage.setItem(PROFILE_SK, data.id.toString());
 			profile.set(data);
 		}
 	}
@@ -134,7 +135,7 @@ export async function updateProfile(p: Profile): Promise<void> {
 
 		if (get(profile) && get(profile).id === data.id) {
 			profile.set(data);
-			localStorage.setItem('profile', data.id.toString());
+			localStorage.setItem(PROFILE_SK, data.id.toString());
 		}
 	}
 }
@@ -147,7 +148,7 @@ export async function deleteProfile(p: Profile): Promise<void> {
 
 		if (get(profile).id === p.id) {
 			profile.set({} as Profile);
-			localStorage.removeItem('profile');
+			localStorage.removeItem(PROFILE_SK);
 		}
 	}
 }
@@ -353,7 +354,7 @@ export async function downloadBackup() {
 export async function uploadBackup(file: File) {
 	const formData = new FormData();
 	formData.append('file', file);
-	const token = localStorage.getItem('token');
+	const token = localStorage.getItem(TOKEN_SK);
 	await fetch(`${API_URL}/restore`, {
 		method: 'POST',
 		body: formData,

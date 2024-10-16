@@ -32,7 +32,7 @@
 			.int()
 			.nonnegative()
 			.optional(),
-		retryExpression: z.string({ required_error: 'Retry Expression is required' }).optional()
+		retryExpression: z.string({ required_error: 'Retry Expression is required' }).trim().optional()
 	});
 
 	let errors: Record<any, string[] | undefined> = {};

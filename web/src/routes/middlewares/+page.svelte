@@ -9,13 +9,14 @@
 	import Search from '$lib/components/tables/search.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import { Eye, Pencil, X } from 'lucide-svelte';
+	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
 
 	let search = '';
 	let count = 0;
 	let currentPage = 1;
 	let fMiddlewares: Middleware[] = [];
 	let perPage: Selected<number> | undefined = JSON.parse(
-		localStorage.getItem('limit') ?? '{"value": 10, "label": "10"}'
+		localStorage.getItem(LIMIT_SK) ?? '{"value": 10, "label": "10"}'
 	);
 	$: search, $middlewares, currentPage, perPage, searchMiddleware();
 
@@ -71,7 +72,7 @@
 		{ value: 'type', label: 'Type' }
 	];
 	let fColumns: string[] = JSON.parse(
-		localStorage.getItem('middleware-columns') ?? JSON.stringify(columns.map((c) => c.value))
+		localStorage.getItem(MIDDLEWARE_COLUMN_SK) ?? JSON.stringify(columns.map((c) => c.value))
 	);
 </script>
 

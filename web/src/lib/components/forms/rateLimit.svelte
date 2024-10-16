@@ -11,7 +11,7 @@
 	export let disabled = false;
 
 	const rateLimitSchema = z.object({
-		period: z.string({ required_error: 'Period is required' }).default('1s'),
+		period: z.string({ required_error: 'Period is required' }).trim().default('1s'),
 		average: z.coerce
 			.number({ required_error: 'Average is required' })
 			.int()
@@ -26,7 +26,7 @@
 						excludedIPs: z.array(CustomIPSchemaOptional).optional()
 					})
 					.default({ excludedIPs: [] }),
-				requestHeaderName: z.string().optional(),
+				requestHeaderName: z.string().trim().optional(),
 				requestHost: z.boolean().optional()
 			})
 			.default({})

@@ -12,47 +12,57 @@ const ipv6CidrRegex = /^(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
 const timeUnitRegex = /^(0|[1-9]\d*)(ns|us|µs|ms|s|m|h)?$/;
 
 // Custom Zod schema to validate either IPv4 or IPv6 with or without CIDR
-export const CustomIPSchema = z.string().refine(
-	(value) => {
-		const [ipAddress, mask] = value.split('/');
-		if (!mask) {
-			return ipv4Regex.test(ipAddress) || ipv6Regex.test(ipAddress);
-		} else {
-			return (
-				(ipv4Regex.test(ipAddress) && ipv4CidrRegex.test(mask)) ||
-				(ipv6Regex.test(ipAddress) && ipv6CidrRegex.test(mask))
-			);
+export const CustomIPSchema = z
+	.string()
+	.trim()
+	.refine(
+		(value) => {
+			const [ipAddress, mask] = value.split('/');
+			if (!mask) {
+				return ipv4Regex.test(ipAddress) || ipv6Regex.test(ipAddress);
+			} else {
+				return (
+					(ipv4Regex.test(ipAddress) && ipv4CidrRegex.test(mask)) ||
+					(ipv6Regex.test(ipAddress) && ipv6CidrRegex.test(mask))
+				);
+			}
+		},
+		{
+			message: 'Invalid IP address or CIDR notation'
 		}
-	},
-	{
-		message: 'Invalid IP address or CIDR notation'
-	}
-);
+	);
 
-export const CustomIPSchemaOptional = z.string().refine(
-	(value) => {
-		const [ipAddress, mask] = value.split('/');
-		if (!ipAddress) return true;
-		if (!mask) {
-			return ipv4Regex.test(ipAddress) || ipv6Regex.test(ipAddress);
-		} else {
-			return (
-				(ipv4Regex.test(ipAddress) && ipv4CidrRegex.test(mask)) ||
-				(ipv6Regex.test(ipAddress) && ipv6CidrRegex.test(mask))
-			);
+export const CustomIPSchemaOptional = z
+	.string()
+	.trim()
+	.refine(
+		(value) => {
+			const [ipAddress, mask] = value.split('/');
+			if (!ipAddress) return true;
+			if (!mask) {
+				return ipv4Regex.test(ipAddress) || ipv6Regex.test(ipAddress);
+			} else {
+				return (
+					(ipv4Regex.test(ipAddress) && ipv4CidrRegex.test(mask)) ||
+					(ipv6Regex.test(ipAddress) && ipv6CidrRegex.test(mask))
+				);
+			}
+		},
+		{
+			message: 'Invalid IP address or CIDR notation'
 		}
-	},
-	{
-		message: 'Invalid IP address or CIDR notation'
-	}
-);
+	);
 
-export const CustomTimeUnitSchema = z.string().refine((value) => timeUnitRegex.test(value), {
-	message: 'Invalid time unit'
-});
+export const CustomTimeUnitSchema = z
+	.string()
+	.trim()
+	.refine((value) => timeUnitRegex.test(value), {
+		message: 'Invalid time unit'
+	});
 
 export const CustomTimeUnitSchemaOptional = z
 	.string()
+	.trim()
 	.optional()
 	.refine(
 		(value) => {

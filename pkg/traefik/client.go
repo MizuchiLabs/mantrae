@@ -366,6 +366,8 @@ func (m HTTPMiddleware) ToMiddleware() *Middleware {
 		Compress:          m.Compress,
 		PassTLSClientCert: m.PassTLSClientCert,
 		Retry:             m.Retry,
+		GrpcWeb:           m.GrpcWeb,
+		Plugin:            m.Plugin,
 	}
 }
 

@@ -97,31 +97,33 @@ type Middleware struct {
 	Provider       string `json:"provider,omitempty"`
 	Type           string `json:"type,omitempty"`
 	Status         string `json:"status,omitempty"`
-	MiddlewareType string `json:"middlewareType,omitempty"` // "http" or "tcp"
+	MiddlewareType string `json:"middlewareType,omitempty"`
 	AgentID        string `json:"agentID,omitempty"`
 
 	// HTTP-specific fields
-	AddPrefix         *dynamic.AddPrefix         `json:"addPrefix,omitempty"`
-	StripPrefix       *dynamic.StripPrefix       `json:"stripPrefix,omitempty"`
-	StripPrefixRegex  *dynamic.StripPrefixRegex  `json:"stripPrefixRegex,omitempty"`
-	ReplacePath       *dynamic.ReplacePath       `json:"replacePath,omitempty"`
-	ReplacePathRegex  *dynamic.ReplacePathRegex  `json:"replacePathRegex,omitempty"`
-	Chain             *dynamic.Chain             `json:"chain,omitempty"`
-	IPAllowList       *dynamic.IPAllowList       `json:"ipAllowList,omitempty"` // also for tcp
-	Headers           *dynamic.Headers           `json:"headers,omitempty"`
-	Errors            *dynamic.ErrorPage         `json:"errors,omitempty"`
-	RateLimit         *dynamic.RateLimit         `json:"rateLimit,omitempty"`
-	RedirectRegex     *dynamic.RedirectRegex     `json:"redirectRegex,omitempty"`
-	RedirectScheme    *dynamic.RedirectScheme    `json:"redirectScheme,omitempty"`
-	BasicAuth         *dynamic.BasicAuth         `json:"basicAuth,omitempty"`
-	DigestAuth        *dynamic.DigestAuth        `json:"digestAuth,omitempty"`
-	ForwardAuth       *dynamic.ForwardAuth       `json:"forwardAuth,omitempty"`
-	InFlightReq       *dynamic.InFlightReq       `json:"inFlightReq,omitempty"`
-	Buffering         *dynamic.Buffering         `json:"buffering,omitempty"`
-	CircuitBreaker    *dynamic.CircuitBreaker    `json:"circuitBreaker,omitempty"`
-	Compress          *dynamic.Compress          `json:"compress,omitempty"`
-	PassTLSClientCert *dynamic.PassTLSClientCert `json:"passTLSClientCert,omitempty"`
-	Retry             *dynamic.Retry             `json:"retry,omitempty"`
+	AddPrefix         *dynamic.AddPrefix            `json:"addPrefix,omitempty"`
+	StripPrefix       *dynamic.StripPrefix          `json:"stripPrefix,omitempty"`
+	StripPrefixRegex  *dynamic.StripPrefixRegex     `json:"stripPrefixRegex,omitempty"`
+	ReplacePath       *dynamic.ReplacePath          `json:"replacePath,omitempty"`
+	ReplacePathRegex  *dynamic.ReplacePathRegex     `json:"replacePathRegex,omitempty"`
+	Chain             *dynamic.Chain                `json:"chain,omitempty"`
+	IPAllowList       *dynamic.IPAllowList          `json:"ipAllowList,omitempty"` // also for tcp
+	Headers           *dynamic.Headers              `json:"headers,omitempty"`
+	Errors            *dynamic.ErrorPage            `json:"errors,omitempty"`
+	RateLimit         *dynamic.RateLimit            `json:"rateLimit,omitempty"`
+	RedirectRegex     *dynamic.RedirectRegex        `json:"redirectRegex,omitempty"`
+	RedirectScheme    *dynamic.RedirectScheme       `json:"redirectScheme,omitempty"`
+	BasicAuth         *dynamic.BasicAuth            `json:"basicAuth,omitempty"`
+	DigestAuth        *dynamic.DigestAuth           `json:"digestAuth,omitempty"`
+	ForwardAuth       *dynamic.ForwardAuth          `json:"forwardAuth,omitempty"`
+	InFlightReq       *dynamic.InFlightReq          `json:"inFlightReq,omitempty"`
+	Buffering         *dynamic.Buffering            `json:"buffering,omitempty"`
+	CircuitBreaker    *dynamic.CircuitBreaker       `json:"circuitBreaker,omitempty"`
+	Compress          *dynamic.Compress             `json:"compress,omitempty"`
+	PassTLSClientCert *dynamic.PassTLSClientCert    `json:"passTLSClientCert,omitempty"`
+	Retry             *dynamic.Retry                `json:"retry,omitempty"`
+	GrpcWeb           *dynamic.GrpcWeb              `json:"grpcWeb,omitempty"`
+	Plugin            map[string]dynamic.PluginConf `json:"plugin,omitempty"`
 
 	// TCP-specific fields
 	InFlightConn *dynamic.TCPInFlightConn `json:"inFlightConn,omitempty"`

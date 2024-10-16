@@ -14,14 +14,15 @@
 	let servers: string[] = [];
 
 	const serviceSchema = z.object({
-		provider: z.string().optional(),
-		type: z.string().optional(),
-		status: z.string().optional(),
+		provider: z.string().trim().optional(),
+		type: z.string().trim().optional(),
+		status: z.string().trim().optional(),
 		serviceType: z
 			.string()
+			.trim()
 			.toLowerCase()
 			.regex(/^(http|tcp|udp)$/),
-		serverStatus: z.record(z.string()).optional(),
+		serverStatus: z.record(z.string().trim()).optional(),
 		loadBalancer: z.object({
 			servers: z
 				.array(

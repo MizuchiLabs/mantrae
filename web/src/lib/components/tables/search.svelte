@@ -5,6 +5,7 @@
 	import { Delete } from 'lucide-svelte';
 	import type { Selected } from 'bits-ui';
 	import { onMount } from 'svelte';
+	import { LOCAL_PROVIDER_SK } from '$lib/store';
 
 	export let search: string;
 	export let columns: Selected<string>[];
@@ -14,15 +15,15 @@
 	const clearSearch = () => {
 		search = '';
 		localProvider = false;
-		localStorage.setItem('local-provider', localProvider.toString());
+		localStorage.setItem(LOCAL_PROVIDER_SK, localProvider.toString());
 	};
 
 	// Only show local routers not external ones
-	let localProvider = localStorage.getItem('local-provider') === 'true';
+	let localProvider = localStorage.getItem(LOCAL_PROVIDER_SK) === 'true';
 	const toggleProvider = () => {
 		localProvider = !localProvider;
 		search = localProvider ? '@provider:http' : '';
-		localStorage.setItem('local-provider', localProvider.toString());
+		localStorage.setItem(LOCAL_PROVIDER_SK, localProvider.toString());
 	};
 
 	const changeColumns = (columns: Selected<string>[] | undefined) => {

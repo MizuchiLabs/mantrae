@@ -5,6 +5,7 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ValidateRule } from './ruleString';
 	import { onMount } from 'svelte';
+	import { RULE_EDITOR_TAB_SK } from '$lib/store';
 
 	export let rule: string;
 	export let type: string;
@@ -185,10 +186,9 @@
 			}
 		}
 	};
+
 	let simpleDisabled = false;
 	let currentTab = 'simple';
-	const TAB_STORAGE_KEY = 'rule-editor-tab';
-
 	const checkConditions = () => {
 		let conditions = rule.split(/(&&|\|\|)/);
 		if (conditions.length > 3) {
@@ -206,7 +206,7 @@
 
 	onMount(() => {
 		// Load tab state from localStorage
-		const savedTab = localStorage.getItem(TAB_STORAGE_KEY) as 'simple' | 'advanced' | null;
+		const savedTab = localStorage.getItem(RULE_EDITOR_TAB_SK) as 'simple' | 'advanced' | null;
 		if (savedTab && !simpleDisabled) {
 			currentTab = savedTab;
 		} else {
@@ -219,7 +219,7 @@
 <!-- Simple and advanced mode-->
 <Tabs.Root
 	value={currentTab}
-	onValueChange={(value) => value && localStorage.setItem(TAB_STORAGE_KEY, value)}
+	onValueChange={(value) => value && localStorage.setItem(RULE_EDITOR_TAB_SK, value)}
 	class="flex flex-col gap-2"
 >
 	<div class="flex justify-end">

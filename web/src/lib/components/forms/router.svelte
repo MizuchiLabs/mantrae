@@ -32,6 +32,7 @@
 			status: z.string().trim().optional(),
 			routerType: z
 				.string()
+				.trim()
 				.toLowerCase()
 				.regex(/^(http|tcp|udp)$/),
 			dnsProvider: z.coerce.number().int().nonnegative().optional(),

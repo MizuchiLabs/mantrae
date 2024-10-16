@@ -19,12 +19,12 @@
 			.number({ required_error: 'Min Response Body Bytes is required' })
 			.int()
 			.nonnegative(),
-		defaultEncoding: z.string({ required_error: 'Default Encoding is required' }).optional(),
+		defaultEncoding: z.string({ required_error: 'Default Encoding is required' }).trim().optional(),
 		excludedContentTypes: z
-			.array(z.string({ required_error: 'Excluded Content Types is required' }))
+			.array(z.string({ required_error: 'Excluded Content Types is required' }).trim())
 			.optional(),
 		includeContentTypes: z
-			.array(z.string({ required_error: 'Include Content Types is required' }))
+			.array(z.string({ required_error: 'Include Content Types is required' }).trim())
 			.optional()
 	});
 
