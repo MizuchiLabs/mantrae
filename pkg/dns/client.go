@@ -2,14 +2,13 @@ package dns
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -91,7 +90,7 @@ func getDomainProviderMap() map[string]DomainProvider {
 					continue
 				}
 
-				domain, err := extractDomainFromRule(router.Rule)
+				domain, err := util.ExtractDomainFromRule(router.Rule)
 				if err != nil {
 					slog.Error("Failed to extract domain from rule", "error", err)
 					continue
@@ -129,7 +128,7 @@ func DeleteDNS(router traefik.Router) {
 		return
 	}
 
-	subdomain, err := extractDomainFromRule(router.Rule)
+	subdomain, err := util.ExtractDomainFromRule(router.Rule)
 	if err != nil {
 		slog.Error("Failed to extract domain from rule", "error", err)
 		return
@@ -155,16 +154,6 @@ func Sync(ctx context.Context) {
 			UpdateDNS()
 		}
 	}
-}
-
-func extractDomainFromRule(rule string) (string, error) {
-	// Regular expression to match the domain inside a Host(`domain.com`) rule
-	re := regexp.MustCompile(`Host\(` + "`" + `([^` + "`" + `]+)` + "`" + `\)`)
-	matches := re.FindStringSubmatch(rule)
-	if len(matches) < 2 {
-		return "", fmt.Errorf("no domain found in rule")
-	}
-	return matches[1], nil
 }
 
 func getBaseDomain(domain string) (string, error) {

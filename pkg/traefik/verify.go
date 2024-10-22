@@ -24,6 +24,14 @@ func (r *Router) Verify() error {
 
 	r.Rule = strings.TrimSpace(r.Rule)
 	r.Name = validateName(r.Name, r.Provider)
+
+	// Ignore for now
+	domain, _ := util.ExtractDomainFromRule(r.Rule)
+	if domain != "" {
+		if err := util.ValidSSLCert(domain); err != nil {
+			r.SSLError = err.Error()
+		}
+	}
 	if r.Service == "" {
 		r.Service = r.Name
 	}

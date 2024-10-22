@@ -6,6 +6,7 @@ export interface Router {
 	provider?: string;
 	status?: string;
 	routerType: string;
+	sslError?: string;
 	dnsProvider?: number;
 
 	entrypoints?: string[];

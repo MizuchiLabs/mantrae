@@ -34,6 +34,7 @@ type Router struct {
 	Status      string `json:"status,omitempty"`
 	RouterType  string `json:"routerType"`
 	DNSProvider *int64 `json:"dnsProvider,omitempty"`
+	SSLError    string `json:"sslError,omitempty"`
 	AgentID     string `json:"agentID,omitempty"`
 
 	Entrypoints []string                    `json:"entrypoints,omitempty"` // http, tcp, udp

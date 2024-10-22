@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select';
+	import * as HoverCard from '$lib/components/ui/hover-card';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import {
 		deleteRouter,
@@ -20,7 +22,7 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
-	import { Eye, Pencil, X, SquareArrowOutUpRight } from 'lucide-svelte';
+	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldX } from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
 	let search = '';
@@ -423,13 +425,27 @@
 								</div>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('serviceStatus') ? 'font-medium' : 'hidden'}>
-								<span
-									class="rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
-									class:bg-green-300={getServiceStatus(router).ok}
-									class:bg-red-300={!getServiceStatus(router).ok}
-								>
-									{getServiceStatus(router).status}
-								</span>
+								<div class="flex flex-row items-center gap-2">
+									<span
+										class="rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-opacity-80 focus:outline-none"
+										class:bg-green-300={getServiceStatus(router).ok}
+										class:bg-red-300={!getServiceStatus(router).ok}
+									>
+										{getServiceStatus(router).status}
+									</span>
+									{#if router.sslError}
+										<HoverCard.Root openDelay={400}>
+											<HoverCard.Trigger>
+												<Badge variant="secondary" class="bg-red-300">
+													<ShieldX size="1rem" />
+												</Badge>
+											</HoverCard.Trigger>
+											<HoverCard.Content>
+												<div class="text-sm">SSL Error: {router.sslError}</div>
+											</HoverCard.Content>
+										</HoverCard.Root>
+									{/if}
+								</div>
 							</Table.Cell>
 							<Table.Cell class="min-w-[100px]">
 								{#if router.provider === 'http'}

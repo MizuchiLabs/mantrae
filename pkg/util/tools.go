@@ -3,9 +3,12 @@ package util
 
 import (
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
@@ -179,6 +182,70 @@ func IsValidEmail(email string) bool {
 		return false
 	}
 	return matched
+}
+
+// ExtractDomainFromRule extracts the domain inside a Host(`domain.com`) rule
+func ExtractDomainFromRule(rule string) (string, error) {
+	re := regexp.MustCompile(`Host\(` + "`" + `([^` + "`" + `]+)` + "`" + `\)`)
+	matches := re.FindStringSubmatch(rule)
+	if len(matches) < 2 {
+		return "", fmt.Errorf("no domain found in rule")
+	}
+	return matches[1], nil
+}
+
+func ValidSSLCert(domain string) error {
+	conn, err := tls.DialWithDialer(
+		&net.Dialer{Timeout: 5 * time.Second},
+		"tcp",
+		domain+":443",
+		&tls.Config{},
+	)
+	if err != nil {
+		return fmt.Errorf("could not establish TLS connection: %v", err)
+	}
+	defer conn.Close()
+
+	// Get the certificate
+	cert := conn.ConnectionState().PeerCertificates[0]
+
+	// Check if the certificate is currently valid
+	now := time.Now()
+	if now.Before(cert.NotBefore) {
+		return fmt.Errorf("certificate is not yet valid")
+	}
+	if now.After(cert.NotAfter) {
+		return fmt.Errorf("certificate has expired")
+	}
+
+	// Ensure the domain has a scheme
+	if !strings.HasPrefix(domain, "http://") && !strings.HasPrefix(domain, "https://") {
+		domain = "https://" + domain
+	}
+
+	// Extra cloudflare checks
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	// Make a request to the domain
+	resp, err := client.Get(domain)
+	if err != nil {
+		return fmt.Errorf("error reaching domain: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check HTTP status codes commonly returned by Cloudflare for SSL issues
+	switch resp.StatusCode {
+	case 525:
+		return fmt.Errorf("SSL handshake failed between Cloudflare and origin (Error 525)")
+	case 526:
+		return fmt.Errorf("invalid SSL certificate on the origin server (Error 526)")
+	case 521:
+		return fmt.Errorf("web server is down or unreachable (Error 521)")
+	}
+
+	return nil
 }
 
 func IsRunningInDocker() bool {

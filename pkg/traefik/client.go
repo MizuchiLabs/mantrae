@@ -42,6 +42,7 @@ type HTTPRouter struct {
 	BaseFields
 	RouterType  string `json:"routerType"`
 	DNSProvider string `json:"dnsProvider"`
+	SSLError    string `json:"sslError,omitempty"`
 	dynamic.Router
 }
 
@@ -510,6 +511,8 @@ func GetTraefikConfig() {
 			return
 		}
 		data.Version = v.Version
+
+		// Verify config and write to db
 		if _, err := EncodeToDB(config.ProfileID, data); err != nil {
 			slog.Error("Failed to update config", "error", err)
 			return
@@ -566,6 +569,7 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 				case Router:
 					if newRouter, ok := any(v).(Router); ok {
 						newRouter.DNSProvider = existingItem.DNSProvider
+						newRouter.SSLError = existingItem.SSLError
 						merged[k] = any(newRouter).(T)
 					}
 				default:
