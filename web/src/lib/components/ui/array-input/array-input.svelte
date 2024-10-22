@@ -34,7 +34,8 @@
 		dispatch('update', items);
 	};
 
-	const update = (index: number, value: string) => {
+	const update = (index: number, target: EventTarget | null) => {
+		const value = (target as HTMLInputElement).value;
 		items = items?.map((_, i) => (i === index ? value : _));
 		dispatch('update', items);
 	};
@@ -74,7 +75,7 @@
 						type="text"
 						bind:value={items[index]}
 						placeholder={disabled ? '' : placeholder}
-						on:input={() => update(index, item)}
+						on:input={(e) => update(index, e.target)}
 						{disabled}
 					/>
 				{/if}
