@@ -94,6 +94,11 @@ func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
 }
 
 func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	if err := t.checkRecord(subdomain); err != nil {
 		return err
 	}
@@ -107,7 +112,7 @@ func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
 		endpoint := fmt.Sprintf(
 			"/api/zones/records/delete?token=%s&zone=%s&type=%s",
 			t.APIKey,
-			getBaseDomain(subdomain),
+			domain,
 			record.Type,
 		)
 
@@ -156,10 +161,15 @@ func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
 }
 
 func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/add?token=%s&zone=%s",
 		t.APIKey,
-		getBaseDomain(subdomain),
+		domain,
 	)
 
 	if t.ZoneType == "forwarder" {
@@ -214,10 +224,15 @@ func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 }
 
 func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/update?token=%s&zone=%s&type=%s&ipAddress=%s",
 		t.APIKey,
-		getBaseDomain(subdomain),
+		domain,
 		recordType,
 		t.ExternalIP,
 	)
@@ -244,11 +259,16 @@ func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
 }
 
 func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/get?token=%s&domain=%s&zone=%s&listZone=true",
 		t.APIKey,
 		subdomain,
-		getBaseDomain(subdomain),
+		domain,
 	)
 
 	resp, err := t.doRequest(

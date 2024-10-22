@@ -61,10 +61,15 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 }
 
 func (p *PowerDNSProvider) createRecord(subdomain string, recordType powerdns.RRType) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	// Create the A/AAAA record
-	err := p.Client.Records.Add(
+	err = p.Client.Records.Add(
 		context.Background(),
-		getBaseDomain(subdomain),
+		domain,
 		subdomain,
 		recordType,
 		60,
@@ -77,7 +82,7 @@ func (p *PowerDNSProvider) createRecord(subdomain string, recordType powerdns.RR
 	// Create the TXT record
 	err = p.Client.Records.Add(
 		context.Background(),
-		getBaseDomain(subdomain),
+		domain,
 		"_mantrae-"+subdomain,
 		powerdns.RRTypeTXT,
 		60,
@@ -95,9 +100,14 @@ func (p *PowerDNSProvider) updateRecord(
 	recordType powerdns.RRType,
 	subdomain string,
 ) error {
-	err := p.Client.Records.Change(
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
+	err = p.Client.Records.Change(
 		context.Background(),
-		getBaseDomain(subdomain),
+		domain,
 		subdomain,
 		recordType,
 		60,
@@ -111,6 +121,11 @@ func (p *PowerDNSProvider) updateRecord(
 }
 
 func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	if err := p.checkRecord(subdomain); err != nil {
 		return err
 	}
@@ -126,7 +141,7 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 	for _, record := range records {
 		err := p.Client.Records.Delete(
 			context.Background(),
-			getBaseDomain(subdomain),
+			domain,
 			record.Name,
 			powerdns.RRType(record.Type),
 		)
@@ -136,7 +151,7 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 
 		err = p.Client.Records.Delete(
 			context.Background(),
-			getBaseDomain(subdomain),
+			domain,
 			"_mantrae-"+subdomain,
 			powerdns.RRTypeTXT,
 		)
@@ -159,9 +174,14 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 }
 
 func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
 	records, err := p.Client.Records.Get(
 		context.Background(),
-		getBaseDomain(subdomain),
+		domain,
 		subdomain,
 		nil,
 	)
@@ -182,9 +202,14 @@ func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
 }
 
 func (p *PowerDNSProvider) checkRecord(subdomain string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	records, err := p.Client.Records.Get(
 		context.Background(),
-		getBaseDomain(subdomain),
+		domain,
 		"_mantrae-"+subdomain,
 		powerdns.RRTypePtr(powerdns.RRTypeTXT),
 	)

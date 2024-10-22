@@ -3,10 +3,9 @@ package dns
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
-	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -168,25 +167,12 @@ func extractDomainFromRule(rule string) (string, error) {
 	return matches[1], nil
 }
 
-func getBaseDomain(subdomain string) string {
-	u, err := url.Parse(subdomain)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// If the URL doesn't have a scheme, url.Parse might put the whole string in Path
-	if u.Host == "" {
-		u, err = url.Parse("http://" + subdomain)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+func getBaseDomain(domain string) (string, error) {
+	// Ensure the domain doesn't contain a scheme
+	domain = strings.TrimPrefix(domain, "http://")
+	domain = strings.TrimPrefix(domain, "https://")
 
-	baseDomain, err := publicsuffix.EffectiveTLDPlusOne(u.Hostname())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return baseDomain
+	return publicsuffix.EffectiveTLDPlusOne(domain)
 }
 
 func verifyRecords(records []DNSRecord, subdomain string, content string) bool {

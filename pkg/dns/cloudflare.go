@@ -67,6 +67,11 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 }
 
 func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
 	if err := c.checkRecord(subdomain); err != nil {
 		return err
 	}
@@ -76,7 +81,7 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 		return err
 	}
 
-	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	zoneID, err := c.Client.ZoneIDByName(domain)
 	if err != nil {
 		return err
 	}
@@ -101,7 +106,12 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 }
 
 func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
-	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
+	zoneID, err := c.Client.ZoneIDByName(domain)
 	if err != nil {
 		return err
 	}
@@ -138,7 +148,12 @@ func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
 }
 
 func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string) error {
-	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return err
+	}
+
+	zoneID, err := c.Client.ZoneIDByName(domain)
 	if err != nil {
 		return err
 	}
@@ -162,7 +177,12 @@ func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string
 }
 
 func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
-	zoneID, err := c.Client.ZoneIDByName(getBaseDomain(subdomain))
+	domain, err := getBaseDomain(subdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	zoneID, err := c.Client.ZoneIDByName(domain)
 	if err != nil {
 		return nil, fmt.Errorf("error getting zone ID for subdomain %s: %w", subdomain, err)
 	}
