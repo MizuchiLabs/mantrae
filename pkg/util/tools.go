@@ -237,12 +237,25 @@ func ValidSSLCert(domain string) error {
 
 	// Check HTTP status codes commonly returned by Cloudflare for SSL issues
 	switch resp.StatusCode {
+	case 502:
+	case 504:
+		return fmt.Errorf("Bad Gateway (Error 502 or 504)")
+	case 503:
+		return fmt.Errorf("Service Unavailable (Error 503)")
+	case 520:
+		return fmt.Errorf("Web server returns an unknown error (Error 520)")
+	case 521:
+		return fmt.Errorf("Web server is down or unreachable (Error 521)")
+	case 522:
+		return fmt.Errorf("Connection timed out (Error 522)")
+	case 523:
+		return fmt.Errorf("Origin is not reachable (Error 523)")
+	case 524:
+		return fmt.Errorf("A timeout occurred during SSL handshake (Error 524)")
 	case 525:
 		return fmt.Errorf("SSL handshake failed between Cloudflare and origin (Error 525)")
 	case 526:
-		return fmt.Errorf("invalid SSL certificate on the origin server (Error 526)")
-	case 521:
-		return fmt.Errorf("web server is down or unreachable (Error 521)")
+		return fmt.Errorf("Invalid SSL certificate on the origin server (Error 526)")
 	}
 
 	return nil
