@@ -72,7 +72,12 @@
 		}
 
 		if (isHTTP) {
-			middlewareType = HTTPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);
+			middlewareType = HTTPMiddlewareTypes.find(
+				(t) => t.value.toLowerCase() === middleware.type
+			) ?? {
+				label: 'Plugin',
+				value: 'plugin'
+			};
 		}
 		if (!isHTTP) {
 			middlewareType = TCPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);

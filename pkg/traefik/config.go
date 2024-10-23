@@ -30,6 +30,8 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 		},
 	}
 
+	VerifyConfig(&d)
+
 	for _, router := range d.Routers {
 		// Only add routers by our provider
 		if router.Provider == "http" {
