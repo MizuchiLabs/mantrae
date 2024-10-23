@@ -27,6 +27,8 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("PUT /api/router/{id}", JWT(UpdateRouter))
 	mux.HandleFunc("PUT /api/service/{id}", JWT(UpdateService))
 	mux.HandleFunc("PUT /api/middleware/{id}", JWT(UpdateMiddleware))
+	mux.HandleFunc("POST /api/plugin/{id}", JWT(AddPluginMiddleware))
+	mux.HandleFunc("GET /api/middleware/plugins", GetMiddlewarePlugins)
 	mux.HandleFunc("DELETE /api/router/{id}/{name}", JWT(DeleteRouter))
 	mux.HandleFunc("DELETE /api/middleware/{id}/{name}", JWT(DeleteMiddleware))
 

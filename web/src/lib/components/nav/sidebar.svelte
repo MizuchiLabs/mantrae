@@ -4,8 +4,7 @@
 	import Mode from './mode.svelte';
 	import { page } from '$app/stores';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
-	import { Settings, Users, Route, Layers, Earth } from 'lucide-svelte';
+	import { Settings, Users, Route, Layers, Globe, Blocks } from 'lucide-svelte';
 
 	$: active = $page.url.pathname;
 
@@ -21,21 +20,24 @@
 			icon: Layers
 		},
 		{
+			name: 'Plugins',
+			path: '/plugins/',
+			icon: Blocks
+		},
+		{
+			name: 'Users',
+			path: '/settings/users/',
+			icon: Users
+		},
+		{
+			name: 'DNS',
+			path: '/settings/dns/',
+			icon: Globe
+		},
+		{
 			name: 'Settings',
 			path: '/settings/',
-			icon: Settings,
-			subRoutes: [
-				{
-					name: 'Users',
-					path: '/settings/users/',
-					icon: Users
-				},
-				{
-					name: 'DNS',
-					path: '/settings/dns/',
-					icon: Earth
-				}
-			]
+			icon: Settings
 		}
 	];
 </script>
@@ -68,37 +70,6 @@
 					{route.name}
 				</Tooltip.Content>
 			</Tooltip.Root>
-
-			<!-- Sub Routes -->
-			{#if route.subRoutes}
-				<Collapsible.Root open={active.includes(route.path)}>
-					<Collapsible.Content class="flex flex-col gap-2">
-						{#each route.subRoutes as subRoute}
-							<Tooltip.Root openDelay={500}>
-								<Tooltip.Trigger>
-									<Button
-										variant="ghost"
-										class="h-12 w-12 rounded-full hover:bg-foreground/5"
-										href={subRoute.path}
-									>
-										<div
-											class="hover:bg-accent/20 hover:text-red-300"
-											class:text-gray-600={active !== `${subRoute.path}`}
-											class:dark:text-white={active !== `${subRoute.path}`}
-											class:text-red-400={active === `${subRoute.path}`}
-										>
-											<svelte:component this={subRoute.icon} />
-										</div>
-									</Button>
-								</Tooltip.Trigger>
-								<Tooltip.Content side="right" align="center">
-									{subRoute.name}
-								</Tooltip.Content>
-							</Tooltip.Root>
-						{/each}
-					</Collapsible.Content>
-				</Collapsible.Root>
-			{/if}
 		{/each}
 	</div>
 

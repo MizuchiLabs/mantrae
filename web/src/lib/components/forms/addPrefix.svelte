@@ -6,7 +6,6 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	//middleware.addPrefix = { prefix: '', ...middleware.addPrefix };
 
 	const addPrefixSchema = z.object({
 		prefix: z

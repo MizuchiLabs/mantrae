@@ -5,18 +5,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"golang.org/x/crypto/bcrypt"
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 // Helper function to write JSON response
@@ -645,6 +648,103 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, newConfig)
 }
 
+func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
+	var plugin traefik.Plugin
+	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
+		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		return
+	}
+
+	yamlData, err := yaml.Marshal(plugin.Snippet["yaml"])
+	if err != nil {
+		http.Error(w, "Failed to convert to YAML", http.StatusInternalServerError)
+		return
+	}
+
+	var result map[string]any
+
+	if err := yaml.Unmarshal([]byte(string(yamlData)), &result); err != nil {
+		slog.Error("Failed to unmarshal YAML", "err", err)
+		http.Error(w, "Failed to unmarshal YAML", http.StatusInternalServerError)
+		return
+	}
+
+	// Accessing the dynamic key
+	middlewares := result["http"].(map[string]interface{})["middlewares"].(map[string]interface{})
+
+	for key, value := range middlewares {
+		if plugin, ok := value.(map[string]interface{})["plugin"].(map[string]interface{}); ok {
+			// Now you can access the dynamic plugin key
+			fmt.Printf("Key: %s\n", key)
+			fmt.Printf("Plugin Data: %+v\n", plugin)
+		}
+	}
+
+	pluginName := ""
+	importParts := strings.Split(plugin.Name, "/")
+	if len(importParts) > 0 {
+		pluginName = strings.ToLower(importParts[len(importParts)-1])
+	}
+	myPluginName := fmt.Sprintf("my-%s", pluginName)
+
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Profile not found", http.StatusNotFound)
+		return
+	}
+	data, err := traefik.DecodeFromDB(config)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	newMiddleware := traefik.Middleware{
+		Name:           pluginName,
+		Provider:       "http",
+		Type:           "plugin",
+		MiddlewareType: "http",
+		Plugin:         make(map[string]dynamic.PluginConf),
+	}
+
+	// Unmarshal the YAML data into a nested map structure
+	var middlewareConfig map[string]map[string]map[string]map[string]map[string]interface{}
+
+	if err := yaml.Unmarshal(yamlData, &middlewareConfig); err != nil {
+		http.Error(w, "Failed to unmarshal YAML", http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("middlewareConfig: %v\n", middlewareConfig)
+	pluginConfig := middlewareConfig["http"]["middlewares"][myPluginName]["plugin"][pluginName]
+
+	newPluginConf := dynamic.PluginConf{
+		pluginName: pluginConfig,
+	}
+
+	newMiddleware.Plugin[pluginName] = newPluginConf
+
+	data.Middlewares[newMiddleware.Name] = newMiddleware
+	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, newConfig)
+}
+
 func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -823,6 +923,32 @@ func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
 	go dns.DeleteDNS(router)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
+	resp, err := http.Get("https://plugins.traefik.io/api/services/plugins")
+	if err != nil {
+		http.Error(w, "Failed to fetch plugins", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse the response body into the Go Plugin struct
+	var plugins []traefik.Plugin
+	if err := json.NewDecoder(resp.Body).Decode(&plugins); err != nil {
+		http.Error(w, "Failed to decode plugins", http.StatusInternalServerError)
+		return
+	}
+
+	// Filter out non-middleware plugins
+	var middlewarePlugins []traefik.Plugin
+	for _, plugin := range plugins {
+		if plugin.Type == "middleware" {
+			middlewarePlugins = append(middlewarePlugins, plugin)
+		}
+	}
+
+	writeJSON(w, middlewarePlugins)
 }
 
 // GetTraefikConfig returns the traefik config

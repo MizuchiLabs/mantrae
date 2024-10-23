@@ -36,7 +36,8 @@
 		{ label: 'Circuit Breaker', value: 'circuitBreaker' },
 		{ label: 'Buffering', value: 'buffering' },
 		{ label: 'Errors', value: 'errors' },
-		{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' }
+		{ label: 'Pass TLS Client Cert', value: 'passTLSClientCert' },
+		{ label: 'Plugin', value: 'plugin' }
 	];
 	const TCPMiddlewareTypes: Selected<string>[] = [
 		{ label: 'InFlightConn', value: 'inFlightConn' },

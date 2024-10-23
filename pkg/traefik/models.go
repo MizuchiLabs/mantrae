@@ -164,3 +164,21 @@ type UDPOverview struct {
 	Routers  BasicOverview `json:"routers,omitempty"`
 	Services BasicOverview `json:"services,omitempty"`
 }
+
+type Plugin struct {
+	ID            string            `json:"id"`
+	Name          string            `json:"name"`
+	DisplayName   string            `json:"displayName"`
+	Author        string            `json:"author"`
+	Type          string            `json:"type"`
+	Import        string            `json:"import"`
+	Summary       string            `json:"summary"`
+	IconUrl       string            `json:"iconUrl"`
+	BannerUrl     string            `json:"bannerUrl"`
+	Readme        string            `json:"readme"`
+	LatestVersion string            `json:"latestVersion"`
+	Versions      []string          `json:"versions"`
+	Stars         int               `json:"stars"`
+	Snippet       map[string]string `json:"snippet"`
+	CreatedAt     string            `json:"createdAt"`
+}

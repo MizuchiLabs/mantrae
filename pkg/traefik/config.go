@@ -125,6 +125,7 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 					Compress:          middleware.Compress,
 					PassTLSClientCert: middleware.PassTLSClientCert,
 					Retry:             middleware.Retry,
+					Plugin:            middleware.Plugin,
 				}
 			case "tcp":
 				if middleware.IPAllowList != nil {

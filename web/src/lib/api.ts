@@ -1,7 +1,8 @@
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import type { Config, Profile, DNSProvider, User, Setting } from './types/base';
-import { type Middleware } from './types/middlewares';
+import type { Plugin } from './types/plugins';
+import type { Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
 import { newService, type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
@@ -16,6 +17,7 @@ export const config: Writable<Config> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
+export const plugins: Writable<Plugin[]> = writable();
 export const dynamic = writable('');
 export const version = writable('');
 
@@ -368,6 +370,25 @@ export async function uploadBackup(file: File) {
 	await getSettings();
 }
 
+// Plugins --------------------------------------------------------------------
+export async function getPlugins() {
+	const response = await handleRequest('/middleware/plugins', 'GET');
+	if (response) {
+		const data = await response.json();
+		plugins.set(data);
+	}
+}
+
+export async function addPlugin(plugin: Plugin) {
+	const response = await handleRequest(`/plugin/${get(profile).id}`, 'POST', plugin);
+	if (response) {
+		const data = await response.json();
+		config.set(data);
+		toast.success(`Plugin ${data.name} added`);
+	}
+}
+
+// Extras ---------------------------------------------------------------------
 export async function getVersion() {
 	const response = await handleRequest('/version', 'GET');
 	if (response) {

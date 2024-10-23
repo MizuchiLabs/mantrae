@@ -31,6 +31,7 @@ export interface Middleware {
 	compress?: Compress;
 	passTLSClientCert?: PassTLSClientCert;
 	retry?: Retry;
+	plugin?: Record<string, Record<string, any>>;
 
 	// TCP-specific fields
 	inFlightConn?: TCPInFlightConn;
