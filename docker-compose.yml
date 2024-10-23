@@ -47,7 +47,7 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --providers.docker.watch=true
-      - --providers.http.endpoint=http://mantrae:3000
+      - --providers.http.endpoint=http://mantrae:3000/api/<profile-name> # use the correct profile name
       - --certificatesresolvers.letsencrypt.acme.email=your@email.com
       - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare

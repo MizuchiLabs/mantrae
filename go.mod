@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	connectrpc.com/connect v1.17.0
-	github.com/cloudflare/cloudflare-go v0.107.0
+	github.com/cloudflare/cloudflare-go v0.108.0
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joeig/go-powerdns/v3 v3.14.1
@@ -17,8 +17,8 @@ require (
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	golang.org/x/net v0.30.0
 	google.golang.org/protobuf v1.35.1
-	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.33.1
+	sigs.k8s.io/yaml v1.4.0
 )
 
 require (

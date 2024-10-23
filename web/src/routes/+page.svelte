@@ -195,7 +195,7 @@
 	};
 
 	const getDNSProviderName = (r: Router) => {
-		return $provider.find((p) => p.id === r.dnsProvider)?.name;
+		return $provider?.find((p) => p.id === r.dnsProvider)?.name || undefined;
 	};
 
 	const applyBulkChanges = () => {
@@ -338,12 +338,12 @@
 							<Table.Cell class={fColumns.includes('dns') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									class:bg-green-300={router.dnsProvider}
-									class:bg-blue-300={!router.dnsProvider}
+									class:bg-green-300={getDNSProviderName(router)}
+									class:bg-blue-300={!getDNSProviderName(router)}
 									on:click={() => (search = `@dns:${getDNSProviderName(router)}`)}
 									aria-hidden
 								>
-									{router.dnsProvider ? getDNSProviderName(router) : 'None'}
+									{getDNSProviderName(router) ? getDNSProviderName(router) : 'None'}
 								</span>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>

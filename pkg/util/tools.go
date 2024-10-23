@@ -237,6 +237,8 @@ func ValidSSLCert(domain string) error {
 
 	// Check HTTP status codes commonly returned by Cloudflare for SSL issues
 	switch resp.StatusCode {
+	case 500:
+		return fmt.Errorf("Internal Server Error (Error 500)")
 	case 502:
 	case 504:
 		return fmt.Errorf("Bad Gateway (Error 502 or 504)")

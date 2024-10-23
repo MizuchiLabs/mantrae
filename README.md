@@ -130,7 +130,7 @@ certificatesResolvers:
 
 providers:
   http:
-    endpoint: "<endpoint where mantrae is running>"
+    endpoint: "<endpoint where mantrae is running> + /api/<profile-name>"
     # Optional if basic auth is enabled on mantrae
     headers:
       Authorization: Basic <base64 encoded username:password>

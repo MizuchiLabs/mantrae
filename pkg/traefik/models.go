@@ -166,19 +166,23 @@ type UDPOverview struct {
 }
 
 type Plugin struct {
-	ID            string            `json:"id"`
-	Name          string            `json:"name"`
-	DisplayName   string            `json:"displayName"`
-	Author        string            `json:"author"`
-	Type          string            `json:"type"`
-	Import        string            `json:"import"`
-	Summary       string            `json:"summary"`
-	IconUrl       string            `json:"iconUrl"`
-	BannerUrl     string            `json:"bannerUrl"`
-	Readme        string            `json:"readme"`
-	LatestVersion string            `json:"latestVersion"`
-	Versions      []string          `json:"versions"`
-	Stars         int               `json:"stars"`
-	Snippet       map[string]string `json:"snippet"`
-	CreatedAt     string            `json:"createdAt"`
+	ID            string        `json:"id"`
+	Name          string        `json:"name"`
+	DisplayName   string        `json:"displayName"`
+	Author        string        `json:"author"`
+	Type          string        `json:"type"`
+	Import        string        `json:"import"`
+	Summary       string        `json:"summary"`
+	IconUrl       string        `json:"iconUrl"`
+	BannerUrl     string        `json:"bannerUrl"`
+	Readme        string        `json:"readme"`
+	LatestVersion string        `json:"latestVersion"`
+	Versions      []string      `json:"versions"`
+	Stars         int           `json:"stars"`
+	Snippet       PluginSnippet `json:"snippet"`
+	CreatedAt     string        `json:"createdAt"`
+}
+
+type PluginSnippet struct {
+	Yaml string `json:"yaml"`
 }

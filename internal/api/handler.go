@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -19,7 +18,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 )
 
 // Helper function to write JSON response
@@ -655,29 +654,10 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	yamlData, err := yaml.Marshal(plugin.Snippet["yaml"])
-	if err != nil {
-		http.Error(w, "Failed to convert to YAML", http.StatusInternalServerError)
-		return
-	}
-
-	var result map[string]any
-
-	if err := yaml.Unmarshal([]byte(string(yamlData)), &result); err != nil {
-		slog.Error("Failed to unmarshal YAML", "err", err)
+	var pluginRaw map[string]any
+	if err := yaml.Unmarshal([]byte(plugin.Snippet.Yaml), &pluginRaw); err != nil {
 		http.Error(w, "Failed to unmarshal YAML", http.StatusInternalServerError)
 		return
-	}
-
-	// Accessing the dynamic key
-	middlewares := result["http"].(map[string]interface{})["middlewares"].(map[string]interface{})
-
-	for key, value := range middlewares {
-		if plugin, ok := value.(map[string]interface{})["plugin"].(map[string]interface{}); ok {
-			// Now you can access the dynamic plugin key
-			fmt.Printf("Key: %s\n", key)
-			fmt.Printf("Plugin Data: %+v\n", plugin)
-		}
 	}
 
 	pluginName := ""
@@ -686,6 +666,18 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 		pluginName = strings.ToLower(importParts[len(importParts)-1])
 	}
 	myPluginName := fmt.Sprintf("my-%s", pluginName)
+
+	pluginData := pluginRaw["http"].(map[string]any)["middlewares"].(map[string]any)[myPluginName].(map[string]any)["plugin"].(map[string]any)[pluginName].(map[string]any)
+	newMiddleware := traefik.Middleware{
+		Name:           pluginName,
+		Provider:       "http",
+		Type:           "plugin",
+		MiddlewareType: "http",
+		Plugin:         make(map[string]dynamic.PluginConf),
+	}
+	newMiddleware.Plugin[pluginName] = dynamic.PluginConf{
+		pluginName: pluginData,
+	}
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -706,30 +698,6 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
-	newMiddleware := traefik.Middleware{
-		Name:           pluginName,
-		Provider:       "http",
-		Type:           "plugin",
-		MiddlewareType: "http",
-		Plugin:         make(map[string]dynamic.PluginConf),
-	}
-
-	// Unmarshal the YAML data into a nested map structure
-	var middlewareConfig map[string]map[string]map[string]map[string]map[string]interface{}
-
-	if err := yaml.Unmarshal(yamlData, &middlewareConfig); err != nil {
-		http.Error(w, "Failed to unmarshal YAML", http.StatusInternalServerError)
-		return
-	}
-	fmt.Printf("middlewareConfig: %v\n", middlewareConfig)
-	pluginConfig := middlewareConfig["http"]["middlewares"][myPluginName]["plugin"][pluginName]
-
-	newPluginConf := dynamic.PluginConf{
-		pluginName: pluginConfig,
-	}
-
-	newMiddleware.Plugin[pluginName] = newPluginConf
 
 	data.Middlewares[newMiddleware.Name] = newMiddleware
 	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)

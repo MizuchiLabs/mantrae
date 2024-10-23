@@ -30,8 +30,6 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 		},
 	}
 
-	VerifyConfig(&d)
-
 	for _, router := range d.Routers {
 		// Only add routers by our provider
 		if router.Provider == "http" {
@@ -143,22 +141,6 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 		}
 	}
 
-	// Remove empty configurations
-	if len(config.HTTP.Routers) == 0 && len(config.HTTP.Services) == 0 &&
-		len(config.HTTP.Middlewares) == 0 {
-		config.HTTP = nil
-	}
-	if len(config.TCP.Routers) == 0 && len(config.TCP.Services) == 0 &&
-		len(config.TCP.Middlewares) == 0 {
-		config.TCP = nil
-	}
-	if len(config.UDP.Routers) == 0 && len(config.UDP.Services) == 0 {
-		config.UDP = nil
-	}
-	if len(config.TLS.Stores) == 0 && len(config.TLS.Options) == 0 {
-		config.TLS = nil
-	}
-
 	return config, nil
 }
 
@@ -168,7 +150,7 @@ func (lb *LoadBalancer) ToHTTPServersLoadBalancer() *dynamic.ServersLoadBalancer
 		return nil
 	}
 
-	var httpServers []dynamic.Server
+	httpServers := make([]dynamic.Server, len(lb.Servers))
 	for _, server := range lb.Servers {
 		httpServers = append(httpServers, dynamic.Server{
 			URL: server.URL,
@@ -191,7 +173,7 @@ func (lb *LoadBalancer) ToTCPServersLoadBalancer() *dynamic.TCPServersLoadBalanc
 		return nil
 	}
 
-	var tcpServers []dynamic.TCPServer
+	tcpServers := make([]dynamic.TCPServer, len(lb.Servers))
 	for _, server := range lb.Servers {
 		tcpServers = append(tcpServers, dynamic.TCPServer{
 			Address: server.Address,
@@ -211,7 +193,7 @@ func (lb *LoadBalancer) ToUDPServersLoadBalancer() *dynamic.UDPServersLoadBalanc
 		return nil
 	}
 
-	var udpServers []dynamic.UDPServer
+	udpServers := make([]dynamic.UDPServer, len(lb.Servers))
 	for _, server := range lb.Servers {
 		udpServers = append(udpServers, dynamic.UDPServer{
 			Address: server.Address,
@@ -229,7 +211,7 @@ func (wrr *WeightedRoundRobin) ToHTTPWeightedRoundRobin() *dynamic.WeightedRound
 		return nil
 	}
 
-	var httpServices []dynamic.WRRService
+	httpServices := make([]dynamic.WRRService, len(wrr.Services))
 	for _, service := range wrr.Services {
 		httpServices = append(httpServices, dynamic.WRRService{
 			Name:   service.Name,
@@ -250,7 +232,7 @@ func (wrr *WeightedRoundRobin) ToTCPWeightedRoundRobin() *dynamic.TCPWeightedRou
 		return nil
 	}
 
-	var tcpServices []dynamic.TCPWRRService
+	tcpServices := make([]dynamic.TCPWRRService, len(wrr.Services))
 	for _, service := range wrr.Services {
 		tcpServices = append(tcpServices, dynamic.TCPWRRService{
 			Name:   service.Name,
@@ -268,7 +250,7 @@ func (wrr *WeightedRoundRobin) ToUDPWeightedRoundRobin() *dynamic.UDPWeightedRou
 		return nil
 	}
 
-	var udpServices []dynamic.UDPWRRService
+	udpServices := make([]dynamic.UDPWRRService, len(wrr.Services))
 	for _, service := range wrr.Services {
 		udpServices = append(udpServices, dynamic.UDPWRRService{
 			Name:   service.Name,
