@@ -176,6 +176,9 @@ func (s HTTPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.URL == "" {
+					continue
+				}
 				servers[i] = Server{URL: server.URL}
 			}
 		}
@@ -219,6 +222,9 @@ func (s TCPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.Address == "" {
+					continue
+				}
 				servers[i] = Server{Address: server.Address}
 			}
 		}
@@ -235,6 +241,9 @@ func (s TCPService) ToService() *Service {
 	var services []dynamic.WRRService
 	if s.Weighted != nil && s.Weighted.Services != nil {
 		for _, service := range s.Weighted.Services {
+			if service.Name == "" {
+				continue
+			}
 			services = append(services, dynamic.WRRService{
 				Name:   service.Name,
 				Weight: service.Weight,
@@ -262,6 +271,9 @@ func (s UDPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.Address == "" {
+					continue
+				}
 				servers[i] = Server{
 					Address: server.Address,
 				}
@@ -276,6 +288,9 @@ func (s UDPService) ToService() *Service {
 	var services []dynamic.WRRService
 	if s.Weighted != nil && s.Weighted.Services != nil {
 		for _, service := range s.Weighted.Services {
+			if service.Name == "" {
+				continue
+			}
 			services = append(services, dynamic.WRRService{
 				Name:   service.Name,
 				Weight: service.Weight,
