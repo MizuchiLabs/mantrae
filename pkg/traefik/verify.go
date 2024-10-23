@@ -48,7 +48,7 @@ func (s *Service) Verify() error {
 	if s.Provider == "" {
 		return fmt.Errorf("provider cannot be empty")
 	}
-	if s.LoadBalancer != nil {
+	if s.LoadBalancer != nil && s.Provider == "http" {
 		validServers := make([]Server, 0)
 		for _, server := range s.LoadBalancer.Servers {
 			if server.Address != "" || server.URL != "" {
