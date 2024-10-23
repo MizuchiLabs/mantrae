@@ -16,19 +16,19 @@ import (
 func VerifyConfig(config *Dynamic) {
 	for i, r := range config.Routers {
 		if err := r.Verify(); err != nil {
-			slog.Error("Failed to verify router", "error", err)
+			slog.Error("Failed to verify router", "name", r.Name, "error", err)
 			delete(config.Routers, i)
 		}
 	}
 	for i, s := range config.Services {
 		if err := s.Verify(); err != nil {
-			slog.Error("Failed to verify service", "error", err)
+			slog.Error("Failed to verify service", "name", s.Name, "error", err)
 			delete(config.Services, i)
 		}
 	}
 	for i, m := range config.Middlewares {
 		if err := m.Verify(); err != nil {
-			slog.Error("Failed to verify middleware", "error", err)
+			slog.Error("Failed to verify middleware", "name", m.Name, "error", err)
 			delete(config.Middlewares, i)
 		}
 	}
