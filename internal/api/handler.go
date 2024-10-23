@@ -669,15 +669,13 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 
 	pluginData := pluginRaw["http"].(map[string]any)["middlewares"].(map[string]any)[myPluginName].(map[string]any)["plugin"].(map[string]any)[pluginName].(map[string]any)
 	newMiddleware := traefik.Middleware{
-		Name:           pluginName,
+		Name:           pluginName + "@http",
 		Provider:       "http",
 		Type:           "plugin",
 		MiddlewareType: "http",
 		Plugin:         make(map[string]dynamic.PluginConf),
 	}
-	newMiddleware.Plugin[pluginName] = dynamic.PluginConf{
-		pluginName: pluginData,
-	}
+	newMiddleware.Plugin[pluginName] = pluginData
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
