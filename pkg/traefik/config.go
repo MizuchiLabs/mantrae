@@ -141,6 +141,22 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 		}
 	}
 
+	// Remove empty configurations
+	if len(config.HTTP.Routers) == 0 && len(config.HTTP.Services) == 0 &&
+		len(config.HTTP.Middlewares) == 0 {
+		config.HTTP = nil
+	}
+	if len(config.TCP.Routers) == 0 && len(config.TCP.Services) == 0 &&
+		len(config.TCP.Middlewares) == 0 {
+		config.TCP = nil
+	}
+	if len(config.UDP.Routers) == 0 && len(config.UDP.Services) == 0 {
+		config.UDP = nil
+	}
+	if len(config.TLS.Stores) == 0 && len(config.TLS.Options) == 0 {
+		config.TLS = nil
+	}
+
 	return config, nil
 }
 

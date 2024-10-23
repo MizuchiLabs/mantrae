@@ -30,10 +30,10 @@
 
 {#if middleware.plugin}
 	<div class="grid grid-cols-4 items-center gap-2">
-		<Label for="value" class="text-right">Value</Label>
+		<Label for="config" class="text-right">Config</Label>
 		<Textarea
-			id="value"
-			name="value"
+			id="config"
+			name="config"
 			rows={pluginData ? pluginData.split('\n').length + 1 : 3}
 			bind:value={pluginData}
 			on:input={validateJSON}
