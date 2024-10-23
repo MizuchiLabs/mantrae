@@ -14,22 +14,22 @@ import (
 )
 
 func VerifyConfig(config *Dynamic) {
-	for _, r := range config.Routers {
+	for i, r := range config.Routers {
 		if err := r.Verify(); err != nil {
 			slog.Error("Failed to verify router", "error", err)
-			delete(config.Routers, r.Name)
+			delete(config.Routers, i)
 		}
 	}
-	for _, s := range config.Services {
+	for i, s := range config.Services {
 		if err := s.Verify(); err != nil {
 			slog.Error("Failed to verify service", "error", err)
-			delete(config.Services, s.Name)
+			delete(config.Services, i)
 		}
 	}
-	for _, m := range config.Middlewares {
+	for i, m := range config.Middlewares {
 		if err := m.Verify(); err != nil {
 			slog.Error("Failed to verify middleware", "error", err)
-			delete(config.Middlewares, m.Name)
+			delete(config.Middlewares, i)
 		}
 	}
 }

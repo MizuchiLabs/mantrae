@@ -48,6 +48,22 @@ func (s *Service) Verify() error {
 	if s.Provider == "" {
 		return fmt.Errorf("provider cannot be empty")
 	}
+	if s.LoadBalancer != nil {
+		validServers := make([]Server, 0)
+		for _, server := range s.LoadBalancer.Servers {
+			if server.Address != "" || server.URL != "" {
+				validServers = append(validServers, server)
+			}
+		}
+
+		if len(validServers) == 0 {
+			return fmt.Errorf("no valid servers found in load balancer")
+		}
+
+		s.LoadBalancer.Servers = validServers
+	} else {
+		return fmt.Errorf("load balancer cannot be nil")
+	}
 
 	s.Name = validateName(s.Name, s.Provider)
 	return nil
