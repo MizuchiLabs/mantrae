@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import HoverInfo from '../utils/hoverInfo.svelte';
 	import type { Profile } from '$lib/types/base';
+	import { Eye, EyeOff } from 'lucide-svelte';
 
 	export let profile: Profile;
+	let showPassword = false;
 </script>
 
 <div class="grid gap-4 py-4">
@@ -59,15 +62,40 @@
 			required
 		/>
 	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
+	<div class="relative grid grid-cols-4 items-center gap-4">
 		<Label for="password" class="text-right">Password</Label>
-		<Input
-			name="password"
-			type="password"
-			class="col-span-3"
-			bind:value={profile.password}
-			placeholder="Basic auth password"
-			required
-		/>
+		<div class="col-span-3 flex flex-row items-center justify-end gap-1">
+			{#if showPassword}
+				<Input
+					name="password"
+					type="text"
+					class="col-span-3 pr-10"
+					bind:value={profile.password}
+					placeholder="Basic auth password"
+					required
+				/>
+			{:else}
+				<Input
+					name="password"
+					type="password"
+					class="col-span-3 pr-10"
+					bind:value={profile.password}
+					placeholder="Basic auth password"
+					required
+				/>
+			{/if}
+			<Button
+				variant="ghost"
+				size="icon"
+				class="absolute hover:bg-transparent hover:text-red-400"
+				on:click={() => (showPassword = !showPassword)}
+			>
+				{#if showPassword}
+					<Eye size="1rem" />
+				{:else}
+					<EyeOff size="1rem" />
+				{/if}
+			</Button>
+		</div>
 	</div>
 </div>

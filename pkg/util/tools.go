@@ -202,6 +202,9 @@ func ValidSSLCert(domain string) error {
 		&tls.Config{},
 	)
 	if err != nil {
+		if err, ok := err.(net.Error); ok && err.Timeout() {
+			return fmt.Errorf("timeout reached after 5 seconds: %v", err)
+		}
 		return fmt.Errorf("could not establish TLS connection: %v", err)
 	}
 	defer conn.Close()
