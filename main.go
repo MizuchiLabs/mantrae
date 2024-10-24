@@ -92,6 +92,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("Shutting down server...")
+	cancel()
 
 	ctxShutdown, cancelShutdown := context.WithTimeout(ctx, 3*time.Second)
 	defer cancelShutdown()

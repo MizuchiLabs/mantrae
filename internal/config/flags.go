@@ -215,6 +215,6 @@ func ResetAdminUser() error {
 	}); err != nil {
 		return fmt.Errorf("failed to update default admin user: %w", err)
 	}
-	slog.Info("Generated new admin password", "password", password)
+	slog.Info("Reset default admin user", "username", "admin", "password", password)
 	return nil
 }
