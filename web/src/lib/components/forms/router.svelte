@@ -47,7 +47,7 @@
 				.optional()
 		})
 		.refine(
-			(data) => {
+			(data: Router) => {
 				// Conditionally check if `rule` is required for `http` or `tcp`
 				if (['http', 'tcp'].includes(data.routerType) && !data.rule) {
 					return false;
@@ -66,7 +66,7 @@
 			formSchema.parse({ ...router });
 			errors = {};
 			return true;
-		} catch (err) {
+		} catch (err: any) {
 			if (err instanceof z.ZodError) {
 				errors = err.flatten().fieldErrors;
 			}
