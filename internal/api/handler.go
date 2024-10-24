@@ -988,7 +988,7 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	dynamicConfig, err := traefik.GenerateConfig(*data)
+	dynamicConfig, err := traefik.GenerateConfig(data)
 	if err != nil {
 		http.Error(
 			w,

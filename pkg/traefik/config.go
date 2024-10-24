@@ -7,7 +7,7 @@ import (
 	ttls "github.com/traefik/traefik/v3/pkg/tls"
 )
 
-func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
+func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 	config := &dynamic.Configuration{
 		HTTP: &dynamic.HTTPConfiguration{
 			Routers:           make(map[string]*dynamic.Router),
