@@ -25,11 +25,6 @@ type DNSRecord struct {
 	Content string
 }
 
-type DomainProvider struct {
-	Domain   string
-	Provider DNSProvider
-}
-
 var managedTXT = "\"managed-by=mantrae\""
 
 func getProvider(id *int64) DNSProvider {
@@ -61,29 +56,21 @@ func getProvider(id *int64) DNSProvider {
 	return nil
 }
 
-func getDomainProviderMap() map[string]DomainProvider {
+// UpdateDNS updates the DNS records for all locally managed domains
+func UpdateDNS() {
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
 		slog.Error("Failed to get profiles", "error", err)
-		return nil
 	}
 
 	// Get all local
-	domainProviderMap := make(map[string]DomainProvider)
 	for _, profile := range profiles {
-		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
-		if err != nil {
-			slog.Error("Failed to get config", "error", err)
-			return nil
-		}
-
-		data, err := traefik.DecodeFromDB(config)
+		data, err := traefik.DecodeFromDB(profile.ID)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
-			return nil
 		}
 
-		for _, router := range data.Routers {
+		for i, router := range data.Routers {
 			if router.DNSProvider != nil {
 				provider := getProvider(router.DNSProvider)
 				if provider == nil {
@@ -95,28 +82,20 @@ func getDomainProviderMap() map[string]DomainProvider {
 					slog.Error("Failed to extract domain from rule", "error", err)
 					continue
 				}
-				domainProviderMap[domain] = DomainProvider{
-					Domain:   domain,
-					Provider: provider,
+
+				if err := provider.UpsertRecord(domain); err != nil {
+					slog.Error("Failed to upsert record", "error", err)
+					if router.ErrorState == nil {
+						router.ErrorState = &traefik.ErrorState{}
+					}
+					router.ErrorState.DNS = err.Error()
+					data.Routers[i] = router
 				}
 			}
 		}
-	}
 
-	return domainProviderMap
-}
-
-// UpdateDNS updates the DNS records for all locally managed domains
-func UpdateDNS() {
-	dpMap := getDomainProviderMap()
-	if dpMap == nil {
-		return
-	}
-
-	// Update all DNS records
-	for _, dp := range dpMap {
-		if err := dp.Provider.UpsertRecord(dp.Domain); err != nil {
-			slog.Error("Failed to upsert record", "error", err)
+		if _, err := traefik.EncodeToDB(data); err != nil {
+			slog.Error("Failed to update config", "error", err)
 		}
 	}
 }

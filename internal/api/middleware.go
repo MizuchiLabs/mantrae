@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -33,9 +32,6 @@ func (rec *statusRecorder) Flush() {
 	}
 }
 
-// A map to store the last log time for each API path
-var lastLogTimes = make(map[string]time.Time)
-
 // Log middleware to log HTTP requests
 func Log(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -52,22 +48,19 @@ func Log(next http.Handler) http.Handler {
 			return
 		}
 
-		path := r.URL.Path
 		status := recorder.statusCode
-		apiPathRegex := regexp.MustCompile(`^/api/[^/]+$`)
-
-		if apiPathRegex.MatchString(path) && status >= 200 && status < 300 {
-			// Rate limiting logs: only log once per 30 seconds for this path
-			lastLogTime, exists := lastLogTimes[path]
-			if exists && time.Since(lastLogTime) < 30*time.Second {
-				return // Skip logging if within the last 30 seconds
-			}
-			// Update the last log time for this path
-			lastLogTimes[path] = time.Now()
-		}
 
 		// Log the request details
-		if status >= 400 {
+		if status >= 500 {
+			slog.Error("Request",
+				"method", r.Method,
+				"url", r.URL.Path,
+				"protocol", r.Proto,
+				"status", recorder.statusCode,
+				"duration", duration,
+			)
+		}
+		if status >= 400 && status < 500 {
 			slog.Warn("Request",
 				"method", r.Method,
 				"url", r.URL.Path,
@@ -77,13 +70,16 @@ func Log(next http.Handler) http.Handler {
 			)
 			return
 		}
-		slog.Info("Request",
-			"method", r.Method,
-			"url", r.URL.Path,
-			"protocol", r.Proto,
-			"status", recorder.statusCode,
-			"duration", duration,
-		)
+		if status >= 200 && status < 400 {
+			slog.Info("Request",
+				"method", r.Method,
+				"url", r.URL.Path,
+				"protocol", r.Proto,
+				"status", recorder.statusCode,
+				"duration", duration,
+			)
+			return
+		}
 	})
 }
 

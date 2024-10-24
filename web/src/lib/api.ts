@@ -384,7 +384,7 @@ export async function addPlugin(plugin: Plugin) {
 	if (response) {
 		const data = await response.json();
 		config.set(data);
-		toast.success(`Plugin ${data.name} added`);
+		toast.success(`Plugin ${plugin.displayName} added`);
 	}
 }
 

@@ -6,7 +6,7 @@ export interface Router {
 	provider?: string;
 	status?: string;
 	routerType: string;
-	sslError?: string;
+	errorState?: ErrorState;
 	dnsProvider?: number;
 
 	entrypoints?: string[];
@@ -62,6 +62,11 @@ export function newService(): Service {
 		serviceType: 'http',
 		serverStatus: {}
 	};
+}
+
+export interface ErrorState {
+	ssl?: string;
+	dns?: string;
 }
 
 export interface TLSConfig {

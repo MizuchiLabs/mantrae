@@ -444,13 +444,13 @@ func GetTraefikConfig() {
 			continue
 		}
 
-		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
-		if err != nil {
-			slog.Error("Failed to get config", "error", err)
-			return
-		}
+		// config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
+		// if err != nil {
+		// 	slog.Error("Failed to get config", "error", err)
+		// 	return
+		// }
 
-		data, err := DecodeFromDB(config)
+		data, err := DecodeFromDB(profile.ID)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
 			return
@@ -527,8 +527,10 @@ func GetTraefikConfig() {
 		}
 		data.Version = v.Version
 
-		// Verify config and write to db
-		if _, err := EncodeToDB(config.ProfileID, data); err != nil {
+		VerifyConfig(data)
+
+		// Write to db
+		if _, err := EncodeToDB(data); err != nil {
 			slog.Error("Failed to update config", "error", err)
 			return
 		}
@@ -579,16 +581,14 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	for _, external := range externals {
 		for k, v := range external {
 			if existing, found := merged[k]; found {
-				// If exists, check and update for specific fields (e.g., DNSProvider)
 				switch existingItem := any(existing).(type) {
 				case Router:
 					if newRouter, ok := any(v).(Router); ok {
 						newRouter.DNSProvider = existingItem.DNSProvider
-						newRouter.SSLError = existingItem.SSLError
+						newRouter.ErrorState = existingItem.ErrorState
 						merged[k] = any(newRouter).(T)
 					}
 				default:
-					// Services or Middleware might not need this DNSProvider logic
 					merged[k] = v
 				}
 			} else {

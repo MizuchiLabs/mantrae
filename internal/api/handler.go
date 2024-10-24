@@ -184,7 +184,11 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 func GetProfiles(w http.ResponseWriter, r *http.Request) {
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
-		http.Error(w, "Failed to get profiles", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get profiles: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	writeJSON(w, profiles)
@@ -194,13 +198,13 @@ func GetProfiles(w http.ResponseWriter, r *http.Request) {
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
 	profile, err := db.Query.GetProfileByID(context.Background(), id)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Profile not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
@@ -211,7 +215,11 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 func CreateProfile(w http.ResponseWriter, r *http.Request) {
 	var profile db.CreateProfileParams
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		http.Error(w, "Failed to decode profile", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode profile: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -238,7 +246,11 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var profile db.UpdateProfileParams
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		http.Error(w, "Failed to decode profile", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode profile: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -265,7 +277,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
@@ -287,7 +299,11 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := db.Query.ListUsers(context.Background())
 	if err != nil {
-		http.Error(w, "Failed to get users", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get users: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	writeJSON(w, users)
@@ -297,12 +313,12 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	user, err := db.Query.GetUserByID(context.Background(), id)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("User not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	writeJSON(w, user)
@@ -312,7 +328,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user db.CreateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Failed to decode user", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to decode user: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -338,7 +354,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var user db.UpdateUserParams
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Failed to decode user", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to decode user: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -364,7 +380,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	if err := db.Query.DeleteUserByID(context.Background(), id); err != nil {
@@ -385,7 +401,11 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 func GetProviders(w http.ResponseWriter, r *http.Request) {
 	providers, err := db.Query.ListProviders(context.Background())
 	if err != nil {
-		http.Error(w, "Failed to get providers", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get providers: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -396,12 +416,12 @@ func GetProviders(w http.ResponseWriter, r *http.Request) {
 func GetProvider(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Provider not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	provider, err := db.Query.GetProviderByID(context.Background(), id)
 	if err != nil {
-		http.Error(w, "Provider not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Provider not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
@@ -412,7 +432,11 @@ func GetProvider(w http.ResponseWriter, r *http.Request) {
 func CreateProvider(w http.ResponseWriter, r *http.Request) {
 	var provider db.CreateProviderParams
 	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
-		http.Error(w, "Failed to decode provider", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode provider: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -438,7 +462,11 @@ func CreateProvider(w http.ResponseWriter, r *http.Request) {
 func UpdateProvider(w http.ResponseWriter, r *http.Request) {
 	var provider db.UpdateProviderParams
 	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
-		http.Error(w, "Failed to decode provider", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode provider: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -464,7 +492,7 @@ func UpdateProvider(w http.ResponseWriter, r *http.Request) {
 func DeleteProvider(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	if err := db.Query.DeleteProviderByID(context.Background(), id); err != nil {
@@ -485,15 +513,11 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request) {
 func GetConfig(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -509,7 +533,11 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 	var router traefik.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode router: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -520,15 +548,11 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -539,7 +563,7 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Routers[router.Name] = router
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -558,7 +582,11 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 func UpdateService(w http.ResponseWriter, r *http.Request) {
 	var service traefik.Service
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -569,15 +597,10 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -588,7 +611,7 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Services[service.Name] = service
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -604,7 +627,11 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	var middleware traefik.Middleware
 	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode middleware: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -615,15 +642,10 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -634,7 +656,7 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Middlewares[middleware.Name] = middleware
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -650,20 +672,28 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 	var plugin traefik.Plugin
 	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode plugin: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	var pluginRaw map[string]any
 	if err := yaml.Unmarshal([]byte(plugin.Snippet.Yaml), &pluginRaw); err != nil {
-		http.Error(w, "Failed to unmarshal YAML", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode plugin: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
 	pluginName := ""
 	importParts := strings.Split(plugin.Name, "/")
 	if len(importParts) > 0 {
-		pluginName = strings.ToLower(importParts[len(importParts)-1])
+		pluginName = importParts[len(importParts)-1]
 	}
 	myPluginName := fmt.Sprintf("my-%s", pluginName)
 
@@ -671,7 +701,7 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 	newMiddleware := traefik.Middleware{
 		Name:           pluginName + "@http",
 		Provider:       "http",
-		Type:           "plugin",
+		Type:           strings.ToLower(pluginName),
 		MiddlewareType: "http",
 		Plugin:         make(map[string]dynamic.PluginConf),
 	}
@@ -679,15 +709,11 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -698,7 +724,7 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.Middlewares[newMiddleware.Name] = newMiddleware
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -714,15 +740,11 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -734,7 +756,7 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 
 	delete(data.Routers, r.PathValue("name"))
 	delete(data.Services, r.PathValue("name"))
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -750,15 +772,11 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
+
+	data, err := traefik.DecodeFromDB(id)
 	if err != nil {
 		http.Error(
 			w,
@@ -769,7 +787,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	}
 
 	delete(data.Middlewares, r.PathValue("name"))
-	newConfig, err := traefik.EncodeToDB(config.ProfileID, data)
+	newConfig, err := traefik.EncodeToDB(data)
 	if err != nil {
 		http.Error(
 			w,
@@ -788,7 +806,11 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 func GetSettings(w http.ResponseWriter, r *http.Request) {
 	settings, err := db.Query.ListSettings(context.Background())
 	if err != nil {
-		http.Error(w, "Failed to get settings", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get settings: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	writeJSON(w, settings)
@@ -799,7 +821,7 @@ func GetSetting(w http.ResponseWriter, r *http.Request) {
 	key := r.PathValue("key")
 	setting, err := db.Query.GetSettingByKey(context.Background(), key)
 	if err != nil {
-		http.Error(w, "Setting not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Setting not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 	writeJSON(w, setting)
@@ -809,12 +831,20 @@ func GetSetting(w http.ResponseWriter, r *http.Request) {
 func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 	var setting db.UpdateSettingParams
 	if err := json.NewDecoder(r.Body).Decode(&setting); err != nil {
-		http.Error(w, "Failed to decode setting", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode setting: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	if err := setting.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to verify setting: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -831,7 +861,11 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 	// Check if the updated setting affects the backup configuration
 	if setting.Key == "backup-enabled" || setting.Key == "backup-schedule" {
 		if err := config.ScheduleBackups(); err != nil {
-			http.Error(w, "Failed to reconfigure backup", http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to schedule backups: %s", err.Error()),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 	}
@@ -845,7 +879,11 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 func DownloadBackup(w http.ResponseWriter, r *http.Request) {
 	data, err := config.DumpBackup(r.Context())
 	if err != nil {
-		http.Error(w, "Failed to get backup", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to create backup: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	writeJSON(w, data)
@@ -854,14 +892,22 @@ func DownloadBackup(w http.ResponseWriter, r *http.Request) {
 func UploadBackup(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Failed to read file", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to upload backup: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 	defer file.Close()
 
 	var data config.BackupData
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
-		http.Error(w, "Failed to decode backup data", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode backup: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 	if err := config.RestoreBackup(r.Context(), &data); err != nil {
@@ -882,7 +928,11 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
 	var router traefik.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-		http.Error(w, "Failed to decode config", http.StatusBadRequest)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode router: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -902,7 +952,11 @@ func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 	// Parse the response body into the Go Plugin struct
 	var plugins []traefik.Plugin
 	if err := json.NewDecoder(resp.Body).Decode(&plugins); err != nil {
-		http.Error(w, "Failed to decode plugins", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to parse plugins: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -921,23 +975,26 @@ func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Profile not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
-	config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
+	data, err := traefik.DecodeFromDB(profile.ID)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(config)
-	if err != nil {
-		http.Error(w, "Failed to decode config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	dynamicConfig, err := traefik.GenerateConfig(*data)
 	if err != nil {
-		http.Error(w, "Failed to generate traefik config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to generate config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -953,7 +1010,11 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		outConfig, err = json.Marshal(dynamicConfig)
 	}
 	if err != nil {
-		http.Error(w, "Failed to marshal config", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to marshal config: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -968,20 +1029,20 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 func GetPublicIP(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
 	profile, err := db.Query.GetProfileByID(context.Background(), id)
 	if err != nil {
-		http.Error(w, "Profile not found", http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Profile not found: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
 	// Parse the URL
 	u, err := url.Parse(profile.Url)
 	if err != nil {
-		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Invalid URL: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -1004,7 +1065,11 @@ func GetPublicIP(w http.ResponseWriter, r *http.Request) {
 
 	ip, err := util.GetPublicIP()
 	if err != nil {
-		http.Error(w, "Failed to get public IP", http.StatusInternalServerError)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get public IP: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	writeJSON(w, map[string]string{"ip": ip})

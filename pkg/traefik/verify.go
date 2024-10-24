@@ -2,6 +2,7 @@ package traefik
 
 import (
 	"fmt"
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -29,23 +30,6 @@ func (r *Router) Verify() error {
 		r.Service = r.Name
 	}
 	return nil
-}
-
-// SSLCheck checks only on correct entrypoint if the certificate is valid
-func SSLCheck(r *Router, epList []Entrypoint) {
-	for _, e := range r.Entrypoints {
-		for _, ep := range epList {
-			if ep.Address == ":443" && e == ep.Name {
-				// Extract and validate the domain
-				if domain, _ := util.ExtractDomainFromRule(r.Rule); domain != "" {
-					if err := util.ValidSSLCert(domain); err != nil {
-						r.SSLError = err.Error()
-					}
-				}
-				return // Exit early after the first valid entry point match
-			}
-		}
-	}
 }
 
 func (s *Service) Verify() error {
@@ -121,6 +105,35 @@ func (m *Middleware) Verify() error {
 	setMiddlewareByType(m)
 	cleanStruct(m)
 	return nil
+}
+
+// SSLCheck checks only on correct entrypoint if the certificate is valid
+func SSLCheck(config *Dynamic) {
+	for i, r := range config.Routers {
+		for _, ep := range config.Entrypoints {
+			for _, e := range r.Entrypoints {
+				if ep.Address == ":443" && e == ep.Name {
+					// Extract and validate the domain
+					if domain, _ := util.ExtractDomainFromRule(r.Rule); domain != "" {
+						if err := util.ValidSSLCert(domain); err != nil {
+							router := config.Routers[i]
+							if router.ErrorState == nil {
+								router.ErrorState = &ErrorState{}
+							}
+							router.ErrorState.SSL = err.Error()
+
+							// Reassign the modified router back to the map
+							config.Routers[i] = router
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+	if _, err := EncodeToDB(config); err != nil {
+		slog.Error("Failed to update config", "error", err)
+	}
 }
 
 func validateName(s, p string) string {
