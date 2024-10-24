@@ -19,7 +19,7 @@ func VerifyConfig(config *Dynamic) {
 			slog.Error("Failed to verify router", "name", r.Name, "error", err)
 			delete(config.Routers, i)
 		}
-		SSLCheck(&r, config.Entrypoints)
+		go SSLCheck(&r, config.Entrypoints)
 	}
 	for i, s := range config.Services {
 		if err := s.Verify(); err != nil {
