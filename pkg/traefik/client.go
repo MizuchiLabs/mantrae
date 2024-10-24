@@ -606,8 +606,6 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 					if newItem.Provider != "http" {
 						merged[k] = v
 					}
-				default:
-					merged[k] = v
 				}
 			}
 		}
