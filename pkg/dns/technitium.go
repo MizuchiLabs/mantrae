@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"slices"
 )
 
 type TechnitiumProvider struct {
@@ -20,6 +21,9 @@ type TechnitiumProvider struct {
 }
 
 func NewTechnitiumProvider(url, key, ip, zoneType string) *TechnitiumProvider {
+	if !slices.Contains(ZoneTypes, zoneType) {
+		slog.Error("Invalid zone type", "type", zoneType)
+	}
 	return &TechnitiumProvider{
 		BaseURL:    url,
 		APIKey:     key,

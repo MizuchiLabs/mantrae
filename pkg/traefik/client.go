@@ -444,12 +444,6 @@ func GetTraefikConfig() {
 			continue
 		}
 
-		// config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
-		// if err != nil {
-		// 	slog.Error("Failed to get config", "error", err)
-		// 	return
-		// }
-
 		data, err := DecodeFromDB(profile.ID)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)

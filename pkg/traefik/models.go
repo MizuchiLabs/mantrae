@@ -17,7 +17,7 @@ type Dynamic struct {
 	Middlewares map[string]Middleware     `json:"middlewares,omitempty"`
 	TLS         *dynamic.TLSConfiguration `json:"tls,omitempty"`
 	Version     string                    `json:"version,omitempty"`
-	Mutex       sync.Mutex
+	Mutex       sync.Mutex                `json:"-"`
 }
 
 type Entrypoint struct {
@@ -32,13 +32,13 @@ type Entrypoint struct {
 
 type Router struct {
 	// Common fields
-	Name        string      `json:"name,omitempty"`
-	Provider    string      `json:"provider,omitempty"`
-	Status      string      `json:"status,omitempty"`
-	RouterType  string      `json:"routerType"`
-	DNSProvider *int64      `json:"dnsProvider,omitempty"`
-	ErrorState  *ErrorState `json:"errorState,omitempty"`
-	AgentID     string      `json:"agentID,omitempty"`
+	Name        string     `json:"name,omitempty"`
+	Provider    string     `json:"provider,omitempty"`
+	Status      string     `json:"status,omitempty"`
+	RouterType  string     `json:"routerType"`
+	DNSProvider *int64     `json:"dnsProvider,omitempty"`
+	ErrorState  ErrorState `json:"errorState,omitempty"`
+	AgentID     string     `json:"agentID,omitempty"`
 
 	Entrypoints []string                    `json:"entrypoints,omitempty"` // http, tcp, udp
 	Middlewares []string                    `json:"middlewares,omitempty"` // http, tcp

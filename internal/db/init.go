@@ -42,7 +42,7 @@ func InitDB() error {
 	var err error
 
 	if isTest() {
-		db, err = sql.Open("sqlite", "file:test.db?mode=memory")
+		db, err = sql.Open("sqlite", "file::memory:?cache=shared")
 		if err != nil {
 			return fmt.Errorf("failed to open database: %w", err)
 		}

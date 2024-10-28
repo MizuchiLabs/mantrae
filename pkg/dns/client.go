@@ -2,7 +2,9 @@ package dns
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"slices"
 	"strings"
 	"time"
 
@@ -25,35 +27,41 @@ type DNSRecord struct {
 	Content string
 }
 
-var managedTXT = "\"managed-by=mantrae\""
+var (
+	DNSProviders = []string{"cloudflare", "powerdns", "technitium"}
+	ZoneTypes    = []string{"primary", "forwarder"}
+	managedTXT   = "\"managed-by=mantrae\""
+)
 
-func getProvider(id *int64) DNSProvider {
+func getProvider(id *int64) (DNSProvider, error) {
 	if id == nil || *id == 0 {
-		return nil
+		return nil, fmt.Errorf("invalid provider id")
 	}
 
 	provider, err := db.Query.GetProviderByID(context.Background(), *id)
 	if err != nil {
-		slog.Error("Failed to get providers", "error", err)
-		return nil
+		return nil, err
+	}
+
+	if !slices.Contains(DNSProviders, provider.Type) {
+		return nil, fmt.Errorf("invalid provider type")
 	}
 
 	switch provider.Type {
 	case "cloudflare":
-		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp, provider.Proxied)
+		return NewCloudflareProvider(provider.ApiKey, provider.ExternalIp, provider.Proxied), nil
 	case "powerdns":
-		return NewPowerDNSProvider(*provider.ApiUrl, provider.ApiKey, provider.ExternalIp)
+		return NewPowerDNSProvider(*provider.ApiUrl, provider.ApiKey, provider.ExternalIp), nil
 	case "technitium":
 		return NewTechnitiumProvider(
 			*provider.ApiUrl,
 			provider.ApiKey,
 			provider.ExternalIp,
 			*provider.ZoneType,
-		)
+		), nil
 	default:
-		slog.Error("Unknown provider type", "type", provider.Type)
+		return nil, fmt.Errorf("invalid provider type")
 	}
-	return nil
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
@@ -72,8 +80,13 @@ func UpdateDNS() {
 
 		for i, router := range data.Routers {
 			if router.DNSProvider != nil {
-				provider := getProvider(router.DNSProvider)
-				if provider == nil {
+				provider, err := getProvider(router.DNSProvider)
+				if err != nil {
+					slog.Error("Failed to get provider", "error", err)
+
+					// Delete provider from router
+					router.DNSProvider = nil
+					data.Routers[i] = router
 					continue
 				}
 
@@ -85,10 +98,10 @@ func UpdateDNS() {
 
 				if err := provider.UpsertRecord(domain); err != nil {
 					slog.Error("Failed to upsert record", "error", err)
-					if router.ErrorState == nil {
-						router.ErrorState = &traefik.ErrorState{}
-					}
 					router.ErrorState.DNS = err.Error()
+					data.Routers[i] = router
+				} else {
+					router.ErrorState.DNS = ""
 					data.Routers[i] = router
 				}
 			}
@@ -102,8 +115,9 @@ func UpdateDNS() {
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
 func DeleteDNS(router traefik.Router) {
-	dnsProvider := getProvider(router.DNSProvider)
-	if dnsProvider == nil {
+	provider, err := getProvider(router.DNSProvider)
+	if err != nil {
+		slog.Error("Failed to get provider", "error", err)
 		return
 	}
 
@@ -113,7 +127,7 @@ func DeleteDNS(router traefik.Router) {
 		return
 	}
 
-	if err := dnsProvider.DeleteRecord(subdomain); err != nil {
+	if err := provider.DeleteRecord(subdomain); err != nil {
 		slog.Error("Failed to delete record", "error", err)
 		return
 	}
