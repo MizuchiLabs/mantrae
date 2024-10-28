@@ -49,6 +49,24 @@ type Provider struct {
 	ZoneType   *string `json:"zone_type"`
 }
 
+type Router struct {
+	ID          int64       `json:"id"`
+	ConfigID    int64       `json:"config_id"`
+	Name        string      `json:"name"`
+	Provider    string      `json:"provider"`
+	Type        string      `json:"type"`
+	EntryPoints interface{} `json:"entry_points"`
+	Middlewares interface{} `json:"middlewares"`
+	Rule        string      `json:"rule"`
+	RuleSyntax  *string     `json:"rule_syntax"`
+	Service     string      `json:"service"`
+	Priority    *int64      `json:"priority"`
+	Tls         interface{} `json:"tls"`
+	Errors      interface{} `json:"errors"`
+	DnsProvider *int64      `json:"dns_provider"`
+	AgentID     *string     `json:"agent_id"`
+}
+
 type Setting struct {
 	ID    int64  `json:"id"`
 	Key   string `json:"key"`
