@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { login, loggedIn } from '$lib/api';
@@ -57,7 +57,7 @@
 				<div class="mt-4 flex flex-col">
 					<Button type="submit" on:click={handleSubmit}>Login</Button>
 				</div>
-			</div></Card.Content
-		>
+			</div>
+		</Card.Content>
 	</Card.Root>
 {/if}

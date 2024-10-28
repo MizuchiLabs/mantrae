@@ -2,6 +2,7 @@ package traefik
 
 import (
 	"fmt"
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -25,13 +26,6 @@ func (r *Router) Verify() error {
 	r.Rule = strings.TrimSpace(r.Rule)
 	r.Name = validateName(r.Name, r.Provider)
 
-	// Ignore for now
-	domain, _ := util.ExtractDomainFromRule(r.Rule)
-	if domain != "" {
-		if err := util.ValidSSLCert(domain); err != nil {
-			r.SSLError = err.Error()
-		}
-	}
 	if r.Service == "" {
 		r.Service = r.Name
 	}
@@ -47,6 +41,24 @@ func (s *Service) Verify() error {
 	}
 	if s.Provider == "" {
 		return fmt.Errorf("provider cannot be empty")
+	}
+	if s.Provider == "http" {
+		if s.LoadBalancer != nil {
+			validServers := make([]Server, 0)
+			for _, server := range s.LoadBalancer.Servers {
+				if server.Address != "" || server.URL != "" {
+					validServers = append(validServers, server)
+				}
+			}
+
+			if len(validServers) == 0 {
+				return fmt.Errorf("no valid servers found in load balancer")
+			}
+
+			s.LoadBalancer.Servers = validServers
+		} else {
+			return fmt.Errorf("load balancer cannot be nil")
+		}
 	}
 
 	s.Name = validateName(s.Name, s.Provider)
@@ -93,6 +105,32 @@ func (m *Middleware) Verify() error {
 	setMiddlewareByType(m)
 	cleanStruct(m)
 	return nil
+}
+
+// SSLCheck checks only on correct entrypoint if the certificate is valid
+func SSLCheck(config *Dynamic) {
+	for i, router := range config.Routers {
+		for _, ep := range config.Entrypoints {
+			for _, e := range router.Entrypoints {
+				if ep.Address == ":443" && e == ep.Name {
+					// Extract and validate the domain
+					if domain, _ := util.ExtractDomainFromRule(router.Rule); domain != "" {
+						if err := util.ValidSSLCert(domain); err != nil {
+							router.ErrorState.SSL = err.Error()
+							config.Routers[i] = router
+						} else {
+							router.ErrorState.SSL = ""
+							config.Routers[i] = router
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+	if _, err := EncodeToDB(config); err != nil {
+		slog.Error("Failed to update config", "error", err)
+	}
 }
 
 func validateName(s, p string) string {

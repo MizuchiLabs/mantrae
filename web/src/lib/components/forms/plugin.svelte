@@ -10,18 +10,19 @@
 	function extractInnerPluginData() {
 		if (!middleware.plugin) return;
 		const outerKey = Object.keys(middleware.plugin)[0];
-		const innerKey = Object.keys(middleware.plugin[outerKey])[0];
+		const data = middleware.plugin[outerKey];
 
-		const data = middleware.plugin[outerKey][innerKey];
 		return JSON.stringify(data, null, 2);
 	}
 
 	$: pluginData = extractInnerPluginData() || '{}';
 	let error = '';
 	function validateJSON() {
-		if (!pluginData) return;
+		if (!pluginData || !middleware.plugin) return;
 		try {
-			JSON.parse(pluginData);
+			const data = JSON.parse(pluginData);
+			const outerKey = Object.keys(middleware.plugin)[0];
+			middleware.plugin = { [outerKey]: data };
 		} catch (e: any) {
 			error = e;
 		}
@@ -29,15 +30,15 @@
 </script>
 
 {#if middleware.plugin}
-	<div class="grid grid-cols-4 items-center gap-2">
-		<Label for="value" class="text-right">Value</Label>
+	<div class="grid grid-cols-8 items-center gap-2">
+		<Label for="config" class="text-right">Config</Label>
 		<Textarea
-			id="value"
-			name="value"
+			id="config"
+			name="config"
 			rows={pluginData ? pluginData.split('\n').length + 1 : 3}
 			bind:value={pluginData}
 			on:input={validateJSON}
-			class="col-span-3"
+			class="col-span-7 max-h-[500px] overflow-y-auto"
 			{disabled}
 		/>
 		{#if error}

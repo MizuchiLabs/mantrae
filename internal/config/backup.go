@@ -47,7 +47,7 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 
 	// We're only interested in the our local provider
 	for _, config := range configs {
-		dynamic, err := traefik.DecodeFromDB(config)
+		dynamic, err := traefik.DecodeFromDB(config.ProfileID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode config: %w", err)
 		}
@@ -109,15 +109,27 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 
-	for _, profile := range data.Profiles {
-		if _, err := db.Query.UpsertProfile(ctx, db.UpsertProfileParams(profile)); err != nil {
-			return fmt.Errorf("failed to upsert profile: %w", err)
-		}
+	// Create defaults
+	if err := SetDefaultAdminUser(); err != nil {
+		return err
+	}
+	if err := SetDefaultSettings(); err != nil {
+		return err
 	}
 
-	for _, config := range data.Configs {
-		if _, err := traefik.EncodeToDB(config.ProfileID, config); err != nil {
-			return fmt.Errorf("failed to update config: %w", err)
+	// Insert data
+	if len(data.Profiles) > 0 {
+		for _, profile := range data.Profiles {
+			if _, err := db.Query.UpsertProfile(ctx, db.UpsertProfileParams(profile)); err != nil {
+				return fmt.Errorf("failed to upsert profile: %w", err)
+			}
+		}
+
+		for _, config := range data.Configs {
+			traefik.VerifyConfig(config)
+			if _, err := traefik.EncodeToDB(config); err != nil {
+				return fmt.Errorf("failed to update config: %w", err)
+			}
 		}
 	}
 
@@ -147,6 +159,11 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		if _, err := db.Query.UpsertUser(ctx, db.UpsertUserParams(user)); err != nil {
 			return fmt.Errorf("failed to upsert user: %w", err)
 		}
+	}
+
+	// Trigger fetch
+	if len(data.Profiles) > 0 {
+		go traefik.GetTraefikConfig()
 	}
 
 	return nil

@@ -133,7 +133,7 @@
 							on:click={async () => {
 								provider.external_ip = await getPublicIP();
 							}}
-							class=" hover:bg-transparent hover:text-red-400"
+							class="hover:bg-transparent hover:text-red-400"
 						>
 							<Copy size="1rem" />
 						</Button>

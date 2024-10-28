@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button';
@@ -11,7 +12,10 @@
 	import type { Selected } from 'bits-ui';
 	import { LIMIT_SK } from '$lib/store';
 	import Pagination from '$lib/components/tables/pagination.svelte';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { toast } from 'svelte-sonner';
 
+	let open = false;
 	let search: string = '';
 	let fPlugins: Plugin[] = [];
 	let count = 0;
@@ -40,6 +44,25 @@
 	const paginate = (plugins: Plugin[], page: number, itemsPerPage: number) => {
 		const start = (page - 1) * itemsPerPage;
 		return plugins?.slice(start, start + itemsPerPage);
+	};
+
+	let selectedPlugin: Plugin | undefined;
+	let yamlSnippet: string = '';
+	const installPlugin = async (plugin: Plugin) => {
+		await addPlugin(plugin);
+		selectedPlugin = plugin;
+		yamlSnippet = `experimental:
+  plugins:
+    ${plugin.name.split('/').slice(-1)[0]}:
+      moduleName: ${plugin.name}
+      version: ${plugin.latestVersion}`;
+		console.log(plugin);
+		open = true;
+	};
+
+	const copyToClipboard = () => {
+		navigator.clipboard.writeText(yamlSnippet);
+		toast.success('Copied!');
 	};
 
 	onMount(async () => {
@@ -90,7 +113,7 @@
 				</Card.Header>
 				<Card.Content class="mt-auto flex flex-row items-center justify-between">
 					<Badge variant="secondary">{plugin.latestVersion}</Badge>
-					<Button variant="default" on:click={() => addPlugin(plugin)}>Install</Button>
+					<Button variant="default" on:click={() => installPlugin(plugin)}>Install</Button>
 				</Card.Content>
 			</Card.Root>
 		{/each}
@@ -98,3 +121,23 @@
 
 	<Pagination {count} bind:perPage bind:currentPage />
 </div>
+
+<Dialog.Root bind:open>
+	<Dialog.Content class="max-w-xl">
+		<Dialog.Header>
+			<Dialog.Title>Install {selectedPlugin?.displayName}</Dialog.Title>
+			<Dialog.Description>
+				Add this snippet to your Traefik Static Config:
+				<span class="text-xs text-slate-500">(Click to copy)</span>
+			</Dialog.Description>
+		</Dialog.Header>
+		<div class="flex flex-col gap-4">
+			<Textarea
+				bind:value={yamlSnippet}
+				rows={yamlSnippet?.split('\n').length || 5}
+				on:click={copyToClipboard}
+				readonly
+			/>
+		</div>
+	</Dialog.Content>
+</Dialog.Root>

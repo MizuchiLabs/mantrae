@@ -22,7 +22,7 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
-	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldX } from 'lucide-svelte';
+	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldAlert, TriangleAlert } from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
 	let search = '';
@@ -336,15 +336,29 @@
 								</span>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('dns') ? 'font-medium' : 'hidden'}>
-								<span
-									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									class:bg-green-300={getDNSProviderName(router)}
-									class:bg-blue-300={!getDNSProviderName(router)}
-									on:click={() => (search = `@dns:${getDNSProviderName(router)}`)}
-									aria-hidden
-								>
-									{getDNSProviderName(router) ? getDNSProviderName(router) : 'None'}
-								</span>
+								<div class="flex flex-row items-center gap-1">
+									<span
+										class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
+										class:bg-green-300={getDNSProviderName(router)}
+										class:bg-blue-300={!getDNSProviderName(router)}
+										on:click={() => (search = `@dns:${getDNSProviderName(router)}`)}
+										aria-hidden
+									>
+										{getDNSProviderName(router) ? getDNSProviderName(router) : 'None'}
+									</span>
+									{#if router.errorState && router.errorState.dns}
+										<HoverCard.Root openDelay={400}>
+											<HoverCard.Trigger>
+												<Badge variant="secondary" class="bg-orange-300">
+													<TriangleAlert size="1rem" />
+												</Badge>
+											</HoverCard.Trigger>
+											<HoverCard.Content class="text-sm text-slate-800">
+												DNS Error: {router.errorState.dns}
+											</HoverCard.Content>
+										</HoverCard.Root>
+									{/if}
+								</div>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
 								<span
@@ -433,15 +447,15 @@
 									>
 										{getServiceStatus(router).status}
 									</span>
-									{#if router.sslError}
+									{#if router.errorState && router.errorState.ssl}
 										<HoverCard.Root openDelay={400}>
 											<HoverCard.Trigger>
 												<Badge variant="secondary" class="bg-red-300">
-													<ShieldX size="1rem" />
+													<ShieldAlert size="1rem" />
 												</Badge>
 											</HoverCard.Trigger>
 											<HoverCard.Content>
-												<div class="text-sm">SSL Error: {router.sslError}</div>
+												<div class="text-sm">SSL Error: {router.errorState.ssl}</div>
 											</HoverCard.Content>
 										</HoverCard.Root>
 									{/if}

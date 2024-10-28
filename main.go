@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -19,7 +20,20 @@ import (
 
 // Set up global logger with specified configuration
 func init() {
-	logger := slog.New(tint.NewHandler(os.Stdout, nil))
+	opts := &tint.Options{}
+	switch strings.ToLower(os.Getenv("LOG_LEVEL")) {
+	case "debug":
+		opts.Level = slog.LevelDebug
+	case "info":
+		opts.Level = slog.LevelInfo
+	case "warn":
+		opts.Level = slog.LevelWarn
+	case "error":
+		opts.Level = slog.LevelError
+	default:
+		opts.Level = slog.LevelInfo
+	}
+	logger := slog.New(tint.NewHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
 }
 
@@ -78,6 +92,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	slog.Info("Shutting down server...")
+	cancel()
 
 	ctxShutdown, cancelShutdown := context.WithTimeout(ctx, 3*time.Second)
 	defer cancelShutdown()

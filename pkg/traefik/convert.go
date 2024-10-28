@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"strings"
+	"sync"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -14,30 +15,40 @@ import (
 )
 
 func VerifyConfig(config *Dynamic) {
-	for _, r := range config.Routers {
+	go SSLCheck(config)
+	for i, r := range config.Routers {
 		if err := r.Verify(); err != nil {
-			slog.Error("Failed to verify router", "error", err)
-			delete(config.Routers, r.Name)
+			slog.Error("Failed to verify router", "name", r.Name, "error", err)
+			delete(config.Routers, i)
 		}
 	}
-	for _, s := range config.Services {
+	for i, s := range config.Services {
 		if err := s.Verify(); err != nil {
-			slog.Error("Failed to verify service", "error", err)
-			delete(config.Services, s.Name)
+			slog.Error("Failed to verify service", "name", s.Name, "error", err)
+			delete(config.Services, i)
 		}
 	}
-	for _, m := range config.Middlewares {
+	for i, m := range config.Middlewares {
 		if err := m.Verify(); err != nil {
-			slog.Error("Failed to verify middleware", "error", err)
-			delete(config.Middlewares, m.Name)
+			slog.Error("Failed to verify middleware", "name", m.Name, "error", err)
+			delete(config.Middlewares, i)
 		}
 	}
 }
 
 // DecodeFromDB decodes the config from the database into our Dynamic struct
-func DecodeFromDB(config db.Config) (*Dynamic, error) {
+func DecodeFromDB(id int64) (*Dynamic, error) {
+	if id == 0 {
+		return nil, nil
+	}
+
+	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+
 	data := &Dynamic{
-		ProfileID:   config.ProfileID,
+		ProfileID:   id,
 		Overview:    nil,
 		Entrypoints: make([]Entrypoint, 0),
 		Routers:     make(map[string]Router),
@@ -45,6 +56,7 @@ func DecodeFromDB(config db.Config) (*Dynamic, error) {
 		Middlewares: make(map[string]Middleware),
 		TLS:         nil,
 		Version:     "",
+		Mutex:       sync.Mutex{},
 	}
 
 	if config.Overview != nil {
@@ -83,9 +95,13 @@ func DecodeFromDB(config db.Config) (*Dynamic, error) {
 	return data, nil
 }
 
-// EncodeToDB encodes the config from our Dynamic struct into the database
-func EncodeToDB(profileID int64, data *Dynamic) (*Dynamic, error) {
-	VerifyConfig(data)
+// EncodeToDB encodes the config from our Dynamic struct and saves it to the database
+func EncodeToDB(data *Dynamic) (*Dynamic, error) {
+	if data.ProfileID == 0 {
+		return nil, nil
+	}
+	data.Mutex.Lock()
+	defer data.Mutex.Unlock()
 
 	overview, err := json.Marshal(data.Overview)
 	if err != nil {
@@ -111,8 +127,8 @@ func EncodeToDB(profileID int64, data *Dynamic) (*Dynamic, error) {
 	if err != nil {
 		return nil, err
 	}
-	config, err := db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
-		ProfileID:   profileID,
+	_, err = db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
+		ProfileID:   data.ProfileID,
 		Overview:    overview,
 		Entrypoints: entrypoints,
 		Routers:     routers,
@@ -122,10 +138,11 @@ func EncodeToDB(profileID int64, data *Dynamic) (*Dynamic, error) {
 		Version:     &data.Version,
 	})
 	if err != nil {
+		slog.Error("Failed to update config", "error", err)
 		return nil, err
 	}
 
-	return DecodeFromDB(config)
+	return DecodeFromDB(data.ProfileID)
 }
 
 // DecodeFromLabels uses the traefik parses to decode the config from the labels into our Dynamic struct
@@ -144,7 +161,7 @@ func DecodeFromLabels(id string) (*Dynamic, error) {
 		return nil, err
 	}
 
-	dynamicConfig, err := DecodeFromDB(dbConfig)
+	dynamicConfig, err := DecodeFromDB(dbConfig.ProfileID)
 	if err != nil {
 		return nil, err
 	}

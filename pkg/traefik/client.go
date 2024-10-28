@@ -176,6 +176,9 @@ func (s HTTPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.URL == "" {
+					continue
+				}
 				servers[i] = Server{URL: server.URL}
 			}
 		}
@@ -219,6 +222,9 @@ func (s TCPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.Address == "" {
+					continue
+				}
 				servers[i] = Server{Address: server.Address}
 			}
 		}
@@ -235,6 +241,9 @@ func (s TCPService) ToService() *Service {
 	var services []dynamic.WRRService
 	if s.Weighted != nil && s.Weighted.Services != nil {
 		for _, service := range s.Weighted.Services {
+			if service.Name == "" {
+				continue
+			}
 			services = append(services, dynamic.WRRService{
 				Name:   service.Name,
 				Weight: service.Weight,
@@ -262,6 +271,9 @@ func (s UDPService) ToService() *Service {
 		if s.LoadBalancer.Servers != nil {
 			servers = make([]Server, len(s.LoadBalancer.Servers))
 			for i, server := range s.LoadBalancer.Servers {
+				if server.Address == "" {
+					continue
+				}
 				servers[i] = Server{
 					Address: server.Address,
 				}
@@ -276,6 +288,9 @@ func (s UDPService) ToService() *Service {
 	var services []dynamic.WRRService
 	if s.Weighted != nil && s.Weighted.Services != nil {
 		for _, service := range s.Weighted.Services {
+			if service.Name == "" {
+				continue
+			}
 			services = append(services, dynamic.WRRService{
 				Name:   service.Name,
 				Weight: service.Weight,
@@ -429,13 +444,7 @@ func GetTraefikConfig() {
 			continue
 		}
 
-		config, err := db.Query.GetConfigByProfileID(context.Background(), profile.ID)
-		if err != nil {
-			slog.Error("Failed to get config", "error", err)
-			return
-		}
-
-		data, err := DecodeFromDB(config)
+		data, err := DecodeFromDB(profile.ID)
 		if err != nil {
 			slog.Error("Failed to decode config", "error", err)
 			return
@@ -512,8 +521,10 @@ func GetTraefikConfig() {
 		}
 		data.Version = v.Version
 
-		// Verify config and write to db
-		if _, err := EncodeToDB(config.ProfileID, data); err != nil {
+		VerifyConfig(data)
+
+		// Write to db
+		if _, err := EncodeToDB(data); err != nil {
 			slog.Error("Failed to update config", "error", err)
 			return
 		}
@@ -564,16 +575,14 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 	for _, external := range externals {
 		for k, v := range external {
 			if existing, found := merged[k]; found {
-				// If exists, check and update for specific fields (e.g., DNSProvider)
 				switch existingItem := any(existing).(type) {
 				case Router:
 					if newRouter, ok := any(v).(Router); ok {
 						newRouter.DNSProvider = existingItem.DNSProvider
-						newRouter.SSLError = existingItem.SSLError
+						newRouter.ErrorState = existingItem.ErrorState
 						merged[k] = any(newRouter).(T)
 					}
 				default:
-					// Services or Middleware might not need this DNSProvider logic
 					merged[k] = v
 				}
 			} else {
@@ -591,8 +600,6 @@ func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
 					if newItem.Provider != "http" {
 						merged[k] = v
 					}
-				default:
-					merged[k] = v
 				}
 			}
 		}

@@ -7,7 +7,7 @@ import (
 	ttls "github.com/traefik/traefik/v3/pkg/tls"
 )
 
-func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
+func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 	config := &dynamic.Configuration{
 		HTTP: &dynamic.HTTPConfiguration{
 			Routers:           make(map[string]*dynamic.Router),
@@ -141,6 +141,22 @@ func GenerateConfig(d Dynamic) (*dynamic.Configuration, error) {
 		}
 	}
 
+	// Remove empty configurations
+	if len(config.HTTP.Routers) == 0 && len(config.HTTP.Services) == 0 &&
+		len(config.HTTP.Middlewares) == 0 {
+		config.HTTP = nil
+	}
+	if len(config.TCP.Routers) == 0 && len(config.TCP.Services) == 0 &&
+		len(config.TCP.Middlewares) == 0 {
+		config.TCP = nil
+	}
+	if len(config.UDP.Routers) == 0 && len(config.UDP.Services) == 0 {
+		config.UDP = nil
+	}
+	if len(config.TLS.Stores) == 0 && len(config.TLS.Options) == 0 {
+		config.TLS = nil
+	}
+
 	return config, nil
 }
 
@@ -151,10 +167,10 @@ func (lb *LoadBalancer) ToHTTPServersLoadBalancer() *dynamic.ServersLoadBalancer
 	}
 
 	httpServers := make([]dynamic.Server, len(lb.Servers))
-	for _, server := range lb.Servers {
-		httpServers = append(httpServers, dynamic.Server{
+	for i, server := range lb.Servers {
+		httpServers[i] = dynamic.Server{
 			URL: server.URL,
-		})
+		}
 	}
 
 	return &dynamic.ServersLoadBalancer{
@@ -174,10 +190,10 @@ func (lb *LoadBalancer) ToTCPServersLoadBalancer() *dynamic.TCPServersLoadBalanc
 	}
 
 	tcpServers := make([]dynamic.TCPServer, len(lb.Servers))
-	for _, server := range lb.Servers {
-		tcpServers = append(tcpServers, dynamic.TCPServer{
+	for i, server := range lb.Servers {
+		tcpServers[i] = dynamic.TCPServer{
 			Address: server.Address,
-		})
+		}
 	}
 
 	return &dynamic.TCPServersLoadBalancer{
@@ -194,10 +210,10 @@ func (lb *LoadBalancer) ToUDPServersLoadBalancer() *dynamic.UDPServersLoadBalanc
 	}
 
 	udpServers := make([]dynamic.UDPServer, len(lb.Servers))
-	for _, server := range lb.Servers {
-		udpServers = append(udpServers, dynamic.UDPServer{
+	for i, server := range lb.Servers {
+		udpServers[i] = dynamic.UDPServer{
 			Address: server.Address,
-		})
+		}
 	}
 
 	return &dynamic.UDPServersLoadBalancer{
@@ -212,11 +228,11 @@ func (wrr *WeightedRoundRobin) ToHTTPWeightedRoundRobin() *dynamic.WeightedRound
 	}
 
 	httpServices := make([]dynamic.WRRService, len(wrr.Services))
-	for _, service := range wrr.Services {
-		httpServices = append(httpServices, dynamic.WRRService{
+	for i, service := range wrr.Services {
+		httpServices[i] = dynamic.WRRService{
 			Name:   service.Name,
 			Weight: service.Weight, // HTTP uses Weight
-		})
+		}
 	}
 
 	return &dynamic.WeightedRoundRobin{
@@ -233,11 +249,11 @@ func (wrr *WeightedRoundRobin) ToTCPWeightedRoundRobin() *dynamic.TCPWeightedRou
 	}
 
 	tcpServices := make([]dynamic.TCPWRRService, len(wrr.Services))
-	for _, service := range wrr.Services {
-		tcpServices = append(tcpServices, dynamic.TCPWRRService{
+	for i, service := range wrr.Services {
+		tcpServices[i] = dynamic.TCPWRRService{
 			Name:   service.Name,
 			Weight: service.Weight,
-		})
+		}
 	}
 
 	return &dynamic.TCPWeightedRoundRobin{
@@ -251,11 +267,11 @@ func (wrr *WeightedRoundRobin) ToUDPWeightedRoundRobin() *dynamic.UDPWeightedRou
 	}
 
 	udpServices := make([]dynamic.UDPWRRService, len(wrr.Services))
-	for _, service := range wrr.Services {
-		udpServices = append(udpServices, dynamic.UDPWRRService{
+	for i, service := range wrr.Services {
+		udpServices[i] = dynamic.UDPWRRService{
 			Name:   service.Name,
 			Weight: service.Weight,
-		})
+		}
 	}
 
 	return &dynamic.UDPWeightedRoundRobin{

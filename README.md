@@ -94,7 +94,7 @@ Before starting mantrae it will look for a `SECRET` environment variable. Depend
 
 ## FAQ
 
-### Why would use this? Traefik already has configuration discovery.
+### Why would I use this? Traefik already has configuration discovery.
 
 Yes, Traefik has amazing configuration discovery capabilities for various providers (Docker, Kubernetes, etc.). But for all those times you can't use these features (e.g. multiple machines not connected via Docker Swarm or Kubernetes) you have to use the file provider. Mantrae helps you with that and adds additional automation features like managing DNS records as well, similar to external-dns for Kubernetes.
 
@@ -142,6 +142,7 @@ providers:
 - Backup scheduler (local or S3)
 - Support multiple database providers (currently only supports SQLite)
 - User management and permissions system
+- Agent for simpler management of multiple machines.
 
 ## Contributing
 

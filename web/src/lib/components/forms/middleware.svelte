@@ -52,30 +52,33 @@
 	const setMiddlewareType = async (type: Selected<string> | undefined) => {
 		if (type === undefined) return;
 		middlewareType = type;
-		middleware = newMiddleware();
 		middleware.type = type.value.toLowerCase();
 		middleware.middlewareType = isHTTP ? 'http' : 'tcp';
 		form = null;
 		form = await LoadMiddlewareForm(middleware);
 	};
 
+	$: console.log(middleware);
 	$: isHTTP, setType();
 	const setType = () => {
-		if (isHTTP) setMiddlewareType(HTTPMiddlewareTypes[0]);
-		else setMiddlewareType(TCPMiddlewareTypes[0]);
-	};
-
-	const checkType = () => {
 		if (middleware.type === '') {
-			setMiddlewareType(HTTPMiddlewareTypes[0]);
+			if (isHTTP) setMiddlewareType(HTTPMiddlewareTypes[0]);
+			else setMiddlewareType(TCPMiddlewareTypes[0]);
 			return;
-		}
-
-		if (isHTTP) {
-			middlewareType = HTTPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);
-		}
-		if (!isHTTP) {
-			middlewareType = TCPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type);
+		} else {
+			if (isHTTP) {
+				let middlewareType = HTTPMiddlewareTypes.find(
+					(t) => t.value.toLowerCase() === middleware.type
+				) ?? {
+					label: 'Plugin',
+					value: 'plugin'
+				};
+				setMiddlewareType(middlewareType);
+			} else {
+				setMiddlewareType(
+					TCPMiddlewareTypes.find((t) => t.value.toLowerCase() === middleware.type)
+				);
+			}
 		}
 	};
 
@@ -84,7 +87,7 @@
 	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
 
 	onMount(async () => {
-		checkType();
+		setType();
 		form = await LoadMiddlewareForm(middleware);
 	});
 </script>
@@ -104,11 +107,13 @@
 		</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		<div class="flex items-center justify-end gap-2">
-			<Label for="middleware-type">TCP</Label>
-			<Switch id="middleware-type" bind:checked={isHTTP} />
-			<Label for="middleware-type">HTTP</Label>
-		</div>
+		{#if middleware.provider === 'http' && middleware.type !== 'plugin'}
+			<div class="flex items-center justify-end gap-2">
+				<Label for="middleware-type">TCP</Label>
+				<Switch id="middleware-type" bind:checked={isHTTP} />
+				<Label for="middleware-type">HTTP</Label>
+			</div>
+		{/if}
 
 		<!-- Type -->
 		{#if !disabled}

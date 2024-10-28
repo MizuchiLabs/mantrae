@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Delete } from 'lucide-svelte';
@@ -58,14 +59,21 @@
 				bind:value={search}
 			/>
 		</div>
-		<button
-			class={buttonVariants({ variant: 'outline' })}
-			class:bg-primary={localProvider}
-			class:text-primary-foreground={localProvider}
-			on:click={toggleProvider}
-		>
-			Local Only
-		</button>
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				<button
+					class={buttonVariants({ variant: 'outline' })}
+					class:bg-primary={localProvider}
+					class:text-primary-foreground={localProvider}
+					on:click={toggleProvider}
+				>
+					Local
+				</button>
+			</Tooltip.Trigger>
+			<Tooltip.Content side="top" align="center" class="max-w-sm">
+				Display only entries managed by Mantrae
+			</Tooltip.Content>
+		</Tooltip.Root>
 	</div>
 
 	<Select.Root
