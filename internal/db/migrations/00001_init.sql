@@ -21,23 +21,42 @@ CREATE TABLE IF NOT EXISTS config (
 );
 
 CREATE TABLE IF NOT EXISTS routers (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  config_id INTEGER NOT NULL,
-  agent_id TEXT,
-  name VARCHAR(255) NOT NULL UNIQUE,
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
   provider VARCHAR(255) NOT NULL,
-  type VARCHAR(255) NOT NULL,
+  protocol VARCHAR(255) NOT NULL,
+  status VARCHAR(255),
   entry_points JSONB,
   middlewares JSONB,
   rule TEXT NOT NULL,
-  rule_syntax TEXT,
+  rule_syntax VARCHAR(255),
   service TEXT NOT NULL,
   priority INTEGER,
   tls JSONB,
-  errors JSONB,
   dns_provider INTEGER,
-  FOREIGN KEY (config_id) REFERENCES config (id) ON DELETE CASCADE,
+  agent_id TEXT,
+  errors JSONB,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider) REFERENCES providers (id) ON DELETE SET NULL,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS services (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  provider VARCHAR(255) NOT NULL,
+  type VARCHAR(255) NOT NULL,
+  protocol VARCHAR(255) NOT NULL,
+  status VARCHAR(255),
+  server_status JSONB,
+  load_balancer JSONB,
+  weighted JSONB,
+  mirroring JSONB,
+  failover JSONB,
+  agent_id TEXT,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL
 );
 

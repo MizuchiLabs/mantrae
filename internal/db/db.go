@@ -36,6 +36,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createProviderStmt, err = db.PrepareContext(ctx, createProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProvider: %w", err)
 	}
+	if q.createRouterStmt, err = db.PrepareContext(ctx, createRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateRouter: %w", err)
+	}
+	if q.createServiceStmt, err = db.PrepareContext(ctx, createService); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateService: %w", err)
+	}
 	if q.createSettingStmt, err = db.PrepareContext(ctx, createSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSetting: %w", err)
 	}
@@ -65,6 +71,18 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteProviderByNameStmt, err = db.PrepareContext(ctx, deleteProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProviderByName: %w", err)
+	}
+	if q.deleteRouterByIDStmt, err = db.PrepareContext(ctx, deleteRouterByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteRouterByID: %w", err)
+	}
+	if q.deleteRouterByNameStmt, err = db.PrepareContext(ctx, deleteRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteRouterByName: %w", err)
+	}
+	if q.deleteServiceByIDStmt, err = db.PrepareContext(ctx, deleteServiceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteServiceByID: %w", err)
+	}
+	if q.deleteServiceByNameStmt, err = db.PrepareContext(ctx, deleteServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteServiceByName: %w", err)
 	}
 	if q.deleteSettingByIDStmt, err = db.PrepareContext(ctx, deleteSettingByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSettingByID: %w", err)
@@ -102,6 +120,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProviderByNameStmt, err = db.PrepareContext(ctx, getProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProviderByName: %w", err)
 	}
+	if q.getRouterByIDStmt, err = db.PrepareContext(ctx, getRouterByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterByID: %w", err)
+	}
+	if q.getServiceByIDStmt, err = db.PrepareContext(ctx, getServiceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetServiceByID: %w", err)
+	}
 	if q.getSettingByKeyStmt, err = db.PrepareContext(ctx, getSettingByKey); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSettingByKey: %w", err)
 	}
@@ -123,6 +147,18 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProvidersStmt, err = db.PrepareContext(ctx, listProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProviders: %w", err)
 	}
+	if q.listRoutersStmt, err = db.PrepareContext(ctx, listRouters); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRouters: %w", err)
+	}
+	if q.listRoutersByProfileIDStmt, err = db.PrepareContext(ctx, listRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRoutersByProfileID: %w", err)
+	}
+	if q.listServicesStmt, err = db.PrepareContext(ctx, listServices); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServices: %w", err)
+	}
+	if q.listServicesByProfileIDStmt, err = db.PrepareContext(ctx, listServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServicesByProfileID: %w", err)
+	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
 	}
@@ -141,6 +177,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateProviderStmt, err = db.PrepareContext(ctx, updateProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProvider: %w", err)
 	}
+	if q.updateRouterStmt, err = db.PrepareContext(ctx, updateRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateRouter: %w", err)
+	}
+	if q.updateServiceStmt, err = db.PrepareContext(ctx, updateService); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateService: %w", err)
+	}
 	if q.updateSettingStmt, err = db.PrepareContext(ctx, updateSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateSetting: %w", err)
 	}
@@ -155,6 +197,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.upsertProviderStmt, err = db.PrepareContext(ctx, upsertProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertProvider: %w", err)
+	}
+	if q.upsertRouterStmt, err = db.PrepareContext(ctx, upsertRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertRouter: %w", err)
+	}
+	if q.upsertServiceStmt, err = db.PrepareContext(ctx, upsertService); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertService: %w", err)
 	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
@@ -185,6 +233,16 @@ func (q *Queries) Close() error {
 	if q.createProviderStmt != nil {
 		if cerr := q.createProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createProviderStmt: %w", cerr)
+		}
+	}
+	if q.createRouterStmt != nil {
+		if cerr := q.createRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createRouterStmt: %w", cerr)
+		}
+	}
+	if q.createServiceStmt != nil {
+		if cerr := q.createServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createServiceStmt: %w", cerr)
 		}
 	}
 	if q.createSettingStmt != nil {
@@ -235,6 +293,26 @@ func (q *Queries) Close() error {
 	if q.deleteProviderByNameStmt != nil {
 		if cerr := q.deleteProviderByNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteProviderByNameStmt: %w", cerr)
+		}
+	}
+	if q.deleteRouterByIDStmt != nil {
+		if cerr := q.deleteRouterByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteRouterByIDStmt: %w", cerr)
+		}
+	}
+	if q.deleteRouterByNameStmt != nil {
+		if cerr := q.deleteRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.deleteServiceByIDStmt != nil {
+		if cerr := q.deleteServiceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteServiceByIDStmt: %w", cerr)
+		}
+	}
+	if q.deleteServiceByNameStmt != nil {
+		if cerr := q.deleteServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteServiceByNameStmt: %w", cerr)
 		}
 	}
 	if q.deleteSettingByIDStmt != nil {
@@ -297,6 +375,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProviderByNameStmt: %w", cerr)
 		}
 	}
+	if q.getRouterByIDStmt != nil {
+		if cerr := q.getRouterByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterByIDStmt: %w", cerr)
+		}
+	}
+	if q.getServiceByIDStmt != nil {
+		if cerr := q.getServiceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getServiceByIDStmt: %w", cerr)
+		}
+	}
 	if q.getSettingByKeyStmt != nil {
 		if cerr := q.getSettingByKeyStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getSettingByKeyStmt: %w", cerr)
@@ -332,6 +420,26 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProvidersStmt: %w", cerr)
 		}
 	}
+	if q.listRoutersStmt != nil {
+		if cerr := q.listRoutersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersStmt: %w", cerr)
+		}
+	}
+	if q.listRoutersByProfileIDStmt != nil {
+		if cerr := q.listRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.listServicesStmt != nil {
+		if cerr := q.listServicesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServicesStmt: %w", cerr)
+		}
+	}
+	if q.listServicesByProfileIDStmt != nil {
+		if cerr := q.listServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServicesByProfileIDStmt: %w", cerr)
+		}
+	}
 	if q.listSettingsStmt != nil {
 		if cerr := q.listSettingsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listSettingsStmt: %w", cerr)
@@ -362,6 +470,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateProviderStmt: %w", cerr)
 		}
 	}
+	if q.updateRouterStmt != nil {
+		if cerr := q.updateRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateRouterStmt: %w", cerr)
+		}
+	}
+	if q.updateServiceStmt != nil {
+		if cerr := q.updateServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateServiceStmt: %w", cerr)
+		}
+	}
 	if q.updateSettingStmt != nil {
 		if cerr := q.updateSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateSettingStmt: %w", cerr)
@@ -385,6 +503,16 @@ func (q *Queries) Close() error {
 	if q.upsertProviderStmt != nil {
 		if cerr := q.upsertProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertProviderStmt: %w", cerr)
+		}
+	}
+	if q.upsertRouterStmt != nil {
+		if cerr := q.upsertRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertRouterStmt: %w", cerr)
+		}
+	}
+	if q.upsertServiceStmt != nil {
+		if cerr := q.upsertServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertServiceStmt: %w", cerr)
 		}
 	}
 	if q.upsertSettingStmt != nil {
@@ -440,6 +568,8 @@ type Queries struct {
 	createConfigStmt              *sql.Stmt
 	createProfileStmt             *sql.Stmt
 	createProviderStmt            *sql.Stmt
+	createRouterStmt              *sql.Stmt
+	createServiceStmt             *sql.Stmt
 	createSettingStmt             *sql.Stmt
 	createUserStmt                *sql.Stmt
 	deleteAgentByHostnameStmt     *sql.Stmt
@@ -450,6 +580,10 @@ type Queries struct {
 	deleteProfileByNameStmt       *sql.Stmt
 	deleteProviderByIDStmt        *sql.Stmt
 	deleteProviderByNameStmt      *sql.Stmt
+	deleteRouterByIDStmt          *sql.Stmt
+	deleteRouterByNameStmt        *sql.Stmt
+	deleteServiceByIDStmt         *sql.Stmt
+	deleteServiceByNameStmt       *sql.Stmt
 	deleteSettingByIDStmt         *sql.Stmt
 	deleteSettingByKeyStmt        *sql.Stmt
 	deleteUserByIDStmt            *sql.Stmt
@@ -462,6 +596,8 @@ type Queries struct {
 	getProfileByNameStmt          *sql.Stmt
 	getProviderByIDStmt           *sql.Stmt
 	getProviderByNameStmt         *sql.Stmt
+	getRouterByIDStmt             *sql.Stmt
+	getServiceByIDStmt            *sql.Stmt
 	getSettingByKeyStmt           *sql.Stmt
 	getUserByIDStmt               *sql.Stmt
 	getUserByUsernameStmt         *sql.Stmt
@@ -469,17 +605,25 @@ type Queries struct {
 	listConfigsStmt               *sql.Stmt
 	listProfilesStmt              *sql.Stmt
 	listProvidersStmt             *sql.Stmt
+	listRoutersStmt               *sql.Stmt
+	listRoutersByProfileIDStmt    *sql.Stmt
+	listServicesStmt              *sql.Stmt
+	listServicesByProfileIDStmt   *sql.Stmt
 	listSettingsStmt              *sql.Stmt
 	listUsersStmt                 *sql.Stmt
 	updateAgentStmt               *sql.Stmt
 	updateConfigStmt              *sql.Stmt
 	updateProfileStmt             *sql.Stmt
 	updateProviderStmt            *sql.Stmt
+	updateRouterStmt              *sql.Stmt
+	updateServiceStmt             *sql.Stmt
 	updateSettingStmt             *sql.Stmt
 	updateUserStmt                *sql.Stmt
 	upsertAgentStmt               *sql.Stmt
 	upsertProfileStmt             *sql.Stmt
 	upsertProviderStmt            *sql.Stmt
+	upsertRouterStmt              *sql.Stmt
+	upsertServiceStmt             *sql.Stmt
 	upsertSettingStmt             *sql.Stmt
 	upsertUserStmt                *sql.Stmt
 }
@@ -492,6 +636,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createConfigStmt:              q.createConfigStmt,
 		createProfileStmt:             q.createProfileStmt,
 		createProviderStmt:            q.createProviderStmt,
+		createRouterStmt:              q.createRouterStmt,
+		createServiceStmt:             q.createServiceStmt,
 		createSettingStmt:             q.createSettingStmt,
 		createUserStmt:                q.createUserStmt,
 		deleteAgentByHostnameStmt:     q.deleteAgentByHostnameStmt,
@@ -502,6 +648,10 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteProfileByNameStmt:       q.deleteProfileByNameStmt,
 		deleteProviderByIDStmt:        q.deleteProviderByIDStmt,
 		deleteProviderByNameStmt:      q.deleteProviderByNameStmt,
+		deleteRouterByIDStmt:          q.deleteRouterByIDStmt,
+		deleteRouterByNameStmt:        q.deleteRouterByNameStmt,
+		deleteServiceByIDStmt:         q.deleteServiceByIDStmt,
+		deleteServiceByNameStmt:       q.deleteServiceByNameStmt,
 		deleteSettingByIDStmt:         q.deleteSettingByIDStmt,
 		deleteSettingByKeyStmt:        q.deleteSettingByKeyStmt,
 		deleteUserByIDStmt:            q.deleteUserByIDStmt,
@@ -514,6 +664,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProfileByNameStmt:          q.getProfileByNameStmt,
 		getProviderByIDStmt:           q.getProviderByIDStmt,
 		getProviderByNameStmt:         q.getProviderByNameStmt,
+		getRouterByIDStmt:             q.getRouterByIDStmt,
+		getServiceByIDStmt:            q.getServiceByIDStmt,
 		getSettingByKeyStmt:           q.getSettingByKeyStmt,
 		getUserByIDStmt:               q.getUserByIDStmt,
 		getUserByUsernameStmt:         q.getUserByUsernameStmt,
@@ -521,17 +673,25 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listConfigsStmt:               q.listConfigsStmt,
 		listProfilesStmt:              q.listProfilesStmt,
 		listProvidersStmt:             q.listProvidersStmt,
+		listRoutersStmt:               q.listRoutersStmt,
+		listRoutersByProfileIDStmt:    q.listRoutersByProfileIDStmt,
+		listServicesStmt:              q.listServicesStmt,
+		listServicesByProfileIDStmt:   q.listServicesByProfileIDStmt,
 		listSettingsStmt:              q.listSettingsStmt,
 		listUsersStmt:                 q.listUsersStmt,
 		updateAgentStmt:               q.updateAgentStmt,
 		updateConfigStmt:              q.updateConfigStmt,
 		updateProfileStmt:             q.updateProfileStmt,
 		updateProviderStmt:            q.updateProviderStmt,
+		updateRouterStmt:              q.updateRouterStmt,
+		updateServiceStmt:             q.updateServiceStmt,
 		updateSettingStmt:             q.updateSettingStmt,
 		updateUserStmt:                q.updateUserStmt,
 		upsertAgentStmt:               q.upsertAgentStmt,
 		upsertProfileStmt:             q.upsertProfileStmt,
 		upsertProviderStmt:            q.upsertProviderStmt,
+		upsertRouterStmt:              q.upsertRouterStmt,
+		upsertServiceStmt:             q.upsertServiceStmt,
 		upsertSettingStmt:             q.upsertSettingStmt,
 		upsertUserStmt:                q.upsertUserStmt,
 	}

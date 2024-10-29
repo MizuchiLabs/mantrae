@@ -142,6 +142,225 @@ WHERE
       name = ?
   );
 
+-- name: GetRouterByID :one
+SELECT
+  *
+FROM
+  routers
+WHERE
+  id = ?
+LIMIT
+  1;
+
+-- name: ListRouters :many
+SELECT
+  *
+FROM
+  routers;
+
+-- name: ListRoutersByProfileID :many
+SELECT
+  *
+FROM
+  routers
+WHERE
+  profile_id = ?;
+
+-- name: CreateRouter :one
+INSERT INTO
+  routers (
+    profile_id,
+    name,
+    provider,
+    protocol,
+    status,
+    entry_points,
+    middlewares,
+    rule,
+    rule_syntax,
+    service,
+    priority,
+    tls,
+    dns_provider,
+    agent_id,
+    errors
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
+
+-- name: UpdateRouter :one
+UPDATE routers
+SET
+  name = ?,
+  provider = ?,
+  protocol = ?,
+  status = ?,
+  entry_points = ?,
+  middlewares = ?,
+  rule = ?,
+  rule_syntax = ?,
+  service = ?,
+  priority = ?,
+  tls = ?,
+  dns_provider = ?,
+  agent_id = ?,
+  errors = ?
+WHERE
+  id = ? RETURNING *;
+
+-- name: UpsertRouter :one
+INSERT INTO
+  routers (
+    id,
+    profile_id,
+    name,
+    provider,
+    protocol,
+    status,
+    entry_points,
+    middlewares,
+    rule,
+    rule_syntax,
+    service,
+    priority,
+    tls,
+    dns_provider,
+    agent_id,
+    errors
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  profile_id = EXCLUDED.profile_id,
+  name = EXCLUDED.name,
+  provider = EXCLUDED.provider,
+  protocol = EXCLUDED.protocol,
+  status = EXCLUDED.status,
+  entry_points = EXCLUDED.entry_points,
+  middlewares = EXCLUDED.middlewares,
+  rule = EXCLUDED.rule,
+  rule_syntax = EXCLUDED.rule_syntax,
+  service = EXCLUDED.service,
+  priority = EXCLUDED.priority,
+  tls = EXCLUDED.tls,
+  dns_provider = EXCLUDED.dns_provider,
+  agent_id = EXCLUDED.agent_id,
+  errors = EXCLUDED.errors RETURNING *;
+
+-- name: DeleteRouterByID :exec
+DELETE FROM routers
+WHERE
+  id = ?;
+
+-- name: DeleteRouterByName :exec
+DELETE FROM routers
+WHERE
+  name = ?;
+
+-- name: GetServiceByID :one
+SELECT
+  *
+FROM
+  services
+WHERE
+  id = ?
+LIMIT
+  1;
+
+-- name: ListServices :many
+SELECT
+  *
+FROM
+  services;
+
+-- name: ListServicesByProfileID :many
+SELECT
+  *
+FROM
+  services
+WHERE
+  profile_id = ?;
+
+-- name: CreateService :one
+INSERT INTO
+  services (
+    profile_id,
+    name,
+    provider,
+    type,
+    protocol,
+    status,
+    server_status,
+    load_balancer,
+    weighted,
+    mirroring,
+    failover,
+    agent_id
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
+
+-- name: UpdateService :one
+UPDATE services
+SET
+  name = ?,
+  provider = ?,
+  protocol = ?,
+  status = ?,
+  server_status = ?,
+  load_balancer = ?,
+  weighted = ?,
+  mirroring = ?,
+  failover = ?,
+  agent_id = ?
+WHERE
+  id = ? RETURNING *;
+
+-- name: UpsertService :one
+INSERT INTO
+  services (
+    id,
+    profile_id,
+    name,
+    provider,
+    type,
+    protocol,
+    status,
+    server_status,
+    load_balancer,
+    weighted,
+    mirroring,
+    failover,
+    agent_id
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+UPDATE
+SET
+  profile_id = EXCLUDED.profile_id,
+  name = EXCLUDED.name,
+  provider = EXCLUDED.provider,
+  type = EXCLUDED.type,
+  protocol = EXCLUDED.protocol,
+  status = EXCLUDED.status,
+  server_status = EXCLUDED.server_status,
+  load_balancer = EXCLUDED.load_balancer,
+  weighted = EXCLUDED.weighted,
+  mirroring = EXCLUDED.mirroring,
+  failover = EXCLUDED.failover,
+  agent_id = EXCLUDED.agent_id RETURNING *;
+
+-- name: DeleteServiceByID :exec
+DELETE FROM services
+WHERE
+  id = ?;
+
+-- name: DeleteServiceByName :exec
+DELETE FROM services
+WHERE
+  name = ?;
+
 -- name: GetProviderByID :one
 SELECT
   *

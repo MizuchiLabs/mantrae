@@ -10,11 +10,13 @@
 		deleteRouter,
 		entrypoints,
 		middlewares,
+		profile,
 		routers,
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,
-		getService
+		getService,
+		getRouters
 	} from '$lib/api';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
@@ -24,6 +26,7 @@
 	import { page } from '$app/stores';
 	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldAlert, TriangleAlert } from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
+	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -221,6 +224,11 @@
 		bulkDnsProvider = undefined;
 		allChecked = false;
 	};
+
+	onMount(async () => {
+		if (!$profile?.id) return;
+		await getRouters($profile.id);
+	});
 </script>
 
 <svelte:head>

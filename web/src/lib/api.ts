@@ -14,6 +14,7 @@ export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
+export const routers: Writable<Router[]> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
@@ -23,7 +24,7 @@ export const version = writable('');
 
 // Derived stores
 export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
-export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
+//export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
 export const services = derived(config, ($config) => Object.values($config?.services ?? []));
 export const middlewares = derived(config, ($config) => Object.values($config?.middlewares ?? []));
 
@@ -152,6 +153,16 @@ export async function deleteProfile(p: Profile): Promise<void> {
 			profile.set({} as Profile);
 			localStorage.removeItem(PROFILE_SK);
 		}
+	}
+}
+
+// Routers ----------------------------------------------------------------------
+export async function getRouters(id: number) {
+	const response = await handleRequest(`/router/${id}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		console.log(data);
+		routers.set(data);
 	}
 }
 

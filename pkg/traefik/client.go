@@ -12,6 +12,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/google/uuid"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
@@ -35,38 +36,47 @@ type BaseFields struct {
 	Type     string `json:"type,omitempty"`
 	Status   string `json:"status,omitempty"`
 	Provider string `json:"provider,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
 }
 
 // Extended routers
 type HTTPRouter struct {
 	BaseFields
-	RouterType  string `json:"routerType"`
-	DNSProvider string `json:"dnsProvider"`
-	SSLError    string `json:"sslError,omitempty"`
 	dynamic.Router
 }
 
 type TCPRouter struct {
 	BaseFields
-	RouterType  string `json:"routerType"`
-	DNSProvider string `json:"dnsProvider"`
 	dynamic.TCPRouter
 }
 
 type UDPRouter struct {
 	BaseFields
-	RouterType  string `json:"routerType"`
-	DNSProvider string `json:"dnsProvider"`
 	dynamic.UDPRouter
 }
 
 type Routerable interface {
-	ToRouter() *Router
+	ToRouter() *db.Router
 }
 
-func (r HTTPRouter) ToRouter() *Router {
-	var tlsConfig *dynamic.RouterTCPTLSConfig
+func (r HTTPRouter) ToRouter() *db.Router {
+	var status *string
+	if r.Status != "" {
+		status = &r.Status
+	}
 
+	var rulesyntax *string
+	if r.RuleSyntax != "" {
+		rulesyntax = &r.RuleSyntax
+	}
+
+	var priority *int64
+	if r.Priority != 0 {
+		p := int64(r.Priority)
+		priority = &p
+	}
+
+	var tlsConfig *dynamic.RouterTCPTLSConfig
 	if r.TLS != nil {
 		tlsConfig = &dynamic.RouterTCPTLSConfig{
 			Options:      r.TLS.Options,
@@ -75,53 +85,82 @@ func (r HTTPRouter) ToRouter() *Router {
 		}
 	}
 
-	return &Router{
+	return &db.Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
-		Status:      r.Status,
-		RouterType:  "http",
-		Entrypoints: r.EntryPoints,
+		Status:      status,
+		Protocol:    "http",
+		EntryPoints: r.EntryPoints,
 		Middlewares: r.Middlewares,
 		Rule:        r.Rule,
-		RuleSyntax:  r.RuleSyntax,
+		RuleSyntax:  rulesyntax,
 		Service:     r.Service,
-		Priority:    r.Priority,
-		TLS:         tlsConfig,
+		Priority:    priority,
+		Tls:         tlsConfig,
 	}
 }
 
-func (r TCPRouter) ToRouter() *Router {
-	return &Router{
+func (r TCPRouter) ToRouter() *db.Router {
+	var status *string
+	if r.Status != "" {
+		status = &r.Status
+	}
+
+	var rulesyntax *string
+	if r.RuleSyntax != "" {
+		rulesyntax = &r.RuleSyntax
+	}
+
+	var priority *int64
+	if r.Priority != 0 {
+		p := int64(r.Priority)
+		priority = &p
+	}
+
+	var tlsConfig *dynamic.RouterTCPTLSConfig
+	if r.TLS != nil {
+		tlsConfig = &dynamic.RouterTCPTLSConfig{
+			Options:      r.TLS.Options,
+			CertResolver: r.TLS.CertResolver,
+			Domains:      r.TLS.Domains,
+		}
+	}
+
+	return &db.Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
-		Status:      r.Status,
-		RouterType:  "tcp",
-		Entrypoints: r.EntryPoints,
+		Status:      status,
+		Protocol:    "tcp",
+		EntryPoints: r.EntryPoints,
 		Middlewares: r.Middlewares,
 		Rule:        r.Rule,
-		RuleSyntax:  r.RuleSyntax,
+		RuleSyntax:  rulesyntax,
 		Service:     r.Service,
-		Priority:    r.Priority,
-		TLS:         r.TLS,
+		Priority:    priority,
+		Tls:         tlsConfig,
 	}
 }
 
-func (r UDPRouter) ToRouter() *Router {
-	return &Router{
+func (r UDPRouter) ToRouter() *db.Router {
+	var status *string
+	if r.Status != "" {
+		status = &r.Status
+	}
+
+	return &db.Router{
 		Name:        r.Name,
 		Provider:    r.Provider,
-		Status:      r.Status,
-		RouterType:  "udp",
-		Entrypoints: r.EntryPoints,
+		Status:      status,
+		Protocol:    "udp",
+		EntryPoints: r.EntryPoints,
 		Service:     r.Service,
 	}
 }
 
-func getRouters[T Routerable](profile db.Profile, endpoint string) map[string]Router {
+func getRouters[T Routerable](profile db.Profile, endpoint string) error {
 	body, err := fetch(profile, endpoint)
 	if err != nil {
-		slog.Error("Failed to get routers", "error", err)
-		return nil
+		return fmt.Errorf("failed to get routers: %w", err)
 	}
 	defer body.Close()
 	if body == nil {
@@ -129,47 +168,106 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) map[string]Ro
 	}
 	var routerables []T
 	if err := json.NewDecoder(body).Decode(&routerables); err != nil {
-		slog.Error("Failed to decode routers", "error", err)
-		return nil
+		return fmt.Errorf("failed to decode routers: %w", err)
 	}
 
-	routers := make(map[string]Router, len(routerables))
+	// Current routers
+	dbRouters, err := db.Query.ListRoutersByProfileID(context.Background(), profile.ID)
+	if err != nil {
+		return fmt.Errorf("failed to list routers: %w", err)
+	}
+	// fmt.Printf("dbRouters: %+v\n", dbRouters)
+
+	// Create a map to quickly look up existing routers by name
+	existingRouters := make(map[string]string, len(dbRouters)) // name to ID mapping
+	for _, dbRouter := range dbRouters {
+		if dbRouter.Name == "" {
+			continue
+		}
+		existingRouters[dbRouter.Name] = dbRouter.ID
+	}
+	fmt.Printf("existingRouters: %v\n", existingRouters)
+
+	var currentProtocol string // of T
+	routers := make(map[string]db.Router, len(routerables))
 	for _, r := range routerables {
 		newRouter := r.ToRouter()
 		if newRouter.Name == "" {
 			continue
 		}
 		routers[newRouter.Name] = *newRouter
+		currentProtocol = newRouter.Protocol
+
+		data := db.UpsertRouterParams{
+			ProfileID:  profile.ID,
+			Provider:   newRouter.Provider,
+			Protocol:   newRouter.Protocol,
+			Status:     newRouter.Status,
+			Rule:       newRouter.Rule,
+			RuleSyntax: newRouter.RuleSyntax,
+			Service:    newRouter.Service,
+			Priority:   newRouter.Priority,
+		}
+		// Get existing ID or generate a new one
+		data.ID = existingRouters[newRouter.Name]
+		if data.ID == "" {
+			data.ID = uuid.New().String()
+			data.Name = newRouter.Name
+		}
+
+		data.EntryPoints, _ = json.Marshal(newRouter.EntryPoints)
+		data.Middlewares, _ = json.Marshal(newRouter.Middlewares)
+		data.Tls, _ = json.Marshal(newRouter.Tls)
+		if _, err := db.Query.UpsertRouter(context.Background(), data); err != nil {
+			slog.Error("Failed to upsert router", "error", err)
+			continue
+		}
 	}
-	return routers
+
+	// Cleanup if router doesn't exist locally (except our provider)
+	for _, r := range dbRouters {
+		if r.Protocol != currentProtocol {
+			continue
+		}
+
+		if _, ok := routers[r.Name]; !ok && r.Provider != "http" {
+			if err := db.Query.DeleteRouterByID(context.Background(), r.ID); err != nil {
+				slog.Error("failed to delete router", "error", err)
+				continue
+			}
+		}
+	}
+	return nil
 }
 
 type HTTPService struct {
 	BaseFields
-	ServiceType  string            `json:"serviceType,omitempty"`
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 	dynamic.Service
 }
 
 type TCPService struct {
 	BaseFields
-	ServiceType  string            `json:"serviceType,omitempty"`
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 	dynamic.TCPService
 }
 
 type UDPService struct {
 	BaseFields
-	ServiceType  string            `json:"serviceType,omitempty"`
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 	dynamic.UDPService
 }
 
 type Serviceable interface {
-	ToService() *Service
+	ToService() *db.Service
 }
 
-func (s HTTPService) ToService() *Service {
+func (s HTTPService) ToService() *db.Service {
+	var status *string
+	if s.Status != "" {
+		status = &s.Status
+	}
+
 	var lb *LoadBalancer
 	var servers []Server
 	if s.LoadBalancer != nil {
@@ -201,12 +299,12 @@ func (s HTTPService) ToService() *Service {
 		}
 	}
 
-	return &Service{
+	return &db.Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
 		Type:         s.Type,
-		Status:       s.Status,
-		ServiceType:  "http",
+		Status:       status,
+		Protocol:     "http",
 		ServerStatus: s.ServerStatus,
 		LoadBalancer: lb,
 		Weighted:     weighted,
@@ -215,7 +313,12 @@ func (s HTTPService) ToService() *Service {
 	}
 }
 
-func (s TCPService) ToService() *Service {
+func (s TCPService) ToService() *db.Service {
+	var status *string
+	if s.Status != "" {
+		status = &s.Status
+	}
+
 	var lb *LoadBalancer
 	var servers []Server
 	if s.LoadBalancer != nil {
@@ -252,19 +355,24 @@ func (s TCPService) ToService() *Service {
 
 		weighted = &WeightedRoundRobin{Services: services}
 	}
-	return &Service{
+	return &db.Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
 		Type:         s.Type,
-		Status:       s.Status,
-		ServiceType:  "tcp",
+		Status:       status,
+		Protocol:     "tcp",
 		ServerStatus: s.ServerStatus,
 		LoadBalancer: lb,
 		Weighted:     weighted,
 	}
 }
 
-func (s UDPService) ToService() *Service {
+func (s UDPService) ToService() *db.Service {
+	var status *string
+	if s.Status != "" {
+		status = &s.Status
+	}
+
 	var lb *LoadBalancer
 	var servers []Server
 	if s.LoadBalancer != nil && s.LoadBalancer.Servers != nil {
@@ -300,42 +408,90 @@ func (s UDPService) ToService() *Service {
 		weighted = &WeightedRoundRobin{Services: services}
 	}
 
-	return &Service{
+	return &db.Service{
 		Name:         s.Name,
 		Provider:     s.Provider,
 		Type:         s.Type,
-		Status:       s.Status,
-		ServiceType:  "udp",
+		Status:       status,
+		Protocol:     "udp",
 		ServerStatus: s.ServerStatus,
 		LoadBalancer: lb,
 		Weighted:     weighted,
 	}
 }
 
-func getServices[T Serviceable](profile db.Profile, endpoint string) map[string]Service {
+func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 	body, err := fetch(profile, endpoint)
 	if err != nil {
-		slog.Error("Failed to get services", "error", err)
-		return nil
+		return fmt.Errorf("failed to get services: %w", err)
 	}
 	defer body.Close()
 
 	var serviceables []T
 	if err := json.NewDecoder(body).Decode(&serviceables); err != nil {
-		slog.Error("Failed to decode services", "error", err)
-		return nil
+		return fmt.Errorf("failed to decode services: %w", err)
 	}
 
-	services := make(map[string]Service, len(serviceables))
+	// Current services
+	dbServices, err := db.Query.ListServicesByProfileID(context.Background(), profile.ID)
+	if err != nil {
+		return fmt.Errorf("failed to list routers: %w", err)
+	}
+
+	existingServices := make(map[string]string) // name to ID mapping
+	for _, dbService := range dbServices {
+		existingServices[dbService.Name] = dbService.ID
+	}
+
+	var currentProtocol string // of T
+	services := make(map[string]db.Service, len(serviceables))
 	for _, s := range serviceables {
 		newService := s.ToService()
 		if newService.Name == "" {
 			continue
 		}
 		services[newService.Name] = *newService
+		currentProtocol = newService.Protocol
+
+		data := db.UpsertServiceParams{
+			ProfileID: profile.ID,
+			Provider:  newService.Provider,
+			Type:      newService.Type,
+			Protocol:  newService.Protocol,
+			Status:    newService.Status,
+		}
+		data.ID = existingServices[newService.Name]
+		if data.ID == "" {
+			data.ID = uuid.New().String()
+			data.Name = newService.Name
+		}
+
+		data.ServerStatus, _ = json.Marshal(newService.ServerStatus)
+		data.LoadBalancer, _ = json.Marshal(newService.LoadBalancer)
+		data.Weighted, _ = json.Marshal(newService.Weighted)
+		data.Mirroring, _ = json.Marshal(newService.Mirroring)
+		data.Failover, _ = json.Marshal(newService.Failover)
+		if _, err := db.Query.UpsertService(context.Background(), data); err != nil {
+			slog.Error("Failed to upsert service", "error", err)
+			continue
+		}
 	}
 
-	return services
+	// Cleanup if router doesn't exist locally (except our provider)
+	for _, s := range dbServices {
+		if s.Protocol != currentProtocol {
+			continue
+		}
+
+		if _, ok := services[s.Name]; !ok && s.Provider != "http" {
+			if err := db.Query.DeleteRouterByID(context.Background(), s.ID); err != nil {
+				slog.Error("failed to delete service", "error", err)
+				continue
+			}
+		}
+	}
+
+	return nil
 }
 
 type HTTPMiddleware struct {
@@ -451,20 +607,14 @@ func GetTraefikConfig() {
 		}
 
 		// Fetch routers
-		data.Routers = merge(
-			data.Routers,
-			getRouters[HTTPRouter](profile, HTTPRouterAPI),
-			getRouters[TCPRouter](profile, TCPRouterAPI),
-			getRouters[UDPRouter](profile, UDPRouterAPI),
-		)
+		getRouters[HTTPRouter](profile, HTTPRouterAPI)
+		getRouters[TCPRouter](profile, TCPRouterAPI)
+		getRouters[UDPRouter](profile, UDPRouterAPI)
 
 		// Fetch services
-		data.Services = merge(
-			data.Services,
-			getServices[HTTPService](profile, HTTPServiceAPI),
-			getServices[TCPService](profile, TCPServiceAPI),
-			getServices[UDPService](profile, UDPServiceAPI),
-		)
+		getServices[HTTPService](profile, HTTPServiceAPI)
+		getServices[TCPService](profile, TCPServiceAPI)
+		getServices[UDPService](profile, UDPServiceAPI)
 
 		// Fetch middlewares
 		data.Middlewares = merge(

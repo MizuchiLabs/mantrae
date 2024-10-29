@@ -11,14 +11,14 @@ import (
 type Agent struct {
 	ID         string      `json:"id"`
 	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"public_ip"`
-	PrivateIps interface{} `json:"private_ips"`
+	PublicIp   *string     `json:"publicIp"`
+	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
-	LastSeen   *time.Time  `json:"last_seen"`
+	LastSeen   *time.Time  `json:"lastSeen"`
 }
 
 type Config struct {
-	ProfileID   int64       `json:"profile_id"`
+	ProfileID   int64       `json:"profileId"`
 	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
 	Routers     interface{} `json:"routers"`
@@ -41,30 +41,47 @@ type Provider struct {
 	ID         int64   `json:"id"`
 	Name       string  `json:"name"`
 	Type       string  `json:"type"`
-	ExternalIp string  `json:"external_ip"`
-	ApiKey     string  `json:"api_key"`
-	ApiUrl     *string `json:"api_url"`
+	ExternalIp string  `json:"externalIp"`
+	ApiKey     string  `json:"apiKey"`
+	ApiUrl     *string `json:"apiUrl"`
 	Proxied    bool    `json:"proxied"`
-	IsActive   bool    `json:"is_active"`
-	ZoneType   *string `json:"zone_type"`
+	IsActive   bool    `json:"isActive"`
+	ZoneType   *string `json:"zoneType"`
 }
 
 type Router struct {
-	ID          int64       `json:"id"`
-	ConfigID    int64       `json:"config_id"`
+	ID          string      `json:"id"`
+	ProfileID   int64       `json:"profileId"`
 	Name        string      `json:"name"`
 	Provider    string      `json:"provider"`
-	Type        string      `json:"type"`
-	EntryPoints interface{} `json:"entry_points"`
+	Protocol    string      `json:"protocol"`
+	Status      *string     `json:"status"`
+	EntryPoints interface{} `json:"entryPoints"`
 	Middlewares interface{} `json:"middlewares"`
 	Rule        string      `json:"rule"`
-	RuleSyntax  *string     `json:"rule_syntax"`
+	RuleSyntax  *string     `json:"ruleSyntax"`
 	Service     string      `json:"service"`
 	Priority    *int64      `json:"priority"`
 	Tls         interface{} `json:"tls"`
+	DnsProvider *int64      `json:"dnsProvider"`
+	AgentID     *string     `json:"agentId"`
 	Errors      interface{} `json:"errors"`
-	DnsProvider *int64      `json:"dns_provider"`
-	AgentID     *string     `json:"agent_id"`
+}
+
+type Service struct {
+	ID           string      `json:"id"`
+	ProfileID    int64       `json:"profileId"`
+	Name         string      `json:"name"`
+	Provider     string      `json:"provider"`
+	Type         string      `json:"type"`
+	Protocol     string      `json:"protocol"`
+	Status       *string     `json:"status"`
+	ServerStatus interface{} `json:"serverStatus"`
+	LoadBalancer interface{} `json:"loadBalancer"`
+	Weighted     interface{} `json:"weighted"`
+	Mirroring    interface{} `json:"mirroring"`
+	Failover     interface{} `json:"failover"`
+	AgentID      *string     `json:"agentId"`
 }
 
 type Setting struct {

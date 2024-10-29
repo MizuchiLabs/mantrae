@@ -13,6 +13,8 @@ type Querier interface {
 	CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
+	CreateRouter(ctx context.Context, arg CreateRouterParams) (Router, error)
+	CreateService(ctx context.Context, arg CreateServiceParams) (Service, error)
 	CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAgentByHostname(ctx context.Context, hostname string) error
@@ -23,6 +25,10 @@ type Querier interface {
 	DeleteProfileByName(ctx context.Context, name string) error
 	DeleteProviderByID(ctx context.Context, id int64) error
 	DeleteProviderByName(ctx context.Context, name string) error
+	DeleteRouterByID(ctx context.Context, id string) error
+	DeleteRouterByName(ctx context.Context, name string) error
+	DeleteServiceByID(ctx context.Context, id string) error
+	DeleteServiceByName(ctx context.Context, name string) error
 	DeleteSettingByID(ctx context.Context, id int64) error
 	DeleteSettingByKey(ctx context.Context, key string) error
 	DeleteUserByID(ctx context.Context, id int64) error
@@ -35,6 +41,8 @@ type Querier interface {
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetProviderByID(ctx context.Context, id int64) (Provider, error)
 	GetProviderByName(ctx context.Context, name string) (Provider, error)
+	GetRouterByID(ctx context.Context, id string) (Router, error)
+	GetServiceByID(ctx context.Context, id string) (Service, error)
 	GetSettingByKey(ctx context.Context, key string) (Setting, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
@@ -42,17 +50,25 @@ type Querier interface {
 	ListConfigs(ctx context.Context) ([]Config, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListProviders(ctx context.Context) ([]Provider, error)
+	ListRouters(ctx context.Context) ([]Router, error)
+	ListRoutersByProfileID(ctx context.Context, profileID int64) ([]Router, error)
+	ListServices(ctx context.Context) ([]Service, error)
+	ListServicesByProfileID(ctx context.Context, profileID int64) ([]Service, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
+	UpdateRouter(ctx context.Context, arg UpdateRouterParams) (Router, error)
+	UpdateService(ctx context.Context, arg UpdateServiceParams) (Service, error)
 	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent, error)
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 	UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error)
+	UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Router, error)
+	UpsertService(ctx context.Context, arg UpsertServiceParams) (Service, error)
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) (Setting, error)
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 }

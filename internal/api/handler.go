@@ -530,8 +530,27 @@ func GetConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-func UpdateRouter(w http.ResponseWriter, r *http.Request) {
-	var router traefik.Router
+// Router ---------------------------------------------------------------------
+func GetRouters(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+
+	routers, err := db.Query.ListRoutersByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get routers: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+	}
+	writeJSON(w, routers)
+}
+
+func CreateRouter(w http.ResponseWriter, r *http.Request) {
+	var router db.CreateRouterParams
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
 		http.Error(
 			w,
@@ -541,46 +560,88 @@ func UpdateRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := router.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// if err := router.Verify(); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+
+	data, err := db.Query.CreateRouter(context.Background(), router)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to create router: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
+	writeJSON(w, data)
+}
+
+func UpdateRouter(w http.ResponseWriter, r *http.Request) {
+	var router db.UpdateRouterParams
+	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode router: %s", err.Error()),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// if err := router.Verify(); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+
+	data, err := db.Query.UpdateRouter(context.Background(), router)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update router: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func DeleteRouter(w http.ResponseWriter, r *http.Request) {
+	err := db.Query.DeleteRouterByID(context.Background(), r.PathValue("id"))
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to delete router: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Services -------------------------------------------------------------------
+func GetServices(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
-	data, err := traefik.DecodeFromDB(id)
+	services, err := db.Query.ListServicesByProfileID(context.Background(), id)
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			fmt.Sprintf("Failed to get services: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
-		return
 	}
-
-	data.Routers[router.Name] = router
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	// Update the DNS records immediately
-	go dns.UpdateDNS()
-
-	writeJSON(w, newConfig)
+	writeJSON(w, services)
 }
 
-func UpdateService(w http.ResponseWriter, r *http.Request) {
-	var service traefik.Service
+func CreateService(w http.ResponseWriter, r *http.Request) {
+	var service db.CreateServiceParams
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		http.Error(
 			w,
@@ -590,39 +651,160 @@ func UpdateService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := service.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// if err := service.Verify(); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-	data, err := traefik.DecodeFromDB(id)
+	data, err := db.Query.CreateService(context.Background(), service)
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			fmt.Sprintf("Failed to create service: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	data.Services[service.Name] = service
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, newConfig)
+	writeJSON(w, data)
 }
+
+func UpdateService(w http.ResponseWriter, r *http.Request) {
+	var service db.UpdateServiceParams
+	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	// if err := service.Verify(); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+
+	data, err := db.Query.UpdateService(context.Background(), service)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update service: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func DeleteService(w http.ResponseWriter, r *http.Request) {
+	err := db.Query.DeleteServiceByID(context.Background(), r.PathValue("id"))
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to delete service: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// func UpdateRouter(w http.ResponseWriter, r *http.Request) {
+// 	var router traefik.Router
+// 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to decode router: %s", err.Error()),
+// 			http.StatusBadRequest,
+// 		)
+// 		return
+// 	}
+//
+// 	if err := router.Verify(); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+//
+// 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+// 		return
+// 	}
+//
+// 	data, err := traefik.DecodeFromDB(id)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	data.Routers[router.Name] = router
+// 	newConfig, err := traefik.EncodeToDB(data)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to update config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	// Update the DNS records immediately
+// 	go dns.UpdateDNS()
+//
+// 	writeJSON(w, newConfig)
+// }
+
+// func UpdateService(w http.ResponseWriter, r *http.Request) {
+// 	var service traefik.Service
+// 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+// 			http.StatusBadRequest,
+// 		)
+// 		return
+// 	}
+//
+// 	if err := service.Verify(); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+//
+// 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+// 		return
+// 	}
+// 	data, err := traefik.DecodeFromDB(id)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	data.Services[service.Name] = service
+// 	newConfig, err := traefik.EncodeToDB(data)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to update config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	writeJSON(w, newConfig)
+// }
 
 func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 	var middleware traefik.Middleware
@@ -737,37 +919,37 @@ func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, newConfig)
 }
 
-func DeleteRouter(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-
-	data, err := traefik.DecodeFromDB(id)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	delete(data.Routers, r.PathValue("name"))
-	delete(data.Services, r.PathValue("name"))
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, newConfig)
-}
+// func DeleteRouter(w http.ResponseWriter, r *http.Request) {
+// 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+// 		return
+// 	}
+//
+// 	data, err := traefik.DecodeFromDB(id)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	delete(data.Routers, r.PathValue("name"))
+// 	delete(data.Services, r.PathValue("name"))
+// 	newConfig, err := traefik.EncodeToDB(data)
+// 	if err != nil {
+// 		http.Error(
+// 			w,
+// 			fmt.Sprintf("Failed to update config: %s", err.Error()),
+// 			http.StatusInternalServerError,
+// 		)
+// 		return
+// 	}
+//
+// 	writeJSON(w, newConfig)
+// }
 
 func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
