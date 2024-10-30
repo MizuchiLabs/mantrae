@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -60,104 +61,59 @@ type Routerable interface {
 }
 
 func (r HTTPRouter) ToRouter() *db.Router {
-	var status *string
-	if r.Status != "" {
-		status = &r.Status
+	var dbRouter *db.Router
+	dbBytes, err := json.Marshal(r)
+	if err != nil {
+		return nil
+	}
+	if err := json.Unmarshal(dbBytes, &dbRouter); err != nil {
+		return nil
 	}
 
-	var rulesyntax *string
-	if r.RuleSyntax != "" {
-		rulesyntax = &r.RuleSyntax
-	}
-
-	var priority *int64
-	if r.Priority != 0 {
-		p := int64(r.Priority)
-		priority = &p
-	}
-
-	var tlsConfig *dynamic.RouterTCPTLSConfig
-	if r.TLS != nil {
-		tlsConfig = &dynamic.RouterTCPTLSConfig{
-			Options:      r.TLS.Options,
-			CertResolver: r.TLS.CertResolver,
-			Domains:      r.TLS.Domains,
-		}
-	}
-
-	return &db.Router{
-		Name:        r.Name,
-		Provider:    r.Provider,
-		Status:      status,
-		Protocol:    "http",
-		EntryPoints: r.EntryPoints,
-		Middlewares: r.Middlewares,
-		Rule:        r.Rule,
-		RuleSyntax:  rulesyntax,
-		Service:     r.Service,
-		Priority:    priority,
-		Tls:         tlsConfig,
-	}
+	dbRouter.Protocol = "http"
+	return dbRouter
 }
 
 func (r TCPRouter) ToRouter() *db.Router {
-	var status *string
-	if r.Status != "" {
-		status = &r.Status
+	var dbRouter *db.Router
+	dbBytes, err := json.Marshal(r)
+	if err != nil {
+		return nil
+	}
+	if err := json.Unmarshal(dbBytes, &dbRouter); err != nil {
+		return nil
 	}
 
-	var rulesyntax *string
-	if r.RuleSyntax != "" {
-		rulesyntax = &r.RuleSyntax
-	}
-
-	var priority *int64
-	if r.Priority != 0 {
-		p := int64(r.Priority)
-		priority = &p
-	}
-
-	var tlsConfig *dynamic.RouterTCPTLSConfig
-	if r.TLS != nil {
-		tlsConfig = &dynamic.RouterTCPTLSConfig{
-			Options:      r.TLS.Options,
-			CertResolver: r.TLS.CertResolver,
-			Domains:      r.TLS.Domains,
-		}
-	}
-
-	return &db.Router{
-		Name:        r.Name,
-		Provider:    r.Provider,
-		Status:      status,
-		Protocol:    "tcp",
-		EntryPoints: r.EntryPoints,
-		Middlewares: r.Middlewares,
-		Rule:        r.Rule,
-		RuleSyntax:  rulesyntax,
-		Service:     r.Service,
-		Priority:    priority,
-		Tls:         tlsConfig,
-	}
+	dbRouter.Protocol = "tcp"
+	return dbRouter
 }
 
 func (r UDPRouter) ToRouter() *db.Router {
-	var status *string
-	if r.Status != "" {
-		status = &r.Status
+	var dbRouter *db.Router
+	dbBytes, err := json.Marshal(r)
+	if err != nil {
+		return nil
+	}
+	if err := json.Unmarshal(dbBytes, &dbRouter); err != nil {
+		return nil
 	}
 
-	return &db.Router{
-		Name:        r.Name,
-		Provider:    r.Provider,
-		Status:      status,
-		Protocol:    "udp",
-		EntryPoints: r.EntryPoints,
-		Service:     r.Service,
-	}
+	dbRouter.Protocol = "udp"
+	return dbRouter
 }
 
 func getRouters[T Routerable](profile db.Profile, endpoint string) error {
+	typeName := reflect.TypeOf((*T)(nil)).Elem().Name() // Get the name of the type T
+	var protocol string
+	switch typeName {
+	case "HTTPRouter":
+		protocol = "http"
+	case "TCPRouter":
+		protocol = "tcp"
+	case "UDPRouter":
+		protocol = "udp"
+	}
+
 	body, err := fetch(profile, endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to get routers: %w", err)
@@ -176,30 +132,19 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) error {
 	if err != nil {
 		return fmt.Errorf("failed to list routers: %w", err)
 	}
-	// fmt.Printf("dbRouters: %+v\n", dbRouters)
 
-	// Create a map to quickly look up existing routers by name
-	existingRouters := make(map[string]string, len(dbRouters)) // name to ID mapping
-	for _, dbRouter := range dbRouters {
-		if dbRouter.Name == "" {
-			continue
-		}
-		existingRouters[dbRouter.Name] = dbRouter.ID
-	}
-	fmt.Printf("existingRouters: %v\n", existingRouters)
-
-	var currentProtocol string // of T
-	routers := make(map[string]db.Router, len(routerables))
+	routers := make(map[string]bool, len(routerables))
 	for _, r := range routerables {
 		newRouter := r.ToRouter()
-		if newRouter.Name == "" {
+		if newRouter.Name == "" || newRouter.Provider == "http" {
 			continue
 		}
-		routers[newRouter.Name] = *newRouter
-		currentProtocol = newRouter.Protocol
+		routers[newRouter.Name] = true
 
 		data := db.UpsertRouterParams{
+			ID:         uuid.New().String(),
 			ProfileID:  profile.ID,
+			Name:       newRouter.Name,
 			Provider:   newRouter.Provider,
 			Protocol:   newRouter.Protocol,
 			Status:     newRouter.Status,
@@ -207,12 +152,6 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) error {
 			RuleSyntax: newRouter.RuleSyntax,
 			Service:    newRouter.Service,
 			Priority:   newRouter.Priority,
-		}
-		// Get existing ID or generate a new one
-		data.ID = existingRouters[newRouter.Name]
-		if data.ID == "" {
-			data.ID = uuid.New().String()
-			data.Name = newRouter.Name
 		}
 
 		data.EntryPoints, _ = json.Marshal(newRouter.EntryPoints)
@@ -226,11 +165,12 @@ func getRouters[T Routerable](profile db.Profile, endpoint string) error {
 
 	// Cleanup if router doesn't exist locally (except our provider)
 	for _, r := range dbRouters {
-		if r.Protocol != currentProtocol {
+		if r.Protocol != protocol || r.Provider == "http" {
 			continue
 		}
 
-		if _, ok := routers[r.Name]; !ok && r.Provider != "http" {
+		if _, ok := routers[r.Name]; !ok {
+			slog.Info("Removing router", "name", r.Name, "id", r.ID)
 			if err := db.Query.DeleteRouterByID(context.Background(), r.ID); err != nil {
 				slog.Error("failed to delete router", "error", err)
 				continue
@@ -263,164 +203,67 @@ type Serviceable interface {
 }
 
 func (s HTTPService) ToService() *db.Service {
-	var status *string
-	if s.Status != "" {
-		status = &s.Status
+	var dbService *db.Service
+	sBytes, err := json.Marshal(s)
+	if err != nil {
+		slog.Error("Failed to marshal service", "error", err)
+		return nil
 	}
 
-	var lb *LoadBalancer
-	var servers []Server
-	if s.LoadBalancer != nil {
-		if s.LoadBalancer.Servers != nil {
-			servers = make([]Server, len(s.LoadBalancer.Servers))
-			for i, server := range s.LoadBalancer.Servers {
-				if server.URL == "" {
-					continue
-				}
-				servers[i] = Server{URL: server.URL}
-			}
-		}
-		lb = &LoadBalancer{
-			Servers:            servers,
-			Sticky:             s.LoadBalancer.Sticky,
-			PassHostHeader:     s.LoadBalancer.PassHostHeader,
-			HealthCheck:        s.LoadBalancer.HealthCheck,
-			ResponseForwarding: s.LoadBalancer.ResponseForwarding,
-			ServersTransport:   s.LoadBalancer.ServersTransport,
-		}
+	if err := json.Unmarshal(sBytes, &dbService); err != nil {
+		slog.Error("Failed to unmarshal service", "error", err)
+		return nil
 	}
-
-	var weighted *WeightedRoundRobin
-	if s.Weighted != nil {
-		weighted = &WeightedRoundRobin{
-			Services:    s.Weighted.Services,
-			Sticky:      s.Weighted.Sticky,
-			HealthCheck: s.Weighted.HealthCheck,
-		}
-	}
-
-	return &db.Service{
-		Name:         s.Name,
-		Provider:     s.Provider,
-		Type:         s.Type,
-		Status:       status,
-		Protocol:     "http",
-		ServerStatus: s.ServerStatus,
-		LoadBalancer: lb,
-		Weighted:     weighted,
-		Mirroring:    s.Mirroring,
-		Failover:     s.Failover,
-	}
+	dbService.Protocol = "http"
+	return dbService
 }
 
 func (s TCPService) ToService() *db.Service {
-	var status *string
-	if s.Status != "" {
-		status = &s.Status
+	var dbService *db.Service
+	sBytes, err := json.Marshal(s)
+	if err != nil {
+		slog.Error("Failed to marshal service", "error", err)
+		return nil
 	}
 
-	var lb *LoadBalancer
-	var servers []Server
-	if s.LoadBalancer != nil {
-		if s.LoadBalancer.Servers != nil {
-			servers = make([]Server, len(s.LoadBalancer.Servers))
-			for i, server := range s.LoadBalancer.Servers {
-				if server.Address == "" {
-					continue
-				}
-				servers[i] = Server{Address: server.Address}
-			}
-		}
-
-		lb = &LoadBalancer{
-			Servers:          servers,
-			ServersTransport: s.LoadBalancer.ServersTransport,
-			ProxyProtocol:    s.LoadBalancer.ProxyProtocol,
-			TerminationDelay: s.LoadBalancer.TerminationDelay,
-		}
+	if err := json.Unmarshal(sBytes, &dbService); err != nil {
+		slog.Error("Failed to unmarshal service", "error", err)
+		return nil
 	}
 
-	var weighted *WeightedRoundRobin
-	var services []dynamic.WRRService
-	if s.Weighted != nil && s.Weighted.Services != nil {
-		for _, service := range s.Weighted.Services {
-			if service.Name == "" {
-				continue
-			}
-			services = append(services, dynamic.WRRService{
-				Name:   service.Name,
-				Weight: service.Weight,
-			})
-		}
-
-		weighted = &WeightedRoundRobin{Services: services}
-	}
-	return &db.Service{
-		Name:         s.Name,
-		Provider:     s.Provider,
-		Type:         s.Type,
-		Status:       status,
-		Protocol:     "tcp",
-		ServerStatus: s.ServerStatus,
-		LoadBalancer: lb,
-		Weighted:     weighted,
-	}
+	dbService.Protocol = "tcp"
+	return dbService
 }
 
 func (s UDPService) ToService() *db.Service {
-	var status *string
-	if s.Status != "" {
-		status = &s.Status
+	var dbService *db.Service
+	sBytes, err := json.Marshal(s)
+	if err != nil {
+		slog.Error("Failed to marshal service", "error", err)
+		return nil
 	}
 
-	var lb *LoadBalancer
-	var servers []Server
-	if s.LoadBalancer != nil && s.LoadBalancer.Servers != nil {
-		if s.LoadBalancer.Servers != nil {
-			servers = make([]Server, len(s.LoadBalancer.Servers))
-			for i, server := range s.LoadBalancer.Servers {
-				if server.Address == "" {
-					continue
-				}
-				servers[i] = Server{
-					Address: server.Address,
-				}
-			}
-		}
-		lb = &LoadBalancer{
-			Servers: servers,
-		}
+	if err := json.Unmarshal(sBytes, &dbService); err != nil {
+		slog.Error("Failed to unmarshal service", "error", err)
+		return nil
 	}
 
-	var weighted *WeightedRoundRobin
-	var services []dynamic.WRRService
-	if s.Weighted != nil && s.Weighted.Services != nil {
-		for _, service := range s.Weighted.Services {
-			if service.Name == "" {
-				continue
-			}
-			services = append(services, dynamic.WRRService{
-				Name:   service.Name,
-				Weight: service.Weight,
-			})
-		}
-
-		weighted = &WeightedRoundRobin{Services: services}
-	}
-
-	return &db.Service{
-		Name:         s.Name,
-		Provider:     s.Provider,
-		Type:         s.Type,
-		Status:       status,
-		Protocol:     "udp",
-		ServerStatus: s.ServerStatus,
-		LoadBalancer: lb,
-		Weighted:     weighted,
-	}
+	dbService.Protocol = "udp"
+	return dbService
 }
 
 func getServices[T Serviceable](profile db.Profile, endpoint string) error {
+	typeName := reflect.TypeOf((*T)(nil)).Elem().Name() // Get the name of the type T
+	var protocol string
+	switch typeName {
+	case "HTTPService":
+		protocol = "http"
+	case "TCPService":
+		protocol = "tcp"
+	case "UDPService":
+		protocol = "udp"
+	}
+
 	body, err := fetch(profile, endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to get services: %w", err)
@@ -438,12 +281,6 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 		return fmt.Errorf("failed to list routers: %w", err)
 	}
 
-	existingServices := make(map[string]string) // name to ID mapping
-	for _, dbService := range dbServices {
-		existingServices[dbService.Name] = dbService.ID
-	}
-
-	var currentProtocol string // of T
 	services := make(map[string]db.Service, len(serviceables))
 	for _, s := range serviceables {
 		newService := s.ToService()
@@ -451,39 +288,54 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 			continue
 		}
 		services[newService.Name] = *newService
-		currentProtocol = newService.Protocol
 
-		data := db.UpsertServiceParams{
+		_, err := db.Query.GetServiceByName(context.Background(), db.GetServiceByNameParams{
 			ProfileID: profile.ID,
-			Provider:  newService.Provider,
-			Type:      newService.Type,
-			Protocol:  newService.Protocol,
-			Status:    newService.Status,
-		}
-		data.ID = existingServices[newService.Name]
-		if data.ID == "" {
-			data.ID = uuid.New().String()
-			data.Name = newService.Name
+			Name:      newService.Name,
+		})
+		if newService.Provider == "http" && err == nil {
+			data := db.UpsertServiceParams{
+				ID:        uuid.New().String(),
+				ProfileID: profile.ID,
+				Name:      newService.Name,
+			}
+			data.ServerStatus, _ = json.Marshal(newService.ServerStatus)
+			if _, err := db.Query.UpsertService(context.Background(), data); err != nil {
+				slog.Error("Failed to upsert service", "error", err)
+				continue
+			}
 		}
 
-		data.ServerStatus, _ = json.Marshal(newService.ServerStatus)
-		data.LoadBalancer, _ = json.Marshal(newService.LoadBalancer)
-		data.Weighted, _ = json.Marshal(newService.Weighted)
-		data.Mirroring, _ = json.Marshal(newService.Mirroring)
-		data.Failover, _ = json.Marshal(newService.Failover)
-		if _, err := db.Query.UpsertService(context.Background(), data); err != nil {
-			slog.Error("Failed to upsert service", "error", err)
-			continue
+		if newService.Provider != "http" {
+			data := db.UpsertServiceParams{
+				ID:        uuid.New().String(),
+				ProfileID: profile.ID,
+				Name:      newService.Name,
+				Provider:  newService.Provider,
+				Type:      newService.Type,
+				Protocol:  newService.Protocol,
+				Status:    newService.Status,
+			}
+			data.ServerStatus, _ = json.Marshal(newService.ServerStatus)
+			data.LoadBalancer, _ = json.Marshal(newService.LoadBalancer)
+			data.Weighted, _ = json.Marshal(newService.Weighted)
+			data.Mirroring, _ = json.Marshal(newService.Mirroring)
+			data.Failover, _ = json.Marshal(newService.Failover)
+			if _, err := db.Query.UpsertService(context.Background(), data); err != nil {
+				slog.Error("Failed to upsert service", "error", err)
+				continue
+			}
 		}
 	}
 
 	// Cleanup if router doesn't exist locally (except our provider)
 	for _, s := range dbServices {
-		if s.Protocol != currentProtocol {
+		if s.Protocol != protocol || s.Provider == "http" {
 			continue
 		}
 
-		if _, ok := services[s.Name]; !ok && s.Provider != "http" {
+		if _, ok := services[s.Name]; !ok {
+			slog.Info("Removing service", "name", s.Name)
 			if err := db.Query.DeleteRouterByID(context.Background(), s.ID); err != nil {
 				slog.Error("failed to delete service", "error", err)
 				continue
@@ -607,14 +459,26 @@ func GetTraefikConfig() {
 		}
 
 		// Fetch routers
-		getRouters[HTTPRouter](profile, HTTPRouterAPI)
-		getRouters[TCPRouter](profile, TCPRouterAPI)
-		getRouters[UDPRouter](profile, UDPRouterAPI)
+		if err := getRouters[HTTPRouter](profile, HTTPRouterAPI); err != nil {
+			slog.Error("Failed to get routers", "error", err)
+		}
+		if err := getRouters[TCPRouter](profile, TCPRouterAPI); err != nil {
+			slog.Error("Failed to get routers", "error", err)
+		}
+		if err := getRouters[UDPRouter](profile, UDPRouterAPI); err != nil {
+			slog.Error("Failed to get routers", "error", err)
+		}
 
 		// Fetch services
-		getServices[HTTPService](profile, HTTPServiceAPI)
-		getServices[TCPService](profile, TCPServiceAPI)
-		getServices[UDPService](profile, UDPServiceAPI)
+		if err := getServices[HTTPService](profile, HTTPServiceAPI); err != nil {
+			slog.Error("Failed to get services", "error", err)
+		}
+		if err := getServices[TCPService](profile, TCPServiceAPI); err != nil {
+			slog.Error("Failed to get services", "error", err)
+		}
+		if err := getServices[UDPService](profile, UDPServiceAPI); err != nil {
+			slog.Error("Failed to get services", "error", err)
+		}
 
 		// Fetch middlewares
 		data.Middlewares = merge(

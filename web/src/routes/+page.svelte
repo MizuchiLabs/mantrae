@@ -12,11 +12,13 @@
 		middlewares,
 		profile,
 		routers,
+		services,
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,
 		getService,
-		getRouters
+		getRouters,
+		getServices
 	} from '$lib/api';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
@@ -26,7 +28,6 @@
 	import { page } from '$app/stores';
 	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldAlert, TriangleAlert } from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
-	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -51,13 +52,14 @@
 	}
 
 	const searchRouter = () => {
+		if ($routers === undefined) return;
 		let items = $routers.filter((router) => {
 			const searchParts = search.toLowerCase().split(' ');
 			return searchParts.every((part) =>
 				part.startsWith('@provider:')
 					? router.provider?.toLowerCase() === part.split(':')[1]
-					: part.startsWith('@type:')
-						? router.routerType.toLowerCase() === part.split(':')[1]
+					: part.startsWith('@protocol:')
+						? router.protocol.toLowerCase() === part.split(':')[1]
 						: part.startsWith('@dns:')
 							? getDNSProviderName(router)?.toLowerCase() === part.split(':')[1]
 							: router.name.toLowerCase().includes(part)
@@ -79,19 +81,23 @@
 	let openModal = false;
 	let disabled = false;
 	const createModal = () => {
+		if (!$profile?.id) return;
 		router = newRouter();
 		service = newService();
+		router.profileId = $profile.id;
+		service.profileId = $profile.id;
 		disabled = false;
 		openModal = true;
 	};
 	const updateModal = (r: Router) => {
+		if (!r) return;
 		if (r.provider === 'http') {
 			disabled = false;
 		} else {
 			disabled = true;
 		}
 		router = r;
-		service = getService(router);
+		service = $services?.find((s: Service) => s.name === r.name) ?? newService();
 		openModal = true;
 	};
 
@@ -99,7 +105,7 @@
 		{ value: 'name', label: 'Name' },
 		{ value: 'provider', label: 'Provider' },
 		{ value: 'dns', label: 'DNS' },
-		{ value: 'type', label: 'Type' },
+		{ value: 'protocol', label: 'Protocol' },
 		{ value: 'rule', label: 'Rule' },
 		{ value: 'entrypoints', label: 'Entrypoints' },
 		{ value: 'middlewares', label: 'Middlewares' },
@@ -117,14 +123,15 @@
 	};
 	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
 		if (router?.middlewares === undefined) return [];
-		return router.middlewares.map((middleware) => {
+		return router.middlewares?.map((middleware) => {
 			return { value: middleware, label: middleware };
 		});
 	};
 
 	// Show how many services are up and total services
 	const getServiceStatus = (router: Router) => {
-		let service = getService(router);
+		if (router === undefined) return { status: '0/0', ok: false };
+		let service = $services?.find((s: Service) => s.name === router.name);
 		let total = service?.loadBalancer?.servers?.length || 0;
 		let up = Object.values(service?.serverStatus || {}).filter((status) => status === 'UP').length;
 		return { status: `${up}/${total}`, ok: up === total };
@@ -225,9 +232,11 @@
 		allChecked = false;
 	};
 
-	onMount(async () => {
+	// Get routers when the profile changes
+	profile.subscribe(() => {
 		if (!$profile?.id) return;
-		await getRouters($profile.id);
+		getRouters($profile.id);
+		getServices($profile.id);
 	});
 </script>
 
@@ -245,7 +254,7 @@
 			<div>
 				<Card.Title>Routers</Card.Title>
 				<Card.Description>
-					Total routers managed by Mantrae {$routers.filter((r) => r.provider === 'http').length}
+					Total routers managed by Mantrae {$routers?.filter((r) => r.provider === 'http').length}
 				</Card.Description>
 			</div>
 			<div class="justify-self-end">
@@ -283,8 +292,8 @@
 						{#if fColumns.includes('dns')}
 							<Table.Head>DNS</Table.Head>
 						{/if}
-						{#if fColumns.includes('type')}
-							<Table.Head>Type</Table.Head>
+						{#if fColumns.includes('protocol')}
+							<Table.Head>Protocol</Table.Head>
 						{/if}
 						{#if fColumns.includes('rule')}
 							<Table.Head class="hidden lg:table-cell">Rule</Table.Head>
@@ -354,7 +363,7 @@
 									>
 										{getDNSProviderName(router) ? getDNSProviderName(router) : 'None'}
 									</span>
-									{#if router.errorState && router.errorState.dns}
+									{#if router.errors && router.errors.dns}
 										<HoverCard.Root openDelay={400}>
 											<HoverCard.Trigger>
 												<Badge variant="secondary" class="bg-orange-300">
@@ -362,22 +371,22 @@
 												</Badge>
 											</HoverCard.Trigger>
 											<HoverCard.Content class="text-sm text-slate-800">
-												DNS Error: {router.errorState.dns}
+												DNS Error: {router.errors.dns}
 											</HoverCard.Content>
 										</HoverCard.Root>
 									{/if}
 								</div>
 							</Table.Cell>
-							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
+							<Table.Cell class={fColumns.includes('protocol') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									class:bg-green-300={router.routerType === 'http'}
-									class:bg-blue-300={router.routerType === 'tcp'}
-									class:bg-purple-300={router.routerType === 'udp'}
-									on:click={() => (search = `@type:${router.routerType}`)}
+									class:bg-green-300={router.protocol === 'http'}
+									class:bg-blue-300={router.protocol === 'tcp'}
+									class:bg-purple-300={router.protocol === 'udp'}
+									on:click={() => (search = `@protocol:${router.protocol}`)}
 									aria-hidden
 								>
-									{router.routerType}
+									{router.protocol}
 								</span>
 							</Table.Cell>
 							<Table.Cell
@@ -424,7 +433,7 @@
 							<Table.Cell
 								class={fColumns.includes('middlewares') ? 'hidden lg:table-cell' : 'hidden'}
 							>
-								<div class:hidden={router.routerType === 'udp'}>
+								<div class:hidden={router.protocol === 'udp'}>
 									<Select.Root
 										multiple={true}
 										selected={getSelectedMiddlewares(router)}
@@ -436,7 +445,7 @@
 										</Select.Trigger>
 										<Select.Content class="text-sm">
 											{#each $middlewares as middleware}
-												{#if router.routerType === middleware.middlewareType}
+												{#if router.protocol === middleware.middlewareType}
 													<Select.Item value={middleware.name}>
 														{middleware.name}
 													</Select.Item>
@@ -455,7 +464,7 @@
 									>
 										{getServiceStatus(router).status}
 									</span>
-									{#if router.errorState && router.errorState.ssl}
+									{#if router.errors && router.errors.ssl}
 										<HoverCard.Root openDelay={400}>
 											<HoverCard.Trigger>
 												<Badge variant="secondary" class="bg-red-300">
@@ -463,7 +472,7 @@
 												</Badge>
 											</HoverCard.Trigger>
 											<HoverCard.Content>
-												<div class="text-sm">SSL Error: {router.errorState.ssl}</div>
+												<div class="text-sm">SSL Error: {router.errors.ssl}</div>
 											</HoverCard.Content>
 										</HoverCard.Root>
 									{/if}
@@ -506,7 +515,7 @@
 		<Card.Footer>
 			<div class="text-xs text-muted-foreground">
 				Showing <strong>{fRouters.length > 0 ? 1 : 0}-{fRouters.length}</strong> of
-				<strong>{$routers.length}</strong> routers
+				<strong>{$routers?.length}</strong> routers
 			</div>
 		</Card.Footer>
 	</Card.Root>
@@ -519,7 +528,7 @@
 			<Card.Root>
 				<Card.Content class="flex flex-row items-center justify-between gap-4 p-4 shadow-md">
 					<div class="flex flex-col items-center justify-start gap-4 md:flex-row">
-						<!-- Bulk update entrypoints -->
+						<!--Bulk update entrypoints-->
 						<Select.Root
 							multiple={true}
 							selected={bulkEntrypoints}

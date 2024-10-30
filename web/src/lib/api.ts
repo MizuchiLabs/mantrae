@@ -15,6 +15,7 @@ export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
 export const routers: Writable<Router[]> = writable();
+export const services: Writable<Service[]> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
@@ -24,8 +25,6 @@ export const version = writable('');
 
 // Derived stores
 export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
-//export const routers = derived(config, ($config) => Object.values($config?.routers ?? []));
-export const services = derived(config, ($config) => Object.values($config?.services ?? []));
 export const middlewares = derived(config, ($config) => Object.values($config?.middlewares ?? []));
 
 async function handleRequest(
@@ -161,8 +160,80 @@ export async function getRouters(id: number) {
 	const response = await handleRequest(`/router/${id}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		console.log(data);
 		routers.set(data);
+	}
+}
+
+export async function upsertRouter(r: Router, id: number): Promise<void> {
+	if (!id) return;
+	const response = await handleRequest(`/router`, 'POST', r);
+	if (response) {
+		const data = await response.json();
+		if (data && get(routers)) {
+			routers.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === r.id);
+
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Router ${r.name} updated`);
+		}
+	}
+}
+
+export async function deleteRouter(r: Router): Promise<void> {
+	const response = await handleRequest(`/router/${r.id}`, 'DELETE');
+	if (response) {
+		routers.update((items) => items.filter((i) => i.id !== r.id));
+		toast.success(`Router ${r.name} deleted`);
+	}
+}
+
+// Services ----------------------------------------------------------------------
+export async function getServices(id: number) {
+	const response = await handleRequest(`/service/${id}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		services.set(data);
+	}
+}
+
+export async function upsertService(s: Service, id: number): Promise<void> {
+	if (!id) return;
+	const response = await handleRequest(`/service`, 'POST', s);
+	if (response) {
+		const data = await response.json();
+		if (data && get(services)) {
+			services.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === s.id);
+
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Service ${data.name} created`);
+		}
+	}
+}
+
+export async function deleteService(s: Service): Promise<void> {
+	const response = await handleRequest(`/service/${s.id}`, 'DELETE');
+	if (response) {
+		services.update((items) => items.filter((i) => i.id !== s.id));
+		toast.success(`Service ${s.name} deleted`);
 	}
 }
 
@@ -289,15 +360,6 @@ export async function updateMiddleware(m: Middleware): Promise<void> {
 		const data = await response.json();
 		config.set(data);
 		toast.success(`Middleware ${m.name} updated`);
-	}
-}
-
-export async function deleteRouter(r: Router): Promise<void> {
-	const response = await handleRequest(`/router/${get(profile).id}/${r.name}`, 'DELETE');
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Router ${r.name} deleted`);
 	}
 }
 
@@ -435,25 +497,25 @@ function nameCheck(router: Router) {
 	const parts = name.split('@');
 	return parts[0] + '@' + provider;
 }
-export async function upsertRouter(
-	name: string,
-	router: Router,
-	service: Service | undefined
-): Promise<void> {
-	if (name === '' || router.name === '') return;
-
-	// Ensure the service name is the same as the router name
-	if (service === undefined) {
-		service = getService(router);
-	}
-	router.name = nameCheck(router);
-	router.service = nameCheck(router);
-	service.name = nameCheck(router);
-	service.serviceType = router.routerType;
-
-	await updateRouter(router);
-	await updateService(service);
-}
+// export async function upsertRouter(
+// 	name: string,
+// 	router: Router,
+// 	service: Service | undefined
+// ): Promise<void> {
+// 	if (name === '' || router.name === '') return;
+//
+// 	// Ensure the service name is the same as the router name
+// 	if (service === undefined) {
+// 		service = getService(router);
+// 	}
+// 	router.name = nameCheck(router);
+// 	router.service = nameCheck(router);
+// 	service.name = nameCheck(router);
+// 	service.protocol = router.protocol;
+//
+// 	await updateRouter(router);
+// 	await updateService(service);
+// }
 
 // TODO: Handle this differently
 export const getService = (router: Router): Service => {
@@ -478,7 +540,8 @@ export async function toggleEntrypoint(
 	router.entrypoints = item.map((i) => i.value) as string[];
 
 	if (update) {
-		upsertRouter(router.name, router, undefined);
+		//upsertRouter(router.name, router, undefined);
+		upsertRouter(router, router.profileId);
 	}
 }
 
@@ -491,7 +554,8 @@ export async function toggleMiddleware(
 	router.middlewares = item.map((i) => i.value) as string[];
 
 	if (update) {
-		upsertRouter(router.name, router, undefined);
+		//upsertRouter(router.name, router, undefined);
+		upsertRouter(router, router.profileId);
 	}
 }
 
@@ -507,6 +571,7 @@ export async function toggleDNSProvider(
 	router.dnsProvider = providerID;
 
 	if (update) {
-		upsertRouter(router.name, router, undefined);
+		//upsertRouter(router.name, router, undefined);
+		upsertRouter(router, router.profileId);
 	}
 }

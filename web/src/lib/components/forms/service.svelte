@@ -2,14 +2,17 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { type Service } from '$lib/types/config';
+	import { type Router, type Service } from '$lib/types/config';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
+	import { services } from '$lib/api';
 	import { onMount } from 'svelte';
 
+	export let router: Router;
 	export let service: Service;
-	export let type: string;
 	export let disabled = false;
+	$: router, routerChange();
+
 	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
 	let servers: string[] = [];
 
@@ -17,7 +20,7 @@
 		provider: z.string().trim().optional(),
 		type: z.string().trim().optional(),
 		status: z.string().trim().optional(),
-		serviceType: z
+		protocol: z
 			.string()
 			.trim()
 			.toLowerCase()
@@ -59,7 +62,7 @@
 		if (service.loadBalancer === undefined) service.loadBalancer = { servers: [] };
 
 		service.loadBalancer.passHostHeader = passHostHeader;
-		switch (service.serviceType) {
+		switch (service.protocol) {
 			case 'http':
 				service.loadBalancer.servers = servers.map((s) => {
 					return { url: s };
@@ -74,11 +77,13 @@
 		}
 	};
 
-	$: type, changeServiceType();
-	const changeServiceType = () => {
+	const routerChange = () => {
+		service.name = router.name;
+		service.provider = router.provider;
+		service.profileId = router.profileId;
+		service.protocol = router.protocol;
+		service = $services.find((s) => s.name === router.name) ?? service;
 		servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
-		service.serviceType = type;
-		update();
 	};
 
 	const onSwitchChange = () => {
@@ -87,19 +92,19 @@
 		service.loadBalancer.passHostHeader = passHostHeader;
 	};
 
-	onMount(() => {
-		servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
-		update();
-	});
+	// onMount(() => {
+	// 	servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
+	// 	update();
+	// });
 </script>
 
 <Card.Root>
 	<Card.Header>
 		<Card.Title>Service</Card.Title>
-		<Card.Description>Configure your {type} service</Card.Description>
+		<Card.Description>Configure your {router.protocol} service</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
-		{#if service.serviceType === 'http'}
+		{#if service.protocol === 'http'}
 			<div class="grid grid-cols-4 items-center gap-4">
 				<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
 				<Switch

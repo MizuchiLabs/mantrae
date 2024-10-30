@@ -152,6 +152,17 @@ WHERE
 LIMIT
   1;
 
+-- name: GetRouterByName :one
+SELECT
+  *
+FROM
+  routers
+WHERE
+  name = ?
+  AND profile_id = ?
+LIMIT
+  1;
+
 -- name: ListRouters :many
 SELECT
   *
@@ -165,48 +176,6 @@ FROM
   routers
 WHERE
   profile_id = ?;
-
--- name: CreateRouter :one
-INSERT INTO
-  routers (
-    profile_id,
-    name,
-    provider,
-    protocol,
-    status,
-    entry_points,
-    middlewares,
-    rule,
-    rule_syntax,
-    service,
-    priority,
-    tls,
-    dns_provider,
-    agent_id,
-    errors
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
-
--- name: UpdateRouter :one
-UPDATE routers
-SET
-  name = ?,
-  provider = ?,
-  protocol = ?,
-  status = ?,
-  entry_points = ?,
-  middlewares = ?,
-  rule = ?,
-  rule_syntax = ?,
-  service = ?,
-  priority = ?,
-  tls = ?,
-  dns_provider = ?,
-  agent_id = ?,
-  errors = ?
-WHERE
-  id = ? RETURNING *;
 
 -- name: UpsertRouter :one
 INSERT INTO
@@ -229,24 +198,34 @@ INSERT INTO
     errors
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
 UPDATE
 SET
-  profile_id = EXCLUDED.profile_id,
-  name = EXCLUDED.name,
-  provider = EXCLUDED.provider,
-  protocol = EXCLUDED.protocol,
-  status = EXCLUDED.status,
-  entry_points = EXCLUDED.entry_points,
-  middlewares = EXCLUDED.middlewares,
-  rule = EXCLUDED.rule,
-  rule_syntax = EXCLUDED.rule_syntax,
-  service = EXCLUDED.service,
-  priority = EXCLUDED.priority,
-  tls = EXCLUDED.tls,
-  dns_provider = EXCLUDED.dns_provider,
-  agent_id = EXCLUDED.agent_id,
-  errors = EXCLUDED.errors RETURNING *;
+  provider = COALESCE(NULLIF(EXCLUDED.provider, ''), routers.provider),
+  protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), routers.protocol),
+  status = COALESCE(NULLIF(EXCLUDED.status, ''), routers.status),
+  entry_points = COALESCE(
+    NULLIF(EXCLUDED.entry_points, ''),
+    routers.entry_points
+  ),
+  middlewares = COALESCE(
+    NULLIF(EXCLUDED.middlewares, ''),
+    routers.middlewares
+  ),
+  rule = COALESCE(NULLIF(EXCLUDED.rule, ''), routers.rule),
+  rule_syntax = COALESCE(
+    NULLIF(EXCLUDED.rule_syntax, ''),
+    routers.rule_syntax
+  ),
+  service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
+  priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
+  tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
+  dns_provider = COALESCE(
+    NULLIF(EXCLUDED.dns_provider, ''),
+    routers.dns_provider
+  ),
+  agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
+  errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING *;
 
 -- name: DeleteRouterByID :exec
 DELETE FROM routers
@@ -268,6 +247,17 @@ WHERE
 LIMIT
   1;
 
+-- name: GetServiceByName :one
+SELECT
+  *
+FROM
+  services
+WHERE
+  name = ?
+  AND profile_id = ?
+LIMIT
+  1;
+
 -- name: ListServices :many
 SELECT
   *
@@ -281,41 +271,6 @@ FROM
   services
 WHERE
   profile_id = ?;
-
--- name: CreateService :one
-INSERT INTO
-  services (
-    profile_id,
-    name,
-    provider,
-    type,
-    protocol,
-    status,
-    server_status,
-    load_balancer,
-    weighted,
-    mirroring,
-    failover,
-    agent_id
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
-
--- name: UpdateService :one
-UPDATE services
-SET
-  name = ?,
-  provider = ?,
-  protocol = ?,
-  status = ?,
-  server_status = ?,
-  load_balancer = ?,
-  weighted = ?,
-  mirroring = ?,
-  failover = ?,
-  agent_id = ?
-WHERE
-  id = ? RETURNING *;
 
 -- name: UpsertService :one
 INSERT INTO
@@ -335,21 +290,28 @@ INSERT INTO
     agent_id
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
 UPDATE
 SET
-  profile_id = EXCLUDED.profile_id,
-  name = EXCLUDED.name,
-  provider = EXCLUDED.provider,
-  type = EXCLUDED.type,
-  protocol = EXCLUDED.protocol,
-  status = EXCLUDED.status,
-  server_status = EXCLUDED.server_status,
-  load_balancer = EXCLUDED.load_balancer,
-  weighted = EXCLUDED.weighted,
-  mirroring = EXCLUDED.mirroring,
-  failover = EXCLUDED.failover,
-  agent_id = EXCLUDED.agent_id RETURNING *;
+  provider = COALESCE(NULLIF(EXCLUDED.provider, ''), services.provider),
+  type = COALESCE(NULLIF(EXCLUDED.type, ''), services.type),
+  protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), services.protocol),
+  status = COALESCE(NULLIF(EXCLUDED.status, ''), services.status),
+  server_status = COALESCE(
+    NULLIF(EXCLUDED.server_status, ''),
+    services.server_status
+  ),
+  load_balancer = COALESCE(
+    NULLIF(EXCLUDED.load_balancer, ''),
+    services.load_balancer
+  ),
+  weighted = COALESCE(NULLIF(EXCLUDED.weighted, ''), services.weighted),
+  mirroring = COALESCE(
+    NULLIF(EXCLUDED.mirroring, ''),
+    services.mirroring
+  ),
+  failover = COALESCE(NULLIF(EXCLUDED.failover, ''), services.failover),
+  agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), services.agent_id) RETURNING *;
 
 -- name: DeleteServiceByID :exec
 DELETE FROM services
@@ -358,6 +320,82 @@ WHERE
 
 -- name: DeleteServiceByName :exec
 DELETE FROM services
+WHERE
+  name = ?;
+
+-- name: GetMiddlewareByID :one
+SELECT
+  *
+FROM
+  middlewares
+WHERE
+  id = ?
+LIMIT
+  1;
+
+-- name: GetMiddlewareByName :one
+SELECT
+  *
+FROM
+  middlewares
+WHERE
+  name = ?
+  AND profile_id = ?
+LIMIT
+  1;
+
+-- name: ListMiddlewares :many
+SELECT
+  *
+FROM
+  middlewares;
+
+-- name: ListMiddlewaresByProfileID :many
+SELECT
+  *
+FROM
+  middlewares
+WHERE
+  profile_id = ?;
+
+-- name: UpsertMiddleware :one
+INSERT INTO
+  middlewares (
+    id,
+    profile_id,
+    name,
+    provider,
+    type,
+    protocol,
+    agent_id,
+    content
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
+UPDATE
+SET
+  provider = COALESCE(
+    NULLIF(EXCLUDED.provider, ''),
+    middlewares.provider
+  ),
+  type = COALESCE(NULLIF(EXCLUDED.type, ''), middlewares.type),
+  protocol = COALESCE(
+    NULLIF(EXCLUDED.protocol, ''),
+    middlewares.protocol
+  ),
+  agent_id = COALESCE(
+    NULLIF(EXCLUDED.agent_id, ''),
+    middlewares.agent_id
+  ),
+  content = COALESCE(NULLIF(EXCLUDED.content, ''), middlewares.content) RETURNING *;
+
+-- name: DeleteMiddlewareByID :exec
+DELETE FROM middlewares
+WHERE
+  id = ?;
+
+-- name: DeleteMiddlewareByName :exec
+DELETE FROM middlewares
 WHERE
   name = ?;
 

@@ -1,8 +1,12 @@
 package traefik
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	ttls "github.com/traefik/traefik/v3/pkg/tls"
 )
@@ -30,69 +34,98 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 		},
 	}
 
-	for _, router := range d.Routers {
+	routers, err := db.Query.ListRoutersByProfileID(context.Background(), d.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, router := range routers {
+		if err := router.DecodeFields(); err != nil {
+			continue
+		}
+
 		// Only add routers by our provider
 		if router.Provider == "http" {
 			name := strings.Split(router.Name, "@")[0]
-			switch router.RouterType {
+			switch router.Protocol {
 			case "http":
-				var tlsConfig *dynamic.RouterTLSConfig
-				if router.TLS != nil {
-					tlsConfig = &dynamic.RouterTLSConfig{
-						Options:      router.TLS.Options,
-						CertResolver: router.TLS.CertResolver,
-						Domains:      router.TLS.Domains,
-					}
+				var rtr *dynamic.Router
+				rtrBytes, err := json.Marshal(router)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal router: %w", err)
 				}
-				config.HTTP.Routers[name] = &dynamic.Router{
-					EntryPoints: router.Entrypoints,
-					Middlewares: router.Middlewares,
-					Rule:        router.Rule,
-					RuleSyntax:  router.RuleSyntax,
-					Service:     router.Service,
-					Priority:    router.Priority,
-					TLS:         tlsConfig,
+				if err := json.Unmarshal(rtrBytes, &rtr); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
 				}
+				config.HTTP.Routers[name] = rtr
 			case "tcp":
-				config.TCP.Routers[name] = &dynamic.TCPRouter{
-					EntryPoints: router.Entrypoints,
-					Middlewares: router.Middlewares,
-					Rule:        router.Rule,
-					RuleSyntax:  router.RuleSyntax,
-					Service:     router.Service,
-					Priority:    router.Priority,
-					TLS:         router.TLS,
+				var rtr *dynamic.TCPRouter
+				rtrBytes, err := json.Marshal(router)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal router: %w", err)
 				}
+				if err := json.Unmarshal(rtrBytes, &rtr); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
+				}
+
+				config.TCP.Routers[name] = rtr
 			case "udp":
-				config.UDP.Routers[name] = &dynamic.UDPRouter{
-					EntryPoints: router.Entrypoints,
-					Service:     router.Service,
+				var rtr *dynamic.UDPRouter
+				rtrBytes, err := json.Marshal(router)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal router: %w", err)
 				}
+				if err := json.Unmarshal(rtrBytes, &rtr); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
+				}
+				config.UDP.Routers[name] = rtr
 			}
 		}
 	}
-	for _, service := range d.Services {
+
+	services, err := db.Query.ListServicesByProfileID(context.Background(), d.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	for _, service := range services {
+		if err := service.DecodeFields(); err != nil {
+			continue
+		}
+
 		// Only add services by our provider
 		if service.Provider == "http" {
 			name := strings.Split(service.Name, "@")[0]
-			switch service.ServiceType {
+			switch service.Protocol {
 			case "http":
-				config.HTTP.Services[name] = &dynamic.Service{
-					LoadBalancer: service.LoadBalancer.ToHTTPServersLoadBalancer(),
-					Weighted:     service.Weighted.ToHTTPWeightedRoundRobin(),
-					Mirroring:    service.Mirroring,
-					Failover:     service.Failover,
+				var svc *dynamic.Service
+				svcBytes, err := json.Marshal(service)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal service: %w", err)
 				}
+				if err := json.Unmarshal(svcBytes, &svc); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
+				}
+				config.HTTP.Services[name] = svc
 			case "tcp":
-				config.TCP.Services[name] = &dynamic.TCPService{
-					LoadBalancer: service.LoadBalancer.ToTCPServersLoadBalancer(),
-					Weighted:     service.Weighted.ToTCPWeightedRoundRobin(),
+				var svc *dynamic.TCPService
+				svcBytes, err := json.Marshal(service)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal service: %w", err)
 				}
+				if err := json.Unmarshal(svcBytes, &svc); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
+				}
+				config.TCP.Services[name] = svc
 			case "udp":
-				config.UDP.Services[name] = &dynamic.UDPService{
-					LoadBalancer: service.LoadBalancer.ToUDPServersLoadBalancer(),
-					Weighted:     service.Weighted.ToUDPWeightedRoundRobin(),
+				var svc *dynamic.UDPService
+				svcBytes, err := json.Marshal(service)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal service: %w", err)
 				}
+				if err := json.Unmarshal(svcBytes, &svc); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal service: %w", err)
+				}
+				config.UDP.Services[name] = svc
 			}
 		}
 	}
@@ -158,123 +191,4 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 	}
 
 	return config, nil
-}
-
-// Convert LoadBalancer to HTTP ServersLoadBalancer
-func (lb *LoadBalancer) ToHTTPServersLoadBalancer() *dynamic.ServersLoadBalancer {
-	if lb == nil {
-		return nil
-	}
-
-	httpServers := make([]dynamic.Server, len(lb.Servers))
-	for i, server := range lb.Servers {
-		httpServers[i] = dynamic.Server{
-			URL: server.URL,
-		}
-	}
-
-	return &dynamic.ServersLoadBalancer{
-		Sticky:             lb.Sticky,
-		Servers:            httpServers,
-		HealthCheck:        lb.HealthCheck,
-		PassHostHeader:     lb.PassHostHeader,
-		ResponseForwarding: lb.ResponseForwarding,
-		ServersTransport:   lb.ServersTransport,
-	}
-}
-
-// Convert LoadBalancer to TCPServersLoadBalancer
-func (lb *LoadBalancer) ToTCPServersLoadBalancer() *dynamic.TCPServersLoadBalancer {
-	if lb == nil {
-		return nil
-	}
-
-	tcpServers := make([]dynamic.TCPServer, len(lb.Servers))
-	for i, server := range lb.Servers {
-		tcpServers[i] = dynamic.TCPServer{
-			Address: server.Address,
-		}
-	}
-
-	return &dynamic.TCPServersLoadBalancer{
-		TerminationDelay: lb.TerminationDelay,
-		ProxyProtocol:    lb.ProxyProtocol,
-		Servers:          tcpServers,
-	}
-}
-
-// Convert LoadBalancer to UDPServersLoadBalancer (same structure as TCP)
-func (lb *LoadBalancer) ToUDPServersLoadBalancer() *dynamic.UDPServersLoadBalancer {
-	if lb == nil {
-		return nil
-	}
-
-	udpServers := make([]dynamic.UDPServer, len(lb.Servers))
-	for i, server := range lb.Servers {
-		udpServers[i] = dynamic.UDPServer{
-			Address: server.Address,
-		}
-	}
-
-	return &dynamic.UDPServersLoadBalancer{
-		Servers: udpServers,
-	}
-}
-
-// Convert WeightedRoundRobin to HTTP WeightedRoundRobin
-func (wrr *WeightedRoundRobin) ToHTTPWeightedRoundRobin() *dynamic.WeightedRoundRobin {
-	if wrr == nil {
-		return nil
-	}
-
-	httpServices := make([]dynamic.WRRService, len(wrr.Services))
-	for i, service := range wrr.Services {
-		httpServices[i] = dynamic.WRRService{
-			Name:   service.Name,
-			Weight: service.Weight, // HTTP uses Weight
-		}
-	}
-
-	return &dynamic.WeightedRoundRobin{
-		Services:    httpServices,
-		Sticky:      wrr.Sticky,
-		HealthCheck: wrr.HealthCheck,
-	}
-}
-
-// Convert WeightedRoundRobin to TCP WeightedRoundRobin
-func (wrr *WeightedRoundRobin) ToTCPWeightedRoundRobin() *dynamic.TCPWeightedRoundRobin {
-	if wrr == nil {
-		return nil
-	}
-
-	tcpServices := make([]dynamic.TCPWRRService, len(wrr.Services))
-	for i, service := range wrr.Services {
-		tcpServices[i] = dynamic.TCPWRRService{
-			Name:   service.Name,
-			Weight: service.Weight,
-		}
-	}
-
-	return &dynamic.TCPWeightedRoundRobin{
-		Services: tcpServices,
-	}
-}
-
-func (wrr *WeightedRoundRobin) ToUDPWeightedRoundRobin() *dynamic.UDPWeightedRoundRobin {
-	if wrr == nil {
-		return nil
-	}
-
-	udpServices := make([]dynamic.UDPWRRService, len(wrr.Services))
-	for i, service := range wrr.Services {
-		udpServices[i] = dynamic.UDPWRRService{
-			Name:   service.Name,
-			Weight: service.Weight,
-		}
-	}
-
-	return &dynamic.UDPWeightedRoundRobin{
-		Services: udpServices,
-	}
 }

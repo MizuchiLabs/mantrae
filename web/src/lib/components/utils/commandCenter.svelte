@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Command from '$lib/components/ui/command';
 	import { goto } from '$app/navigation';
-	import { getService, middlewares, routers } from '$lib/api';
+	import { middlewares, routers, services } from '$lib/api';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
 	import { onMount } from 'svelte';
 	import RouterModal from '../modals/router.svelte';
@@ -53,7 +53,7 @@
 			disabled = true;
 		}
 		router = r;
-		service = getService(router);
+		service = $services?.find((s: Service) => s.name === r.name) ?? newService();
 		openRouterModal = true;
 	};
 

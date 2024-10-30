@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS routers (
   provider VARCHAR(255) NOT NULL,
   protocol VARCHAR(255) NOT NULL,
   status VARCHAR(255),
+  agent_id TEXT,
   entry_points JSONB,
   middlewares JSONB,
   rule TEXT NOT NULL,
@@ -35,11 +36,11 @@ CREATE TABLE IF NOT EXISTS routers (
   priority INTEGER,
   tls JSONB,
   dns_provider INTEGER,
-  agent_id TEXT,
   errors JSONB,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider) REFERENCES providers (id) ON DELETE SET NULL,
-  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  UNIQUE (name, profile_id)
 );
 
 CREATE TABLE IF NOT EXISTS services (
@@ -49,15 +50,30 @@ CREATE TABLE IF NOT EXISTS services (
   provider VARCHAR(255) NOT NULL,
   type VARCHAR(255) NOT NULL,
   protocol VARCHAR(255) NOT NULL,
+  agent_id TEXT,
   status VARCHAR(255),
   server_status JSONB,
   load_balancer JSONB,
   weighted JSONB,
   mirroring JSONB,
   failover JSONB,
-  agent_id TEXT,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  UNIQUE (name, profile_id)
+);
+
+CREATE TABLE IF NOT EXISTS middlewares (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  provider VARCHAR(255) NOT NULL,
+  type VARCHAR(255) NOT NULL,
+  protocol VARCHAR(255) NOT NULL,
+  agent_id TEXT,
+  content JSONB,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  UNIQUE (name, profile_id)
 );
 
 CREATE TABLE IF NOT EXISTS providers (
@@ -67,6 +83,7 @@ CREATE TABLE IF NOT EXISTS providers (
   external_ip TEXT NOT NULL,
   api_key TEXT NOT NULL,
   api_url TEXT,
+  zone_type TEXT,
   proxied BOOLEAN NOT NULL DEFAULT FALSE,
   is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -131,6 +148,12 @@ END;
 DROP TABLE IF EXISTS profiles;
 
 DROP TABLE IF EXISTS config;
+
+DROP TABLE IF EXISTS routers;
+
+DROP TABLE IF EXISTS services;
+
+DROP TABLE IF EXISTS middlewares;
 
 DROP TABLE IF EXISTS providers;
 

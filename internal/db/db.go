@@ -36,12 +36,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createProviderStmt, err = db.PrepareContext(ctx, createProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProvider: %w", err)
 	}
-	if q.createRouterStmt, err = db.PrepareContext(ctx, createRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateRouter: %w", err)
-	}
-	if q.createServiceStmt, err = db.PrepareContext(ctx, createService); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateService: %w", err)
-	}
 	if q.createSettingStmt, err = db.PrepareContext(ctx, createSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateSetting: %w", err)
 	}
@@ -59,6 +53,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteConfigByProfileNameStmt, err = db.PrepareContext(ctx, deleteConfigByProfileName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteConfigByProfileName: %w", err)
+	}
+	if q.deleteMiddlewareByIDStmt, err = db.PrepareContext(ctx, deleteMiddlewareByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteMiddlewareByID: %w", err)
+	}
+	if q.deleteMiddlewareByNameStmt, err = db.PrepareContext(ctx, deleteMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteMiddlewareByName: %w", err)
 	}
 	if q.deleteProfileByIDStmt, err = db.PrepareContext(ctx, deleteProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfileByID: %w", err)
@@ -108,6 +108,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getConfigByProfileNameStmt, err = db.PrepareContext(ctx, getConfigByProfileName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfigByProfileName: %w", err)
 	}
+	if q.getMiddlewareByIDStmt, err = db.PrepareContext(ctx, getMiddlewareByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMiddlewareByID: %w", err)
+	}
+	if q.getMiddlewareByNameStmt, err = db.PrepareContext(ctx, getMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetMiddlewareByName: %w", err)
+	}
 	if q.getProfileByIDStmt, err = db.PrepareContext(ctx, getProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfileByID: %w", err)
 	}
@@ -123,8 +129,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getRouterByIDStmt, err = db.PrepareContext(ctx, getRouterByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRouterByID: %w", err)
 	}
+	if q.getRouterByNameStmt, err = db.PrepareContext(ctx, getRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterByName: %w", err)
+	}
 	if q.getServiceByIDStmt, err = db.PrepareContext(ctx, getServiceByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetServiceByID: %w", err)
+	}
+	if q.getServiceByNameStmt, err = db.PrepareContext(ctx, getServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetServiceByName: %w", err)
 	}
 	if q.getSettingByKeyStmt, err = db.PrepareContext(ctx, getSettingByKey); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSettingByKey: %w", err)
@@ -140,6 +152,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listConfigsStmt, err = db.PrepareContext(ctx, listConfigs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListConfigs: %w", err)
+	}
+	if q.listMiddlewaresStmt, err = db.PrepareContext(ctx, listMiddlewares); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMiddlewares: %w", err)
+	}
+	if q.listMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, listMiddlewaresByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProfileID: %w", err)
 	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
@@ -177,12 +195,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateProviderStmt, err = db.PrepareContext(ctx, updateProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProvider: %w", err)
 	}
-	if q.updateRouterStmt, err = db.PrepareContext(ctx, updateRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateRouter: %w", err)
-	}
-	if q.updateServiceStmt, err = db.PrepareContext(ctx, updateService); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateService: %w", err)
-	}
 	if q.updateSettingStmt, err = db.PrepareContext(ctx, updateSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateSetting: %w", err)
 	}
@@ -191,6 +203,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.upsertAgentStmt, err = db.PrepareContext(ctx, upsertAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertAgent: %w", err)
+	}
+	if q.upsertMiddlewareStmt, err = db.PrepareContext(ctx, upsertMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertMiddleware: %w", err)
 	}
 	if q.upsertProfileStmt, err = db.PrepareContext(ctx, upsertProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertProfile: %w", err)
@@ -235,16 +250,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createProviderStmt: %w", cerr)
 		}
 	}
-	if q.createRouterStmt != nil {
-		if cerr := q.createRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createRouterStmt: %w", cerr)
-		}
-	}
-	if q.createServiceStmt != nil {
-		if cerr := q.createServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createServiceStmt: %w", cerr)
-		}
-	}
 	if q.createSettingStmt != nil {
 		if cerr := q.createSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createSettingStmt: %w", cerr)
@@ -273,6 +278,16 @@ func (q *Queries) Close() error {
 	if q.deleteConfigByProfileNameStmt != nil {
 		if cerr := q.deleteConfigByProfileNameStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteConfigByProfileNameStmt: %w", cerr)
+		}
+	}
+	if q.deleteMiddlewareByIDStmt != nil {
+		if cerr := q.deleteMiddlewareByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteMiddlewareByIDStmt: %w", cerr)
+		}
+	}
+	if q.deleteMiddlewareByNameStmt != nil {
+		if cerr := q.deleteMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteMiddlewareByNameStmt: %w", cerr)
 		}
 	}
 	if q.deleteProfileByIDStmt != nil {
@@ -355,6 +370,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getConfigByProfileNameStmt: %w", cerr)
 		}
 	}
+	if q.getMiddlewareByIDStmt != nil {
+		if cerr := q.getMiddlewareByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMiddlewareByIDStmt: %w", cerr)
+		}
+	}
+	if q.getMiddlewareByNameStmt != nil {
+		if cerr := q.getMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getMiddlewareByNameStmt: %w", cerr)
+		}
+	}
 	if q.getProfileByIDStmt != nil {
 		if cerr := q.getProfileByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProfileByIDStmt: %w", cerr)
@@ -380,9 +405,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getRouterByIDStmt: %w", cerr)
 		}
 	}
+	if q.getRouterByNameStmt != nil {
+		if cerr := q.getRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterByNameStmt: %w", cerr)
+		}
+	}
 	if q.getServiceByIDStmt != nil {
 		if cerr := q.getServiceByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getServiceByIDStmt: %w", cerr)
+		}
+	}
+	if q.getServiceByNameStmt != nil {
+		if cerr := q.getServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getServiceByNameStmt: %w", cerr)
 		}
 	}
 	if q.getSettingByKeyStmt != nil {
@@ -408,6 +443,16 @@ func (q *Queries) Close() error {
 	if q.listConfigsStmt != nil {
 		if cerr := q.listConfigsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listConfigsStmt: %w", cerr)
+		}
+	}
+	if q.listMiddlewaresStmt != nil {
+		if cerr := q.listMiddlewaresStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMiddlewaresStmt: %w", cerr)
+		}
+	}
+	if q.listMiddlewaresByProfileIDStmt != nil {
+		if cerr := q.listMiddlewaresByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMiddlewaresByProfileIDStmt: %w", cerr)
 		}
 	}
 	if q.listProfilesStmt != nil {
@@ -470,16 +515,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateProviderStmt: %w", cerr)
 		}
 	}
-	if q.updateRouterStmt != nil {
-		if cerr := q.updateRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateRouterStmt: %w", cerr)
-		}
-	}
-	if q.updateServiceStmt != nil {
-		if cerr := q.updateServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateServiceStmt: %w", cerr)
-		}
-	}
 	if q.updateSettingStmt != nil {
 		if cerr := q.updateSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateSettingStmt: %w", cerr)
@@ -493,6 +528,11 @@ func (q *Queries) Close() error {
 	if q.upsertAgentStmt != nil {
 		if cerr := q.upsertAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertAgentStmt: %w", cerr)
+		}
+	}
+	if q.upsertMiddlewareStmt != nil {
+		if cerr := q.upsertMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertMiddlewareStmt: %w", cerr)
 		}
 	}
 	if q.upsertProfileStmt != nil {
@@ -562,137 +602,147 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                            DBTX
-	tx                            *sql.Tx
-	createAgentStmt               *sql.Stmt
-	createConfigStmt              *sql.Stmt
-	createProfileStmt             *sql.Stmt
-	createProviderStmt            *sql.Stmt
-	createRouterStmt              *sql.Stmt
-	createServiceStmt             *sql.Stmt
-	createSettingStmt             *sql.Stmt
-	createUserStmt                *sql.Stmt
-	deleteAgentByHostnameStmt     *sql.Stmt
-	deleteAgentByIDStmt           *sql.Stmt
-	deleteConfigByProfileIDStmt   *sql.Stmt
-	deleteConfigByProfileNameStmt *sql.Stmt
-	deleteProfileByIDStmt         *sql.Stmt
-	deleteProfileByNameStmt       *sql.Stmt
-	deleteProviderByIDStmt        *sql.Stmt
-	deleteProviderByNameStmt      *sql.Stmt
-	deleteRouterByIDStmt          *sql.Stmt
-	deleteRouterByNameStmt        *sql.Stmt
-	deleteServiceByIDStmt         *sql.Stmt
-	deleteServiceByNameStmt       *sql.Stmt
-	deleteSettingByIDStmt         *sql.Stmt
-	deleteSettingByKeyStmt        *sql.Stmt
-	deleteUserByIDStmt            *sql.Stmt
-	deleteUserByUsernameStmt      *sql.Stmt
-	getAgentByHostnameStmt        *sql.Stmt
-	getAgentByIDStmt              *sql.Stmt
-	getConfigByProfileIDStmt      *sql.Stmt
-	getConfigByProfileNameStmt    *sql.Stmt
-	getProfileByIDStmt            *sql.Stmt
-	getProfileByNameStmt          *sql.Stmt
-	getProviderByIDStmt           *sql.Stmt
-	getProviderByNameStmt         *sql.Stmt
-	getRouterByIDStmt             *sql.Stmt
-	getServiceByIDStmt            *sql.Stmt
-	getSettingByKeyStmt           *sql.Stmt
-	getUserByIDStmt               *sql.Stmt
-	getUserByUsernameStmt         *sql.Stmt
-	listAgentsStmt                *sql.Stmt
-	listConfigsStmt               *sql.Stmt
-	listProfilesStmt              *sql.Stmt
-	listProvidersStmt             *sql.Stmt
-	listRoutersStmt               *sql.Stmt
-	listRoutersByProfileIDStmt    *sql.Stmt
-	listServicesStmt              *sql.Stmt
-	listServicesByProfileIDStmt   *sql.Stmt
-	listSettingsStmt              *sql.Stmt
-	listUsersStmt                 *sql.Stmt
-	updateAgentStmt               *sql.Stmt
-	updateConfigStmt              *sql.Stmt
-	updateProfileStmt             *sql.Stmt
-	updateProviderStmt            *sql.Stmt
-	updateRouterStmt              *sql.Stmt
-	updateServiceStmt             *sql.Stmt
-	updateSettingStmt             *sql.Stmt
-	updateUserStmt                *sql.Stmt
-	upsertAgentStmt               *sql.Stmt
-	upsertProfileStmt             *sql.Stmt
-	upsertProviderStmt            *sql.Stmt
-	upsertRouterStmt              *sql.Stmt
-	upsertServiceStmt             *sql.Stmt
-	upsertSettingStmt             *sql.Stmt
-	upsertUserStmt                *sql.Stmt
+	db                             DBTX
+	tx                             *sql.Tx
+	createAgentStmt                *sql.Stmt
+	createConfigStmt               *sql.Stmt
+	createProfileStmt              *sql.Stmt
+	createProviderStmt             *sql.Stmt
+	createSettingStmt              *sql.Stmt
+	createUserStmt                 *sql.Stmt
+	deleteAgentByHostnameStmt      *sql.Stmt
+	deleteAgentByIDStmt            *sql.Stmt
+	deleteConfigByProfileIDStmt    *sql.Stmt
+	deleteConfigByProfileNameStmt  *sql.Stmt
+	deleteMiddlewareByIDStmt       *sql.Stmt
+	deleteMiddlewareByNameStmt     *sql.Stmt
+	deleteProfileByIDStmt          *sql.Stmt
+	deleteProfileByNameStmt        *sql.Stmt
+	deleteProviderByIDStmt         *sql.Stmt
+	deleteProviderByNameStmt       *sql.Stmt
+	deleteRouterByIDStmt           *sql.Stmt
+	deleteRouterByNameStmt         *sql.Stmt
+	deleteServiceByIDStmt          *sql.Stmt
+	deleteServiceByNameStmt        *sql.Stmt
+	deleteSettingByIDStmt          *sql.Stmt
+	deleteSettingByKeyStmt         *sql.Stmt
+	deleteUserByIDStmt             *sql.Stmt
+	deleteUserByUsernameStmt       *sql.Stmt
+	getAgentByHostnameStmt         *sql.Stmt
+	getAgentByIDStmt               *sql.Stmt
+	getConfigByProfileIDStmt       *sql.Stmt
+	getConfigByProfileNameStmt     *sql.Stmt
+	getMiddlewareByIDStmt          *sql.Stmt
+	getMiddlewareByNameStmt        *sql.Stmt
+	getProfileByIDStmt             *sql.Stmt
+	getProfileByNameStmt           *sql.Stmt
+	getProviderByIDStmt            *sql.Stmt
+	getProviderByNameStmt          *sql.Stmt
+	getRouterByIDStmt              *sql.Stmt
+	getRouterByNameStmt            *sql.Stmt
+	getServiceByIDStmt             *sql.Stmt
+	getServiceByNameStmt           *sql.Stmt
+	getSettingByKeyStmt            *sql.Stmt
+	getUserByIDStmt                *sql.Stmt
+	getUserByUsernameStmt          *sql.Stmt
+	listAgentsStmt                 *sql.Stmt
+	listConfigsStmt                *sql.Stmt
+	listMiddlewaresStmt            *sql.Stmt
+	listMiddlewaresByProfileIDStmt *sql.Stmt
+	listProfilesStmt               *sql.Stmt
+	listProvidersStmt              *sql.Stmt
+	listRoutersStmt                *sql.Stmt
+	listRoutersByProfileIDStmt     *sql.Stmt
+	listServicesStmt               *sql.Stmt
+	listServicesByProfileIDStmt    *sql.Stmt
+	listSettingsStmt               *sql.Stmt
+	listUsersStmt                  *sql.Stmt
+	updateAgentStmt                *sql.Stmt
+	updateConfigStmt               *sql.Stmt
+	updateProfileStmt              *sql.Stmt
+	updateProviderStmt             *sql.Stmt
+	updateSettingStmt              *sql.Stmt
+	updateUserStmt                 *sql.Stmt
+	upsertAgentStmt                *sql.Stmt
+	upsertMiddlewareStmt           *sql.Stmt
+	upsertProfileStmt              *sql.Stmt
+	upsertProviderStmt             *sql.Stmt
+	upsertRouterStmt               *sql.Stmt
+	upsertServiceStmt              *sql.Stmt
+	upsertSettingStmt              *sql.Stmt
+	upsertUserStmt                 *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                            tx,
-		tx:                            tx,
-		createAgentStmt:               q.createAgentStmt,
-		createConfigStmt:              q.createConfigStmt,
-		createProfileStmt:             q.createProfileStmt,
-		createProviderStmt:            q.createProviderStmt,
-		createRouterStmt:              q.createRouterStmt,
-		createServiceStmt:             q.createServiceStmt,
-		createSettingStmt:             q.createSettingStmt,
-		createUserStmt:                q.createUserStmt,
-		deleteAgentByHostnameStmt:     q.deleteAgentByHostnameStmt,
-		deleteAgentByIDStmt:           q.deleteAgentByIDStmt,
-		deleteConfigByProfileIDStmt:   q.deleteConfigByProfileIDStmt,
-		deleteConfigByProfileNameStmt: q.deleteConfigByProfileNameStmt,
-		deleteProfileByIDStmt:         q.deleteProfileByIDStmt,
-		deleteProfileByNameStmt:       q.deleteProfileByNameStmt,
-		deleteProviderByIDStmt:        q.deleteProviderByIDStmt,
-		deleteProviderByNameStmt:      q.deleteProviderByNameStmt,
-		deleteRouterByIDStmt:          q.deleteRouterByIDStmt,
-		deleteRouterByNameStmt:        q.deleteRouterByNameStmt,
-		deleteServiceByIDStmt:         q.deleteServiceByIDStmt,
-		deleteServiceByNameStmt:       q.deleteServiceByNameStmt,
-		deleteSettingByIDStmt:         q.deleteSettingByIDStmt,
-		deleteSettingByKeyStmt:        q.deleteSettingByKeyStmt,
-		deleteUserByIDStmt:            q.deleteUserByIDStmt,
-		deleteUserByUsernameStmt:      q.deleteUserByUsernameStmt,
-		getAgentByHostnameStmt:        q.getAgentByHostnameStmt,
-		getAgentByIDStmt:              q.getAgentByIDStmt,
-		getConfigByProfileIDStmt:      q.getConfigByProfileIDStmt,
-		getConfigByProfileNameStmt:    q.getConfigByProfileNameStmt,
-		getProfileByIDStmt:            q.getProfileByIDStmt,
-		getProfileByNameStmt:          q.getProfileByNameStmt,
-		getProviderByIDStmt:           q.getProviderByIDStmt,
-		getProviderByNameStmt:         q.getProviderByNameStmt,
-		getRouterByIDStmt:             q.getRouterByIDStmt,
-		getServiceByIDStmt:            q.getServiceByIDStmt,
-		getSettingByKeyStmt:           q.getSettingByKeyStmt,
-		getUserByIDStmt:               q.getUserByIDStmt,
-		getUserByUsernameStmt:         q.getUserByUsernameStmt,
-		listAgentsStmt:                q.listAgentsStmt,
-		listConfigsStmt:               q.listConfigsStmt,
-		listProfilesStmt:              q.listProfilesStmt,
-		listProvidersStmt:             q.listProvidersStmt,
-		listRoutersStmt:               q.listRoutersStmt,
-		listRoutersByProfileIDStmt:    q.listRoutersByProfileIDStmt,
-		listServicesStmt:              q.listServicesStmt,
-		listServicesByProfileIDStmt:   q.listServicesByProfileIDStmt,
-		listSettingsStmt:              q.listSettingsStmt,
-		listUsersStmt:                 q.listUsersStmt,
-		updateAgentStmt:               q.updateAgentStmt,
-		updateConfigStmt:              q.updateConfigStmt,
-		updateProfileStmt:             q.updateProfileStmt,
-		updateProviderStmt:            q.updateProviderStmt,
-		updateRouterStmt:              q.updateRouterStmt,
-		updateServiceStmt:             q.updateServiceStmt,
-		updateSettingStmt:             q.updateSettingStmt,
-		updateUserStmt:                q.updateUserStmt,
-		upsertAgentStmt:               q.upsertAgentStmt,
-		upsertProfileStmt:             q.upsertProfileStmt,
-		upsertProviderStmt:            q.upsertProviderStmt,
-		upsertRouterStmt:              q.upsertRouterStmt,
-		upsertServiceStmt:             q.upsertServiceStmt,
-		upsertSettingStmt:             q.upsertSettingStmt,
-		upsertUserStmt:                q.upsertUserStmt,
+		db:                             tx,
+		tx:                             tx,
+		createAgentStmt:                q.createAgentStmt,
+		createConfigStmt:               q.createConfigStmt,
+		createProfileStmt:              q.createProfileStmt,
+		createProviderStmt:             q.createProviderStmt,
+		createSettingStmt:              q.createSettingStmt,
+		createUserStmt:                 q.createUserStmt,
+		deleteAgentByHostnameStmt:      q.deleteAgentByHostnameStmt,
+		deleteAgentByIDStmt:            q.deleteAgentByIDStmt,
+		deleteConfigByProfileIDStmt:    q.deleteConfigByProfileIDStmt,
+		deleteConfigByProfileNameStmt:  q.deleteConfigByProfileNameStmt,
+		deleteMiddlewareByIDStmt:       q.deleteMiddlewareByIDStmt,
+		deleteMiddlewareByNameStmt:     q.deleteMiddlewareByNameStmt,
+		deleteProfileByIDStmt:          q.deleteProfileByIDStmt,
+		deleteProfileByNameStmt:        q.deleteProfileByNameStmt,
+		deleteProviderByIDStmt:         q.deleteProviderByIDStmt,
+		deleteProviderByNameStmt:       q.deleteProviderByNameStmt,
+		deleteRouterByIDStmt:           q.deleteRouterByIDStmt,
+		deleteRouterByNameStmt:         q.deleteRouterByNameStmt,
+		deleteServiceByIDStmt:          q.deleteServiceByIDStmt,
+		deleteServiceByNameStmt:        q.deleteServiceByNameStmt,
+		deleteSettingByIDStmt:          q.deleteSettingByIDStmt,
+		deleteSettingByKeyStmt:         q.deleteSettingByKeyStmt,
+		deleteUserByIDStmt:             q.deleteUserByIDStmt,
+		deleteUserByUsernameStmt:       q.deleteUserByUsernameStmt,
+		getAgentByHostnameStmt:         q.getAgentByHostnameStmt,
+		getAgentByIDStmt:               q.getAgentByIDStmt,
+		getConfigByProfileIDStmt:       q.getConfigByProfileIDStmt,
+		getConfigByProfileNameStmt:     q.getConfigByProfileNameStmt,
+		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
+		getMiddlewareByNameStmt:        q.getMiddlewareByNameStmt,
+		getProfileByIDStmt:             q.getProfileByIDStmt,
+		getProfileByNameStmt:           q.getProfileByNameStmt,
+		getProviderByIDStmt:            q.getProviderByIDStmt,
+		getProviderByNameStmt:          q.getProviderByNameStmt,
+		getRouterByIDStmt:              q.getRouterByIDStmt,
+		getRouterByNameStmt:            q.getRouterByNameStmt,
+		getServiceByIDStmt:             q.getServiceByIDStmt,
+		getServiceByNameStmt:           q.getServiceByNameStmt,
+		getSettingByKeyStmt:            q.getSettingByKeyStmt,
+		getUserByIDStmt:                q.getUserByIDStmt,
+		getUserByUsernameStmt:          q.getUserByUsernameStmt,
+		listAgentsStmt:                 q.listAgentsStmt,
+		listConfigsStmt:                q.listConfigsStmt,
+		listMiddlewaresStmt:            q.listMiddlewaresStmt,
+		listMiddlewaresByProfileIDStmt: q.listMiddlewaresByProfileIDStmt,
+		listProfilesStmt:               q.listProfilesStmt,
+		listProvidersStmt:              q.listProvidersStmt,
+		listRoutersStmt:                q.listRoutersStmt,
+		listRoutersByProfileIDStmt:     q.listRoutersByProfileIDStmt,
+		listServicesStmt:               q.listServicesStmt,
+		listServicesByProfileIDStmt:    q.listServicesByProfileIDStmt,
+		listSettingsStmt:               q.listSettingsStmt,
+		listUsersStmt:                  q.listUsersStmt,
+		updateAgentStmt:                q.updateAgentStmt,
+		updateConfigStmt:               q.updateConfigStmt,
+		updateProfileStmt:              q.updateProfileStmt,
+		updateProviderStmt:             q.updateProviderStmt,
+		updateSettingStmt:              q.updateSettingStmt,
+		updateUserStmt:                 q.updateUserStmt,
+		upsertAgentStmt:                q.upsertAgentStmt,
+		upsertMiddlewareStmt:           q.upsertMiddlewareStmt,
+		upsertProfileStmt:              q.upsertProfileStmt,
+		upsertProviderStmt:             q.upsertProviderStmt,
+		upsertRouterStmt:               q.upsertRouterStmt,
+		upsertServiceStmt:              q.upsertServiceStmt,
+		upsertSettingStmt:              q.upsertSettingStmt,
+		upsertUserStmt:                 q.upsertUserStmt,
 	}
 }

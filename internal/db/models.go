@@ -28,6 +28,17 @@ type Config struct {
 	Version     *string     `json:"version"`
 }
 
+type Middleware struct {
+	ID        string      `json:"id"`
+	ProfileID int64       `json:"profileId"`
+	Name      string      `json:"name"`
+	Provider  string      `json:"provider"`
+	Type      string      `json:"type"`
+	Protocol  string      `json:"protocol"`
+	AgentID   *string     `json:"agentId"`
+	Content   interface{} `json:"content"`
+}
+
 type Profile struct {
 	ID       int64   `json:"id"`
 	Name     string  `json:"name"`
@@ -44,9 +55,9 @@ type Provider struct {
 	ExternalIp string  `json:"externalIp"`
 	ApiKey     string  `json:"apiKey"`
 	ApiUrl     *string `json:"apiUrl"`
+	ZoneType   *string `json:"zoneType"`
 	Proxied    bool    `json:"proxied"`
 	IsActive   bool    `json:"isActive"`
-	ZoneType   *string `json:"zoneType"`
 }
 
 type Router struct {
@@ -56,6 +67,7 @@ type Router struct {
 	Provider    string      `json:"provider"`
 	Protocol    string      `json:"protocol"`
 	Status      *string     `json:"status"`
+	AgentID     *string     `json:"agentId"`
 	EntryPoints interface{} `json:"entryPoints"`
 	Middlewares interface{} `json:"middlewares"`
 	Rule        string      `json:"rule"`
@@ -64,7 +76,6 @@ type Router struct {
 	Priority    *int64      `json:"priority"`
 	Tls         interface{} `json:"tls"`
 	DnsProvider *int64      `json:"dnsProvider"`
-	AgentID     *string     `json:"agentId"`
 	Errors      interface{} `json:"errors"`
 }
 
@@ -75,13 +86,13 @@ type Service struct {
 	Provider     string      `json:"provider"`
 	Type         string      `json:"type"`
 	Protocol     string      `json:"protocol"`
+	AgentID      *string     `json:"agentId"`
 	Status       *string     `json:"status"`
 	ServerStatus interface{} `json:"serverStatus"`
 	LoadBalancer interface{} `json:"loadBalancer"`
 	Weighted     interface{} `json:"weighted"`
 	Mirroring    interface{} `json:"mirroring"`
 	Failover     interface{} `json:"failover"`
-	AgentID      *string     `json:"agentId"`
 }
 
 type Setting struct {

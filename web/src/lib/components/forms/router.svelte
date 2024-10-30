@@ -12,7 +12,8 @@
 		provider,
 		toggleEntrypoint,
 		toggleMiddleware,
-		toggleDNSProvider
+		toggleDNSProvider,
+		profile
 	} from '$lib/api';
 	import { newRouter, type Router } from '$lib/types/config';
 	import RuleEditor from '../utils/ruleEditor.svelte';
@@ -21,44 +22,44 @@
 	import { z } from 'zod';
 	import type { Selected } from 'bits-ui';
 	import autoAnimate from '@formkit/auto-animate';
+	import { onMount } from 'svelte';
 
 	export let router: Router;
 	export let disabled = false;
 
-	const formSchema = z
-		.object({
-			name: z.string().trim().min(1, 'Name is required').max(255),
-			provider: z.string().trim().optional(),
-			status: z.string().trim().optional(),
-			routerType: z
-				.string()
-				.trim()
-				.toLowerCase()
-				.regex(/^(http|tcp|udp)$/),
-			dnsProvider: z.coerce.number().int().nonnegative().optional(),
-			entrypoints: z.array(z.string()).optional(),
-			middlewares: z.array(z.string()).optional(),
-			rule: z.string().trim().optional(),
-			priority: z.coerce.number().int().nonnegative().optional(),
-			tls: z
-				.object({
-					certResolver: z.string().trim().optional()
-				})
-				.optional()
-		})
-		.refine(
-			(data: Router) => {
-				// Conditionally check if `rule` is required for `http` or `tcp`
-				if (['http', 'tcp'].includes(data.routerType) && !data.rule) {
-					return false;
-				}
-				return true;
-			},
-			{
-				message: 'Rule is required for HTTP and TCP routers',
-				path: ['rule'] // This points to the 'rule' field
-			}
-		);
+	const formSchema = z.object({
+		name: z.string().trim().min(1, 'Name is required').max(255),
+		provider: z.string().trim().optional(),
+		status: z.string().trim().optional(),
+		protocol: z
+			.string()
+			.trim()
+			.toLowerCase()
+			.regex(/^(http|tcp|udp)$/),
+		dnsProvider: z.coerce.number().int().nonnegative().optional(),
+		entrypoints: z.array(z.string()).optional().nullable(),
+		middlewares: z.array(z.string()).optional().nullable(),
+		rule: z.string().trim().optional(),
+		priority: z.coerce.number().int().nonnegative().optional(),
+		tls: z
+			.object({
+				certResolver: z.string().trim().optional()
+			})
+			.optional()
+	});
+	// .refine(
+	// 	(data: Router) => {
+	// 		// Conditionally check if `rule` is required for `http` or `tcp`
+	// 		if (['http', 'tcp'].includes(data.protocol) && !data.rule) {
+	// 			return false;
+	// 		}
+	// 		return true;
+	// 	},
+	// 	{
+	// 		message: 'Rule is required for HTTP and TCP routers',
+	// 		path: ['rule'] // This points to the 'rule' field
+	// 	}
+	//);
 
 	let errors: Record<any, string[] | undefined> = {};
 	export const validate = () => {
@@ -76,13 +77,17 @@
 
 	const changeRouterType = (value: string, oldRouter: Router) => {
 		router = newRouter();
+		router.profileId = $profile?.id ?? 0;
 		router.name = oldRouter.name;
 		router.entrypoints = oldRouter.entrypoints;
 		router.middlewares = oldRouter.middlewares;
 		router.dnsProvider = oldRouter.dnsProvider;
 		router.priority = oldRouter.priority;
 		router.tls = oldRouter.tls;
-		router.routerType = value;
+		router.protocol = value;
+		if (value === 'udp') {
+			router.rule = '';
+		}
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
 		let list = router?.entrypoints?.map((entrypoint) => {
@@ -119,6 +124,9 @@
 	$: isNameTaken = routerCompare.some(
 		(r) => r.name.split('@')[0].toLowerCase() === router.name.split('@')[0].toLowerCase()
 	);
+
+	// Set default TLS settings
+	$: router.tls = router.tls || {};
 </script>
 
 <Card.Root>
@@ -127,12 +135,12 @@
 		<Card.Description>Configure your router settings</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
-		<!-- Type -->
+		<!-- Protocol -->
 		{#if router.provider === 'http'}
 			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
 				<Toggle
 					size="sm"
-					pressed={router.routerType === 'http'}
+					pressed={router.protocol === 'http'}
 					onPressedChange={() => changeRouterType('http', router)}
 					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
 				>
@@ -140,7 +148,7 @@
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.routerType === 'tcp'}
+					pressed={router.protocol === 'tcp'}
 					onPressedChange={() => changeRouterType('tcp', router)}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
@@ -148,7 +156,7 @@
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.routerType === 'udp'}
+					pressed={router.protocol === 'udp'}
 					onPressedChange={() => changeRouterType('udp', router)}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
@@ -238,7 +246,7 @@
 
 		<!-- Middlewares -->
 		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-1" class:hidden={router.routerType === 'udp'}>
+			<div class="grid grid-cols-4 items-center gap-1" class:hidden={router.protocol === 'udp'}>
 				<Label for="middlewares" class="mr-2 text-right">Middlewares</Label>
 				<Select.Root
 					multiple={true}
@@ -250,7 +258,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						{#each $middlewares as middleware}
-							{#if router.routerType === middleware.middlewareType}
+							{#if router.protocol === middleware.middlewareType}
 								<Select.Item value={middleware.name}>
 									{middleware.name}
 								</Select.Item>
@@ -295,7 +303,7 @@
 		{/if}
 
 		<!-- CertResolver -->
-		{#if router.provider === 'http' && router.routerType !== 'udp'}
+		{#if router.provider === 'http' && router.protocol !== 'udp'}
 			<div class="space-y-0.5">
 				<div class="grid grid-cols-4 items-center gap-1">
 					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
@@ -324,11 +332,11 @@
 		{/if}
 
 		<!-- Rule -->
-		{#if router.routerType === 'http' || router.routerType === 'tcp'}
+		{#if router.protocol === 'http' || router.protocol === 'tcp'}
 			{#if errors.rule}
 				<div class="col-span-4 text-right text-sm text-red-500">{errors.rule}</div>
 			{/if}
-			<RuleEditor bind:rule={router.rule} bind:type={router.routerType} {disabled} />
+			<RuleEditor bind:rule={router.rule} bind:type={router.protocol} {disabled} />
 		{/if}
 	</Card.Content>
 </Card.Root>

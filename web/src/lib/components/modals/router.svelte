@@ -2,7 +2,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { upsertRouter } from '$lib/api';
+	import { profile, upsertService, upsertRouter } from '$lib/api';
 	import { type Router, type Service } from '$lib/types/config';
 	import ServiceForm from '../forms/service.svelte';
 	import RouterForm from '../forms/router.svelte';
@@ -11,17 +11,16 @@
 	export let service: Service;
 	export let open = false;
 	export let disabled = false;
-	let originalName = router?.name;
 
 	let routerForm: RouterForm;
 	let serviceForm: ServiceForm;
 
 	const update = async () => {
-		const routerValied = routerForm.validate();
-		const serviceValied = serviceForm.validate();
-		if (routerValied && serviceValied) {
-			await upsertRouter(originalName, router, service);
-			originalName = router.name;
+		const rValid = routerForm.validate();
+		const sValid = serviceForm.validate();
+		if (rValid && sValid && $profile.id) {
+			await upsertRouter(router, $profile.id);
+			await upsertService(service, $profile.id);
 			open = false;
 		}
 	};
@@ -39,12 +38,7 @@
 				<RouterForm bind:router {disabled} bind:this={routerForm} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm
-					bind:service
-					bind:type={router.routerType}
-					{disabled}
-					bind:this={serviceForm}
-				/>
+				<ServiceForm bind:service bind:router {disabled} bind:this={serviceForm} />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Button class="w-full" on:click={() => update()}>Save</Button>

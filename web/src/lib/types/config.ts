@@ -2,33 +2,36 @@ import type { Domain } from './tls';
 
 export interface Router {
 	// Common fields
+	id: string;
+	profileId: number;
 	name: string;
 	provider?: string;
+	protocol: string;
 	status?: string;
-	routerType: string;
-	errorState?: ErrorState;
+	errors?: Errors;
 	dnsProvider?: number;
 
 	entrypoints?: string[];
 	middlewares?: string[];
 	service: string;
 	rule: string;
+	ruleSyntax?: string;
 	priority?: number;
 	tls: TLSConfig;
 }
 
 export function newRouter(): Router {
 	return {
+		id: '',
+		profileId: 0,
 		name: '',
 		provider: 'http',
 		status: '',
-		routerType: 'http',
-		dnsProvider: 0,
+		protocol: 'http',
 		entrypoints: [],
 		middlewares: [],
 		rule: '',
 		service: '',
-		priority: 0,
 		tls: {
 			passthrough: false,
 			options: '',
@@ -40,11 +43,13 @@ export function newRouter(): Router {
 
 export interface Service {
 	// Common fields
+	id: string;
+	profileId: number;
 	name: string;
 	provider?: string;
 	type?: string;
 	status?: string;
-	serviceType: string;
+	protocol: string;
 	serverStatus?: Record<string, string>;
 
 	loadBalancer?: ServersLoadBalancer;
@@ -55,16 +60,18 @@ export interface Service {
 
 export function newService(): Service {
 	return {
+		id: '',
+		profileId: 0,
 		name: '',
 		provider: 'http',
 		type: '',
 		status: '',
-		serviceType: 'http',
+		protocol: 'http',
 		serverStatus: {}
 	};
 }
 
-export interface ErrorState {
+export interface Errors {
 	ssl?: string;
 	dns?: string;
 }

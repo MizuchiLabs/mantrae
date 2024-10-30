@@ -24,13 +24,11 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("DELETE /api/profile/{id}", JWT(DeleteProfile))
 
 	mux.HandleFunc("GET /api/router/{id}", JWT(GetRouters))
-	mux.HandleFunc("POST /api/router/{id}", JWT(CreateRouter))
-	mux.HandleFunc("PUT /api/router/{id}", JWT(UpdateRouter))
+	mux.HandleFunc("POST /api/router", JWT(UpsertRouter))
 	mux.HandleFunc("DELETE /api/router/{id}", JWT(DeleteRouter))
 
 	mux.HandleFunc("GET /api/service/{id}", JWT(GetServices))
-	mux.HandleFunc("PUT /api/service/{id}", JWT(UpdateService))
-	mux.HandleFunc("POST /api/service/{id}", JWT(CreateService))
+	mux.HandleFunc("POST /api/service", JWT(UpsertService))
 	mux.HandleFunc("DELETE /api/service/{id}", JWT(DeleteService))
 
 	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
