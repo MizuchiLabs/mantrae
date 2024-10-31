@@ -29,7 +29,7 @@
 		if (type === undefined) return;
 		provider.type = type.value.toLowerCase();
 		if (provider.type === 'technitium') {
-			provider.zone_type = 'primary';
+			provider.zoneType = 'primary';
 		}
 	};
 
@@ -44,7 +44,7 @@
 				<Badge variant="secondary" class="bg-blue-400">
 					{provider.type}
 				</Badge>
-				{#if provider.is_active}
+				{#if provider.isActive}
 					<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
 				{/if}
 			</div>
@@ -53,7 +53,7 @@
 	<Card.Content class="space-y-2">
 		<div class="mb-4 flex items-center justify-end gap-2">
 			<Label for="is_active" class="text-right">Default</Label>
-			<Switch name="is_active" bind:checked={provider.is_active} required />
+			<Switch name="is_active" bind:checked={provider.isActive} required />
 		</div>
 
 		{#if provider.type === 'cloudflare'}
@@ -67,16 +67,16 @@
 			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
 				<Toggle
 					size="sm"
-					pressed={provider.zone_type === 'primary'}
-					onPressedChange={() => (provider.zone_type = 'primary')}
+					pressed={provider.zoneType === 'primary'}
+					onPressedChange={() => (provider.zoneType = 'primary')}
 					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
 				>
 					Primary
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={provider.zone_type === 'forwarder'}
-					onPressedChange={() => (provider.zone_type = 'forwarder')}
+					pressed={provider.zoneType === 'forwarder'}
+					onPressedChange={() => (provider.zoneType = 'forwarder')}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
 					Forwarder
@@ -121,7 +121,7 @@
 					name="external-ip"
 					type="text"
 					placeholder="Public IP address of Traefik"
-					bind:value={provider.external_ip}
+					bind:value={provider.externalIp}
 					class="pr-10"
 					required
 				/>
@@ -131,7 +131,7 @@
 							variant="ghost"
 							size="icon"
 							on:click={async () => {
-								provider.external_ip = await getPublicIP();
+								provider.externalIp = await getPublicIP();
 							}}
 							class="hover:bg-transparent hover:text-red-400"
 						>
@@ -157,7 +157,7 @@
 						? 'http://127.0.0.1:8081'
 						: 'http://127.0.0.1:5380'}
 					class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-					bind:value={provider.api_url}
+					bind:value={provider.apiUrl}
 					required
 				/>
 			</div>
@@ -169,7 +169,7 @@
 					<Input
 						name="key"
 						type="text"
-						bind:value={provider.api_key}
+						bind:value={provider.apiKey}
 						placeholder="API Key of the provider"
 						class="pr-10"
 						required
@@ -178,7 +178,7 @@
 					<Input
 						name="key"
 						type="password"
-						bind:value={provider.api_key}
+						bind:value={provider.apiKey}
 						placeholder="API Key of the provider"
 						class="pr-10"
 						required

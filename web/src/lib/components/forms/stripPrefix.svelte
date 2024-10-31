@@ -6,23 +6,20 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.stripPrefix = { prefixes: [], forceSlash: false, ...middleware.stripPrefix };
 </script>
 
-{#if middleware.stripPrefix}
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="force-slash" class="text-right">Force Slash</Label>
-		<Switch
-			id="force-slash"
-			bind:checked={middleware.stripPrefix.forceSlash}
-			class="col-span-3"
-			{disabled}
-		/>
-	</div>
-	<ArrayInput
-		bind:items={middleware.stripPrefix.prefixes}
-		label="Prefixes"
-		placeholder="/foo"
+<div class="grid grid-cols-4 items-center gap-4">
+	<Label for="force-slash" class="text-right">Force Slash</Label>
+	<Switch
+		id="force-slash"
+		bind:checked={middleware.content.forceSlash}
+		class="col-span-3"
 		{disabled}
 	/>
-{/if}
+</div>
+<ArrayInput
+	bind:items={middleware.content.prefixes}
+	label="Prefixes"
+	placeholder="/foo"
+	{disabled}
+/>

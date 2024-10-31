@@ -73,3 +73,23 @@ export const CustomTimeUnitSchemaOptional = z
 			message: 'Invalid time unit'
 		}
 	);
+
+const isEmpty = (obj: any) => {
+	return Object.keys(obj).length === 0 || Object.values(obj).every((val) => val === '');
+};
+export const cleanEmptyObjects = (obj: any) => {
+	for (const key in obj) {
+		if (Array.isArray(obj[key])) {
+			// If it's an array, check if it's empty or contains only empty strings
+			if (obj[key].length === 0 || (obj[key].length === 1 && obj[key][0] === '')) {
+				delete obj[key]; // Delete the empty array
+			}
+		} else if (typeof obj[key] === 'object' && obj[key] !== null) {
+			// If it's an object, recursively check its properties
+			cleanEmptyObjects(obj[key]);
+			if (isEmpty(obj[key])) {
+				delete obj[key]; // Delete if the nested object is empty
+			}
+		}
+	}
+};

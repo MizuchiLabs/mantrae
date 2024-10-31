@@ -6,7 +6,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
-	import { middlewares } from '$lib/api';
+	import { middlewares, profile } from '$lib/api';
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
 	import { onMount, SvelteComponent } from 'svelte';
@@ -45,20 +45,26 @@
 	];
 
 	// Load the initial form component
-	let isHTTP = middleware.middlewareType == 'http' ? true : false;
+	let isHTTP = middleware.protocol == 'http' ? true : false;
 	let middlewareType: Selected<string> | undefined;
 
 	let form: typeof SvelteComponent | null = null;
 	const setMiddlewareType = async (type: Selected<string> | undefined) => {
-		if (type === undefined) return;
+		if (!type || !$profile.id) return;
+		// Delete previous middleware form
+		if (middleware.type) {
+			delete middleware.content[middleware.type];
+		}
+
+		// Set the middleware type
 		middlewareType = type;
+		middleware.profileId = $profile.id;
 		middleware.type = type.value.toLowerCase();
-		middleware.middlewareType = isHTTP ? 'http' : 'tcp';
+		middleware.protocol = isHTTP ? 'http' : 'tcp';
 		form = null;
 		form = await LoadMiddlewareForm(middleware);
 	};
 
-	$: console.log(middleware);
 	$: isHTTP, setType();
 	const setType = () => {
 		if (middleware.type === '') {
@@ -87,7 +93,7 @@
 	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
 
 	onMount(async () => {
-		setType();
+		//setType();
 		form = await LoadMiddlewareForm(middleware);
 	});
 </script>

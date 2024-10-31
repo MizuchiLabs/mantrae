@@ -12,18 +12,18 @@
 		if (
 			dnsProvider.name === '' ||
 			dnsProvider.type === '' ||
-			dnsProvider.api_key === '' ||
-			dnsProvider.external_ip === ''
+			dnsProvider.apiKey === '' ||
+			dnsProvider.externalIp === ''
 		)
 			return;
 
 		// PowerDNS requires the API URL to start with http:// or https://
 		if (
 			dnsProvider.type === 'powerdns' &&
-			!dnsProvider.api_url?.startsWith('http://') &&
-			!dnsProvider.api_url?.startsWith('https://')
+			!dnsProvider.apiUrl?.startsWith('http://') &&
+			!dnsProvider.apiUrl?.startsWith('https://')
 		) {
-			dnsProvider.api_url = 'http://' + dnsProvider.api_url;
+			dnsProvider.apiUrl = 'http://' + dnsProvider.apiUrl;
 		}
 
 		if ($provider?.find((p) => p.name === dnsProvider.name)) {

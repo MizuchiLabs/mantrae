@@ -20,10 +20,10 @@
 		clearTimeout(timeout);
 		timeout = setTimeout(() => {
 			// Ensure stores are available before filtering
-			fRouters = $routers.filter((router) =>
+			fRouters = $routers?.filter((router) =>
 				router.name.toLowerCase().includes(searchQuery.toLowerCase())
 			);
-			fMiddlewares = $middlewares.filter((middleware) =>
+			fMiddlewares = $middlewares?.filter((middleware) =>
 				middleware.name.toLowerCase().includes(searchQuery.toLowerCase())
 			);
 		}, 300);

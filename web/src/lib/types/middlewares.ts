@@ -3,47 +3,26 @@ import type { ClientTLS } from './tls';
 // HTTP  Middlewares ----------------------------------------------------------
 export interface Middleware {
 	// Common fields
+	id: string;
+	profileId: number;
 	name: string;
 	provider?: string;
 	type?: string;
 	status?: string;
-	middlewareType: string;
-
-	// HTTP-specific fields
-	addPrefix?: AddPrefix;
-	stripPrefix?: StripPrefix;
-	stripPrefixRegex?: StripPrefixRegex;
-	replacePath?: ReplacePath;
-	replacePathRegex?: ReplacePathRegex;
-	chain?: Chain;
-	ipAllowList?: IPAllowList; // also for tcp
-	headers?: Headers;
-	errors?: ErrorPage;
-	rateLimit?: RateLimit;
-	redirectRegex?: RedirectRegex;
-	redirectScheme?: RedirectScheme;
-	basicAuth?: BasicAuth;
-	digestAuth?: DigestAuth;
-	forwardAuth?: ForwardAuth;
-	inFlightReq?: InFlightReq;
-	buffering?: Buffering;
-	circuitBreaker?: CircuitBreaker;
-	compress?: Compress;
-	passTLSClientCert?: PassTLSClientCert;
-	retry?: Retry;
-	plugin?: Record<string, Record<string, any>>;
-
-	// TCP-specific fields
-	inFlightConn?: TCPInFlightConn;
+	protocol: string;
+	content: Record<string, any>;
 }
 
 export function newMiddleware(): Middleware {
 	return {
+		id: '',
+		profileId: 0,
 		name: '',
 		provider: 'http',
 		type: '',
 		status: '',
-		middlewareType: 'http'
+		protocol: 'http',
+		content: {}
 	};
 }
 

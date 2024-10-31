@@ -132,6 +132,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getRouterByNameStmt, err = db.PrepareContext(ctx, getRouterByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRouterByName: %w", err)
 	}
+	if q.getRouterByServiceNameStmt, err = db.PrepareContext(ctx, getRouterByServiceName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterByServiceName: %w", err)
+	}
 	if q.getServiceByIDStmt, err = db.PrepareContext(ctx, getServiceByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetServiceByID: %w", err)
 	}
@@ -410,6 +413,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getRouterByNameStmt: %w", cerr)
 		}
 	}
+	if q.getRouterByServiceNameStmt != nil {
+		if cerr := q.getRouterByServiceNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterByServiceNameStmt: %w", cerr)
+		}
+	}
 	if q.getServiceByIDStmt != nil {
 		if cerr := q.getServiceByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getServiceByIDStmt: %w", cerr)
@@ -640,6 +648,7 @@ type Queries struct {
 	getProviderByNameStmt          *sql.Stmt
 	getRouterByIDStmt              *sql.Stmt
 	getRouterByNameStmt            *sql.Stmt
+	getRouterByServiceNameStmt     *sql.Stmt
 	getServiceByIDStmt             *sql.Stmt
 	getServiceByNameStmt           *sql.Stmt
 	getSettingByKeyStmt            *sql.Stmt
@@ -713,6 +722,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProviderByNameStmt:          q.getProviderByNameStmt,
 		getRouterByIDStmt:              q.getRouterByIDStmt,
 		getRouterByNameStmt:            q.getRouterByNameStmt,
+		getRouterByServiceNameStmt:     q.getRouterByServiceNameStmt,
 		getServiceByIDStmt:             q.getServiceByIDStmt,
 		getServiceByNameStmt:           q.getServiceByNameStmt,
 		getSettingByKeyStmt:            q.getSettingByKeyStmt,

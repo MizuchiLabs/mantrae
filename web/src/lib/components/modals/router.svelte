@@ -2,7 +2,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { profile, upsertService, upsertRouter } from '$lib/api';
+	import { upsertService, upsertRouter } from '$lib/api';
 	import { type Router, type Service } from '$lib/types/config';
 	import ServiceForm from '../forms/service.svelte';
 	import RouterForm from '../forms/router.svelte';
@@ -18,9 +18,11 @@
 	const update = async () => {
 		const rValid = routerForm.validate();
 		const sValid = serviceForm.validate();
-		if (rValid && sValid && $profile.id) {
-			await upsertRouter(router, $profile.id);
-			await upsertService(service, $profile.id);
+		if (rValid && sValid) {
+			await upsertRouter(router);
+			if (service.provider === 'http') {
+				await upsertService(service);
+			}
 			open = false;
 		}
 	};

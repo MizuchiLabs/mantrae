@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/net/publicsuffix"
 )
@@ -73,20 +72,21 @@ func UpdateDNS() {
 
 	// Get all local
 	for _, profile := range profiles {
-		data, err := traefik.DecodeFromDB(profile.ID)
+		routers, err := db.Query.ListRoutersByProfileID(context.Background(), profile.ID)
 		if err != nil {
-			slog.Error("Failed to decode config", "error", err)
+			slog.Error("Failed to get routers", "error", err)
+			continue
 		}
 
-		for i, router := range data.Routers {
-			if router.DNSProvider != nil {
-				provider, err := getProvider(router.DNSProvider)
+		for i, router := range routers {
+			if router.DnsProvider != nil {
+				provider, err := getProvider(router.DnsProvider)
 				if err != nil {
 					slog.Error("Failed to get provider", "error", err)
 
 					// Delete provider from router
-					router.DNSProvider = nil
-					data.Routers[i] = router
+					router.DnsProvider = nil
+					routers[i] = router
 					continue
 				}
 
@@ -98,24 +98,39 @@ func UpdateDNS() {
 
 				if err := provider.UpsertRecord(domain); err != nil {
 					slog.Error("Failed to upsert record", "error", err)
-					router.ErrorState.DNS = err.Error()
-					data.Routers[i] = router
+					router.Errors, err = db.SetError(router.Errors, "dns", err.Error())
+					if err != nil {
+						slog.Error("Failed to update router", "error", err)
+						continue
+					}
+					routers[i] = router
 				} else {
-					router.ErrorState.DNS = ""
-					data.Routers[i] = router
+					router.Errors, err = db.SetError(router.Errors, "dns", "")
+					if err != nil {
+						slog.Error("Failed to update router", "error", err)
+						continue
+					}
+					routers[i] = router
 				}
 			}
-		}
 
-		if _, err := traefik.EncodeToDB(data); err != nil {
-			slog.Error("Failed to update config", "error", err)
+			// Update routers
+			if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams{
+				ID:          router.ID,
+				ProfileID:   router.ProfileID,
+				Name:        router.Name,
+				Errors:      router.Errors,
+				DnsProvider: router.DnsProvider,
+			}); err != nil {
+				slog.Error("Failed to update routers", "error", err)
+			}
 		}
 	}
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(router traefik.Router) {
-	provider, err := getProvider(router.DNSProvider)
+func DeleteDNS(router db.Router) {
+	provider, err := getProvider(router.DnsProvider)
 	if err != nil {
 		slog.Error("Failed to get provider", "error", err)
 		return

@@ -10,14 +10,12 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/yaml"
 )
@@ -570,8 +568,9 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err := db.Query.GetRouterByID(context.Background(), router.ID)
-	if err == nil {
+
+	oldRouter, err := db.Query.GetRouterByID(context.Background(), router.ID)
+	if err == nil && oldRouter.Name != router.Name {
 		if err = db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
 			http.Error(
 				w,
@@ -593,10 +592,15 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := data.DecodeFields(); err != nil {
-		slog.Error("Failed to decode router", "name", data.Name, "error", err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode router: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
 	}
 
-	// go data.SSLCheck() // TODO: fix
+	go data.SSLCheck() // TODO: fix
 	writeJSON(w, data)
 }
 
@@ -706,7 +710,11 @@ func UpsertService(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := data.DecodeFields(); err != nil {
-		slog.Error("Failed to decode service", "name", data.Name, "error", err)
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
 	}
 
 	writeJSON(w, data)
@@ -726,8 +734,39 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
-	var middleware traefik.Middleware
+// Middlewares ----------------------------------------------------------------
+func GetMiddlewares(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+
+	middlewares, err := db.Query.ListMiddlewaresByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get middlewares: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	for i := range middlewares {
+		if err := middlewares[i].DecodeFields(); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to decode middleware: %s", err.Error()),
+				http.StatusInternalServerError,
+			)
+		}
+	}
+
+	writeJSON(w, middlewares)
+}
+
+func UpsertMiddleware(w http.ResponseWriter, r *http.Request) {
+	var middleware db.UpsertMiddlewareParams
 	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
 		http.Error(
 			w,
@@ -742,132 +781,51 @@ func UpdateMiddleware(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
+	_, err := db.Query.GetMiddlewareByID(context.Background(), middleware.ID)
+	if err == nil {
+		if err = db.Query.DeleteMiddlewareByID(context.Background(), middleware.ID); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to delete middleware: %s", err.Error()),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 	}
-	data, err := traefik.DecodeFromDB(id)
+
+	data, err := db.Query.UpsertMiddleware(context.Background(), middleware)
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			fmt.Sprintf("Failed to upsert middleware: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	data.Middlewares[middleware.Name] = middleware
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
+	if err := data.DecodeFields(); err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
-		return
 	}
 
-	writeJSON(w, newConfig)
-}
-
-func AddPluginMiddleware(w http.ResponseWriter, r *http.Request) {
-	var plugin traefik.Plugin
-	if err := json.NewDecoder(r.Body).Decode(&plugin); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode plugin: %s", err.Error()),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	var pluginRaw map[string]any
-	if err := yaml.Unmarshal([]byte(plugin.Snippet.Yaml), &pluginRaw); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode plugin: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	pluginName := ""
-	importParts := strings.Split(plugin.Name, "/")
-	if len(importParts) > 0 {
-		pluginName = importParts[len(importParts)-1]
-	}
-	myPluginName := fmt.Sprintf("my-%s", pluginName)
-
-	pluginData := pluginRaw["http"].(map[string]any)["middlewares"].(map[string]any)[myPluginName].(map[string]any)["plugin"].(map[string]any)[pluginName].(map[string]any)
-	newMiddleware := traefik.Middleware{
-		Name:           pluginName + "@http",
-		Provider:       "http",
-		Type:           strings.ToLower(pluginName),
-		MiddlewareType: "http",
-		Plugin:         make(map[string]dynamic.PluginConf),
-	}
-	newMiddleware.Plugin[pluginName] = pluginData
-
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-
-	data, err := traefik.DecodeFromDB(id)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	data.Middlewares[newMiddleware.Name] = newMiddleware
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, newConfig)
+	writeJSON(w, data)
 }
 
 func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-
-	data, err := traefik.DecodeFromDB(id)
+	err := db.Query.DeleteMiddlewareByID(context.Background(), r.PathValue("id"))
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			fmt.Sprintf("Failed to delete middleware: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	delete(data.Middlewares, r.PathValue("name"))
-	newConfig, err := traefik.EncodeToDB(data)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, newConfig)
+	w.WriteHeader(http.StatusOK)
 }
 
 // Settings -------------------------------------------------------------------
@@ -996,7 +954,7 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 
 // DeleteRouterDNS deletes the DNS records for a router
 func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
-	var router traefik.Router
+	var router db.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
 		http.Error(
 			w,

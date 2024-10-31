@@ -12,10 +12,6 @@ CREATE TABLE IF NOT EXISTS config (
   profile_id INTEGER NOT NULL,
   overview JSONB,
   entrypoints JSONB,
-  routers JSONB,
-  services JSONB,
-  middlewares JSONB,
-  tls JSONB,
   version TEXT,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );

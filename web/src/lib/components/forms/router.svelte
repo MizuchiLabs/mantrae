@@ -36,7 +36,7 @@
 			.trim()
 			.toLowerCase()
 			.regex(/^(http|tcp|udp)$/),
-		dnsProvider: z.coerce.number().int().nonnegative().optional(),
+		dnsProvider: z.coerce.number().int().optional(),
 		entrypoints: z.array(z.string()).optional().nullable(),
 		middlewares: z.array(z.string()).optional().nullable(),
 		rule: z.string().trim().optional(),
@@ -258,7 +258,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						{#each $middlewares as middleware}
-							{#if router.protocol === middleware.middlewareType}
+							{#if router.protocol === middleware.protocol}
 								<Select.Item value={middleware.name}>
 									{middleware.name}
 								</Select.Item>
@@ -292,7 +292,7 @@
 						{#each $provider as provider}
 							<Select.Item value={provider.id} class="flex items-center gap-2">
 								{provider.name} ({provider.type})
-								{#if provider.is_active}
+								{#if provider.isActive}
 									<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
 								{/if}
 							</Select.Item>

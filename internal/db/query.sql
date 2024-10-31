@@ -99,28 +99,15 @@ FROM
 
 -- name: CreateConfig :one
 INSERT INTO
-  config (
-    profile_id,
-    overview,
-    entrypoints,
-    routers,
-    services,
-    middlewares,
-    tls,
-    version
-  )
+  config (profile_id, overview, entrypoints, version)
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?) RETURNING *;
 
 -- name: UpdateConfig :one
 UPDATE config
 SET
   overview = ?,
   entrypoints = ?,
-  routers = ?,
-  services = ?,
-  middlewares = ?,
-  tls = ?,
   version = ?
 WHERE
   profile_id = ? RETURNING *;
@@ -159,6 +146,17 @@ FROM
   routers
 WHERE
   name = ?
+  AND profile_id = ?
+LIMIT
+  1;
+
+-- name: GetRouterByServiceName :one
+SELECT
+  *
+FROM
+  routers
+WHERE
+  service = ?
   AND profile_id = ?
 LIMIT
   1;
@@ -220,10 +218,10 @@ SET
   service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
   priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
   tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
-  dns_provider = COALESCE(
-    NULLIF(EXCLUDED.dns_provider, ''),
-    routers.dns_provider
-  ),
+  dns_provider = CASE
+    WHEN EXCLUDED.dns_provider = 0 THEN NULL
+    ELSE EXCLUDED.dns_provider
+  END,
   agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
   errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING *;
 

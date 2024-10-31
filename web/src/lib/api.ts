@@ -16,6 +16,7 @@ export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
 export const routers: Writable<Router[]> = writable();
 export const services: Writable<Service[]> = writable();
+export const middlewares: Writable<Middleware[]> = writable();
 export const users: Writable<User[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
@@ -25,7 +26,6 @@ export const version = writable('');
 
 // Derived stores
 export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
-export const middlewares = derived(config, ($config) => Object.values($config?.middlewares ?? []));
 
 async function handleRequest(
 	endpoint: string,
@@ -164,8 +164,7 @@ export async function getRouters(id: number) {
 	}
 }
 
-export async function upsertRouter(r: Router, id: number): Promise<void> {
-	if (!id) return;
+export async function upsertRouter(r: Router): Promise<void> {
 	const response = await handleRequest(`/router`, 'POST', r);
 	if (response) {
 		const data = await response.json();
@@ -205,8 +204,7 @@ export async function getServices(id: number) {
 	}
 }
 
-export async function upsertService(s: Service, id: number): Promise<void> {
-	if (!id) return;
+export async function upsertService(s: Service): Promise<void> {
 	const response = await handleRequest(`/service`, 'POST', s);
 	if (response) {
 		const data = await response.json();
@@ -234,6 +232,46 @@ export async function deleteService(s: Service): Promise<void> {
 	if (response) {
 		services.update((items) => items.filter((i) => i.id !== s.id));
 		toast.success(`Service ${s.name} deleted`);
+	}
+}
+
+// Middleware -----------------------------------------------------------------
+export async function getMiddlewares(id: number) {
+	const response = await handleRequest(`/middleware/${id}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		middlewares.set(data);
+	}
+}
+
+export async function upsertMiddleware(m: Middleware): Promise<void> {
+	const response = await handleRequest(`/middleware`, 'POST', m);
+	if (response) {
+		const data = await response.json();
+		if (data && get(middlewares)) {
+			middlewares.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === m.id);
+
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Middleware ${data.name} created`);
+		}
+	}
+}
+
+export async function deleteMiddleware(m: Middleware): Promise<void> {
+	const response = await handleRequest(`/middleware/${m.id}`, 'DELETE');
+	if (response) {
+		middlewares.update((items) => items.filter((i) => i.id !== m.id));
+		toast.success(`Middleware ${m.name} deleted`);
 	}
 }
 
@@ -363,14 +401,14 @@ export async function updateMiddleware(m: Middleware): Promise<void> {
 	}
 }
 
-export async function deleteMiddleware(m: Middleware): Promise<void> {
-	const response = await handleRequest(`/middleware/${get(profile).id}/${m.name}`, 'DELETE');
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Middleware ${m.name} deleted`);
-	}
-}
+// export async function deleteMiddleware(m: Middleware): Promise<void> {
+// 	const response = await handleRequest(`/middleware/${get(profile).id}/${m.name}`, 'DELETE');
+// 	if (response) {
+// 		const data = await response.json();
+// 		config.set(data);
+// 		toast.success(`Middleware ${m.name} deleted`);
+// 	}
+// }
 
 export async function deleteRouterDNS(r: Router): Promise<void> {
 	if (!r || !r.dnsProvider) return;
@@ -452,15 +490,6 @@ export async function getPlugins() {
 	}
 }
 
-export async function addPlugin(plugin: Plugin) {
-	const response = await handleRequest(`/plugin/${get(profile).id}`, 'POST', plugin);
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Plugin ${plugin.displayName} added`);
-	}
-}
-
 // Extras ---------------------------------------------------------------------
 export async function getVersion() {
 	const response = await handleRequest('/version', 'GET');
@@ -497,38 +526,6 @@ function nameCheck(router: Router) {
 	const parts = name.split('@');
 	return parts[0] + '@' + provider;
 }
-// export async function upsertRouter(
-// 	name: string,
-// 	router: Router,
-// 	service: Service | undefined
-// ): Promise<void> {
-// 	if (name === '' || router.name === '') return;
-//
-// 	// Ensure the service name is the same as the router name
-// 	if (service === undefined) {
-// 		service = getService(router);
-// 	}
-// 	router.name = nameCheck(router);
-// 	router.service = nameCheck(router);
-// 	service.name = nameCheck(router);
-// 	service.protocol = router.protocol;
-//
-// 	await updateRouter(router);
-// 	await updateService(service);
-// }
-
-// TODO: Handle this differently
-export const getService = (router: Router): Service => {
-	if (router === undefined) return newService();
-
-	const baseName = router.service.split('@')[0];
-	let service = get(config)?.services?.[baseName + '@' + router.provider];
-	if (service === undefined) {
-		service = get(config)?.services?.[router.service];
-		if (service === undefined) return newService();
-	}
-	return service;
-};
 
 // Toggle functions -----------------------------------------------------------
 export async function toggleEntrypoint(
@@ -540,8 +537,7 @@ export async function toggleEntrypoint(
 	router.entrypoints = item.map((i) => i.value) as string[];
 
 	if (update) {
-		//upsertRouter(router.name, router, undefined);
-		upsertRouter(router, router.profileId);
+		upsertRouter(router);
 	}
 }
 
@@ -554,8 +550,7 @@ export async function toggleMiddleware(
 	router.middlewares = item.map((i) => i.value) as string[];
 
 	if (update) {
-		//upsertRouter(router.name, router, undefined);
-		upsertRouter(router, router.profileId);
+		upsertRouter(router);
 	}
 }
 
@@ -571,7 +566,6 @@ export async function toggleDNSProvider(
 	router.dnsProvider = providerID;
 
 	if (update) {
-		//upsertRouter(router.name, router, undefined);
-		upsertRouter(router, router.profileId);
+		upsertRouter(router);
 	}
 }

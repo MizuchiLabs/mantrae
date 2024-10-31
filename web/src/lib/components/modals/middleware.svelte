@@ -1,19 +1,17 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { updateMiddleware } from '$lib/api';
+	import { upsertMiddleware } from '$lib/api';
 	import type { Middleware } from '$lib/types/middlewares';
 	import MiddlewareForm from '../forms/middleware.svelte';
 
 	export let middleware: Middleware;
 	export let open = false;
 	export let disabled = false;
-	let originalName = middleware?.name;
 
 	const update = async () => {
 		if (middleware.name === '') return;
-		await updateMiddleware(middleware);
-		originalName = middleware.name;
+		await upsertMiddleware(middleware);
 		open = false;
 	};
 </script>

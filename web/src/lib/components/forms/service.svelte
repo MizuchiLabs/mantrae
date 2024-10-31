@@ -47,7 +47,9 @@
 	let errors: Record<any, string[] | undefined> = {};
 	export const validate = () => {
 		try {
-			serviceSchema.parse({ ...service });
+			if (service.provider === 'http') {
+				serviceSchema.parse({ ...service });
+			}
 			errors = {};
 			return true;
 		} catch (err) {

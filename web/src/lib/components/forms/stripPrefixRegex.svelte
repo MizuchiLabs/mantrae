@@ -4,14 +4,11 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.stripPrefixRegex = { regex: [], ...middleware.stripPrefixRegex };
 </script>
 
-{#if middleware.stripPrefixRegex}
-	<ArrayInput
-		bind:items={middleware.stripPrefixRegex.regex}
-		label="Regex"
-		placeholder="/foo/[a-z0-9]+/[0-9]+/"
-		{disabled}
-	/>
-{/if}
+<ArrayInput
+	bind:items={middleware.content.regex}
+	label="Regex"
+	placeholder="/foo/[a-z0-9]+/[0-9]+/"
+	{disabled}
+/>

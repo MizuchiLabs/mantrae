@@ -16,7 +16,6 @@
 		toggleEntrypoint,
 		toggleMiddleware,
 		provider,
-		getService,
 		getRouters,
 		getServices
 	} from '$lib/api';
@@ -53,7 +52,7 @@
 
 	const searchRouter = () => {
 		if ($routers === undefined) return;
-		let items = $routers.filter((router) => {
+		let items = $routers?.filter((router) => {
 			const searchParts = search.toLowerCase().split(' ');
 			return searchParts.every((part) =>
 				part.startsWith('@provider:')
@@ -66,13 +65,13 @@
 			);
 		});
 
-		count = items.length || 1;
+		count = items?.length || 1;
 		fRouters = paginate(items);
 	};
 
 	const paginate = (routers: Router[]) => {
 		const itemsPerPage = perPage?.value ?? 10;
-		return routers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+		return routers?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) ?? [];
 	};
 
 	// Open the modal for the selected router
@@ -233,10 +232,10 @@
 	};
 
 	// Get routers when the profile changes
-	profile.subscribe(() => {
-		if (!$profile?.id) return;
-		getRouters($profile.id);
-		getServices($profile.id);
+	profile.subscribe((value) => {
+		if (!value?.id) return;
+		getRouters(value.id);
+		getServices(value.id);
 	});
 </script>
 
@@ -445,7 +444,7 @@
 										</Select.Trigger>
 										<Select.Content class="text-sm">
 											{#each $middlewares as middleware}
-												{#if router.protocol === middleware.middlewareType}
+												{#if router.protocol === middleware.protocol}
 													<Select.Item value={middleware.name}>
 														{middleware.name}
 													</Select.Item>

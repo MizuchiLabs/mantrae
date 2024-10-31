@@ -52,7 +52,15 @@ func (r *UpsertRouterParams) Verify() error {
 	if r.Protocol == "" {
 		return fmt.Errorf("protocol cannot be empty")
 	}
-	r.Service = r.Name
+	if r.Provider == "" {
+		return fmt.Errorf("provider cannot be empty")
+	}
+	if r.Provider == "http" {
+		r.Service = r.Name
+	}
+	if r.DnsProvider == nil || *r.DnsProvider == 0 {
+		r.Errors, _ = SetError(r.Errors, "dns", "")
+	}
 	r.EntryPoints, _ = json.Marshal(r.EntryPoints)
 	r.Middlewares, _ = json.Marshal(r.Middlewares)
 	r.Tls, _ = json.Marshal(r.Tls)
@@ -73,11 +81,68 @@ func (s *UpsertServiceParams) Verify() error {
 	if s.Protocol == "" {
 		return fmt.Errorf("protocol cannot be empty")
 	}
+	// if s.Provider == "http" {
+	// 	if s.LoadBalancer != nil {
+	// 		validServers := make([]traefik.Server, 0)
+	// 		for _, server := range s.LoadBalancer.Servers {
+	// 			if server.Address != "" || server.URL != "" {
+	// 				validServers = append(validServers, server)
+	// 			}
+	// 		}
+	//
+	// 		if len(validServers) == 0 {
+	// 			return fmt.Errorf("no valid servers found in load balancer")
+	// 		}
+	//
+	// 		s.LoadBalancer.Servers = validServers
+	// 	} else {
+	// 		return fmt.Errorf("load balancer cannot be nil")
+	// 	}
+	// }
+
 	s.LoadBalancer, _ = json.Marshal(s.LoadBalancer)
 	s.Failover, _ = json.Marshal(s.Failover)
 	s.Mirroring, _ = json.Marshal(s.Mirroring)
 	s.Weighted, _ = json.Marshal(s.Weighted)
 	s.ServerStatus, _ = json.Marshal(s.ServerStatus)
+	return nil
+}
+
+func (m *UpsertMiddlewareParams) Verify() error {
+	if m.ID == "" {
+		m.ID = uuid.New().String()
+	}
+	if m.Name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	if m.ProfileID == 0 {
+		return fmt.Errorf("profile id cannot be empty")
+	}
+	if m.Protocol == "" {
+		return fmt.Errorf("protocol cannot be empty")
+	}
+
+	m.Content, _ = json.Marshal(m.Content)
+
+	// 	if m.Type == "basicauth" {
+	// 	for i, u := range m.Content["BasicAuth"].(map[string]interface{}).Users {
+	// 		hash, err := util.HashBasicAuth(u)
+	// 		if err != nil {
+	// 			return fmt.Errorf("error hashing password: %s", err.Error())
+	// 		}
+	// 		m.BasicAuth.Users[i] = hash
+	// 	}
+	// }
+	// if m.DigestAuth != nil {
+	// 	for i, u := range m.DigestAuth.Users {
+	// 		hash, err := util.HashBasicAuth(u)
+	// 		if err != nil {
+	// 			return fmt.Errorf("error hashing password: %s", err.Error())
+	// 		}
+	// 		m.DigestAuth.Users[i] = hash
+	// 	}
+	// }
+
 	return nil
 }
 
@@ -248,6 +313,45 @@ func (s *Service) DecodeFields() error {
 	return nil
 }
 
+func (m *Middleware) DecodeFields() error {
+	if m.Content != nil {
+		if err := json.Unmarshal(m.Content.([]byte), &m.Content); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// SetError adds an error message with a custom key to the Errors map in the provided router.
+func SetError(errors interface{}, key string, message string) ([]byte, error) {
+	errMap := make(map[string]string)
+	switch e := errors.(type) {
+	case map[string]interface{}:
+		for k, v := range e {
+			if strVal, ok := v.(string); ok {
+				errMap[k] = strVal
+			}
+		}
+	case string:
+		if err := json.Unmarshal([]byte(e), &errMap); err != nil {
+			return nil, err
+		}
+	}
+
+	if message == "" {
+		delete(errMap, key)
+	} else {
+		errMap[key] = message
+	}
+
+	updatedErrors, err := json.Marshal(errMap)
+	if err != nil {
+		return nil, err
+	}
+	return updatedErrors, nil
+}
+
 func (r *Router) SSLCheck() {
 	tlsMap := make(map[string]any)
 	if r.Tls != nil {
@@ -262,44 +366,27 @@ func (r *Router) SSLCheck() {
 		return
 	}
 
-	// Unmarshal existing errors if any
-	errorsMap := make(map[string]any)
-	if r.Errors != nil {
-		if existingMap, ok := r.Errors.(map[string]interface{}); ok {
-			errorsMap = existingMap
-		} else {
-			slog.Error("Unexpected type for errors config", "type", fmt.Sprintf("%T", r.Errors))
-			return
-		}
-	}
-
 	// Perform SSL validation and update only the "ssl" error field
 	if domain, _ := util.ExtractDomainFromRule(r.Rule); domain != "" {
-		slog.Info("Checking SSL", "domain", domain)
 		if err := util.ValidSSLCert(domain); err != nil {
-			errorsMap["ssl"] = err.Error() // Set "ssl" error message
+			r.Errors, err = SetError(r.Errors, "ssl", err.Error())
+			if err != nil {
+				slog.Error("Failed to update router", "error", err)
+				return
+			}
 		} else {
-			delete(errorsMap, "ssl") // Remove "ssl" error if SSL is valid
+			r.Errors, err = SetError(r.Errors, "ssl", "")
+			if err != nil {
+				slog.Error("Failed to update router", "error", err)
+				return
+			}
 		}
 	}
-
-	// Marshal back to JSON and update `Errors`
-	if len(errorsMap) > 0 {
-		marshalledErrors, err := json.Marshal(errorsMap)
-		if err != nil {
-			return
-		}
-		r.Errors = marshalledErrors
-	} else {
-		r.Errors = nil // Clear `Errors` if no errors remain
-	}
-
-	_, err := Query.UpsertRouter(context.Background(), UpsertRouterParams{
+	if _, err := Query.UpsertRouter(context.Background(), UpsertRouterParams{
 		Name:      r.Name,
 		ProfileID: r.ProfileID,
 		Errors:    r.Errors,
-	})
-	if err != nil {
+	}); err != nil {
 		slog.Error("Failed to update router", "error", err)
 	}
 }

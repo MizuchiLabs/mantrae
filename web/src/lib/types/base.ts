@@ -1,5 +1,3 @@
-import type { Router, Service } from './config';
-import type { Middleware } from './middlewares';
 import type { Overview } from './overview';
 import type { CertAndStores, Options, Store } from './tls';
 
@@ -23,13 +21,9 @@ export const newProfile = (): Profile => {
 };
 
 export interface Config {
-	profile_id: number;
+	profileId: number;
 	overview?: Overview;
 	entrypoints?: Entrypoint[];
-	routers?: Record<string, Router>;
-	services?: Record<string, Service>;
-	middlewares?: Record<string, Middleware>;
-	tls?: TLSConfiguration;
 	version?: string;
 }
 
@@ -55,12 +49,12 @@ export interface DNSProvider {
 	id: number;
 	name: string;
 	type: string;
-	external_ip: string;
-	api_key?: string;
-	api_url?: string;
-	zone_type?: string;
+	externalIp: string;
+	apiKey?: string;
+	apiUrl?: string;
+	zoneType?: string;
 	proxied: boolean;
-	is_active: boolean;
+	isActive: boolean;
 }
 
 export function newProvider(): DNSProvider {
@@ -68,11 +62,11 @@ export function newProvider(): DNSProvider {
 		id: 0,
 		name: '',
 		type: 'cloudflare',
-		external_ip: '',
-		api_key: '',
-		api_url: '',
+		externalIp: '',
+		apiKey: '',
+		apiUrl: '',
 		proxied: false,
-		is_active: false
+		isActive: false
 	};
 }
 

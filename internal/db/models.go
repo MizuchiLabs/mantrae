@@ -21,10 +21,6 @@ type Config struct {
 	ProfileID   int64       `json:"profileId"`
 	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Routers     interface{} `json:"routers"`
-	Services    interface{} `json:"services"`
-	Middlewares interface{} `json:"middlewares"`
-	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -129,47 +130,157 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 			}
 		}
 	}
-	for _, middleware := range d.Middlewares {
+
+	middlewares, err := db.Query.ListMiddlewaresByProfileID(context.Background(), d.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, middleware := range middlewares {
+		if err := middleware.DecodeFields(); err != nil {
+			continue
+		}
+
 		if middleware.Provider == "http" {
 			name := strings.Split(middleware.Name, "@")[0]
-			switch middleware.MiddlewareType {
+			switch middleware.Protocol {
 			case "http":
-				config.HTTP.Middlewares[name] = &dynamic.Middleware{
-					AddPrefix:         middleware.AddPrefix,
-					StripPrefix:       middleware.StripPrefix,
-					StripPrefixRegex:  middleware.StripPrefixRegex,
-					ReplacePath:       middleware.ReplacePath,
-					ReplacePathRegex:  middleware.ReplacePathRegex,
-					Chain:             middleware.Chain,
-					IPAllowList:       middleware.IPAllowList,
-					Headers:           middleware.Headers,
-					Errors:            middleware.Errors,
-					RateLimit:         middleware.RateLimit,
-					RedirectRegex:     middleware.RedirectRegex,
-					RedirectScheme:    middleware.RedirectScheme,
-					BasicAuth:         middleware.BasicAuth,
-					DigestAuth:        middleware.DigestAuth,
-					ForwardAuth:       middleware.ForwardAuth,
-					InFlightReq:       middleware.InFlightReq,
-					Buffering:         middleware.Buffering,
-					CircuitBreaker:    middleware.CircuitBreaker,
-					Compress:          middleware.Compress,
-					PassTLSClientCert: middleware.PassTLSClientCert,
-					Retry:             middleware.Retry,
-					Plugin:            middleware.Plugin,
+				var mw *dynamic.Middleware
+				mwBytes, err := json.Marshal(middleware)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal middleware: %w", err)
 				}
+				if err := json.Unmarshal(mwBytes, &mw); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal middleware: %w", err)
+				}
+
+				// Handle Content based on the Type field
+				var contentBytes []byte
+				if middleware.Content != nil {
+					contentBytes, err = json.Marshal(middleware.Content)
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal middleware content: %w", err)
+					}
+				}
+
+				// Use reflection to assign Content to the correct field based on Type
+				contentValue := reflect.New(reflect.TypeOf(middleware.Content)).Interface()
+				if err := json.Unmarshal(contentBytes, contentValue); err != nil {
+					return nil, fmt.Errorf(
+						"failed to unmarshal content for type %s: %w",
+						middleware.Type,
+						err,
+					)
+				}
+
+				pluginContent := make(map[string]dynamic.PluginConf)
+
+				// Set the content in the right place using reflection
+				mwValue := reflect.ValueOf(mw).Elem()
+				for i := 0; i < mwValue.NumField(); i++ {
+					field := mwValue.Type().Field(i)
+					// Compare using EqualFold for case-insensitive matching
+					if strings.EqualFold(field.Name, middleware.Type) {
+						// Create an instance of the correct type
+						fieldType := field.Type
+						if fieldType.Kind() == reflect.Ptr {
+							// Dereference pointer to get underlying type
+							fieldType = fieldType.Elem()
+						}
+
+						// Handle plugin case separately
+						if strings.EqualFold(middleware.Type, "plugin") {
+							// Initialize pluginContent as a map to hold the dynamic.PluginConf
+							pluginConf := make(dynamic.PluginConf)
+
+							// Unmarshal contentBytes directly into the pluginContent map
+							if err := json.Unmarshal(contentBytes, &pluginConf); err != nil {
+								return nil, fmt.Errorf(
+									"failed to unmarshal content for type %s: %w",
+									middleware.Type,
+									err,
+								)
+							}
+							pluginContent[middleware.Name] = pluginConf
+							mwValue.Field(i).Set(reflect.ValueOf(pluginContent))
+						} else {
+							// Create an instance of the correct type
+							contentValue = reflect.New(fieldType).Interface()
+
+							// Unmarshal contentBytes into the correct type
+							if err := json.Unmarshal(contentBytes, contentValue); err != nil {
+								return nil, fmt.Errorf("failed to unmarshal content for type %s: %w", middleware.Type, err)
+							}
+
+							// Set the value in the Middleware struct
+							mwValue.Field(i).Set(reflect.ValueOf(contentValue))
+						}
+
+						break
+					}
+				}
+
+				config.HTTP.Middlewares[name] = mw
 			case "tcp":
-				if middleware.IPAllowList != nil {
-					config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
-						IPAllowList: &dynamic.TCPIPAllowList{
-							SourceRange: middleware.IPAllowList.SourceRange,
-						},
-					}
-				} else {
-					config.TCP.Middlewares[name] = &dynamic.TCPMiddleware{
-						InFlightConn: middleware.InFlightConn,
+				var mw *dynamic.TCPMiddleware
+				mwBytes, err := json.Marshal(middleware)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal middleware: %w", err)
+				}
+				if err := json.Unmarshal(mwBytes, &mw); err != nil {
+					return nil, fmt.Errorf("failed to unmarshal middleware: %w", err)
+				}
+				// Handle Content based on the Type field
+				var contentBytes []byte
+				if middleware.Content != nil {
+					contentBytes, err = json.Marshal(middleware.Content)
+					if err != nil {
+						return nil, fmt.Errorf("failed to marshal middleware content: %w", err)
 					}
 				}
+
+				// Use reflection to assign Content to the correct field based on Type
+				contentValue := reflect.New(reflect.TypeOf(middleware.Content)).Interface()
+				if err := json.Unmarshal(contentBytes, contentValue); err != nil {
+					return nil, fmt.Errorf(
+						"failed to unmarshal content for type %s: %w",
+						middleware.Type,
+						err,
+					)
+				}
+
+				// Set the content in the right place using reflection
+				mwValue := reflect.ValueOf(mw).Elem()
+				for i := 0; i < mwValue.NumField(); i++ {
+					field := mwValue.Type().Field(i)
+					// Compare using EqualFold for case-insensitive matching
+					if strings.EqualFold(field.Name, middleware.Type) {
+						// Create an instance of the correct type
+						fieldType := field.Type
+						if fieldType.Kind() == reflect.Ptr {
+							// Dereference pointer to get underlying type
+							fieldType = fieldType.Elem()
+						}
+
+						// Create an instance of the correct type
+						contentValue = reflect.New(fieldType).Interface()
+
+						// Unmarshal contentBytes into the correct type
+						if err := json.Unmarshal(contentBytes, contentValue); err != nil {
+							return nil, fmt.Errorf(
+								"failed to unmarshal content for type %s: %w",
+								middleware.Type,
+								err,
+							)
+						}
+
+						// Set the value in the Middleware struct
+						mwValue.Field(i).Set(reflect.ValueOf(contentValue))
+						break
+					}
+				}
+
+				config.TCP.Middlewares[name] = mw
 			}
 		}
 	}

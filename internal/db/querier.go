@@ -45,6 +45,7 @@ type Querier interface {
 	GetProviderByName(ctx context.Context, name string) (Provider, error)
 	GetRouterByID(ctx context.Context, id string) (Router, error)
 	GetRouterByName(ctx context.Context, arg GetRouterByNameParams) (Router, error)
+	GetRouterByServiceName(ctx context.Context, arg GetRouterByServiceNameParams) (Router, error)
 	GetServiceByID(ctx context.Context, id string) (Service, error)
 	GetServiceByName(ctx context.Context, arg GetServiceByNameParams) (Service, error)
 	GetSettingByKey(ctx context.Context, key string) (Setting, error)

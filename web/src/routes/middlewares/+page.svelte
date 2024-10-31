@@ -10,6 +10,8 @@
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import { Eye, Pencil, X } from 'lucide-svelte';
 	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
+	import { profile, getMiddlewares } from '$lib/api';
+	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -28,7 +30,8 @@
 	}
 
 	function searchMiddleware() {
-		let items = $middlewares.filter((middleware) => {
+		if ($middlewares === undefined) return;
+		let items = $middlewares?.filter((middleware) => {
 			const searchParts = search.toLowerCase().split(' ');
 			return searchParts.every((part) =>
 				part.startsWith('@provider:')
@@ -39,13 +42,13 @@
 			);
 		});
 
-		count = items.length || 1;
+		count = items?.length || 1;
 		fMiddlewares = paginate(items);
 	}
 
 	const paginate = (middlewares: Middleware[]) => {
 		const itemsPerPage = perPage?.value ?? 10;
-		return middlewares.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+		return middlewares?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) ?? [];
 	};
 
 	let middleware = newMiddleware();
@@ -74,6 +77,11 @@
 	let fColumns: string[] = JSON.parse(
 		localStorage.getItem(MIDDLEWARE_COLUMN_SK) ?? JSON.stringify(columns.map((c) => c.value))
 	);
+
+	profile.subscribe((value) => {
+		if (!value?.id) return;
+		getMiddlewares(value.id);
+	});
 </script>
 
 <svelte:head>
@@ -90,7 +98,7 @@
 			<div>
 				<Card.Title>Middlewares</Card.Title>
 				<Card.Description
-					>Total middlewares managed by Mantrae {$middlewares.filter((m) => m.provider === 'http')
+					>Total middlewares managed by Mantrae {$middlewares?.filter((m) => m.provider === 'http')
 						.length}</Card.Description
 				>
 			</div>
@@ -187,9 +195,9 @@
 		</Card.Content>
 		<Card.Footer>
 			<div class="text-xs text-muted-foreground">
-				Showing <strong>{fMiddlewares.length > 0 ? 1 : 0}-{fMiddlewares.length}</strong>
+				Showing <strong>{fMiddlewares?.length > 0 ? 1 : 0}-{fMiddlewares?.length}</strong>
 				of
-				<strong>{$middlewares.length}</strong> middlewares
+				<strong>{$middlewares?.length}</strong> middlewares
 			</div>
 		</Card.Footer>
 	</Card.Root>

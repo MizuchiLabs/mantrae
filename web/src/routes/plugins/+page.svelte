@@ -7,13 +7,15 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Delete } from 'lucide-svelte';
 	import type { Plugin } from '$lib/types/plugins';
-	import { addPlugin, getPlugins, plugins } from '$lib/api';
+	import { profile, getPlugins, plugins, upsertMiddleware } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Selected } from 'bits-ui';
 	import { LIMIT_SK } from '$lib/store';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { toast } from 'svelte-sonner';
+	import YAML from 'yaml';
+	import { newMiddleware } from '$lib/types/middlewares';
 
 	let open = false;
 	let search: string = '';
@@ -49,16 +51,49 @@
 	let selectedPlugin: Plugin | undefined;
 	let yamlSnippet: string = '';
 	const installPlugin = async (plugin: Plugin) => {
-		await addPlugin(plugin);
+		if (!$profile.id) return;
+		const data = YAML.parse(plugin.snippet.yaml);
+		const content = getPluginContent(data);
+		let name = Object.keys(content)[0];
+		if (name.startsWith('my-')) {
+			name = name.slice(3);
+		}
+		let middleware = newMiddleware();
+		middleware.name = name;
+		middleware.content = Object.values(content)[0];
+		middleware.profileId = $profile.id;
+		middleware.provider = 'http';
+		middleware.protocol = 'http';
+		middleware.type = 'plugin';
+		await upsertMiddleware(middleware);
 		selectedPlugin = plugin;
 		yamlSnippet = `experimental:
   plugins:
     ${plugin.name.split('/').slice(-1)[0]}:
       moduleName: ${plugin.name}
       version: ${plugin.latestVersion}`;
-		console.log(plugin);
 		open = true;
 	};
+
+	function getPluginContent(data: any) {
+		let content: Record<string, Record<string, any>> = {};
+
+		// Iterate through HTTP middlewares
+		if (data.http && data.http.middlewares) {
+			Object.entries(data.http.middlewares).forEach(([name, middleware]: any) => {
+				if (middleware.plugin) {
+					// There should only be one plugin key, which is the last part we need
+					const pluginNames = Object.keys(middleware.plugin);
+					if (pluginNames.length > 0) {
+						const lastPluginName = pluginNames[pluginNames.length - 1];
+						content[name] = middleware.plugin[lastPluginName]; // Get the content of the last plugin
+					}
+				}
+			});
+		}
+
+		return content;
+	}
 
 	const copyToClipboard = () => {
 		navigator.clipboard.writeText(yamlSnippet);

@@ -8,42 +8,42 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.chain = { middlewares: [], ...middleware.chain };
 
-	let selectedMiddlewares: Selected<string>[] | undefined = middleware.chain.middlewares?.map(
-		(m) => ({ value: m, label: m })
+	// Create a reactive variable for selected middlewares
+	let selectedMiddlewares: Selected<string>[] | undefined = middleware.content?.middlewares?.map(
+		(m: string) => ({ value: m, label: m })
 	);
+
 	const changeMiddlewares = (middlewares: Selected<string>[] | undefined) => {
-		if (middlewares === undefined || !middleware.chain) return;
-		middleware.chain.middlewares = middlewares.map((m) => m.value);
+		if (!middleware.content) return;
+		middleware.content.middlewares = middlewares ? middlewares.map((m) => m.value) : [];
+		selectedMiddlewares = middlewares || [];
 	};
 </script>
 
-{#if middleware.chain}
-	{#if disabled}
-		<ArrayInput
-			items={middleware.chain.middlewares}
-			label="Middlewares"
-			placeholder=""
-			disabled={true}
-		/>
-	{:else}
-		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="middlewares" class="text-right">Middlewares</Label>
-			<div class="col-span-3 space-y-2">
-				<Select.Root multiple selected={selectedMiddlewares} onSelectedChange={changeMiddlewares}>
-					<Select.Trigger>
-						<Select.Value placeholder="Select middlewares to chain" />
-					</Select.Trigger>
-					<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-						{#each $middlewares as m}
-							<Select.Item value={m.name} label={m.name}>
-								{m.name}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
+{#if disabled}
+	<ArrayInput
+		items={middleware.content.middlewares}
+		label="Middlewares"
+		placeholder=""
+		disabled={true}
+	/>
+{:else}
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="middlewares" class="text-right">Middlewares</Label>
+		<div class="col-span-3 space-y-2">
+			<Select.Root multiple selected={selectedMiddlewares} onSelectedChange={changeMiddlewares}>
+				<Select.Trigger>
+					<Select.Value placeholder="Select middlewares to" />
+				</Select.Trigger>
+				<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
+					{#each $middlewares as m}
+						<Select.Item value={m.name} label={m.name}>
+							{m.name}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
 		</div>
-	{/if}
+	</div>
 {/if}

@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -359,62 +360,112 @@ type TCPMiddleware struct {
 }
 
 type Middlewareable interface {
-	ToMiddleware() *Middleware
+	ToMiddleware() *db.Middleware
 }
 
-func (m HTTPMiddleware) ToMiddleware() *Middleware {
-	return &Middleware{
-		Name:              m.Name,
-		Provider:          m.Provider,
-		Type:              m.Type,
-		Status:            m.Status,
-		MiddlewareType:    "http",
-		AddPrefix:         m.AddPrefix,
-		StripPrefix:       m.StripPrefix,
-		StripPrefixRegex:  m.StripPrefixRegex,
-		ReplacePath:       m.ReplacePath,
-		ReplacePathRegex:  m.ReplacePathRegex,
-		Chain:             m.Chain,
-		IPAllowList:       m.IPAllowList,
-		Headers:           m.Headers,
-		Errors:            m.Errors,
-		RateLimit:         m.RateLimit,
-		RedirectRegex:     m.RedirectRegex,
-		RedirectScheme:    m.RedirectScheme,
-		BasicAuth:         m.BasicAuth,
-		DigestAuth:        m.DigestAuth,
-		ForwardAuth:       m.ForwardAuth,
-		InFlightReq:       m.InFlightReq,
-		Buffering:         m.Buffering,
-		CircuitBreaker:    m.CircuitBreaker,
-		Compress:          m.Compress,
-		PassTLSClientCert: m.PassTLSClientCert,
-		Retry:             m.Retry,
-		GrpcWeb:           m.GrpcWeb,
-		Plugin:            m.Plugin,
+func (m HTTPMiddleware) ToMiddleware() *db.Middleware {
+	var dbMiddleware db.Middleware
+	mBytes, err := json.Marshal(m)
+	if err != nil {
+		slog.Error("Failed to marshal middleware", "error", err)
+		return nil
 	}
-}
 
-func (m TCPMiddleware) ToMiddleware() *Middleware {
-	var allowList *dynamic.IPAllowList
-	if m.IPAllowList != nil {
-		allowList = &dynamic.IPAllowList{
-			SourceRange: m.IPAllowList.SourceRange,
+	if err := json.Unmarshal(mBytes, &dbMiddleware); err != nil {
+		slog.Error("Failed to unmarshal middleware", "error", err)
+		return nil
+	}
+	dbMiddleware.Protocol = "http"
+
+	// Unmarshal to traefik.Middleware to access specific fields
+	var traefikMiddleware dynamic.Middleware
+	if err := json.Unmarshal(mBytes, &traefikMiddleware); err != nil {
+		slog.Error("Failed to unmarshal into traefik.Middleware", "error", err)
+		return nil
+	}
+
+	// Use reflection to find the field that matches m.Type (case-insensitive)
+	v := reflect.ValueOf(&traefikMiddleware).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldName := v.Type().Field(i).Name
+
+		// Case-insensitive comparison
+		if strings.EqualFold(fieldName, m.Type) && !field.IsZero() {
+			dbMiddleware.Content = field.Interface()
+			return &dbMiddleware
 		}
 	}
 
-	return &Middleware{
-		Name:           m.Name,
-		Provider:       m.Provider,
-		Type:           m.Type,
-		Status:         m.Status,
-		MiddlewareType: "tcp",
-		InFlightConn:   m.InFlightConn,
-		IPAllowList:    allowList,
+	// If no middleware field matches, check for a plugin match
+	if pluginConfig, ok := traefikMiddleware.Plugin[m.Type]; ok {
+		dbMiddleware.Content = pluginConfig
+		return &dbMiddleware
 	}
+
+	// If no matching field is found, log a warning
+	slog.Warn("Requested middleware type not found or empty", "type", m.Type)
+	dbMiddleware.Content = nil
+	return &dbMiddleware
 }
 
-func getMiddlewares[T Middlewareable](profile db.Profile, endpoint string) map[string]Middleware {
+func (m TCPMiddleware) ToMiddleware() *db.Middleware {
+	var dbMiddleware db.Middleware
+	mBytes, err := json.Marshal(m)
+	if err != nil {
+		slog.Error("Failed to marshal middleware", "error", err)
+		return nil
+	}
+
+	if err := json.Unmarshal(mBytes, &dbMiddleware); err != nil {
+		slog.Error("Failed to unmarshal middleware", "error", err)
+		return nil
+	}
+
+	dbMiddleware.Protocol = "http"
+
+	// Unmarshal to traefik.Middleware to access specific fields
+	var traefikMiddleware dynamic.Middleware
+	if err := json.Unmarshal(mBytes, &traefikMiddleware); err != nil {
+		slog.Error("Failed to unmarshal into traefik.Middleware", "error", err)
+		return nil
+	}
+
+	// Use reflection to find the field that matches m.Type (case-insensitive)
+	v := reflect.ValueOf(&traefikMiddleware).Elem()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldName := v.Type().Field(i).Name
+
+		// Case-insensitive comparison
+		if strings.EqualFold(fieldName, m.Type) && !field.IsZero() {
+			dbMiddleware.Content = field.Interface()
+			return &dbMiddleware
+		}
+	}
+
+	// If no middleware field matches, check for a plugin match
+	if pluginConfig, ok := traefikMiddleware.Plugin[m.Type]; ok {
+		dbMiddleware.Content = pluginConfig
+		return &dbMiddleware
+	}
+
+	// If no matching field is found, log a warning
+	slog.Warn("Requested middleware type not found or empty", "type", m.Type)
+	dbMiddleware.Content = nil
+	return &dbMiddleware
+}
+
+func getMiddlewares[T Middlewareable](profile db.Profile, endpoint string) error {
+	typeName := reflect.TypeOf((*T)(nil)).Elem().Name() // Get the name of the type T
+	var protocol string
+	switch typeName {
+	case "HTTPMiddleware":
+		protocol = "http"
+	case "TCPMiddleware":
+		protocol = "tcp"
+	}
+
 	body, err := fetch(profile, endpoint)
 	if err != nil {
 		slog.Error("Failed to get middlewares", "error", err)
@@ -428,16 +479,52 @@ func getMiddlewares[T Middlewareable](profile db.Profile, endpoint string) map[s
 		return nil
 	}
 
-	middlewares := make(map[string]Middleware, len(middlewareables))
+	// Current middlewares
+	dbMiddlewares, err := db.Query.ListMiddlewaresByProfileID(context.Background(), profile.ID)
+	if err != nil {
+		slog.Error("Failed to list middlewares", "error", err)
+		return nil
+	}
+
+	middlewares := make(map[string]db.Middleware, len(middlewareables))
 	for _, m := range middlewareables {
 		newMiddleware := m.ToMiddleware()
-		if newMiddleware.Name == "" {
+		if newMiddleware.Name == "" || newMiddleware.Provider == "http" {
 			continue
 		}
 		middlewares[newMiddleware.Name] = *newMiddleware
+		data := db.UpsertMiddlewareParams{
+			ID:        uuid.New().String(),
+			ProfileID: profile.ID,
+			Name:      newMiddleware.Name,
+			Provider:  newMiddleware.Provider,
+			Type:      newMiddleware.Type,
+			Protocol:  newMiddleware.Protocol,
+		}
+
+		data.Content, _ = json.Marshal(newMiddleware.Content)
+		if _, err := db.Query.UpsertMiddleware(context.Background(), data); err != nil {
+			slog.Error("Failed to upsert middleware", "error", err)
+			return nil
+		}
 	}
 
-	return middlewares
+	// Cleanup if router doesn't exist locally (except our provider)
+	for _, m := range dbMiddlewares {
+		if m.Protocol != protocol || m.Provider == "http" {
+			continue
+		}
+
+		if _, ok := middlewares[m.Name]; !ok {
+			slog.Info("Removing middleware", "name", m.Name)
+			if err := db.Query.DeleteRouterByID(context.Background(), m.ID); err != nil {
+				slog.Error("failed to delete middleware", "error", err)
+				continue
+			}
+		}
+	}
+
+	return nil
 }
 
 func GetTraefikConfig() {
@@ -481,11 +568,12 @@ func GetTraefikConfig() {
 		}
 
 		// Fetch middlewares
-		data.Middlewares = merge(
-			data.Middlewares,
-			getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI),
-			getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI),
-		)
+		if err := getMiddlewares[HTTPMiddleware](profile, HTTPMiddlewaresAPI); err != nil {
+			slog.Error("Failed to get middlewares", "error", err)
+		}
+		if err := getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI); err != nil {
+			slog.Error("Failed to get middlewares", "error", err)
+		}
 
 		// Fetch overview
 		overview, err := fetch(profile, OverviewAPI)
@@ -535,8 +623,6 @@ func GetTraefikConfig() {
 		}
 		data.Version = v.Version
 
-		VerifyConfig(data)
-
 		// Write to db
 		if _, err := EncodeToDB(data); err != nil {
 			slog.Error("Failed to update config", "error", err)
@@ -562,64 +648,6 @@ func Sync(ctx context.Context) {
 			GetTraefikConfig()
 		}
 	}
-}
-
-func merge[T any](local map[string]T, externals ...map[string]T) map[string]T {
-	merged := make(map[string]T)
-
-	// Add local provider ("http") and DNSProvider-preserving routers to merged
-	for k, v := range local {
-		switch item := any(v).(type) {
-		case Router:
-			if item.Provider == "http" || item.DNSProvider != nil {
-				merged[k] = v
-			}
-		case Service:
-			if item.Provider == "http" {
-				merged[k] = v
-			}
-		case Middleware:
-			if item.Provider == "http" {
-				merged[k] = v
-			}
-		}
-	}
-
-	// Merge in external data without overwriting local "http" provider entries
-	for _, external := range externals {
-		for k, v := range external {
-			if existing, found := merged[k]; found {
-				switch existingItem := any(existing).(type) {
-				case Router:
-					if newRouter, ok := any(v).(Router); ok {
-						newRouter.DNSProvider = existingItem.DNSProvider
-						newRouter.ErrorState = existingItem.ErrorState
-						merged[k] = any(newRouter).(T)
-					}
-				default:
-					merged[k] = v
-				}
-			} else {
-				// Add non-http provider entries
-				switch newItem := any(v).(type) {
-				case Router:
-					if newItem.Provider != "http" {
-						merged[k] = v
-					}
-				case Service:
-					if newItem.Provider != "http" {
-						merged[k] = v
-					}
-				case Middleware:
-					if newItem.Provider != "http" {
-						merged[k] = v
-					}
-				}
-			}
-		}
-	}
-
-	return merged
 }
 
 func fetch(profile db.Profile, endpoint string) (io.ReadCloser, error) {

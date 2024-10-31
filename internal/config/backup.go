@@ -61,43 +61,6 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 		}
 	}
 
-	configs, err := db.Query.ListConfigs(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get configs: %w", err)
-	}
-
-	// We're only interested in the our local provider
-	for _, config := range configs {
-		dynamic, err := traefik.DecodeFromDB(config.ProfileID)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode config: %w", err)
-		}
-
-		newDynamic := &traefik.Dynamic{
-			ProfileID:   config.ProfileID,
-			Routers:     make(map[string]traefik.Router),
-			Services:    make(map[string]traefik.Service),
-			Middlewares: make(map[string]traefik.Middleware),
-		}
-		for i, router := range dynamic.Routers {
-			if router.Provider == "http" {
-				newDynamic.Routers[i] = router
-			}
-		}
-		for i, service := range dynamic.Services {
-			if service.Provider == "http" {
-				newDynamic.Services[i] = service
-			}
-		}
-		for i, middleware := range dynamic.Middlewares {
-			if middleware.Provider == "http" {
-				newDynamic.Middlewares[i] = middleware
-			}
-		}
-
-		data.Configs = append(data.Configs, newDynamic)
-	}
-
 	data.Providers, err = db.Query.ListProviders(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get providers: %w", err)
@@ -186,13 +149,6 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 				AgentID:      service.AgentID,
 			})); err != nil {
 				return fmt.Errorf("failed to upsert service: %w", err)
-			}
-		}
-
-		for _, config := range data.Configs {
-			traefik.VerifyConfig(config)
-			if _, err := traefik.EncodeToDB(config); err != nil {
-				return fmt.Errorf("failed to update config: %w", err)
 			}
 		}
 	}

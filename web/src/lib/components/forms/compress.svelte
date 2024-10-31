@@ -7,11 +7,11 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.compress = {
+	middleware.content = {
 		excludedContentTypes: [],
 		includeContentTypes: [],
 		defaultEncoding: '',
-		...middleware.compress
+		...middleware.content
 	};
 
 	const compressSchema = z.object({
@@ -31,7 +31,7 @@
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			compressSchema.parse(middleware.compress); // Parse the compress object
+			compressSchema.parse(middleware.content); // Parse the compress object
 			errors = {};
 			return { isValid: true, errors: null };
 		} catch (err) {
@@ -44,51 +44,49 @@
 	};
 </script>
 
-{#if middleware.compress}
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="min-response-body-bytes" class="text-right">Min Response Body Bytes</Label>
-		<div class="relative col-span-3">
-			<Input
-				id="min-response-body-bytes"
-				name="min-response-body-bytes"
-				type="number"
-				bind:value={middleware.compress.minResponseBodyBytes}
-				on:input={validate}
-				placeholder="1024"
-				{disabled}
-			/>
-			{#if errors.minResponseBodyBytes}
-				<div class="col-span-4 text-right text-sm text-red-500">{errors.minResponseBodyBytes}</div>
-			{/if}
-		</div>
+<div class="grid grid-cols-4 items-center gap-4">
+	<Label for="min-response-body-bytes" class="text-right">Min Response Body Bytes</Label>
+	<div class="relative col-span-3">
+		<Input
+			id="min-response-body-bytes"
+			name="min-response-body-bytes"
+			type="number"
+			bind:value={middleware.content.minResponseBodyBytes}
+			on:input={validate}
+			placeholder="1024"
+			{disabled}
+		/>
+		{#if errors.minResponseBodyBytes}
+			<div class="col-span-4 text-right text-sm text-red-500">{errors.minResponseBodyBytes}</div>
+		{/if}
 	</div>
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="default-encoding" class="text-right">Default Encoding</Label>
-		<div class="relative col-span-3">
-			<Input
-				id="default-encoding"
-				name="default-encoding"
-				type="text"
-				bind:value={middleware.compress.defaultEncoding}
-				on:input={validate}
-				placeholder="gzip"
-				{disabled}
-			/>
-			{#if errors.defaultEncoding}
-				<div class="col-span-4 text-right text-sm text-red-500">{errors.defaultEncoding}</div>
-			{/if}
-		</div>
+</div>
+<div class="grid grid-cols-4 items-center gap-4">
+	<Label for="default-encoding" class="text-right">Default Encoding</Label>
+	<div class="relative col-span-3">
+		<Input
+			id="default-encoding"
+			name="default-encoding"
+			type="text"
+			bind:value={middleware.content.defaultEncoding}
+			on:input={validate}
+			placeholder="gzip"
+			{disabled}
+		/>
+		{#if errors.defaultEncoding}
+			<div class="col-span-4 text-right text-sm text-red-500">{errors.defaultEncoding}</div>
+		{/if}
 	</div>
-	<ArrayInput
-		bind:items={middleware.compress.excludedContentTypes}
-		label="Excluded Content Types"
-		placeholder="text/event-stream"
-		{disabled}
-	/>
-	<ArrayInput
-		bind:items={middleware.compress.includeContentTypes}
-		label="Include Content Types"
-		placeholder="application/json"
-		{disabled}
-	/>
-{/if}
+</div>
+<ArrayInput
+	bind:items={middleware.content.excludedContentTypes}
+	label="Excluded Content Types"
+	placeholder="text/event-stream"
+	{disabled}
+/>
+<ArrayInput
+	bind:items={middleware.content.includeContentTypes}
+	label="Include Content Types"
+	placeholder="application/json"
+	{disabled}
+/>

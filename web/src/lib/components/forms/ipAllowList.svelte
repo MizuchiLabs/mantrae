@@ -5,19 +5,13 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
-	import { CustomIPSchema, CustomIPSchemaOptional } from '../utils/validation';
+	import { cleanEmptyObjects, CustomIPSchema, CustomIPSchemaOptional } from '../utils/validation';
+	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const emptyIpAllowList = {
-		sourceRange: [],
-		ipStrategy: { excludedIPs: [] }
-	};
-	const defaultTemplate = {
-		sourceRange: ['192.168.0.0/16', '172.16.0.0/12', '127.0.0.1/32', '10.0.0.0/8'],
-		ipStrategy: { excludedIPs: [] }
-	};
+	const sourceRange = ['192.168.0.0/16', '172.16.0.0/12', '127.0.0.1/32', '10.0.0.0/8'];
 
 	const ipAllowListSchema = z.object({
 		sourceRange: z.array(CustomIPSchema).default([]),
@@ -28,12 +22,13 @@
 			})
 			.default({})
 	});
-	middleware.ipAllowList = ipAllowListSchema.parse({ ...middleware.ipAllowList });
+	middleware.content = ipAllowListSchema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			middleware.ipAllowList = ipAllowListSchema.parse(middleware.ipAllowList);
+			middleware.content = ipAllowListSchema.parse(middleware.content);
+			cleanEmptyObjects(middleware.content);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -46,12 +41,15 @@
 	const toggleIpAllowList = () => {
 		isTemplate = !isTemplate;
 		if (isTemplate) {
-			middleware.ipAllowList = defaultTemplate;
+			middleware.content.sourceRange = sourceRange;
 		} else {
-			middleware.ipAllowList = emptyIpAllowList;
+			middleware.content.sourceRange = [];
 		}
-		validate();
 	};
+
+	onDestroy(() => {
+		validate();
+	});
 </script>
 
 <div class="flex items-center justify-end gap-2">
@@ -60,46 +58,44 @@
 	</Button>
 </div>
 
-{#if middleware.ipAllowList}
+<ArrayInput
+	bind:items={middleware.content.sourceRange}
+	label="Source Range"
+	placeholder="192.168.1.1/32"
+	on:update={validate}
+	{disabled}
+/>
+{#if errors.sourceRange}
+	<div class="col-span-4 text-right text-sm text-red-500">{errors.sourceRange}</div>
+{/if}
+
+{#if middleware.content.ipStrategy && middleware.protocol === 'http'}
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="depth" class="text-right">Depth</Label>
+		<div class="relative col-span-3">
+			<Input
+				id="depth"
+				name="depth"
+				type="text"
+				bind:value={middleware.content.ipStrategy.depth}
+				on:input={validate}
+				placeholder="0"
+				{disabled}
+			/>
+			{#if errors.ipStrategy}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.ipStrategy}</div>
+			{/if}
+		</div>
+	</div>
+
 	<ArrayInput
-		bind:items={middleware.ipAllowList.sourceRange}
-		label="Source Range"
-		placeholder="192.168.1.1/32"
+		bind:items={middleware.content.ipStrategy.excludedIPs}
+		label="Excluded IPs"
+		placeholder="192.168.1.1"
 		on:update={validate}
 		{disabled}
 	/>
-	{#if errors.sourceRange}
-		<div class="col-span-4 text-right text-sm text-red-500">{errors.sourceRange}</div>
-	{/if}
-
-	{#if middleware.ipAllowList.ipStrategy && middleware.middlewareType === 'http'}
-		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="depth" class="text-right">Depth</Label>
-			<div class="relative col-span-3">
-				<Input
-					id="depth"
-					name="depth"
-					type="text"
-					bind:value={middleware.ipAllowList.ipStrategy.depth}
-					on:input={validate}
-					placeholder="0"
-					{disabled}
-				/>
-				{#if errors.ipStrategy}
-					<div class="col-span-4 text-right text-sm text-red-500">{errors.ipStrategy}</div>
-				{/if}
-			</div>
-		</div>
-
-		<ArrayInput
-			bind:items={middleware.ipAllowList.ipStrategy.excludedIPs}
-			label="Excluded IPs"
-			placeholder="192.168.1.1"
-			on:update={validate}
-			{disabled}
-		/>
-		{#if errors.ipStrategy}
-			<div class="col-span-4 text-right text-sm text-red-500">{errors.ipStrategy}</div>
-		{/if}
+	{#if errors.ipStrategy}
+		<div class="col-span-4 text-right text-sm text-red-500">{errors.ipStrategy}</div>
 	{/if}
 {/if}

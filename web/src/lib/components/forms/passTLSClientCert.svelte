@@ -5,19 +5,12 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.passTLSClientCert = {
+	middleware.content = {
 		pem: true
 	};
 </script>
 
-{#if middleware.passTLSClientCert}
-	<div class="grid grid-cols-4 items-center gap-4">
-		<Label for="pem" class="text-right">Pem</Label>
-		<Switch
-			id="remove-header"
-			bind:checked={middleware.passTLSClientCert.pem}
-			class="col-span-3"
-			{disabled}
-		/>
-	</div>
-{/if}
+<div class="grid grid-cols-4 items-center gap-4">
+	<Label for="pem" class="text-right">Pem</Label>
+	<Switch id="remove-header" bind:checked={middleware.content.pem} class="col-span-3" {disabled} />
+</div>

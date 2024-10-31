@@ -56,28 +56,15 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent
 
 const createConfig = `-- name: CreateConfig :one
 INSERT INTO
-  config (
-    profile_id,
-    overview,
-    entrypoints,
-    routers,
-    services,
-    middlewares,
-    tls,
-    version
-  )
+  config (profile_id, overview, entrypoints, version)
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+  (?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, version
 `
 
 type CreateConfigParams struct {
 	ProfileID   int64       `json:"profileId"`
 	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Routers     interface{} `json:"routers"`
-	Services    interface{} `json:"services"`
-	Middlewares interface{} `json:"middlewares"`
-	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 }
 
@@ -86,10 +73,6 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 		arg.ProfileID,
 		arg.Overview,
 		arg.Entrypoints,
-		arg.Routers,
-		arg.Services,
-		arg.Middlewares,
-		arg.Tls,
 		arg.Version,
 	)
 	var i Config
@@ -97,10 +80,6 @@ func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Con
 		&i.ProfileID,
 		&i.Overview,
 		&i.Entrypoints,
-		&i.Routers,
-		&i.Services,
-		&i.Middlewares,
-		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -502,7 +481,7 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 
 const getConfigByProfileID = `-- name: GetConfigByProfileID :one
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+  profile_id, overview, entrypoints, version
 FROM
   config
 WHERE
@@ -518,10 +497,6 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 		&i.ProfileID,
 		&i.Overview,
 		&i.Entrypoints,
-		&i.Routers,
-		&i.Services,
-		&i.Middlewares,
-		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -529,7 +504,7 @@ func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Co
 
 const getConfigByProfileName = `-- name: GetConfigByProfileName :one
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+  profile_id, overview, entrypoints, version
 FROM
   config
 WHERE
@@ -552,10 +527,6 @@ func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Conf
 		&i.ProfileID,
 		&i.Overview,
 		&i.Entrypoints,
-		&i.Routers,
-		&i.Services,
-		&i.Middlewares,
-		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -803,6 +774,47 @@ func (q *Queries) GetRouterByName(ctx context.Context, arg GetRouterByNameParams
 	return i, err
 }
 
+const getRouterByServiceName = `-- name: GetRouterByServiceName :one
+SELECT
+  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+FROM
+  routers
+WHERE
+  service = ?
+  AND profile_id = ?
+LIMIT
+  1
+`
+
+type GetRouterByServiceNameParams struct {
+	Service   string `json:"service"`
+	ProfileID int64  `json:"profileId"`
+}
+
+func (q *Queries) GetRouterByServiceName(ctx context.Context, arg GetRouterByServiceNameParams) (Router, error) {
+	row := q.queryRow(ctx, q.getRouterByServiceNameStmt, getRouterByServiceName, arg.Service, arg.ProfileID)
+	var i Router
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.Name,
+		&i.Provider,
+		&i.Protocol,
+		&i.Status,
+		&i.AgentID,
+		&i.EntryPoints,
+		&i.Middlewares,
+		&i.Rule,
+		&i.RuleSyntax,
+		&i.Service,
+		&i.Priority,
+		&i.Tls,
+		&i.DnsProvider,
+		&i.Errors,
+	)
+	return i, err
+}
+
 const getServiceByID = `-- name: GetServiceByID :one
 SELECT
   id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
@@ -978,7 +990,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listConfigs = `-- name: ListConfigs :many
 SELECT
-  profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+  profile_id, overview, entrypoints, version
 FROM
   config
 `
@@ -996,10 +1008,6 @@ func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
 			&i.ProfileID,
 			&i.Overview,
 			&i.Entrypoints,
-			&i.Routers,
-			&i.Services,
-			&i.Middlewares,
-			&i.Tls,
 			&i.Version,
 		); err != nil {
 			return nil, err
@@ -1471,22 +1479,14 @@ UPDATE config
 SET
   overview = ?,
   entrypoints = ?,
-  routers = ?,
-  services = ?,
-  middlewares = ?,
-  tls = ?,
   version = ?
 WHERE
-  profile_id = ? RETURNING profile_id, overview, entrypoints, routers, services, middlewares, tls, version
+  profile_id = ? RETURNING profile_id, overview, entrypoints, version
 `
 
 type UpdateConfigParams struct {
 	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Routers     interface{} `json:"routers"`
-	Services    interface{} `json:"services"`
-	Middlewares interface{} `json:"middlewares"`
-	Tls         interface{} `json:"tls"`
 	Version     *string     `json:"version"`
 	ProfileID   int64       `json:"profileId"`
 }
@@ -1495,10 +1495,6 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 	row := q.queryRow(ctx, q.updateConfigStmt, updateConfig,
 		arg.Overview,
 		arg.Entrypoints,
-		arg.Routers,
-		arg.Services,
-		arg.Middlewares,
-		arg.Tls,
 		arg.Version,
 		arg.ProfileID,
 	)
@@ -1507,10 +1503,6 @@ func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Con
 		&i.ProfileID,
 		&i.Overview,
 		&i.Entrypoints,
-		&i.Routers,
-		&i.Services,
-		&i.Middlewares,
-		&i.Tls,
 		&i.Version,
 	)
 	return i, err
@@ -1942,10 +1934,10 @@ SET
   service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
   priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
   tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
-  dns_provider = COALESCE(
-    NULLIF(EXCLUDED.dns_provider, ''),
-    routers.dns_provider
-  ),
+  dns_provider = CASE
+    WHEN EXCLUDED.dns_provider = 0 THEN NULL
+    ELSE EXCLUDED.dns_provider
+  END,
   agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
   errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 `
