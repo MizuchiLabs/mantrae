@@ -1936,7 +1936,8 @@ SET
   tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
   dns_provider = CASE
     WHEN EXCLUDED.dns_provider = 0 THEN NULL
-    ELSE EXCLUDED.dns_provider
+    WHEN EXCLUDED.dns_provider IS NOT NULL THEN EXCLUDED.dns_provider
+    ELSE routers.dns_provider
   END,
   agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
   errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors

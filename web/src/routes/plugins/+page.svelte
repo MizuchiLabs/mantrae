@@ -171,6 +171,7 @@
 				bind:value={yamlSnippet}
 				rows={yamlSnippet?.split('\n').length || 5}
 				on:click={copyToClipboard}
+				class="p-2"
 				readonly
 			/>
 		</div>
