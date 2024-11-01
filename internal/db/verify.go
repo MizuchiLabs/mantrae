@@ -13,6 +13,11 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type Server struct {
+	URL     string `json:"url,omitempty"`
+	Address string `json:"address,omitempty"`
+}
+
 func (p *CreateProfileParams) Verify() error {
 	if p.Name == "" {
 		return fmt.Errorf("name cannot be empty")
@@ -100,7 +105,56 @@ func (s *UpsertServiceParams) Verify() error {
 	// 	}
 	// }
 
-	s.LoadBalancer, _ = json.Marshal(s.LoadBalancer)
+	loadBalancerBytes, err := json.Marshal(s.LoadBalancer)
+	if err != nil {
+		return fmt.Errorf("error marshaling LoadBalancer: %s", err.Error())
+	}
+
+	// Unmarshal LoadBalancer into a map for processing
+	var loadBalancerMap map[string]interface{}
+	if err := json.Unmarshal(loadBalancerBytes, &loadBalancerMap); err != nil {
+		return fmt.Errorf("error unmarshaling LoadBalancer: %s", err.Error())
+	}
+	fmt.Printf("loadBalancerMap: %v\n", loadBalancerMap)
+
+	if s.Provider == "http" {
+		// Process servers in LoadBalancer
+		if servers, found := loadBalancerMap["servers"].([]interface{}); found {
+			validServers := make([]Server, 0)
+			for _, server := range servers {
+				serverMap, ok := server.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("invalid server format")
+				}
+
+				address, addressOk := serverMap["address"].(string)
+				url, urlOk := serverMap["url"].(string)
+
+				// Initialize address and url if they are not present or nil
+				if addressOk && address != "" {
+					validServers = append(validServers, Server{
+						Address: address,
+					})
+				}
+				if urlOk && url != "" {
+					validServers = append(validServers, Server{
+						URL: url,
+					})
+				}
+			}
+
+			if len(validServers) == 0 {
+				return fmt.Errorf("no valid servers found in load balancer")
+			}
+
+			// Reassign valid servers back to the LoadBalancer map
+			loadBalancerMap["servers"] = validServers
+		} else {
+			return fmt.Errorf("servers key not found in LoadBalancer")
+		}
+	}
+
+	s.LoadBalancer, _ = json.Marshal(loadBalancerMap)
 	s.Failover, _ = json.Marshal(s.Failover)
 	s.Mirroring, _ = json.Marshal(s.Mirroring)
 	s.Weighted, _ = json.Marshal(s.Weighted)
@@ -122,27 +176,55 @@ func (m *UpsertMiddlewareParams) Verify() error {
 		return fmt.Errorf("protocol cannot be empty")
 	}
 
-	m.Content, _ = json.Marshal(m.Content)
+	// Marshal the content field to JSON
+	contentBytes, err := json.Marshal(m.Content)
+	if err != nil {
+		return fmt.Errorf("error marshaling content: %s", err.Error())
+	}
 
-	// 	if m.Type == "basicauth" {
-	// 	for i, u := range m.Content["BasicAuth"].(map[string]interface{}).Users {
-	// 		hash, err := util.HashBasicAuth(u)
-	// 		if err != nil {
-	// 			return fmt.Errorf("error hashing password: %s", err.Error())
-	// 		}
-	// 		m.BasicAuth.Users[i] = hash
-	// 	}
-	// }
-	// if m.DigestAuth != nil {
-	// 	for i, u := range m.DigestAuth.Users {
-	// 		hash, err := util.HashBasicAuth(u)
-	// 		if err != nil {
-	// 			return fmt.Errorf("error hashing password: %s", err.Error())
-	// 		}
-	// 		m.DigestAuth.Users[i] = hash
-	// 	}
-	// }
+	// Unmarshal the JSON bytes into a map for processing based on type
+	var contentMap map[string]interface{}
+	if err := json.Unmarshal(contentBytes, &contentMap); err != nil {
+		return fmt.Errorf("error unmarshaling content: %s", err.Error())
+	}
 
+	// Handle BasicAuth and DigestAuth types
+	switch m.Type {
+	case "basicauth":
+		if users, found := contentMap["users"].([]interface{}); found {
+			for i, u := range users {
+				user, ok := u.(string)
+				if !ok {
+					return fmt.Errorf("invalid user format in BasicAuth")
+				}
+				hash, err := util.HashBasicAuth(user)
+				if err != nil {
+					return fmt.Errorf("error hashing password: %s", err.Error())
+				}
+				users[i] = hash
+			}
+		} else {
+			return fmt.Errorf("users key not found in BasicAuth")
+		}
+	case "digestauth":
+		if users, found := contentMap["users"].([]interface{}); found {
+			for i, u := range users {
+				user, ok := u.(string)
+				if !ok {
+					return fmt.Errorf("invalid user format in DigestAuth")
+				}
+				hash, err := util.HashBasicAuth(user)
+				if err != nil {
+					return fmt.Errorf("error hashing password: %s", err.Error())
+				}
+				users[i] = hash
+			}
+		} else {
+			return fmt.Errorf("users key not found in DigestAuth")
+		}
+	}
+
+	m.Content, _ = json.Marshal(contentMap)
 	return nil
 }
 

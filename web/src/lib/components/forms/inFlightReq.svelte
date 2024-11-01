@@ -5,38 +5,39 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
-	import { cleanEmptyObjects, CustomIPSchemaOptional } from '../utils/validation';
+	import { CustomIPSchemaOptional } from '../utils/validation';
 	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const inFlightReqSchema = z.object({
-		amount: z.coerce
-			.number({ required_error: 'Amount is required' })
-			.int()
-			.nonnegative()
-			.default(50),
+	const schema = z.object({
+		amount: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
 		sourceCriterion: z
 			.object({
 				ipStrategy: z
 					.object({
-						depth: z.coerce.number().int().nonnegative().optional(),
-						excludedIPs: z.array(CustomIPSchemaOptional).optional()
+						depth: z
+							.union([z.string(), z.number()])
+							.transform((value) => (value === '' ? null : Number(value)))
+							.nullish(),
+						excludedIPs: z.array(CustomIPSchemaOptional).nullish()
 					})
-					.default({ excludedIPs: [] }),
-				requestHeaderName: z.string().trim().optional(),
-				requestHost: z.boolean().optional()
+					.default({}),
+				requestHeaderName: z.string().trim().nullish(),
+				requestHost: z.boolean().nullish()
 			})
 			.default({})
 	});
-	middleware.content = inFlightReqSchema.parse({ ...middleware.content });
+	middleware.content = schema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			middleware.content = inFlightReqSchema.parse(middleware.content); // Parse the inFlightReq object
-			cleanEmptyObjects(middleware.content);
+			middleware.content = schema.parse(middleware.content); // Parse the inFlightReq object
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {

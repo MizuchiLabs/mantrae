@@ -7,18 +7,12 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.content = {
-		excludedContentTypes: [],
-		includeContentTypes: [],
-		defaultEncoding: '',
-		...middleware.content
-	};
 
-	const compressSchema = z.object({
-		minResponseBodyBytes: z.coerce
-			.number({ required_error: 'Min Response Body Bytes is required' })
-			.int()
-			.nonnegative(),
+	const schema = z.object({
+		minResponseBodyBytes: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
 		defaultEncoding: z.string({ required_error: 'Default Encoding is required' }).trim().optional(),
 		excludedContentTypes: z
 			.array(z.string({ required_error: 'Excluded Content Types is required' }).trim())
@@ -27,19 +21,17 @@
 			.array(z.string({ required_error: 'Include Content Types is required' }).trim())
 			.optional()
 	});
+	middleware.content = schema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			compressSchema.parse(middleware.content); // Parse the compress object
+			middleware.content = schema.parse(middleware.content); // Parse the compress object
 			errors = {};
-			return { isValid: true, errors: null };
 		} catch (err) {
 			if (err instanceof z.ZodError) {
 				errors = err.flatten().fieldErrors;
-				return { isValid: false, errors: err.flatten().fieldErrors };
 			}
-			return { isValid: false, errors: { general: ['Unexpected error'] } };
 		}
 	};
 </script>

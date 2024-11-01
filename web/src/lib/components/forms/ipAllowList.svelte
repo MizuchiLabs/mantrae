@@ -5,20 +5,23 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
-	import { cleanEmptyObjects, CustomIPSchema, CustomIPSchemaOptional } from '../utils/validation';
+	import { CustomIPSchema, CustomIPSchemaOptional } from '../utils/validation';
 	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const sourceRange = ['192.168.0.0/16', '172.16.0.0/12', '127.0.0.1/32', '10.0.0.0/8'];
+	const templateRange = ['192.168.0.0/16', '172.16.0.0/12', '127.0.0.1/32', '10.0.0.0/8'];
 
 	const ipAllowListSchema = z.object({
 		sourceRange: z.array(CustomIPSchema).default([]),
 		ipStrategy: z
 			.object({
-				depth: z.coerce.number().int().nonnegative().optional(),
-				excludedIPs: z.array(CustomIPSchemaOptional).optional()
+				depth: z
+					.union([z.string(), z.number()])
+					.transform((value) => (value === '' ? null : Number(value)))
+					.nullish(),
+				excludedIPs: z.array(CustomIPSchemaOptional).nullish()
 			})
 			.default({})
 	});
@@ -28,7 +31,6 @@
 	const validate = () => {
 		try {
 			middleware.content = ipAllowListSchema.parse(middleware.content);
-			cleanEmptyObjects(middleware.content);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -37,11 +39,11 @@
 		}
 	};
 
-	let isTemplate = false;
+	let isTemplate = middleware.content?.sourceRange?.length > 0;
 	const toggleIpAllowList = () => {
 		isTemplate = !isTemplate;
 		if (isTemplate) {
-			middleware.content.sourceRange = sourceRange;
+			middleware.content.sourceRange = templateRange;
 		} else {
 			middleware.content.sourceRange = [];
 		}

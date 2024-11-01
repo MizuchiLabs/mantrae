@@ -5,6 +5,7 @@
 	import Profile from './profile.svelte';
 	import { goto } from '$app/navigation';
 	import InfoModal from '../modals/info.svelte';
+	import Warning from '../modals/warning.svelte';
 
 	const handleLogout = () => {
 		logout();
@@ -23,6 +24,7 @@
 		{:else}
 			<InfoModal />
 		{/if}
+		<Warning />
 	</div>
 
 	<div class="mr-2 flex flex-row items-center gap-2">

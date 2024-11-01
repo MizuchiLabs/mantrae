@@ -150,17 +150,6 @@ WHERE
 LIMIT
   1;
 
--- name: GetRouterByServiceName :one
-SELECT
-  *
-FROM
-  routers
-WHERE
-  service = ?
-  AND profile_id = ?
-LIMIT
-  1;
-
 -- name: ListRouters :many
 SELECT
   *
@@ -175,6 +164,14 @@ FROM
 WHERE
   profile_id = ?;
 
+-- name: ListRoutersByProvider :many
+SELECT
+  *
+FROM
+  routers
+WHERE
+  provider = ?;
+
 -- name: UpsertRouter :one
 INSERT INTO
   routers (
@@ -184,6 +181,7 @@ INSERT INTO
     provider,
     protocol,
     status,
+    agent_id,
     entry_points,
     middlewares,
     rule,
@@ -192,7 +190,6 @@ INSERT INTO
     priority,
     tls,
     dns_provider,
-    agent_id,
     errors
   )
 VALUES
@@ -271,6 +268,14 @@ FROM
 WHERE
   profile_id = ?;
 
+-- name: ListServicesByProvider :many
+SELECT
+  *
+FROM
+  services
+WHERE
+  provider = ?;
+
 -- name: UpsertService :one
 INSERT INTO
   services (
@@ -280,13 +285,13 @@ INSERT INTO
     provider,
     type,
     protocol,
+    agent_id,
     status,
     server_status,
     load_balancer,
     weighted,
     mirroring,
-    failover,
-    agent_id
+    failover
   )
 VALUES
   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
@@ -356,6 +361,14 @@ FROM
   middlewares
 WHERE
   profile_id = ?;
+
+-- name: ListMiddlewaresByProvider :many
+SELECT
+  *
+FROM
+  middlewares
+WHERE
+  provider = ?;
 
 -- name: UpsertMiddleware :one
 INSERT INTO

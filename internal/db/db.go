@@ -132,9 +132,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getRouterByNameStmt, err = db.PrepareContext(ctx, getRouterByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRouterByName: %w", err)
 	}
-	if q.getRouterByServiceNameStmt, err = db.PrepareContext(ctx, getRouterByServiceName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRouterByServiceName: %w", err)
-	}
 	if q.getServiceByIDStmt, err = db.PrepareContext(ctx, getServiceByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetServiceByID: %w", err)
 	}
@@ -162,6 +159,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, listMiddlewaresByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProfileID: %w", err)
 	}
+	if q.listMiddlewaresByProviderStmt, err = db.PrepareContext(ctx, listMiddlewaresByProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProvider: %w", err)
+	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
@@ -174,11 +174,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listRoutersByProfileIDStmt, err = db.PrepareContext(ctx, listRoutersByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListRoutersByProfileID: %w", err)
 	}
+	if q.listRoutersByProviderStmt, err = db.PrepareContext(ctx, listRoutersByProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRoutersByProvider: %w", err)
+	}
 	if q.listServicesStmt, err = db.PrepareContext(ctx, listServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListServices: %w", err)
 	}
 	if q.listServicesByProfileIDStmt, err = db.PrepareContext(ctx, listServicesByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListServicesByProfileID: %w", err)
+	}
+	if q.listServicesByProviderStmt, err = db.PrepareContext(ctx, listServicesByProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServicesByProvider: %w", err)
 	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
@@ -413,11 +419,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getRouterByNameStmt: %w", cerr)
 		}
 	}
-	if q.getRouterByServiceNameStmt != nil {
-		if cerr := q.getRouterByServiceNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRouterByServiceNameStmt: %w", cerr)
-		}
-	}
 	if q.getServiceByIDStmt != nil {
 		if cerr := q.getServiceByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getServiceByIDStmt: %w", cerr)
@@ -463,6 +464,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listMiddlewaresByProfileIDStmt: %w", cerr)
 		}
 	}
+	if q.listMiddlewaresByProviderStmt != nil {
+		if cerr := q.listMiddlewaresByProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMiddlewaresByProviderStmt: %w", cerr)
+		}
+	}
 	if q.listProfilesStmt != nil {
 		if cerr := q.listProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
@@ -483,6 +489,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listRoutersByProfileIDStmt: %w", cerr)
 		}
 	}
+	if q.listRoutersByProviderStmt != nil {
+		if cerr := q.listRoutersByProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersByProviderStmt: %w", cerr)
+		}
+	}
 	if q.listServicesStmt != nil {
 		if cerr := q.listServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listServicesStmt: %w", cerr)
@@ -491,6 +502,11 @@ func (q *Queries) Close() error {
 	if q.listServicesByProfileIDStmt != nil {
 		if cerr := q.listServicesByProfileIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.listServicesByProviderStmt != nil {
+		if cerr := q.listServicesByProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServicesByProviderStmt: %w", cerr)
 		}
 	}
 	if q.listSettingsStmt != nil {
@@ -648,7 +664,6 @@ type Queries struct {
 	getProviderByNameStmt          *sql.Stmt
 	getRouterByIDStmt              *sql.Stmt
 	getRouterByNameStmt            *sql.Stmt
-	getRouterByServiceNameStmt     *sql.Stmt
 	getServiceByIDStmt             *sql.Stmt
 	getServiceByNameStmt           *sql.Stmt
 	getSettingByKeyStmt            *sql.Stmt
@@ -658,12 +673,15 @@ type Queries struct {
 	listConfigsStmt                *sql.Stmt
 	listMiddlewaresStmt            *sql.Stmt
 	listMiddlewaresByProfileIDStmt *sql.Stmt
+	listMiddlewaresByProviderStmt  *sql.Stmt
 	listProfilesStmt               *sql.Stmt
 	listProvidersStmt              *sql.Stmt
 	listRoutersStmt                *sql.Stmt
 	listRoutersByProfileIDStmt     *sql.Stmt
+	listRoutersByProviderStmt      *sql.Stmt
 	listServicesStmt               *sql.Stmt
 	listServicesByProfileIDStmt    *sql.Stmt
+	listServicesByProviderStmt     *sql.Stmt
 	listSettingsStmt               *sql.Stmt
 	listUsersStmt                  *sql.Stmt
 	updateAgentStmt                *sql.Stmt
@@ -722,7 +740,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getProviderByNameStmt:          q.getProviderByNameStmt,
 		getRouterByIDStmt:              q.getRouterByIDStmt,
 		getRouterByNameStmt:            q.getRouterByNameStmt,
-		getRouterByServiceNameStmt:     q.getRouterByServiceNameStmt,
 		getServiceByIDStmt:             q.getServiceByIDStmt,
 		getServiceByNameStmt:           q.getServiceByNameStmt,
 		getSettingByKeyStmt:            q.getSettingByKeyStmt,
@@ -732,12 +749,15 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listConfigsStmt:                q.listConfigsStmt,
 		listMiddlewaresStmt:            q.listMiddlewaresStmt,
 		listMiddlewaresByProfileIDStmt: q.listMiddlewaresByProfileIDStmt,
+		listMiddlewaresByProviderStmt:  q.listMiddlewaresByProviderStmt,
 		listProfilesStmt:               q.listProfilesStmt,
 		listProvidersStmt:              q.listProvidersStmt,
 		listRoutersStmt:                q.listRoutersStmt,
 		listRoutersByProfileIDStmt:     q.listRoutersByProfileIDStmt,
+		listRoutersByProviderStmt:      q.listRoutersByProviderStmt,
 		listServicesStmt:               q.listServicesStmt,
 		listServicesByProfileIDStmt:    q.listServicesByProfileIDStmt,
+		listServicesByProviderStmt:     q.listServicesByProviderStmt,
 		listSettingsStmt:               q.listSettingsStmt,
 		listUsersStmt:                  q.listUsersStmt,
 		updateAgentStmt:                q.updateAgentStmt,

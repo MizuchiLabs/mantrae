@@ -3,25 +3,23 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { z } from 'zod';
+	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const inFlightConnSchema = z.object({
-		amount: z.coerce
-			.number({ required_error: 'Amount is required' })
-			.int()
-			.nonnegative()
-			.default(50)
+	const schema = z.object({
+		amount: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish()
 	});
-	middleware.content = inFlightConnSchema.parse({
-		...middleware.content
-	});
+	middleware.content = schema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			middleware.content = inFlightConnSchema.parse(middleware.content);
+			middleware.content = schema.parse(middleware.content);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -29,6 +27,10 @@
 			}
 		}
 	};
+
+	onDestroy(() => {
+		validate();
+	});
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

@@ -88,7 +88,7 @@ func LoadToken() string {
 }
 
 func SaveToken(token string) {
-	err := os.WriteFile("token", []byte(token), 0644)
+	err := os.WriteFile("token", []byte(token), 0600)
 	if err != nil {
 		slog.Error("Failed to write token", "error", err)
 	}

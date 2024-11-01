@@ -4,14 +4,15 @@ go 1.23.0
 
 require (
 	connectrpc.com/connect v1.17.0
+	github.com/brianvoe/gofakeit/v7 v7.1.1
 	github.com/cloudflare/cloudflare-go v0.108.0
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/google/uuid v1.6.0
 	github.com/joeig/go-powerdns/v3 v3.14.1
 	github.com/lmittmann/tint v1.0.5
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/traefik/paerser v0.2.1
 	github.com/traefik/traefik/v3 v3.1.6
 	golang.org/x/crypto v0.28.0
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
@@ -24,7 +25,6 @@ require (
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
-	github.com/brianvoe/gofakeit/v7 v7.1.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
@@ -40,7 +40,6 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/http-wasm/http-wasm-host-go v0.7.0 // indirect
@@ -58,6 +57,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
+	github.com/traefik/paerser v0.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
 	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect

@@ -9,11 +9,10 @@
 	export let disabled = false;
 
 	const retrySchema = z.object({
-		attempts: z.coerce
-			.number({ required_error: 'Attempts is required' })
-			.int()
-			.nonnegative()
-			.default(3),
+		attempts: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
 		initialInterval: CustomTimeUnitSchemaOptional
 	});
 	middleware.content = retrySchema.parse({ ...middleware.content });

@@ -9,7 +9,7 @@ const ipv6Regex =
 	/^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/;
 const ipv6CidrRegex = /^(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
 
-const timeUnitRegex = /^(0|[1-9]\d*)(ns|us|µs|ms|s|m|h)?$/;
+const timeUnitRegex = /^(0|[1-9]\d*)(ns|us|µs|ms|s|m|h)$/;
 
 // Custom Zod schema to validate either IPv4 or IPv6 with or without CIDR
 export const CustomIPSchema = z
@@ -74,8 +74,16 @@ export const CustomTimeUnitSchemaOptional = z
 		}
 	);
 
-const isEmpty = (obj: any) => {
-	return Object.keys(obj).length === 0 || Object.values(obj).every((val) => val === '');
+const isEmpty = (obj: any): boolean => {
+	if (obj === null || obj === undefined) return true; // Handle null and undefined
+	if (typeof obj === 'string') return obj.trim() === ''; // Handle empty strings
+	if (Array.isArray(obj)) return obj.length === 0; // Handle empty arrays
+
+	// Check if all values in an object are empty
+	if (typeof obj === 'object') {
+		return Object.keys(obj).length === 0 || Object.values(obj).every(isEmpty);
+	}
+	return false;
 };
 export const cleanEmptyObjects = (obj: any) => {
 	for (const key in obj) {

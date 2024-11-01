@@ -774,47 +774,6 @@ func (q *Queries) GetRouterByName(ctx context.Context, arg GetRouterByNameParams
 	return i, err
 }
 
-const getRouterByServiceName = `-- name: GetRouterByServiceName :one
-SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-  routers
-WHERE
-  service = ?
-  AND profile_id = ?
-LIMIT
-  1
-`
-
-type GetRouterByServiceNameParams struct {
-	Service   string `json:"service"`
-	ProfileID int64  `json:"profileId"`
-}
-
-func (q *Queries) GetRouterByServiceName(ctx context.Context, arg GetRouterByServiceNameParams) (Router, error) {
-	row := q.queryRow(ctx, q.getRouterByServiceNameStmt, getRouterByServiceName, arg.Service, arg.ProfileID)
-	var i Router
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Protocol,
-		&i.Status,
-		&i.AgentID,
-		&i.EntryPoints,
-		&i.Middlewares,
-		&i.Rule,
-		&i.RuleSyntax,
-		&i.Service,
-		&i.Priority,
-		&i.Tls,
-		&i.DnsProvider,
-		&i.Errors,
-	)
-	return i, err
-}
-
 const getServiceByID = `-- name: GetServiceByID :one
 SELECT
   id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
@@ -1103,6 +1062,47 @@ func (q *Queries) ListMiddlewaresByProfileID(ctx context.Context, profileID int6
 	return items, nil
 }
 
+const listMiddlewaresByProvider = `-- name: ListMiddlewaresByProvider :many
+SELECT
+  id, profile_id, name, provider, type, protocol, agent_id, content
+FROM
+  middlewares
+WHERE
+  provider = ?
+`
+
+func (q *Queries) ListMiddlewaresByProvider(ctx context.Context, provider string) ([]Middleware, error) {
+	rows, err := q.query(ctx, q.listMiddlewaresByProviderStmt, listMiddlewaresByProvider, provider)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Middleware
+	for rows.Next() {
+		var i Middleware
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.Name,
+			&i.Provider,
+			&i.Type,
+			&i.Protocol,
+			&i.AgentID,
+			&i.Content,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listProfiles = `-- name: ListProfiles :many
 SELECT
   id, name, url, username, password, tls
@@ -1276,6 +1276,55 @@ func (q *Queries) ListRoutersByProfileID(ctx context.Context, profileID int64) (
 	return items, nil
 }
 
+const listRoutersByProvider = `-- name: ListRoutersByProvider :many
+SELECT
+  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+FROM
+  routers
+WHERE
+  provider = ?
+`
+
+func (q *Queries) ListRoutersByProvider(ctx context.Context, provider string) ([]Router, error) {
+	rows, err := q.query(ctx, q.listRoutersByProviderStmt, listRoutersByProvider, provider)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Router
+	for rows.Next() {
+		var i Router
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.Name,
+			&i.Provider,
+			&i.Protocol,
+			&i.Status,
+			&i.AgentID,
+			&i.EntryPoints,
+			&i.Middlewares,
+			&i.Rule,
+			&i.RuleSyntax,
+			&i.Service,
+			&i.Priority,
+			&i.Tls,
+			&i.DnsProvider,
+			&i.Errors,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listServices = `-- name: ListServices :many
 SELECT
   id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
@@ -1331,6 +1380,52 @@ WHERE
 
 func (q *Queries) ListServicesByProfileID(ctx context.Context, profileID int64) ([]Service, error) {
 	rows, err := q.query(ctx, q.listServicesByProfileIDStmt, listServicesByProfileID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Service
+	for rows.Next() {
+		var i Service
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.Name,
+			&i.Provider,
+			&i.Type,
+			&i.Protocol,
+			&i.AgentID,
+			&i.Status,
+			&i.ServerStatus,
+			&i.LoadBalancer,
+			&i.Weighted,
+			&i.Mirroring,
+			&i.Failover,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listServicesByProvider = `-- name: ListServicesByProvider :many
+SELECT
+  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+FROM
+  services
+WHERE
+  provider = ?
+`
+
+func (q *Queries) ListServicesByProvider(ctx context.Context, provider string) ([]Service, error) {
+	rows, err := q.query(ctx, q.listServicesByProviderStmt, listServicesByProvider, provider)
 	if err != nil {
 		return nil, err
 	}
@@ -1900,6 +1995,7 @@ INSERT INTO
     provider,
     protocol,
     status,
+    agent_id,
     entry_points,
     middlewares,
     rule,
@@ -1908,7 +2004,6 @@ INSERT INTO
     priority,
     tls,
     dns_provider,
-    agent_id,
     errors
   )
 VALUES
@@ -1950,6 +2045,7 @@ type UpsertRouterParams struct {
 	Provider    string      `json:"provider"`
 	Protocol    string      `json:"protocol"`
 	Status      *string     `json:"status"`
+	AgentID     *string     `json:"agentId"`
 	EntryPoints interface{} `json:"entryPoints"`
 	Middlewares interface{} `json:"middlewares"`
 	Rule        string      `json:"rule"`
@@ -1958,7 +2054,6 @@ type UpsertRouterParams struct {
 	Priority    *int64      `json:"priority"`
 	Tls         interface{} `json:"tls"`
 	DnsProvider *int64      `json:"dnsProvider"`
-	AgentID     *string     `json:"agentId"`
 	Errors      interface{} `json:"errors"`
 }
 
@@ -1970,6 +2065,7 @@ func (q *Queries) UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Rou
 		arg.Provider,
 		arg.Protocol,
 		arg.Status,
+		arg.AgentID,
 		arg.EntryPoints,
 		arg.Middlewares,
 		arg.Rule,
@@ -1978,7 +2074,6 @@ func (q *Queries) UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Rou
 		arg.Priority,
 		arg.Tls,
 		arg.DnsProvider,
-		arg.AgentID,
 		arg.Errors,
 	)
 	var i Router
@@ -2012,13 +2107,13 @@ INSERT INTO
     provider,
     type,
     protocol,
+    agent_id,
     status,
     server_status,
     load_balancer,
     weighted,
     mirroring,
-    failover,
-    agent_id
+    failover
   )
 VALUES
   (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
@@ -2052,13 +2147,13 @@ type UpsertServiceParams struct {
 	Provider     string      `json:"provider"`
 	Type         string      `json:"type"`
 	Protocol     string      `json:"protocol"`
+	AgentID      *string     `json:"agentId"`
 	Status       *string     `json:"status"`
 	ServerStatus interface{} `json:"serverStatus"`
 	LoadBalancer interface{} `json:"loadBalancer"`
 	Weighted     interface{} `json:"weighted"`
 	Mirroring    interface{} `json:"mirroring"`
 	Failover     interface{} `json:"failover"`
-	AgentID      *string     `json:"agentId"`
 }
 
 func (q *Queries) UpsertService(ctx context.Context, arg UpsertServiceParams) (Service, error) {
@@ -2069,13 +2164,13 @@ func (q *Queries) UpsertService(ctx context.Context, arg UpsertServiceParams) (S
 		arg.Provider,
 		arg.Type,
 		arg.Protocol,
+		arg.AgentID,
 		arg.Status,
 		arg.ServerStatus,
 		arg.LoadBalancer,
 		arg.Weighted,
 		arg.Mirroring,
 		arg.Failover,
-		arg.AgentID,
 	)
 	var i Service
 	err := row.Scan(

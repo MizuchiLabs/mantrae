@@ -7,7 +7,6 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.content = { ...middleware.content };
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

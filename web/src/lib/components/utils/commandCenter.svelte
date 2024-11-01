@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Command from '$lib/components/ui/command';
 	import { goto } from '$app/navigation';
-	import { middlewares, routers, services } from '$lib/api';
+	import { getMiddlewares, getRouters, middlewares, profile, routers, services } from '$lib/api';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
 	import { onMount } from 'svelte';
 	import RouterModal from '../modals/router.svelte';
@@ -131,6 +131,13 @@
 			document.removeEventListener('keydown', handleKeydown);
 		};
 	});
+
+	// Get routers when the profile changes
+	profile.subscribe((value) => {
+		if (!value?.id) return;
+		getRouters(value.id);
+		getMiddlewares(value.id);
+	});
 </script>
 
 <div class="hidden">
@@ -145,7 +152,7 @@
 			{#if searchQuery !== ''}
 				<Command.Group heading="Routers">
 					<Command.Empty>No results found.</Command.Empty>
-					{#each fRouters as router}
+					{#each fRouters || [] as router}
 						<Command.Item onSelect={() => updateRouter(router)} value={router.name}>
 							<Route class="mr-2 h-4 w-4" />
 							<span>{router.name}</span>
@@ -155,7 +162,7 @@
 				<Command.Separator />
 				<Command.Group heading="Middlewares">
 					<Command.Empty>No results found.</Command.Empty>
-					{#each fMiddlewares as middleware}
+					{#each fMiddlewares || [] as middleware}
 						<Command.Item onSelect={() => updateMiddleware(middleware)} value={middleware.name}>
 							<Layers class="mr-2 h-4 w-4" />
 							<span>{middleware.name}</span>

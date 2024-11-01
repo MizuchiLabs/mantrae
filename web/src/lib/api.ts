@@ -4,7 +4,7 @@ import type { Config, Profile, DNSProvider, User, Setting } from './types/base';
 import type { Plugin } from './types/plugins';
 import type { Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
-import { newService, type Router, type Service } from './types/config';
+import { type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
 import { PROFILE_SK, TOKEN_SK } from './store';
 
@@ -23,6 +23,7 @@ export const settings: Writable<Setting[]> = writable();
 export const plugins: Writable<Plugin[]> = writable();
 export const dynamic = writable('');
 export const version = writable('');
+export const configError = writable('');
 
 // Derived stores
 export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
@@ -222,7 +223,7 @@ export async function upsertService(s: Service): Promise<void> {
 					return [...items, data];
 				}
 			});
-			toast.success(`Service ${data.name} created`);
+			//toast.success(`Service ${data.name} created`);
 		}
 	}
 }
@@ -231,7 +232,7 @@ export async function deleteService(s: Service): Promise<void> {
 	const response = await handleRequest(`/service/${s.id}`, 'DELETE');
 	if (response) {
 		services.update((items) => items.filter((i) => i.id !== s.id));
-		toast.success(`Service ${s.name} deleted`);
+		//toast.success(`Service ${s.name} deleted`);
 	}
 }
 
@@ -262,7 +263,7 @@ export async function upsertMiddleware(m: Middleware): Promise<void> {
 					return [...items, data];
 				}
 			});
-			toast.success(`Middleware ${data.name} created`);
+			toast.success(`Middleware ${data.name} updated`);
 		}
 	}
 }
@@ -373,42 +374,6 @@ export async function getConfig() {
 		config.set(data);
 	}
 }
-
-export async function updateRouter(r: Router): Promise<void> {
-	const response = await handleRequest(`/router/${get(profile).id}`, 'PUT', r);
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Router ${r.name} updated`);
-	}
-}
-
-export async function updateService(s: Service): Promise<void> {
-	const response = await handleRequest(`/service/${get(profile).id}`, 'PUT', s);
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Service ${s.name} updated`);
-	}
-}
-
-export async function updateMiddleware(m: Middleware): Promise<void> {
-	const response = await handleRequest(`/middleware/${get(profile).id}`, 'PUT', m);
-	if (response) {
-		const data = await response.json();
-		config.set(data);
-		toast.success(`Middleware ${m.name} updated`);
-	}
-}
-
-// export async function deleteMiddleware(m: Middleware): Promise<void> {
-// 	const response = await handleRequest(`/middleware/${get(profile).id}/${m.name}`, 'DELETE');
-// 	if (response) {
-// 		const data = await response.json();
-// 		config.set(data);
-// 		toast.success(`Middleware ${m.name} deleted`);
-// 	}
-// }
 
 export async function deleteRouterDNS(r: Router): Promise<void> {
 	if (!r || !r.dnsProvider) return;

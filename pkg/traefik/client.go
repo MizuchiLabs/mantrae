@@ -375,7 +375,11 @@ func (m HTTPMiddleware) ToMiddleware() *db.Middleware {
 		slog.Error("Failed to unmarshal middleware", "error", err)
 		return nil
 	}
+
 	dbMiddleware.Protocol = "http"
+	if m.Provider == "http" {
+		return &dbMiddleware
+	}
 
 	// Unmarshal to traefik.Middleware to access specific fields
 	var traefikMiddleware dynamic.Middleware
@@ -423,6 +427,9 @@ func (m TCPMiddleware) ToMiddleware() *db.Middleware {
 	}
 
 	dbMiddleware.Protocol = "http"
+	if m.Provider == "http" {
+		return &dbMiddleware
+	}
 
 	// Unmarshal to traefik.Middleware to access specific fields
 	var traefikMiddleware dynamic.Middleware
@@ -631,7 +638,10 @@ func GetTraefikConfig() {
 	}
 
 	// Broadcast the update to all clients
-	util.Broadcast <- "profiles"
+	util.Broadcast <- util.EventMessage{
+		Type:    "profile_updated",
+		Message: "Profile updated",
+	}
 }
 
 // Sync periodically syncs the Traefik configuration

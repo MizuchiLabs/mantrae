@@ -4,6 +4,7 @@
 	import { upsertMiddleware } from '$lib/api';
 	import type { Middleware } from '$lib/types/middlewares';
 	import MiddlewareForm from '../forms/middleware.svelte';
+	import { cleanEmptyObjects } from '../utils/validation';
 
 	export let middleware: Middleware;
 	export let open = false;
@@ -11,6 +12,8 @@
 
 	const update = async () => {
 		if (middleware.name === '') return;
+		cleanEmptyObjects(middleware.content);
+		console.log(middleware);
 		await upsertMiddleware(middleware);
 		open = false;
 	};

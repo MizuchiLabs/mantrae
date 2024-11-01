@@ -24,13 +24,13 @@ var backupCron *cron.Cron
 
 // BackupData is the structure for the full manual backup
 type BackupData struct {
-	Profiles  []db.Profile       `json:"profiles"`
-	Providers []db.Provider      `json:"providers"`
-	Settings  []db.Setting       `json:"settings"`
-	Users     []db.User          `json:"users"`
-	Routers   []db.Router        `json:"routers"`
-	Services  []db.Service       `json:"services"`
-	Configs   []*traefik.Dynamic `json:"configs"`
+	Profiles    []db.Profile    `json:"profiles"`
+	Providers   []db.Provider   `json:"providers"`
+	Settings    []db.Setting    `json:"settings"`
+	Users       []db.User       `json:"users"`
+	Routers     []db.Router     `json:"routers"`
+	Services    []db.Service    `json:"services"`
+	Middlewares []db.Middleware `json:"middlewares"`
 }
 
 func DumpBackup(ctx context.Context) (*BackupData, error) {
@@ -42,23 +42,36 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 		return nil, fmt.Errorf("failed to get profiles: %w", err)
 	}
 
-	data.Routers, err = db.Query.ListRouters(ctx)
+	data.Routers, err = db.Query.ListRoutersByProvider(ctx, "http")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get routers: %w", err)
 	}
-	data.Services, err = db.Query.ListServices(ctx)
+	data.Services, err = db.Query.ListServicesByProvider(ctx, "http")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get services: %w", err)
 	}
-	for _, router := range data.Routers {
+	data.Middlewares, err = db.Query.ListMiddlewaresByProvider(ctx, "http")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get middlewares: %w", err)
+	}
+
+	for i, router := range data.Routers {
 		if err := router.DecodeFields(); err != nil {
 			slog.Error("Failed to decode router", "name", router.Name, "error", err)
 		}
+		data.Routers[i] = router
 	}
-	for _, service := range data.Services {
+	for i, service := range data.Services {
 		if err := service.DecodeFields(); err != nil {
 			slog.Error("Failed to decode service", "name", service.Name, "error", err)
 		}
+		data.Services[i] = service
+	}
+	for i, middleware := range data.Middlewares {
+		if err := middleware.DecodeFields(); err != nil {
+			slog.Error("Failed to decode middleware", "name", middleware.Name, "error", err)
+		}
+		data.Middlewares[i] = middleware
 	}
 
 	data.Providers, err = db.Query.ListProviders(ctx)
@@ -110,45 +123,32 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		}
 
 		for _, router := range data.Routers {
-			if _, err := db.Query.UpsertRouter(ctx, db.UpsertRouterParams(db.UpsertRouterParams{
-				ID:          router.ID,
-				ProfileID:   router.ProfileID,
-				Name:        router.Name,
-				Provider:    router.Provider,
-				Protocol:    router.Protocol,
-				Status:      router.Status,
-				EntryPoints: router.EntryPoints,
-				Middlewares: router.Middlewares,
-				Rule:        router.Rule,
-				RuleSyntax:  router.RuleSyntax,
-				Service:     router.Service,
-				Priority:    router.Priority,
-				Tls:         router.Tls,
-				DnsProvider: router.DnsProvider,
-				AgentID:     router.AgentID,
-				Errors:      router.Errors,
-			})); err != nil {
+			params := db.UpsertRouterParams(router)
+			if err := params.Verify(); err != nil {
+				continue
+			}
+			if _, err := db.Query.UpsertRouter(ctx, db.UpsertRouterParams(params)); err != nil {
 				return fmt.Errorf("failed to upsert router: %w", err)
 			}
 		}
 
 		for _, service := range data.Services {
-			if _, err := db.Query.UpsertService(ctx, db.UpsertServiceParams(db.UpsertServiceParams{
-				ID:           service.ID,
-				ProfileID:    service.ProfileID,
-				Name:         service.Name,
-				Provider:     service.Provider,
-				Type:         service.Type,
-				Protocol:     service.Protocol,
-				Status:       service.Status,
-				ServerStatus: service.ServerStatus,
-				LoadBalancer: service.LoadBalancer,
-				Weighted:     service.Weighted,
-				Mirroring:    service.Mirroring,
-				Failover:     service.Failover,
-				AgentID:      service.AgentID,
-			})); err != nil {
+			params := db.UpsertServiceParams(service)
+			if err := params.Verify(); err != nil {
+				continue
+			}
+			if _, err := db.Query.UpsertService(ctx, db.UpsertServiceParams(params)); err != nil {
 				return fmt.Errorf("failed to upsert service: %w", err)
+			}
+		}
+
+		for _, middleware := range data.Middlewares {
+			params := db.UpsertMiddlewareParams(middleware)
+			if err := params.Verify(); err != nil {
+				continue
+			}
+			if _, err := db.Query.UpsertMiddleware(ctx, db.UpsertMiddlewareParams(params)); err != nil {
+				return fmt.Errorf("failed to upsert middleware: %w", err)
 			}
 		}
 	}

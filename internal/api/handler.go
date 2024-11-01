@@ -101,21 +101,28 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 	// Register the client to receive updates
 	util.ClientsMutex.Lock()
-	util.Clients[util.Broadcast] = true
+	util.Clients[w] = true
 	util.ClientsMutex.Unlock()
 
 	defer func() {
 		// Unregister the client when the connection is closed
 		util.ClientsMutex.Lock()
-		delete(util.Clients, util.Broadcast)
+		delete(util.Clients, w)
 		util.ClientsMutex.Unlock()
 	}()
 
 	for {
 		select {
 		case message := <-util.Broadcast:
-			fmt.Fprintf(w, "data: %s\n\n", message)
-			w.(http.Flusher).Flush() // Force the data to be sent to the client
+			// Serialize the EventMessage to JSON
+			data, err := json.Marshal(message)
+			if err != nil {
+				fmt.Printf("Error marshalling message: %v\n", err)
+				continue
+			}
+			// Send the data to the client
+			fmt.Fprintf(w, "data: %s\n\n", data)
+			w.(http.Flusher).Flush()
 		case <-r.Context().Done():
 			return
 		}
@@ -1018,6 +1025,10 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	}
 	dynamicConfig, err := traefik.GenerateConfig(data)
 	if err != nil {
+		util.Broadcast <- util.EventMessage{
+			Type:    "config_error",
+			Message: fmt.Sprintf("Failed to generate config: %s", err.Error()),
+		}
 		http.Error(
 			w,
 			fmt.Sprintf("Failed to generate config: %s", err.Error()),
@@ -1050,6 +1061,10 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", contentType)
 	if _, err := w.Write(outConfig); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
+	util.Broadcast <- util.EventMessage{
+		Type:    "config_error",
+		Message: "",
 	}
 }
 

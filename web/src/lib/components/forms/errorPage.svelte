@@ -6,12 +6,6 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.content = {
-		status: [],
-		service: '',
-		query: '',
-		...middleware.content
-	};
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

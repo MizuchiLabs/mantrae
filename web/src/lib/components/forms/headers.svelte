@@ -97,29 +97,29 @@
 	};
 
 	const headersSchema = z.object({
-		sslProxyHeaders: z.record(z.string(), z.string()).optional(),
-		contentSecurityPolicy: z.string().optional(),
-		contentTypeNosniff: z.boolean().optional(),
-		browserXssFilter: z.boolean().optional(),
-		frameDeny: z.boolean().optional(),
-		customFrameOptionsValue: z.string().optional(),
-		referrerPolicy: z.string().optional(),
-		permissionsPolicy: z.string().optional(),
-		accessControlAllowOriginList: z.array(CustomIPSchemaOptional).default([]).optional(),
-		accessControlAllowOriginListRegex: z.array(z.string()).default([]).optional(),
-		accessControlAllowHeaders: z.array(z.string()).default([]).optional(),
-		accessControlAllowMethods: z.array(z.string()).default([]).optional(),
-		accessControlAllowCredentials: z.boolean().default(false).optional(),
-		accessControlExposeHeaders: z.array(z.string()).default([]).optional(),
-		accessControlMaxAge: z.coerce.number().int().nonnegative().optional(),
-		stsSeconds: z.coerce.number().int().nonnegative().optional(),
-		stsIncludeSubdomains: z.boolean().default(false).optional(),
-		stsPreload: z.boolean().default(false).optional(),
-		forceSTSHeader: z.boolean().default(false).optional(),
-		customResponseHeaders: z.record(z.string(), z.string()).optional(),
-		customRequestHeaders: z.record(z.string(), z.string()).optional(),
-		addVaryHeader: z.boolean().default(true).optional(),
-		hostsProxyHeaders: z.array(z.string()).default([]).optional()
+		sslProxyHeaders: z.record(z.string(), z.string()).nullish(),
+		contentSecurityPolicy: z.string().nullish(),
+		contentTypeNosniff: z.boolean().nullish(),
+		browserXssFilter: z.boolean().nullish(),
+		frameDeny: z.boolean().nullish(),
+		customFrameOptionsValue: z.string().nullish(),
+		referrerPolicy: z.string().nullish(),
+		permissionsPolicy: z.string().nullish(),
+		accessControlAllowOriginList: z.array(CustomIPSchemaOptional).default([]).nullish(),
+		accessControlAllowOriginListRegex: z.array(z.string()).default([]).nullish(),
+		accessControlAllowHeaders: z.array(z.string()).default([]).nullish(),
+		accessControlAllowMethods: z.array(z.string()).default([]).nullish(),
+		accessControlAllowCredentials: z.boolean().default(false).nullish(),
+		accessControlExposeHeaders: z.array(z.string()).default([]).nullish(),
+		accessControlMaxAge: z.coerce.number().int().nonnegative().nullish(),
+		stsSeconds: z.coerce.number().int().nonnegative().nullish(),
+		stsIncludeSubdomains: z.boolean().default(false).nullish(),
+		stsPreload: z.boolean().default(false).nullish(),
+		forceSTSHeader: z.boolean().default(false).nullish(),
+		customResponseHeaders: z.record(z.string(), z.string()).nullish(),
+		customRequestHeaders: z.record(z.string(), z.string()).nullish(),
+		addVaryHeader: z.boolean().default(true).nullish(),
+		hostsProxyHeaders: z.array(z.string()).default([]).nullish()
 	});
 	middleware.content = headersSchema.parse({ ...middleware.content });
 
@@ -135,7 +135,6 @@
 		}
 	};
 
-	//middleware = { ...emptyHeaders, ...middleware };
 	let isTemplate = false;
 	const toggleTemplate = () => {
 		isTemplate = !isTemplate;

@@ -3,51 +3,47 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { z } from 'zod';
+	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const chema = z.object({
-		maxRequestBodyBytes: z.coerce
-			.number({ required_error: 'Max Request Body Bytes is required' })
-			.int()
-			.nonnegative()
-			.optional(),
-		memRequestBodyBytes: z.coerce
-			.number({ required_error: 'Mem Request Body Bytes is required' })
-			.int()
-			.nonnegative()
-			.optional(),
-		maxResponseBodyBytes: z.coerce
-			.number({ required_error: 'Max Response Body Bytes is required' })
-			.int()
-			.nonnegative()
-			.optional(),
-		memResponseBodyBytes: z.coerce
-			.number({ required_error: 'Mem Response Body Bytes is required' })
-			.int()
-			.nonnegative()
-			.optional(),
-		retryExpression: z.string({ required_error: 'Retry Expression is required' }).trim().optional()
+	const schema = z.object({
+		maxRequestBodyBytes: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
+		memRequestBodyBytes: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
+		maxResponseBodyBytes: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
+		memResponseBodyBytes: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish(),
+		retryExpression: z.string().trim().nullish()
 	});
+	middleware.content = schema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			chema.parse(middleware.content); // Parse the object
+			middleware.content = schema.parse(middleware.content);
 			errors = {};
-			return { isValid: true, errors: null };
 		} catch (err) {
 			if (err instanceof z.ZodError) {
 				errors = err.flatten().fieldErrors;
-				return { isValid: false, errors: err.flatten().fieldErrors };
 			}
-			return { isValid: false, errors: { general: ['Unexpected error'] } };
 		}
 	};
 
-	// Initial validation
-	middleware.content = { ...middleware.content };
+	onDestroy(() => {
+		validate();
+	});
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

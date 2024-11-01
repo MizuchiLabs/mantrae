@@ -3,7 +3,15 @@
 	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import Header from '$lib/components/nav/header.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { API_URL, getProfiles, loggedIn, getProviders, getUsers, getVersion } from '$lib/api';
+	import {
+		API_URL,
+		getProfiles,
+		loggedIn,
+		getProviders,
+		getUsers,
+		getVersion,
+		configError
+	} from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
@@ -13,15 +21,22 @@
 	const eventSource = new EventSource(`${API_URL}/events`);
 	eventSource.onmessage = (event) => {
 		if (!$loggedIn) return;
-		switch (event.data) {
-			case 'profiles':
+		let data = JSON.parse(event.data);
+		switch (data.type) {
+			case 'profile_updated':
 				getProfiles();
 				break;
-			case 'users':
+			case 'user_updated':
 				getUsers();
 				break;
-			case 'providers':
+			case 'provider_updated':
 				getProviders();
+				break;
+			case 'config_error':
+				configError.set(data.message);
+				break;
+			case 'config_ok':
+				configError.set('');
 				break;
 		}
 	};

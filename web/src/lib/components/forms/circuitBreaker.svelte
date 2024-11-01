@@ -4,29 +4,31 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { z } from 'zod';
 	import { CustomTimeUnitSchemaOptional } from '../utils/validation';
+	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
-	const cSchema = z.object({
+	const schema = z.object({
 		expression: z
-			.string({ required_error: 'Expression is required' })
+			.string()
 			.trim()
 			.min(1, 'Expression is required')
 			.default('LatencyAtQuantileMS(50.0) > 100'),
 		checkPeriod: CustomTimeUnitSchemaOptional,
 		fallbackDuration: CustomTimeUnitSchemaOptional,
 		recoveryDuration: CustomTimeUnitSchemaOptional,
-		responseCode: z.coerce.number().int().nonnegative().optional()
+		responseCode: z
+			.union([z.string(), z.number()])
+			.transform((value) => (value === '' ? null : Number(value)))
+			.nullish()
 	});
-	middleware.content = cSchema.parse({
-		...middleware.content
-	});
+	middleware.content = schema.parse({ ...middleware.content });
 
 	let errors: Record<any, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			middleware.content = cSchema.parse(middleware.content);
+			middleware.content = schema.parse(middleware.content);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -34,6 +36,10 @@
 			}
 		}
 	};
+
+	onDestroy(() => {
+		validate();
+	});
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

@@ -3,24 +3,26 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { z } from 'zod';
+	import { onDestroy } from 'svelte';
 
 	export let middleware: Middleware;
 	export let disabled = false;
 
 	// Define validation schema for addPrefix content
-	const addPrefixSchema = z.object({
+	const schema = z.object({
 		prefix: z
 			.string({ required_error: 'Prefix is required' })
 			.trim()
 			.min(1, 'Prefix is required')
 			.default('/foo')
 	});
+	middleware.content = schema.parse({ ...middleware.content });
 
 	// Parse and validate middleware.content for addPrefix
 	let errors: Record<string, string[] | undefined> = {};
 	const validate = () => {
 		try {
-			middleware.content = addPrefixSchema.parse(middleware.content);
+			middleware.content = schema.parse(middleware.content);
 			errors = {};
 		} catch (err) {
 			if (err instanceof z.ZodError) {
@@ -29,8 +31,9 @@
 		}
 	};
 
-	// Initial validation
-	middleware.content = addPrefixSchema.parse({ ...middleware.content });
+	onDestroy(() => {
+		validate();
+	});
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">

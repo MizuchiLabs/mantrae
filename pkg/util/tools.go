@@ -199,7 +199,9 @@ func ValidSSLCert(domain string) error {
 		&net.Dialer{Timeout: 5 * time.Second},
 		"tcp",
 		domain+":443",
-		&tls.Config{},
+		&tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
 	)
 	if err != nil {
 		if err, ok := err.(net.Error); ok && err.Timeout() {

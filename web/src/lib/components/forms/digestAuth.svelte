@@ -7,7 +7,6 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.content = { ...middleware.content };
 </script>
 
 <ArrayInput

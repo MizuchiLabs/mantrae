@@ -1,16 +1,20 @@
 package util
 
-import "sync"
+import (
+	"net/http"
+	"sync"
+)
+
+type EventMessage struct {
+	Type    string `json:"type"`
+	Message string `json:"message"`
+}
 
 // A channel to broadcast updates
-var Broadcast chan string
+var Broadcast = make(chan EventMessage)
 
 // A list of clients connected to SSE
 var (
-	Clients      = make(map[chan string]bool)
-	ClientsMutex sync.Mutex
+	Clients      = make(map[http.ResponseWriter]bool)
+	ClientsMutex = &sync.Mutex{}
 )
-
-func init() {
-	Broadcast = make(chan string)
-}

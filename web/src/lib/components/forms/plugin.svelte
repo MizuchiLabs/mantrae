@@ -18,6 +18,8 @@
 		if (!pluginData || !middleware.content) return;
 		try {
 			JSON.parse(pluginData);
+			middleware.content = JSON.parse(pluginData);
+			error = '';
 		} catch (e: any) {
 			error = e;
 		}

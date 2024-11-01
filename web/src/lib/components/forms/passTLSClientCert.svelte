@@ -5,9 +5,6 @@
 
 	export let middleware: Middleware;
 	export let disabled = false;
-	middleware.content = {
-		pem: true
-	};
 </script>
 
 <div class="grid grid-cols-4 items-center gap-4">
