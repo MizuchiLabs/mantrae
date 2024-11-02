@@ -23,6 +23,9 @@
 	let backupEnabled: boolean;
 	let backupKeep: string;
 	let backupSchedule: string;
+	let serverURL: string;
+	let agentCleanupEnabled: boolean;
+	let agentCleanupTimout: string;
 
 	const update = async (s: Setting) => {
 		await updateSetting(s);
@@ -40,6 +43,10 @@
 		backupEnabled = $settings?.find((s) => s.key === 'backup-enabled')?.value === 'true';
 		backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
 		backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
+		serverURL = $settings?.find((s) => s.key === 'server-url')?.value ?? '';
+		agentCleanupEnabled =
+			$settings?.find((s) => s.key === 'agent-cleanup-enabled')?.value === 'true';
+		agentCleanupTimout = $settings?.find((s) => s.key === 'agent-cleanup-timeout')?.value ?? '';
 	});
 </script>
 
@@ -56,6 +63,52 @@
 				</Card.Title>
 			</Card.Header>
 			<Card.Content class="mt-4 flex flex-col gap-4">
+				<h2 class="border-b border-gray-200 pb-2 text-lg">Server</h2>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
+						Server URL
+						<HoverInfo text="The URL of the server which agents should use." />
+					</Label>
+					<Input
+						name="server-url"
+						type="text"
+						on:keydown={(e) => onKeydown(e, { key: 'server-url', value: serverURL })}
+						bind:value={serverURL}
+						class="col-span-3 text-right"
+					/>
+				</div>
+				<h2 class="border-b border-gray-200 pb-2 text-lg">Agents</h2>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
+						Cleanup Enabled
+						<HoverInfo
+							text="Automatically cleanup disconnected agents after a certain amount of time."
+						/>
+					</Label>
+					<Switch
+						name="agent-cleanup-enabled"
+						class="col-span-3 justify-self-end"
+						bind:checked={agentCleanupEnabled}
+						onCheckedChange={(value) =>
+							updateSetting({ id: 0, key: 'agent-cleanup-enabled', value: value.toString() })}
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
+						Cleanup Timout
+						<HoverInfo
+							text="The amount of time after which disconnected agents should be cleaned up. Valid time units are ns, us, ms, s, m, h."
+						/>
+					</Label>
+					<Input
+						name="agent-cleanup-timeout"
+						type="text"
+						on:keydown={(e) =>
+							onKeydown(e, { key: 'agent-cleanup-timeout', value: agentCleanupTimout })}
+						bind:value={agentCleanupTimout}
+						class="col-span-3 text-right"
+					/>
+				</div>
 				<h2 class="border-b border-gray-200 pb-2 text-lg">Backups</h2>
 				<div class="mt-4 grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="backup-enabled" class="col-span-1">Enabled</Label>

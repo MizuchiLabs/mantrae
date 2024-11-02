@@ -10,50 +10,6 @@ import (
 	"time"
 )
 
-const createAgent = `-- name: CreateAgent :one
-INSERT INTO
-  agents (
-    id,
-    hostname,
-    public_ip,
-    private_ips,
-    containers,
-    last_seen
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING id, hostname, public_ip, private_ips, containers, last_seen
-`
-
-type CreateAgentParams struct {
-	ID         string      `json:"id"`
-	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	LastSeen   *time.Time  `json:"lastSeen"`
-}
-
-func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error) {
-	row := q.queryRow(ctx, q.createAgentStmt, createAgent,
-		arg.ID,
-		arg.Hostname,
-		arg.PublicIp,
-		arg.PrivateIps,
-		arg.Containers,
-		arg.LastSeen,
-	)
-	var i Agent
-	err := row.Scan(
-		&i.ID,
-		&i.Hostname,
-		&i.PublicIp,
-		&i.PrivateIps,
-		&i.Containers,
-		&i.LastSeen,
-	)
-	return i, err
-}
-
 const createConfig = `-- name: CreateConfig :one
 INSERT INTO
   config (profile_id, overview, entrypoints, version)
@@ -429,34 +385,9 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 	return err
 }
 
-const getAgentByHostname = `-- name: GetAgentByHostname :one
-SELECT
-  id, hostname, public_ip, private_ips, containers, last_seen
-FROM
-  agents
-WHERE
-  hostname = ?
-LIMIT
-  1
-`
-
-func (q *Queries) GetAgentByHostname(ctx context.Context, hostname string) (Agent, error) {
-	row := q.queryRow(ctx, q.getAgentByHostnameStmt, getAgentByHostname, hostname)
-	var i Agent
-	err := row.Scan(
-		&i.ID,
-		&i.Hostname,
-		&i.PublicIp,
-		&i.PrivateIps,
-		&i.Containers,
-		&i.LastSeen,
-	)
-	return i, err
-}
-
 const getAgentByID = `-- name: GetAgentByID :one
 SELECT
-  id, hostname, public_ip, private_ips, containers, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
 FROM
   agents
 WHERE
@@ -470,10 +401,39 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 	var i Agent
 	err := row.Scan(
 		&i.ID,
+		&i.ProfileID,
 		&i.Hostname,
 		&i.PublicIp,
 		&i.PrivateIps,
 		&i.Containers,
+		&i.ActiveIp,
+		&i.LastSeen,
+	)
+	return i, err
+}
+
+const getAgentByProfileID = `-- name: GetAgentByProfileID :one
+SELECT
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+FROM
+  agents
+WHERE
+  profile_id = ?
+LIMIT
+  1
+`
+
+func (q *Queries) GetAgentByProfileID(ctx context.Context, profileID int64) (Agent, error) {
+	row := q.queryRow(ctx, q.getAgentByProfileIDStmt, getAgentByProfileID, profileID)
+	var i Agent
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.Hostname,
+		&i.PublicIp,
+		&i.PrivateIps,
+		&i.Containers,
+		&i.ActiveIp,
 		&i.LastSeen,
 	)
 	return i, err
@@ -912,7 +872,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, hostname, public_ip, private_ips, containers, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
 FROM
   agents
 `
@@ -928,10 +888,53 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 		var i Agent
 		if err := rows.Scan(
 			&i.ID,
+			&i.ProfileID,
 			&i.Hostname,
 			&i.PublicIp,
 			&i.PrivateIps,
 			&i.Containers,
+			&i.ActiveIp,
+			&i.LastSeen,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAgentsByProfileID = `-- name: ListAgentsByProfileID :many
+SELECT
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+FROM
+  agents
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([]Agent, error) {
+	rows, err := q.query(ctx, q.listAgentsByProfileIDStmt, listAgentsByProfileID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Agent
+	for rows.Next() {
+		var i Agent
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.Hostname,
+			&i.PublicIp,
+			&i.PrivateIps,
+			&i.Containers,
+			&i.ActiveIp,
 			&i.LastSeen,
 		); err != nil {
 			return nil, err
@@ -1527,48 +1530,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateAgent = `-- name: UpdateAgent :one
-UPDATE agents
-SET
-  hostname = ?,
-  public_ip = ?,
-  private_ips = ?,
-  containers = ?,
-  last_seen = ?
-WHERE
-  id = ? RETURNING id, hostname, public_ip, private_ips, containers, last_seen
-`
-
-type UpdateAgentParams struct {
-	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	LastSeen   *time.Time  `json:"lastSeen"`
-	ID         string      `json:"id"`
-}
-
-func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {
-	row := q.queryRow(ctx, q.updateAgentStmt, updateAgent,
-		arg.Hostname,
-		arg.PublicIp,
-		arg.PrivateIps,
-		arg.Containers,
-		arg.LastSeen,
-		arg.ID,
-	)
-	var i Agent
-	err := row.Scan(
-		&i.ID,
-		&i.Hostname,
-		&i.PublicIp,
-		&i.PrivateIps,
-		&i.Containers,
-		&i.LastSeen,
-	)
-	return i, err
-}
-
 const updateConfig = `-- name: UpdateConfig :one
 UPDATE config
 SET
@@ -1761,48 +1722,64 @@ const upsertAgent = `-- name: UpsertAgent :one
 INSERT INTO
   agents (
     id,
+    profile_id,
     hostname,
     public_ip,
     private_ips,
     containers,
+    active_ip,
     last_seen
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
-  hostname = EXCLUDED.hostname,
-  public_ip = EXCLUDED.public_ip,
-  private_ips = EXCLUDED.private_ips,
-  containers = EXCLUDED.containers,
-  last_seen = EXCLUDED.last_seen RETURNING id, hostname, public_ip, private_ips, containers, last_seen
+  profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
+  hostname = COALESCE(NULLIF(EXCLUDED.hostname, ''), agents.hostname),
+  public_ip = COALESCE(NULLIF(EXCLUDED.public_ip, ''), agents.public_ip),
+  private_ips = COALESCE(
+    NULLIF(EXCLUDED.private_ips, ''),
+    agents.private_ips
+  ),
+  containers = COALESCE(
+    NULLIF(EXCLUDED.containers, ''),
+    agents.containers
+  ),
+  active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
+  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
 `
 
 type UpsertAgentParams struct {
 	ID         string      `json:"id"`
+	ProfileID  int64       `json:"profileId"`
 	Hostname   string      `json:"hostname"`
 	PublicIp   *string     `json:"publicIp"`
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
+	ActiveIp   *string     `json:"activeIp"`
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 
 func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent, error) {
 	row := q.queryRow(ctx, q.upsertAgentStmt, upsertAgent,
 		arg.ID,
+		arg.ProfileID,
 		arg.Hostname,
 		arg.PublicIp,
 		arg.PrivateIps,
 		arg.Containers,
+		arg.ActiveIp,
 		arg.LastSeen,
 	)
 	var i Agent
 	err := row.Scan(
 		&i.ID,
+		&i.ProfileID,
 		&i.Hostname,
 		&i.PublicIp,
 		&i.PrivateIps,
 		&i.Containers,
+		&i.ActiveIp,
 		&i.LastSeen,
 	)
 	return i, err

@@ -24,9 +24,6 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.createAgentStmt, err = db.PrepareContext(ctx, createAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateAgent: %w", err)
-	}
 	if q.createConfigStmt, err = db.PrepareContext(ctx, createConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateConfig: %w", err)
 	}
@@ -96,11 +93,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteUserByUsernameStmt, err = db.PrepareContext(ctx, deleteUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUserByUsername: %w", err)
 	}
-	if q.getAgentByHostnameStmt, err = db.PrepareContext(ctx, getAgentByHostname); err != nil {
-		return nil, fmt.Errorf("error preparing query GetAgentByHostname: %w", err)
-	}
 	if q.getAgentByIDStmt, err = db.PrepareContext(ctx, getAgentByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAgentByID: %w", err)
+	}
+	if q.getAgentByProfileIDStmt, err = db.PrepareContext(ctx, getAgentByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAgentByProfileID: %w", err)
 	}
 	if q.getConfigByProfileIDStmt, err = db.PrepareContext(ctx, getConfigByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetConfigByProfileID: %w", err)
@@ -150,6 +147,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listAgentsStmt, err = db.PrepareContext(ctx, listAgents); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgents: %w", err)
 	}
+	if q.listAgentsByProfileIDStmt, err = db.PrepareContext(ctx, listAgentsByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAgentsByProfileID: %w", err)
+	}
 	if q.listConfigsStmt, err = db.PrepareContext(ctx, listConfigs); err != nil {
 		return nil, fmt.Errorf("error preparing query ListConfigs: %w", err)
 	}
@@ -191,9 +191,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
-	}
-	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
 	}
 	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
@@ -239,11 +236,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
-	if q.createAgentStmt != nil {
-		if cerr := q.createAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createAgentStmt: %w", cerr)
-		}
-	}
 	if q.createConfigStmt != nil {
 		if cerr := q.createConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createConfigStmt: %w", cerr)
@@ -359,14 +351,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteUserByUsernameStmt: %w", cerr)
 		}
 	}
-	if q.getAgentByHostnameStmt != nil {
-		if cerr := q.getAgentByHostnameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getAgentByHostnameStmt: %w", cerr)
-		}
-	}
 	if q.getAgentByIDStmt != nil {
 		if cerr := q.getAgentByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getAgentByIDStmt: %w", cerr)
+		}
+	}
+	if q.getAgentByProfileIDStmt != nil {
+		if cerr := q.getAgentByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAgentByProfileIDStmt: %w", cerr)
 		}
 	}
 	if q.getConfigByProfileIDStmt != nil {
@@ -449,6 +441,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listAgentsStmt: %w", cerr)
 		}
 	}
+	if q.listAgentsByProfileIDStmt != nil {
+		if cerr := q.listAgentsByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAgentsByProfileIDStmt: %w", cerr)
+		}
+	}
 	if q.listConfigsStmt != nil {
 		if cerr := q.listConfigsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listConfigsStmt: %w", cerr)
@@ -517,11 +514,6 @@ func (q *Queries) Close() error {
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
-		}
-	}
-	if q.updateAgentStmt != nil {
-		if cerr := q.updateAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateAgentStmt: %w", cerr)
 		}
 	}
 	if q.updateConfigStmt != nil {
@@ -628,7 +620,6 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                             DBTX
 	tx                             *sql.Tx
-	createAgentStmt                *sql.Stmt
 	createConfigStmt               *sql.Stmt
 	createProfileStmt              *sql.Stmt
 	createProviderStmt             *sql.Stmt
@@ -652,8 +643,8 @@ type Queries struct {
 	deleteSettingByKeyStmt         *sql.Stmt
 	deleteUserByIDStmt             *sql.Stmt
 	deleteUserByUsernameStmt       *sql.Stmt
-	getAgentByHostnameStmt         *sql.Stmt
 	getAgentByIDStmt               *sql.Stmt
+	getAgentByProfileIDStmt        *sql.Stmt
 	getConfigByProfileIDStmt       *sql.Stmt
 	getConfigByProfileNameStmt     *sql.Stmt
 	getMiddlewareByIDStmt          *sql.Stmt
@@ -670,6 +661,7 @@ type Queries struct {
 	getUserByIDStmt                *sql.Stmt
 	getUserByUsernameStmt          *sql.Stmt
 	listAgentsStmt                 *sql.Stmt
+	listAgentsByProfileIDStmt      *sql.Stmt
 	listConfigsStmt                *sql.Stmt
 	listMiddlewaresStmt            *sql.Stmt
 	listMiddlewaresByProfileIDStmt *sql.Stmt
@@ -684,7 +676,6 @@ type Queries struct {
 	listServicesByProviderStmt     *sql.Stmt
 	listSettingsStmt               *sql.Stmt
 	listUsersStmt                  *sql.Stmt
-	updateAgentStmt                *sql.Stmt
 	updateConfigStmt               *sql.Stmt
 	updateProfileStmt              *sql.Stmt
 	updateProviderStmt             *sql.Stmt
@@ -704,7 +695,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                             tx,
 		tx:                             tx,
-		createAgentStmt:                q.createAgentStmt,
 		createConfigStmt:               q.createConfigStmt,
 		createProfileStmt:              q.createProfileStmt,
 		createProviderStmt:             q.createProviderStmt,
@@ -728,8 +718,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteSettingByKeyStmt:         q.deleteSettingByKeyStmt,
 		deleteUserByIDStmt:             q.deleteUserByIDStmt,
 		deleteUserByUsernameStmt:       q.deleteUserByUsernameStmt,
-		getAgentByHostnameStmt:         q.getAgentByHostnameStmt,
 		getAgentByIDStmt:               q.getAgentByIDStmt,
+		getAgentByProfileIDStmt:        q.getAgentByProfileIDStmt,
 		getConfigByProfileIDStmt:       q.getConfigByProfileIDStmt,
 		getConfigByProfileNameStmt:     q.getConfigByProfileNameStmt,
 		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
@@ -746,6 +736,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByIDStmt:                q.getUserByIDStmt,
 		getUserByUsernameStmt:          q.getUserByUsernameStmt,
 		listAgentsStmt:                 q.listAgentsStmt,
+		listAgentsByProfileIDStmt:      q.listAgentsByProfileIDStmt,
 		listConfigsStmt:                q.listConfigsStmt,
 		listMiddlewaresStmt:            q.listMiddlewaresStmt,
 		listMiddlewaresByProfileIDStmt: q.listMiddlewaresByProfileIDStmt,
@@ -760,7 +751,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listServicesByProviderStmt:     q.listServicesByProviderStmt,
 		listSettingsStmt:               q.listSettingsStmt,
 		listUsersStmt:                  q.listUsersStmt,
-		updateAgentStmt:                q.updateAgentStmt,
 		updateConfigStmt:               q.updateConfigStmt,
 		updateProfileStmt:              q.updateProfileStmt,
 		updateProviderStmt:             q.updateProviderStmt,

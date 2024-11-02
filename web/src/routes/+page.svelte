@@ -25,7 +25,15 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
-	import { Eye, Pencil, X, SquareArrowOutUpRight, ShieldAlert, TriangleAlert } from 'lucide-svelte';
+	import {
+		Eye,
+		Pencil,
+		Bot,
+		X,
+		SquareArrowOutUpRight,
+		ShieldAlert,
+		TriangleAlert
+	} from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
 	let search = '';
@@ -115,9 +123,10 @@
 	);
 
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
-		let list = router?.entrypoints?.map((entrypoint) => {
-			return { value: entrypoint, label: entrypoint };
+		let list = router?.entryPoints?.map((ep) => {
+			return { value: ep, label: ep };
 		});
+		console.log(list);
 		return list ?? [];
 	};
 	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
@@ -137,9 +146,9 @@
 	};
 
 	const hasTLS = (router: Router): boolean => {
-		if (router.entrypoints === undefined) return false;
+		if (router.entryPoints === undefined) return false;
 
-		return router.entrypoints.some((e) => {
+		return router.entryPoints.some((e) => {
 			let entrypoint = $entrypoints.find((ep) => ep.name === e);
 			return entrypoint?.http?.tls !== undefined;
 		});
@@ -328,19 +337,25 @@
 								</div>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('name') ? 'font-medium' : 'hidden'}>
-								{#if getHost(router)}
-									<a
-										href={getHost(router)}
-										target="_blank"
-										rel="noreferrer"
-										class="flex flex-row items-center gap-1 text-blue-600"
-									>
+								<div class="flex flex-row items-center gap-1">
+									{#if getHost(router)}
+										<a
+											href={getHost(router)}
+											target="_blank"
+											rel="noreferrer"
+											class="flex flex-row items-center gap-1 text-blue-600"
+										>
+											{router.name.split('@')[0]}
+											<SquareArrowOutUpRight size="1rem" />
+										</a>
+									{:else}
 										{router.name.split('@')[0]}
-										<SquareArrowOutUpRight size="1rem" />
-									</a>
-								{:else}
-									{router.name.split('@')[0]}
-								{/if}
+									{/if}
+
+									{#if router.agentId}
+										<Bot size="1.25rem" class="ml-1 text-green-600" />
+									{/if}
+								</div>
 							</Table.Cell>
 							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
 								<span
@@ -487,14 +502,16 @@
 									>
 										<Pencil size="1rem" />
 									</Button>
-									<Button
-										variant="ghost"
-										class="h-8 w-8 rounded-full bg-red-400"
-										size="icon"
-										on:click={() => deleteRouter(router)}
-									>
-										<X size="1rem" />
-									</Button>
+									{#if !router.agentId}}
+										<Button
+											variant="ghost"
+											class="h-8 w-8 rounded-full bg-red-400"
+											size="icon"
+											on:click={() => deleteRouter(router)}
+										>
+											<X size="1rem" />
+										</Button>
+									{/if}
 								{:else}
 									<Button
 										variant="ghost"

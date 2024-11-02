@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS routers (
   errors JSONB,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider) REFERENCES providers (id) ON DELETE SET NULL,
-  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (name, profile_id)
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS services (
   mirroring JSONB,
   failover JSONB,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (name, profile_id)
 );
 
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS middlewares (
   agent_id TEXT,
   content JSONB,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE SET NULL,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (name, profile_id)
 );
 
@@ -100,11 +100,14 @@ CREATE TABLE IF NOT EXISTS settings (
 
 CREATE TABLE IF NOT EXISTS agents (
   id TEXT PRIMARY KEY,
-  hostname VARCHAR(255) NOT NULL,
+  profile_id INTEGER NOT NULL,
+  hostname TEXT NOT NULL,
   public_ip TEXT,
   private_ips JSONB,
   containers JSONB,
-  last_seen DATETIME
+  active_ip TEXT,
+  last_seen DATETIME,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 -- +goose StatementBegin

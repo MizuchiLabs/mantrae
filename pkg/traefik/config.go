@@ -284,8 +284,13 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 			}
 		}
 	}
+	cleanConfig(config)
 
-	// Remove empty configurations
+	return config, nil
+}
+
+// cleanConfig removes empty configurations
+func cleanConfig(config *dynamic.Configuration) {
 	if len(config.HTTP.Routers) == 0 && len(config.HTTP.Services) == 0 &&
 		len(config.HTTP.Middlewares) == 0 {
 		config.HTTP = nil
@@ -300,6 +305,4 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 	if len(config.TLS.Stores) == 0 && len(config.TLS.Options) == 0 {
 		config.TLS = nil
 	}
-
-	return config, nil
 }

@@ -9,7 +9,6 @@ import (
 )
 
 type Querier interface {
-	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
 	CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
@@ -33,8 +32,8 @@ type Querier interface {
 	DeleteSettingByKey(ctx context.Context, key string) error
 	DeleteUserByID(ctx context.Context, id int64) error
 	DeleteUserByUsername(ctx context.Context, username string) error
-	GetAgentByHostname(ctx context.Context, hostname string) (Agent, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
+	GetAgentByProfileID(ctx context.Context, profileID int64) (Agent, error)
 	GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error)
 	GetConfigByProfileName(ctx context.Context, name string) (Config, error)
 	GetMiddlewareByID(ctx context.Context, id string) (Middleware, error)
@@ -51,6 +50,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAgents(ctx context.Context) ([]Agent, error)
+	ListAgentsByProfileID(ctx context.Context, profileID int64) ([]Agent, error)
 	ListConfigs(ctx context.Context) ([]Config, error)
 	ListMiddlewares(ctx context.Context) ([]Middleware, error)
 	ListMiddlewaresByProfileID(ctx context.Context, profileID int64) ([]Middleware, error)
@@ -65,7 +65,6 @@ type Querier interface {
 	ListServicesByProvider(ctx context.Context, provider string) ([]Service, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
-	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)

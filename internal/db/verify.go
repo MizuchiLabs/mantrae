@@ -86,24 +86,6 @@ func (s *UpsertServiceParams) Verify() error {
 	if s.Protocol == "" {
 		return fmt.Errorf("protocol cannot be empty")
 	}
-	// if s.Provider == "http" {
-	// 	if s.LoadBalancer != nil {
-	// 		validServers := make([]traefik.Server, 0)
-	// 		for _, server := range s.LoadBalancer.Servers {
-	// 			if server.Address != "" || server.URL != "" {
-	// 				validServers = append(validServers, server)
-	// 			}
-	// 		}
-	//
-	// 		if len(validServers) == 0 {
-	// 			return fmt.Errorf("no valid servers found in load balancer")
-	// 		}
-	//
-	// 		s.LoadBalancer.Servers = validServers
-	// 	} else {
-	// 		return fmt.Errorf("load balancer cannot be nil")
-	// 	}
-	// }
 
 	loadBalancerBytes, err := json.Marshal(s.LoadBalancer)
 	if err != nil {
@@ -115,7 +97,6 @@ func (s *UpsertServiceParams) Verify() error {
 	if err := json.Unmarshal(loadBalancerBytes, &loadBalancerMap); err != nil {
 		return fmt.Errorf("error unmarshaling LoadBalancer: %s", err.Error())
 	}
-	fmt.Printf("loadBalancerMap: %v\n", loadBalancerMap)
 
 	if s.Provider == "http" {
 		// Process servers in LoadBalancer
@@ -225,6 +206,19 @@ func (m *UpsertMiddlewareParams) Verify() error {
 	}
 
 	m.Content, _ = json.Marshal(contentMap)
+	return nil
+}
+
+func (a *UpsertAgentParams) Verify() error {
+	if a.ID == "" {
+		a.ID = uuid.New().String()
+	}
+	if a.Hostname == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+
+	a.PrivateIps, _ = json.Marshal(a.PrivateIps)
+	a.Containers, _ = json.Marshal(a.Containers)
 	return nil
 }
 
@@ -402,6 +396,20 @@ func (m *Middleware) DecodeFields() error {
 		}
 	}
 
+	return nil
+}
+
+func (a *Agent) DecodeFields() error {
+	if a.PrivateIps != nil {
+		if err := json.Unmarshal(a.PrivateIps.([]byte), &a.PrivateIps); err != nil {
+			return err
+		}
+	}
+	if a.Containers != nil {
+		if err := json.Unmarshal(a.Containers.([]byte), &a.Containers); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

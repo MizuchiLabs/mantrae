@@ -166,6 +166,10 @@ func SetDefaultProfile(url, username, password string) error {
 }
 
 func SetDefaultSettings() error {
+	serverURL := os.Getenv("SERVER_URL")
+	if serverURL == "" {
+		serverURL = "http://localhost:8090"
+	}
 	baseSettings := []db.Setting{
 		{
 			Key:   "backup-enabled",
@@ -178,6 +182,18 @@ func SetDefaultSettings() error {
 		{
 			Key:   "backup-keep",
 			Value: "3", // Keep 3 backups
+		},
+		{
+			Key:   "server-url",
+			Value: serverURL,
+		},
+		{
+			Key:   "agent-cleanup-enabled",
+			Value: "true",
+		},
+		{
+			Key:   "agent-cleanup-timeout",
+			Value: "168h",
 		},
 	}
 

@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
-import type { Config, Profile, DNSProvider, User, Setting } from './types/base';
+import type { Config, Profile, DNSProvider, User, Setting, Agent } from './types/base';
 import type { Plugin } from './types/plugins';
 import type { Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
@@ -18,6 +18,7 @@ export const routers: Writable<Router[]> = writable();
 export const services: Writable<Service[]> = writable();
 export const middlewares: Writable<Middleware[]> = writable();
 export const users: Writable<User[]> = writable();
+export const agents: Writable<Agent[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
 export const plugins: Writable<Plugin[]> = writable();
@@ -411,6 +412,46 @@ export async function updateSetting(s: Setting): Promise<void> {
 	}
 }
 
+// Agents ---------------------------------------------------------------------
+export async function getAgents(id: number) {
+	const response = await handleRequest(`/agent/${id}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		agents.set(data);
+	}
+}
+
+export async function upsertAgent(a: Agent) {
+	const response = await handleRequest(`/agent/${a.profileId}`, 'PUT', a);
+	if (response) {
+		const data = await response.json();
+		if (data && get(agents)) {
+			agents.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === a.id);
+
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Agent ${data.hostname} updated`);
+		}
+	}
+}
+
+export async function deleteAgent(id: number) {
+	const response = await handleRequest(`/agent/${id}`, 'DELETE');
+	if (response) {
+		agents.update((items) => items.filter((i) => i.id !== id));
+		toast.success(`Agent deleted`);
+	}
+}
+
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {
 	const response = await handleRequest('/backup', 'GET');
@@ -473,6 +514,20 @@ export async function getPublicIP() {
 	return '';
 }
 
+export async function getAgentToken() {
+	let payload = {
+		ServerURL: get(settings)?.find((s) => s.key === 'server-url')?.value,
+		ProfileID: get(profile)?.id
+	};
+	if (!payload.ServerURL || !payload.ProfileID) return '';
+	const response = await handleRequest(`/agent/token`, 'POST', payload);
+	if (response) {
+		const data = await response.json();
+		return data.token;
+	}
+	return '';
+}
+
 export async function getTraefikConfig() {
 	if (!get(profile)) return '';
 
@@ -499,7 +554,7 @@ export async function toggleEntrypoint(
 	update: boolean
 ) {
 	if (item === undefined) return;
-	router.entrypoints = item.map((i) => i.value) as string[];
+	router.entryPoints = item.map((i) => i.value) as string[];
 
 	if (update) {
 		upsertRouter(router);

@@ -24,6 +24,13 @@ type AgentServer struct {
 	mu sync.Mutex
 }
 
+func (s *AgentServer) HealthCheck(
+	ctx context.Context,
+	req *connect.Request[agentv1.HealthCheckRequest],
+) (*connect.Response[agentv1.HealthCheckResponse], error) {
+	return connect.NewResponse(&agentv1.HealthCheckResponse{}), nil
+}
+
 func (s *AgentServer) RefreshToken(
 	ctx context.Context,
 	req *connect.Request[agentv1.RefreshTokenRequest],
@@ -37,7 +44,7 @@ func (s *AgentServer) RefreshToken(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	token, err := util.EncodeAgentJWT(decoded.ServerURL)
+	token, err := util.EncodeAgentJWT(decoded.ServerURL, decoded.ProfileID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -53,6 +60,10 @@ func (s *AgentServer) GetContainer(
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
 	if err := validate(req.Header()); err != nil {
 		return nil, err
+	}
+	decoded, err := util.DecodeJWT(req.Msg.GetToken())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	// Upsert agent
@@ -70,6 +81,7 @@ func (s *AgentServer) GetContainer(
 	lastSeen := req.Msg.GetLastSeen().AsTime()
 	if _, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
 		ID:         req.Msg.GetId(),
+		ProfileID:  decoded.ProfileID,
 		Hostname:   req.Msg.GetHostname(),
 		PublicIp:   &req.Msg.PublicIp,
 		PrivateIps: privateIpsJSON,
@@ -79,9 +91,13 @@ func (s *AgentServer) GetContainer(
 		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	util.Broadcast <- util.EventMessage{
+		Type:    "agent_updated",
+		Message: req.Msg.GetHostname(),
+	}
 	s.mu.Unlock()
 
-	_, err = traefik.DecodeFromLabels(req.Msg.GetId())
+	err = traefik.DecodeFromLabels(req.Msg.GetId(), containersJSON)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -104,6 +120,61 @@ func validate(header http.Header) error {
 	}
 
 	return nil
+}
+
+func (s *AgentServer) cleanupAgents() {
+	// Run cleanup every 5 minutes
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	enabled, err := db.Query.GetSettingByKey(context.Background(), "agent-cleanup-enabled")
+	if err != nil {
+		slog.Error("failed to get agent cleanup timeout", "error", err)
+		return
+	}
+
+	if enabled.Value != "true" {
+		return
+	}
+
+	// Timeout to delete old agents
+	timeout, err := db.Query.GetSettingByKey(context.Background(), "agent-cleanup-timeout")
+	if err != nil {
+		slog.Error("failed to get agent cleanup timeout", "error", err)
+		return
+	}
+
+	timeoutDuration, err := time.ParseDuration(timeout.Value)
+	if err != nil {
+		slog.Error("failed to parse timeout cleanup duration", "error", err)
+	}
+
+	for range ticker.C {
+		s.mu.Lock()
+		now := time.Now()
+		agents, err := db.Query.ListAgents(context.Background())
+		if err != nil {
+			slog.Error("failed to query disconnected agents", "error", err)
+			s.mu.Unlock()
+			continue
+		}
+
+		for _, agent := range agents {
+			if agent.LastSeen == nil {
+				continue
+			}
+
+			if now.Sub(*agent.LastSeen) > timeoutDuration {
+				if err := db.Query.DeleteAgentByID(context.Background(), agent.ID); err != nil {
+					slog.Error("failed to delete disconnected agent", "id", agent.ID, "error", err)
+				} else {
+					slog.Info("Deleted disconnected agent", "id", agent.ID)
+				}
+			}
+
+		}
+		s.mu.Unlock()
+	}
 }
 
 func Server(port string) {
@@ -137,4 +208,6 @@ func Server(port string) {
 			return
 		}
 	}()
+
+	go agent.cleanupAgents()
 }

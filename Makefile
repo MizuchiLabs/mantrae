@@ -31,7 +31,9 @@ test:
 build: audit
 	cd web && pnpm install && pnpm run build
 	go build $(LDFLAGS) -o $(BIN) main.go
+	go build $(LDFLAGS) -o $(BIN)-agent agent/cmd/main.go
 	upx $(BIN)
+	upx $(BIN)-agent
 
 .PHONY: docker
 docker:

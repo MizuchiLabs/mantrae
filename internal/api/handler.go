@@ -133,22 +133,56 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 // GetAgents returns all agents
 func GetAgents(w http.ResponseWriter, r *http.Request) {
-	agents, err := db.Query.ListAgents(context.Background())
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+
+	agents, err := db.Query.ListAgentsByProfileID(context.Background(), id)
 	if err != nil {
 		http.Error(w, "Failed to get agents", http.StatusInternalServerError)
 		return
 	}
+
+	for i := range agents {
+		if err := agents[i].DecodeFields(); err != nil {
+			slog.Error("Failed to decode agent", "name", agents[i].ID, "error", err)
+		}
+	}
 	writeJSON(w, agents)
 }
 
-// GetAgent returns an agent
-func GetAgent(w http.ResponseWriter, r *http.Request) {
-	agent, err := db.Query.GetAgentByID(context.Background(), r.PathValue("id"))
-	if err != nil {
-		http.Error(w, "Failed to get agent", http.StatusInternalServerError)
+func UpsertAgent(w http.ResponseWriter, r *http.Request) {
+	var agent db.UpsertAgentParams
+	if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode agent: %s", err.Error()),
+			http.StatusBadRequest,
+		)
 		return
 	}
-	writeJSON(w, agent)
+	if err := agent.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	data, err := db.Query.UpsertAgent(context.Background(), agent)
+	if err != nil {
+		http.Error(w, "Failed to upsert agent", http.StatusInternalServerError)
+		return
+	}
+
+	if err := data.DecodeFields(); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+	}
+
+	writeJSON(w, data)
 }
 
 // DeleteAgent deletes an agent
@@ -163,7 +197,8 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 // GetAgentToken returns an agent token
 func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 	var data struct {
-		ServerURL string `json:"url"`
+		ServerURL string `json:"serverURL"`
+		ProfileID int64  `json:"profileID"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -175,7 +210,7 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := util.EncodeAgentJWT(data.ServerURL)
+	token, err := util.EncodeAgentJWT(data.ServerURL, data.ProfileID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

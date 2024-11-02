@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -37,29 +36,41 @@ func Client(quit chan os.Signal) {
 		claims.ServerURL,
 		connect.WithGRPC(),
 	)
+
+	// Test connection
+	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{})
+	if _, err := client.HealthCheck(context.Background(), healthCheckRequest); err != nil {
+		slog.Error("Failed to connect to server", "server", claims.ServerURL, "error", err)
+		os.Exit(1)
+	}
 	slog.Info("Connected to", "server", claims.ServerURL)
+
+	tickerContainer := time.NewTicker(10 * time.Second)
+	defer tickerContainer.Stop()
 
 	// Start a goroutine for sending container data
 	go func() {
-		for {
+		connected := true
+		for range tickerContainer.C {
 			// Send machine/container info
-			if _, err := client.GetContainer(context.Background(), sendContainer(claims.Secret)); err != nil {
-				slog.Error(
-					"Failed to send container info",
-					"server",
-					claims.ServerURL,
-					"error",
-					err,
-				)
+			_, err := client.GetContainer(context.Background(), sendContainer(claims.Secret))
+
+			if err != nil && connected {
+				slog.Warn("Lost connection to server, retrying...", "server", claims.ServerURL)
+				connected = false
+			} else if err == nil && !connected {
+				slog.Info("Reconnected to server", "server", claims.ServerURL)
+				connected = true
 			}
-			// Wait 10 seconds before sending the next container info
-			time.Sleep(10 * time.Second)
 		}
 	}()
 
+	tickerRefresh := time.NewTicker(1 * time.Hour)
+	defer tickerRefresh.Stop()
+
 	// Start a separate goroutine for refreshing the token
 	go func() {
-		for {
+		for range tickerRefresh.C {
 			// Refresh token
 			tokenRequest := connect.NewRequest(&agentv1.RefreshTokenRequest{Token: token})
 			tokenRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
@@ -70,8 +81,6 @@ func Client(quit chan os.Signal) {
 				SaveToken(newToken.Msg.Token)
 				token = newToken.Msg.Token
 			}
-
-			time.Sleep(1 * time.Hour)
 		}
 	}()
 
@@ -121,7 +130,7 @@ func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] 
 		request.Hostname = "unknown"
 	}
 	request.Hostname = hostname
-
+	request.Token = LoadToken()
 	request.PublicIp, err = util.GetPublicIP()
 	if err != nil {
 		slog.Error("Failed to get public IP", "error", err)
@@ -156,6 +165,7 @@ func getContainers() ([]*agentv1.Container, error) {
 	}
 
 	var result []*agentv1.Container
+	portMap := make(map[int32]int32)
 
 	// Iterate over each container and populate the Container struct
 	for _, c := range containers {
@@ -166,22 +176,46 @@ func getContainers() ([]*agentv1.Container, error) {
 			continue
 		}
 
-		// Populate PortInfo
-		var ports []int32
-		for _, portmap := range containerJSON.NetworkSettings.Ports {
-			for _, binding := range portmap {
-				port, err := strconv.ParseInt(binding.HostPort, 10, 32)
-				if err != nil {
-					slog.Error("Failed to parse port", "port", port, "error", err)
-					continue
-				}
-				ports = append(ports, int32(port))
+		// Skip Traefik
+		skipTraefik := os.Getenv("SKIP_TRAEFIK")
+		if skipTraefik == "true" {
+			if strings.Contains(strings.ToLower(containerJSON.Config.Image), "traefik") ||
+				(len(c.Names) > 0 && strings.Contains(strings.ToLower(c.Names[0]), "traefik")) {
+				continue
 			}
 		}
 
-		// Remove duplicates
-		slices.Sort(ports)
-		ports = slices.Compact(ports)
+		// Populate PortInfo
+		for port, bindings := range containerJSON.NetworkSettings.Ports {
+			for _, binding := range bindings {
+				// Get external port
+				externalPort, err := strconv.ParseInt(binding.HostPort, 10, 32)
+				if err != nil {
+					slog.Error(
+						"Failed to parse external port",
+						"port",
+						binding.HostPort,
+						"error",
+						err,
+					)
+					continue
+				}
+
+				// Get internal port from the port key
+				internalPort, err := strconv.ParseInt(
+					port.Port(),
+					10,
+					32,
+				) // port is of type nat.Port
+				if err != nil {
+					slog.Error("Failed to parse internal port", "port", port.Port(), "error", err)
+					continue
+				}
+
+				// Map internal port to external port
+				portMap[int32(internalPort)] = int32(externalPort)
+			}
+		}
 
 		created, err := time.Parse(time.RFC3339, containerJSON.Created)
 		if err != nil {
@@ -194,7 +228,7 @@ func getContainers() ([]*agentv1.Container, error) {
 			Name:    c.Names[0], // Take the first name if multiple exist
 			Labels:  containerJSON.Config.Labels,
 			Image:   containerJSON.Config.Image,
-			Ports:   ports,
+			Portmap: portMap,
 			Status:  containerJSON.State.Status,
 			Created: timestamppb.New(created),
 		}

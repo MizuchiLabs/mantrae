@@ -10,7 +10,9 @@
 		getProviders,
 		getUsers,
 		getVersion,
-		configError
+		configError,
+		profile,
+		getAgents
 	} from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
@@ -31,6 +33,10 @@
 				break;
 			case 'provider_updated':
 				getProviders();
+				break;
+			case 'agent_updated':
+				if (!$profile?.id) return;
+				getAgents($profile?.id);
 				break;
 			case 'config_error':
 				configError.set(data.message);

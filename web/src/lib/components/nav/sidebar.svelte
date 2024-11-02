@@ -4,7 +4,7 @@
 	import Mode from './mode.svelte';
 	import { page } from '$app/stores';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Settings, Users, Route, Layers, Globe, Blocks } from 'lucide-svelte';
+	import { Settings, Users, Route, Layers, Globe, Blocks, Bot } from 'lucide-svelte';
 
 	$: active = $page.url.pathname;
 
@@ -28,6 +28,11 @@
 			name: 'Users',
 			path: '/settings/users/',
 			icon: Users
+		},
+		{
+			name: 'Agents',
+			path: '/agents/',
+			icon: Bot
 		},
 		{
 			name: 'DNS',

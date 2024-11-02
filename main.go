@@ -68,9 +68,8 @@ func main() {
 	go traefik.Sync(ctx)
 	go dns.Sync(ctx)
 
-	// TODO: Later
 	// Start the grpc server
-	// go api.Server(flags.Agent.Port)
+	go api.Server(flags.Agent.Port)
 
 	// Start the WebUI server
 	srv := &http.Server{

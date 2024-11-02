@@ -625,13 +625,13 @@ WHERE
 LIMIT
   1;
 
--- name: GetAgentByHostname :one
+-- name: GetAgentByProfileID :one
 SELECT
   *
 FROM
   agents
 WHERE
-  hostname = ?
+  profile_id = ?
 LIMIT
   1;
 
@@ -641,49 +641,43 @@ SELECT
 FROM
   agents;
 
--- name: CreateAgent :one
-INSERT INTO
-  agents (
-    id,
-    hostname,
-    public_ip,
-    private_ips,
-    containers,
-    last_seen
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?) RETURNING *;
-
--- name: UpdateAgent :one
-UPDATE agents
-SET
-  hostname = ?,
-  public_ip = ?,
-  private_ips = ?,
-  containers = ?,
-  last_seen = ?
+-- name: ListAgentsByProfileID :many
+SELECT
+  *
+FROM
+  agents
 WHERE
-  id = ? RETURNING *;
+  profile_id = ?;
 
 -- name: UpsertAgent :one
 INSERT INTO
   agents (
     id,
+    profile_id,
     hostname,
     public_ip,
     private_ips,
     containers,
+    active_ip,
     last_seen
   )
 VALUES
-  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
-  hostname = EXCLUDED.hostname,
-  public_ip = EXCLUDED.public_ip,
-  private_ips = EXCLUDED.private_ips,
-  containers = EXCLUDED.containers,
-  last_seen = EXCLUDED.last_seen RETURNING *;
+  profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
+  hostname = COALESCE(NULLIF(EXCLUDED.hostname, ''), agents.hostname),
+  public_ip = COALESCE(NULLIF(EXCLUDED.public_ip, ''), agents.public_ip),
+  private_ips = COALESCE(
+    NULLIF(EXCLUDED.private_ips, ''),
+    agents.private_ips
+  ),
+  containers = COALESCE(
+    NULLIF(EXCLUDED.containers, ''),
+    agents.containers
+  ),
+  active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
+  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING *;
 
 -- name: DeleteAgentByID :exec
 DELETE FROM agents

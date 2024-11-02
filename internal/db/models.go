@@ -10,10 +10,12 @@ import (
 
 type Agent struct {
 	ID         string      `json:"id"`
+	ProfileID  int64       `json:"profileId"`
 	Hostname   string      `json:"hostname"`
 	PublicIp   *string     `json:"publicIp"`
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
+	ActiveIp   *string     `json:"activeIp"`
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 

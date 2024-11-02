@@ -22,7 +22,8 @@ import (
 
 type Claims struct {
 	Username  string `json:"username,omitempty"`
-	ServerURL string `json:"server_url,omitempty"`
+	ServerURL string `json:"serverUrl,omitempty"`
+	ProfileID int64  `json:"profileId,omitempty"`
 	Secret    string `json:"secret,omitempty"`
 	jwt.RegisteredClaims
 }
@@ -91,7 +92,7 @@ func EncodeUserJWT(username string) (string, error) {
 }
 
 // EncodeAgentJWT generates a JWT for the agent
-func EncodeAgentJWT(serverURL string) (string, error) {
+func EncodeAgentJWT(serverURL string, profileID int64) (string, error) {
 	secret := os.Getenv("SECRET")
 	if secret == "" {
 		return "", errors.New("SECRET environment variable is not set")
@@ -101,9 +102,14 @@ func EncodeAgentJWT(serverURL string) (string, error) {
 		return "", errors.New("serverURL cannot be empty")
 	}
 
+	if profileID == 0 {
+		return "", errors.New("profileID cannot be empty")
+	}
+
 	expirationTime := time.Now().Add(14 * 24 * time.Hour) // 14 days
 	claims := Claims{
 		ServerURL: serverURL,
+		ProfileID: profileID,
 		Secret:    secret, // Optionally store the secret here
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),

@@ -5,7 +5,7 @@
 	import { deleteUser, getUsers, users } from '$lib/api';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { newUser, type User } from '$lib/types/base';
-	import { Bot, UserIcon } from 'lucide-svelte';
+	import { Bot, UserIcon, Plus } from 'lucide-svelte';
 
 	let user: User;
 	let openModal = false;
@@ -35,7 +35,7 @@
 <div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
 	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={createModal}>
 		<span>Add User</span>
-		<iconify-icon icon="fa6-solid:plus" />
+		<Plus size="1rem" />
 	</Button>
 </div>
 

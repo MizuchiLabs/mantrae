@@ -37,8 +37,6 @@ func Routes(useAuth bool) http.Handler {
 
 	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
 	mux.HandleFunc("GET /api/middleware/plugins", GetMiddlewarePlugins)
-	mux.HandleFunc("DELETE /api/router/{id}/{name}", JWT(DeleteRouter))
-	mux.HandleFunc("DELETE /api/middleware/{id}/{name}", JWT(DeleteMiddleware))
 
 	mux.HandleFunc("GET /api/user", JWT(GetUsers))
 	mux.HandleFunc("GET /api/user/{id}", JWT(GetUser))
@@ -57,10 +55,10 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("GET /api/settings/{key}", JWT(GetSetting))
 	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
 
-	mux.HandleFunc("GET /api/agent", JWT(GetAgents))
-	mux.HandleFunc("GET /api/agent/{id}", JWT(GetAgent))
-	mux.HandleFunc("DELETE /api/agent", JWT(DeleteAgent))
-	mux.HandleFunc("GET /api/agent/token", JWT(GetAgentToken))
+	mux.HandleFunc("GET /api/agent/{id}", JWT(GetAgents))
+	mux.HandleFunc("PUT /api/agent/{id}", JWT(UpsertAgent))
+	mux.HandleFunc("DELETE /api/agent/{id}", JWT(DeleteAgent))
+	mux.HandleFunc("POST /api/agent/token", JWT(GetAgentToken))
 
 	mux.HandleFunc("GET /api/ip/{id}", JWT(GetPublicIP))
 

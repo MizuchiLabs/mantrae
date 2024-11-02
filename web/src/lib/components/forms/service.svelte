@@ -6,7 +6,6 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
 	import { services } from '$lib/api';
-	import { onMount } from 'svelte';
 
 	export let router: Router;
 	export let service: Service;
@@ -17,22 +16,22 @@
 	let servers: string[] = [];
 
 	const serviceSchema = z.object({
-		provider: z.string().trim().optional(),
-		type: z.string().trim().optional(),
-		status: z.string().trim().optional(),
+		provider: z.string().trim().nullish(),
+		type: z.string().trim().nullish(),
+		status: z.string().trim().nullish(),
 		protocol: z
 			.string()
 			.trim()
 			.toLowerCase()
 			.regex(/^(http|tcp|udp)$/),
-		serverStatus: z.record(z.string().trim()).optional(),
+		serverStatus: z.record(z.string().trim()).nullish(),
 		loadBalancer: z.object({
 			servers: z
 				.array(
 					z
 						.object({
-							url: z.string().trim().optional(),
-							address: z.string().trim().optional()
+							url: z.string().trim().nullish(),
+							address: z.string().trim().nullish()
 						})
 						.refine((data) => data.url || data.address, {
 							message: 'At least one server is required',
@@ -40,7 +39,7 @@
 						})
 				)
 				.nonempty('At least one server is required'),
-			passHostHeader: z.boolean().optional()
+			passHostHeader: z.boolean().nullish()
 		})
 	});
 

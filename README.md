@@ -17,6 +17,7 @@
 - **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
 - **Service Status**: Monitor the status of your services and see their health information.
 - **DNS Providers**: Support for multiple DNS providers (currently Cloudflare, PowerDNS, Technitium) for automatic DNS record updates.
+- **Agents**: New agent mode! Instead of defining your routers in the web ui, you can label your containers as usual using traefik labels. Start the agent on the machine and it will automatically set everything up for you.
 
 ## 🚧 Disclaimer 🚧
 
@@ -82,9 +83,11 @@ Before starting mantrae it will look for a `SECRET` environment variable. Depend
 1. Create new DNS provider by defining its type and associated settings.
 1. You can choose a default DNS provider for newly created routers.
 
-### Settings
+### Agents
 
-1. Various settings will be added here in the future. Currently you can use it to backup and restore your database.
+1. Open the "Agents" section.
+1. Copy the generated token and start the agent like this: `./mantrae-agent -token <token>`
+1. The agent will report all containers back to mantrae including traefik labels used. It will also fetch the public and private ip of the machine (which you can choose from the web ui, or set a custom ip).
 
 ### Screenshots
 

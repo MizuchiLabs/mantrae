@@ -39,6 +39,9 @@ const (
 	// AgentServiceRefreshTokenProcedure is the fully-qualified name of the AgentService's RefreshToken
 	// RPC.
 	AgentServiceRefreshTokenProcedure = "/agent.v1.AgentService/RefreshToken"
+	// AgentServiceHealthCheckProcedure is the fully-qualified name of the AgentService's HealthCheck
+	// RPC.
+	AgentServiceHealthCheckProcedure = "/agent.v1.AgentService/HealthCheck"
 )
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
@@ -46,12 +49,14 @@ var (
 	agentServiceServiceDescriptor            = v1.File_agent_v1_agent_proto.Services().ByName("AgentService")
 	agentServiceGetContainerMethodDescriptor = agentServiceServiceDescriptor.Methods().ByName("GetContainer")
 	agentServiceRefreshTokenMethodDescriptor = agentServiceServiceDescriptor.Methods().ByName("RefreshToken")
+	agentServiceHealthCheckMethodDescriptor  = agentServiceServiceDescriptor.Methods().ByName("HealthCheck")
 )
 
 // AgentServiceClient is a client for the agent.v1.AgentService service.
 type AgentServiceClient interface {
 	GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error)
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
+	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
 }
 
 // NewAgentServiceClient constructs a client for the agent.v1.AgentService service. By default, it
@@ -76,6 +81,12 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(agentServiceRefreshTokenMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		healthCheck: connect.NewClient[v1.HealthCheckRequest, v1.HealthCheckResponse](
+			httpClient,
+			baseURL+AgentServiceHealthCheckProcedure,
+			connect.WithSchema(agentServiceHealthCheckMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -83,6 +94,7 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 type agentServiceClient struct {
 	getContainer *connect.Client[v1.GetContainerRequest, v1.GetContainerResponse]
 	refreshToken *connect.Client[v1.RefreshTokenRequest, v1.RefreshTokenResponse]
+	healthCheck  *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
 }
 
 // GetContainer calls agent.v1.AgentService.GetContainer.
@@ -95,10 +107,16 @@ func (c *agentServiceClient) RefreshToken(ctx context.Context, req *connect.Requ
 	return c.refreshToken.CallUnary(ctx, req)
 }
 
+// HealthCheck calls agent.v1.AgentService.HealthCheck.
+func (c *agentServiceClient) HealthCheck(ctx context.Context, req *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
+	return c.healthCheck.CallUnary(ctx, req)
+}
+
 // AgentServiceHandler is an implementation of the agent.v1.AgentService service.
 type AgentServiceHandler interface {
 	GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error)
 	RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error)
+	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
 }
 
 // NewAgentServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -119,12 +137,20 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(agentServiceRefreshTokenMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	agentServiceHealthCheckHandler := connect.NewUnaryHandler(
+		AgentServiceHealthCheckProcedure,
+		svc.HealthCheck,
+		connect.WithSchema(agentServiceHealthCheckMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/agent.v1.AgentService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AgentServiceGetContainerProcedure:
 			agentServiceGetContainerHandler.ServeHTTP(w, r)
 		case AgentServiceRefreshTokenProcedure:
 			agentServiceRefreshTokenHandler.ServeHTTP(w, r)
+		case AgentServiceHealthCheckProcedure:
+			agentServiceHealthCheckHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -140,4 +166,8 @@ func (UnimplementedAgentServiceHandler) GetContainer(context.Context, *connect.R
 
 func (UnimplementedAgentServiceHandler) RefreshToken(context.Context, *connect.Request[v1.RefreshTokenRequest]) (*connect.Response[v1.RefreshTokenResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("agent.v1.AgentService.RefreshToken is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("agent.v1.AgentService.HealthCheck is not implemented"))
 }

@@ -45,6 +45,17 @@ export function newUser(): User {
 	};
 }
 
+export interface Agent {
+	id: number;
+	profileId: number;
+	hostname: string;
+	publicIp: string;
+	privateIps: string;
+	containers: any;
+	activeIp: string;
+	lastSeen: string;
+}
+
 export interface DNSProvider {
 	id: number;
 	name: string;

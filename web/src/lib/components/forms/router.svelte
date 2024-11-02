@@ -22,28 +22,27 @@
 	import { z } from 'zod';
 	import type { Selected } from 'bits-ui';
 	import autoAnimate from '@formkit/auto-animate';
-	import { onMount } from 'svelte';
 
 	export let router: Router;
 	export let disabled = false;
 
 	const formSchema = z.object({
 		name: z.string().trim().min(1, 'Name is required').max(255),
-		provider: z.string().trim().optional(),
-		status: z.string().trim().optional(),
+		provider: z.string().trim().nullish(),
+		status: z.string().trim().nullish(),
 		protocol: z
 			.string()
 			.trim()
 			.toLowerCase()
 			.regex(/^(http|tcp|udp)$/),
-		dnsProvider: z.coerce.number().int().optional(),
-		entrypoints: z.array(z.string()).optional().nullable(),
-		middlewares: z.array(z.string()).optional().nullable(),
+		dnsProvider: z.coerce.number().int().nullish(),
+		entrypoints: z.array(z.string()).nullish(),
+		middlewares: z.array(z.string()).nullish(),
 		rule: z.string().trim().optional(),
 		priority: z.coerce.number().int().nonnegative().optional(),
 		tls: z
 			.object({
-				certResolver: z.string().trim().optional()
+				certResolver: z.string().trim().nullish()
 			})
 			.optional()
 	});
@@ -79,7 +78,7 @@
 		router = newRouter();
 		router.profileId = $profile?.id ?? 0;
 		router.name = oldRouter.name;
-		router.entrypoints = oldRouter.entrypoints;
+		router.entryPoints = oldRouter.entryPoints;
 		router.middlewares = oldRouter.middlewares;
 		router.dnsProvider = oldRouter.dnsProvider;
 		router.priority = oldRouter.priority;
@@ -90,8 +89,8 @@
 		}
 	};
 	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
-		let list = router?.entrypoints?.map((entrypoint) => {
-			return { value: entrypoint, label: entrypoint };
+		let list = router?.entryPoints?.map((ep) => {
+			return { value: ep, label: ep };
 		});
 		return list ?? [];
 	};
@@ -241,7 +240,7 @@
 				</Select.Root>
 			</div>
 		{:else}
-			<ArrayInput bind:items={router.entrypoints} label="Entrypoints" placeholder="" {disabled} />
+			<ArrayInput bind:items={router.entryPoints} label="Entrypoints" placeholder="" {disabled} />
 		{/if}
 
 		<!-- Middlewares -->

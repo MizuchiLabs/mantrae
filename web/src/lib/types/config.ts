@@ -9,9 +9,10 @@ export interface Router {
 	protocol: string;
 	status?: string;
 	errors?: Errors;
+	agentId?: string;
 	dnsProvider?: number;
 
-	entrypoints?: string[];
+	entryPoints?: string[];
 	middlewares?: string[];
 	service: string;
 	rule: string;
@@ -28,7 +29,7 @@ export function newRouter(): Router {
 		provider: 'http',
 		status: '',
 		protocol: 'http',
-		entrypoints: [],
+		entryPoints: [],
 		middlewares: [],
 		rule: '',
 		service: '',
@@ -50,6 +51,7 @@ export interface Service {
 	type?: string;
 	status?: string;
 	protocol: string;
+	agentId?: string;
 	serverStatus?: Record<string, string>;
 
 	loadBalancer?: ServersLoadBalancer;

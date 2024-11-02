@@ -184,13 +184,6 @@
 						<Highlight code={$dynamic} language={yaml} let:highlighted>
 							<LineNumbers {highlighted} hideBorder wrapLines />
 						</Highlight>
-						<!-- <Textarea -->
-						<!-- 	value={$dynamic} -->
-						<!-- 	rows={30} -->
-						<!-- 	class="bg-gray-50 focus-visible:ring-0 focus-visible:ring-offset-0" -->
-						<!-- 	on:click={(e) => e.target?.select()} -->
-						<!-- 	readonly -->
-						<!-- /> -->
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>
