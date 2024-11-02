@@ -13,7 +13,6 @@
 	const update = async () => {
 		if (middleware.name === '') return;
 		cleanEmptyObjects(middleware.content);
-		console.log(middleware);
 		await upsertMiddleware(middleware);
 		open = false;
 	};

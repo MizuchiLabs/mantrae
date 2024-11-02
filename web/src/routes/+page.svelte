@@ -126,7 +126,6 @@
 		let list = router?.entryPoints?.map((ep) => {
 			return { value: ep, label: ep };
 		});
-		console.log(list);
 		return list ?? [];
 	};
 	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
