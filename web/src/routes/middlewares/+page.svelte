@@ -195,9 +195,9 @@
 		</Card.Content>
 		<Card.Footer>
 			<div class="text-xs text-muted-foreground">
-				Showing <strong>{fMiddlewares?.length > 0 ? 1 : 0}-{fMiddlewares?.length}</strong>
+				Showing <strong>{fMiddlewares?.length > 0 ? 1 : 0}-{fMiddlewares?.length ?? 0}</strong>
 				of
-				<strong>{$middlewares?.length}</strong> middlewares
+				<strong>{$middlewares?.length ?? 0}</strong> middlewares
 			</div>
 		</Card.Footer>
 	</Card.Root>

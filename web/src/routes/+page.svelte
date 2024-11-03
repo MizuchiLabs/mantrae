@@ -531,8 +531,8 @@
 		</Card.Content>
 		<Card.Footer>
 			<div class="text-xs text-muted-foreground">
-				Showing <strong>{fRouters.length > 0 ? 1 : 0}-{fRouters.length}</strong> of
-				<strong>{$routers?.length}</strong> routers
+				Showing <strong>{fRouters.length > 0 ? 1 : 0}-{fRouters?.length ?? 0}</strong> of
+				<strong>{$routers?.length ?? 0}</strong> routers
 			</div>
 		</Card.Footer>
 	</Card.Root>
