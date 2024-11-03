@@ -387,7 +387,7 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 
 const getAgentByID = `-- name: GetAgentByID :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 WHERE
@@ -407,6 +407,7 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.Deleted,
 		&i.LastSeen,
 	)
 	return i, err
@@ -414,17 +415,23 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 
 const getAgentByProfileID = `-- name: GetAgentByProfileID :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 WHERE
-  profile_id = ?
+  id = ?
+  AND profile_id = ?
 LIMIT
   1
 `
 
-func (q *Queries) GetAgentByProfileID(ctx context.Context, profileID int64) (Agent, error) {
-	row := q.queryRow(ctx, q.getAgentByProfileIDStmt, getAgentByProfileID, profileID)
+type GetAgentByProfileIDParams struct {
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
+}
+
+func (q *Queries) GetAgentByProfileID(ctx context.Context, arg GetAgentByProfileIDParams) (Agent, error) {
+	row := q.queryRow(ctx, q.getAgentByProfileIDStmt, getAgentByProfileID, arg.ID, arg.ProfileID)
 	var i Agent
 	err := row.Scan(
 		&i.ID,
@@ -434,6 +441,7 @@ func (q *Queries) GetAgentByProfileID(ctx context.Context, profileID int64) (Age
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.Deleted,
 		&i.LastSeen,
 	)
 	return i, err
@@ -525,7 +533,7 @@ SELECT
 FROM
   middlewares
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1
@@ -583,7 +591,7 @@ SELECT
 FROM
   profiles
 WHERE
-  name = ?
+  name LIKE ?
 LIMIT
   1
 `
@@ -636,7 +644,7 @@ SELECT
 FROM
   providers
 WHERE
-  name = ?
+  name LIKE ?
 LIMIT
   1
 `
@@ -699,7 +707,7 @@ SELECT
 FROM
   routers
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1
@@ -772,7 +780,7 @@ SELECT
 FROM
   services
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1
@@ -872,7 +880,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 `
@@ -894,6 +902,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
+			&i.Deleted,
 			&i.LastSeen,
 		); err != nil {
 			return nil, err
@@ -911,7 +920,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfileID = `-- name: ListAgentsByProfileID :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 WHERE
@@ -935,6 +944,7 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
+			&i.Deleted,
 			&i.LastSeen,
 		); err != nil {
 			return nil, err
@@ -1728,10 +1738,11 @@ INSERT INTO
     private_ips,
     containers,
     active_ip,
+    deleted,
     last_seen
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
   profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
@@ -1746,7 +1757,8 @@ SET
     agents.containers
   ),
   active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
-  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, last_seen
+  deleted = COALESCE(NULLIF(EXCLUDED.deleted, FALSE), agents.deleted),
+  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 `
 
 type UpsertAgentParams struct {
@@ -1757,6 +1769,7 @@ type UpsertAgentParams struct {
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
 	ActiveIp   *string     `json:"activeIp"`
+	Deleted    bool        `json:"deleted"`
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 
@@ -1769,6 +1782,7 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 		arg.PrivateIps,
 		arg.Containers,
 		arg.ActiveIp,
+		arg.Deleted,
 		arg.LastSeen,
 	)
 	var i Agent
@@ -1780,6 +1794,7 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.Deleted,
 		&i.LastSeen,
 	)
 	return i, err

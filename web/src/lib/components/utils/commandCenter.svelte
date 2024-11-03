@@ -135,8 +135,8 @@
 	// Get routers when the profile changes
 	profile.subscribe((value) => {
 		if (!value?.id) return;
-		getRouters(value.id);
-		getMiddlewares(value.id);
+		getRouters();
+		getMiddlewares();
 	});
 </script>
 

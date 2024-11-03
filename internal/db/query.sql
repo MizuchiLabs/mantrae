@@ -14,7 +14,7 @@ SELECT
 FROM
   profiles
 WHERE
-  name = ?
+  name LIKE ?
 LIMIT
   1;
 
@@ -145,7 +145,7 @@ SELECT
 FROM
   routers
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1;
@@ -249,7 +249,7 @@ SELECT
 FROM
   services
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1;
@@ -343,7 +343,7 @@ SELECT
 FROM
   middlewares
 WHERE
-  name = ?
+  name LIKE ?
   AND profile_id = ?
 LIMIT
   1;
@@ -427,7 +427,7 @@ SELECT
 FROM
   providers
 WHERE
-  name = ?
+  name LIKE ?
 LIMIT
   1;
 
@@ -631,7 +631,8 @@ SELECT
 FROM
   agents
 WHERE
-  profile_id = ?
+  id = ?
+  AND profile_id = ?
 LIMIT
   1;
 
@@ -659,10 +660,11 @@ INSERT INTO
     private_ips,
     containers,
     active_ip,
+    deleted,
     last_seen
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
   profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
@@ -677,6 +679,7 @@ SET
     agents.containers
   ),
   active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
+  deleted = COALESCE(NULLIF(EXCLUDED.deleted, FALSE), agents.deleted),
   last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING *;
 
 -- name: DeleteAgentByID :exec

@@ -71,6 +71,7 @@ func (r HTTPRouter) ToRouter() *db.Router {
 		return nil
 	}
 
+	dbRouter.Name = strings.Split(r.Name, "@")[0]
 	dbRouter.Protocol = "http"
 	return dbRouter
 }
@@ -85,6 +86,7 @@ func (r TCPRouter) ToRouter() *db.Router {
 		return nil
 	}
 
+	dbRouter.Name = strings.Split(r.Name, "@")[0]
 	dbRouter.Protocol = "tcp"
 	return dbRouter
 }
@@ -99,6 +101,7 @@ func (r UDPRouter) ToRouter() *db.Router {
 		return nil
 	}
 
+	dbRouter.Name = strings.Split(r.Name, "@")[0]
 	dbRouter.Protocol = "udp"
 	return dbRouter
 }
@@ -215,6 +218,7 @@ func (s HTTPService) ToService() *db.Service {
 		slog.Error("Failed to unmarshal service", "error", err)
 		return nil
 	}
+	dbService.Name = strings.Split(s.Name, "@")[0]
 	dbService.Protocol = "http"
 	return dbService
 }
@@ -231,7 +235,7 @@ func (s TCPService) ToService() *db.Service {
 		slog.Error("Failed to unmarshal service", "error", err)
 		return nil
 	}
-
+	dbService.Name = strings.Split(s.Name, "@")[0]
 	dbService.Protocol = "tcp"
 	return dbService
 }
@@ -249,6 +253,7 @@ func (s UDPService) ToService() *db.Service {
 		return nil
 	}
 
+	dbService.Name = strings.Split(s.Name, "@")[0]
 	dbService.Protocol = "udp"
 	return dbService
 }
@@ -290,15 +295,15 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 		}
 		services[newService.Name] = *newService
 
-		_, err := db.Query.GetServiceByName(context.Background(), db.GetServiceByNameParams{
+		dbService, err := db.Query.GetServiceByName(context.Background(), db.GetServiceByNameParams{
 			ProfileID: profile.ID,
 			Name:      newService.Name,
 		})
 		if newService.Provider == "http" && err == nil {
 			data := db.UpsertServiceParams{
-				ID:        uuid.New().String(),
-				ProfileID: profile.ID,
-				Name:      newService.Name,
+				ID:        dbService.ID,
+				ProfileID: dbService.ProfileID,
+				Name:      dbService.Name,
 			}
 			data.ServerStatus, _ = json.Marshal(newService.ServerStatus)
 			if _, err := db.Query.UpsertService(context.Background(), data); err != nil {
@@ -337,7 +342,7 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 
 		if _, ok := services[s.Name]; !ok {
 			slog.Info("Removing service", "name", s.Name)
-			if err := db.Query.DeleteRouterByID(context.Background(), s.ID); err != nil {
+			if err := db.Query.DeleteServiceByID(context.Background(), s.ID); err != nil {
 				slog.Error("failed to delete service", "error", err)
 				continue
 			}
@@ -376,6 +381,7 @@ func (m HTTPMiddleware) ToMiddleware() *db.Middleware {
 		return nil
 	}
 
+	dbMiddleware.Name = strings.Split(m.Name, "@")[0]
 	dbMiddleware.Protocol = "http"
 	if m.Provider == "http" {
 		return &dbMiddleware
@@ -426,6 +432,7 @@ func (m TCPMiddleware) ToMiddleware() *db.Middleware {
 		return nil
 	}
 
+	dbMiddleware.Name = strings.Split(m.Name, "@")[0]
 	dbMiddleware.Protocol = "http"
 	if m.Provider == "http" {
 		return &dbMiddleware
@@ -524,7 +531,7 @@ func getMiddlewares[T Middlewareable](profile db.Profile, endpoint string) error
 
 		if _, ok := middlewares[m.Name]; !ok {
 			slog.Info("Removing middleware", "name", m.Name)
-			if err := db.Query.DeleteRouterByID(context.Background(), m.ID); err != nil {
+			if err := db.Query.DeleteMiddlewareByID(context.Background(), m.ID); err != nil {
 				slog.Error("failed to delete middleware", "error", err)
 				continue
 			}

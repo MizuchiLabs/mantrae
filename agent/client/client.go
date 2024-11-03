@@ -38,12 +38,20 @@ func Client(quit chan os.Signal) {
 	)
 
 	// Test connection
-	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{})
-	if _, err := client.HealthCheck(context.Background(), healthCheckRequest); err != nil {
+	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID(), Token: token})
+	healthCheckRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
+	result, err := client.HealthCheck(context.Background(), healthCheckRequest)
+	if err != nil {
 		slog.Error("Failed to connect to server", "server", claims.ServerURL, "error", err)
 		os.Exit(1)
 	}
-	slog.Info("Connected to", "server", claims.ServerURL)
+	if !result.Msg.Ok {
+		slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
+		DeleteToken()
+		quit <- os.Interrupt
+	} else {
+		slog.Info("Connected to", "server", claims.ServerURL)
+	}
 
 	tickerContainer := time.NewTicker(10 * time.Second)
 	defer tickerContainer.Stop()
@@ -84,6 +92,28 @@ func Client(quit chan os.Signal) {
 		}
 	}()
 
+	healthTicker := time.NewTicker(5 * time.Second)
+	defer healthTicker.Stop()
+
+	// Start a goroutine for sending health data
+	go func() {
+		for range healthTicker.C {
+			healthCheckRequest := connect.NewRequest(
+				&agentv1.HealthCheckRequest{Id: getID(), Token: token},
+			)
+			healthCheckRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
+			result, err := client.HealthCheck(context.Background(), healthCheckRequest)
+			if err != nil {
+				slog.Error("Failed to send health check", "server", claims.ServerURL, "error", err)
+			}
+			if !result.Msg.Ok {
+				slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
+				DeleteToken()
+				quit <- os.Interrupt
+			}
+		}
+	}()
+
 	// Wait for the main loop to finish
 	<-quit
 }
@@ -115,14 +145,7 @@ func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] 
 	var request agentv1.GetContainerRequest
 
 	// Get machine ID
-	machineID, err := os.ReadFile("/etc/machine-id")
-	if err != nil {
-		request.Id = "unknown"
-	}
-
-	if len(machineID) > 0 {
-		request.Id = strings.TrimSpace(string(machineID))
-	}
+	request.Id = getID()
 
 	// Get hostname
 	hostname, err := os.Hostname()
@@ -237,4 +260,18 @@ func getContainers() ([]*agentv1.Container, error) {
 	}
 
 	return result, nil
+}
+
+// Get machine ID
+func getID() string {
+	var id string
+	machineID, err := os.ReadFile("/etc/machine-id")
+	if err != nil {
+		id = "unknown"
+	}
+
+	if len(machineID) > 0 {
+		id = strings.TrimSpace(string(machineID))
+	}
+	return id
 }

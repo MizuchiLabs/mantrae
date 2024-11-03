@@ -35,6 +35,7 @@
 		TriangleAlert
 	} from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
+	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -138,7 +139,7 @@
 	// Show how many services are up and total services
 	const getServiceStatus = (router: Router) => {
 		if (router === undefined) return { status: '0/0', ok: false };
-		let service = $services?.find((s: Service) => s.name === router.name);
+		let service = $services?.find((s: Service) => s.name === router.service);
 		let total = service?.loadBalancer?.servers?.length || 0;
 		let up = Object.values(service?.serverStatus || {}).filter((status) => status === 'UP').length;
 		return { status: `${up}/${total}`, ok: up === total };
@@ -242,8 +243,8 @@
 	// Get routers when the profile changes
 	profile.subscribe((value) => {
 		if (!value?.id) return;
-		getRouters(value.id);
-		getServices(value.id);
+		getServices();
+		getRouters();
 	});
 </script>
 

@@ -185,13 +185,28 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-// DeleteAgent deletes an agent
 func DeleteAgent(w http.ResponseWriter, r *http.Request) {
-	if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
-		http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+	deletionType := r.PathValue("type")
+	if deletionType == "hard" {
+		if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
+			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if deletionType == "soft" {
+		agent, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
+			ID:      r.PathValue("id"),
+			Deleted: true,
+		})
+		if err != nil {
+			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+			return
+		}
+
+		writeJSON(w, agent)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 // GetAgentToken returns an agent token

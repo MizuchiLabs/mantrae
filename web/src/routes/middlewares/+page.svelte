@@ -80,7 +80,7 @@
 
 	profile.subscribe((value) => {
 		if (!value?.id) return;
-		getMiddlewares(value.id);
+		getMiddlewares();
 	});
 </script>
 

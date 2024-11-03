@@ -83,7 +83,7 @@
 		service.provider = router.provider;
 		service.profileId = router.profileId;
 		service.protocol = router.protocol;
-		service = $services.find((s) => s.name === router.name) ?? service;
+		service = $services.find((s) => s.name === router.service) ?? service;
 		servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
 	};
 

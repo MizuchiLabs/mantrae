@@ -14,6 +14,7 @@ export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
 export const config: Writable<Config> = writable();
+
 export const routers: Writable<Router[]> = writable();
 export const services: Writable<Service[]> = writable();
 export const middlewares: Writable<Middleware[]> = writable();
@@ -22,6 +23,7 @@ export const agents: Writable<Agent[]> = writable();
 export const provider: Writable<DNSProvider[]> = writable();
 export const settings: Writable<Setting[]> = writable();
 export const plugins: Writable<Plugin[]> = writable();
+
 export const dynamic = writable('');
 export const version = writable('');
 export const configError = writable('');
@@ -158,8 +160,10 @@ export async function deleteProfile(p: Profile): Promise<void> {
 }
 
 // Routers ----------------------------------------------------------------------
-export async function getRouters(id: number) {
-	const response = await handleRequest(`/router/${id}`, 'GET');
+export async function getRouters() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/router/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
 		routers.set(data);
@@ -198,8 +202,10 @@ export async function deleteRouter(r: Router): Promise<void> {
 }
 
 // Services ----------------------------------------------------------------------
-export async function getServices(id: number) {
-	const response = await handleRequest(`/service/${id}`, 'GET');
+export async function getServices() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/service/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
 		services.set(data);
@@ -233,13 +239,14 @@ export async function deleteService(s: Service): Promise<void> {
 	const response = await handleRequest(`/service/${s.id}`, 'DELETE');
 	if (response) {
 		services.update((items) => items.filter((i) => i.id !== s.id));
-		//toast.success(`Service ${s.name} deleted`);
 	}
 }
 
 // Middleware -----------------------------------------------------------------
-export async function getMiddlewares(id: number) {
-	const response = await handleRequest(`/middleware/${id}`, 'GET');
+export async function getMiddlewares() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/middleware/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
 		middlewares.set(data);
@@ -413,8 +420,10 @@ export async function updateSetting(s: Setting): Promise<void> {
 }
 
 // Agents ---------------------------------------------------------------------
-export async function getAgents(id: number) {
-	const response = await handleRequest(`/agent/${id}`, 'GET');
+export async function getAgents() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/agent/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
 		agents.set(data);
@@ -445,12 +454,62 @@ export async function upsertAgent(a: Agent) {
 }
 
 export async function deleteAgent(id: number) {
-	const response = await handleRequest(`/agent/${id}`, 'DELETE');
+	const response = await handleRequest(`/agent/${id}/hard`, 'DELETE');
 	if (response) {
 		agents.update((items) => items.filter((i) => i.id !== id));
 		toast.success(`Agent deleted`);
 	}
 }
+
+export async function softDeleteAgent(id: number) {
+	const response = await handleRequest(`/agent/${id}/soft`, 'DELETE');
+	if (response) {
+		const data = await response.json();
+		if (data && get(agents)) {
+			agents.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === id);
+
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Agent deletion requested`);
+		}
+	}
+}
+
+// Agent Token derived store
+export const agentToken = derived(
+	[settings, profile],
+	([$settings, $profile], set) => {
+		const serverURL = $settings?.find((s) => s.key === 'server-url')?.value;
+		const profileID = $profile?.id;
+
+		if (serverURL && profileID) {
+			const payload = {
+				ServerURL: serverURL,
+				ProfileID: profileID
+			};
+
+			// Fetch the token
+			handleRequest(`/agent/token`, 'POST', payload)
+				.then((response) => response?.json())
+				.then((data) => {
+					set(data.token || '');
+				})
+				.catch(() => set(''));
+		} else {
+			set(''); // Reset to an empty string if values are missing
+		}
+	},
+	''
+);
 
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {
@@ -510,20 +569,6 @@ export async function getPublicIP() {
 	if (response) {
 		const data = await response.json();
 		return data.ip;
-	}
-	return '';
-}
-
-export async function getAgentToken() {
-	let payload = {
-		ServerURL: get(settings)?.find((s) => s.key === 'server-url')?.value,
-		ProfileID: get(profile)?.id
-	};
-	if (!payload.ServerURL || !payload.ProfileID) return '';
-	const response = await handleRequest(`/agent/token`, 'POST', payload);
-	if (response) {
-		const data = await response.json();
-		return data.token;
 	}
 	return '';
 }

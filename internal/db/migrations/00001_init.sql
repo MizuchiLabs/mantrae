@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS agents (
   private_ips JSONB,
   containers JSONB,
   active_ip TEXT,
+  deleted BOOLEAN NOT NULL DEFAULT FALSE,
   last_seen DATETIME,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );

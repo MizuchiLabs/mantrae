@@ -11,7 +11,6 @@
 		getUsers,
 		getVersion,
 		configError,
-		profile,
 		getAgents
 	} from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
@@ -35,8 +34,7 @@
 				getProviders();
 				break;
 			case 'agent_updated':
-				if (!$profile?.id) return;
-				getAgents($profile?.id);
+				getAgents();
 				break;
 			case 'config_error':
 				configError.set(data.message);

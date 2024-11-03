@@ -28,7 +28,34 @@ func (s *AgentServer) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[agentv1.HealthCheckRequest],
 ) (*connect.Response[agentv1.HealthCheckResponse], error) {
-	return connect.NewResponse(&agentv1.HealthCheckResponse{}), nil
+	if err := validate(req.Header()); err != nil {
+		return nil, err
+	}
+
+	decoded, err := util.DecodeJWT(req.Msg.GetToken())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	agent, err := db.Query.GetAgentByProfileID(context.Background(), db.GetAgentByProfileIDParams{
+		ID:        req.Msg.GetId(),
+		ProfileID: decoded.ProfileID,
+	})
+	// No agent found, ignore since a new agent wants to connect
+	if err != nil {
+		return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
+	}
+
+	if agent.Deleted {
+		if err := db.Query.DeleteAgentByID(context.Background(), agent.ID); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: false}), nil
+	}
+
+	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
 }
 
 func (s *AgentServer) RefreshToken(

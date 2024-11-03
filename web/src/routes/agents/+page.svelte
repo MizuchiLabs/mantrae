@@ -5,24 +5,24 @@
 	import { Button } from '$lib/components/ui/button';
 	import AgentModal from '$lib/components/modals/agent.svelte';
 	import {
-		getAgents,
 		agents,
-		settings,
-		profile,
-		getAgentToken,
 		getSettings,
-		deleteAgent
+		getAgents,
+		agentToken,
+		deleteAgent,
+		softDeleteAgent,
+		profile
 	} from '$lib/api';
 	import { type Agent } from '$lib/types/base';
 	import { Bot, BotOff, Copy, CopyCheck } from 'lucide-svelte';
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
-
-	let token = '';
+	import { toast } from 'svelte-sonner';
 
 	let copyText = 'Copy';
 	const copyToken = () => {
-		navigator.clipboard.writeText(token);
+		navigator.clipboard.writeText($agentToken);
 		copyText = 'Copied!';
+		toast.success('Copied token to clipboard!');
 		setTimeout(() => {
 			copyText = 'Copy';
 		}, 2000);
@@ -35,17 +35,10 @@
 		return diffInMinutes < 1;
 	}
 
-	// Get routers when the profile changes
-	profile.subscribe(async (value) => {
+	profile.subscribe((value) => {
 		if (!value?.id) return;
-		await getAgents(value.id);
-
-		if (!token) {
-			token = await getAgentToken();
-		}
-		if (!$settings) {
-			await getSettings();
-		}
+		getAgents();
+		getSettings();
 	});
 </script>
 
@@ -60,7 +53,7 @@
 			id="agent-token"
 			name="agent-token"
 			type="text"
-			bind:value={token}
+			value={$agentToken}
 			class="overflow-hidden text-ellipsis whitespace-nowrap pr-10"
 			readonly
 		/>
@@ -111,11 +104,42 @@
 				</Card.Content>
 				<Card.Footer class="flex items-center gap-2">
 					<AgentModal agent={a} />
-					<Button
-						variant="ghost"
-						class="w-full bg-red-400 text-black"
-						on:click={() => deleteAgent(a.id)}>Delete</Button
-					>
+					{#if a.deleted}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								<Button
+									variant="ghost"
+									class="w-full bg-red-400 text-black"
+									on:click={() => deleteAgent(a.id)}>Force Delete</Button
+								>
+							</Tooltip.Trigger>
+							<Tooltip.Content class="w-[300px]">
+								<p>
+									Force deleting this agent will permanently remove it from the database. Use this
+									option only if the agent cannot communicate with the server (e.g., machine
+									offline). This action cannot be undone and is necessary to clean up inactive
+									agents.
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					{:else}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								<Button
+									variant="ghost"
+									class="w-full bg-red-400 text-black"
+									on:click={() => softDeleteAgent(a.id)}>Request Deletion</Button
+								>
+							</Tooltip.Trigger>
+							<Tooltip.Content class="w-[300px]">
+								<p>
+									Requesting deletion will mark this agent as deleted in the system. The agent will
+									receive a notification to delete itself from the database permanently during its
+									next communication. This allows for cleanup without manual intervention.
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
 				</Card.Footer>
 			</Card.Root>
 		{/each}

@@ -53,6 +53,7 @@ export interface Agent {
 	privateIps: string;
 	containers: any;
 	activeIp: string;
+	deleted: boolean;
 	lastSeen: string;
 }
 

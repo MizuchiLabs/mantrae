@@ -38,5 +38,10 @@ message RefreshTokenResponse {
   string token = 1;
 }
 
-message HealthCheckRequest {}
-message HealthCheckResponse {}
+message HealthCheckRequest {
+  string id = 1;
+  string token = 2;
+}
+message HealthCheckResponse {
+  bool ok = 1;
+}
