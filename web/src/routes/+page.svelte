@@ -17,7 +17,8 @@
 		toggleMiddleware,
 		provider,
 		getRouters,
-		getServices
+		getServices,
+		upsertRouter
 	} from '$lib/api';
 	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { newRouter, newService, type Router, type Service } from '$lib/types/config';
@@ -35,7 +36,6 @@
 		TriangleAlert
 	} from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
-	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;
@@ -230,6 +230,7 @@
 			}
 			if (bulkDnsProvider) {
 				router.dnsProvider = bulkDnsProvider.value;
+				upsertRouter(router);
 			}
 		});
 		// Reset after applying changes

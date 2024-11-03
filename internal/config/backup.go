@@ -114,6 +114,24 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		return err
 	}
 
+	for _, provider := range data.Providers {
+		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams(provider)); err != nil {
+			return fmt.Errorf("failed to upsert provider: %w", err)
+		}
+	}
+
+	for _, setting := range data.Settings {
+		if _, err := db.Query.UpsertSetting(ctx, db.UpsertSettingParams(setting)); err != nil {
+			return fmt.Errorf("failed to upsert setting: %w", err)
+		}
+	}
+
+	for _, user := range data.Users {
+		if _, err := db.Query.UpsertUser(ctx, db.UpsertUserParams(user)); err != nil {
+			return fmt.Errorf("failed to upsert user: %w", err)
+		}
+	}
+
 	// Insert data
 	if len(data.Profiles) > 0 {
 		for _, profile := range data.Profiles {
@@ -150,24 +168,6 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 			if _, err := db.Query.UpsertMiddleware(ctx, db.UpsertMiddlewareParams(params)); err != nil {
 				return fmt.Errorf("failed to upsert middleware: %w", err)
 			}
-		}
-	}
-
-	for _, provider := range data.Providers {
-		if _, err := db.Query.UpsertProvider(ctx, db.UpsertProviderParams(provider)); err != nil {
-			return fmt.Errorf("failed to upsert provider: %w", err)
-		}
-	}
-
-	for _, setting := range data.Settings {
-		if _, err := db.Query.UpsertSetting(ctx, db.UpsertSettingParams(setting)); err != nil {
-			return fmt.Errorf("failed to upsert setting: %w", err)
-		}
-	}
-
-	for _, user := range data.Users {
-		if _, err := db.Query.UpsertUser(ctx, db.UpsertUserParams(user)); err != nil {
-			return fmt.Errorf("failed to upsert user: %w", err)
 		}
 	}
 
