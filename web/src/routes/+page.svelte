@@ -181,7 +181,7 @@
 	let shiftKeyPressed = false;
 
 	const toggleRouterSelection = (router: Router) => {
-		const currentIndex = fRouters.findIndex((r) => r.name === router.name);
+		const currentIndex = fRouters.findIndex((r) => r.id === router.id);
 
 		// Check if shift key is held
 		if (shiftKeyPressed && lastSelectedIndex !== null) {
@@ -190,26 +190,35 @@
 
 			// Select all routers between the last selected and the current one
 			const rangeToSelect = fRouters.slice(start, end + 1);
-			const allSelected = rangeToSelect.every((r) => selectedRouters.includes(r));
+			const allSelected = rangeToSelect.every((r) =>
+				selectedRouters.some((selected) => selected.id === r.id)
+			);
 
 			// If all routers in range are selected, deselect them, otherwise select them
 			rangeToSelect.forEach((r) => {
 				if (allSelected) {
-					selectedRouters = selectedRouters.filter((sr) => sr !== r); // Deselect if already selected
+					// Deselect if already selected
+					selectedRouters = selectedRouters.filter((sr) => sr.id !== r.id);
 				} else {
-					if (!selectedRouters.includes(r)) {
-						selectedRouters = [...selectedRouters, r]; // Select if not selected
+					// Select if not selected
+					if (!selectedRouters.some((selected) => selected.id === r.id)) {
+						selectedRouters = [...selectedRouters, r];
 					}
 				}
 			});
 		} else {
-			if (selectedRouters.includes(router)) {
-				selectedRouters = selectedRouters.filter((r) => r !== router);
+			// Toggle individual selection
+			if (selectedRouters.some((selected) => selected.id === router.id)) {
+				// Deselect if already selected
+				selectedRouters = selectedRouters.filter((r) => r.id !== router.id);
 			} else {
+				// Select if not selected
 				selectedRouters = [...selectedRouters, router];
 			}
 		}
-		lastSelectedIndex = currentIndex; // Update the last selected index
+
+		// Update the last selected index
+		lastSelectedIndex = currentIndex;
 	};
 
 	const getDNSProviderName = (r: Router) => {
@@ -332,7 +341,7 @@
 								>
 									<Checkbox
 										id={router.name}
-										checked={selectedRouters.includes(router)}
+										checked={selectedRouters.some((sr) => sr.id === router.id)}
 										onCheckedChange={() => toggleRouterSelection(router)}
 									/>
 								</div>
