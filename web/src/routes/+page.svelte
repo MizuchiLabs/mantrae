@@ -501,7 +501,7 @@
 									>
 										<Pencil size="1rem" />
 									</Button>
-									{#if !router.agentId}}
+									{#if !router.agentId}
 										<Button
 											variant="ghost"
 											class="h-8 w-8 rounded-full bg-red-400"
