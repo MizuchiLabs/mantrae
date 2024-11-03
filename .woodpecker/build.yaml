@@ -1,5 +1,5 @@
 when:
-  - event: [push, tag, deployment]
+  - event: [push, tag, deployment, manual]
     branch: main
 
 steps:
