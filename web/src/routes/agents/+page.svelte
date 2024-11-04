@@ -143,5 +143,10 @@
 				</Card.Footer>
 			</Card.Root>
 		{/each}
+	{:else}
+		<div class="flex h-[calc(75vh)] w-full flex-col items-center justify-center gap-2">
+			<BotOff size="8rem" />
+			<span class="text-xl font-semibold">No agents connected</span>
+		</div>
 	{/if}
 </div>

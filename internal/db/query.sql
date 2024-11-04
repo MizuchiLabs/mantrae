@@ -91,34 +91,33 @@ WHERE
 LIMIT
   1;
 
--- name: ListConfigs :many
+-- name: ListEntryPoints :many
 SELECT
   *
 FROM
-  config;
+  entrypoints;
 
--- name: CreateConfig :one
-INSERT INTO
-  config (profile_id, overview, entrypoints, version)
-VALUES
-  (?, ?, ?, ?) RETURNING *;
-
--- name: UpdateConfig :one
-UPDATE config
-SET
-  overview = ?,
-  entrypoints = ?,
-  version = ?
-WHERE
-  profile_id = ? RETURNING *;
-
--- name: DeleteConfigByProfileID :exec
-DELETE FROM config
+-- name: ListEntryPointsByProfileID :many
+SELECT
+  *
+FROM
+  entrypoints
 WHERE
   profile_id = ?;
 
--- name: DeleteConfigByProfileName :exec
-DELETE FROM config
+-- name: UpsertEntryPoint :one
+INSERT INTO
+  entrypoints (profile_id, name, address, as_default, http)
+VALUES
+  (?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
+UPDATE
+SET
+  address = EXCLUDED.address,
+  as_default = EXCLUDED.as_default,
+  http = EXCLUDED.http RETURNING *;
+
+-- name: DeleteEntryPointByName :exec
+DELETE FROM entrypoints
 WHERE
   profile_id = (
     SELECT
@@ -126,8 +125,15 @@ WHERE
     FROM
       profiles
     WHERE
-      name = ?
-  );
+      profiles.name = ?
+  )
+  AND entrypoints.name = ?;
+
+-- name: ListConfigs :many
+SELECT
+  *
+FROM
+  config;
 
 -- name: GetRouterByID :one
 SELECT
@@ -421,13 +427,13 @@ WHERE
 LIMIT
   1;
 
--- name: GetProviderByName :one
+-- name: GetDefaultProvider :one
 SELECT
   *
 FROM
   providers
 WHERE
-  name LIKE ?
+  is_active = true
 LIMIT
   1;
 

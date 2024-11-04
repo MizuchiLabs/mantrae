@@ -1,3 +1,9 @@
+export interface Version {
+	version: string;
+	codename: string;
+	startDate: string;
+}
+
 export interface Overview {
 	http: HTTPOverview;
 	tcp: TCPOverview;

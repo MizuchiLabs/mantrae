@@ -7,7 +7,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Selected } from 'bits-ui';
 	import { middlewares, profile } from '$lib/api';
-	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
+	import { type Middleware } from '$lib/types/middlewares';
 	import { LoadMiddlewareForm } from '../utils/middlewareModules';
 	import { onMount, SvelteComponent } from 'svelte';
 	import logo from '$lib/images/logo.svg';
@@ -90,10 +90,9 @@
 
 	// Check if middleware name is taken
 	let isNameTaken = false;
-	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name + '@' + middleware.provider);
+	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name);
 
 	onMount(async () => {
-		//setType();
 		form = await LoadMiddlewareForm(middleware);
 	});
 </script>

@@ -84,6 +84,7 @@ export function RuleDescription(rules: string) {
 						break;
 					case 'ALPN':
 						result = `ALPN: ${match[1]}`;
+						break;
 					default:
 						result = formattedCondition;
 				}

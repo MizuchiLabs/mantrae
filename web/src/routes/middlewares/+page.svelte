@@ -11,7 +11,6 @@
 	import { Eye, Pencil, X } from 'lucide-svelte';
 	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
 	import { profile, getMiddlewares } from '$lib/api';
-	import { onMount } from 'svelte';
 
 	let search = '';
 	let count = 0;

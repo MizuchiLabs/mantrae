@@ -8,12 +8,14 @@ CREATE TABLE IF NOT EXISTS profiles (
   tls BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS config (
+CREATE TABLE IF NOT EXISTS entrypoints (
   profile_id INTEGER NOT NULL,
-  overview JSONB,
-  entrypoints JSONB,
-  version TEXT,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+  name VARCHAR(255) NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  as_default BOOLEAN DEFAULT FALSE,
+  http JSONB,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS routers (
@@ -147,7 +149,7 @@ END;
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
 
-DROP TABLE IF EXISTS config;
+DROP TABLE IF EXISTS entrypoints;
 
 DROP TABLE IF EXISTS routers;
 

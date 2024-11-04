@@ -551,6 +551,7 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
+
 	if err := db.Query.DeleteProviderByID(context.Background(), id); err != nil {
 		http.Error(
 			w,
@@ -559,31 +560,34 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-
 	w.WriteHeader(http.StatusOK)
 }
 
-// Config ---------------------------------------------------------------------
+// Entrypoints ---------------------------------------------------------------------
 
-// GetConfig returns the config for a single profile
-func GetConfig(w http.ResponseWriter, r *http.Request) {
+// GetEntryPoints returns the config for a single profile
+func GetEntryPoints(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
 
-	data, err := traefik.DecodeFromDB(id)
+	entrypoints, err := db.Query.ListEntryPointsByProfileID(context.Background(), id)
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
+			fmt.Sprintf("Failed to get entry points: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
 	}
-
-	writeJSON(w, data)
+	for i := range entrypoints {
+		if err := entrypoints[i].DecodeFields(); err != nil {
+			slog.Error("Failed to decode entry point", "name", entrypoints[i].Name, "error", err)
+		}
+	}
+	writeJSON(w, entrypoints)
 }
 
 // Router ---------------------------------------------------------------------
@@ -593,6 +597,7 @@ func GetRouters(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
+
 	routers, err := db.Query.ListRoutersByProfileID(context.Background(), id)
 	if err != nil {
 		http.Error(
@@ -619,6 +624,12 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 			http.StatusBadRequest,
 		)
 		return
+	}
+
+	// Use default provider if not set
+	provider, err := db.Query.GetDefaultProvider(context.Background())
+	if err == nil && provider.ID != 0 && router.DnsProvider == nil && router.ID == "" {
+		router.DnsProvider = &provider.ID
 	}
 
 	if err := router.Verify(); err != nil {
@@ -1056,6 +1067,32 @@ func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, middlewarePlugins)
 }
 
+// GetTraefikOverview returns the overview of the connected Traefik instance
+func GetTraefikOverview(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+	profile, err := db.Query.GetProfileByID(context.Background(), id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Profile not found: %s", err.Error()), http.StatusNotFound)
+	}
+
+	// Fetch overview
+	data, err := traefik.GetOverview(profile)
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to fetch overview: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
 // GetTraefikConfig returns the traefik config
 func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
@@ -1064,16 +1101,7 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := traefik.DecodeFromDB(profile.ID)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode config: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-	dynamicConfig, err := traefik.GenerateConfig(data)
+	dynamicConfig, err := traefik.GenerateConfig(profile.ID)
 	if err != nil {
 		util.Broadcast <- util.EventMessage{
 			Type:    "config_error",

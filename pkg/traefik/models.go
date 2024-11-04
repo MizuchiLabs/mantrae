@@ -3,17 +3,12 @@
 package traefik
 
 import (
-	"sync"
-
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Dynamic struct {
 	ProfileID   int64        `json:"profile_id,omitempty"`
-	Overview    *Overview    `json:"overview,omitempty"`
 	Entrypoints []Entrypoint `json:"entrypoints,omitempty"`
-	Version     string       `json:"version,omitempty"`
-	Mutex       sync.Mutex   `json:"-"`
 }
 
 type Entrypoint struct {
@@ -26,14 +21,10 @@ type Entrypoint struct {
 	} `json:"http,omitempty"`
 }
 
-type Server struct {
-	URL     string `json:"url,omitempty"`
-	Address string `json:"address,omitempty"`
-}
-
-type ErrorState struct {
-	SSL string `json:"ssl,omitempty"`
-	DNS string `json:"dns,omitempty"`
+type Version struct {
+	Version   string `json:"version,omitempty"`
+	Codename  string `json:"codename,omitempty"`
+	StartDate string `json:"startDate,omitempty"`
 }
 
 type Overview struct {

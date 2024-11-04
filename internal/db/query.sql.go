@@ -12,32 +12,20 @@ import (
 
 const createConfig = `-- name: CreateConfig :one
 INSERT INTO
-  config (profile_id, overview, entrypoints, version)
+  config (profile_id, entrypoints)
 VALUES
-  (?, ?, ?, ?) RETURNING profile_id, overview, entrypoints, version
+  (?, ?) RETURNING profile_id, entrypoints
 `
 
 type CreateConfigParams struct {
 	ProfileID   int64       `json:"profileId"`
-	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Version     *string     `json:"version"`
 }
 
 func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error) {
-	row := q.queryRow(ctx, q.createConfigStmt, createConfig,
-		arg.ProfileID,
-		arg.Overview,
-		arg.Entrypoints,
-		arg.Version,
-	)
+	row := q.queryRow(ctx, q.createConfigStmt, createConfig, arg.ProfileID, arg.Entrypoints)
 	var i Config
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Overview,
-		&i.Entrypoints,
-		&i.Version,
-	)
+	err := row.Scan(&i.ProfileID, &i.Entrypoints)
 	return i, err
 }
 
@@ -228,6 +216,30 @@ WHERE
 
 func (q *Queries) DeleteConfigByProfileName(ctx context.Context, name string) error {
 	_, err := q.exec(ctx, q.deleteConfigByProfileNameStmt, deleteConfigByProfileName, name)
+	return err
+}
+
+const deleteEntryPointByName = `-- name: DeleteEntryPointByName :exec
+DELETE FROM entrypoints
+WHERE
+  profile_id = (
+    SELECT
+      id
+    FROM
+      profiles
+    WHERE
+      profiles.name = ?
+  )
+  AND entrypoints.name = ?
+`
+
+type DeleteEntryPointByNameParams struct {
+	Name   string `json:"name"`
+	Name_2 string `json:"name2"`
+}
+
+func (q *Queries) DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPointByNameParams) error {
+	_, err := q.exec(ctx, q.deleteEntryPointByNameStmt, deleteEntryPointByName, arg.Name, arg.Name_2)
 	return err
 }
 
@@ -449,7 +461,7 @@ func (q *Queries) GetAgentByProfileID(ctx context.Context, arg GetAgentByProfile
 
 const getConfigByProfileID = `-- name: GetConfigByProfileID :one
 SELECT
-  profile_id, overview, entrypoints, version
+  profile_id, entrypoints
 FROM
   config
 WHERE
@@ -461,18 +473,13 @@ LIMIT
 func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error) {
 	row := q.queryRow(ctx, q.getConfigByProfileIDStmt, getConfigByProfileID, profileID)
 	var i Config
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Overview,
-		&i.Entrypoints,
-		&i.Version,
-	)
+	err := row.Scan(&i.ProfileID, &i.Entrypoints)
 	return i, err
 }
 
 const getConfigByProfileName = `-- name: GetConfigByProfileName :one
 SELECT
-  profile_id, overview, entrypoints, version
+  profile_id, entrypoints
 FROM
   config
 WHERE
@@ -491,11 +498,34 @@ LIMIT
 func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Config, error) {
 	row := q.queryRow(ctx, q.getConfigByProfileNameStmt, getConfigByProfileName, name)
 	var i Config
+	err := row.Scan(&i.ProfileID, &i.Entrypoints)
+	return i, err
+}
+
+const getDefaultProvider = `-- name: GetDefaultProvider :one
+SELECT
+  id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+FROM
+  providers
+WHERE
+  is_active = true
+LIMIT
+  1
+`
+
+func (q *Queries) GetDefaultProvider(ctx context.Context) (Provider, error) {
+	row := q.queryRow(ctx, q.getDefaultProviderStmt, getDefaultProvider)
+	var i Provider
 	err := row.Scan(
-		&i.ProfileID,
-		&i.Overview,
-		&i.Entrypoints,
-		&i.Version,
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.ExternalIp,
+		&i.ApiKey,
+		&i.ApiUrl,
+		&i.ZoneType,
+		&i.Proxied,
+		&i.IsActive,
 	)
 	return i, err
 }
@@ -623,34 +653,6 @@ LIMIT
 
 func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, error) {
 	row := q.queryRow(ctx, q.getProviderByIDStmt, getProviderByID, id)
-	var i Provider
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Type,
-		&i.ExternalIp,
-		&i.ApiKey,
-		&i.ApiUrl,
-		&i.ZoneType,
-		&i.Proxied,
-		&i.IsActive,
-	)
-	return i, err
-}
-
-const getProviderByName = `-- name: GetProviderByName :one
-SELECT
-  id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
-FROM
-  providers
-WHERE
-  name LIKE ?
-LIMIT
-  1
-`
-
-func (q *Queries) GetProviderByName(ctx context.Context, name string) (Provider, error) {
-	row := q.queryRow(ctx, q.getProviderByNameStmt, getProviderByName, name)
 	var i Provider
 	err := row.Scan(
 		&i.ID,
@@ -962,7 +964,7 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 
 const listConfigs = `-- name: ListConfigs :many
 SELECT
-  profile_id, overview, entrypoints, version
+  profile_id, entrypoints
 FROM
   config
 `
@@ -976,11 +978,80 @@ func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
 	var items []Config
 	for rows.Next() {
 		var i Config
+		if err := rows.Scan(&i.ProfileID, &i.Entrypoints); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEntryPoints = `-- name: ListEntryPoints :many
+SELECT
+  profile_id, name, address, as_default, http
+FROM
+  entrypoints
+`
+
+func (q *Queries) ListEntryPoints(ctx context.Context) ([]Entrypoint, error) {
+	rows, err := q.query(ctx, q.listEntryPointsStmt, listEntryPoints)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Entrypoint
+	for rows.Next() {
+		var i Entrypoint
 		if err := rows.Scan(
 			&i.ProfileID,
-			&i.Overview,
-			&i.Entrypoints,
-			&i.Version,
+			&i.Name,
+			&i.Address,
+			&i.AsDefault,
+			&i.Http,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEntryPointsByProfileID = `-- name: ListEntryPointsByProfileID :many
+SELECT
+  profile_id, name, address, as_default, http
+FROM
+  entrypoints
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) ListEntryPointsByProfileID(ctx context.Context, profileID int64) ([]Entrypoint, error) {
+	rows, err := q.query(ctx, q.listEntryPointsByProfileIDStmt, listEntryPointsByProfileID, profileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Entrypoint
+	for rows.Next() {
+		var i Entrypoint
+		if err := rows.Scan(
+			&i.ProfileID,
+			&i.Name,
+			&i.Address,
+			&i.AsDefault,
+			&i.Http,
 		); err != nil {
 			return nil, err
 		}
@@ -1543,34 +1614,20 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 const updateConfig = `-- name: UpdateConfig :one
 UPDATE config
 SET
-  overview = ?,
-  entrypoints = ?,
-  version = ?
+  entrypoints = ?
 WHERE
-  profile_id = ? RETURNING profile_id, overview, entrypoints, version
+  profile_id = ? RETURNING profile_id, entrypoints
 `
 
 type UpdateConfigParams struct {
-	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Version     *string     `json:"version"`
 	ProfileID   int64       `json:"profileId"`
 }
 
 func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error) {
-	row := q.queryRow(ctx, q.updateConfigStmt, updateConfig,
-		arg.Overview,
-		arg.Entrypoints,
-		arg.Version,
-		arg.ProfileID,
-	)
+	row := q.queryRow(ctx, q.updateConfigStmt, updateConfig, arg.Entrypoints, arg.ProfileID)
 	var i Config
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Overview,
-		&i.Entrypoints,
-		&i.Version,
-	)
+	err := row.Scan(&i.ProfileID, &i.Entrypoints)
 	return i, err
 }
 
@@ -1796,6 +1853,45 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 		&i.ActiveIp,
 		&i.Deleted,
 		&i.LastSeen,
+	)
+	return i, err
+}
+
+const upsertEntryPoint = `-- name: UpsertEntryPoint :one
+INSERT INTO
+  entrypoints (profile_id, name, address, as_default, http)
+VALUES
+  (?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
+UPDATE
+SET
+  address = EXCLUDED.address,
+  as_default = EXCLUDED.as_default,
+  http = EXCLUDED.http RETURNING profile_id, name, address, as_default, http
+`
+
+type UpsertEntryPointParams struct {
+	ProfileID int64       `json:"profileId"`
+	Name      string      `json:"name"`
+	Address   string      `json:"address"`
+	AsDefault *bool       `json:"asDefault"`
+	Http      interface{} `json:"http"`
+}
+
+func (q *Queries) UpsertEntryPoint(ctx context.Context, arg UpsertEntryPointParams) (Entrypoint, error) {
+	row := q.queryRow(ctx, q.upsertEntryPointStmt, upsertEntryPoint,
+		arg.ProfileID,
+		arg.Name,
+		arg.Address,
+		arg.AsDefault,
+		arg.Http,
+	)
+	var i Entrypoint
+	err := row.Scan(
+		&i.ProfileID,
+		&i.Name,
+		&i.Address,
+		&i.AsDefault,
+		&i.Http,
 	)
 	return i, err
 }

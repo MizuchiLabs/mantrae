@@ -18,6 +18,7 @@ type Querier interface {
 	DeleteAgentByID(ctx context.Context, id string) error
 	DeleteConfigByProfileID(ctx context.Context, profileID int64) error
 	DeleteConfigByProfileName(ctx context.Context, name string) error
+	DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPointByNameParams) error
 	DeleteMiddlewareByID(ctx context.Context, id string) error
 	DeleteMiddlewareByName(ctx context.Context, name string) error
 	DeleteProfileByID(ctx context.Context, id int64) error
@@ -36,12 +37,12 @@ type Querier interface {
 	GetAgentByProfileID(ctx context.Context, arg GetAgentByProfileIDParams) (Agent, error)
 	GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error)
 	GetConfigByProfileName(ctx context.Context, name string) (Config, error)
+	GetDefaultProvider(ctx context.Context) (Provider, error)
 	GetMiddlewareByID(ctx context.Context, id string) (Middleware, error)
 	GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNameParams) (Middleware, error)
 	GetProfileByID(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetProviderByID(ctx context.Context, id int64) (Provider, error)
-	GetProviderByName(ctx context.Context, name string) (Provider, error)
 	GetRouterByID(ctx context.Context, id string) (Router, error)
 	GetRouterByName(ctx context.Context, arg GetRouterByNameParams) (Router, error)
 	GetServiceByID(ctx context.Context, id string) (Service, error)
@@ -52,6 +53,8 @@ type Querier interface {
 	ListAgents(ctx context.Context) ([]Agent, error)
 	ListAgentsByProfileID(ctx context.Context, profileID int64) ([]Agent, error)
 	ListConfigs(ctx context.Context) ([]Config, error)
+	ListEntryPoints(ctx context.Context) ([]Entrypoint, error)
+	ListEntryPointsByProfileID(ctx context.Context, profileID int64) ([]Entrypoint, error)
 	ListMiddlewares(ctx context.Context) ([]Middleware, error)
 	ListMiddlewaresByProfileID(ctx context.Context, profileID int64) ([]Middleware, error)
 	ListMiddlewaresByProvider(ctx context.Context, provider string) ([]Middleware, error)
@@ -71,6 +74,7 @@ type Querier interface {
 	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent, error)
+	UpsertEntryPoint(ctx context.Context, arg UpsertEntryPointParams) (Entrypoint, error)
 	UpsertMiddleware(ctx context.Context, arg UpsertMiddlewareParams) (Middleware, error)
 	UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error)
 	UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error)

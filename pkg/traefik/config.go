@@ -12,7 +12,7 @@ import (
 	ttls "github.com/traefik/traefik/v3/pkg/tls"
 )
 
-func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
+func GenerateConfig(id int64) (*dynamic.Configuration, error) {
 	config := &dynamic.Configuration{
 		HTTP: &dynamic.HTTPConfiguration{
 			Routers:           make(map[string]*dynamic.Router),
@@ -35,7 +35,7 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 		},
 	}
 
-	routers, err := db.Query.ListRoutersByProfileID(context.Background(), d.ProfileID)
+	routers, err := db.Query.ListRoutersByProfileID(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 		}
 	}
 
-	services, err := db.Query.ListServicesByProfileID(context.Background(), d.ProfileID)
+	services, err := db.Query.ListServicesByProfileID(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func GenerateConfig(d *Dynamic) (*dynamic.Configuration, error) {
 		}
 	}
 
-	middlewares, err := db.Query.ListMiddlewaresByProfileID(context.Background(), d.ProfileID)
+	middlewares, err := db.Query.ListMiddlewaresByProfileID(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}

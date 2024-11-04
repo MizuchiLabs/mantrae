@@ -35,7 +35,7 @@ func Routes(useAuth bool) http.Handler {
 	mux.HandleFunc("POST /api/middleware", JWT(UpsertMiddleware))
 	mux.HandleFunc("DELETE /api/middleware/{id}", JWT(DeleteMiddleware))
 
-	mux.HandleFunc("GET /api/config/{id}", JWT(GetConfig))
+	mux.HandleFunc("GET /api/entrypoint/{id}", JWT(GetEntryPoints))
 	mux.HandleFunc("GET /api/middleware/plugins", GetMiddlewarePlugins)
 
 	mux.HandleFunc("GET /api/user", JWT(GetUsers))
@@ -64,6 +64,8 @@ func Routes(useAuth bool) http.Handler {
 
 	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
 	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
+
+	mux.HandleFunc("GET /api/traefik/{id}", JWT(GetTraefikOverview))
 
 	if useAuth {
 		mux.HandleFunc("GET /api/{name}", BasicAuth(GetTraefikConfig))

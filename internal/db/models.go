@@ -22,9 +22,15 @@ type Agent struct {
 
 type Config struct {
 	ProfileID   int64       `json:"profileId"`
-	Overview    interface{} `json:"overview"`
 	Entrypoints interface{} `json:"entrypoints"`
-	Version     *string     `json:"version"`
+}
+
+type Entrypoint struct {
+	ProfileID int64       `json:"profileId"`
+	Name      string      `json:"name"`
+	Address   string      `json:"address"`
+	AsDefault *bool       `json:"asDefault"`
+	Http      interface{} `json:"http"`
 }
 
 type Middleware struct {

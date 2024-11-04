@@ -6,78 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
-	"sync"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/traefik/paerser/parser"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
-
-// DecodeFromDB decodes the config from the database into our Dynamic struct
-func DecodeFromDB(id int64) (*Dynamic, error) {
-	if id == 0 {
-		return nil, nil
-	}
-
-	config, err := db.Query.GetConfigByProfileID(context.Background(), id)
-	if err != nil {
-		return nil, err
-	}
-
-	data := &Dynamic{
-		ProfileID:   id,
-		Overview:    nil,
-		Entrypoints: make([]Entrypoint, 0),
-		Version:     "",
-		Mutex:       sync.Mutex{},
-	}
-
-	if config.Overview != nil {
-		if err := json.Unmarshal(config.Overview.([]byte), &data.Overview); err != nil {
-			return nil, err
-		}
-	}
-	if config.Entrypoints != nil {
-		if err := json.Unmarshal(config.Entrypoints.([]byte), &data.Entrypoints); err != nil {
-			return nil, err
-		}
-	}
-	if config.Version != nil {
-		data.Version = *config.Version
-	}
-	return data, nil
-}
-
-// EncodeToDB encodes the config from our Dynamic struct and saves it to the database
-func EncodeToDB(data *Dynamic) (*Dynamic, error) {
-	if data.ProfileID == 0 {
-		return nil, nil
-	}
-	data.Mutex.Lock()
-	defer data.Mutex.Unlock()
-
-	overview, err := json.Marshal(data.Overview)
-	if err != nil {
-		return nil, err
-	}
-	entrypoints, err := json.Marshal(data.Entrypoints)
-	if err != nil {
-		return nil, err
-	}
-	_, err = db.Query.UpdateConfig(context.Background(), db.UpdateConfigParams{
-		ProfileID:   data.ProfileID,
-		Overview:    overview,
-		Entrypoints: entrypoints,
-		Version:     &data.Version,
-	})
-	if err != nil {
-		slog.Error("Failed to update config", "error", err)
-		return nil, err
-	}
-
-	return DecodeFromDB(data.ProfileID)
-}
 
 // DecodeFromLabels uses the traefik parses to decode the config from the labels into our Dynamic struct
 func DecodeFromLabels(id string, container []byte) error {

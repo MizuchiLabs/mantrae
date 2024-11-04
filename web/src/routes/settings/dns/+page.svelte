@@ -6,6 +6,7 @@
 	import { deleteProvider, getProviders, provider } from '$lib/api';
 	import { newProvider, type DNSProvider } from '$lib/types/base';
 	import { onMount } from 'svelte';
+	import { Globe } from 'lucide-svelte';
 
 	let dnsProvider: DNSProvider;
 	let openModal = false;
@@ -49,7 +50,7 @@
 								<img src={powerdns} alt="PowerDNS" width="26" />
 							{/if}
 
-							{#if p.is_active}
+							{#if p.isActive}
 								<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
 							{/if}
 						</div>
@@ -66,5 +67,10 @@
 				</Card.Footer>
 			</Card.Root>
 		{/each}
+	{:else}
+		<div class="flex h-[calc(75vh)] w-full flex-col items-center justify-center gap-2">
+			<Globe size="8rem" />
+			<span class="text-xl font-semibold">No providers configured</span>
+		</div>
 	{/if}
 </div>

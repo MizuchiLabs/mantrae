@@ -44,6 +44,20 @@ func (p *UpdateProfileParams) Verify() error {
 	return nil
 }
 
+func (e *UpsertEntryPointParams) Verify() error {
+	if e.ProfileID == 0 {
+		return fmt.Errorf("profile id cannot be empty")
+	}
+	if e.Name == "" {
+		return fmt.Errorf("name cannot be empty")
+	}
+	if e.Address == "" {
+		return fmt.Errorf("address cannot be empty")
+	}
+	e.Http, _ = json.Marshal(e.Http)
+	return nil
+}
+
 func (r *UpsertRouterParams) Verify() error {
 	if r.ID == "" {
 		r.ID = uuid.New().String()
@@ -336,6 +350,15 @@ func (p *UpdateProviderParams) Verify() error {
 }
 
 // Decoding -------------------------------------------------------------------
+func (e *Entrypoint) DecodeFields() error {
+	if e.Http != nil {
+		if err := json.Unmarshal(e.Http.([]byte), &e.Http); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r *Router) DecodeFields() error {
 	if r.EntryPoints != nil {
 		if err := json.Unmarshal(r.EntryPoints.([]byte), &r.EntryPoints); err != nil {

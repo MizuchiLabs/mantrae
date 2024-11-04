@@ -4,7 +4,7 @@
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { getTraefikConfig, config, dynamic } from '$lib/api';
+	import { getTraefikConfig, getTraefikOverview, dynamic, profile, entrypoints } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { darkMode } from '$lib/utils';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
@@ -12,6 +12,10 @@
 	import github from 'svelte-highlight/styles/github';
 	import githubDark from 'svelte-highlight/styles/github-dark';
 	import { Copy, CopyCheck } from 'lucide-svelte';
+	import type { Overview, Version } from '$lib/types/overview';
+
+	let version: Version;
+	let overview: Overview;
 
 	let copyText = 'Copy';
 	const copy = () => {
@@ -21,6 +25,14 @@
 			copyText = 'Copy';
 		}, 2000);
 	};
+
+	profile.subscribe(async (value) => {
+		if (!value?.id) return;
+		if (version && overview) return;
+		let data = await getTraefikOverview();
+		version = data.version;
+		overview = data.overview;
+	});
 
 	onMount(async () => {
 		await getTraefikConfig();
@@ -56,9 +68,9 @@
 						<div class="mt-2 grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Version</span>
 							<div class="col-span-3 space-x-2">
-								{#if $config?.version}
+								{#if version.version}
 									<Badge variant="secondary" class="bg-blue-300">
-										v{$config?.version}
+										v{version.version}
 									</Badge>
 								{/if}
 							</div>
@@ -68,7 +80,7 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Entrypoints</span>
 							<div class="col-span-3 space-x-2">
-								{#each $config.entrypoints ?? [] as entrypoint}
+								{#each $entrypoints ?? [] as entrypoint}
 									{#if entrypoint.asDefault}
 										<Badge variant="secondary" class="bg-green-300"
 											>{entrypoint.name}{entrypoint.address}</Badge
@@ -84,13 +96,13 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Features</span>
 							<div class="col-span-3 space-x-2">
-								{#if $config.overview?.features.tracing}
+								{#if overview?.features.tracing}
 									<Badge variant="secondary">Tracing</Badge>
 								{/if}
-								{#if $config.overview?.features.metrics}
+								{#if overview?.features.metrics}
 									<Badge variant="secondary">Metrics</Badge>
 								{/if}
-								{#if $config.overview?.features.accessLog}
+								{#if overview?.features.accessLog}
 									<Badge variant="secondary">Access Log</Badge>
 								{/if}
 							</div>
@@ -100,7 +112,7 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Providers</span>
 							<div class="col-span-3 space-x-2">
-								{#each $config.overview?.providers ?? [] as provider}
+								{#each overview?.providers ?? [] as provider}
 									{#if provider === 'http'}
 										<Badge variant="secondary" class="bg-yellow-300">{provider}</Badge>
 									{:else}
@@ -117,13 +129,13 @@
 							<span class="col-span-1 font-mono">HTTP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$config?.overview?.http.routers.total ?? 0}
+									Routers: {overview?.http.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$config?.overview?.http.services.total ?? 0}
+									Services: {overview?.http.services.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Middlewares: {$config?.overview?.http.middlewares.total ?? 0}
+									Middlewares: {overview?.http.middlewares.total ?? 0}
 								</Badge>
 							</div>
 						</div>
@@ -133,13 +145,13 @@
 							<span class="col-span-1 font-mono">TCP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$config?.overview?.tcp.routers.total ?? 0}
+									Routers: {overview?.tcp.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$config?.overview?.tcp.services.total ?? 0}
+									Services: {overview?.tcp.services.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Middlewares: {$config?.overview?.tcp.middlewares.total ?? 0}
+									Middlewares: {overview?.tcp.middlewares.total ?? 0}
 								</Badge>
 							</div>
 						</div>
@@ -149,10 +161,10 @@
 							<span class="col-span-1 font-mono">UDP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$config?.overview?.udp.routers.total ?? 0}
+									Routers: {overview?.udp.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$config?.overview?.udp.services.total ?? 0}
+									Services: {overview?.udp.services.total ?? 0}
 								</Badge>
 							</div>
 						</div>

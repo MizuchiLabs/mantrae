@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
-import type { Config, Profile, DNSProvider, User, Setting, Agent } from './types/base';
+import type { Profile, DNSProvider, User, Setting, Agent, Entrypoint } from './types/base';
 import type { Plugin } from './types/plugins';
 import type { Middleware } from './types/middlewares';
 import { derived, get, writable, type Writable } from 'svelte/store';
@@ -13,7 +13,7 @@ export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/ap
 export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
-export const config: Writable<Config> = writable();
+export const entrypoints: Writable<Entrypoint[]> = writable();
 
 export const routers: Writable<Router[]> = writable();
 export const services: Writable<Service[]> = writable();
@@ -27,9 +27,6 @@ export const plugins: Writable<Plugin[]> = writable();
 export const dynamic = writable('');
 export const version = writable('');
 export const configError = writable('');
-
-// Derived stores
-export const entrypoints = derived(config, ($config) => $config?.entrypoints ?? []);
 
 async function handleRequest(
 	endpoint: string,
@@ -114,7 +111,7 @@ export async function getProfile(id: number) {
 		localStorage.removeItem(PROFILE_SK);
 		return;
 	}
-	await getConfig();
+	await getEntrypoints();
 }
 
 export async function createProfile(p: Profile): Promise<void> {
@@ -374,12 +371,14 @@ export async function deleteProvider(id: number): Promise<void> {
 	}
 }
 
-// Config ---------------------------------------------------------------------
-export async function getConfig() {
-	const response = await handleRequest(`/config/${get(profile).id}`, 'GET');
+// Entrypoints ----------------------------------------------------------------
+export async function getEntrypoints() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/entrypoint/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		config.set(data);
+		entrypoints.set(data);
 	}
 }
 
@@ -542,7 +541,7 @@ export async function uploadBackup(file: File) {
 	await getProfiles();
 	await getUsers();
 	await getProviders();
-	await getConfig();
+	await getEntrypoints();
 	await getSettings();
 }
 
@@ -573,6 +572,17 @@ export async function getPublicIP() {
 	return '';
 }
 
+export async function getTraefikOverview() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/traefik/${profileID}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		return data;
+	}
+	return '';
+}
+
 export async function getTraefikConfig() {
 	if (!get(profile)) return '';
 
@@ -581,15 +591,6 @@ export async function getTraefikConfig() {
 		const data = await response.text();
 		dynamic.set(data);
 	}
-}
-
-// Helper functions -----------------------------------------------------------
-// Create or update a router and its service
-function nameCheck(router: Router) {
-	const name = router.name?.trim().toLowerCase();
-	const provider = router.provider?.trim().toLowerCase() ?? 'http';
-	const parts = name.split('@');
-	return parts[0] + '@' + provider;
 }
 
 // Toggle functions -----------------------------------------------------------

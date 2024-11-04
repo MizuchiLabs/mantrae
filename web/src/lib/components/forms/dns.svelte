@@ -52,8 +52,15 @@
 	</Card.Header>
 	<Card.Content class="space-y-2">
 		<div class="mb-4 flex items-center justify-end gap-2">
-			<Label for="is_active" class="text-right">Default</Label>
-			<Switch name="is_active" bind:checked={provider.isActive} required />
+			<Tooltip.Root>
+				<Tooltip.Trigger>
+					<Label for="is_active" class="text-right">Default</Label>
+					<Switch name="is_active" bind:checked={provider.isActive} required />
+				</Tooltip.Trigger>
+				<Tooltip.Content class="max-w-sm">
+					<p>Sets this provider as the default, any new router created will use this provider</p>
+				</Tooltip.Content>
+			</Tooltip.Root>
 		</div>
 
 		{#if provider.type === 'cloudflare'}

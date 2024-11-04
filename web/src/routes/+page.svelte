@@ -149,7 +149,7 @@
 		if (router.entryPoints === undefined) return false;
 
 		return router.entryPoints.some((e) => {
-			let entrypoint = $entrypoints.find((ep) => ep.name === e);
+			let entrypoint = $entrypoints?.find((ep) => ep.name === e);
 			return entrypoint?.http?.tls !== undefined;
 		});
 	};

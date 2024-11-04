@@ -19,6 +19,9 @@ import (
 )
 
 const (
+	EntrypointsAPI     = "/api/entrypoints"
+	OverviewAPI        = "/api/overview"
+	VersionAPI         = "/api/version"
 	HTTPRouterAPI      = "/api/http/routers"
 	TCPRouterAPI       = "/api/tcp/routers"
 	UDPRouterAPI       = "/api/udp/routers"
@@ -27,9 +30,6 @@ const (
 	UDPServiceAPI      = "/api/udp/services"
 	HTTPMiddlewaresAPI = "/api/http/middlewares"
 	TCPMiddlewaresAPI  = "/api/tcp/middlewares"
-	OverviewAPI        = "/api/overview"
-	EntrypointsAPI     = "/api/entrypoints"
-	VersionAPI         = "/api/version"
 )
 
 // Extra fields from the API endpoint
@@ -541,6 +541,66 @@ func getMiddlewares[T Middlewareable](profile db.Profile, endpoint string) error
 	return nil
 }
 
+func getEntrypoints(profile db.Profile) error {
+	entrypointData, err := fetch(profile, EntrypointsAPI)
+	if err != nil {
+		return err
+	}
+	defer entrypointData.Close()
+
+	var entrypoints []db.UpsertEntryPointParams
+	if err = json.NewDecoder(entrypointData).Decode(&entrypoints); err != nil {
+		return err
+	}
+	for _, entrypoint := range entrypoints {
+		entrypoint.ProfileID = profile.ID
+		entrypoint.Address = strings.TrimPrefix(entrypoint.Address, ":")
+		if err := entrypoint.Verify(); err != nil {
+			slog.Error("Failed to verify entrypoint", "error", err)
+			continue
+		}
+		if _, err := db.Query.UpsertEntryPoint(context.Background(), entrypoint); err != nil {
+			slog.Error("Failed to upsert entrypoints", "error", err)
+			continue
+		}
+	}
+	return nil
+}
+
+func GetOverview(profile db.Profile) (interface{}, error) {
+	// Fetch overview
+	overviewData, err := fetch(profile, OverviewAPI)
+	if err != nil {
+		return nil, err
+	}
+	defer overviewData.Close()
+
+	var overview Overview
+	if err = json.NewDecoder(overviewData).Decode(&overview); err != nil {
+		return nil, err
+	}
+
+	// Fetch version
+	versionData, err := fetch(profile, VersionAPI)
+	if err != nil {
+		return nil, err
+	}
+	defer versionData.Close()
+
+	var version Version
+	if err = json.NewDecoder(versionData).Decode(&version); err != nil {
+		return nil, err
+	}
+	data := struct {
+		Overview Overview `json:"overview"`
+		Version  Version  `json:"version"`
+	}{
+		Overview: overview,
+		Version:  version,
+	}
+	return data, nil
+}
+
 func GetTraefikConfig() {
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
@@ -553,10 +613,9 @@ func GetTraefikConfig() {
 			continue
 		}
 
-		data, err := DecodeFromDB(profile.ID)
-		if err != nil {
-			slog.Error("Failed to decode config", "error", err)
-			return
+		// Fetch entrypoints
+		if err := getEntrypoints(profile); err != nil {
+			slog.Error("Failed to get entrypoints", "error", err)
 		}
 
 		// Fetch routers
@@ -587,60 +646,6 @@ func GetTraefikConfig() {
 		}
 		if err := getMiddlewares[TCPMiddleware](profile, TCPMiddlewaresAPI); err != nil {
 			slog.Error("Failed to get middlewares", "error", err)
-		}
-
-		// Fetch overview
-		overview, err := fetch(profile, OverviewAPI)
-		if err != nil {
-			slog.Error("Failed to get overview", "error", err)
-			return
-		}
-		defer overview.Close()
-
-		var dataOverview Overview
-		if err = json.NewDecoder(overview).Decode(&dataOverview); err != nil {
-			slog.Error("Failed to decode overview", "error", err)
-			return
-		}
-		data.Overview = &dataOverview
-
-		// Retrieve entrypoints
-		entrypoints, err := fetch(profile, EntrypointsAPI)
-		if err != nil {
-			slog.Error("Failed to get entrypoints", "error", err)
-			return
-		}
-		defer entrypoints.Close()
-
-		var dataEntrypoints []Entrypoint
-		if err = json.NewDecoder(entrypoints).Decode(&dataEntrypoints); err != nil {
-			slog.Error("Failed to decode entrypoints", "error", err)
-			return
-		}
-		data.Entrypoints = dataEntrypoints
-
-		// Fetch version
-		version, err := fetch(profile, VersionAPI)
-		if err != nil {
-			slog.Error("Failed to get version", "error", err)
-			return
-		}
-		defer version.Close()
-
-		var v struct {
-			Version string `json:"version"`
-		}
-
-		if err = json.NewDecoder(version).Decode(&v); err != nil {
-			slog.Error("Failed to decode version", "error", err)
-			return
-		}
-		data.Version = v.Version
-
-		// Write to db
-		if _, err := EncodeToDB(data); err != nil {
-			slog.Error("Failed to update config", "error", err)
-			return
 		}
 	}
 

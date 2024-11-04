@@ -1,4 +1,3 @@
-import type { Overview } from './overview';
 import type { CertAndStores, Options, Store } from './tls';
 
 export interface Profile {
@@ -20,11 +19,14 @@ export const newProfile = (): Profile => {
 	};
 };
 
-export interface Config {
-	profileId: number;
-	overview?: Overview;
-	entrypoints?: Entrypoint[];
-	version?: string;
+export interface Entrypoint {
+	name: string;
+	address: string;
+	asDefault: boolean;
+	http?: {
+		middlewares: string[];
+		tls?: TLSConfiguration;
+	};
 }
 
 export interface User {
@@ -86,16 +88,6 @@ export interface Setting {
 	id: number;
 	key: string;
 	value: string;
-}
-
-export interface Entrypoint {
-	name: string;
-	address: string;
-	asDefault: boolean;
-	http?: {
-		middlewares: string[];
-		tls?: TLSConfiguration;
-	};
 }
 
 export interface TLSConfiguration {
