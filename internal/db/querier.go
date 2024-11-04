@@ -9,15 +9,12 @@ import (
 )
 
 type Querier interface {
-	CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
 	CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAgentByHostname(ctx context.Context, hostname string) error
 	DeleteAgentByID(ctx context.Context, id string) error
-	DeleteConfigByProfileID(ctx context.Context, profileID int64) error
-	DeleteConfigByProfileName(ctx context.Context, name string) error
 	DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPointByNameParams) error
 	DeleteMiddlewareByID(ctx context.Context, id string) error
 	DeleteMiddlewareByName(ctx context.Context, name string) error
@@ -35,8 +32,6 @@ type Querier interface {
 	DeleteUserByUsername(ctx context.Context, username string) error
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetAgentByProfileID(ctx context.Context, arg GetAgentByProfileIDParams) (Agent, error)
-	GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error)
-	GetConfigByProfileName(ctx context.Context, name string) (Config, error)
 	GetDefaultProvider(ctx context.Context) (Provider, error)
 	GetMiddlewareByID(ctx context.Context, id string) (Middleware, error)
 	GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNameParams) (Middleware, error)
@@ -52,7 +47,6 @@ type Querier interface {
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAgents(ctx context.Context) ([]Agent, error)
 	ListAgentsByProfileID(ctx context.Context, profileID int64) ([]Agent, error)
-	ListConfigs(ctx context.Context) ([]Config, error)
 	ListEntryPoints(ctx context.Context) ([]Entrypoint, error)
 	ListEntryPointsByProfileID(ctx context.Context, profileID int64) ([]Entrypoint, error)
 	ListMiddlewares(ctx context.Context) ([]Middleware, error)
@@ -68,7 +62,6 @@ type Querier interface {
 	ListServicesByProvider(ctx context.Context, provider string) ([]Service, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
-	UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
 	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)

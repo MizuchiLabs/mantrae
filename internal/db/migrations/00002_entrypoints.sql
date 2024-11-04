@@ -2,6 +2,8 @@
 -- +goose StatementBegin
 DROP TABLE IF EXISTS config;
 
+DROP TRIGGER IF EXISTS add_profile_config;
+
 CREATE TABLE IF NOT EXISTS entrypoints (
   profile_id INTEGER NOT NULL,
   name VARCHAR(255) NOT NULL,

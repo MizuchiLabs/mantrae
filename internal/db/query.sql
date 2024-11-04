@@ -64,33 +64,6 @@ DELETE FROM profiles
 WHERE
   name = ?;
 
--- name: GetConfigByProfileID :one
-SELECT
-  *
-FROM
-  config
-WHERE
-  profile_id = ?
-LIMIT
-  1;
-
--- name: GetConfigByProfileName :one
-SELECT
-  *
-FROM
-  config
-WHERE
-  profile_id = (
-    SELECT
-      id
-    FROM
-      profiles
-    WHERE
-      name = ?
-  )
-LIMIT
-  1;
-
 -- name: ListEntryPoints :many
 SELECT
   *
@@ -128,12 +101,6 @@ WHERE
       profiles.name = ?
   )
   AND entrypoints.name = ?;
-
--- name: ListConfigs :many
-SELECT
-  *
-FROM
-  config;
 
 -- name: GetRouterByID :one
 SELECT

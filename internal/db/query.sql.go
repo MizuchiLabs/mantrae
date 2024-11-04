@@ -10,25 +10,6 @@ import (
 	"time"
 )
 
-const createConfig = `-- name: CreateConfig :one
-INSERT INTO
-  config (profile_id, entrypoints)
-VALUES
-  (?, ?) RETURNING profile_id, entrypoints
-`
-
-type CreateConfigParams struct {
-	ProfileID   int64       `json:"profileId"`
-	Entrypoints interface{} `json:"entrypoints"`
-}
-
-func (q *Queries) CreateConfig(ctx context.Context, arg CreateConfigParams) (Config, error) {
-	row := q.queryRow(ctx, q.createConfigStmt, createConfig, arg.ProfileID, arg.Entrypoints)
-	var i Config
-	err := row.Scan(&i.ProfileID, &i.Entrypoints)
-	return i, err
-}
-
 const createProfile = `-- name: CreateProfile :one
 INSERT INTO
   profiles (name, url, username, password, tls)
@@ -187,35 +168,6 @@ WHERE
 
 func (q *Queries) DeleteAgentByID(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteAgentByIDStmt, deleteAgentByID, id)
-	return err
-}
-
-const deleteConfigByProfileID = `-- name: DeleteConfigByProfileID :exec
-DELETE FROM config
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) DeleteConfigByProfileID(ctx context.Context, profileID int64) error {
-	_, err := q.exec(ctx, q.deleteConfigByProfileIDStmt, deleteConfigByProfileID, profileID)
-	return err
-}
-
-const deleteConfigByProfileName = `-- name: DeleteConfigByProfileName :exec
-DELETE FROM config
-WHERE
-  profile_id = (
-    SELECT
-      id
-    FROM
-      profiles
-    WHERE
-      name = ?
-  )
-`
-
-func (q *Queries) DeleteConfigByProfileName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteConfigByProfileNameStmt, deleteConfigByProfileName, name)
 	return err
 }
 
@@ -456,49 +408,6 @@ func (q *Queries) GetAgentByProfileID(ctx context.Context, arg GetAgentByProfile
 		&i.Deleted,
 		&i.LastSeen,
 	)
-	return i, err
-}
-
-const getConfigByProfileID = `-- name: GetConfigByProfileID :one
-SELECT
-  profile_id, entrypoints
-FROM
-  config
-WHERE
-  profile_id = ?
-LIMIT
-  1
-`
-
-func (q *Queries) GetConfigByProfileID(ctx context.Context, profileID int64) (Config, error) {
-	row := q.queryRow(ctx, q.getConfigByProfileIDStmt, getConfigByProfileID, profileID)
-	var i Config
-	err := row.Scan(&i.ProfileID, &i.Entrypoints)
-	return i, err
-}
-
-const getConfigByProfileName = `-- name: GetConfigByProfileName :one
-SELECT
-  profile_id, entrypoints
-FROM
-  config
-WHERE
-  profile_id = (
-    SELECT
-      id
-    FROM
-      profiles
-    WHERE
-      name = ?
-  )
-LIMIT
-  1
-`
-
-func (q *Queries) GetConfigByProfileName(ctx context.Context, name string) (Config, error) {
-	row := q.queryRow(ctx, q.getConfigByProfileNameStmt, getConfigByProfileName, name)
-	var i Config
-	err := row.Scan(&i.ProfileID, &i.Entrypoints)
 	return i, err
 }
 
@@ -949,36 +858,6 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 			&i.Deleted,
 			&i.LastSeen,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listConfigs = `-- name: ListConfigs :many
-SELECT
-  profile_id, entrypoints
-FROM
-  config
-`
-
-func (q *Queries) ListConfigs(ctx context.Context) ([]Config, error) {
-	rows, err := q.query(ctx, q.listConfigsStmt, listConfigs)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Config
-	for rows.Next() {
-		var i Config
-		if err := rows.Scan(&i.ProfileID, &i.Entrypoints); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -1609,26 +1488,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateConfig = `-- name: UpdateConfig :one
-UPDATE config
-SET
-  entrypoints = ?
-WHERE
-  profile_id = ? RETURNING profile_id, entrypoints
-`
-
-type UpdateConfigParams struct {
-	Entrypoints interface{} `json:"entrypoints"`
-	ProfileID   int64       `json:"profileId"`
-}
-
-func (q *Queries) UpdateConfig(ctx context.Context, arg UpdateConfigParams) (Config, error) {
-	row := q.queryRow(ctx, q.updateConfigStmt, updateConfig, arg.Entrypoints, arg.ProfileID)
-	var i Config
-	err := row.Scan(&i.ProfileID, &i.Entrypoints)
-	return i, err
 }
 
 const updateProfile = `-- name: UpdateProfile :one

@@ -24,9 +24,6 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.createConfigStmt, err = db.PrepareContext(ctx, createConfig); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateConfig: %w", err)
-	}
 	if q.createProfileStmt, err = db.PrepareContext(ctx, createProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProfile: %w", err)
 	}
@@ -44,12 +41,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteAgentByIDStmt, err = db.PrepareContext(ctx, deleteAgentByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteAgentByID: %w", err)
-	}
-	if q.deleteConfigByProfileIDStmt, err = db.PrepareContext(ctx, deleteConfigByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteConfigByProfileID: %w", err)
-	}
-	if q.deleteConfigByProfileNameStmt, err = db.PrepareContext(ctx, deleteConfigByProfileName); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteConfigByProfileName: %w", err)
 	}
 	if q.deleteEntryPointByNameStmt, err = db.PrepareContext(ctx, deleteEntryPointByName); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteEntryPointByName: %w", err)
@@ -102,12 +93,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getAgentByProfileIDStmt, err = db.PrepareContext(ctx, getAgentByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAgentByProfileID: %w", err)
 	}
-	if q.getConfigByProfileIDStmt, err = db.PrepareContext(ctx, getConfigByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetConfigByProfileID: %w", err)
-	}
-	if q.getConfigByProfileNameStmt, err = db.PrepareContext(ctx, getConfigByProfileName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetConfigByProfileName: %w", err)
-	}
 	if q.getDefaultProviderStmt, err = db.PrepareContext(ctx, getDefaultProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDefaultProvider: %w", err)
 	}
@@ -152,9 +137,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listAgentsByProfileIDStmt, err = db.PrepareContext(ctx, listAgentsByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgentsByProfileID: %w", err)
-	}
-	if q.listConfigsStmt, err = db.PrepareContext(ctx, listConfigs); err != nil {
-		return nil, fmt.Errorf("error preparing query ListConfigs: %w", err)
 	}
 	if q.listEntryPointsStmt, err = db.PrepareContext(ctx, listEntryPoints); err != nil {
 		return nil, fmt.Errorf("error preparing query ListEntryPoints: %w", err)
@@ -201,9 +183,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
-	if q.updateConfigStmt, err = db.PrepareContext(ctx, updateConfig); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateConfig: %w", err)
-	}
 	if q.updateProfileStmt, err = db.PrepareContext(ctx, updateProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateProfile: %w", err)
 	}
@@ -248,11 +227,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
-	if q.createConfigStmt != nil {
-		if cerr := q.createConfigStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createConfigStmt: %w", cerr)
-		}
-	}
 	if q.createProfileStmt != nil {
 		if cerr := q.createProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createProfileStmt: %w", cerr)
@@ -281,16 +255,6 @@ func (q *Queries) Close() error {
 	if q.deleteAgentByIDStmt != nil {
 		if cerr := q.deleteAgentByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteAgentByIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteConfigByProfileIDStmt != nil {
-		if cerr := q.deleteConfigByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteConfigByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteConfigByProfileNameStmt != nil {
-		if cerr := q.deleteConfigByProfileNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteConfigByProfileNameStmt: %w", cerr)
 		}
 	}
 	if q.deleteEntryPointByNameStmt != nil {
@@ -378,16 +342,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getAgentByProfileIDStmt: %w", cerr)
 		}
 	}
-	if q.getConfigByProfileIDStmt != nil {
-		if cerr := q.getConfigByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getConfigByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.getConfigByProfileNameStmt != nil {
-		if cerr := q.getConfigByProfileNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getConfigByProfileNameStmt: %w", cerr)
-		}
-	}
 	if q.getDefaultProviderStmt != nil {
 		if cerr := q.getDefaultProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDefaultProviderStmt: %w", cerr)
@@ -463,11 +417,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listAgentsByProfileIDStmt: %w", cerr)
 		}
 	}
-	if q.listConfigsStmt != nil {
-		if cerr := q.listConfigsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listConfigsStmt: %w", cerr)
-		}
-	}
 	if q.listEntryPointsStmt != nil {
 		if cerr := q.listEntryPointsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listEntryPointsStmt: %w", cerr)
@@ -541,11 +490,6 @@ func (q *Queries) Close() error {
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
-		}
-	}
-	if q.updateConfigStmt != nil {
-		if cerr := q.updateConfigStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateConfigStmt: %w", cerr)
 		}
 	}
 	if q.updateProfileStmt != nil {
@@ -652,15 +596,12 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                             DBTX
 	tx                             *sql.Tx
-	createConfigStmt               *sql.Stmt
 	createProfileStmt              *sql.Stmt
 	createProviderStmt             *sql.Stmt
 	createSettingStmt              *sql.Stmt
 	createUserStmt                 *sql.Stmt
 	deleteAgentByHostnameStmt      *sql.Stmt
 	deleteAgentByIDStmt            *sql.Stmt
-	deleteConfigByProfileIDStmt    *sql.Stmt
-	deleteConfigByProfileNameStmt  *sql.Stmt
 	deleteEntryPointByNameStmt     *sql.Stmt
 	deleteMiddlewareByIDStmt       *sql.Stmt
 	deleteMiddlewareByNameStmt     *sql.Stmt
@@ -678,8 +619,6 @@ type Queries struct {
 	deleteUserByUsernameStmt       *sql.Stmt
 	getAgentByIDStmt               *sql.Stmt
 	getAgentByProfileIDStmt        *sql.Stmt
-	getConfigByProfileIDStmt       *sql.Stmt
-	getConfigByProfileNameStmt     *sql.Stmt
 	getDefaultProviderStmt         *sql.Stmt
 	getMiddlewareByIDStmt          *sql.Stmt
 	getMiddlewareByNameStmt        *sql.Stmt
@@ -695,7 +634,6 @@ type Queries struct {
 	getUserByUsernameStmt          *sql.Stmt
 	listAgentsStmt                 *sql.Stmt
 	listAgentsByProfileIDStmt      *sql.Stmt
-	listConfigsStmt                *sql.Stmt
 	listEntryPointsStmt            *sql.Stmt
 	listEntryPointsByProfileIDStmt *sql.Stmt
 	listMiddlewaresStmt            *sql.Stmt
@@ -711,7 +649,6 @@ type Queries struct {
 	listServicesByProviderStmt     *sql.Stmt
 	listSettingsStmt               *sql.Stmt
 	listUsersStmt                  *sql.Stmt
-	updateConfigStmt               *sql.Stmt
 	updateProfileStmt              *sql.Stmt
 	updateProviderStmt             *sql.Stmt
 	updateSettingStmt              *sql.Stmt
@@ -731,15 +668,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                             tx,
 		tx:                             tx,
-		createConfigStmt:               q.createConfigStmt,
 		createProfileStmt:              q.createProfileStmt,
 		createProviderStmt:             q.createProviderStmt,
 		createSettingStmt:              q.createSettingStmt,
 		createUserStmt:                 q.createUserStmt,
 		deleteAgentByHostnameStmt:      q.deleteAgentByHostnameStmt,
 		deleteAgentByIDStmt:            q.deleteAgentByIDStmt,
-		deleteConfigByProfileIDStmt:    q.deleteConfigByProfileIDStmt,
-		deleteConfigByProfileNameStmt:  q.deleteConfigByProfileNameStmt,
 		deleteEntryPointByNameStmt:     q.deleteEntryPointByNameStmt,
 		deleteMiddlewareByIDStmt:       q.deleteMiddlewareByIDStmt,
 		deleteMiddlewareByNameStmt:     q.deleteMiddlewareByNameStmt,
@@ -757,8 +691,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteUserByUsernameStmt:       q.deleteUserByUsernameStmt,
 		getAgentByIDStmt:               q.getAgentByIDStmt,
 		getAgentByProfileIDStmt:        q.getAgentByProfileIDStmt,
-		getConfigByProfileIDStmt:       q.getConfigByProfileIDStmt,
-		getConfigByProfileNameStmt:     q.getConfigByProfileNameStmt,
 		getDefaultProviderStmt:         q.getDefaultProviderStmt,
 		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
 		getMiddlewareByNameStmt:        q.getMiddlewareByNameStmt,
@@ -774,7 +706,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByUsernameStmt:          q.getUserByUsernameStmt,
 		listAgentsStmt:                 q.listAgentsStmt,
 		listAgentsByProfileIDStmt:      q.listAgentsByProfileIDStmt,
-		listConfigsStmt:                q.listConfigsStmt,
 		listEntryPointsStmt:            q.listEntryPointsStmt,
 		listEntryPointsByProfileIDStmt: q.listEntryPointsByProfileIDStmt,
 		listMiddlewaresStmt:            q.listMiddlewaresStmt,
@@ -790,7 +721,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listServicesByProviderStmt:     q.listServicesByProviderStmt,
 		listSettingsStmt:               q.listSettingsStmt,
 		listUsersStmt:                  q.listUsersStmt,
-		updateConfigStmt:               q.updateConfigStmt,
 		updateProfileStmt:              q.updateProfileStmt,
 		updateProviderStmt:             q.updateProviderStmt,
 		updateSettingStmt:              q.updateSettingStmt,

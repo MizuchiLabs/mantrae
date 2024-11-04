@@ -20,11 +20,6 @@ type Agent struct {
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 
-type Config struct {
-	ProfileID   int64       `json:"profileId"`
-	Entrypoints interface{} `json:"entrypoints"`
-}
-
 type Entrypoint struct {
 	ProfileID int64       `json:"profileId"`
 	Name      string      `json:"name"`

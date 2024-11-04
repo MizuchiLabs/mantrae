@@ -114,16 +114,6 @@ CREATE TABLE IF NOT EXISTS agents (
 );
 
 -- +goose StatementBegin
-CREATE TRIGGER add_profile_config AFTER INSERT ON profiles FOR EACH ROW BEGIN
-INSERT INTO
-  config (profile_id)
-VALUES
-  (NEW.id);
-
-END;
-
--- +goose StatementEnd
--- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
 UPDATE providers
 SET
@@ -164,8 +154,6 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS settings;
 
 DROP TABLE IF EXISTS agents;
-
-DROP TRIGGER IF EXISTS add_profile_config;
 
 DROP TRIGGER IF EXISTS ensure_single_active_insert;
 
