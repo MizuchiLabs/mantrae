@@ -11,6 +11,7 @@ const config: Config = {
   favicon: "img/favicon.ico",
   url: "https://mizuchi.dev/",
   baseUrl: "/mantrae/",
+  trailingSlash: true,
   organizationName: "mizuchilabs",
   projectName: "mantrae",
   onBrokenLinks: "throw",
