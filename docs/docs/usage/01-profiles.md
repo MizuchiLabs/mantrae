@@ -32,6 +32,9 @@ Configure Traefik to use this endpoint to pull configuration details specific to
 providers:
   http:
     endpoint: "http://mantrae:3000/api/default"
+    # Optional if you enabled basic auth on mantrae itself
+    headers:
+      Authorization: Basic <base64 encoded username:password>
 ```
 
 ---
