@@ -28,6 +28,11 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// IsTest returns true if the current program is running in a test environment
+func IsTest() bool {
+	return strings.HasSuffix(os.Args[0], ".test")
+}
+
 // GenPassword generates a random password of the specified length
 func GenPassword(length int) string {
 	bytes := make([]byte, length)

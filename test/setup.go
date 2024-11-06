@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"encoding/json"
+	"os"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
@@ -11,6 +12,8 @@ import (
 )
 
 func SetupDB() error {
+	os.Setenv("SECRET", gofakeit.Password(true, true, true, true, true, 24))
+
 	// Initialize the in-memory database
 	if err := db.InitDB(); err != nil {
 		return err

@@ -32,6 +32,10 @@ func init() {
 		log.Fatal(err)
 	}
 
+	if IsTest() {
+		return
+	}
+
 	if App.Secret == "" {
 		log.Fatal("SECRET environment variable not set")
 	}

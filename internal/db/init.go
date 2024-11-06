@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/pressly/goose/v3"
@@ -32,16 +30,11 @@ const initScript = `
 	PRAGMA temp_store = MEMORY;
 `
 
-// isTest returns true if the current program is running in a test environment
-func isTest() bool {
-	return strings.HasSuffix(os.Args[0], ".test")
-}
-
 func InitDB() error {
 	var db *sql.DB
 	var err error
 
-	if isTest() {
+	if util.IsTest() {
 		db, err = sql.Open("sqlite", "file::memory:?cache=shared")
 		if err != nil {
 			return fmt.Errorf("failed to open database: %w", err)
