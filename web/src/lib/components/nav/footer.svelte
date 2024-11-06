@@ -1,23 +1,38 @@
 <script lang="ts">
 	import { version } from '$lib/api';
+	import { BookText } from 'lucide-svelte';
+	import { Button } from '../ui/button';
 </script>
 
 <footer
-	class="bottom-0 left-16 right-0 mx-4 flex flex-row items-center justify-between gap-2 bg-background p-2"
+	class="bottom-0 left-16 right-0 flex flex-row items-center justify-end bg-background px-2 py-1"
 >
-	<div class="flex flex-row items-center gap-1 text-xs text-gray-700/50">
-		{#if $version && $version !== 'unknown'}
+	<div class="flex flex-row items-center divide-x text-xs text-muted-foreground">
+		<Button
+			variant="ghost"
+			href="https://mizuchi.dev/mantrae/"
+			target="_blank"
+			rel="noreferrer"
+			size="sm"
+			class="flex items-center gap-1 text-xs"
+		>
+			<BookText size={16} />
+			Docs
+		</Button>
+		<Button
+			variant="ghost"
+			href="https://github.com/mizuchilabs/mantrae"
+			target="_blank"
+			rel="noreferrer"
+			size="sm"
+			class="flex items-center gap-1 text-xs"
+		>
 			Mantrae
-			{$version}
-		{/if}
-	</div>
-
-	<div class="flex flex-row items-center gap-2">
-		<!-- <a href="/" target="_blank" rel="noreferrer"> -->
-		<!-- 	<iconify-icon icon="solar:book-bold-duotone" /> -->
-		<!-- </a> -->
-		<a href="https://github.com/mizuchilabs/mantrae" target="_blank" rel="noreferrer">
-			<iconify-icon icon="line-md:github-loop" />
-		</a>
+			{#if $version && $version !== 'unknown'}
+				{$version}
+			{:else}
+				v0.0.0
+			{/if}
+		</Button>
 	</div>
 </footer>

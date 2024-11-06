@@ -5,7 +5,8 @@ go 1.23.0
 require (
 	connectrpc.com/connect v1.17.0
 	github.com/brianvoe/gofakeit/v7 v7.1.1
-	github.com/cloudflare/cloudflare-go v0.108.0
+	github.com/caarlos0/env/v11 v11.2.2
+	github.com/cloudflare/cloudflare-go v0.109.0
 	github.com/docker/docker v27.3.1+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0

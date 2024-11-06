@@ -70,7 +70,7 @@ func Log(next http.Handler) http.Handler {
 			)
 			return
 		}
-		if status >= 200 && status < 400 {
+		if status >= 200 && status < 400 && util.App.LogLevel == "debug" {
 			slog.Info("Request",
 				"method", r.Method,
 				"url", r.URL.Path,

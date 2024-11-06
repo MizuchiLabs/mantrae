@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -139,7 +138,7 @@ func validate(header http.Header) error {
 	if !strings.HasPrefix(auth, "Bearer ") {
 		return connect.NewError(connect.CodeUnauthenticated, errors.New("missing bearer prefix"))
 	}
-	if strings.TrimSpace(os.Getenv("SECRET")) != strings.TrimPrefix(auth, "Bearer ") {
+	if strings.TrimSpace(util.App.Secret) != strings.TrimPrefix(auth, "Bearer ") {
 		return connect.NewError(
 			connect.CodeUnauthenticated,
 			errors.New("failed to validate token"),

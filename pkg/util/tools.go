@@ -69,11 +69,6 @@ func HashBasicAuth(userString string) (string, error) {
 
 // EncodeUserJWT generates a JWT for user login
 func EncodeUserJWT(username string) (string, error) {
-	secret := os.Getenv("SECRET")
-	if secret == "" {
-		return "", errors.New("SECRET environment variable is not set")
-	}
-
 	if username == "" {
 		return "", errors.New("username cannot be empty")
 	}
@@ -88,16 +83,11 @@ func EncodeUserJWT(username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	return token.SignedString([]byte(App.Secret))
 }
 
 // EncodeAgentJWT generates a JWT for the agent
 func EncodeAgentJWT(serverURL string, profileID int64) (string, error) {
-	secret := os.Getenv("SECRET")
-	if secret == "" {
-		return "", errors.New("SECRET environment variable is not set")
-	}
-
 	if serverURL == "" {
 		return "", errors.New("serverURL cannot be empty")
 	}
@@ -110,7 +100,7 @@ func EncodeAgentJWT(serverURL string, profileID int64) (string, error) {
 	claims := Claims{
 		ServerURL: serverURL,
 		ProfileID: profileID,
-		Secret:    secret, // Optionally store the secret here
+		Secret:    App.Secret,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -118,7 +108,7 @@ func EncodeAgentJWT(serverURL string, profileID int64) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret)) // Server uses its secret for signing
+	return token.SignedString([]byte(App.Secret))
 }
 
 // DecodeJWT decodes the token and returns claims if valid
@@ -128,8 +118,7 @@ func DecodeJWT(tokenString string) (*Claims, error) {
 		tokenString,
 		claims,
 		func(token *jwt.Token) (interface{}, error) {
-			// Validate the algorithm and return the server's secret
-			return []byte(os.Getenv("SECRET")), nil // Use the secret from claims to verify
+			return []byte(App.Secret), nil
 		},
 	)
 

@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/MizuchiLabs/mantrae/web"
 )
 
-func Routes(useAuth bool) http.Handler {
+func Routes() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/login", Login)
@@ -67,7 +68,7 @@ func Routes(useAuth bool) http.Handler {
 
 	mux.HandleFunc("GET /api/traefik/{id}", JWT(GetTraefikOverview))
 
-	if useAuth {
+	if util.App.EnableBasicAuth {
 		mux.HandleFunc("GET /api/{name}", BasicAuth(GetTraefikConfig))
 	} else {
 		mux.HandleFunc("GET /api/{name}", GetTraefikConfig)

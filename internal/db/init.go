@@ -52,7 +52,7 @@ func InitDB() error {
 			return err
 		})
 
-		db, err = sql.Open("sqlite", "file:"+util.Path(util.DBName))
+		db, err = sql.Open("sqlite", "file:"+util.DBPath())
 		if err != nil {
 			return fmt.Errorf("failed to open database: %w", err)
 		}

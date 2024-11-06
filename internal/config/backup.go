@@ -97,7 +97,7 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 	db.DB.Close()
 
 	// Delete Database
-	if err = os.Remove(util.Path(util.DBName)); err != nil && !os.IsNotExist(err) {
+	if err = os.Remove(util.DBPath()); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to delete existing database: %w", err)
 	}
 
@@ -182,7 +182,7 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 func BackupDatabase() error {
 	timestamp := time.Now().Format("2006-01-02")
 	backupName := fmt.Sprintf("backup-%s.tar.gz", timestamp)
-	backupPath := fmt.Sprintf("%s/%s", util.Path(util.BackupDir), backupName)
+	backupPath := fmt.Sprintf("%s/%s", util.BackupPath(), backupName)
 
 	// Create the backup directory if it doesn't exist
 	backupDir := filepath.Dir(backupPath)
@@ -198,7 +198,7 @@ func BackupDatabase() error {
 	}
 
 	// Open the original database file
-	dbFile, err := os.Open(util.Path(util.DBName))
+	dbFile, err := os.Open(util.DBPath())
 	if err != nil {
 		return fmt.Errorf("failed to open original database file: %w", err)
 	}
@@ -230,7 +230,7 @@ func BackupDatabase() error {
 		return fmt.Errorf("failed to get file info header: %w", err)
 	}
 
-	header.Name = util.DBName
+	header.Name = util.DBPath()
 	if err = tarWriter.WriteHeader(header); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
@@ -288,7 +288,7 @@ func CleanupBackups() error {
 	}
 
 	// Get the list of backup files
-	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.tar.gz", util.Path(util.BackupDir)))
+	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.tar.gz", util.BackupPath()))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)
 	}

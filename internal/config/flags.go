@@ -20,19 +20,12 @@ type Flags struct {
 	URL      string
 	Username string
 	Password string
-	Config   string
-	UseAuth  bool
 	Update   bool
 	Reset    bool
-	Agent    AgentFlags
 }
 
-type AgentFlags struct {
-	Enabled bool
-	Port    string
-}
-
-func (f *Flags) Parse() error {
+func Parse() error {
+	var f Flags
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.StringVar(&f.Port, "port", "3000", "Port to listen on")
 	flag.StringVar(
@@ -43,14 +36,8 @@ func (f *Flags) Parse() error {
 	)
 	flag.StringVar(&f.Username, "username", "", "Specify the username for the Traefik instance")
 	flag.StringVar(&f.Password, "password", "", "Specify the password for the Traefik instance")
-	flag.StringVar(&f.Config, "config", "", "Specify the path to the config location")
-	flag.BoolVar(&f.UseAuth, "auth", false, "Use basic authentication for the profile endpoint")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
 	flag.BoolVar(&f.Reset, "reset", false, "Reset the default admin password")
-
-	// Agent flags
-	flag.BoolVar(&f.Agent.Enabled, "agent.enabled", true, "Enable the agent server")
-	flag.StringVar(&f.Agent.Port, "agent.port", "8090", "Port to listen on for agents")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -58,9 +45,6 @@ func (f *Flags) Parse() error {
 	if f.Version {
 		fmt.Println(util.Version)
 		os.Exit(0)
-	}
-	if f.Config != "" {
-		util.MainDir = f.Config
 	}
 	if err := SetDefaultAdminUser(); err != nil {
 		return err
@@ -79,6 +63,10 @@ func (f *Flags) Parse() error {
 			return err
 		}
 		os.Exit(0)
+	}
+
+	if f.Port != "" {
+		util.App.Port = f.Port
 	}
 
 	util.UpdateSelf(f.Update)
@@ -166,10 +154,6 @@ func SetDefaultProfile(url, username, password string) error {
 }
 
 func SetDefaultSettings() error {
-	serverURL := os.Getenv("SERVER_URL")
-	if serverURL == "" {
-		serverURL = "http://localhost:8090"
-	}
 	baseSettings := []db.Setting{
 		{
 			Key:   "backup-enabled",
@@ -185,7 +169,7 @@ func SetDefaultSettings() error {
 		},
 		{
 			Key:   "server-url",
-			Value: serverURL,
+			Value: util.App.ServerURL,
 		},
 		{
 			Key:   "agent-cleanup-enabled",

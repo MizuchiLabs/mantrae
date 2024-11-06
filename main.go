@@ -15,13 +15,14 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )
 
 // Set up global logger with specified configuration
 func init() {
 	opts := &tint.Options{}
-	switch strings.ToLower(os.Getenv("LOG_LEVEL")) {
+	switch strings.ToLower(util.App.LogLevel) {
 	case "debug":
 		opts.Level = slog.LevelDebug
 	case "info":
@@ -38,10 +39,6 @@ func init() {
 }
 
 func main() {
-	if _, ok := os.LookupEnv("SECRET"); !ok {
-		slog.Error("SECRET environment variable not set")
-		return
-	}
 	if err := db.InitDB(); err != nil {
 		slog.Error("Failed to initialize database", "error", err)
 		return
@@ -49,8 +46,7 @@ func main() {
 	defer db.DB.Close() // Close the database connection when the program exits
 
 	// Parse command-line flags and set default settings
-	var flags config.Flags
-	if err := flags.Parse(); err != nil {
+	if err := config.Parse(); err != nil {
 		slog.Error("Failed to parse flags", "error", err)
 		return
 	}
@@ -69,16 +65,16 @@ func main() {
 	go dns.Sync(ctx)
 
 	// Start the grpc server
-	go api.Server(flags.Agent.Port)
+	go api.Server(util.App.AgentPort)
 
 	// Start the WebUI server
 	srv := &http.Server{
-		Addr:              ":" + flags.Port,
-		Handler:           api.Routes(flags.UseAuth),
+		Addr:              ":" + util.App.Port,
+		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	slog.Info("Server running on", "port", flags.Port)
+	slog.Info("Server running on", "port", util.App.Port)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("ListenAndServe", "error", err)
