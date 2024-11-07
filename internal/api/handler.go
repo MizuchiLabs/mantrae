@@ -954,7 +954,6 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
 		return
 	}
-	fmt.Printf("id: %v\n", id)
 
 	token, err := util.EncodeAgentJWT(id)
 	if err != nil {
