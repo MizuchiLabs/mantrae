@@ -70,7 +70,7 @@ func (s *AgentServer) RefreshToken(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	token, err := util.EncodeAgentJWT(decoded.ServerURL, decoded.ProfileID)
+	token, err := util.EncodeAgentJWT(decoded.ProfileID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

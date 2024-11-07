@@ -13,7 +13,7 @@ type AppConfig struct {
 	Secret          string `env:"SECRET"            envDefault:""`
 	Port            string `env:"PORT"              envDefault:"3000"`
 	AgentPort       string `env:"AGENT_PORT"        envDefault:"8090"`
-	ServerURL       string `env:"SERVER_URL"        envDefault:"http://localhost:8090"`
+	ServerURL       string `env:"SERVER_URL"        envDefault:"http://localhost"`
 	EnableBasicAuth bool   `env:"ENABLE_BASIC_AUTH" envDefault:"false"`
 	EnableAgent     bool   `env:"ENABLE_AGENT"      envDefault:"true"`
 	ConfigDir       string `env:"CONFIG_DIR"        envDefault:""`

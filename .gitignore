@@ -17,6 +17,7 @@ mantrae-agent
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
+cover.html
 *.out
 
 # Dependency directories (remove the comment below to include it)

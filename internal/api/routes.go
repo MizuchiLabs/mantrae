@@ -57,9 +57,9 @@ func Routes() http.Handler {
 	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
 
 	mux.HandleFunc("GET /api/agent/{id}", JWT(GetAgents))
+	mux.HandleFunc("GET /api/agent/token/{id}", JWT(GetAgentToken))
 	mux.HandleFunc("PUT /api/agent/{id}", JWT(UpsertAgent))
 	mux.HandleFunc("DELETE /api/agent/{id}/{type}", JWT(DeleteAgent))
-	mux.HandleFunc("POST /api/agent/token", JWT(GetAgentToken))
 
 	mux.HandleFunc("GET /api/ip/{id}", JWT(GetPublicIP))
 

@@ -6,11 +6,10 @@
 	import AgentModal from '$lib/components/modals/agent.svelte';
 	import {
 		agents,
-		getSettings,
-		getAgents,
 		agentToken,
 		deleteAgent,
 		softDeleteAgent,
+		getAgentToken,
 		profile
 	} from '$lib/api';
 	import { type Agent } from '$lib/types/base';
@@ -37,8 +36,7 @@
 
 	profile.subscribe((value) => {
 		if (!value?.id) return;
-		getAgents();
-		getSettings();
+		getAgentToken();
 	});
 </script>
 

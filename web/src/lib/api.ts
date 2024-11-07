@@ -3,7 +3,7 @@ import { toast } from 'svelte-sonner';
 import type { Profile, DNSProvider, User, Setting, Agent, Entrypoint } from './types/base';
 import type { Plugin } from './types/plugins';
 import type { Middleware } from './types/middlewares';
-import { derived, get, writable, type Writable } from 'svelte/store';
+import { get, writable, type Writable } from 'svelte/store';
 import { type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
 import { PROFILE_SK, TOKEN_SK } from './store';
@@ -27,6 +27,7 @@ export const plugins: Writable<Plugin[]> = writable();
 export const dynamic = writable('');
 export const version = writable('');
 export const configError = writable('');
+export const agentToken = writable('');
 
 async function handleRequest(
 	endpoint: string,
@@ -484,31 +485,15 @@ export async function softDeleteAgent(id: number) {
 }
 
 // Agent Token derived store
-export const agentToken = derived(
-	[settings, profile],
-	([$settings, $profile], set) => {
-		const serverURL = $settings?.find((s) => s.key === 'server-url')?.value;
-		const profileID = $profile?.id;
-
-		if (serverURL && profileID) {
-			const payload = {
-				ServerURL: serverURL,
-				ProfileID: profileID
-			};
-
-			// Fetch the token
-			handleRequest(`/agent/token`, 'POST', payload)
-				.then((response) => response?.json())
-				.then((data) => {
-					set(data.token || '');
-				})
-				.catch(() => set(''));
-		} else {
-			set(''); // Reset to an empty string if values are missing
-		}
-	},
-	''
-);
+export async function getAgentToken() {
+	const profileID = get(profile)?.id;
+	if (!profileID) return;
+	const response = await handleRequest(`/agent/token/${profileID}`, 'GET');
+	if (response) {
+		const data = await response.json();
+		agentToken.set(data.token || '');
+	}
+}
 
 // Backup ---------------------------------------------------------------------
 export async function downloadBackup() {

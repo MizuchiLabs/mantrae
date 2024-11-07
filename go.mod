@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joeig/go-powerdns/v3 v3.14.1
 	github.com/lmittmann/tint v1.0.5
+	github.com/markbates/goth v1.80.0
 	github.com/pressly/goose/v3 v3.22.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/traefik/paerser v0.2.1
@@ -25,6 +26,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.5.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -43,6 +45,8 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/gorilla/sessions v1.4.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/http-wasm/http-wasm-host-go v0.7.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -65,6 +69,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect

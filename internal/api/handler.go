@@ -31,7 +31,7 @@ func writeJSON(w http.ResponseWriter, data any) {
 
 // Authentication -------------------------------------------------------------
 
-// Login verifies the user credentials
+// Login verifies the user credentials using normal password
 func Login(w http.ResponseWriter, r *http.Request) {
 	var user db.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -127,111 +127,6 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-}
-
-// Agents ---------------------------------------------------------------------
-
-// GetAgents returns all agents
-func GetAgents(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-
-	agents, err := db.Query.ListAgentsByProfileID(context.Background(), id)
-	if err != nil {
-		http.Error(w, "Failed to get agents", http.StatusInternalServerError)
-		return
-	}
-
-	for i := range agents {
-		if err := agents[i].DecodeFields(); err != nil {
-			slog.Error("Failed to decode agent", "name", agents[i].ID, "error", err)
-		}
-	}
-	writeJSON(w, agents)
-}
-
-func UpsertAgent(w http.ResponseWriter, r *http.Request) {
-	var agent db.UpsertAgentParams
-	if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode agent: %s", err.Error()),
-			http.StatusBadRequest,
-		)
-		return
-	}
-	if err := agent.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	data, err := db.Query.UpsertAgent(context.Background(), agent)
-	if err != nil {
-		http.Error(w, "Failed to upsert agent", http.StatusInternalServerError)
-		return
-	}
-
-	if err := data.DecodeFields(); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode service: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-	}
-
-	writeJSON(w, data)
-}
-
-func DeleteAgent(w http.ResponseWriter, r *http.Request) {
-	deletionType := r.PathValue("type")
-	if deletionType == "hard" {
-		if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
-			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		return
-	} else if deletionType == "soft" {
-		agent, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
-			ID:      r.PathValue("id"),
-			Deleted: true,
-		})
-		if err != nil {
-			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
-			return
-		}
-
-		writeJSON(w, agent)
-		return
-	}
-}
-
-// GetAgentToken returns an agent token
-func GetAgentToken(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		ServerURL string `json:"serverURL"`
-		ProfileID int64  `json:"profileID"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if data.ServerURL == "" {
-		http.Error(w, "Server URL cannot be empty", http.StatusBadRequest)
-		return
-	}
-
-	token, err := util.EncodeAgentJWT(data.ServerURL, data.ProfileID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	writeJSON(w, map[string]string{"token": token})
 }
 
 // Profiles -------------------------------------------------------------------
@@ -668,7 +563,7 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go data.SSLCheck() // TODO: fix
+	go data.SSLCheck()
 	writeJSON(w, data)
 }
 
@@ -967,6 +862,107 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, data)
+}
+
+// Agents ---------------------------------------------------------------------
+
+// GetAgents returns all agents
+func GetAgents(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+
+	agents, err := db.Query.ListAgentsByProfileID(context.Background(), id)
+	if err != nil {
+		http.Error(w, "Failed to get agents", http.StatusInternalServerError)
+		return
+	}
+
+	for i := range agents {
+		if err := agents[i].DecodeFields(); err != nil {
+			slog.Error("Failed to decode agent", "name", agents[i].ID, "error", err)
+		}
+	}
+	writeJSON(w, agents)
+}
+
+func UpsertAgent(w http.ResponseWriter, r *http.Request) {
+	var agent db.UpsertAgentParams
+	if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode agent: %s", err.Error()),
+			http.StatusBadRequest,
+		)
+		return
+	}
+	if err := agent.Verify(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	data, err := db.Query.UpsertAgent(context.Background(), agent)
+	if err != nil {
+		http.Error(w, "Failed to upsert agent", http.StatusInternalServerError)
+		return
+	}
+
+	if err := data.DecodeFields(); err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to decode service: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+	}
+
+	writeJSON(w, data)
+}
+
+func DeleteAgent(w http.ResponseWriter, r *http.Request) {
+	deletionType := r.PathValue("type")
+	if deletionType == "hard" {
+		if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
+			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	} else if deletionType == "soft" {
+		agent, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
+			ID:      r.PathValue("id"),
+			Deleted: true,
+		})
+		if err != nil {
+			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
+			return
+		}
+
+		writeJSON(w, agent)
+		return
+	} else {
+		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
+		return
+	}
+}
+
+// GetAgentToken returns an agent token
+func GetAgentToken(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+	fmt.Printf("id: %v\n", id)
+
+	token, err := util.EncodeAgentJWT(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, map[string]string{"token": token})
 }
 
 // Backup ---------------------------------------------------------------------

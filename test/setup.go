@@ -7,6 +7,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
+	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"
 )
@@ -30,14 +31,14 @@ func SetupDB() error {
 // Seed random data for testing tables
 func seedMockData() error {
 	// Seed Users
-	var users []db.User
 	for i := 0; i < 5; i++ {
 		email := gofakeit.Email()
-		data, err := db.Query.CreateUser(
+		password, _ := util.HashPassword(gofakeit.Password(true, true, true, true, true, 24))
+		_, err := db.Query.UpsertUser(
 			context.Background(),
-			db.CreateUserParams{
+			db.UpsertUserParams{
 				Username: gofakeit.Username(),
-				Password: gofakeit.Password(true, true, true, true, true, 24),
+				Password: password,
 				Email:    &email,
 				Type:     "user",
 			},
@@ -45,8 +46,24 @@ func seedMockData() error {
 		if err != nil {
 			return err
 		}
+	}
 
-		users = append(users, data)
+	// Additional testuser
+	password, err := util.HashPassword("test")
+	if err != nil {
+		return err
+	}
+	_, err = db.Query.UpsertUser(
+		context.Background(),
+		db.UpsertUserParams{
+			Username: "test",
+			Password: password,
+			Email:    nil,
+			Type:     "user",
+		},
+	)
+	if err != nil {
+		return err
 	}
 
 	// Seed Providers
@@ -127,6 +144,25 @@ func seedMockData() error {
 		}
 
 		agents = append(agents, data)
+	}
+
+	// Additional testagent
+	testAgentIP := gofakeit.IPv4Address()
+	_, err = db.Query.UpsertAgent(
+		context.Background(),
+		db.UpsertAgentParams{
+			ID:         "test",
+			ProfileID:  profiles[gofakeit.Number(0, len(profiles)-1)].ID,
+			Hostname:   "test",
+			PublicIp:   &testAgentIP,
+			PrivateIps: nil,
+			Containers: nil,
+			ActiveIp:   nil,
+			Deleted:    false,
+		},
+	)
+	if err != nil {
+		return err
 	}
 
 	// Seed Routers, Services, Middlewares

@@ -179,6 +179,10 @@ func SetDefaultSettings() error {
 			Key:   "agent-cleanup-timeout",
 			Value: "168h",
 		},
+		{
+			Key:   "oauth-provider",
+			Value: "",
+		},
 	}
 
 	for _, setting := range baseSettings {
