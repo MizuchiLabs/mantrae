@@ -9,6 +9,7 @@ steps:
       - git config --global user.name "${CI_COMMIT_AUTHOR}"
       - git config --global user.email "${CI_COMMIT_AUTHOR_EMAIL}"
       - echo "machine github.com login ${CI_COMMIT_AUTHOR} password ${GITHUB_TOKEN}" > ~/.netrc
+      - chmod 600 ~/.netrc
       - corepack enable
       - corepack prepare pnpm@latest --activate
       - pnpm config set store-dir .pnpm-store
@@ -17,7 +18,6 @@ steps:
       - pnpm run build
       - pnpm run deploy
     environment:
-      GIT_USER: ${CI_COMMIT_AUTHOR}
       GITHUB_TOKEN:
         from_secret: gh_token
 

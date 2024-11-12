@@ -1,6 +1,8 @@
 when:
   - event: [push, tag, deployment, manual]
     branch: main
+  - path:
+      exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
 
 steps:
   - name: frontend-build
