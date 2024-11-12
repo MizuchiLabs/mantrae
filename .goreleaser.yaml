@@ -61,5 +61,23 @@ report_sizes: true
 changelog:
   sort: asc
   filters:
-    exclude:
-      - '^web:'
+    include:
+      - '^feat:'
+      - '^bug:'
+      - '^sec:'
+      - '^doc:'
+  groups:
+    - title: "🚀 Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🔒 Security"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "🐛 Bug fixes"
+      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "📚 Documentation"
+      regexp: '^.*?doc(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: Misc
+      order: 999
