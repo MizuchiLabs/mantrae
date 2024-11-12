@@ -46,10 +46,10 @@ Environment variables can be used to set up Mantrae and configure its settings. 
 
 ### Database Configuration
 
-| Variable  | Default   | Description                                                |
-| --------- | --------- | ---------------------------------------------------------- |
-| `DB_TYPE` | `sqlite`  | Database type. Supported options: `sqlite`.                |
-| `DB_NAME` | `mantrae` | Database name (only applies if `DB_TYPE` is not `sqlite`). |
+| Variable  | Default   | Description                                 |
+| --------- | --------- | ------------------------------------------- |
+| `DB_TYPE` | `sqlite`  | Database type. Supported options: `sqlite`. |
+| `DB_NAME` | `mantrae` | Database name.                              |
 
 ### Example Usage
 
