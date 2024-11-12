@@ -18,6 +18,7 @@ steps:
       - pnpm run build
       - pnpm run deploy
     environment:
+      GIT_USER: ${CI_COMMIT_AUTHOR}
       GITHUB_TOKEN:
         from_secret: gh_token
 
