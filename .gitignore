@@ -25,7 +25,6 @@ cover.html
 
 # Go workspace file
 go.work
-*.json
 *.db
 *.db-shm
 *.db-wal
