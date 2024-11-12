@@ -1,6 +1,6 @@
 when:
   - branch: main
-  - event: [push, tag, deployment, manual]
+    event: [push, tag, deployment, manual]
 
 steps:
   - name: deploy-docs

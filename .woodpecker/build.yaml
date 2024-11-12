@@ -1,7 +1,7 @@
 when:
   - branch: main
-  - event: [push, tag, deployment, manual]
-  - path:
+    event: [push, tag, deployment, manual]
+    path:
       exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
 
 steps:
