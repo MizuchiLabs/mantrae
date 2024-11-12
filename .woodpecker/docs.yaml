@@ -6,6 +6,8 @@ steps:
   - name: deploy-docs
     image: node:20
     commands:
+      - git config --global user.name "Woodpecker Bot"
+      - git config --global user.email "ci@mizuchi.dev"
       - mkdir -p $HOME/.ssh
       - ssh-keyscan -t rsa github.com >> $HOME/.ssh/known_hosts
       - echo "$GITHUB_TOKEN" > "$HOME/.ssh/id_rsa"
