@@ -42,23 +42,6 @@ steps:
       password:
         from_secret: gh_token
 
-  - name: deploy-docs
-    image: node:20
-    commands:
-      - git config --global user.name "${CI_COMMIT_AUTHOR}"
-      - git config --global user.email "${CI_COMMIT_AUTHOR_EMAIL}"
-      - echo "machine github.com login ${CI_COMMIT_AUTHOR} password ${GITHUB_TOKEN}" > ~/.netrc
-      - corepack enable
-      - corepack prepare pnpm@latest --activate
-      - pnpm config set store-dir .pnpm-store
-      - cd docs
-      - pnpm install
-      - pnpm deploy
-    environment:
-      GIT_USER: ${CI_COMMIT_AUTHOR}
-      GITHUB_TOKEN:
-        from_secret: gh_token
-
   - name: release
     image: goreleaser/goreleaser
     commands:
