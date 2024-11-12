@@ -29,9 +29,9 @@
 		>
 			Mantrae
 			{#if $version && $version !== 'unknown'}
-				{$version}
+				v{$version}
 			{:else}
-				v0.0.0
+				<span class="italic">latest</span>
 			{/if}
 		</Button>
 	</div>

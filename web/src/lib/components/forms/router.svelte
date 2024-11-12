@@ -118,11 +118,7 @@
 	};
 
 	// Check if router name is taken unless self
-	let isNameTaken = false;
-	let routerCompare = $routers.filter((r) => r.name !== router.name);
-	$: isNameTaken = routerCompare.some(
-		(r) => r.name.split('@')[0].toLowerCase() === router.name.split('@')[0].toLowerCase()
-	);
+	$: nameTaken = $routers.some((r) => r.id !== router.id && r.name === router.name);
 
 	// Set default TLS settings
 	$: router.tls = router.tls || {};
@@ -206,6 +202,9 @@
 					</span>
 				{/if}
 			</div>
+			{#if nameTaken}
+				<div class="col-span-4 text-right text-sm text-red-500">Name already taken</div>
+			{/if}
 			{#if errors.name}
 				<div class="col-span-4 text-right text-sm text-red-500">{errors.name}</div>
 			{/if}

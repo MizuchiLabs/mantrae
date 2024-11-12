@@ -89,8 +89,7 @@
 	};
 
 	// Check if middleware name is taken
-	let isNameTaken = false;
-	$: isNameTaken = $middlewares.some((m) => m.name === middleware.name);
+	$: nameTaken = $middlewares.some((m) => m.id !== middleware.id && m.name === middleware.name);
 
 	onMount(async () => {
 		form = await LoadMiddlewareForm(middleware);
@@ -189,6 +188,9 @@
 					</span>
 				{/if}
 			</div>
+			{#if nameTaken}
+				<div class="col-span-4 text-right text-sm text-red-500">Name already taken</div>
+			{/if}
 		</div>
 
 		<!-- Dynamic Form -->
