@@ -48,6 +48,7 @@ steps:
       - git config --global user.name "${CI_REPO_OWNER}"
       - git config --global user.email "${CI_COMMIT_AUTHOR_EMAIL}"
       - echo "machine github.com login ${CI_REPO_OWNER} password ${GITHUB_TOKEN}" > ~/.netrc
+      - cd docs
       - yarn install
       - GIT_USER=${CI_REPO_OWNER} yarn deploy
     environment:
