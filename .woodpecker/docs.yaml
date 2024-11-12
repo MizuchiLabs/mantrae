@@ -14,8 +14,8 @@ steps:
       - pnpm config set store-dir .pnpm-store
       - cd docs
       - pnpm install
-      - pnpm build
-      - pnpm deploy
+      - pnpm run build
+      - pnpm run deploy
     environment:
       GIT_USER: ${CI_COMMIT_AUTHOR}
       GITHUB_TOKEN:
