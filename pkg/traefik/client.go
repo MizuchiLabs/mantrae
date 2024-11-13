@@ -608,6 +608,11 @@ func GetTraefikConfig() {
 		return
 	}
 
+	// TODO: Ignore fetching for tests for now
+	if util.IsTest() {
+		return
+	}
+
 	for _, profile := range profiles {
 		if profile.Url == "" {
 			continue
@@ -690,7 +695,7 @@ func fetch(profile db.Profile, endpoint string) (io.ReadCloser, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if *profile.Username != "" && *profile.Password != "" {
+	if profile.Username != nil && profile.Password != nil {
 		req.SetBasicAuth(*profile.Username, *profile.Password)
 	}
 

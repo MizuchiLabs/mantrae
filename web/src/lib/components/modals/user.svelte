@@ -9,23 +9,11 @@
 	export let user: User;
 	export let disabled = false;
 	export let open = false;
-	let pw = '';
-	let pwconfirm = '';
 
+	let userForm: UserForm;
 	const update = async () => {
-		if (user.username === '') {
-			toast.error('Username cannot be empty');
-			return;
-		}
-
-		if (pw !== '') {
-			if (pw === pwconfirm) {
-				user.password = pw;
-			} else {
-				toast.error('Passwords do not match');
-				return;
-			}
-		}
+		const valid = userForm.validate();
+		if (!valid) return;
 
 		if (user.id) {
 			await updateUser(user);
@@ -37,15 +25,13 @@
 			await createUser(user);
 		}
 		open = false;
-		pw = '';
-		pwconfirm = '';
 	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger />
 	<Dialog.Content>
-		<UserForm bind:user bind:pw bind:pwconfirm {disabled} />
+		<UserForm bind:user bind:this={userForm} {disabled} />
 		<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

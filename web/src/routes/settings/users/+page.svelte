@@ -5,7 +5,7 @@
 	import { deleteUser, getUsers, users } from '$lib/api';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { newUser, type User } from '$lib/types/base';
-	import { Bot, UserIcon, Plus } from 'lucide-svelte';
+	import { UserIcon, Plus, Crown } from 'lucide-svelte';
 
 	let user: User;
 	let openModal = false;
@@ -47,10 +47,10 @@
 					<Card.Title class="flex items-center justify-between gap-2">
 						<span>{u.username}</span>
 						<div class="flex items-center gap-2">
-							{#if u.type === 'user'}
-								<UserIcon />
+							{#if u.isAdmin}
+								<Crown />
 							{:else}
-								<Bot />
+								<UserIcon />
 							{/if}
 						</div>
 					</Card.Title>

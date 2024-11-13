@@ -119,16 +119,16 @@ func (q *Queries) CreateSetting(ctx context.Context, arg CreateSettingParams) (S
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO
-  users (username, password, email, type)
+  users (username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?) RETURNING id, username, password, email, type
+  (?, ?, ?, ?) RETURNING id, username, password, email, is_admin
 `
 
 type CreateUserParams struct {
 	Username string  `json:"username"`
 	Password string  `json:"password"`
 	Email    *string `json:"email"`
-	Type     string  `json:"type"`
+	IsAdmin  bool    `json:"isAdmin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -136,7 +136,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Username,
 		arg.Password,
 		arg.Email,
-		arg.Type,
+		arg.IsAdmin,
 	)
 	var i User
 	err := row.Scan(
@@ -144,7 +144,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Type,
+		&i.IsAdmin,
 	)
 	return i, err
 }
@@ -349,19 +349,25 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 	return err
 }
 
-const getAgentByID = `-- name: GetAgentByID :one
+const getAgentByHostname = `-- name: GetAgentByHostname :one
 SELECT
   id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 WHERE
-  id = ?
+  hostname = ?
+  AND profile_id = ?
 LIMIT
   1
 `
 
-func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
-	row := q.queryRow(ctx, q.getAgentByIDStmt, getAgentByID, id)
+type GetAgentByHostnameParams struct {
+	Hostname  string `json:"hostname"`
+	ProfileID int64  `json:"profileId"`
+}
+
+func (q *Queries) GetAgentByHostname(ctx context.Context, arg GetAgentByHostnameParams) (Agent, error) {
+	row := q.queryRow(ctx, q.getAgentByHostnameStmt, getAgentByHostname, arg.Hostname, arg.ProfileID)
 	var i Agent
 	err := row.Scan(
 		&i.ID,
@@ -377,25 +383,19 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 	return i, err
 }
 
-const getAgentByProfileID = `-- name: GetAgentByProfileID :one
+const getAgentByID = `-- name: GetAgentByID :one
 SELECT
   id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
 FROM
   agents
 WHERE
   id = ?
-  AND profile_id = ?
 LIMIT
   1
 `
 
-type GetAgentByProfileIDParams struct {
-	ID        string `json:"id"`
-	ProfileID int64  `json:"profileId"`
-}
-
-func (q *Queries) GetAgentByProfileID(ctx context.Context, arg GetAgentByProfileIDParams) (Agent, error) {
-	row := q.queryRow(ctx, q.getAgentByProfileIDStmt, getAgentByProfileID, arg.ID, arg.ProfileID)
+func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
+	row := q.queryRow(ctx, q.getAgentByIDStmt, getAgentByID, id)
 	var i Agent
 	err := row.Scan(
 		&i.ID,
@@ -743,7 +743,7 @@ func (q *Queries) GetSettingByKey(ctx context.Context, key string) (Setting, err
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-  id, username, password, email, type
+  id, username, password, email, is_admin
 FROM
   users
 WHERE
@@ -760,14 +760,14 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Type,
+		&i.IsAdmin,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-  id, username, password, email, type
+  id, username, password, email, is_admin
 FROM
   users
 WHERE
@@ -784,7 +784,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Type,
+		&i.IsAdmin,
 	)
 	return i, err
 }
@@ -1456,7 +1456,7 @@ func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-  id, username, password, email, type
+  id, username, password, email, is_admin
 FROM
   users
 `
@@ -1475,7 +1475,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Password,
 			&i.Email,
-			&i.Type,
+			&i.IsAdmin,
 		); err != nil {
 			return nil, err
 		}
@@ -1612,16 +1612,16 @@ SET
   username = ?,
   password = ?,
   email = ?,
-  type = ?
+  is_admin = ?
 WHERE
-  id = ? RETURNING id, username, password, email, type
+  id = ? RETURNING id, username, password, email, is_admin
 `
 
 type UpdateUserParams struct {
 	Username string  `json:"username"`
 	Password string  `json:"password"`
 	Email    *string `json:"email"`
-	Type     string  `json:"type"`
+	IsAdmin  bool    `json:"isAdmin"`
 	ID       int64   `json:"id"`
 }
 
@@ -1630,7 +1630,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Username,
 		arg.Password,
 		arg.Email,
-		arg.Type,
+		arg.IsAdmin,
 		arg.ID,
 	)
 	var i User
@@ -1639,7 +1639,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Type,
+		&i.IsAdmin,
 	)
 	return i, err
 }
@@ -2164,7 +2164,7 @@ func (q *Queries) UpsertSetting(ctx context.Context, arg UpsertSettingParams) (S
 
 const upsertUser = `-- name: UpsertUser :one
 INSERT INTO
-  users (id, username, password, email, type)
+  users (id, username, password, email, is_admin)
 VALUES
   (?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
@@ -2172,7 +2172,7 @@ SET
   username = EXCLUDED.username,
   password = EXCLUDED.password,
   email = EXCLUDED.email,
-  type = EXCLUDED.type RETURNING id, username, password, email, type
+  is_admin = EXCLUDED.is_admin RETURNING id, username, password, email, is_admin
 `
 
 type UpsertUserParams struct {
@@ -2180,7 +2180,7 @@ type UpsertUserParams struct {
 	Username string  `json:"username"`
 	Password string  `json:"password"`
 	Email    *string `json:"email"`
-	Type     string  `json:"type"`
+	IsAdmin  bool    `json:"isAdmin"`
 }
 
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
@@ -2189,7 +2189,7 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		arg.Username,
 		arg.Password,
 		arg.Email,
-		arg.Type,
+		arg.IsAdmin,
 	)
 	var i User
 	err := row.Scan(
@@ -2197,7 +2197,7 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Type,
+		&i.IsAdmin,
 	)
 	return i, err
 }

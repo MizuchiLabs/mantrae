@@ -31,18 +31,10 @@ func (s *AgentServer) HealthCheck(
 		return nil, err
 	}
 
-	decoded, err := util.DecodeJWT(req.Msg.GetToken())
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	agent, err := db.Query.GetAgentByProfileID(context.Background(), db.GetAgentByProfileIDParams{
-		ID:        req.Msg.GetId(),
-		ProfileID: decoded.ProfileID,
-	})
-	// No agent found, ignore since a new agent wants to connect
+	agent, err := db.Query.GetAgentByID(context.Background(), req.Msg.GetId())
+	// No agent found, ignore since maybe a new agent wants to connect
 	if err != nil {
 		return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
 	}

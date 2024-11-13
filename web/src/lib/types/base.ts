@@ -34,7 +34,7 @@ export interface User {
 	username: string;
 	password: string;
 	email: string;
-	type: string;
+	isAdmin: boolean;
 }
 
 export function newUser(): User {
@@ -43,7 +43,7 @@ export function newUser(): User {
 		username: '',
 		password: '',
 		email: '',
-		type: 'user'
+		isAdmin: false
 	};
 }
 

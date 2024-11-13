@@ -81,7 +81,10 @@ func Routes() http.Handler {
 
 	mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
-	middle := Chain(Log, Cors)
+	if util.IsTest() {
+		return mux
+	}
 
+	middle := Chain(Log, Cors)
 	return middle(mux)
 }

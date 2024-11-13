@@ -188,7 +188,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 		Username string
 		Password string
 		Email    string
-		Type     string
+		IsAdmin  bool
 	}
 	tests := []struct {
 		name    string
@@ -201,7 +201,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "test",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 			},
 			wantErr: false,
 		},
@@ -211,7 +211,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 				Username: "",
 				Password: "test",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 			},
 			wantErr: true,
 		},
@@ -221,7 +221,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 			},
 			wantErr: true,
 		},
@@ -231,19 +231,9 @@ func TestCreateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "test",
 				Email:    "",
-				Type:     "test",
+				IsAdmin:  true,
 			},
 			wantErr: false,
-		},
-		{
-			name: "Test CreateUserParams.Verify with empty type",
-			fields: fields{
-				Username: "test",
-				Password: "test",
-				Email:    "test@test.com",
-				Type:     "",
-			},
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -254,7 +244,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 				Username: tt.fields.Username,
 				Password: tt.fields.Password,
 				Email:    &tt.fields.Email,
-				Type:     tt.fields.Type,
+				IsAdmin:  tt.fields.IsAdmin,
 			}
 			if err := u.Verify(); (err != nil) != tt.wantErr {
 				t.Errorf("CreateUserParams.Verify() error = %v, wantErr %v", err, tt.wantErr)
@@ -268,7 +258,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 		Username string
 		Password string
 		Email    string
-		Type     string
+		IsAdmin  bool
 		ID       int64
 	}
 	tests := []struct {
@@ -282,7 +272,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "test",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 				ID:       1,
 			},
 			wantErr: false,
@@ -293,7 +283,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 				Username: "",
 				Password: "test",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 				ID:       1,
 			},
 			wantErr: true,
@@ -304,7 +294,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "",
 				Email:    "test@test.com",
-				Type:     "test",
+				IsAdmin:  true,
 				ID:       1,
 			},
 			wantErr: true,
@@ -315,21 +305,10 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 				Username: "test",
 				Password: "test",
 				Email:    "",
-				Type:     "test",
+				IsAdmin:  true,
 				ID:       1,
 			},
 			wantErr: false,
-		},
-		{
-			name: "Test UpdateUserParams.Verify with empty type",
-			fields: fields{
-				Username: "test",
-				Password: "test",
-				Email:    "test@test.com",
-				Type:     "",
-				ID:       1,
-			},
-			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -340,7 +319,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 				Username: tt.fields.Username,
 				Password: tt.fields.Password,
 				Email:    &tt.fields.Email,
-				Type:     tt.fields.Type,
+				IsAdmin:  tt.fields.IsAdmin,
 				ID:       tt.fields.ID,
 			}
 			if err := u.Verify(); (err != nil) != tt.wantErr {

@@ -22,8 +22,13 @@ func setupHandler(method, path string, body string) (*httptest.ResponseRecorder,
 	}
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/api/profile", bytes.NewBuffer([]byte(body)))
+	r := httptest.NewRequest(method, path, nil)
+	if body != "" {
+		r = httptest.NewRequest(method, path, bytes.NewBuffer([]byte(body)))
+	}
 	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	Routes().ServeHTTP(w, r)
 
 	return w, r
 }
@@ -39,13 +44,7 @@ func Test_writeJSON(t *testing.T) {
 		name string
 		args args
 	}{
-		{
-			name: "Test writeJSON",
-			args: args{
-				w:    w,
-				data: map[string]string{"test": "test"},
-			},
-		},
+		{"writeJSON - Success", args{w: w, data: map[string]string{"test": "test"}}},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -62,20 +61,22 @@ func TestLogin(t *testing.T) {
 		body       string
 		wantStatus int
 	}{
+		{"Login - Successful", `{"username": "test", "password": "test"}`, http.StatusOK},
+		{"Login - Empty Credentials", `{"username": "", "password": ""}`, http.StatusBadRequest},
 		{
-			name:       "Login",
-			body:       `{"username": "test", "password": "test"}`,
-			wantStatus: http.StatusOK,
+			"Login - Invalid Credentials",
+			`{"username": "test", "password": "wrong"}`,
+			http.StatusUnauthorized,
 		},
 		{
-			name:       "Login Fail",
-			body:       `{"username": "test", "password": "wrong"}`,
-			wantStatus: http.StatusUnauthorized,
+			"Login - Invalid Username",
+			`{"username": "wrong", "password": "wrong"}`,
+			http.StatusUnauthorized,
 		},
 	}
 	for _, tt := range tests {
 		tt := tt
-		w, r := setupHandler("POST", "/login", tt.body)
+		w, r := setupHandler("POST", "/api/login", tt.body)
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			Login(w, r)
@@ -97,16 +98,8 @@ func TestVerifyToken(t *testing.T) {
 		body       string
 		wantStatus int
 	}{
-		{
-			name:       "Valid Token",
-			body:       `{"token": "valid_token"}`,
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "Empty Token",
-			body:       `{"token": ""}`,
-			wantStatus: http.StatusOK,
-		},
+		{"Valid Token", `{"token": "valid_token"}`, http.StatusOK},
+		{"Empty Token", `{"token": ""}`, http.StatusOK},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -114,9 +107,13 @@ func TestVerifyToken(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			VerifyToken(w, r)
-
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf("VerifyToken() status = %v, want %v", got, tt.wantStatus)
+				t.Errorf(
+					"VerifyToken() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
 			}
 		})
 	}
@@ -127,42 +124,47 @@ func TestGetVersion(t *testing.T) {
 		name       string
 		wantStatus int
 	}{
-		{
-			name:       "Get Version - Successful",
-			wantStatus: http.StatusOK,
-		},
+		{"Get Version - Successful", http.StatusOK},
 	}
 	for _, tt := range tests {
 		tt := tt
 		w, r := setupHandler("GET", "/api/version", "")
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			GetVersion(w, r)
-
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf("GetVersion() status = %v, want %v", got, tt.wantStatus)
+				t.Errorf(
+					"GetVersion() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
 			}
 		})
 	}
 }
 
 func TestGetEvents(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		wantStatus int
 	}{
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", "/api/events", "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetEvents(tt.args.w, tt.args.r)
+			GetEvents(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetEvents() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
@@ -173,24 +175,24 @@ func TestGetAgents(t *testing.T) {
 		endpoint   string
 		wantStatus int
 	}{
-		{
-			name:       "Get Agents - Successful",
-			endpoint:   "/api/agents/1",
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "Get Agents - Missing Fields",
-			endpoint:   "/api/agents",
-			wantStatus: http.StatusBadRequest,
-		},
+		{"Get Agents - Successful", "/api/agent/1", http.StatusOK},
+		{"Get Agents - Missing Fields", "/api/agent", http.StatusNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
 		w, r := setupHandler("GET", tt.endpoint, "")
-
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			GetAgents(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				fmt.Printf("r.URL: %v\n", r.URL)
+				t.Errorf(
+					"GetAgents() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
@@ -201,26 +203,22 @@ func TestUpsertAgent(t *testing.T) {
 		body       string
 		wantStatus int
 	}{
-		{
-			name:       "Upsert Agent - Successful",
-			body:       `{"profileId": 1, "hostname": "localhost"}`,
-			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "Upsert Agent - Missing Hostname",
-			body:       `{"profileId": 1}`,
-			wantStatus: http.StatusBadRequest,
-		},
+		{"Upsert Agent - Successful", `{"profileId": 1, "hostname": "localhost"}`, http.StatusOK},
+		{"Upsert Agent - Missing Hostname", `{"profileId": 1}`, http.StatusBadRequest},
 	}
 	for _, tt := range tests {
 		tt := tt
-		w, r := setupHandler("PUT", "/api/agent/testagent", tt.body)
-
+		w, r := setupHandler("PUT", "/api/agent/test", tt.body)
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			UpsertAgent(w, r)
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf("UpsertAgent() status = %v, want %v", got, tt.wantStatus)
+				t.Errorf(
+					"UpsertAgent() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
 			}
 		})
 	}
@@ -232,11 +230,9 @@ func TestDeleteAgent(t *testing.T) {
 		endpoint   string
 		wantStatus int
 	}{
-		{
-			name:       "Delete Agent - Invalid Agent",
-			endpoint:   "/api/agent/test/wrong",
-			wantStatus: http.StatusBadRequest,
-		},
+		{"Delete Agent - Successful", "/api/agent/test/hard", http.StatusOK},
+		{"Delete Agent - Invalid Agent", "/api/agent/wrong/wrong", http.StatusNotFound},
+		{"Delete Agent - Invalid Type", "/api/agent/test/wrong", http.StatusBadRequest},
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -245,68 +241,91 @@ func TestDeleteAgent(t *testing.T) {
 			t.Parallel()
 			DeleteAgent(w, r)
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf("DeleteAgent() status = %v, want %v", got, tt.wantStatus)
+				t.Errorf(
+					"DeleteAgent() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
 			}
 		})
 	}
 }
 
 func TestGetAgentToken(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		endpoint   string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{"Get Agent Token - Successful", "/api/agent/token/1", http.StatusOK},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", "/api/agent/token/1", "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetAgentToken(tt.args.w, tt.args.r)
+			GetAgentToken(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetAgentToken() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
 
 func TestGetProfiles(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{"Get Profiles - Successful", http.StatusOK},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", "/api/profile", "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetProfiles(tt.args.w, tt.args.r)
+			GetProfiles(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetProfiles() = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
 
 func TestGetProfile(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		endpoint   string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{"Get Profile - Existing ID", "/api/profile/1", http.StatusOK},
+		{"Get Profile - Nonexistent ID", "/api/profile/999", http.StatusNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", tt.endpoint, "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetProfile(tt.args.w, tt.args.r)
+			GetProfile(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetProfile() = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
@@ -318,14 +337,14 @@ func TestCreateProfile(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name:       "Create Profile - Successful",
-			body:       `{"name": "testprofile", "url": "http://test.com"}`,
-			wantStatus: http.StatusOK,
+			"Create Profile - Successful",
+			`{"name": "testprofile", "url": "http://test.com"}`,
+			http.StatusOK,
 		},
 		{
-			name:       "Create Profile - Missing Fields",
-			body:       `{"name": "Incomplete"}`,
-			wantStatus: http.StatusBadRequest,
+			"Create Profile - Missing Fields",
+			`{"name": "Incomplete"}`,
+			http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
@@ -335,108 +354,155 @@ func TestCreateProfile(t *testing.T) {
 			t.Parallel()
 			CreateProfile(w, r)
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf("CreateProfile() status = %v, want %v", got, tt.wantStatus)
+				t.Errorf(
+					"CreateProfile() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
 			}
 		})
 	}
 }
 
 func TestUpdateProfile(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		body       string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{
+			"Update Profile - Successful",
+			`{"id": 1, "name": "updated", "url": "http://test.com"}`,
+			http.StatusOK,
+		},
+		{"Update Profile - Missing URL", `{"id": 1, "name": "updated"}`, http.StatusBadRequest},
+		{"Update Profile - Missing ID", `{"name": "updated"}`, http.StatusBadRequest},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("PUT", "/api/profile", tt.body)
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			UpdateProfile(tt.args.w, tt.args.r)
+			UpdateProfile(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"UpdateProfile() = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
 
 func TestDeleteProfile(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		endpoint   string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{"Delete Profile - Existing ID", "/api/profile/1", http.StatusOK},
+		{"Delete Profile - Nonexistent ID", "/api/profile/999", http.StatusNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("DELETE", tt.endpoint, "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			DeleteProfile(tt.args.w, tt.args.r)
+			DeleteProfile(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf("DeleteProfile() = %v, want %v", got, tt.wantStatus)
+			}
 		})
 	}
 }
 
 func TestGetUsers(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{"Get Users - Success", http.StatusOK},
+		{"Get Users - No Users", http.StatusOK},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", "/api/user", "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetUsers(tt.args.w, tt.args.r)
+			GetUsers(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetUsers() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
 
 func TestGetUser(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		userID     string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		//{"Get User - Success", "1", http.StatusOK},
+		{"Get User - Not Found", "9999", http.StatusNotFound},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("GET", fmt.Sprintf("/api/user/%s", tt.userID), "")
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			GetUser(tt.args.w, tt.args.r)
+			GetUser(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"GetUser() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }
 
 func TestCreateUser(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
 	tests := []struct {
-		name string
-		args args
+		name       string
+		body       string
+		wantStatus int
 	}{
-		// TODO: Add test cases.
+		{
+			"Create User - Success",
+			`{"username": "newuser", "password": "password123"}`,
+			http.StatusOK,
+		},
+		{
+			"Create User - Missing Fields",
+			`{"username": "incompleteuser"}`,
+			http.StatusBadRequest,
+		},
 	}
 	for _, tt := range tests {
 		tt := tt
+		w, r := setupHandler("POST", "/api/user", tt.body)
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			CreateUser(tt.args.w, tt.args.r)
+			CreateUser(w, r)
+			if got := w.Result().StatusCode; got != tt.wantStatus {
+				t.Errorf(
+					"CreateUser() status = %v, want %v, error = %v",
+					got,
+					tt.wantStatus,
+					w.Body.String(),
+				)
+			}
 		})
 	}
 }

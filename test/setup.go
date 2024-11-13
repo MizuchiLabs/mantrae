@@ -40,7 +40,7 @@ func seedMockData() error {
 				Username: gofakeit.Username(),
 				Password: password,
 				Email:    &email,
-				Type:     "user",
+				IsAdmin:  gofakeit.Bool(),
 			},
 		)
 		if err != nil {
@@ -59,7 +59,7 @@ func seedMockData() error {
 			Username: "test",
 			Password: password,
 			Email:    nil,
-			Type:     "user",
+			IsAdmin:  true,
 		},
 	)
 	if err != nil {

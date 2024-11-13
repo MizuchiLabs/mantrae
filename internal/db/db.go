@@ -87,11 +87,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteUserByUsernameStmt, err = db.PrepareContext(ctx, deleteUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUserByUsername: %w", err)
 	}
+	if q.getAgentByHostnameStmt, err = db.PrepareContext(ctx, getAgentByHostname); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAgentByHostname: %w", err)
+	}
 	if q.getAgentByIDStmt, err = db.PrepareContext(ctx, getAgentByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAgentByID: %w", err)
-	}
-	if q.getAgentByProfileIDStmt, err = db.PrepareContext(ctx, getAgentByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetAgentByProfileID: %w", err)
 	}
 	if q.getDefaultProviderStmt, err = db.PrepareContext(ctx, getDefaultProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDefaultProvider: %w", err)
@@ -332,14 +332,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteUserByUsernameStmt: %w", cerr)
 		}
 	}
+	if q.getAgentByHostnameStmt != nil {
+		if cerr := q.getAgentByHostnameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAgentByHostnameStmt: %w", cerr)
+		}
+	}
 	if q.getAgentByIDStmt != nil {
 		if cerr := q.getAgentByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getAgentByIDStmt: %w", cerr)
-		}
-	}
-	if q.getAgentByProfileIDStmt != nil {
-		if cerr := q.getAgentByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getAgentByProfileIDStmt: %w", cerr)
 		}
 	}
 	if q.getDefaultProviderStmt != nil {
@@ -617,8 +617,8 @@ type Queries struct {
 	deleteSettingByKeyStmt         *sql.Stmt
 	deleteUserByIDStmt             *sql.Stmt
 	deleteUserByUsernameStmt       *sql.Stmt
+	getAgentByHostnameStmt         *sql.Stmt
 	getAgentByIDStmt               *sql.Stmt
-	getAgentByProfileIDStmt        *sql.Stmt
 	getDefaultProviderStmt         *sql.Stmt
 	getMiddlewareByIDStmt          *sql.Stmt
 	getMiddlewareByNameStmt        *sql.Stmt
@@ -689,8 +689,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteSettingByKeyStmt:         q.deleteSettingByKeyStmt,
 		deleteUserByIDStmt:             q.deleteUserByIDStmt,
 		deleteUserByUsernameStmt:       q.deleteUserByUsernameStmt,
+		getAgentByHostnameStmt:         q.getAgentByHostnameStmt,
 		getAgentByIDStmt:               q.getAgentByIDStmt,
-		getAgentByProfileIDStmt:        q.getAgentByProfileIDStmt,
 		getDefaultProviderStmt:         q.getDefaultProviderStmt,
 		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
 		getMiddlewareByNameStmt:        q.getMiddlewareByNameStmt,

@@ -232,6 +232,11 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if _, err := db.Query.GetProfileByID(context.Background(), id); err != nil {
+		http.Error(w, fmt.Sprintf("Profile not found: %s", err.Error()), http.StatusNotFound)
+		return
+	}
+
 	if err := db.Query.DeleteProfileByID(context.Background(), id); err != nil {
 		http.Error(
 			w,
@@ -922,6 +927,17 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 
 func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 	deletionType := r.PathValue("type")
+	if deletionType == "" {
+		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Query.GetAgentByID(context.Background(), r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Agent not found", http.StatusNotFound)
+		return
+	}
+
 	if deletionType == "hard" {
 		if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
 			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)

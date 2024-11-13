@@ -503,7 +503,7 @@ FROM
 
 -- name: CreateUser :one
 INSERT INTO
-  users (username, password, email, type)
+  users (username, password, email, is_admin)
 VALUES
   (?, ?, ?, ?) RETURNING *;
 
@@ -513,13 +513,13 @@ SET
   username = ?,
   password = ?,
   email = ?,
-  type = ?
+  is_admin = ?
 WHERE
   id = ? RETURNING *;
 
 -- name: UpsertUser :one
 INSERT INTO
-  users (id, username, password, email, type)
+  users (id, username, password, email, is_admin)
 VALUES
   (?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
@@ -527,7 +527,7 @@ SET
   username = EXCLUDED.username,
   password = EXCLUDED.password,
   email = EXCLUDED.email,
-  type = EXCLUDED.type RETURNING *;
+  is_admin = EXCLUDED.is_admin RETURNING *;
 
 -- name: DeleteUserByID :exec
 DELETE FROM users
@@ -598,13 +598,13 @@ WHERE
 LIMIT
   1;
 
--- name: GetAgentByProfileID :one
+-- name: GetAgentByHostname :one
 SELECT
   *
 FROM
   agents
 WHERE
-  id = ?
+  hostname = ?
   AND profile_id = ?
 LIMIT
   1;

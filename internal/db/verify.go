@@ -32,6 +32,9 @@ func (p *CreateProfileParams) Verify() error {
 }
 
 func (p *UpdateProfileParams) Verify() error {
+	if p.ID == 0 {
+		return fmt.Errorf("id cannot be empty")
+	}
 	if p.Name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}
@@ -243,9 +246,6 @@ func (u *CreateUserParams) Verify() error {
 	if u.Password == "" {
 		return fmt.Errorf("password cannot be empty")
 	}
-	if u.Type == "" {
-		return fmt.Errorf("user type cannot be empty")
-	}
 	if u.Email != nil && *u.Email != "" {
 		if !util.IsValidEmail(*u.Email) {
 			return fmt.Errorf("email is not valid")
@@ -266,9 +266,6 @@ func (u *UpdateUserParams) Verify() error {
 	}
 	if u.Password == "" {
 		return fmt.Errorf("password cannot be empty")
-	}
-	if u.Type == "" {
-		return fmt.Errorf("user type cannot be empty")
 	}
 	if u.Email != nil && *u.Email != "" {
 		if !util.IsValidEmail(*u.Email) {

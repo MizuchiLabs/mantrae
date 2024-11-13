@@ -30,8 +30,8 @@ type Querier interface {
 	DeleteSettingByKey(ctx context.Context, key string) error
 	DeleteUserByID(ctx context.Context, id int64) error
 	DeleteUserByUsername(ctx context.Context, username string) error
+	GetAgentByHostname(ctx context.Context, arg GetAgentByHostnameParams) (Agent, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
-	GetAgentByProfileID(ctx context.Context, arg GetAgentByProfileIDParams) (Agent, error)
 	GetDefaultProvider(ctx context.Context) (Provider, error)
 	GetMiddlewareByID(ctx context.Context, id string) (Middleware, error)
 	GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNameParams) (Middleware, error)

@@ -87,7 +87,7 @@ func SetDefaultAdminUser() error {
 		if _, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
 			Username: "admin",
 			Password: hash,
-			Type:     "user",
+			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to create default admin user: %w", err)
 		}
@@ -106,7 +106,7 @@ func SetDefaultAdminUser() error {
 		if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
 			Username: "admin",
 			Password: hash,
-			Type:     "user",
+			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to update default admin user: %w", err)
 		}
@@ -215,7 +215,7 @@ func ResetAdminUser() error {
 		ID:       creds.ID,
 		Username: creds.Username,
 		Password: hash,
-		Type:     "user",
+		IsAdmin:  true,
 	}); err != nil {
 		return fmt.Errorf("failed to update default admin user: %w", err)
 	}
