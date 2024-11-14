@@ -3,8 +3,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { User } from '$lib/types/base';
 	import UserForm from '$lib/components/forms/user.svelte';
-	import { createUser, updateUser } from '$lib/api';
-	import { toast } from 'svelte-sonner';
+	import { upsertUser } from '$lib/api';
 
 	export let user: User;
 	export let disabled = false;
@@ -15,15 +14,7 @@
 		const valid = userForm.validate();
 		if (!valid) return;
 
-		if (user.id) {
-			await updateUser(user);
-		} else {
-			if (user.password === '') {
-				toast.error('Password cannot be empty');
-				return;
-			}
-			await createUser(user);
-		}
+		await upsertUser(user);
 		open = false;
 	};
 </script>

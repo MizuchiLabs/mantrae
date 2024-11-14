@@ -2169,10 +2169,10 @@ VALUES
   (?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
-  username = EXCLUDED.username,
-  password = EXCLUDED.password,
-  email = EXCLUDED.email,
-  is_admin = EXCLUDED.is_admin RETURNING id, username, password, email, is_admin
+  username = COALESCE(NULLIF(EXCLUDED.username, ''), users.username),
+  password = COALESCE(NULLIF(EXCLUDED.password, ''), users.password),
+  email = COALESCE(NULLIF(EXCLUDED.email, ''), users.email),
+  is_admin = COALESCE(EXCLUDED.is_admin, users.is_admin) RETURNING id, username, password, email, is_admin
 `
 
 type UpsertUserParams struct {

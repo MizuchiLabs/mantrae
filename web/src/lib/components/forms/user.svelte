@@ -36,7 +36,7 @@
 					confirm: pwconfirm
 				}
 			});
-			if (pw !== '') user.password = pw;
+			user.password = pw;
 			errors = {};
 			return true;
 		} catch (error) {

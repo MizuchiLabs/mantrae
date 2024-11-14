@@ -472,42 +472,7 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
-func TestCreateUser(t *testing.T) {
-	tests := []struct {
-		name       string
-		body       string
-		wantStatus int
-	}{
-		{
-			"Create User - Success",
-			`{"username": "newuser", "password": "password123"}`,
-			http.StatusOK,
-		},
-		{
-			"Create User - Missing Fields",
-			`{"username": "incompleteuser"}`,
-			http.StatusBadRequest,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		w, r := setupHandler("POST", "/api/user", tt.body)
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			CreateUser(w, r)
-			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf(
-					"CreateUser() status = %v, want %v, error = %v",
-					got,
-					tt.wantStatus,
-					w.Body.String(),
-				)
-			}
-		})
-	}
-}
-
-func TestUpdateUser(t *testing.T) {
+func TestUpsertUser(t *testing.T) {
 	type args struct {
 		w http.ResponseWriter
 		r *http.Request
@@ -522,7 +487,7 @@ func TestUpdateUser(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			UpdateUser(tt.args.w, tt.args.r)
+			UpsertUser(tt.args.w, tt.args.r)
 		})
 	}
 }

@@ -240,7 +240,7 @@ func TestCreateUserParams_Verify(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			u := &CreateUserParams{
+			u := &User{
 				Username: tt.fields.Username,
 				Password: tt.fields.Password,
 				Email:    &tt.fields.Email,
@@ -315,7 +315,7 @@ func TestUpdateUserParams_Verify(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			u := &UpdateUserParams{
+			u := &User{
 				Username: tt.fields.Username,
 				Password: tt.fields.Password,
 				Email:    &tt.fields.Email,

@@ -280,9 +280,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, user)
 }
 
-// CreateUser creates a new user
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user db.CreateUserParams
+// UpsertUser updates a single user
+func UpsertUser(w http.ResponseWriter, r *http.Request) {
+	var user db.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to decode user: %s", err.Error()), http.StatusBadRequest)
 		return
@@ -293,43 +293,41 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := db.Query.CreateUser(context.Background(), user)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to create user: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
+	if user.ID == 0 {
+		data, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
+			Username: user.Username,
+			Password: user.Password,
+			Email:    user.Email,
+			IsAdmin:  user.IsAdmin,
+		})
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to update user: %s", err.Error()),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		writeJSON(w, data)
+	} else {
+		params := db.UpdateUserParams{
+			ID:       user.ID,
+			Username: user.Username,
+			Password: user.Password,
+			Email:    user.Email,
+			IsAdmin:  user.IsAdmin,
+		}
+		data, err := db.Query.UpdateUser(context.Background(), params)
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to update user: %s", err.Error()),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		writeJSON(w, data)
 	}
-
-	writeJSON(w, data)
-}
-
-// UpdateUser updates a single user
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	var user db.UpdateUserParams
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, fmt.Sprintf("Failed to decode user: %s", err.Error()), http.StatusBadRequest)
-		return
-	}
-
-	if err := user.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	data, err := db.Query.UpdateUser(context.Background(), user)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update user: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, data)
 }
 
 // DeleteUser deletes a single user

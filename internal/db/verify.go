@@ -239,45 +239,32 @@ func (a *UpsertAgentParams) Verify() error {
 	return nil
 }
 
-func (u *CreateUserParams) Verify() error {
+func (u *User) Verify() error {
 	if u.Username == "" {
 		return fmt.Errorf("username cannot be empty")
-	}
-	if u.Password == "" {
-		return fmt.Errorf("password cannot be empty")
 	}
 	if u.Email != nil && *u.Email != "" {
 		if !util.IsValidEmail(*u.Email) {
 			return fmt.Errorf("email is not valid")
 		}
 	}
-
-	hash, err := util.HashPassword(strings.TrimSpace(u.Password))
-	if err != nil {
-		return fmt.Errorf("failed to hash password: %s", err.Error())
-	}
-	u.Password = hash
-	return nil
-}
-
-func (u *UpdateUserParams) Verify() error {
-	if u.Username == "" {
-		return fmt.Errorf("username cannot be empty")
-	}
-	if u.Password == "" {
+	if u.ID == 0 && u.Password == "" {
 		return fmt.Errorf("password cannot be empty")
 	}
-	if u.Email != nil && *u.Email != "" {
-		if !util.IsValidEmail(*u.Email) {
-			return fmt.Errorf("email is not valid")
-		}
-	}
 
-	hash, err := util.HashPassword(strings.TrimSpace(u.Password))
-	if err != nil {
-		return fmt.Errorf("failed to hash password: %s", err.Error())
+	if u.Password != "" {
+		hash, err := util.HashPassword(strings.TrimSpace(u.Password))
+		if err != nil {
+			return fmt.Errorf("failed to hash password: %s", err.Error())
+		}
+		u.Password = hash
+	} else {
+		user, err := Query.GetUserByID(context.Background(), u.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get user: %s", err.Error())
+		}
+		u.Password = user.Password
 	}
-	u.Password = hash
 	return nil
 }
 

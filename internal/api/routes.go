@@ -12,66 +12,70 @@ import (
 func Routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /api/login", Login)
-	mux.HandleFunc("POST /api/verify", VerifyToken)
+	logChain := Chain(Log)
+	jwtChain := Chain(Log, JWT)
+	// adminChain := Chain(Log, AdminOnly, JWT) // Handle perms later
+	basicChain := Chain(Log, BasicAuth)
 
-	mux.HandleFunc("GET /api/version", GetVersion)
-	mux.HandleFunc("GET /api/events", GetEvents)
+	mux.Handle("POST /api/login", logChain(Login))
+	mux.Handle("POST /api/verify", logChain(VerifyToken))
 
-	mux.HandleFunc("GET /api/profile", JWT(GetProfiles))
-	mux.HandleFunc("GET /api/profile/{id}", JWT(GetProfile))
-	mux.HandleFunc("POST /api/profile", JWT(CreateProfile))
-	mux.HandleFunc("PUT /api/profile", JWT(UpdateProfile))
-	mux.HandleFunc("DELETE /api/profile/{id}", JWT(DeleteProfile))
+	mux.Handle("GET /api/version", logChain(GetVersion))
+	mux.Handle("GET /api/events", logChain(GetEvents))
 
-	mux.HandleFunc("GET /api/router/{id}", JWT(GetRouters))
-	mux.HandleFunc("POST /api/router", JWT(UpsertRouter))
-	mux.HandleFunc("DELETE /api/router/{id}", JWT(DeleteRouter))
+	mux.Handle("GET /api/profile", jwtChain(GetProfiles))
+	mux.Handle("GET /api/profile/{id}", jwtChain(GetProfile))
+	mux.Handle("POST /api/profile", jwtChain(CreateProfile))
+	mux.Handle("PUT /api/profile", jwtChain(UpdateProfile))
+	mux.Handle("DELETE /api/profile/{id}", jwtChain(DeleteProfile))
 
-	mux.HandleFunc("GET /api/service/{id}", JWT(GetServices))
-	mux.HandleFunc("POST /api/service", JWT(UpsertService))
-	mux.HandleFunc("DELETE /api/service/{id}", JWT(DeleteService))
+	mux.Handle("GET /api/router/{id}", jwtChain(GetRouters))
+	mux.Handle("POST /api/router", jwtChain(UpsertRouter))
+	mux.Handle("DELETE /api/router/{id}", jwtChain(DeleteRouter))
 
-	mux.HandleFunc("GET /api/middleware/{id}", JWT(GetMiddlewares))
-	mux.HandleFunc("POST /api/middleware", JWT(UpsertMiddleware))
-	mux.HandleFunc("DELETE /api/middleware/{id}", JWT(DeleteMiddleware))
+	mux.Handle("GET /api/service/{id}", jwtChain(GetServices))
+	mux.Handle("POST /api/service", jwtChain(UpsertService))
+	mux.Handle("DELETE /api/service/{id}", jwtChain(DeleteService))
 
-	mux.HandleFunc("GET /api/entrypoint/{id}", JWT(GetEntryPoints))
-	mux.HandleFunc("GET /api/middleware/plugins", GetMiddlewarePlugins)
+	mux.Handle("GET /api/middleware/{id}", jwtChain(GetMiddlewares))
+	mux.Handle("POST /api/middleware", jwtChain(UpsertMiddleware))
+	mux.Handle("DELETE /api/middleware/{id}", jwtChain(DeleteMiddleware))
 
-	mux.HandleFunc("GET /api/user", JWT(GetUsers))
-	mux.HandleFunc("GET /api/user/{id}", JWT(GetUser))
-	mux.HandleFunc("POST /api/user", JWT(CreateUser))
-	mux.HandleFunc("PUT /api/user", JWT(UpdateUser))
-	mux.HandleFunc("DELETE /api/user/{id}", JWT(DeleteUser))
+	mux.Handle("GET /api/entrypoint/{id}", jwtChain(GetEntryPoints))
+	mux.Handle("GET /api/middleware/plugins", logChain(GetMiddlewarePlugins))
 
-	mux.HandleFunc("GET /api/provider", JWT(GetProviders))
-	mux.HandleFunc("GET /api/provider/{id}", JWT(GetProvider))
-	mux.HandleFunc("POST /api/provider", JWT(CreateProvider))
-	mux.HandleFunc("PUT /api/provider", JWT(UpdateProvider))
-	mux.HandleFunc("DELETE /api/provider/{id}", JWT(DeleteProvider))
-	mux.HandleFunc("POST /api/dns", JWT(DeleteRouterDNS)) // Extra route for deleting DNS records
+	mux.Handle("GET /api/user", jwtChain(GetUsers))
+	mux.Handle("GET /api/user/{id}", jwtChain(GetUser))
+	mux.Handle("POST /api/user", jwtChain(UpsertUser))
+	mux.Handle("DELETE /api/user/{id}", jwtChain(DeleteUser))
 
-	mux.HandleFunc("GET /api/settings", JWT(GetSettings))
-	mux.HandleFunc("GET /api/settings/{key}", JWT(GetSetting))
-	mux.HandleFunc("PUT /api/settings", JWT(UpdateSetting))
+	mux.Handle("GET /api/provider", jwtChain(GetProviders))
+	mux.Handle("GET /api/provider/{id}", jwtChain(GetProvider))
+	mux.Handle("POST /api/provider", jwtChain(CreateProvider))
+	mux.Handle("PUT /api/provider", jwtChain(UpdateProvider))
+	mux.Handle("DELETE /api/provider/{id}", jwtChain(DeleteProvider))
+	mux.Handle("POST /api/dns", jwtChain(DeleteRouterDNS)) // Extra route for deleting DNS records
 
-	mux.HandleFunc("GET /api/agent/{id}", JWT(GetAgents))
-	mux.HandleFunc("GET /api/agent/token/{id}", JWT(GetAgentToken))
-	mux.HandleFunc("PUT /api/agent/{id}", JWT(UpsertAgent))
-	mux.HandleFunc("DELETE /api/agent/{id}/{type}", JWT(DeleteAgent))
+	mux.Handle("GET /api/settings", jwtChain(GetSettings))
+	mux.Handle("GET /api/settings/{key}", jwtChain(GetSetting))
+	mux.Handle("PUT /api/settings", jwtChain(UpdateSetting))
 
-	mux.HandleFunc("GET /api/ip/{id}", JWT(GetPublicIP))
+	mux.Handle("GET /api/agent/{id}", jwtChain(GetAgents))
+	mux.Handle("GET /api/agent/token/{id}", jwtChain(GetAgentToken))
+	mux.Handle("PUT /api/agent/{id}", jwtChain(UpsertAgent))
+	mux.Handle("DELETE /api/agent/{id}/{type}", jwtChain(DeleteAgent))
 
-	mux.HandleFunc("GET /api/backup", JWT(DownloadBackup))
-	mux.HandleFunc("POST /api/restore", JWT(UploadBackup))
+	mux.Handle("GET /api/ip/{id}", jwtChain(GetPublicIP))
 
-	mux.HandleFunc("GET /api/traefik/{id}", JWT(GetTraefikOverview))
+	mux.Handle("GET /api/backup", jwtChain(DownloadBackup))
+	mux.Handle("POST /api/restore", jwtChain(UploadBackup))
+
+	mux.Handle("GET /api/traefik/{id}", jwtChain(GetTraefikOverview))
 
 	if util.App.EnableBasicAuth {
-		mux.HandleFunc("GET /api/{name}", BasicAuth(GetTraefikConfig))
+		mux.Handle("GET /api/{name}", basicChain(GetTraefikConfig))
 	} else {
-		mux.HandleFunc("GET /api/{name}", GetTraefikConfig)
+		mux.Handle("GET /api/{name}", logChain(GetTraefikConfig))
 	}
 
 	staticContent, err := fs.Sub(web.StaticFS, "build")
@@ -81,10 +85,5 @@ func Routes() http.Handler {
 
 	mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
-	if util.IsTest() {
-		return mux
-	}
-
-	middle := Chain(Log, Cors)
-	return middle(mux)
+	return Cors(mux)
 }

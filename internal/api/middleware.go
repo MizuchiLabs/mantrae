@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -11,6 +13,8 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code
 type statusRecorder struct {
@@ -33,7 +37,7 @@ func (rec *statusRecorder) Flush() {
 }
 
 // Log middleware to log HTTP requests
-func Log(next http.Handler) http.Handler {
+func Log(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -41,7 +45,7 @@ func Log(next http.Handler) http.Handler {
 		recorder := &statusRecorder{ResponseWriter: w, statusCode: http.StatusOK}
 
 		// Serve the request
-		next.ServeHTTP(recorder, r)
+		next(recorder, r)
 		duration := time.Since(start)
 
 		if strings.HasPrefix(r.URL.Path, "/_app/") {
@@ -87,14 +91,8 @@ func Log(next http.Handler) http.Handler {
 func Cors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Max-Age", "86400")
-		w.Header().Set("X-XSS-Protection", "1; mode=block")
-		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
@@ -148,25 +146,53 @@ func JWT(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		// Validate JWT token
+		// Validate JWT token and decode claims
 		claims, err := util.DecodeJWT(token)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		// Add username to request context
-		r.Header.Set("username", claims.Username)
+		log.Println("Decoded claims:", claims)
+
+		// Add claims to request context for access in subsequent middlewares
+		ctx := context.WithValue(r.Context(), "username", claims.Username)
+		r = r.WithContext(ctx)
+
+		next(w, r)
+	}
+}
+
+func AdminOnly(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Get the username from the request context
+		username, ok := r.Context().Value("username").(string)
+		fmt.Printf("username: %v\n", username)
+		if !ok || username == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := db.Query.GetUserByUsername(context.Background(), username)
+		if err != nil {
+			http.Error(w, "Admin privileges required", http.StatusForbidden)
+			return
+		}
+		if !user.IsAdmin {
+			http.Error(w, "Admin privileges required", http.StatusForbidden)
+			return
+		}
+
 		next(w, r)
 	}
 }
 
 // Chain middlewares
-func Chain(middlewares ...func(http.Handler) http.Handler) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
+func Chain(middlewares ...Middleware) Middleware {
+	return func(final http.HandlerFunc) http.HandlerFunc {
 		for _, middleware := range middlewares {
-			next = middleware(next)
+			final = middleware(final)
 		}
-		return next
+		return final
 	}
 }

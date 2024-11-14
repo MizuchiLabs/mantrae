@@ -300,21 +300,26 @@ export async function getUser(id: number): Promise<User> {
 	return {} as User;
 }
 
-export async function createUser(u: User): Promise<void> {
-	const response = await handleRequest('/user', 'POST', u);
+export async function upsertUser(u: User): Promise<void> {
+	const response = await handleRequest(`/user`, 'POST', u);
 	if (response) {
 		const data = await response.json();
-		users.update((items) => [...(items ?? []), data]);
-		toast.success(`User ${data.username} created`);
-	}
-}
+		if (data && get(users)) {
+			users.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === u.id);
 
-export async function updateUser(u: User): Promise<void> {
-	const response = await handleRequest(`/user`, 'PUT', u);
-	if (response) {
-		const data = await response.json();
-		users.update((items) => items.map((i) => (i.id === u.id ? data : i)));
-		toast.success(`User ${data.username} updated`);
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`User ${data.username} updated`);
+		}
 	}
 }
 
