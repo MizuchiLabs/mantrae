@@ -12,7 +12,8 @@ export const load: LayoutLoad = async ({ fetch, url }) => {
 
 	if (token === null) {
 		logout();
-		if (url.pathname !== '/login') {
+		if (url.pathname !== '/login' && url.pathname !== '/login/reset/') {
+			console.log(url.pathname);
 			goto('/login');
 		}
 		return {};
@@ -24,7 +25,8 @@ export const load: LayoutLoad = async ({ fetch, url }) => {
 	});
 	if (!response.ok) {
 		logout();
-		if (url.pathname !== '/login') {
+		if (url.pathname !== '/login' && url.pathname !== '/login/reset/') {
+			console.log(url.pathname);
 			goto('/login');
 		}
 		return {};

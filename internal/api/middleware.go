@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -152,8 +151,6 @@ func JWT(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-
-		log.Println("Decoded claims:", claims)
 
 		// Add claims to request context for access in subsequent middlewares
 		ctx := context.WithValue(r.Context(), "username", claims.Username)

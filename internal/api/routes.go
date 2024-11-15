@@ -19,6 +19,8 @@ func Routes() http.Handler {
 
 	mux.Handle("POST /api/login", logChain(Login))
 	mux.Handle("POST /api/verify", logChain(VerifyToken))
+	mux.Handle("POST /api/reset", logChain(ResetPassword))
+	mux.Handle("POST /api/reset/{name}", logChain(SendResetEmail))
 
 	mux.Handle("GET /api/version", logChain(GetVersion))
 	mux.Handle("GET /api/events", logChain(GetEvents))

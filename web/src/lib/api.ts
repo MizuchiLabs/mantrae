@@ -42,7 +42,7 @@ async function handleRequest(
 		body: body ? JSON.stringify(body) : undefined,
 		headers: { Authorization: `Bearer ${token}` }
 	});
-	if (response.status === 200) {
+	if (response.ok) {
 		return response;
 	} else {
 		toast.error('Request failed', {
@@ -53,8 +53,9 @@ async function handleRequest(
 }
 
 // Login ----------------------------------------------------------------------
-export async function login(username: string, password: string) {
-	const response = await fetch(`${API_URL}/login`, {
+export async function login(username: string, password: string, remember: boolean) {
+	let loginURL = remember ? `${API_URL}/login?remember=true` : `${API_URL}/login`;
+	const response = await fetch(loginURL, {
 		method: 'POST',
 		body: JSON.stringify({ username, password })
 	});
@@ -72,6 +73,37 @@ export async function login(username: string, password: string) {
 			duration: 3000
 		});
 		return;
+	}
+}
+
+export async function sendResetEmail(username: string) {
+	const response = await fetch(`${API_URL}/reset/${username}`, {
+		method: 'POST'
+	});
+	if (response.ok) {
+		toast.success('Password reset email sent!');
+	} else {
+		toast.error('Request failed', {
+			description: await response.text(),
+			duration: 3000
+		});
+	}
+}
+
+export async function resetPassword(token: string, password: string) {
+	const response = await fetch(`${API_URL}/reset`, {
+		method: 'POST',
+		body: JSON.stringify({ password }),
+		headers: { Authorization: `Bearer ${token}` }
+	});
+	if (response.ok) {
+		toast.success('Password reset successful!');
+		goto('/login');
+	} else {
+		toast.error('Request failed', {
+			description: await response.text(),
+			duration: 3000
+		});
 	}
 }
 

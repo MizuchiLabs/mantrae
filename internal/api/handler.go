@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -56,7 +57,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := util.EncodeUserJWT(user.Username)
+	expirationTime := time.Now().Add(24 * time.Hour)
+	if r.URL.Query().Get("remember") == "true" {
+		expirationTime = time.Now().Add(7 * 24 * time.Hour)
+	}
+	token, err := util.EncodeUserJWT(user.Username, expirationTime)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,6 +84,109 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, "Failed to decode credentials", http.StatusBadRequest)
+		return
+	}
+
+	tokenString := r.Header.Get("Authorization")
+	if len(tokenString) < 7 {
+		http.Error(w, "Token cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	user, err := util.DecodeJWT(tokenString[7:])
+	if err != nil {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	if user.Username == "" || data.Password == "" {
+		http.Error(w, "Username or password cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	dbUser, err := db.Query.GetUserByUsername(context.Background(), user.Username)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if _, err = db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
+		ID:       dbUser.ID,
+		Username: dbUser.Username,
+		Email:    dbUser.Email,
+		Password: string(hash),
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func SendResetEmail(w http.ResponseWriter, r *http.Request) {
+	user, err := db.Query.GetUserByUsername(context.Background(), r.PathValue("name"))
+	if err != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	if user.Email == nil {
+		http.Error(w, fmt.Sprintf("%s has no email address", user.Username), http.StatusBadRequest)
+		return
+	}
+
+	token, err := util.EncodeUserJWT(user.Username, time.Now().Add(10*time.Minute))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	settings, err := db.Query.ListSettings(context.Background())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var config util.EmailConfig
+	var resetLink string
+	for _, setting := range settings {
+		switch setting.Key {
+		case "email-host":
+			config.EmailHost = setting.Value
+		case "email-port":
+			config.EmailPort = setting.Value
+		case "email-username":
+			config.EmailUsername = setting.Value
+		case "email-password":
+			config.EmailPassword = setting.Value
+		case "email-from":
+			config.EmailFrom = setting.Value
+		case "server-url":
+			resetLink = fmt.Sprintf("%s/login/reset?token=%s", setting.Value, token)
+		}
+	}
+	data := map[string]interface{}{
+		"ResetLink": url.PathEscape(resetLink),
+		"Minutes":   10,
+	}
+	if err := util.SendMail(*user.Email, "reset-password", config, data); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // Version --------------------------------------------------------------------

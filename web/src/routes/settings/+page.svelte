@@ -5,7 +5,6 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { downloadBackup, getSettings, uploadBackup, settings, updateSetting } from '$lib/api';
 	import { onMount } from 'svelte';
-	import { toast } from 'svelte-sonner';
 	import { Input } from '$lib/components/ui/input';
 	import type { Setting } from '$lib/types/base';
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
@@ -20,16 +19,20 @@
 	};
 
 	// Settings
-	let backupEnabled: boolean;
-	let backupKeep: string;
-	let backupSchedule: string;
 	let serverURL: string;
 	let agentCleanupEnabled: boolean;
 	let agentCleanupTimout: string;
+	let emailHost: string;
+	let emailPort: string;
+	let emailUsername: string;
+	let emailPassword: string;
+	let emailFrom: string;
+	let backupEnabled: boolean;
+	let backupKeep: string;
+	let backupSchedule: string;
 
 	const update = async (s: Setting) => {
 		await updateSetting(s);
-		toast.success(`Setting ${s.key} updated`);
 	};
 
 	const onKeydown = (e: KeyboardEvent, s: any) => {
@@ -40,13 +43,21 @@
 
 	onMount(async () => {
 		await getSettings();
-		backupEnabled = $settings?.find((s) => s.key === 'backup-enabled')?.value === 'true';
-		backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
-		backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
 		serverURL = $settings?.find((s) => s.key === 'server-url')?.value ?? '';
+
 		agentCleanupEnabled =
 			$settings?.find((s) => s.key === 'agent-cleanup-enabled')?.value === 'true';
 		agentCleanupTimout = $settings?.find((s) => s.key === 'agent-cleanup-timeout')?.value ?? '';
+
+		backupEnabled = $settings?.find((s) => s.key === 'backup-enabled')?.value === 'true';
+		backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
+		backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
+
+		emailHost = $settings?.find((s) => s.key === 'email-host')?.value ?? '';
+		emailPort = $settings?.find((s) => s.key === 'email-port')?.value ?? '';
+		emailUsername = $settings?.find((s) => s.key === 'email-username')?.value ?? '';
+		emailPassword = $settings?.find((s) => s.key === 'email-password')?.value ?? '';
+		emailFrom = $settings?.find((s) => s.key === 'email-from')?.value ?? '';
 	});
 </script>
 
@@ -77,6 +88,7 @@
 						class="col-span-3 text-right"
 					/>
 				</div>
+
 				<h2 class="border-b border-gray-200 pb-2 text-lg">Agents</h2>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
@@ -109,6 +121,74 @@
 						class="col-span-3 text-right"
 					/>
 				</div>
+
+				<h2 class="border-b border-gray-200 pb-2 text-lg">Email</h2>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="email-host" class="col-span-1 flex items-center gap-0.5">
+						Host
+						<HoverInfo text="The host of the email server." />
+					</Label>
+					<Input
+						name="email-host"
+						type="text"
+						on:keydown={(e) => onKeydown(e, { key: 'email-host', value: emailHost })}
+						bind:value={emailHost}
+						class="col-span-3 text-right"
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="email-port" class="col-span-1 flex items-center gap-0.5">
+						Port
+						<HoverInfo text="The port of the email server." />
+					</Label>
+					<Input
+						name="email-port"
+						type="text"
+						on:keydown={(e) => onKeydown(e, { key: 'email-port', value: emailPort })}
+						bind:value={emailPort}
+						class="col-span-3 text-right"
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="email-username" class="col-span-1 flex items-center gap-0.5">
+						Username
+						<HoverInfo text="The username of the email account." />
+					</Label>
+					<Input
+						name="email-username"
+						type="text"
+						on:keydown={(e) => onKeydown(e, { key: 'email-username', value: emailUsername })}
+						bind:value={emailUsername}
+						class="col-span-3 text-right"
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="email-password" class="col-span-1 flex items-center gap-0.5">
+						Password
+						<HoverInfo text="The password of the email account." />
+					</Label>
+					<Input
+						name="email-password"
+						type="password"
+						on:keydown={(e) => onKeydown(e, { key: 'email-password', value: emailPassword })}
+						bind:value={emailPassword}
+						class="col-span-3 text-right"
+					/>
+				</div>
+				<div class="grid grid-cols-4 items-center justify-between gap-2">
+					<Label for="email-from" class="col-span-1 flex items-center gap-0.5">
+						Sender
+						<HoverInfo text="The from address of the email account." />
+					</Label>
+					<Input
+						name="email-from"
+						type="text"
+						on:keydown={(e) => onKeydown(e, { key: 'email-from', value: emailFrom })}
+						bind:value={emailFrom}
+						class="col-span-3 text-right"
+					/>
+				</div>
+
 				<h2 class="border-b border-gray-200 pb-2 text-lg">Backups</h2>
 				<div class="mt-4 grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="backup-enabled" class="col-span-1">Enabled</Label>

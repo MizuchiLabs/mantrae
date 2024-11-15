@@ -23,6 +23,17 @@ type AppConfig struct {
 	// Database
 	DBType string `env:"DB_TYPE" envDefault:"sqlite"`
 	DBName string `env:"DB_NAME" envDefault:"mantrae"`
+
+	// Email
+	EmailConfig
+}
+
+type EmailConfig struct {
+	EmailHost     string `env:"EMAIL_HOST"     envDefault:"localhost"`
+	EmailPort     string `env:"EMAIL_PORT"     envDefault:"25"`
+	EmailUsername string `env:"EMAIL_USERNAME" envDefault:""`
+	EmailPassword string `env:"EMAIL_PASSWORD" envDefault:""`
+	EmailFrom     string `env:"EMAIL_FROM"     envDefault:"mantrae@localhost"`
 }
 
 var App AppConfig

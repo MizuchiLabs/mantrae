@@ -156,6 +156,10 @@ func SetDefaultProfile(url, username, password string) error {
 func SetDefaultSettings() error {
 	baseSettings := []db.Setting{
 		{
+			Key:   "server-url",
+			Value: util.App.ServerURL,
+		},
+		{
 			Key:   "backup-enabled",
 			Value: "true",
 		},
@@ -168,10 +172,6 @@ func SetDefaultSettings() error {
 			Value: "3", // Keep 3 backups
 		},
 		{
-			Key:   "server-url",
-			Value: util.App.ServerURL,
-		},
-		{
 			Key:   "agent-cleanup-enabled",
 			Value: "true",
 		},
@@ -180,8 +180,24 @@ func SetDefaultSettings() error {
 			Value: "168h",
 		},
 		{
-			Key:   "oauth-provider",
-			Value: "",
+			Key:   "email-host",
+			Value: util.App.EmailHost,
+		},
+		{
+			Key:   "email-port",
+			Value: util.App.EmailPort,
+		},
+		{
+			Key:   "email-username",
+			Value: util.App.EmailUsername,
+		},
+		{
+			Key:   "email-password",
+			Value: util.App.EmailPassword,
+		},
+		{
+			Key:   "email-from",
+			Value: util.App.EmailFrom,
 		},
 	}
 

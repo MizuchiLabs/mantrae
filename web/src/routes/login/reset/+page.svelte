@@ -3,24 +3,17 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { login, loggedIn, sendResetEmail } from '$lib/api';
+	import { loggedIn, resetPassword } from '$lib/api';
 	import { Eye, EyeOff } from 'lucide-svelte';
-	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 
-	let username = '';
+	let token = $page.url.searchParams.get('token');
 	let password = '';
 	let showPassword = false;
-	let remember = false;
-	const handleReset = async () => {
-		if (username.length > 0) {
-			await sendResetEmail(username);
-		} else {
-			toast.error('Please enter a username!');
-		}
-	};
+
 	const handleSubmit = async () => {
-		await login(username, password, remember);
+		if (!token) return;
+		await resetPassword(token, password);
 	};
 	const handleKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
@@ -32,15 +25,11 @@
 {#if !$loggedIn}
 	<Card.Root class="w-[400px]">
 		<Card.Header>
-			<Card.Title>Login</Card.Title>
-			<Card.Description>Login to your account</Card.Description>
+			<Card.Title>Reset Password</Card.Title>
+			<Card.Description>Set your new password</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			<div class="grid w-full items-center gap-4" on:keydown={handleKeydown} aria-hidden>
-				<div class="flex flex-col space-y-1.5">
-					<Label for="username">Username</Label>
-					<Input id="username" bind:value={username} />
-				</div>
 				<div class="flex flex-col space-y-1.5">
 					<Label for="password">Password</Label>
 					<div class="flex flex-row items-center justify-end gap-1">
@@ -62,20 +51,9 @@
 							{/if}
 						</Button>
 					</div>
-					<div class="flex flex-row items-center justify-between gap-1">
-						<div class="items-top flex items-center justify-end gap-2">
-							<Checkbox id="remember" bind:checked={remember} />
-							<div class="grid gap-1.5 leading-none">
-								<Label for="terms1" class="text-sm">Remember me</Label>
-							</div>
-						</div>
-						<button class="text-xs text-muted-foreground" on:click={handleReset}>
-							Forgot password?
-						</button>
-					</div>
 				</div>
 				<div class="mt-4 flex flex-col">
-					<Button type="submit" on:click={handleSubmit}>Login</Button>
+					<Button type="submit" on:click={handleSubmit}>Save</Button>
 				</div>
 			</div>
 		</Card.Content>

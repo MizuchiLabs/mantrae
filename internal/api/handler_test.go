@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/MizuchiLabs/mantrae/test"
@@ -16,7 +17,7 @@ func setupHandler(method, path string, body string) (*httptest.ResponseRecorder,
 	if err := test.SetupDB(); err != nil {
 		return nil, nil
 	}
-	token, err := util.EncodeUserJWT("test")
+	token, err := util.EncodeUserJWT("test", time.Now().Add(24*time.Hour))
 	if err != nil {
 		return nil, nil
 	}

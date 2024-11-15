@@ -73,12 +73,13 @@ func HashBasicAuth(userString string) (string, error) {
 }
 
 // EncodeUserJWT generates a JWT for user login
-func EncodeUserJWT(username string) (string, error) {
+func EncodeUserJWT(username string, expirationTime time.Time) (string, error) {
 	if username == "" {
 		return "", errors.New("username cannot be empty")
 	}
-
-	expirationTime := time.Now().Add(24 * time.Hour)
+	if expirationTime.IsZero() {
+		expirationTime = time.Now().Add(24 * time.Hour)
+	}
 	claims := &Claims{
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
