@@ -59,7 +59,7 @@ export async function login(username: string, password: string, remember: boolea
 		method: 'POST',
 		body: JSON.stringify({ username, password })
 	});
-	if (response.status === 200) {
+	if (response.ok) {
 		const { token } = await response.json();
 		localStorage.setItem(TOKEN_SK, token);
 		loggedIn.set(true);

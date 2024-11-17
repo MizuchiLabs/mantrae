@@ -10,10 +10,9 @@ export const trailingSlash = 'always';
 export const load: LayoutLoad = async ({ fetch, url }) => {
 	const token = localStorage.getItem(TOKEN_SK);
 
-	if (token === null) {
+	if (!token) {
 		logout();
-		if (url.pathname !== '/login' && url.pathname !== '/login/reset/') {
-			console.log(url.pathname);
+		if (!url.pathname.startsWith('/login')) {
 			goto('/login');
 		}
 		return {};
@@ -25,8 +24,7 @@ export const load: LayoutLoad = async ({ fetch, url }) => {
 	});
 	if (!response.ok) {
 		logout();
-		if (url.pathname !== '/login' && url.pathname !== '/login/reset/') {
-			console.log(url.pathname);
+		if (!url.pathname.startsWith('/login')) {
 			goto('/login');
 		}
 		return {};
@@ -34,3 +32,4 @@ export const load: LayoutLoad = async ({ fetch, url }) => {
 
 	loggedIn.set(true);
 };
+

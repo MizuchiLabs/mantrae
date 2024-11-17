@@ -61,6 +61,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("remember") == "true" {
 		expirationTime = time.Now().Add(7 * 24 * time.Hour)
 	}
+
 	token, err := util.EncodeUserJWT(user.Username, expirationTime)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,18 +73,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	tokenString := r.Header.Get("Authorization")
-	if len(tokenString) < 7 {
+	if len(tokenString) < 7 && tokenString[:7] != "Bearer " {
 		http.Error(w, "Token cannot be empty", http.StatusBadRequest)
 		return
 	}
 
-	_, err := util.DecodeJWT(tokenString[7:])
+	data, err := util.DecodeJWT(tokenString[7:])
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	writeJSON(w, data)
 }
 
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
