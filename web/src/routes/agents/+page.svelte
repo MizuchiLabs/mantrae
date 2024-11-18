@@ -40,34 +40,36 @@
 	});
 </script>
 
-<div class="my-6 flex flex-col gap-2 px-4">
-	<h1 class="text-xl font-semibold">
-		Agent Token <HoverInfo
-			text="The token used to authenticate with the server. Initially it will be valid for 14 days. The agents will renew their token automatically."
-		/>
-	</h1>
-	<div class="relative flex max-w-[380px]">
-		<Input
-			id="agent-token"
-			name="agent-token"
-			type="text"
-			value={$agentToken}
-			class="overflow-hidden text-ellipsis whitespace-nowrap pr-10"
-			readonly
-		/>
-		<Button
-			variant="ghost"
-			class="absolute right-0 hover:bg-transparent hover:text-red-400"
-			on:click={copyToken}
-		>
-			{#if copyText === 'Copied!'}
-				<CopyCheck size="1rem" />
-			{:else}
-				<Copy size="1rem" />
-			{/if}
-		</Button>
+{#if $profile}
+	<div class="my-6 flex flex-col gap-2 px-4">
+		<h1 class="text-xl font-semibold">
+			Agent Token <HoverInfo
+				text="The token used to authenticate with the server. Initially it will be valid for 14 days. The agents will renew their token automatically."
+			/>
+		</h1>
+		<div class="relative flex max-w-[380px]">
+			<Input
+				id="agent-token"
+				name="agent-token"
+				type="text"
+				value={$agentToken}
+				class="overflow-hidden text-ellipsis whitespace-nowrap pr-10"
+				readonly
+			/>
+			<Button
+				variant="ghost"
+				class="absolute right-0 hover:bg-transparent hover:text-red-400"
+				on:click={copyToken}
+			>
+				{#if copyText === 'Copied!'}
+					<CopyCheck size="1rem" />
+				{:else}
+					<Copy size="1rem" />
+				{/if}
+			</Button>
+		</div>
 	</div>
-</div>
+{/if}
 
 <div class="flex flex-col gap-4 px-4 md:flex-row">
 	{#if $agents}

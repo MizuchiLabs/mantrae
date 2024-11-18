@@ -85,7 +85,6 @@ export function newProvider(): DNSProvider {
 }
 
 export interface Setting {
-	id: number;
 	key: string;
 	value: string;
 }

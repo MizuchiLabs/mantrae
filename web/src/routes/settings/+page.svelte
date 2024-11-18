@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch';
@@ -8,6 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import type { Setting } from '$lib/types/base';
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
+	import { Eye, EyeOff, Save } from 'lucide-svelte';
 
 	let fileInput: HTMLInputElement;
 	const handleFileUpload = (event: Event) => {
@@ -19,45 +21,52 @@
 	};
 
 	// Settings
-	let serverURL: string;
 	let agentCleanupEnabled: boolean;
-	let agentCleanupTimout: string;
-	let emailHost: string;
-	let emailPort: string;
-	let emailUsername: string;
-	let emailPassword: string;
-	let emailFrom: string;
 	let backupEnabled: boolean;
-	let backupKeep: string;
-	let backupSchedule: string;
 
-	const update = async (s: Setting) => {
-		await updateSetting(s);
+	let settingsMap: Record<string, string> = {};
+	let changedSettings: Record<string, string> = {};
+	let showEmailPassword = false;
+
+	const update = async (key: string) => {
+		const setting = { key, value: settingsMap[key] };
+		await updateSetting(setting);
+	};
+	const markAsChanged = (key: string) => {
+		const changed = $settings.find((s: Setting) => s.key === key)?.value;
+		if (settingsMap[key] !== changed) {
+			changedSettings = { ...changedSettings, [key]: settingsMap[key] };
+		} else {
+			// Remove it from changedSettings if the value hasn't changed
+			const { [key]: _, ...rest } = changedSettings;
+			changedSettings = rest;
+		}
+	};
+	const saveChanges = async (): Promise<void> => {
+		for (const key in changedSettings) {
+			if (changedSettings.hasOwnProperty(key)) {
+				await update(key);
+			}
+		}
+
+		// Reset
+		changedSettings = {};
 	};
 
-	const onKeydown = (e: KeyboardEvent, s: any) => {
+	const onKeydown = (e: KeyboardEvent, key: string) => {
 		if (e.key === 'Enter') {
-			update(s);
+			update(key);
 		}
 	};
 
 	onMount(async () => {
 		await getSettings();
-		serverURL = $settings?.find((s) => s.key === 'server-url')?.value ?? '';
-
-		agentCleanupEnabled =
-			$settings?.find((s) => s.key === 'agent-cleanup-enabled')?.value === 'true';
-		agentCleanupTimout = $settings?.find((s) => s.key === 'agent-cleanup-timeout')?.value ?? '';
-
-		backupEnabled = $settings?.find((s) => s.key === 'backup-enabled')?.value === 'true';
-		backupKeep = $settings?.find((s) => s.key === 'backup-keep')?.value ?? '';
-		backupSchedule = $settings?.find((s) => s.key === 'backup-schedule')?.value ?? '';
-
-		emailHost = $settings?.find((s) => s.key === 'email-host')?.value ?? '';
-		emailPort = $settings?.find((s) => s.key === 'email-port')?.value ?? '';
-		emailUsername = $settings?.find((s) => s.key === 'email-username')?.value ?? '';
-		emailPassword = $settings?.find((s) => s.key === 'email-password')?.value ?? '';
-		emailFrom = $settings?.find((s) => s.key === 'email-from')?.value ?? '';
+		settingsMap = $settings.reduce(
+			(acc, setting) => ({ ...acc, [setting.key]: setting.value }),
+			{}
+		);
+		agentCleanupEnabled = settingsMap['agent-cleanup-enabled'] === 'true';
+		backupEnabled = settingsMap['backup-enabled'] === 'true';
 	});
 </script>
 
@@ -71,6 +80,18 @@
 			<Card.Header>
 				<Card.Title class="flex flex-row items-center justify-between gap-2 text-xl font-bold">
 					Settings
+					{#if Object.keys(changedSettings)?.length > 0}
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								<Button variant="ghost" size="icon" on:click={saveChanges}>
+									<Save size="1rem" class="animate-pulse" />
+								</Button>
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<p>Save changes</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					{/if}
 				</Card.Title>
 			</Card.Header>
 			<Card.Content class="mt-4 flex flex-col gap-4">
@@ -83,8 +104,9 @@
 					<Input
 						name="server-url"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'server-url', value: serverURL })}
-						bind:value={serverURL}
+						bind:value={settingsMap['server-url']}
+						on:keydown={(e) => onKeydown(e, 'server-url')}
+						on:input={() => markAsChanged('server-url')}
 						class="col-span-3 text-right"
 					/>
 				</div>
@@ -102,7 +124,7 @@
 						class="col-span-3 justify-self-end"
 						bind:checked={agentCleanupEnabled}
 						onCheckedChange={(value) =>
-							updateSetting({ id: 0, key: 'agent-cleanup-enabled', value: value.toString() })}
+							updateSetting({ key: 'agent-cleanup-enabled', value: value.toString() })}
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
@@ -115,76 +137,107 @@
 					<Input
 						name="agent-cleanup-timeout"
 						type="text"
-						on:keydown={(e) =>
-							onKeydown(e, { key: 'agent-cleanup-timeout', value: agentCleanupTimout })}
-						bind:value={agentCleanupTimout}
+						bind:value={settingsMap['agent-cleanup-timeout']}
+						on:keydown={(e) => onKeydown(e, 'agent-cleanup-timeout')}
+						on:input={() => markAsChanged('agent-cleanup-timeout')}
 						class="col-span-3 text-right"
 					/>
 				</div>
 
+				<!-- Email -->
 				<h2 class="border-b border-gray-200 pb-2 text-lg">Email</h2>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="email-host" class="col-span-1 flex items-center gap-0.5">
+					<Label for="ehost" class="col-span-1 flex items-center gap-0.5">
 						Host
 						<HoverInfo text="The host of the email server." />
 					</Label>
 					<Input
-						name="email-host"
+						name="ehost"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'email-host', value: emailHost })}
-						bind:value={emailHost}
+						bind:value={settingsMap['email-host']}
+						on:keydown={(e) => onKeydown(e, 'email-host')}
+						on:input={() => markAsChanged('email-host')}
 						class="col-span-3 text-right"
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="email-port" class="col-span-1 flex items-center gap-0.5">
+					<Label for="eport" class="col-span-1 flex items-center gap-0.5">
 						Port
 						<HoverInfo text="The port of the email server." />
 					</Label>
 					<Input
-						name="email-port"
+						name="eport"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'email-port', value: emailPort })}
-						bind:value={emailPort}
+						bind:value={settingsMap['email-port']}
+						on:keydown={(e) => onKeydown(e, 'email-port')}
+						on:input={() => markAsChanged('email-port')}
 						class="col-span-3 text-right"
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="email-username" class="col-span-1 flex items-center gap-0.5">
+					<Label for="mail-user" class="col-span-1 flex items-center gap-0.5">
 						Username
 						<HoverInfo text="The username of the email account." />
 					</Label>
 					<Input
-						name="email-username"
+						name="mail-user"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'email-username', value: emailUsername })}
-						bind:value={emailUsername}
+						bind:value={settingsMap['email-username']}
+						on:keydown={(e) => onKeydown(e, 'email-username')}
+						on:input={() => markAsChanged('email-username')}
 						class="col-span-3 text-right"
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="email-password" class="col-span-1 flex items-center gap-0.5">
+					<Label for="mail-password" class="col-span-1 flex items-center gap-0.5">
 						Password
 						<HoverInfo text="The password of the email account." />
 					</Label>
-					<Input
-						name="email-password"
-						type="password"
-						on:keydown={(e) => onKeydown(e, { key: 'email-password', value: emailPassword })}
-						bind:value={emailPassword}
-						class="col-span-3 text-right"
-					/>
+					<div class="col-span-3 flex flex-row items-center justify-end gap-1">
+						{#if showEmailPassword}
+							<Input
+								name="mail-password"
+								type="text"
+								bind:value={settingsMap['email-password']}
+								on:keydown={(e) => onKeydown(e, 'email-password')}
+								on:input={() => markAsChanged('email-password')}
+								class="pr-10 text-right"
+							/>
+						{:else}
+							<Input
+								name="mail-password"
+								type="password"
+								bind:value={settingsMap['email-password']}
+								on:keydown={(e) => onKeydown(e, 'email-password')}
+								on:input={() => markAsChanged('email-password')}
+								class="pr-10 text-right"
+							/>
+						{/if}
+						<Button
+							variant="ghost"
+							size="icon"
+							class="absolute hover:bg-transparent hover:text-red-400"
+							on:click={() => (showEmailPassword = !showEmailPassword)}
+						>
+							{#if showEmailPassword}
+								<Eye size="1rem" />
+							{:else}
+								<EyeOff size="1rem" />
+							{/if}
+						</Button>
+					</div>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="email-from" class="col-span-1 flex items-center gap-0.5">
+					<Label for="from" class="col-span-1 flex items-center gap-0.5">
 						Sender
 						<HoverInfo text="The from address of the email account." />
 					</Label>
 					<Input
-						name="email-from"
+						name="from"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'email-from', value: emailFrom })}
-						bind:value={emailFrom}
+						bind:value={settingsMap['email-from']}
+						on:keydown={(e) => onKeydown(e, 'email-from')}
+						on:input={() => markAsChanged('email-from')}
 						class="col-span-3 text-right"
 					/>
 				</div>
@@ -197,7 +250,7 @@
 						class="col-span-3 justify-self-end"
 						bind:checked={backupEnabled}
 						onCheckedChange={(value) =>
-							updateSetting({ id: 0, key: 'backup-enabled', value: value.toString() })}
+							updateSetting({ key: 'backup-enabled', value: value.toString() })}
 					/>
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
@@ -208,8 +261,9 @@
 					<Input
 						name="backup-keep"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'backup-keep', value: backupKeep })}
-						bind:value={backupKeep}
+						bind:value={settingsMap['backup-keep']}
+						on:keydown={(e) => onKeydown(e, 'backup-keep')}
+						on:input={() => markAsChanged('backup-keep')}
 						class="col-span-3 text-right"
 						placeholder="3"
 					/>
@@ -224,8 +278,8 @@
 					<Input
 						name="backup-schedule"
 						type="text"
-						on:keydown={(e) => onKeydown(e, { key: 'backup-schedule', value: backupSchedule })}
-						bind:value={backupSchedule}
+						bind:value={settingsMap['backup-schedule']}
+						on:keydown={(e) => onKeydown(e, 'backup-schedule')}
 						class="col-span-3 text-right"
 						placeholder="0 0 * * *"
 					/>

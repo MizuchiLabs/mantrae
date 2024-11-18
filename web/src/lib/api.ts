@@ -27,6 +27,7 @@ export const plugins: Writable<Plugin[]> = writable();
 export const dynamic = writable('');
 export const version = writable('');
 export const configError = writable('');
+export const traefikError = writable('');
 export const agentToken = writable('');
 
 async function handleRequest(
@@ -44,11 +45,6 @@ async function handleRequest(
 	});
 	if (response.ok) {
 		return response;
-	} else {
-		toast.error('Request failed', {
-			description: await response.text(),
-			duration: 3000
-		});
 	}
 }
 
@@ -430,7 +426,7 @@ export async function deleteRouterDNS(r: Router): Promise<void> {
 }
 
 // Settings -------------------------------------------------------------------
-export async function getSettings() {
+export async function getSettings(): Promise<void> {
 	const response = await handleRequest('/settings', 'GET');
 	if (response) {
 		const data = await response.json();
@@ -600,18 +596,26 @@ export async function getTraefikOverview() {
 	const response = await handleRequest(`/traefik/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
+		traefikError.set('');
 		return data;
+	} else {
+		traefikError.set('No connection to Traefik');
 	}
 	return '';
 }
 
 export async function getTraefikConfig() {
-	if (!get(profile)) return '';
+	const profileName = get(profile)?.name;
+	if (!profileName) return;
 
-	const response = await handleRequest(`/${get(profile)?.name}?yaml=true`, 'GET');
+	const response = await handleRequest(`/${profileName}?yaml=true`, 'GET');
 	if (response) {
 		const data = await response.text();
-		dynamic.set(data);
+		if (!data.includes('{}')) {
+			dynamic.set(data);
+		}
+	} else {
+		dynamic.set('');
 	}
 }
 

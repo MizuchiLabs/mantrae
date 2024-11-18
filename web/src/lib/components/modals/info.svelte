@@ -68,7 +68,7 @@
 						<div class="mt-2 grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Version</span>
 							<div class="col-span-3 space-x-2">
-								{#if version.version}
+								{#if version?.version}
 									<Badge variant="secondary" class="bg-blue-300">
 										v{version.version}
 									</Badge>
@@ -83,10 +83,10 @@
 								{#each $entrypoints ?? [] as entrypoint}
 									{#if entrypoint.asDefault}
 										<Badge variant="secondary" class="bg-green-300"
-											>{entrypoint.name}{entrypoint.address}</Badge
+											>{entrypoint.name}:{entrypoint.address}</Badge
 										>
 									{:else}
-										<Badge variant="secondary">{entrypoint.name}{entrypoint.address}</Badge>
+										<Badge variant="secondary">{entrypoint.name}:{entrypoint.address}</Badge>
 									{/if}
 								{/each}
 							</div>
@@ -176,26 +176,36 @@
 					<Card.Header>
 						<Card.Title class="flex items-center justify-between gap-2">
 							Dynamic Config
-							<button
-								on:click={copy}
-								class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
-							>
-								{copyText}
-								{#if copyText === 'Copied!'}
-									<CopyCheck size="1rem" />
-								{:else}
-									<Copy size="1rem" />
-								{/if}
-							</button>
+							{#if $dynamic}
+								<button
+									on:click={copy}
+									class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
+								>
+									{copyText}
+									{#if copyText === 'Copied!'}
+										<CopyCheck size="1rem" />
+									{:else}
+										<Copy size="1rem" />
+									{/if}
+								</button>
+							{/if}
 						</Card.Title>
 						<Card.Description>
 							This is the current dynamic configuration your Traefik instance is using.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="text-sm">
-						<Highlight code={$dynamic} language={yaml} let:highlighted>
-							<LineNumbers {highlighted} hideBorder wrapLines />
-						</Highlight>
+						{#if $dynamic}
+							<div class="flex items-center justify-center">
+								<Highlight code={$dynamic} language={yaml} let:highlighted>
+									<LineNumbers {highlighted} hideBorder wrapLines />
+								</Highlight>
+							</div>
+						{:else}
+							<p class="flex items-center justify-center">
+								No dynamic configuration, add some routers.
+							</p>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>

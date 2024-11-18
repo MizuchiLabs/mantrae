@@ -181,7 +181,7 @@ func SendResetEmail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	data := map[string]interface{}{
-		"ResetLink": url.PathEscape(resetLink),
+		"ResetLink": resetLink,
 		"Minutes":   10,
 	}
 	if err := util.SendMail(*user.Email, "reset-password", config, data); err != nil {
