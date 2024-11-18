@@ -354,13 +354,11 @@ func getServices[T Serviceable](profile db.Profile, endpoint string) error {
 
 type HTTPMiddleware struct {
 	BaseFields
-	MiddlewareType string `json:"middlewareType,omitempty"`
 	dynamic.Middleware
 }
 
 type TCPMiddleware struct {
 	BaseFields
-	MiddlewareType string `json:"middlewareType,omitempty"`
 	dynamic.TCPMiddleware
 }
 
@@ -433,13 +431,13 @@ func (m TCPMiddleware) ToMiddleware() *db.Middleware {
 	}
 
 	dbMiddleware.Name = strings.Split(m.Name, "@")[0]
-	dbMiddleware.Protocol = "http"
+	dbMiddleware.Protocol = "tcp"
 	if m.Provider == "http" {
 		return &dbMiddleware
 	}
 
 	// Unmarshal to traefik.Middleware to access specific fields
-	var traefikMiddleware dynamic.Middleware
+	var traefikMiddleware dynamic.TCPMiddleware
 	if err := json.Unmarshal(mBytes, &traefikMiddleware); err != nil {
 		slog.Error("Failed to unmarshal into traefik.Middleware", "error", err)
 		return nil
@@ -456,12 +454,6 @@ func (m TCPMiddleware) ToMiddleware() *db.Middleware {
 			dbMiddleware.Content = field.Interface()
 			return &dbMiddleware
 		}
-	}
-
-	// If no middleware field matches, check for a plugin match
-	if pluginConfig, ok := traefikMiddleware.Plugin[m.Type]; ok {
-		dbMiddleware.Content = pluginConfig
-		return &dbMiddleware
 	}
 
 	// If no matching field is found, log a warning
