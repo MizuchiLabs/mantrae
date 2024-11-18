@@ -43,13 +43,18 @@ Environment variables can be used to set up Mantrae and configure its settings. 
 | `CONFIG_DIR`        |                         | Directory path for Mantrae's configuration files.                     |
 | `BACKUP_DIR`        | `backups`               | Directory for storing backups.                                        |
 | `LOG_LEVEL`         | `info`                  | Log verbosity level. Options: `debug`, `info`, `warn`, `error`.       |
+| `EMAIL_HOST`        | `localhost`             | SMTP server host.                                                     |
+| `EMAIL_PORT`        | `25`                    | SMTP server port.                                                     |
+| `EMAIL_USERNAME`    |                         | SMTP server username.                                                 |
+| `EMAIL_PASSWORD`    |                         | SMTP server password.                                                 |
+| `EMAIL_FROM`        | `mantrae@localhost`     | Sender email address.                                                 |
 
 ### Database Configuration
 
-| Variable  | Default   | Description                                 |
-| --------- | --------- | ------------------------------------------- |
-| `DB_TYPE` | `sqlite`  | Database type. Supported options: `sqlite`. |
-| `DB_NAME` | `mantrae` | Database name.                              |
+| Variable  | Default   | Description                                              |
+| --------- | --------- | -------------------------------------------------------- |
+| `DB_TYPE` | `sqlite`  | Database type. Supported options: only `sqlite` for now. |
+| `DB_NAME` | `mantrae` | Database/file name.                                      |
 
 ### Example Usage
 
