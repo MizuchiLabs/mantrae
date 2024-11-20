@@ -76,6 +76,7 @@ export function newService(): Service {
 export interface Errors {
 	ssl?: string;
 	dns?: string;
+	agent?: string;
 }
 
 export interface TLSConfig {

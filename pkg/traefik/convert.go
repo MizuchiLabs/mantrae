@@ -59,7 +59,7 @@ func DecodeFromLabels(id string, container []byte) error {
 		if config.HTTP != nil {
 			for i, router := range config.HTTP.Routers {
 				priority := int64(router.Priority)
-				dbRouter := db.UpsertRouterParams{
+				dbRouter := db.Router{
 					ProfileID:   agent.ProfileID,
 					Name:        i,
 					Provider:    "http",
@@ -77,13 +77,29 @@ func DecodeFromLabels(id string, container []byte) error {
 					return err
 				}
 
-				if _, err := db.Query.UpsertRouter(context.Background(), dbRouter); err != nil {
+				if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams(dbRouter)); err != nil {
 					return err
 				}
 			}
 
 			for i, service := range config.HTTP.Services {
 				servers := []dynamic.Server{}
+
+				// Get created router
+				router, err := db.Query.GetRouterByName(
+					context.Background(),
+					db.GetRouterByNameParams{
+						ProfileID: agent.ProfileID,
+						Name:      i,
+					},
+				)
+				if err != nil {
+					slog.Error("Failed to get router", "error", err)
+					continue
+				}
+				if err := router.DecodeFields(); err != nil {
+					return err
+				}
 
 				// Build servers
 				for _, server := range service.LoadBalancer.Servers {
@@ -100,15 +116,14 @@ func DecodeFromLabels(id string, container []byte) error {
 						} else {
 							newServer.URL = fmt.Sprintf("http://%s:%d", useIP, externalPort)
 						}
+						router.UpdateError("agent", "")
 					} else {
-						slog.Error("No external port mapping found for internal port", "port", server.Port)
+						router.UpdateError("agent", "No external port mapping found for internal port "+server.Port)
 						continue
 					}
 					servers = append(servers, newServer)
 				}
 				if len(servers) == 0 {
-					slog.Error("No servers found for service", "service", service)
-
 					// Fallback
 					newServer := dynamic.Server{
 						URL: fmt.Sprintf("http://%s:%d", useIP, 80),
@@ -147,7 +162,7 @@ func DecodeFromLabels(id string, container []byte) error {
 		if config.TCP != nil {
 			for i, router := range config.TCP.Routers {
 				priority := int64(router.Priority)
-				dbRouter := db.UpsertRouterParams{
+				dbRouter := db.Router{
 					ProfileID:   agent.ProfileID,
 					Name:        i,
 					Provider:    "http",
@@ -165,7 +180,7 @@ func DecodeFromLabels(id string, container []byte) error {
 					return err
 				}
 
-				if _, err := db.Query.UpsertRouter(context.Background(), dbRouter); err != nil {
+				if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams(dbRouter)); err != nil {
 					return err
 				}
 			}
@@ -226,7 +241,7 @@ func DecodeFromLabels(id string, container []byte) error {
 
 		if config.UDP != nil {
 			for i, router := range config.UDP.Routers {
-				dbRouter := db.UpsertRouterParams{
+				dbRouter := db.Router{
 					ProfileID:   agent.ProfileID,
 					Name:        i,
 					Provider:    "http",
@@ -239,7 +254,7 @@ func DecodeFromLabels(id string, container []byte) error {
 					return err
 				}
 
-				if _, err := db.Query.UpsertRouter(context.Background(), dbRouter); err != nil {
+				if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams(dbRouter)); err != nil {
 					return err
 				}
 			}

@@ -100,7 +100,7 @@ func EncodeAgentJWT(profileID int64) (string, error) {
 
 	expirationTime := time.Now().Add(14 * 24 * time.Hour) // 14 days
 	claims := Claims{
-		ServerURL: App.ServerURL + ":" + App.AgentPort,
+		ServerURL: App.ServerURL + ":" + App.Port,
 		ProfileID: profileID,
 		Secret:    App.Secret,
 		RegisteredClaims: jwt.RegisteredClaims{

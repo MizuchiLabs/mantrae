@@ -62,13 +62,10 @@ func main() {
 	// Start the background sync processes
 	tasks.StartSync(ctx)
 
-	// Start the grpc server
-	go api.Server(util.App.AgentPort)
-
 	// Start the WebUI server
 	srv := &http.Server{
 		Addr:              ":" + util.App.Port,
-		Handler:           api.Routes(),
+		Handler:           api.Server(),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
