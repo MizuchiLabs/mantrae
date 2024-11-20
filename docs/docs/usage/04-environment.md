@@ -36,7 +36,6 @@ Environment variables can be used to set up Mantrae and configure its settings. 
 | ------------------- | ------------------- | --------------------------------------------------------------------- |
 | `SECRET`            |                     | Secret key required for secure access. Required!                      |
 | `PORT`              | `3000`              | Port which Mantrae will listen on.                                    |
-| `AGENT_PORT`        | `8090`              | Listen port to accept connections from agents.                        |
 | `SERVER_URL`        | `http://127.0.0.1`  | The public URL of the Mantrae server for agent connections.           |
 | `ENABLE_BASIC_AUTH` | `false`             | Enables basic authentication for the Mantrae server if set to `true`. |
 | `ENABLE_AGENT`      | `true`              | Enables the Mantrae agent functionality.                              |
