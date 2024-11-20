@@ -33,7 +33,8 @@
 		X,
 		SquareArrowOutUpRight,
 		ShieldAlert,
-		TriangleAlert
+		TriangleAlert,
+		BotOff
 	} from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
@@ -148,7 +149,7 @@
 	const hasTLS = (router: Router): boolean => {
 		if (router.entryPoints === undefined) return false;
 
-		return router.entryPoints.some((e) => {
+		return router?.entryPoints?.some((e) => {
 			let entrypoint = $entrypoints?.find((ep) => ep.name === e);
 			return entrypoint?.http?.tls !== undefined;
 		});
@@ -363,7 +364,18 @@
 									{/if}
 
 									{#if router.agentId}
-										<Bot size="1.25rem" class="ml-1 text-green-600" />
+										{#if router.errors && router.errors.agent}
+											<HoverCard.Root openDelay={400}>
+												<HoverCard.Trigger>
+													<BotOff size="1.25rem" class="ml-1 text-red-600" />
+												</HoverCard.Trigger>
+												<HoverCard.Content>
+													<div class="text-sm">Agent Error: {router.errors.agent}</div>
+												</HoverCard.Content>
+											</HoverCard.Root>
+										{:else}
+											<Bot size="1.25rem" class="ml-1 text-green-600" />
+										{/if}
 									{/if}
 								</div>
 							</Table.Cell>
