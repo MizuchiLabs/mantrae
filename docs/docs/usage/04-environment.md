@@ -32,22 +32,22 @@ To start Mantrae on port 3000 and connect to a Traefik instance with authenticat
 
 Environment variables can be used to set up Mantrae and configure its settings. Below is a list of the supported environment variables.
 
-| Variable            | Default                 | Description                                                           |
-| ------------------- | ----------------------- | --------------------------------------------------------------------- |
-| `SECRET`            |                         | Secret key required for secure access. Required!                      |
-| `PORT`              | `3000`                  | Port which Mantrae will listen on.                                    |
-| `AGENT_PORT`        | `8090`                  | Listen port to accept connections from agents.                        |
-| `SERVER_URL`        | `http://localhost:8090` | The public URL of the Mantrae server for agent connections.           |
-| `ENABLE_BASIC_AUTH` | `false`                 | Enables basic authentication for the Mantrae server if set to `true`. |
-| `ENABLE_AGENT`      | `true`                  | Enables the Mantrae agent functionality.                              |
-| `CONFIG_DIR`        |                         | Directory path for Mantrae's configuration files.                     |
-| `BACKUP_DIR`        | `backups`               | Directory for storing backups.                                        |
-| `LOG_LEVEL`         | `info`                  | Log verbosity level. Options: `debug`, `info`, `warn`, `error`.       |
-| `EMAIL_HOST`        | `localhost`             | SMTP server host.                                                     |
-| `EMAIL_PORT`        | `25`                    | SMTP server port.                                                     |
-| `EMAIL_USERNAME`    |                         | SMTP server username.                                                 |
-| `EMAIL_PASSWORD`    |                         | SMTP server password.                                                 |
-| `EMAIL_FROM`        | `mantrae@localhost`     | Sender email address.                                                 |
+| Variable            | Default             | Description                                                           |
+| ------------------- | ------------------- | --------------------------------------------------------------------- |
+| `SECRET`            |                     | Secret key required for secure access. Required!                      |
+| `PORT`              | `3000`              | Port which Mantrae will listen on.                                    |
+| `AGENT_PORT`        | `8090`              | Listen port to accept connections from agents.                        |
+| `SERVER_URL`        | `http://127.0.0.1`  | The public URL of the Mantrae server for agent connections.           |
+| `ENABLE_BASIC_AUTH` | `false`             | Enables basic authentication for the Mantrae server if set to `true`. |
+| `ENABLE_AGENT`      | `true`              | Enables the Mantrae agent functionality.                              |
+| `CONFIG_DIR`        |                     | Directory path for Mantrae's configuration files.                     |
+| `BACKUP_DIR`        | `backups`           | Directory for storing backups.                                        |
+| `LOG_LEVEL`         | `info`              | Log verbosity level. Options: `debug`, `info`, `warn`, `error`.       |
+| `EMAIL_HOST`        | `localhost`         | SMTP server host.                                                     |
+| `EMAIL_PORT`        | `25`                | SMTP server port.                                                     |
+| `EMAIL_USERNAME`    |                     | SMTP server username.                                                 |
+| `EMAIL_PASSWORD`    |                     | SMTP server password.                                                 |
+| `EMAIL_FROM`        | `mantrae@localhost` | Sender email address.                                                 |
 
 ### Database Configuration
 
