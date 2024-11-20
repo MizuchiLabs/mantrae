@@ -33,7 +33,7 @@ func Client(quit chan os.Signal) {
 	// Create a new client instance
 	client := agentv1connect.NewAgentServiceClient(
 		http.DefaultClient,
-		claims.ServerURL,
+		claims.ServerURL+"/grpc",
 		connect.WithGRPC(),
 	)
 
@@ -104,7 +104,7 @@ func Client(quit chan os.Signal) {
 			healthCheckRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
 			result, err := client.HealthCheck(context.Background(), healthCheckRequest)
 			if err != nil {
-				slog.Error("Failed to send health check", "server", claims.ServerURL, "error", err)
+				continue
 			}
 			if !result.Msg.Ok {
 				slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
