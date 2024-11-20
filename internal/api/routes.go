@@ -5,87 +5,130 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/MizuchiLabs/mantrae/web"
 )
 
-func Routes() http.Handler {
+func Server() http.Handler {
+	agent := http.NewServeMux()
+	agent.Handle(agentv1connect.NewAgentServiceHandler(&AgentServer{}))
+
 	mux := http.NewServeMux()
+	mux.Handle("/", staticHandler())
 
-	logChain := Chain(Log)
-	jwtChain := Chain(Log, JWT)
-	// adminChain := Chain(Log, AdminOnly, JWT) // Handle perms later
-	basicChain := Chain(Log, BasicAuth)
+	// API routing
+	mux.Handle("/api/", http.StripPrefix("/api", apiRoutes()))
 
-	mux.Handle("POST /api/login", logChain(Login))
-	mux.Handle("POST /api/verify", logChain(VerifyToken))
-	mux.Handle("POST /api/reset", logChain(ResetPassword))
-	mux.Handle("POST /api/reset/{name}", logChain(SendResetEmail))
+	// gRPC routing
+	mux.Handle("/grpc/", http.StripPrefix("/grpc", agent))
 
-	mux.Handle("GET /api/version", logChain(GetVersion))
-	mux.Handle("GET /api/events", logChain(GetEvents))
+	return mux
+}
 
-	mux.Handle("GET /api/profile", jwtChain(GetProfiles))
-	mux.Handle("GET /api/profile/{id}", jwtChain(GetProfile))
-	mux.Handle("POST /api/profile", jwtChain(CreateProfile))
-	mux.Handle("PUT /api/profile", jwtChain(UpdateProfile))
-	mux.Handle("DELETE /api/profile/{id}", jwtChain(DeleteProfile))
+func apiRoutes() http.Handler {
+	api := http.NewServeMux()
 
-	mux.Handle("GET /api/router/{id}", jwtChain(GetRouters))
-	mux.Handle("POST /api/router", jwtChain(UpsertRouter))
-	mux.Handle("DELETE /api/router/{id}", jwtChain(DeleteRouter))
-
-	mux.Handle("GET /api/service/{id}", jwtChain(GetServices))
-	mux.Handle("POST /api/service", jwtChain(UpsertService))
-	mux.Handle("DELETE /api/service/{id}", jwtChain(DeleteService))
-
-	mux.Handle("GET /api/middleware/{id}", jwtChain(GetMiddlewares))
-	mux.Handle("POST /api/middleware", jwtChain(UpsertMiddleware))
-	mux.Handle("DELETE /api/middleware/{id}", jwtChain(DeleteMiddleware))
-
-	mux.Handle("GET /api/entrypoint/{id}", jwtChain(GetEntryPoints))
-	mux.Handle("GET /api/middleware/plugins", logChain(GetMiddlewarePlugins))
-
-	mux.Handle("GET /api/user", jwtChain(GetUsers))
-	mux.Handle("GET /api/user/{id}", jwtChain(GetUser))
-	mux.Handle("POST /api/user", jwtChain(UpsertUser))
-	mux.Handle("DELETE /api/user/{id}", jwtChain(DeleteUser))
-
-	mux.Handle("GET /api/provider", jwtChain(GetProviders))
-	mux.Handle("GET /api/provider/{id}", jwtChain(GetProvider))
-	mux.Handle("POST /api/provider", jwtChain(CreateProvider))
-	mux.Handle("PUT /api/provider", jwtChain(UpdateProvider))
-	mux.Handle("DELETE /api/provider/{id}", jwtChain(DeleteProvider))
-	mux.Handle("POST /api/dns", jwtChain(DeleteRouterDNS)) // Extra route for deleting DNS records
-
-	mux.Handle("GET /api/settings", jwtChain(GetSettings))
-	mux.Handle("GET /api/settings/{key}", jwtChain(GetSetting))
-	mux.Handle("PUT /api/settings", jwtChain(UpdateSetting))
-
-	mux.Handle("GET /api/agent/{id}", jwtChain(GetAgents))
-	mux.Handle("GET /api/agent/token/{id}", jwtChain(GetAgentToken))
-	mux.Handle("PUT /api/agent/{id}", jwtChain(UpsertAgent))
-	mux.Handle("DELETE /api/agent/{id}/{type}", jwtChain(DeleteAgent))
-
-	mux.Handle("GET /api/ip/{id}", jwtChain(GetPublicIP))
-
-	mux.Handle("GET /api/backup", jwtChain(DownloadBackup))
-	mux.Handle("POST /api/restore", jwtChain(UploadBackup))
-
-	mux.Handle("GET /api/traefik/{id}", jwtChain(GetTraefikOverview))
-
-	if util.App.EnableBasicAuth {
-		mux.Handle("GET /api/{name}", basicChain(GetTraefikConfig))
-	} else {
-		mux.Handle("GET /api/{name}", logChain(GetTraefikConfig))
+	// Helper for middleware registration
+	register := func(method, path string, chain Middleware, handler http.HandlerFunc) {
+		api.Handle(method+" "+path, chain(handler))
 	}
 
+	// Middlewares
+	logChain := Chain(Log)
+	jwtChain := Chain(Log, JWT)
+	basicChain := Chain(Log, BasicAuth)
+
+	// Auth
+	register("POST", "/login", logChain, Login)
+	register("POST", "/verify", logChain, VerifyToken)
+	register("POST", "/reset", logChain, ResetPassword)
+	register("POST", "/reset/{name}", logChain, SendResetEmail)
+
+	// Events
+	register("GET", "/events", logChain, GetEvents)
+	register("GET", "/version", logChain, GetVersion)
+
+	// Profiles
+	register("GET", "/profile", jwtChain, GetProfiles)
+	register("GET", "/profile/{id}", jwtChain, GetProfile)
+	register("POST", "/profile", jwtChain, CreateProfile)
+	register("PUT", "/profile", jwtChain, UpdateProfile)
+	register("DELETE", "/profile/{id}", jwtChain, DeleteProfile)
+
+	// Routers
+	register("GET", "/router/{id}", jwtChain, GetRouters)
+	register("POST", "/router", jwtChain, UpsertRouter)
+	register("DELETE", "/router/{id}", jwtChain, DeleteRouter)
+
+	// Services
+	register("GET", "/service/{id}", jwtChain, GetServices)
+	register("POST", "/service", jwtChain, UpsertService)
+	register("DELETE", "/service/{id}", jwtChain, DeleteService)
+
+	// Middlewares
+	register("GET", "/middleware/{id}", jwtChain, GetMiddlewares)
+	register("POST", "/middleware", jwtChain, UpsertMiddleware)
+	register("DELETE", "/middleware/{id}", jwtChain, DeleteMiddleware)
+	register("GET", "/middleware/plugins", logChain, GetMiddlewarePlugins)
+
+	// EntryPoints
+	register("GET", "/entrypoint/{id}", jwtChain, GetEntryPoints)
+
+	// Users
+	register("GET", "/user", jwtChain, GetUsers)
+	register("GET", "/user/{id}", jwtChain, GetUser)
+	register("POST", "/user", jwtChain, UpsertUser)
+	register("DELETE", "/user/{id}", jwtChain, DeleteUser)
+
+	// DNS Provider
+	register("GET", "/provider", jwtChain, GetProviders)
+	register("GET", "/provider/{id}", jwtChain, GetProvider)
+	register("POST", "/provider", jwtChain, CreateProvider)
+	register("PUT", "/provider", jwtChain, UpdateProvider)
+	register("DELETE", "/provider/{id}", jwtChain, DeleteProvider)
+
+	// Extra route for deleting DNS records
+	register("POST", "/dns", jwtChain, DeleteRouterDNS)
+
+	// Settings
+	register("GET", "/settings", jwtChain, GetSettings)
+	register("GET", "/settings/{key}", jwtChain, GetSetting)
+	register("PUT", "/settings", jwtChain, UpdateSetting)
+
+	// Agent
+	register("GET", "/agent/{id}", jwtChain, GetAgents)
+	register("GET", "/agent/token/{id}", jwtChain, GetAgentToken)
+	register("PUT", "/agent", jwtChain, UpsertAgent)
+	register("DELETE", "/agent/{id}/{type}", jwtChain, DeleteAgent)
+
+	// Backup
+	register("GET", "/backup", jwtChain, DownloadBackup)
+	register("POST", "/backup", jwtChain, UploadBackup)
+
+	// IP
+	register("GET", "/ip/{id}", jwtChain, GetPublicIP)
+
+	// Traefik
+	register("GET", "/traefik/{id}", jwtChain, GetTraefikOverview)
+
+	// Dynamic config
+	if util.App.EnableBasicAuth {
+		register("GET", "/{name}", basicChain, GetTraefikConfig)
+	} else {
+		register("GET", "/{name}", logChain, GetTraefikConfig)
+	}
+
+	return Cors(api)
+}
+
+func staticHandler() http.Handler {
+	mux := http.NewServeMux()
 	staticContent, err := fs.Sub(web.StaticFS, "build")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	mux.Handle("/", http.FileServer(http.FS(staticContent)))
-
-	return Cors(mux)
+	return mux
 }

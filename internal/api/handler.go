@@ -624,7 +624,7 @@ func GetRouters(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpsertRouter(w http.ResponseWriter, r *http.Request) {
-	var router db.UpsertRouterParams
+	var router db.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
 		http.Error(
 			w,
@@ -645,19 +645,7 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldRouter, err := db.Query.GetRouterByID(context.Background(), router.ID)
-	if err == nil && oldRouter.Name != router.Name {
-		if err = db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to delete router: %s", err.Error()),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
-
-	data, err := db.Query.UpsertRouter(context.Background(), router)
+	data, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams(router))
 	if err != nil {
 		http.Error(
 			w,

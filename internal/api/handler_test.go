@@ -29,7 +29,7 @@ func setupHandler(method, path string, body string) (*httptest.ResponseRecorder,
 	}
 	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
-	Routes().ServeHTTP(w, r)
+	Server().ServeHTTP(w, r)
 
 	return w, r
 }
@@ -186,7 +186,6 @@ func TestGetAgents(t *testing.T) {
 			t.Parallel()
 			GetAgents(w, r)
 			if got := w.Result().StatusCode; got != tt.wantStatus {
-				fmt.Printf("r.URL: %v\n", r.URL)
 				t.Errorf(
 					"GetAgents() status = %v, want %v, error = %v",
 					got,

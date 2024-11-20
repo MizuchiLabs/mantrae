@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -165,7 +164,6 @@ func AdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the username from the request context
 		username, ok := r.Context().Value("username").(string)
-		fmt.Printf("username: %v\n", username)
 		if !ok || username == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
