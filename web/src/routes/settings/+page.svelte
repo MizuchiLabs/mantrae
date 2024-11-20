@@ -114,7 +114,7 @@
 				<h2 class="border-b border-gray-200 pb-2 text-lg">Agents</h2>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
-						Cleanup Enabled
+						Cleanup
 						<HoverInfo
 							text="Automatically cleanup disconnected agents after a certain amount of time."
 						/>
@@ -129,7 +129,7 @@
 				</div>
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
-						Cleanup Timout
+						Timout
 						<HoverInfo
 							text="The amount of time after which disconnected agents should be cleaned up. Valid time units are ns, us, ms, s, m, h."
 						/>
@@ -149,7 +149,7 @@
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="ehost" class="col-span-1 flex items-center gap-0.5">
 						Host
-						<HoverInfo text="The host of the email server." />
+						<HoverInfo text="The IP/Domain of the smtp server." />
 					</Label>
 					<Input
 						name="ehost"
@@ -163,7 +163,7 @@
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="eport" class="col-span-1 flex items-center gap-0.5">
 						Port
-						<HoverInfo text="The port of the email server." />
+						<HoverInfo text="The port of the smtp server." />
 					</Label>
 					<Input
 						name="eport"
@@ -177,7 +177,7 @@
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="mail-user" class="col-span-1 flex items-center gap-0.5">
 						Username
-						<HoverInfo text="The username of the email account." />
+						<HoverInfo text="The username of the smtp server." />
 					</Label>
 					<Input
 						name="mail-user"
@@ -191,7 +191,7 @@
 				<div class="grid grid-cols-4 items-center justify-between gap-2">
 					<Label for="mail-password" class="col-span-1 flex items-center gap-0.5">
 						Password
-						<HoverInfo text="The password of the email account." />
+						<HoverInfo text="The password of the smtp server." />
 					</Label>
 					<div class="col-span-3 flex flex-row items-center justify-end gap-1">
 						{#if showEmailPassword}

@@ -13,8 +13,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/api"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/dns"
-	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/pkg/tasks"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )
@@ -61,8 +60,7 @@ func main() {
 	defer cancel()
 
 	// Start the background sync processes
-	go traefik.Sync(ctx)
-	go dns.Sync(ctx)
+	tasks.StartSync(ctx)
 
 	// Start the grpc server
 	go api.Server(util.App.AgentPort)

@@ -11,7 +11,8 @@
 		getUsers,
 		getVersion,
 		configError,
-		getAgents
+		getAgents,
+		getRouters
 	} from '$lib/api';
 	import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
@@ -26,6 +27,9 @@
 		switch (data.type) {
 			case 'profile_updated':
 				getProfiles();
+				break;
+			case 'router_updated':
+				getRouters();
 				break;
 			case 'user_updated':
 				getUsers();
