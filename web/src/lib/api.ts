@@ -464,7 +464,7 @@ export async function getAgents() {
 }
 
 export async function upsertAgent(a: Agent) {
-	const response = await handleRequest(`/agent/${a.profileId}`, 'PUT', a);
+	const response = await handleRequest(`/agent`, 'PUT', a);
 	if (response) {
 		const data = await response.json();
 		if (data && get(agents)) {
