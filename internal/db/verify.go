@@ -61,7 +61,7 @@ func (e *UpsertEntryPointParams) Verify() error {
 	return nil
 }
 
-func (r *UpsertRouterParams) Verify() error {
+func (r *Router) Verify() error {
 	if r.ID == "" {
 		r.ID = uuid.New().String()
 	}
@@ -81,30 +81,20 @@ func (r *UpsertRouterParams) Verify() error {
 		r.Service = r.Name
 	}
 	if r.DnsProvider == nil || *r.DnsProvider == 0 {
-		router := Router{
-			ID:          r.ID,
-			ProfileID:   r.ProfileID,
-			Name:        r.Name,
-			Provider:    r.Provider,
-			Protocol:    r.Protocol,
-			Status:      r.Status,
-			AgentID:     r.AgentID,
-			EntryPoints: r.EntryPoints,
-			Middlewares: r.Middlewares,
-			Rule:        r.Rule,
-			RuleSyntax:  r.RuleSyntax,
-			Service:     r.Service,
-			Priority:    r.Priority,
-			Tls:         r.Tls,
-			DnsProvider: r.DnsProvider,
-			Errors:      r.Errors,
-		}
-		router.UpdateError("dns", "")
+		r.UpdateError("dns", "")
 	}
 	r.EntryPoints, _ = json.Marshal(r.EntryPoints)
 	r.Middlewares, _ = json.Marshal(r.Middlewares)
 	r.Tls, _ = json.Marshal(r.Tls)
 	r.Errors, _ = json.Marshal(r.Errors)
+
+	// Check if router name has changed
+	oldRouter, err := Query.GetRouterByID(context.Background(), r.ID)
+	if err == nil && oldRouter.Name != r.Name {
+		if err = Query.DeleteRouterByID(context.Background(), r.ID); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

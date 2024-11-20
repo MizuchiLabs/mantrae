@@ -177,9 +177,10 @@ INSERT INTO
     errors
   )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
 UPDATE
 SET
+  id = COALESCE(NULLIF(EXCLUDED.id, ''), routers.id),
   provider = COALESCE(NULLIF(EXCLUDED.provider, ''), routers.provider),
   protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), routers.protocol),
   status = COALESCE(NULLIF(EXCLUDED.status, ''), routers.status),

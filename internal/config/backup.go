@@ -141,11 +141,10 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		}
 
 		for _, router := range data.Routers {
-			params := db.UpsertRouterParams(router)
-			if err := params.Verify(); err != nil {
+			if err := router.Verify(); err != nil {
 				continue
 			}
-			if _, err := db.Query.UpsertRouter(ctx, db.UpsertRouterParams(params)); err != nil {
+			if _, err := db.Query.UpsertRouter(ctx, db.UpsertRouterParams(router)); err != nil {
 				return fmt.Errorf("failed to upsert router: %w", err)
 			}
 		}
