@@ -15,6 +15,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/dns"
+	"github.com/MizuchiLabs/mantrae/pkg/tasks"
 	"github.com/MizuchiLabs/mantrae/pkg/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
@@ -675,7 +676,7 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go data.SSLCheck()
+	go tasks.Refresh()
 	writeJSON(w, data)
 }
 

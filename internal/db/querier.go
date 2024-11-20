@@ -33,6 +33,7 @@ type Querier interface {
 	GetAgentByHostname(ctx context.Context, arg GetAgentByHostnameParams) (Agent, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetDefaultProvider(ctx context.Context) (Provider, error)
+	GetEntryPointByName(ctx context.Context, arg GetEntryPointByNameParams) (Entrypoint, error)
 	GetMiddlewareByID(ctx context.Context, id string) (Middleware, error)
 	GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNameParams) (Middleware, error)
 	GetProfileByID(ctx context.Context, id int64) (Profile, error)

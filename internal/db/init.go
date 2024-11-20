@@ -9,7 +9,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/pressly/goose/v3"
 	"modernc.org/sqlite"
-	_ "modernc.org/sqlite"
+	//_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
@@ -22,12 +22,15 @@ var (
 
 // Default settings for sqlite db
 const initScript = `
+	PRAGMA busy_timeout = 5000;
 	PRAGMA journal_mode = WAL;
+	PRAGMA journal_size_limit = 200000000;
 	PRAGMA synchronous = NORMAL;
 	PRAGMA foreign_keys = ON;
+	PRAGMA temp_store = MEMORY;
 	PRAGMA mmap_size = 300000000;
 	PRAGMA page_size = 32768;
-	PRAGMA temp_store = MEMORY;
+	PRAGMA cache_size = -16000;
 `
 
 func InitDB() error {
@@ -49,6 +52,8 @@ func InitDB() error {
 		if err != nil {
 			return fmt.Errorf("failed to open database: %w", err)
 		}
+		db.SetMaxOpenConns(1) // Only one writer
+		db.SetMaxIdleConns(1) // Prevent idle connections
 	}
 
 	goose.SetBaseFS(migrations)

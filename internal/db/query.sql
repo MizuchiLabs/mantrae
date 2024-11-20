@@ -64,6 +64,17 @@ DELETE FROM profiles
 WHERE
   name = ?;
 
+-- name: GetEntryPointByName :one
+SELECT
+  *
+FROM
+  entrypoints
+WHERE
+  name = ?
+  AND profile_id = ?
+LIMIT
+  1;
+
 -- name: ListEntryPoints :many
 SELECT
   *

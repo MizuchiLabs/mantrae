@@ -96,6 +96,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDefaultProviderStmt, err = db.PrepareContext(ctx, getDefaultProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDefaultProvider: %w", err)
 	}
+	if q.getEntryPointByNameStmt, err = db.PrepareContext(ctx, getEntryPointByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetEntryPointByName: %w", err)
+	}
 	if q.getMiddlewareByIDStmt, err = db.PrepareContext(ctx, getMiddlewareByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMiddlewareByID: %w", err)
 	}
@@ -345,6 +348,11 @@ func (q *Queries) Close() error {
 	if q.getDefaultProviderStmt != nil {
 		if cerr := q.getDefaultProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDefaultProviderStmt: %w", cerr)
+		}
+	}
+	if q.getEntryPointByNameStmt != nil {
+		if cerr := q.getEntryPointByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getEntryPointByNameStmt: %w", cerr)
 		}
 	}
 	if q.getMiddlewareByIDStmt != nil {
@@ -620,6 +628,7 @@ type Queries struct {
 	getAgentByHostnameStmt         *sql.Stmt
 	getAgentByIDStmt               *sql.Stmt
 	getDefaultProviderStmt         *sql.Stmt
+	getEntryPointByNameStmt        *sql.Stmt
 	getMiddlewareByIDStmt          *sql.Stmt
 	getMiddlewareByNameStmt        *sql.Stmt
 	getProfileByIDStmt             *sql.Stmt
@@ -692,6 +701,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getAgentByHostnameStmt:         q.getAgentByHostnameStmt,
 		getAgentByIDStmt:               q.getAgentByIDStmt,
 		getDefaultProviderStmt:         q.getDefaultProviderStmt,
+		getEntryPointByNameStmt:        q.getEntryPointByNameStmt,
 		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
 		getMiddlewareByNameStmt:        q.getMiddlewareByNameStmt,
 		getProfileByIDStmt:             q.getProfileByIDStmt,

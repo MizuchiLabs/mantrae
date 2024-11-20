@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
@@ -98,19 +97,9 @@ func UpdateDNS() {
 
 				if err := provider.UpsertRecord(domain); err != nil {
 					slog.Error("Failed to upsert record", "error", err)
-					router.Errors, err = db.SetError(router.Errors, "dns", err.Error())
-					if err != nil {
-						slog.Error("Failed to update router", "error", err)
-						continue
-					}
-					routers[i] = router
+					router.UpdateError("dns", err.Error())
 				} else {
-					router.Errors, err = db.SetError(router.Errors, "dns", "")
-					if err != nil {
-						slog.Error("Failed to update router", "error", err)
-						continue
-					}
-					routers[i] = router
+					router.UpdateError("dns", "")
 				}
 			}
 
@@ -119,7 +108,6 @@ func UpdateDNS() {
 				ID:          router.ID,
 				ProfileID:   router.ProfileID,
 				Name:        router.Name,
-				Errors:      router.Errors,
 				DnsProvider: router.DnsProvider,
 			}); err != nil {
 				slog.Error("Failed to update routers", "error", err)
@@ -145,22 +133,6 @@ func DeleteDNS(router db.Router) {
 	if err := provider.DeleteRecord(subdomain); err != nil {
 		slog.Error("Failed to delete record", "error", err)
 		return
-	}
-}
-
-// Sync periodically syncs the DNS records
-func Sync(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * 300)
-	defer ticker.Stop()
-
-	UpdateDNS()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			UpdateDNS()
-		}
 	}
 }
 

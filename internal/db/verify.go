@@ -81,7 +81,25 @@ func (r *UpsertRouterParams) Verify() error {
 		r.Service = r.Name
 	}
 	if r.DnsProvider == nil || *r.DnsProvider == 0 {
-		r.Errors, _ = SetError(r.Errors, "dns", "")
+		router := Router{
+			ID:          r.ID,
+			ProfileID:   r.ProfileID,
+			Name:        r.Name,
+			Provider:    r.Provider,
+			Protocol:    r.Protocol,
+			Status:      r.Status,
+			AgentID:     r.AgentID,
+			EntryPoints: r.EntryPoints,
+			Middlewares: r.Middlewares,
+			Rule:        r.Rule,
+			RuleSyntax:  r.RuleSyntax,
+			Service:     r.Service,
+			Priority:    r.Priority,
+			Tls:         r.Tls,
+			DnsProvider: r.DnsProvider,
+			Errors:      r.Errors,
+		}
+		router.UpdateError("dns", "")
 	}
 	r.EntryPoints, _ = json.Marshal(r.EntryPoints)
 	r.Middlewares, _ = json.Marshal(r.Middlewares)
@@ -420,70 +438,91 @@ func (a *Agent) DecodeFields() error {
 	return nil
 }
 
-// SetError adds an error message with a custom key to the Errors map in the provided router.
-func SetError(errors interface{}, key string, message string) ([]byte, error) {
-	errMap := make(map[string]string)
-	switch e := errors.(type) {
-	case map[string]interface{}:
-		for k, v := range e {
-			if strVal, ok := v.(string); ok {
-				errMap[k] = strVal
-			}
-		}
-	case string:
-		if err := json.Unmarshal([]byte(e), &errMap); err != nil {
-			return nil, err
-		}
-	}
-
-	if message == "" {
-		delete(errMap, key)
+func (r *Router) UpdateError(key string, value string) {
+	if r.Errors == nil {
+		r.Errors = make(map[string]interface{})
 	} else {
-		errMap[key] = message
+		// Attempt to cast, and reset if the type is incorrect
+		if _, ok := r.Errors.(map[string]interface{}); !ok {
+			slog.Warn("Invalid errors format detected, resetting to empty map")
+			r.Errors = make(map[string]interface{})
+		}
 	}
 
-	updatedErrors, err := json.Marshal(errMap)
-	if err != nil {
-		return nil, err
+	if errorMap, ok := r.Errors.(map[string]interface{}); ok {
+		if value == "" {
+			delete(errorMap, key)
+		} else {
+			errorMap[key] = value
+		}
 	}
-	return updatedErrors, nil
+
+	updatedErrors, err := json.Marshal(r.Errors)
+	if err != nil {
+		slog.Error("Failed to update router", "error", err)
+		return
+	}
+
+	if _, err := Query.UpsertRouter(context.Background(), UpsertRouterParams{
+		Name:      r.Name,
+		ProfileID: r.ProfileID,
+		Errors:    updatedErrors,
+	}); err != nil {
+		slog.Error("Failed to update router", "error", err)
+	}
+
+	if string(updatedErrors) != "{}" {
+		util.Broadcast <- util.EventMessage{
+			Type:    "router_updated",
+			Message: "Updated router " + r.Name + " with errors: " + string(updatedErrors),
+		}
+	}
 }
 
 func (r *Router) SSLCheck() {
-	tlsMap := make(map[string]any)
-	if r.Tls != nil {
-		if existingMap, ok := r.Tls.(map[string]interface{}); ok {
-			tlsMap = existingMap
-		} else {
-			slog.Error("Unexpected type for TLS config", "type", fmt.Sprintf("%T", r.Tls))
-			return
+	if r.EntryPoints == nil || r.Tls == nil {
+		r.UpdateError("ssl", "")
+		return
+	}
+
+	isHTTPS := false
+	for _, ep := range r.EntryPoints.([]interface{}) {
+		entrypoint, err := Query.GetEntryPointByName(context.Background(), GetEntryPointByNameParams{
+			ProfileID: r.ProfileID,
+			Name:      ep.(string),
+		})
+		if err != nil {
+			slog.Error("Failed to get entry point", "name", ep.(string), "error", err)
+			continue
+		}
+		if entrypoint.Address == "443" {
+			isHTTPS = true
+			break
 		}
 	}
-	if tlsMap["certResolver"] == "" {
+	if !isHTTPS {
+		slog.Debug("Router is not using HTTPS entrypoint", "name", r.Name)
+		r.UpdateError("ssl", "")
+		return
+	}
+
+	if tlsMap, ok := r.Tls.(map[string]interface{}); ok {
+		if tlsMap["certResolver"] == "" {
+			slog.Debug("Router is not using a certificate resolver", "name", r.Name)
+			r.UpdateError("ssl", "")
+			return
+		}
+	} else {
+		slog.Error("Unexpected type for TLS config", "type", fmt.Sprintf("%T", r.Tls))
 		return
 	}
 
 	// Perform SSL validation and update only the "ssl" error field
 	if domain, _ := util.ExtractDomainFromRule(r.Rule); domain != "" {
 		if err := util.ValidSSLCert(domain); err != nil {
-			r.Errors, err = SetError(r.Errors, "ssl", err.Error())
-			if err != nil {
-				slog.Error("Failed to update router", "error", err)
-				return
-			}
+			r.UpdateError("ssl", err.Error())
 		} else {
-			r.Errors, err = SetError(r.Errors, "ssl", "")
-			if err != nil {
-				slog.Error("Failed to update router", "error", err)
-				return
-			}
+			r.UpdateError("ssl", "")
 		}
-	}
-	if _, err := Query.UpsertRouter(context.Background(), UpsertRouterParams{
-		Name:      r.Name,
-		ProfileID: r.ProfileID,
-		Errors:    r.Errors,
-	}); err != nil {
-		slog.Error("Failed to update router", "error", err)
 	}
 }

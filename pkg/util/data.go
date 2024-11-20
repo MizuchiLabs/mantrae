@@ -13,7 +13,7 @@ type AppConfig struct {
 	Secret          string `env:"SECRET"            envDefault:""`
 	Port            string `env:"PORT"              envDefault:"3000"`
 	AgentPort       string `env:"AGENT_PORT"        envDefault:"8090"`
-	ServerURL       string `env:"SERVER_URL"        envDefault:"http://localhost"`
+	ServerURL       string `env:"SERVER_URL"        envDefault:"http://127.0.0.1"`
 	EnableBasicAuth bool   `env:"ENABLE_BASIC_AUTH" envDefault:"false"`
 	EnableAgent     bool   `env:"ENABLE_AGENT"      envDefault:"true"`
 	ConfigDir       string `env:"CONFIG_DIR"        envDefault:""`
@@ -24,8 +24,9 @@ type AppConfig struct {
 	DBType string `env:"DB_TYPE" envDefault:"sqlite"`
 	DBName string `env:"DB_NAME" envDefault:"mantrae"`
 
-	// Email
+	// Other settings
 	EmailConfig
+	Schedules
 }
 
 type EmailConfig struct {
@@ -34,6 +35,12 @@ type EmailConfig struct {
 	EmailUsername string `env:"EMAIL_USERNAME" envDefault:""`
 	EmailPassword string `env:"EMAIL_PASSWORD" envDefault:""`
 	EmailFrom     string `env:"EMAIL_FROM"     envDefault:"mantrae@localhost"`
+}
+
+type Schedules struct {
+	TraefikInterval int64 `env:"TRAEFIK_SYNC_INTERVAL" envDefault:"10"`
+	DNSInterval     int64 `env:"DNS_SYNC_INTERVAL"     envDefault:"300"`
+	SSLInterval     int64 `env:"SSL_CHECK_INTERVAL"    envDefault:"10"`
 }
 
 var App AppConfig

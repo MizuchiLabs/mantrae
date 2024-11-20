@@ -439,6 +439,36 @@ func (q *Queries) GetDefaultProvider(ctx context.Context) (Provider, error) {
 	return i, err
 }
 
+const getEntryPointByName = `-- name: GetEntryPointByName :one
+SELECT
+  profile_id, name, address, as_default, http
+FROM
+  entrypoints
+WHERE
+  name = ?
+  AND profile_id = ?
+LIMIT
+  1
+`
+
+type GetEntryPointByNameParams struct {
+	Name      string `json:"name"`
+	ProfileID int64  `json:"profileId"`
+}
+
+func (q *Queries) GetEntryPointByName(ctx context.Context, arg GetEntryPointByNameParams) (Entrypoint, error) {
+	row := q.queryRow(ctx, q.getEntryPointByNameStmt, getEntryPointByName, arg.Name, arg.ProfileID)
+	var i Entrypoint
+	err := row.Scan(
+		&i.ProfileID,
+		&i.Name,
+		&i.Address,
+		&i.AsDefault,
+		&i.Http,
+	)
+	return i, err
+}
+
 const getMiddlewareByID = `-- name: GetMiddlewareByID :one
 SELECT
   id, profile_id, name, provider, type, protocol, agent_id, content
