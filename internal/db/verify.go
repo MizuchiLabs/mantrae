@@ -342,93 +342,96 @@ func (p *UpdateProviderParams) Verify() error {
 }
 
 // Decoding -------------------------------------------------------------------
+
+// Check if the data is a byte slice and attempt to decode
+func decode(data interface{}, target interface{}) error {
+	if data == nil {
+		return nil
+	}
+
+	switch data := data.(type) {
+	case []byte:
+		return json.Unmarshal(data, target)
+	case string:
+		return json.Unmarshal([]byte(data), target)
+	case map[string]interface{}:
+		return nil
+	case []interface{}:
+		return nil
+	case *json.RawMessage:
+		return json.Unmarshal(*data, target)
+	default:
+		return fmt.Errorf("unsupported data type: %T", data)
+	}
+}
+
 func (e *Entrypoint) DecodeFields() error {
-	if e.Http != nil {
-		if err := json.Unmarshal(e.Http.([]byte), &e.Http); err != nil {
-			return err
-		}
+	if err := decode(e.Http, &e.Http); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (r *Router) DecodeFields() error {
-	if r.EntryPoints != nil {
-		if err := json.Unmarshal(r.EntryPoints.([]byte), &r.EntryPoints); err != nil {
-			return err
-		}
+	if err := decode(r.EntryPoints, &r.EntryPoints); err != nil {
+		return err
 	}
-	if r.Middlewares != nil {
-		if err := json.Unmarshal(r.Middlewares.([]byte), &r.Middlewares); err != nil {
-			return err
-		}
+	if err := decode(r.Middlewares, &r.Middlewares); err != nil {
+		return err
 	}
-	if r.Tls != nil {
-		if err := json.Unmarshal(r.Tls.([]byte), &r.Tls); err != nil {
-			return err
-		}
+	if err := decode(r.Tls, &r.Tls); err != nil {
+		return err
 	}
-	if r.Errors != nil {
-		if err := json.Unmarshal(r.Errors.([]byte), &r.Errors); err != nil {
-			return err
-		}
+	if err := decode(r.Errors, &r.Errors); err != nil {
+		return err
 	}
+
 	return nil
 }
 
 func (s *Service) DecodeFields() error {
-	if s.LoadBalancer != nil {
-		if err := json.Unmarshal(s.LoadBalancer.([]byte), &s.LoadBalancer); err != nil {
-			return err
-		}
+	if err := decode(s.LoadBalancer, &s.LoadBalancer); err != nil {
+		return err
 	}
-	if s.Failover != nil {
-		if err := json.Unmarshal(s.Failover.([]byte), &s.Failover); err != nil {
-			return err
-		}
+	if err := decode(s.Failover, &s.Failover); err != nil {
+		return err
 	}
-	if s.Mirroring != nil {
-		if err := json.Unmarshal(s.Mirroring.([]byte), &s.Mirroring); err != nil {
-			return err
-		}
+	if err := decode(s.Mirroring, &s.Mirroring); err != nil {
+		return err
 	}
-	if s.Weighted != nil {
-		if err := json.Unmarshal(s.Weighted.([]byte), &s.Weighted); err != nil {
-			return err
-		}
+	if err := decode(s.Weighted, &s.Weighted); err != nil {
+		return err
 	}
-	if s.ServerStatus != nil {
-		if err := json.Unmarshal(s.ServerStatus.([]byte), &s.ServerStatus); err != nil {
-			return err
-		}
+	if err := decode(s.ServerStatus, &s.ServerStatus); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (m *Middleware) DecodeFields() error {
-	if m.Content != nil {
-		if err := json.Unmarshal(m.Content.([]byte), &m.Content); err != nil {
-			return err
-		}
+	if err := decode(m.Content, &m.Content); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (a *Agent) DecodeFields() error {
-	if a.PrivateIps != nil {
-		if err := json.Unmarshal(a.PrivateIps.([]byte), &a.PrivateIps); err != nil {
-			return err
-		}
+	if err := decode(a.Containers, &a.Containers); err != nil {
+		return err
 	}
-	if a.Containers != nil {
-		if err := json.Unmarshal(a.Containers.([]byte), &a.Containers); err != nil {
-			return err
-		}
+	if err := decode(a.PrivateIps, &a.PrivateIps); err != nil {
+		return err
 	}
 	return nil
 }
 
 func (r *Router) UpdateError(key string, value string) {
+	if err := r.DecodeFields(); err != nil {
+		slog.Error("Failed to decode router", "error", err)
+		return
+	}
+
 	if r.Errors == nil {
 		r.Errors = make(map[string]interface{})
 	} else {
@@ -470,6 +473,11 @@ func (r *Router) UpdateError(key string, value string) {
 }
 
 func (r *Router) SSLCheck() {
+	if err := r.DecodeFields(); err != nil {
+		slog.Error("Failed to decode router", "error", err)
+		return
+	}
+
 	if r.EntryPoints == nil || r.Tls == nil {
 		r.UpdateError("ssl", "")
 		return
@@ -477,10 +485,13 @@ func (r *Router) SSLCheck() {
 
 	isHTTPS := false
 	for _, ep := range r.EntryPoints.([]interface{}) {
-		entrypoint, err := Query.GetEntryPointByName(context.Background(), GetEntryPointByNameParams{
-			ProfileID: r.ProfileID,
-			Name:      ep.(string),
-		})
+		entrypoint, err := Query.GetEntryPointByName(
+			context.Background(),
+			GetEntryPointByNameParams{
+				ProfileID: r.ProfileID,
+				Name:      ep.(string),
+			},
+		)
 		if err != nil {
 			slog.Error("Failed to get entry point", "name", ep.(string), "error", err)
 			continue
