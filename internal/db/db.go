@@ -165,6 +165,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listRoutersStmt, err = db.PrepareContext(ctx, listRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListRouters: %w", err)
 	}
+	if q.listRoutersByAgentIDStmt, err = db.PrepareContext(ctx, listRoutersByAgentID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRoutersByAgentID: %w", err)
+	}
 	if q.listRoutersByProfileIDStmt, err = db.PrepareContext(ctx, listRoutersByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListRoutersByProfileID: %w", err)
 	}
@@ -465,6 +468,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listRoutersStmt: %w", cerr)
 		}
 	}
+	if q.listRoutersByAgentIDStmt != nil {
+		if cerr := q.listRoutersByAgentIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersByAgentIDStmt: %w", cerr)
+		}
+	}
 	if q.listRoutersByProfileIDStmt != nil {
 		if cerr := q.listRoutersByProfileIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listRoutersByProfileIDStmt: %w", cerr)
@@ -651,6 +659,7 @@ type Queries struct {
 	listProfilesStmt               *sql.Stmt
 	listProvidersStmt              *sql.Stmt
 	listRoutersStmt                *sql.Stmt
+	listRoutersByAgentIDStmt       *sql.Stmt
 	listRoutersByProfileIDStmt     *sql.Stmt
 	listRoutersByProviderStmt      *sql.Stmt
 	listServicesStmt               *sql.Stmt
@@ -724,6 +733,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listProfilesStmt:               q.listProfilesStmt,
 		listProvidersStmt:              q.listProvidersStmt,
 		listRoutersStmt:                q.listRoutersStmt,
+		listRoutersByAgentIDStmt:       q.listRoutersByAgentIDStmt,
 		listRoutersByProfileIDStmt:     q.listRoutersByProfileIDStmt,
 		listRoutersByProviderStmt:      q.listRoutersByProviderStmt,
 		listServicesStmt:               q.listServicesStmt,

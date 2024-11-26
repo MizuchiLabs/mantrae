@@ -1220,6 +1220,55 @@ func (q *Queries) ListRouters(ctx context.Context) ([]Router, error) {
 	return items, nil
 }
 
+const listRoutersByAgentID = `-- name: ListRoutersByAgentID :many
+SELECT
+  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+FROM
+  routers
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) ListRoutersByAgentID(ctx context.Context, agentID *string) ([]Router, error) {
+	rows, err := q.query(ctx, q.listRoutersByAgentIDStmt, listRoutersByAgentID, agentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Router
+	for rows.Next() {
+		var i Router
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.Name,
+			&i.Provider,
+			&i.Protocol,
+			&i.Status,
+			&i.AgentID,
+			&i.EntryPoints,
+			&i.Middlewares,
+			&i.Rule,
+			&i.RuleSyntax,
+			&i.Service,
+			&i.Priority,
+			&i.Tls,
+			&i.DnsProvider,
+			&i.Errors,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRoutersByProfileID = `-- name: ListRoutersByProfileID :many
 SELECT
   id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors

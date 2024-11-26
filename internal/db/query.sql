@@ -156,6 +156,14 @@ FROM
 WHERE
   provider = ?;
 
+-- name: ListRoutersByAgentID :many
+SELECT
+  *
+FROM
+  routers
+WHERE
+  agent_id = ?;
+
 -- name: UpsertRouter :one
 INSERT INTO
   routers (

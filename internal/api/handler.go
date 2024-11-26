@@ -1038,16 +1038,30 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.Query.GetAgentByID(context.Background(), r.PathValue("id"))
+	agentID := r.PathValue("id")
+
+	_, err := db.Query.GetAgentByID(context.Background(), agentID)
 	if err != nil {
 		http.Error(w, "Agent not found", http.StatusNotFound)
 		return
 	}
 
 	if deletionType == "hard" {
-		if err := db.Query.DeleteAgentByID(context.Background(), r.PathValue("id")); err != nil {
+		if err := db.Query.DeleteAgentByID(context.Background(), agentID); err != nil {
 			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
 			return
+		}
+		// Delete all connected routers
+		routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
+		if err != nil {
+			http.Error(w, "Failed to get routers", http.StatusInternalServerError)
+			return
+		}
+		for _, router := range routers {
+			if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
+				http.Error(w, "Failed to delete router", http.StatusInternalServerError)
+				return
+			}
 		}
 		w.WriteHeader(http.StatusOK)
 		return
@@ -1059,6 +1073,19 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
 			return
+		}
+
+		// Delete all connected routers
+		routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
+		if err != nil {
+			http.Error(w, "Failed to get routers", http.StatusInternalServerError)
+			return
+		}
+		for _, router := range routers {
+			if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
+				http.Error(w, "Failed to delete router", http.StatusInternalServerError)
+				return
+			}
 		}
 
 		writeJSON(w, agent)

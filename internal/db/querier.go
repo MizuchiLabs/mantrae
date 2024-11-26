@@ -56,6 +56,7 @@ type Querier interface {
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListProviders(ctx context.Context) ([]Provider, error)
 	ListRouters(ctx context.Context) ([]Router, error)
+	ListRoutersByAgentID(ctx context.Context, agentID *string) ([]Router, error)
 	ListRoutersByProfileID(ctx context.Context, profileID int64) ([]Router, error)
 	ListRoutersByProvider(ctx context.Context, provider string) ([]Router, error)
 	ListServices(ctx context.Context) ([]Service, error)
