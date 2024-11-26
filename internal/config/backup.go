@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/robfig/cron/v3"
 )

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/dns"
-	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/internal/dns"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
@@ -69,16 +69,17 @@ func sslCheck(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * time.Duration(util.App.SSLInterval))
 	defer ticker.Stop()
 
-	routers, err := db.Query.ListRouters(context.Background())
-	if err != nil {
-		slog.Error("Failed to get routers", "error", err)
-	}
-
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			// Fetch new router list
+			routers, err := db.Query.ListRouters(context.Background())
+			if err != nil {
+				slog.Error("Failed to get routers", "error", err)
+			}
+
 			for _, router := range routers {
 				router.SSLCheck()
 			}

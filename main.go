@@ -13,7 +13,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/api"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/tasks"
+	"github.com/MizuchiLabs/mantrae/internal/tasks"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/lmittmann/tint"
 )

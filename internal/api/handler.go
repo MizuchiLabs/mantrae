@@ -15,9 +15,9 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/dns"
-	"github.com/MizuchiLabs/mantrae/pkg/tasks"
-	"github.com/MizuchiLabs/mantrae/pkg/traefik"
+	"github.com/MizuchiLabs/mantrae/internal/dns"
+	"github.com/MizuchiLabs/mantrae/internal/tasks"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
 	"sigs.k8s.io/yaml"
@@ -89,7 +89,7 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := util.DecodeJWT(token)
+	data, err := util.DecodeUserJWT(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Invalid token: %s", err.Error()), http.StatusUnauthorized)
 		return
@@ -113,7 +113,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := util.DecodeJWT(tokenString[7:])
+	user, err := util.DecodeUserJWT(tokenString[7:])
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return

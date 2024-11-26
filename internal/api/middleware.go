@@ -146,7 +146,7 @@ func JWT(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Validate JWT token and decode claims
-		claims, err := util.DecodeJWT(token)
+		claims, err := util.DecodeUserJWT(token)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

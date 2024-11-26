@@ -14,7 +14,6 @@ import (
 	"connectrpc.com/connect"
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -24,7 +23,7 @@ func Client(quit chan os.Signal) {
 	token := LoadToken()
 
 	// Decode the JWT to get auth token and server URL
-	claims, err := util.DecodeJWT(token)
+	claims, err := DecodeJWT(token)
 	if err != nil {
 		DeleteToken()
 		log.Fatalf("Failed to decode JWT: %v", err)
@@ -154,11 +153,11 @@ func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] 
 	}
 	request.Hostname = hostname
 	request.Token = LoadToken()
-	request.PublicIp, err = util.GetPublicIP()
+	request.PublicIp, err = GetPublicIP()
 	if err != nil {
 		slog.Error("Failed to get public IP", "error", err)
 	}
-	request.PrivateIps, err = util.GetPrivateIP()
+	request.PrivateIps, err = GetPrivateIP()
 	if err != nil {
 		slog.Error("Failed to get local IP", "error", err)
 	}

@@ -20,8 +20,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Claims struct {
-	Username  string `json:"username,omitempty"`
+type UserClaims struct {
+	Username string `json:"username,omitempty"`
+	jwt.RegisteredClaims
+}
+
+type AgentClaims struct {
 	ServerURL string `json:"serverUrl,omitempty"`
 	ProfileID int64  `json:"profileId,omitempty"`
 	Secret    string `json:"secret,omitempty"`
@@ -80,7 +84,7 @@ func EncodeUserJWT(username string, expirationTime time.Time) (string, error) {
 	if expirationTime.IsZero() {
 		expirationTime = time.Now().Add(24 * time.Hour)
 	}
-	claims := &Claims{
+	claims := &UserClaims{
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
@@ -99,7 +103,7 @@ func EncodeAgentJWT(profileID int64) (string, error) {
 	}
 
 	expirationTime := time.Now().Add(14 * 24 * time.Hour) // 14 days
-	claims := Claims{
+	claims := AgentClaims{
 		ServerURL: App.ServerURL + ":" + App.Port,
 		ProfileID: profileID,
 		Secret:    App.Secret,
@@ -113,9 +117,25 @@ func EncodeAgentJWT(profileID int64) (string, error) {
 	return token.SignedString([]byte(App.Secret))
 }
 
-// DecodeJWT decodes the token and returns claims if valid
-func DecodeJWT(tokenString string) (*Claims, error) {
-	claims := &Claims{}
+// DecodeUserJWT decodes the user token and returns claims if valid
+func DecodeUserJWT(tokenString string) (*UserClaims, error) {
+	claims := &UserClaims{}
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(App.Secret), nil
+		},
+	)
+
+	if err != nil || !token.Valid {
+		return nil, err
+	}
+	return claims, nil
+}
+
+func DecodeAgentJWT(tokenString string) (*AgentClaims, error) {
+	claims := &AgentClaims{}
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		claims,

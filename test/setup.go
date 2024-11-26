@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/dns"
+	"github.com/MizuchiLabs/mantrae/internal/dns"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/google/uuid"

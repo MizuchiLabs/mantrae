@@ -1,16 +1,13 @@
 package util
 
 import (
-	"embed"
 	"fmt"
 	"html/template"
 	"net/smtp"
 
+	"github.com/MizuchiLabs/mantrae/pkg/templates"
 	"github.com/domodwyer/mailyak/v3"
 )
-
-//go:embed templates/*.html
-var templatesFS embed.FS
 
 func SendMail(to, templateName string, config EmailConfig, data map[string]interface{}) error {
 	client := mailyak.New(
@@ -32,7 +29,8 @@ func SendMail(to, templateName string, config EmailConfig, data map[string]inter
 	client.Subject(subject)
 
 	// Parse the HTML template
-	tmpl, err := template.New(templateName).ParseFS(templatesFS, "templates/"+templateName+".html")
+	tmpl, err := template.New(templateName).
+		ParseFS(templates.TemplateFS, templateName+".html")
 	if err != nil {
 		return err
 	}
