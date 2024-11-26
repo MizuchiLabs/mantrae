@@ -97,14 +97,14 @@ func EncodeUserJWT(username string, expirationTime time.Time) (string, error) {
 }
 
 // EncodeAgentJWT generates a JWT for the agent
-func EncodeAgentJWT(profileID int64) (string, error) {
+func EncodeAgentJWT(profileID int64, serverURL string) (string, error) {
 	if profileID == 0 {
 		return "", errors.New("profileID cannot be empty")
 	}
 
 	expirationTime := time.Now().Add(14 * 24 * time.Hour) // 14 days
 	claims := AgentClaims{
-		ServerURL: App.ServerURL + ":" + App.Port,
+		ServerURL: serverURL + ":" + App.Port,
 		ProfileID: profileID,
 		Secret:    App.Secret,
 		RegisteredClaims: jwt.RegisteredClaims{

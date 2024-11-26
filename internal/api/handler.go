@@ -1077,7 +1077,17 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := util.EncodeAgentJWT(id)
+	setting, err := db.Query.GetSettingByKey(context.Background(), "server-url")
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to get settings: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	token, err := util.EncodeAgentJWT(id, setting.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
