@@ -354,6 +354,8 @@ func decode(data interface{}, target interface{}) error {
 		return json.Unmarshal(data, target)
 	case string:
 		return json.Unmarshal([]byte(data), target)
+	case []string:
+		return json.Unmarshal([]byte(data[0]), target)
 	case *json.RawMessage:
 		return json.Unmarshal(*data, target)
 	case map[string]interface{}:

@@ -91,6 +91,7 @@ func DecodeFromLabels(id string, container []byte) error {
 				// Check if router already exists
 				if router.ID != "" && router.AgentID == nil {
 					slog.Warn("Duplicate router", "name", i)
+					delete(config.HTTP.Services, i)
 					continue
 				}
 

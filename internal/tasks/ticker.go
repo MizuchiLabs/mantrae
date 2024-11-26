@@ -131,20 +131,6 @@ func cleanupAgents(ctx context.Context) {
 				}
 
 				if now.Sub(*agent.LastSeen) > timeoutDuration {
-
-					// Delete all connected routers
-					routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agent.ID)
-					if err != nil {
-						slog.Error("Failed to get routers", "error", err)
-						continue
-					}
-					for _, router := range routers {
-						if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
-							slog.Error("Failed to delete router", "id", router.ID, "error", err)
-							return
-						}
-					}
-
 					if err := db.Query.DeleteAgentByID(context.Background(), agent.ID); err != nil {
 						slog.Error(
 							"failed to delete disconnected agent",
@@ -158,6 +144,19 @@ func cleanupAgents(ctx context.Context) {
 						util.Broadcast <- util.EventMessage{
 							Type:    "agent_updated",
 							Message: "Deleted disconnected agent",
+						}
+					}
+
+					// Delete all connected routers
+					routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agent.ID)
+					if err != nil {
+						slog.Error("Failed to get routers", "error", err)
+						continue
+					}
+					for _, router := range routers {
+						if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
+							slog.Error("Failed to delete router", "id", router.ID, "error", err)
+							return
 						}
 					}
 				}
