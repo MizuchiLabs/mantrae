@@ -29,9 +29,6 @@ func Refresh() {
 		slog.Error("Failed to get routers", "error", err)
 	}
 	for _, router := range routers {
-		if err := router.DecodeFields(); err != nil {
-			continue
-		}
 		router.SSLCheck()
 	}
 }
@@ -83,9 +80,6 @@ func sslCheck(ctx context.Context) {
 			return
 		case <-ticker.C:
 			for _, router := range routers {
-				if err := router.DecodeFields(); err != nil {
-					continue
-				}
 				router.SSLCheck()
 			}
 		}

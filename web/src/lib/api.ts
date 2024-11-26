@@ -9,7 +9,8 @@ import type { Selected } from 'bits-ui';
 import { PROFILE_SK, TOKEN_SK } from './store';
 
 // Global state variables
-export const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3000/api';
+export const BACKEND_PORT = import.meta.env.PORT || 3000;
+export const API_URL = import.meta.env.PROD ? '/api' : `http://127.0.0.1:${BACKEND_PORT}/api`;
 export const loggedIn = writable(false);
 export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
