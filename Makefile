@@ -11,7 +11,7 @@ all: clean build
 
 .PHONY: clean
 clean:
-	rm -rf $(PWD)/$(BIN) $(PWD)/web/build $(PWD)/builds
+	rm -rf $(PWD)/$(BIN) $(PWD)/$(BIN)-agent $(PWD)/web/build $(PWD)/builds
 
 .PHONY: audit
 audit:
