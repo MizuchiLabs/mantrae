@@ -3,6 +3,7 @@ package test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
@@ -17,6 +18,10 @@ func SetupDB() error {
 
 	// Initialize the in-memory database
 	if err := db.InitDB(); err != nil {
+		return err
+	}
+
+	if err := setDefaultSettings(); err != nil {
 		return err
 	}
 
@@ -229,5 +234,66 @@ func seedMockData() error {
 
 	}
 
+	return nil
+}
+
+func setDefaultSettings() error {
+	baseSettings := []db.Setting{
+		{
+			Key:   "server-url",
+			Value: util.App.ServerURL,
+		},
+		{
+			Key:   "backup-enabled",
+			Value: "true",
+		},
+		{
+			Key:   "backup-schedule",
+			Value: "0 2 * * 1", // Weekly at 02:00 AM on Monday
+		},
+		{
+			Key:   "backup-keep",
+			Value: "3", // Keep 3 backups
+		},
+		{
+			Key:   "agent-cleanup-enabled",
+			Value: "true",
+		},
+		{
+			Key:   "agent-cleanup-timeout",
+			Value: "168h",
+		},
+		{
+			Key:   "email-host",
+			Value: util.App.EmailHost,
+		},
+		{
+			Key:   "email-port",
+			Value: util.App.EmailPort,
+		},
+		{
+			Key:   "email-username",
+			Value: util.App.EmailUsername,
+		},
+		{
+			Key:   "email-password",
+			Value: util.App.EmailPassword,
+		},
+		{
+			Key:   "email-from",
+			Value: util.App.EmailFrom,
+		},
+	}
+
+	for _, setting := range baseSettings {
+		if _, err := db.Query.GetSettingByKey(context.Background(), setting.Key); err != nil {
+			if _, err := db.Query.CreateSetting(context.Background(), db.CreateSettingParams{
+				Key:   setting.Key,
+				Value: setting.Value,
+			}); err != nil {
+				return fmt.Errorf("failed to create setting: %w", err)
+			}
+		}
+	}
 	return nil
 }
