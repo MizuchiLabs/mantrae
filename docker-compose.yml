@@ -8,8 +8,10 @@ services:
       - SECRET=<secret> # generate a secret with openssl rand -hex 32
     command:
       - --url=http://traefik:8080 # if traefik is running on the same host
-      - --username=admin # use if you want to enable basicauth on traefik
+      - --username=admin # use this if you enabled basicauth on traefik
       - --password=admin
+    volumes:
+      - ./mantrae:/app
     ports:
       - 3000:3000 # remove this if you want to use traefik 
     labels:
