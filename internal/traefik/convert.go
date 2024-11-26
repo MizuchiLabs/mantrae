@@ -77,6 +77,23 @@ func DecodeFromLabels(id string, container []byte) error {
 					return err
 				}
 
+				router, err := db.Query.GetRouterByName(
+					context.Background(),
+					db.GetRouterByNameParams{
+						ProfileID: agent.ProfileID,
+						Name:      i,
+					},
+				)
+				if err != nil {
+					slog.Error("Failed to get router", "error", err)
+					continue
+				}
+				// Check if router already exists
+				if router.ID != "" && router.AgentID == nil {
+					slog.Warn("Duplicate router", "name", i)
+					continue
+				}
+
 				if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams(dbRouter)); err != nil {
 					return err
 				}
@@ -96,9 +113,6 @@ func DecodeFromLabels(id string, container []byte) error {
 				if err != nil {
 					slog.Error("Failed to get router", "error", err)
 					continue
-				}
-				if err := router.DecodeFields(); err != nil {
-					return err
 				}
 
 				// Build servers
