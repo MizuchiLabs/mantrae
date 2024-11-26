@@ -36,6 +36,10 @@ build: audit
 	upx $(BIN)
 	upx $(BIN)-agent
 
+build-fast: audit
+	go build $(LDFLAGS) -o $(BIN) main.go
+	go build $(LDFLAGS) -o $(BIN)-agent agent/cmd/main.go
+
 .PHONY: docker
 docker:
 	cd web && pnpm install && pnpm run build

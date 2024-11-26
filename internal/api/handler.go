@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
@@ -73,15 +74,24 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
-	tokenString := r.Header.Get("Authorization")
-	if len(tokenString) < 7 && tokenString[:7] != "Bearer " {
-		http.Error(w, "Token cannot be empty", http.StatusBadRequest)
-		return
+	var token string
+
+	// Check for token in cookies and Authorization header
+	if cookie, err := r.Cookie("token"); err == nil {
+		token = cookie.Value
+	} else {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		} else {
+			http.Error(w, "Token cannot be empty", http.StatusBadRequest)
+			return
+		}
 	}
 
-	data, err := util.DecodeJWT(tokenString[7:])
+	data, err := util.DecodeJWT(token)
 	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		http.Error(w, fmt.Sprintf("Invalid token: %s", err.Error()), http.StatusUnauthorized)
 		return
 	}
 

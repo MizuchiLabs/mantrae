@@ -32,4 +32,3 @@ export const load: LayoutLoad = async ({ fetch, url }) => {
 
 	loggedIn.set(true);
 };
-
