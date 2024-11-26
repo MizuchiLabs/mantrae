@@ -354,12 +354,12 @@ func decode(data interface{}, target interface{}) error {
 		return json.Unmarshal(data, target)
 	case string:
 		return json.Unmarshal([]byte(data), target)
+	case *json.RawMessage:
+		return json.Unmarshal(*data, target)
 	case map[string]interface{}:
 		return nil
 	case []interface{}:
 		return nil
-	case *json.RawMessage:
-		return json.Unmarshal(*data, target)
 	default:
 		return fmt.Errorf("unsupported data type: %T", data)
 	}
