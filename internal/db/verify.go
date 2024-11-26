@@ -356,36 +356,30 @@ func decode(data interface{}, target interface{}) error {
 		return json.Unmarshal([]byte(data), target)
 	case *json.RawMessage:
 		return json.Unmarshal(*data, target)
-	case []string:
-		return nil
-	case map[string]interface{}:
-		return nil
-	case []interface{}:
-		return nil
 	default:
-		return fmt.Errorf("unsupported data type: %T", data)
+		return nil
 	}
 }
 
 func (e *Entrypoint) DecodeFields() error {
 	if err := decode(e.Http, &e.Http); err != nil {
-		return err
+		return fmt.Errorf("field http: %s", err.Error())
 	}
 	return nil
 }
 
 func (r *Router) DecodeFields() error {
 	if err := decode(r.EntryPoints, &r.EntryPoints); err != nil {
-		return err
+		return fmt.Errorf("field entrypoints: %s", err.Error())
 	}
 	if err := decode(r.Middlewares, &r.Middlewares); err != nil {
-		return err
+		return fmt.Errorf("field middlewares: %s", err.Error())
 	}
 	if err := decode(r.Tls, &r.Tls); err != nil {
-		return err
+		return fmt.Errorf("field tls: %s", err.Error())
 	}
 	if err := decode(r.Errors, &r.Errors); err != nil {
-		return err
+		return fmt.Errorf("field errors: %s", err.Error())
 	}
 
 	return nil
@@ -393,26 +387,26 @@ func (r *Router) DecodeFields() error {
 
 func (s *Service) DecodeFields() error {
 	if err := decode(s.LoadBalancer, &s.LoadBalancer); err != nil {
-		return err
+		return fmt.Errorf("field loadbalancer: %s", err.Error())
 	}
 	if err := decode(s.Failover, &s.Failover); err != nil {
-		return err
+		return fmt.Errorf("field failover: %s", err.Error())
 	}
 	if err := decode(s.Mirroring, &s.Mirroring); err != nil {
-		return err
+		return fmt.Errorf("field mirroring: %s", err.Error())
 	}
 	if err := decode(s.Weighted, &s.Weighted); err != nil {
-		return err
+		return fmt.Errorf("field weighted: %s", err.Error())
 	}
 	if err := decode(s.ServerStatus, &s.ServerStatus); err != nil {
-		return err
+		return fmt.Errorf("field serverstatus: %s", err.Error())
 	}
 	return nil
 }
 
 func (m *Middleware) DecodeFields() error {
 	if err := decode(m.Content, &m.Content); err != nil {
-		return err
+		return fmt.Errorf("field content: %s", err.Error())
 	}
 
 	return nil
@@ -420,10 +414,10 @@ func (m *Middleware) DecodeFields() error {
 
 func (a *Agent) DecodeFields() error {
 	if err := decode(a.Containers, &a.Containers); err != nil {
-		return err
+		return fmt.Errorf("field containers: %s", err.Error())
 	}
 	if err := decode(a.PrivateIps, &a.PrivateIps); err != nil {
-		return err
+		return fmt.Errorf("field privateips: %s", err.Error())
 	}
 	return nil
 }
