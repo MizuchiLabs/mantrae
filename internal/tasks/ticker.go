@@ -17,6 +17,7 @@ func StartSync(ctx context.Context) {
 	go syncDNS(ctx)
 	go sslCheck(ctx)
 	go cleanupAgents(ctx)
+	go cleanupRouters(ctx)
 }
 
 // Refresh forces a refresh of all tasks
@@ -157,6 +158,57 @@ func cleanupAgents(ctx context.Context) {
 						if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
 							slog.Error("Failed to delete router", "id", router.ID, "error", err)
 							return
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// cleanupRouters periodically deletes routers from offline agents
+func cleanupRouters(ctx context.Context) {
+	// Timeout to delete old agents
+	timeout, err := db.Query.GetSettingByKey(context.Background(), "agent-cleanup-timeout")
+	if err != nil {
+		slog.Error("failed to get agent cleanup timeout", "error", err)
+		return
+	}
+
+	timeoutDuration, err := time.ParseDuration(timeout.Value)
+	if err != nil {
+		slog.Error("failed to parse timeout cleanup duration", "error", err)
+	}
+
+	ticker := time.NewTicker(timeoutDuration)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			routers, err := db.Query.ListRouters(context.Background())
+			if err != nil {
+				slog.Error("failed to query disconnected agents", "error", err)
+				continue
+			}
+
+			for _, router := range routers {
+				if router.AgentID != nil {
+					// Check if the agent is still connected
+					agent, err := db.Query.GetAgentByID(context.Background(), *router.AgentID)
+					if err != nil {
+						continue
+					}
+
+					if agent.LastSeen != nil {
+						if time.Since(*agent.LastSeen) > timeoutDuration {
+							// Agent is disconnected, delete the router
+							if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
+								slog.Error("Failed to delete router", "id", router.ID, "error", err)
+								return
+							}
 						}
 					}
 				}
