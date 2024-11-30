@@ -36,7 +36,7 @@
 				<Select.Trigger>
 					<Select.Value placeholder="Select middlewares to" />
 				</Select.Trigger>
-				<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
+				<Select.Content class="no-scrollbar max-h-[200px] overflow-y-auto">
 					{#each $middlewares as m}
 						<Select.Item value={m.name} label={m.name}>
 							{m.name}
