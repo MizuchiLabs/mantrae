@@ -95,6 +95,7 @@ func (r *Router) Verify() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -498,7 +499,6 @@ func (r *Router) SSLCheck() {
 		}
 	}
 	if !isHTTPS {
-		slog.Debug("Router is not using HTTPS entrypoint", "name", r.Name)
 		r.UpdateError("ssl", "")
 		return
 	}

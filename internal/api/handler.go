@@ -650,6 +650,13 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		router.DnsProvider = &provider.ID
 	}
 
+	// Update DNS
+	updateDNS := false
+	oldRouter, err := db.Query.GetRouterByID(context.Background(), router.ID)
+	if err == nil && oldRouter.Rule != router.Rule && oldRouter.DnsProvider != nil {
+		updateDNS = true
+	}
+
 	if err := router.Verify(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -672,6 +679,11 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError,
 		)
 		return
+	}
+
+	if updateDNS {
+		slog.Debug("Refreshing DNS record", "router", data.Name)
+		go dns.UpdateDNS()
 	}
 
 	go tasks.Refresh()

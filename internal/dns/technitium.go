@@ -287,7 +287,9 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	defer resp.Body.Close()
 
 	var tRecords struct {
-		Response struct {
+		Status       string `json:"status"`
+		ErrorMessage string `json:"errorMessage"`
+		Response     struct {
 			Records []struct {
 				Name  string `json:"name"`
 				Type  string `json:"type"`
@@ -300,6 +302,10 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	}
 	if err = json.NewDecoder(resp.Body).Decode(&tRecords); err != nil {
 		return nil, err
+	}
+
+	if tRecords.Status == "error" {
+		return nil, fmt.Errorf("%s", tRecords.ErrorMessage)
 	}
 
 	var records []DNSRecord
