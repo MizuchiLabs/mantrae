@@ -42,11 +42,10 @@ build-fast: audit
 
 .PHONY: docker
 docker:
-	cd web && pnpm install && pnpm run build
+	#cd web && pnpm install && pnpm run build
 	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o mantrae-linux-amd64 main.go
-	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o mantrae-linux-arm64 main.go
 	docker buildx build \
-		--platform linux/amd64,linux/arm64 \
+		--platform linux/amd64 \
 		--label "org.opencontainers.image.vendor=Mizuchi Labs" \
 		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \
 		--label "org.opencontainers.image.title=Mantrae" \

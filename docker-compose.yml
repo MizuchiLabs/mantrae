@@ -38,7 +38,7 @@ services:
     command:
       - --log.level=INFO
       - --api.dashboard=true
-      - --api.insecure=true # Remove me later
+      - --api.insecure=true # Needs to be enabled (you can secure it via basicauth)
       - --entrypoints.web.address=:80
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
