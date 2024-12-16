@@ -514,8 +514,14 @@ func (r *Router) SSLCheck() {
 		return
 	}
 
+	domains, err := util.ExtractDomainFromRule(r.Rule)
+	if err != nil {
+		slog.Error("Failed to extract domains from rule", "error", err)
+		return
+	}
+
 	// Perform SSL validation and update only the "ssl" error field
-	if domain, _ := util.ExtractDomainFromRule(r.Rule); domain != "" {
+	for _, domain := range domains {
 		if err := util.ValidSSLCert(domain); err != nil {
 			r.UpdateError("ssl", err.Error())
 		} else {

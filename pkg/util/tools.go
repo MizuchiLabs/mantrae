@@ -201,14 +201,22 @@ func IsValidEmail(email string) bool {
 	return matched
 }
 
-// ExtractDomainFromRule extracts the domain inside a Host(`domain.com`) rule
-func ExtractDomainFromRule(rule string) (string, error) {
+// ExtractDomainFromRule extracts all the domains from a rule (e.g. Host(`domain.com`))
+func ExtractDomainFromRule(rule string) ([]string, error) {
 	re := regexp.MustCompile(`Host\(` + "`" + `([^` + "`" + `]+)` + "`" + `\)`)
-	matches := re.FindStringSubmatch(rule)
-	if len(matches) < 2 {
-		return "", fmt.Errorf("no domain found in rule")
+	matches := re.FindAllStringSubmatch(rule, -1)
+
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("no domains found in rule")
 	}
-	return matches[1], nil
+
+	var domains []string
+	for _, match := range matches {
+		if len(match) > 1 {
+			domains = append(domains, match[1])
+		}
+	}
+	return domains, nil
 }
 
 func ValidSSLCert(domain string) error {

@@ -89,20 +89,21 @@ func UpdateDNS() {
 					continue
 				}
 
-				domain, err := util.ExtractDomainFromRule(router.Rule)
+				domains, err := util.ExtractDomainFromRule(router.Rule)
 				if err != nil {
 					slog.Error("Failed to extract domain from rule", "error", err)
 					continue
 				}
-
-				if err := provider.UpsertRecord(domain); err != nil {
-					slog.Error("Failed to upsert record", "error", err)
-					router.UpdateError("dns", err.Error())
-				} else {
-					router.UpdateError("dns", "")
+				for _, domain := range domains {
+					if err := provider.UpsertRecord(domain); err != nil {
+						slog.Error("Failed to upsert record", "error", err)
+						router.UpdateError("dns", err.Error())
+					} else {
+						router.UpdateError("dns", "")
+					}
 				}
-			}
 
+			}
 			// Update routers
 			if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams{
 				ID:          router.ID,
@@ -124,15 +125,17 @@ func DeleteDNS(router db.Router) {
 		return
 	}
 
-	subdomain, err := util.ExtractDomainFromRule(router.Rule)
+	domains, err := util.ExtractDomainFromRule(router.Rule)
 	if err != nil {
 		slog.Error("Failed to extract domain from rule", "error", err)
 		return
 	}
 
-	if err := provider.DeleteRecord(subdomain); err != nil {
-		slog.Error("Failed to delete record", "error", err)
-		return
+	for _, domain := range domains {
+		if err := provider.DeleteRecord(domain); err != nil {
+			slog.Error("Failed to delete record", "error", err)
+			return
+		}
 	}
 }
 
