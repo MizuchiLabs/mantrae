@@ -20,19 +20,19 @@ import (
 
 // Set up global logger with specified configuration
 func init() {
-	opts := &tint.Options{}
-	switch strings.ToLower(util.App.LogLevel) {
-	case "debug":
-		opts.Level = slog.LevelDebug
-	case "info":
-		opts.Level = slog.LevelInfo
-	case "warn":
-		opts.Level = slog.LevelWarn
-	case "error":
-		opts.Level = slog.LevelError
-	default:
-		opts.Level = slog.LevelInfo
+	levelMap := map[string]slog.Level{
+		"debug": slog.LevelDebug,
+		"info":  slog.LevelInfo,
+		"warn":  slog.LevelWarn,
+		"error": slog.LevelError,
 	}
+
+	logLevel, exists := levelMap[strings.ToLower(util.App.LogLevel)]
+	if !exists {
+		logLevel = slog.LevelInfo
+	}
+
+	opts := &tint.Options{Level: logLevel}
 	logger := slog.New(tint.NewHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
 }

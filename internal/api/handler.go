@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// Helper function to write JSON response
+// Helper function to write JSON response to the HTTP response writer.
 func writeJSON(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(data); err != nil {
@@ -34,7 +34,7 @@ func writeJSON(w http.ResponseWriter, data any) {
 
 // Authentication -------------------------------------------------------------
 
-// Login verifies the user credentials using normal password
+// Login verifies user credentials using a normal password and returns a JWT token if successful.
 func Login(w http.ResponseWriter, r *http.Request) {
 	var user db.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -48,13 +48,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dbUser, err := db.Query.GetUserByUsername(context.Background(), user.Username)
-	if err != nil {
-		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
-		return
-	}
-
-	// Check if the password is correct
-	if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+	if err != nil ||
+		bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)) != nil {
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
@@ -73,6 +68,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]string{"token": token})
 }
 
+// VerifyToken checks the validity of a JWT token provided in cookies or Authorization header.
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	var token string
 
@@ -98,6 +94,7 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// ResetPassword allows users to reset their password using a valid JWT token.
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Password string `json:"password"`
@@ -149,6 +146,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// SendResetEmail sends an email with a password reset link to the user's registered email address.
 func SendResetEmail(w http.ResponseWriter, r *http.Request) {
 	user, err := db.Query.GetUserByUsername(context.Background(), r.PathValue("name"))
 	if err != nil {
@@ -203,17 +201,17 @@ func SendResetEmail(w http.ResponseWriter, r *http.Request) {
 
 // Version --------------------------------------------------------------------
 
-// GetVersion returns the current version of Mantrae
+// GetVersion returns the current version of Mantrae as a plain text response.
 func GetVersion(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write([]byte(util.Version)); err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
-		return
 	}
 }
 
 // Events ---------------------------------------------------------------------
 
+// GetEvents streams server-sent events (SSE) for real-time updates.
 func GetEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -251,7 +249,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 
 // Profiles -------------------------------------------------------------------
 
-// GetProfiles returns all profiles but without the dynamic data
+// GetProfiles retrieves all profiles from the database.
 func GetProfiles(w http.ResponseWriter, r *http.Request) {
 	profiles, err := db.Query.ListProfiles(context.Background())
 	if err != nil {
@@ -265,7 +263,7 @@ func GetProfiles(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, profiles)
 }
 
-// GetProfile returns a single profile
+// GetProfile fetches a single profile by its ID.
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -282,7 +280,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, profile)
 }
 
-// CreateProfile creates a new profile
+// CreateProfile inserts a new profile into the database.
 func CreateProfile(w http.ResponseWriter, r *http.Request) {
 	var profile db.CreateProfileParams
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
@@ -313,7 +311,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-// UpdateProfile updates a single profile
+// UpdateProfile updates an existing profile identified by its ID in the database.
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var profile db.UpdateProfileParams
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
@@ -344,7 +342,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-// DeleteProfile deletes a single profile
+// DeleteProfile removes an existing profile from the database by its ID.
 func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -486,6 +484,7 @@ func GetProviders(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, providers)
 }
 
+// UpsertProvider inserts or updates a provider in the database based on the provided data.
 func UpsertProvider(w http.ResponseWriter, r *http.Request) {
 	var provider db.Provider
 	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
@@ -562,6 +561,8 @@ func GetEntryPoints(w http.ResponseWriter, r *http.Request) {
 }
 
 // Router ---------------------------------------------------------------------
+
+// GetRouters retrieves all routers for a given profile by its ID.
 func GetRouters(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -586,6 +587,7 @@ func GetRouters(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, routers)
 }
 
+// UpsertRouter inserts or updates a router in the database based on the provided data.
 func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 	var router db.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
@@ -643,6 +645,7 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// DeleteRouter removes a specific router from the database using its ID.
 func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 	router, err := db.Query.GetRouterByID(context.Background(), r.PathValue("id"))
 	if err != nil {
@@ -685,6 +688,8 @@ func DeleteRouter(w http.ResponseWriter, r *http.Request) {
 }
 
 // Services -------------------------------------------------------------------
+
+// GetServices fetches all services for a given profile by its ID.
 func GetServices(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -710,6 +715,7 @@ func GetServices(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, services)
 }
 
+// UpsertService inserts or updates a service in the database based on the provided data.
 func UpsertService(w http.ResponseWriter, r *http.Request) {
 	var service db.Service
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
@@ -759,6 +765,7 @@ func UpsertService(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// DeleteService removes a specific service from the database using its ID.
 func DeleteService(w http.ResponseWriter, r *http.Request) {
 	err := db.Query.DeleteServiceByID(context.Background(), r.PathValue("id"))
 	if err != nil {
@@ -774,6 +781,8 @@ func DeleteService(w http.ResponseWriter, r *http.Request) {
 }
 
 // Middlewares ----------------------------------------------------------------
+
+// GetMiddlewares fetches all middlewares for a given profile by its ID.
 func GetMiddlewares(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -804,6 +813,7 @@ func GetMiddlewares(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, middlewares)
 }
 
+// UpsertMiddleware inserts or updates a middleware in the database based on the provided data.
 func UpsertMiddleware(w http.ResponseWriter, r *http.Request) {
 	var middleware db.Middleware
 	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
@@ -856,6 +866,7 @@ func UpsertMiddleware(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// DeleteMiddleware removes a specific middleware from the database using its ID.
 func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 	err := db.Query.DeleteMiddlewareByID(context.Background(), r.PathValue("id"))
 	if err != nil {
@@ -872,7 +883,7 @@ func DeleteMiddleware(w http.ResponseWriter, r *http.Request) {
 
 // Settings -------------------------------------------------------------------
 
-// GetSettings returns all settings
+// GetSettings retrieves all settings from the database.
 func GetSettings(w http.ResponseWriter, r *http.Request) {
 	settings, err := db.Query.ListSettings(context.Background())
 	if err != nil {
@@ -886,7 +897,7 @@ func GetSettings(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, settings)
 }
 
-// GetSetting returns a single setting
+// GetSetting fetches a single setting by its key.
 func GetSetting(w http.ResponseWriter, r *http.Request) {
 	key := r.PathValue("key")
 	setting, err := db.Query.GetSettingByKey(context.Background(), key)
@@ -897,7 +908,7 @@ func GetSetting(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, setting)
 }
 
-// UpdateSetting updates a single setting
+// UpdateSetting updates an existing setting in the database based on the provided data.
 func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 	var setting db.UpdateSettingParams
 	if err := json.NewDecoder(r.Body).Decode(&setting); err != nil {
@@ -945,7 +956,7 @@ func UpdateSetting(w http.ResponseWriter, r *http.Request) {
 
 // Agents ---------------------------------------------------------------------
 
-// GetAgents returns all agents
+// GetAgents retrieves all agents for a given profile by its ID.
 func GetAgents(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -967,6 +978,7 @@ func GetAgents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, agents)
 }
 
+// UpsertAgent inserts or updates an agent in the database based on the provided data.
 func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 	var agent db.Agent
 	if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
@@ -999,6 +1011,7 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// DeleteAgent removes a specific agent from the database using its ID and type (hard/soft).
 func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 	agentID := r.PathValue("id")
 	deletionType := r.PathValue("type")
@@ -1062,7 +1075,7 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetAgentToken returns an agent token
+// GetAgentToken generates and returns a JWT token for an agent.
 func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -1091,7 +1104,7 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 
 // Backup ---------------------------------------------------------------------
 
-// DownloadBackup returns a backup of the database
+// DownloadBackup creates a backup of the database and returns it as a JSON response.
 func DownloadBackup(w http.ResponseWriter, r *http.Request) {
 	data, err := config.DumpBackup(r.Context())
 	if err != nil {
@@ -1105,6 +1118,7 @@ func DownloadBackup(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
+// UploadBackup restores a backup from a provided file.
 func UploadBackup(w http.ResponseWriter, r *http.Request) {
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -1140,7 +1154,7 @@ func UploadBackup(w http.ResponseWriter, r *http.Request) {
 
 // Utility --------------------------------------------------------------------
 
-// DeleteRouterDNS deletes the DNS records for a router
+// DeleteRouterDNS deletes DNS records associated with a given router.
 func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
 	var router db.Router
 	if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
@@ -1157,6 +1171,7 @@ func DeleteRouterDNS(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetMiddlewarePlugins retrieves middleware plugins available for Traefik.
 func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get("https://plugins.traefik.io/api/services/plugins")
 	if err != nil {
@@ -1187,7 +1202,7 @@ func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, middlewarePlugins)
 }
 
-// GetTraefikOverview returns the overview of the connected Traefik instance
+// GetTraefikOverview fetches an overview of the connected Traefik instance for a given profile.
 func GetTraefikOverview(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -1213,7 +1228,7 @@ func GetTraefikOverview(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, data)
 }
 
-// GetTraefikConfig returns the traefik config
+// GetTraefikConfig generates and returns the dynamic configuration for Traefik in JSON or YAML format.
 func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	profile, err := db.Query.GetProfileByName(context.Background(), r.PathValue("name"))
 	if err != nil {
@@ -1266,7 +1281,7 @@ func GetTraefikConfig(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetPublicIP tries to guess the public ip of the Traefik instance
+// GetPublicIP attempts to resolve the public IP address of a Traefik instance by its profile ID.
 func GetPublicIP(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
