@@ -157,7 +157,7 @@ func DecodeFromLabels(id string, container []byte) error {
 					ResponseForwarding: service.LoadBalancer.ResponseForwarding,
 					ServersTransport:   service.LoadBalancer.ServersTransport,
 				}
-				dbService := db.UpsertServiceParams{
+				service := db.Service{
 					ProfileID:    agent.ProfileID,
 					Name:         i,
 					Provider:     "http",
@@ -168,11 +168,11 @@ func DecodeFromLabels(id string, container []byte) error {
 					Mirroring:    service.Mirroring,
 					Failover:     service.Failover,
 				}
-				if err := dbService.Verify(); err != nil {
+				if err := service.Verify(); err != nil {
 					return err
 				}
 
-				if _, err := db.Query.UpsertService(context.Background(), dbService); err != nil {
+				if _, err := db.Query.UpsertService(context.Background(), db.UpsertServiceParams(service)); err != nil {
 					return err
 				}
 			}
@@ -239,7 +239,7 @@ func DecodeFromLabels(id string, container []byte) error {
 					ServersTransport: service.LoadBalancer.ServersTransport,
 					TerminationDelay: service.LoadBalancer.TerminationDelay,
 				}
-				dbService := db.UpsertServiceParams{
+				service := db.Service{
 					ProfileID:    agent.ProfileID,
 					Name:         i,
 					Provider:     "http",
@@ -248,11 +248,11 @@ func DecodeFromLabels(id string, container []byte) error {
 					LoadBalancer: &loadBalancer,
 					Weighted:     service.Weighted,
 				}
-				if err := dbService.Verify(); err != nil {
+				if err := service.Verify(); err != nil {
 					return err
 				}
 
-				if _, err := db.Query.UpsertService(context.Background(), dbService); err != nil {
+				if _, err := db.Query.UpsertService(context.Background(), db.UpsertServiceParams(service)); err != nil {
 					return err
 				}
 			}
@@ -308,7 +308,7 @@ func DecodeFromLabels(id string, container []byte) error {
 				}
 
 				loadBalancer := dynamic.UDPServersLoadBalancer{Servers: servers}
-				dbService := db.UpsertServiceParams{
+				service := db.Service{
 					ProfileID:    agent.ProfileID,
 					Name:         i,
 					Provider:     "http",
@@ -318,11 +318,11 @@ func DecodeFromLabels(id string, container []byte) error {
 					Weighted:     service.Weighted,
 				}
 
-				if err := dbService.Verify(); err != nil {
+				if err := service.Verify(); err != nil {
 					return err
 				}
 
-				if _, err := db.Query.UpsertService(context.Background(), dbService); err != nil {
+				if _, err := db.Query.UpsertService(context.Background(), db.UpsertServiceParams(service)); err != nil {
 					return err
 				}
 			}

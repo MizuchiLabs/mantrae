@@ -15,7 +15,7 @@
 	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
 	let servers: string[] = [];
 
-	const serviceSchema = z.object({
+	const schema = z.object({
 		provider: z.string().trim().nullish(),
 		type: z.string().trim().nullish(),
 		status: z.string().trim().nullish(),
@@ -47,7 +47,7 @@
 	export const validate = () => {
 		try {
 			if (service.provider === 'http') {
-				serviceSchema.parse({ ...service });
+				schema.parse({ ...service });
 			}
 			errors = {};
 			return true;

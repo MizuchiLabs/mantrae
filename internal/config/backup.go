@@ -56,19 +56,19 @@ func DumpBackup(ctx context.Context) (*BackupData, error) {
 	}
 
 	for i, router := range data.Routers {
-		if err := router.DecodeFields(); err != nil {
+		if err = router.DecodeFields(); err != nil {
 			slog.Error("Failed to decode router", "name", router.Name, "error", err)
 		}
 		data.Routers[i] = router
 	}
 	for i, service := range data.Services {
-		if err := service.DecodeFields(); err != nil {
+		if err = service.DecodeFields(); err != nil {
 			slog.Error("Failed to decode service", "name", service.Name, "error", err)
 		}
 		data.Services[i] = service
 	}
 	for i, middleware := range data.Middlewares {
-		if err := middleware.DecodeFields(); err != nil {
+		if err = middleware.DecodeFields(); err != nil {
 			slog.Error("Failed to decode middleware", "name", middleware.Name, "error", err)
 		}
 		data.Middlewares[i] = middleware
@@ -150,21 +150,19 @@ func RestoreBackup(ctx context.Context, data *BackupData) error {
 		}
 
 		for _, service := range data.Services {
-			params := db.UpsertServiceParams(service)
-			if err := params.Verify(); err != nil {
+			if err := service.Verify(); err != nil {
 				continue
 			}
-			if _, err := db.Query.UpsertService(ctx, db.UpsertServiceParams(params)); err != nil {
+			if _, err := db.Query.UpsertService(ctx, db.UpsertServiceParams(service)); err != nil {
 				return fmt.Errorf("failed to upsert service: %w", err)
 			}
 		}
 
 		for _, middleware := range data.Middlewares {
-			params := db.UpsertMiddlewareParams(middleware)
-			if err := params.Verify(); err != nil {
+			if err := middleware.Verify(); err != nil {
 				continue
 			}
-			if _, err := db.Query.UpsertMiddleware(ctx, db.UpsertMiddlewareParams(params)); err != nil {
+			if _, err := db.Query.UpsertMiddleware(ctx, db.UpsertMiddlewareParams(middleware)); err != nil {
 				return fmt.Errorf("failed to upsert middleware: %w", err)
 			}
 		}

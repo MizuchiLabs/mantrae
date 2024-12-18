@@ -1963,14 +1963,23 @@ VALUES
   (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
-  name = EXCLUDED.name,
-  type = EXCLUDED.type,
-  external_ip = EXCLUDED.external_ip,
-  api_key = EXCLUDED.api_key,
-  api_url = EXCLUDED.api_url,
-  zone_type = EXCLUDED.zone_type,
-  proxied = EXCLUDED.proxied,
-  is_active = EXCLUDED.is_active RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+  name = COALESCE(NULLIF(EXCLUDED.name, ''), providers.name),
+  type = COALESCE(NULLIF(EXCLUDED.type, ''), providers.type),
+  external_ip = COALESCE(
+    NULLIF(EXCLUDED.external_ip, ''),
+    providers.external_ip
+  ),
+  api_key = COALESCE(NULLIF(EXCLUDED.api_key, ''), providers.api_key),
+  api_url = COALESCE(NULLIF(EXCLUDED.api_url, ''), providers.api_url),
+  zone_type = COALESCE(
+    NULLIF(EXCLUDED.zone_type, ''),
+    providers.zone_type
+  ),
+  proxied = COALESCE(NULLIF(EXCLUDED.proxied, ''), providers.proxied),
+  is_active = COALESCE(
+    NULLIF(EXCLUDED.is_active, ''),
+    providers.is_active
+  ) RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
 `
 
 type UpsertProviderParams struct {

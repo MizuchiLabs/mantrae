@@ -540,7 +540,7 @@ func getEntrypoints(profile db.Profile) error {
 	}
 	defer entrypointData.Close()
 
-	var entrypoints []db.UpsertEntryPointParams
+	var entrypoints []db.Entrypoint
 	if err = json.NewDecoder(entrypointData).Decode(&entrypoints); err != nil {
 		return err
 	}
@@ -551,7 +551,7 @@ func getEntrypoints(profile db.Profile) error {
 			slog.Error("Failed to verify entrypoint", "error", err)
 			continue
 		}
-		if _, err := db.Query.UpsertEntryPoint(context.Background(), entrypoint); err != nil {
+		if _, err := db.Query.UpsertEntryPoint(context.Background(), db.UpsertEntryPointParams(entrypoint)); err != nil {
 			slog.Error("Failed to upsert entrypoints", "error", err)
 			continue
 		}
@@ -650,22 +650,6 @@ func GetTraefikConfig() {
 	util.Broadcast <- util.EventMessage{
 		Type:    "profile_updated",
 		Message: "Profile updated",
-	}
-}
-
-// Sync periodically syncs the Traefik configuration
-func Sync(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * 10)
-	defer ticker.Stop()
-
-	GetTraefikConfig()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			GetTraefikConfig()
-		}
 	}
 }
 

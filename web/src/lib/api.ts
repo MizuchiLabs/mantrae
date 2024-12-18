@@ -369,33 +369,27 @@ export async function getProviders() {
 	}
 }
 
-export async function getProvider(id: number): Promise<DNSProvider> {
-	const response = await handleRequest(`/provider/${id}`, 'GET');
+export async function upsertProvider(p: DNSProvider): Promise<void> {
+	const response = await handleRequest(`/provider`, 'POST', p);
 	if (response) {
 		const data = await response.json();
-		return data;
-	}
-	return {} as DNSProvider;
-}
+		if (data && get(provider)) {
+			provider.update((items) => {
+				const existingIndex = items.findIndex((item) => item.id === p.id);
 
-export async function createProvider(p: DNSProvider): Promise<void> {
-	const response = await handleRequest('/provider', 'POST', p);
-	if (response) {
-		const data = await response.json();
-		provider.update((items) => [...(items ?? []), data]);
-		toast.success(`Provider ${data.name} created`);
+				if (existingIndex !== -1) {
+					// Update existing item
+					const updatedItems = [...items];
+					updatedItems[existingIndex] = data;
+					return updatedItems;
+				} else {
+					// Add new item
+					return [...items, data];
+				}
+			});
+			toast.success(`Provider ${data.name} updated`);
+		}
 	}
-	await getProviders();
-}
-
-export async function updateProvider(p: DNSProvider): Promise<void> {
-	const response = await handleRequest(`/provider`, 'PUT', p);
-	if (response) {
-		const data = await response.json();
-		provider.update((items) => items.map((i) => (i.id === p.id ? data : i)));
-		toast.success(`Provider ${data.name} updated`);
-	}
-	await getProviders();
 }
 
 export async function deleteProvider(id: number): Promise<void> {

@@ -12,8 +12,9 @@
 	import { Copy, Eye, EyeOff } from 'lucide-svelte';
 	import type { Selected } from 'bits-ui';
 	import HoverInfo from '../utils/hoverInfo.svelte';
-	import { Toggle } from '../ui/toggle';
 	import autoAnimate from '@formkit/auto-animate';
+	import { Toggle } from '../ui/toggle';
+	import { z } from 'zod';
 
 	export let provider: DNSProvider;
 	const providerTypes: Selected<string>[] = [
@@ -22,6 +23,7 @@
 		{ label: 'Technitium', value: 'technitium' }
 	];
 
+	let showAPIKey = false;
 	let providerType: Selected<string> | undefined = providerTypes.find(
 		(t) => t.value === provider.type
 	);
@@ -33,7 +35,27 @@
 		}
 	};
 
-	let showAPIKey = false;
+	const schema = z.object({
+		name: z.string().trim().min(1, 'Name is required').max(255),
+		type: z.string().trim().min(1, 'Type is required').max(255),
+		externalIp: z.string().trim().ip().nullish(),
+		apiKey: z.string().trim().min(1, 'API Key is required').max(255),
+		apiUrl: z.string().trim().optional()
+	});
+
+	let errors: Record<any, string[] | undefined> = {};
+	export const validate = () => {
+		try {
+			schema.parse({ ...provider });
+			errors = {};
+			return true;
+		} catch (err: any) {
+			if (err instanceof z.ZodError) {
+				errors = err.flatten().fieldErrors;
+			}
+			return false;
+		}
+	};
 </script>
 
 <Card.Root class="mt-4">
@@ -91,7 +113,7 @@
 			</div>
 		{/if}
 
-		<div class="grid grid-cols-4 items-center gap-4 space-y-2">
+		<div class="grid grid-cols-4 items-center gap-2 space-y-2">
 			<Label for="current" class="text-right">Type</Label>
 			<Select.Root onSelectedChange={setProviderType} selected={providerType}>
 				<Select.Trigger class="col-span-3">
@@ -107,18 +129,22 @@
 			</Select.Root>
 		</div>
 
-		<div class="grid grid-cols-4 items-center gap-4">
+		<div class="grid grid-cols-4 items-center gap-2">
 			<Label for="name" class="text-right">Name</Label>
 			<Input
 				name="name"
 				type="text"
 				bind:value={provider.name}
+				on:input={validate}
 				class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
 				placeholder="Name of the provider"
 				required
 			/>
+			{#if errors.name}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.name}</div>
+			{/if}
 		</div>
-		<div class="grid grid-cols-4 items-center gap-4">
+		<div class="grid grid-cols-4 items-center gap-2">
 			<Label for="external-ip" class="col-span-1 flex items-center justify-end gap-0.5">
 				IP Address
 				<HoverInfo text="Use the public IP of your Traefik instance. (No schema or port)" />
@@ -129,6 +155,7 @@
 					type="text"
 					placeholder="Public IP address of Traefik"
 					bind:value={provider.externalIp}
+					on:input={validate}
 					class="pr-10"
 					required
 				/>
@@ -139,6 +166,7 @@
 							size="icon"
 							on:click={async () => {
 								provider.externalIp = await getPublicIP();
+								validate();
 							}}
 							class="hover:bg-transparent hover:text-red-400"
 						>
@@ -150,9 +178,12 @@
 					</Tooltip.Content>
 				</Tooltip.Root>
 			</div>
+			{#if errors.externalIp}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.externalIp}</div>
+			{/if}
 		</div>
 		{#if provider.type === 'powerdns' || provider.type === 'technitium'}
-			<div class="grid grid-cols-4 items-center gap-4">
+			<div class="grid grid-cols-4 items-center gap-2">
 				<Label for="url" class="col-span-1 flex items-center justify-end gap-0.5">
 					Endpoint
 					<HoverInfo text="The API endpoint of the provider" />
@@ -167,9 +198,12 @@
 					bind:value={provider.apiUrl}
 					required
 				/>
+				{#if errors.apiUrl}
+					<div class="col-span-4 text-right text-sm text-red-500">{errors.apiUrl}</div>
+				{/if}
 			</div>
 		{/if}
-		<div class="grid grid-cols-4 items-center gap-4">
+		<div class="grid grid-cols-4 items-center gap-2">
 			<Label for="key" class="text-right">API Key</Label>
 			<div class="col-span-3 flex flex-row items-center justify-end gap-1">
 				{#if showAPIKey}
@@ -177,6 +211,7 @@
 						name="key"
 						type="text"
 						bind:value={provider.apiKey}
+						on:input={validate}
 						placeholder="API Key of the provider"
 						class="pr-10"
 						required
@@ -186,6 +221,7 @@
 						name="key"
 						type="password"
 						bind:value={provider.apiKey}
+						on:input={validate}
 						placeholder="API Key of the provider"
 						class="pr-10"
 						required
@@ -204,6 +240,9 @@
 					{/if}
 				</Button>
 			</div>
+			{#if errors.apiKey}
+				<div class="col-span-4 text-right text-sm text-red-500">{errors.apiKey}</div>
+			{/if}
 		</div>
 	</Card.Content>
 </Card.Root>

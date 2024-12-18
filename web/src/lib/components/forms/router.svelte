@@ -26,7 +26,7 @@
 	export let router: Router;
 	export let disabled = false;
 
-	const formSchema = z.object({
+	const schema = z.object({
 		name: z.string().trim().min(1, 'Name is required').max(255),
 		provider: z.string().trim().nullish(),
 		status: z.string().trim().nullish(),
@@ -63,7 +63,7 @@
 	let errors: Record<any, string[] | undefined> = {};
 	export const validate = () => {
 		try {
-			formSchema.parse({ ...router });
+			schema.parse({ ...router });
 			errors = {};
 			return true;
 		} catch (err: any) {
@@ -169,6 +169,7 @@
 					name="name"
 					type="text"
 					bind:value={router.name}
+					on:input={validate}
 					placeholder="Name of the router"
 					required
 					{disabled}

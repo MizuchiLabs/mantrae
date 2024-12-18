@@ -83,9 +83,7 @@ func apiRoutes() http.Handler {
 
 	// DNS Provider
 	register("GET", "/provider", jwtChain, GetProviders)
-	register("GET", "/provider/{id}", jwtChain, GetProvider)
-	register("POST", "/provider", jwtChain, CreateProvider)
-	register("PUT", "/provider", jwtChain, UpdateProvider)
+	register("POST", "/provider", jwtChain, UpsertProvider)
 	register("DELETE", "/provider/{id}", jwtChain, DeleteProvider)
 
 	// Extra route for deleting DNS records

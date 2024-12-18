@@ -532,66 +532,6 @@ func TestGetProviders(t *testing.T) {
 	}
 }
 
-func TestGetProvider(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			GetProvider(tt.args.w, tt.args.r)
-		})
-	}
-}
-
-func TestCreateProvider(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			CreateProvider(tt.args.w, tt.args.r)
-		})
-	}
-}
-
-func TestUpdateProvider(t *testing.T) {
-	type args struct {
-		w http.ResponseWriter
-		r *http.Request
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			UpdateProvider(tt.args.w, tt.args.r)
-		})
-	}
-}
-
 func TestDeleteProvider(t *testing.T) {
 	type args struct {
 		w http.ResponseWriter

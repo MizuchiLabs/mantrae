@@ -486,25 +486,8 @@ func GetProviders(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, providers)
 }
 
-// GetProvider returns a single provider
-func GetProvider(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-	provider, err := db.Query.GetProviderByID(context.Background(), id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Provider not found: %s", err.Error()), http.StatusNotFound)
-		return
-	}
-
-	writeJSON(w, provider)
-}
-
-// CreateProvider creates a new provider
-func CreateProvider(w http.ResponseWriter, r *http.Request) {
-	var provider db.CreateProviderParams
+func UpsertProvider(w http.ResponseWriter, r *http.Request) {
+	var provider db.Provider
 	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
 		http.Error(
 			w,
@@ -519,41 +502,11 @@ func CreateProvider(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := db.Query.CreateProvider(context.Background(), provider)
+	data, err := db.Query.UpsertProvider(context.Background(), db.UpsertProviderParams(provider))
 	if err != nil {
 		http.Error(
 			w,
-			fmt.Sprintf("Failed to create provider: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	writeJSON(w, data)
-}
-
-// UpdateProvider updates a single provider
-func UpdateProvider(w http.ResponseWriter, r *http.Request) {
-	var provider db.UpdateProviderParams
-	if err := json.NewDecoder(r.Body).Decode(&provider); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode provider: %s", err.Error()),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if err := provider.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	data, err := db.Query.UpdateProvider(context.Background(), provider)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to update profile: %s", err.Error()),
+			fmt.Sprintf("Failed to upsert provider: %s", err.Error()),
 			http.StatusInternalServerError,
 		)
 		return
@@ -657,7 +610,7 @@ func UpsertRouter(w http.ResponseWriter, r *http.Request) {
 		updateDNS = true
 	}
 
-	if err := router.Verify(); err != nil {
+	if err = router.Verify(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -758,7 +711,7 @@ func GetServices(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpsertService(w http.ResponseWriter, r *http.Request) {
-	var service db.UpsertServiceParams
+	var service db.Service
 	if err := json.NewDecoder(r.Body).Decode(&service); err != nil {
 		http.Error(
 			w,
@@ -785,7 +738,7 @@ func UpsertService(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := db.Query.UpsertService(context.Background(), service)
+	data, err := db.Query.UpsertService(context.Background(), db.UpsertServiceParams(service))
 	if err != nil {
 		http.Error(
 			w,
@@ -852,7 +805,7 @@ func GetMiddlewares(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpsertMiddleware(w http.ResponseWriter, r *http.Request) {
-	var middleware db.UpsertMiddlewareParams
+	var middleware db.Middleware
 	if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
 		http.Error(
 			w,
@@ -879,7 +832,10 @@ func UpsertMiddleware(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, err := db.Query.UpsertMiddleware(context.Background(), middleware)
+	data, err := db.Query.UpsertMiddleware(
+		context.Background(),
+		db.UpsertMiddlewareParams(middleware),
+	)
 	if err != nil {
 		http.Error(
 			w,
@@ -1012,7 +968,7 @@ func GetAgents(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpsertAgent(w http.ResponseWriter, r *http.Request) {
-	var agent db.UpsertAgentParams
+	var agent db.Agent
 	if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
 		http.Error(
 			w,
@@ -1026,7 +982,7 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := db.Query.UpsertAgent(context.Background(), agent)
+	data, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams(agent))
 	if err != nil {
 		http.Error(w, "Failed to upsert agent", http.StatusInternalServerError)
 		return
@@ -1044,13 +1000,12 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteAgent(w http.ResponseWriter, r *http.Request) {
+	agentID := r.PathValue("id")
 	deletionType := r.PathValue("type")
 	if deletionType == "" {
 		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
 		return
 	}
-
-	agentID := r.PathValue("id")
 
 	_, err := db.Query.GetAgentByID(context.Background(), agentID)
 	if err != nil {
@@ -1058,7 +1013,8 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if deletionType == "hard" {
+	switch deletionType {
+	case "hard":
 		if err := db.Query.DeleteAgentByID(context.Background(), agentID); err != nil {
 			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
 			return
@@ -1077,7 +1033,7 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 		}
 		w.WriteHeader(http.StatusOK)
 		return
-	} else if deletionType == "soft" {
+	case "soft":
 		agent, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
 			ID:      r.PathValue("id"),
 			Deleted: true,
@@ -1086,7 +1042,6 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
 			return
 		}
-
 		// Delete all connected routers
 		routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
 		if err != nil {
@@ -1099,10 +1054,9 @@ func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-
 		writeJSON(w, agent)
 		return
-	} else {
+	default:
 		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
 		return
 	}
