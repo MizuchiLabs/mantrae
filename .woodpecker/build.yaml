@@ -32,6 +32,23 @@ steps:
           -o mantrae-linux-$arch main.go; \
         done
 
+  - name: agent-build
+    image: golang:latest
+    commands:
+      - go fmt ./...
+      - go vet ./...
+      - go mod tidy
+      - go mod verify
+      - go test ./...
+      - |
+        for arch in amd64 arm64; do \
+          CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build \
+          -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version=${CI_COMMIT_TAG} \
+                          -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate=${CI_PIPELINE_CREATED} \
+                          -X github.com/MizuchiLabs/mantrae/pkg/util.Commit=${CI_COMMIT_SHA}" \
+          -o mantrae-linux-$arch main.go; \
+        done
+
   - name: container-build
     image: woodpeckerci/plugin-docker-buildx
     privileged: false

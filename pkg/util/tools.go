@@ -28,7 +28,6 @@ type UserClaims struct {
 type AgentClaims struct {
 	ServerURL string `json:"serverUrl,omitempty"`
 	ProfileID int64  `json:"profileId,omitempty"`
-	Secret    string `json:"secret,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -96,20 +95,17 @@ func EncodeUserJWT(username string, expirationTime time.Time) (string, error) {
 	return token.SignedString([]byte(App.Secret))
 }
 
-// EncodeAgentJWT generates a JWT for the agent
+// EncodeAgentJWT generates a JWT for the agent (does not expire)
 func EncodeAgentJWT(profileID int64, serverURL string) (string, error) {
 	if profileID == 0 {
 		return "", errors.New("profileID cannot be empty")
 	}
 
-	expirationTime := time.Now().Add(14 * 24 * time.Hour) // 14 days
 	claims := AgentClaims{
 		ServerURL: serverURL + ":" + App.Port,
 		ProfileID: profileID,
-		Secret:    App.Secret,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
 	}
 

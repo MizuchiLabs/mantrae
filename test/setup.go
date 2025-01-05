@@ -142,7 +142,7 @@ func seedMockData() error {
 			PrivateIps: privateIps,
 			Containers: nil,
 			ActiveIp:   &ip,
-			Deleted:    false,
+			Token:      gofakeit.UUID(),
 		})
 		if err != nil {
 			return err
@@ -163,7 +163,7 @@ func seedMockData() error {
 			PrivateIps: nil,
 			Containers: nil,
 			ActiveIp:   nil,
-			Deleted:    false,
+			Token:      gofakeit.UUID(),
 		},
 	)
 	if err != nil {

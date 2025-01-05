@@ -34,7 +34,7 @@ export const agentToken = writable('');
 async function handleRequest(
 	endpoint: string,
 	method: string,
-	body?: any
+	body?: object
 ): Promise<Response | undefined> {
 	if (!get(loggedIn)) return;
 
@@ -46,12 +46,17 @@ async function handleRequest(
 	});
 	if (response.ok) {
 		return response;
+	} else {
+		toast.error('Request failed', {
+			description: await response.text(),
+			duration: 3000
+		});
 	}
 }
 
 // Login ----------------------------------------------------------------------
 export async function login(username: string, password: string, remember: boolean) {
-	let loginURL = remember ? `${API_URL}/login?remember=true` : `${API_URL}/login`;
+	const loginURL = remember ? `${API_URL}/login?remember=true` : `${API_URL}/login`;
 	const response = await fetch(loginURL, {
 		method: 'POST',
 		body: JSON.stringify({ username, password })
@@ -476,39 +481,15 @@ export async function upsertAgent(a: Agent) {
 					return [...items, data];
 				}
 			});
-			toast.success(`Agent ${data.hostname} updated`);
 		}
 	}
 }
 
-export async function deleteAgent(id: number) {
-	const response = await handleRequest(`/agent/${id}/hard`, 'DELETE');
+export async function deleteAgent(id: string) {
+	const response = await handleRequest(`/agent/${id}`, 'DELETE');
 	if (response) {
 		agents.update((items) => items.filter((i) => i.id !== id));
 		toast.success(`Agent deleted`);
-	}
-}
-
-export async function softDeleteAgent(id: number) {
-	const response = await handleRequest(`/agent/${id}/soft`, 'DELETE');
-	if (response) {
-		const data = await response.json();
-		if (data && get(agents)) {
-			agents.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
-				} else {
-					// Add new item
-					return [...items, data];
-				}
-			});
-			toast.success(`Agent deletion requested`);
-		}
 	}
 }
 

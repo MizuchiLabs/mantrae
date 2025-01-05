@@ -252,32 +252,6 @@ func TestDeleteAgent(t *testing.T) {
 	}
 }
 
-func TestGetAgentToken(t *testing.T) {
-	tests := []struct {
-		name       string
-		endpoint   string
-		wantStatus int
-	}{
-		{"Get Agent Token - Successful", "/api/agent/token/1", http.StatusOK},
-	}
-	for _, tt := range tests {
-		tt := tt
-		w, r := setupHandler("GET", "/api/agent/token/1", "")
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			GetAgentToken(w, r)
-			if got := w.Result().StatusCode; got != tt.wantStatus {
-				t.Errorf(
-					"GetAgentToken() status = %v, want %v, error = %v",
-					got,
-					tt.wantStatus,
-					w.Body.String(),
-				)
-			}
-		})
-	}
-}
-
 func TestGetProfiles(t *testing.T) {
 	tests := []struct {
 		name       string

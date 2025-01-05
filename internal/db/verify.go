@@ -283,11 +283,22 @@ func (p *Provider) Verify() error {
 func (a *Agent) Verify() error {
 	if a.ID == "" {
 		a.ID = uuid.New().String()
+
+		// Generate token for new agents
+		setting, err := Query.GetSettingByKey(context.Background(), "server-url")
+		if err != nil {
+			return fmt.Errorf("failed to get settings: %s", err.Error())
+		}
+
+		token, err := util.EncodeAgentJWT(a.ProfileID, setting.Value)
+		if err != nil {
+			return fmt.Errorf("failed to encode token: %s", err.Error())
+		}
+		a.Token = token
 	}
 	if a.Hostname == "" {
-		return fmt.Errorf("name cannot be empty")
+		a.Hostname = a.ID
 	}
-
 	a.PrivateIps, _ = json.Marshal(a.PrivateIps)
 	a.Containers, _ = json.Marshal(a.Containers)
 	return nil

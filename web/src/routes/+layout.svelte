@@ -54,6 +54,7 @@
 		await getProfiles();
 		await getProviders();
 		await getVersion();
+		await getAgents();
 	});
 </script>
 

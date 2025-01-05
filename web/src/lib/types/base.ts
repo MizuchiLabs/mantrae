@@ -48,15 +48,29 @@ export function newUser(): User {
 }
 
 export interface Agent {
-	id: number;
+	id: string;
 	profileId: number;
 	hostname: string;
 	publicIp: string;
 	privateIps: string;
 	containers: any;
 	activeIp: string;
-	deleted: boolean;
+	token: string;
 	lastSeen: string;
+}
+
+export function newAgent(): Agent {
+	return {
+		id: '',
+		profileId: 0,
+		hostname: '',
+		publicIp: '',
+		privateIps: '',
+		containers: [],
+		activeIp: '',
+		token: '',
+		lastSeen: new Date('2000-01-01').toISOString()
+	};
 }
 
 export interface DNSProvider {

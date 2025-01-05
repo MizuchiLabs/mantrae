@@ -16,7 +16,7 @@ type Agent struct {
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
 	ActiveIp   *string     `json:"activeIp"`
-	Deleted    bool        `json:"deleted"`
+	Token      string      `json:"token"`
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 

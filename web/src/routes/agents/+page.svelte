@@ -1,31 +1,13 @@
 <script lang="ts">
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import AgentModal from '$lib/components/modals/agent.svelte';
-	import {
-		agents,
-		agentToken,
-		deleteAgent,
-		softDeleteAgent,
-		getAgentToken,
-		profile
-	} from '$lib/api';
-	import { type Agent } from '$lib/types/base';
-	import { Bot, BotOff, Copy, CopyCheck } from 'lucide-svelte';
-	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
+	import { agents, deleteAgent, getAgents, profile, upsertAgent } from '$lib/api';
+	import { newAgent, type Agent } from '$lib/types/base';
+	import { Bot, BotOff } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-
-	let copyText = 'Copy';
-	const copyToken = () => {
-		navigator.clipboard.writeText($agentToken);
-		copyText = 'Copied!';
-		toast.success('Copied token to clipboard!');
-		setTimeout(() => {
-			copyText = 'Copy';
-		}, 2000);
-	};
 
 	function checkLastSeen(agent: Agent) {
 		const lastSeenDate = new Date(agent.lastSeen);
@@ -34,40 +16,38 @@
 		return diffInMinutes < 1;
 	}
 
-	profile.subscribe((value) => {
-		if (!value?.id) return;
-		getAgentToken();
+	function addAgent() {
+		let agent = newAgent();
+		agent.profileId = $profile.id || 0;
+		agent.lastSeen = new Date('2000-01-01').toISOString();
+		upsertAgent(agent);
+
+		toast.success('Agent added!', {
+			description: 'Copy the agent token to setup your new agent.',
+			duration: 3000
+		});
+	}
+
+	let copyText = 'Copy Token';
+	const copyToken = (agent: Agent) => {
+		navigator.clipboard.writeText(agent.token);
+		copyText = 'Copied!';
+		setTimeout(() => {
+			copyText = 'Copy Token';
+		}, 2000);
+	};
+
+	onMount(async () => {
+		await getAgents();
 	});
 </script>
 
 {#if $profile}
-	<div class="my-6 flex flex-col gap-2 px-4">
-		<h1 class="text-xl font-semibold">
-			Agent Token <HoverInfo
-				text="The token used to authenticate with the server. Initially it will be valid for 14 days. The agents will renew their token automatically."
-			/>
-		</h1>
-		<div class="relative flex max-w-[380px]">
-			<Input
-				id="agent-token"
-				name="agent-token"
-				type="text"
-				value={$agentToken}
-				class="overflow-hidden text-ellipsis whitespace-nowrap pr-10"
-				readonly
-			/>
-			<Button
-				variant="ghost"
-				class="absolute right-0 hover:bg-transparent hover:text-red-400"
-				on:click={copyToken}
-			>
-				{#if copyText === 'Copied!'}
-					<CopyCheck size="1rem" />
-				{:else}
-					<Copy size="1rem" />
-				{/if}
-			</Button>
-		</div>
+	<div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
+		<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={addAgent}>
+			<span>Add Agent</span>
+			<iconify-icon icon="fa6-solid:plus" />
+		</Button>
 	</div>
 {/if}
 
@@ -99,47 +79,23 @@
 						{/if}
 					</Card.Title>
 				</Card.Header>
-				<Card.Content class="space-y-2">
-					IP: {a.publicIp}
-				</Card.Content>
-				<Card.Footer class="flex items-center gap-2">
-					<AgentModal agent={a} />
-					{#if a.deleted}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<Button
-									variant="ghost"
-									class="w-full bg-red-400 text-black"
-									on:click={() => deleteAgent(a.id)}>Force Delete</Button
-								>
-							</Tooltip.Trigger>
-							<Tooltip.Content class="w-[300px]">
-								<p>
-									Force deleting this agent will permanently remove it from the database. Use this
-									option only if the agent cannot communicate with the server (e.g., machine
-									offline). This action cannot be undone and is necessary to clean up inactive
-									agents.
-								</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					{:else}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<Button
-									variant="ghost"
-									class="w-full bg-red-400 text-black"
-									on:click={() => softDeleteAgent(a.id)}>Request Deletion</Button
-								>
-							</Tooltip.Trigger>
-							<Tooltip.Content class="w-[300px]">
-								<p>
-									Requesting deletion will mark this agent as deleted in the system. The agent will
-									receive a notification to delete itself from the database permanently during its
-									next communication. This allows for cleanup without manual intervention.
-								</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					{/if}
+				{#if a.publicIp}
+					<Card.Content class="space-y-2">
+						IP: {a.publicIp}
+					</Card.Content>
+				{/if}
+				<Card.Footer class="flex flex-col items-center gap-4">
+					<div class="flex w-full flex-row gap-2">
+						<AgentModal agent={a} />
+						<Button
+							variant="ghost"
+							class="w-full bg-red-400 text-black"
+							on:click={() => deleteAgent(a.id)}>Delete</Button
+						>
+					</div>
+					<Button variant="secondary" size="sm" class="w-full" on:click={() => copyToken(a)}
+						>{copyText}</Button
+					>
 				</Card.Footer>
 			</Card.Root>
 		{/each}

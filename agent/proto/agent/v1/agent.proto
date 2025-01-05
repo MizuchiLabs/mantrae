@@ -6,7 +6,6 @@ import "google/protobuf/timestamp.proto";
 
 service AgentService {
   rpc GetContainer(GetContainerRequest) returns (GetContainerResponse);
-  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }
 
@@ -22,25 +21,16 @@ message Container {
 
 message GetContainerRequest {
   string id = 1;
-  string token = 2;
-  string hostname = 3;
-  string public_ip = 4;
-  repeated string private_ips = 5;
-  repeated Container containers = 6;
-  google.protobuf.Timestamp last_seen = 7;
+  string hostname = 2;
+  string public_ip = 3;
+  repeated string private_ips = 4;
+  repeated Container containers = 5;
+  google.protobuf.Timestamp last_seen = 6;
 }
 message GetContainerResponse {}
 
-message RefreshTokenRequest {
-  string token = 1;
-}
-message RefreshTokenResponse {
-  string token = 1;
-}
-
 message HealthCheckRequest {
   string id = 1;
-  string token = 2;
 }
 message HealthCheckResponse {
   bool ok = 1;

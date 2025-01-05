@@ -12,14 +12,25 @@ import (
 	"github.com/lmittmann/tint"
 )
 
-// Set up global logger
+// Set up global logger with specified configuration
 func init() {
-	logger := slog.New(tint.NewHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
+	levelMap := map[string]slog.Level{
+		"debug": slog.LevelDebug,
+		"info":  slog.LevelInfo,
+		"warn":  slog.LevelWarn,
+		"error": slog.LevelError,
+	}
+
+	logLevel := slog.LevelInfo
+	if level, ok := os.LookupEnv("LOG_LEVEL"); ok {
+		if l, ok := levelMap[level]; ok {
+			logLevel = l
+		}
+	}
+	slog.SetDefault(slog.New(tint.NewHandler(os.Stdout, &tint.Options{Level: logLevel})))
 }
 
 func main() {
-	token := flag.String("token", "", "Authentication token (required)")
 	// update := flag.Bool("update", false, "Update to latest version")
 	version := flag.Bool("version", false, "Show version")
 
@@ -30,14 +41,10 @@ func main() {
 		return
 	}
 
-	if *token == "" {
-		*token = client.LoadToken()
-		if len(*token) == 0 {
-			slog.Error("missing token")
-			return
-		}
-	} else {
-		client.SaveToken(*token)
+	// Check if token is set
+	if token, ok := os.LookupEnv("TOKEN"); !ok || token == "" {
+		slog.Error("missing token")
+		return
 	}
 
 	quit := make(chan os.Signal, 1)

@@ -21,6 +21,26 @@ services:
       - proxy
     restart: always
 
+  mantrae-agent:
+    image: ghcr.io/mizuchilabs/mantrae-agent:latest
+    container_name: mantrae
+    environment:
+      - SECRET=<secret> # generate a secret with openssl rand -hex 32
+    command:
+      - --url=http://traefik:8080 # if traefik is running on the same host
+      - --username=admin # use this if you enabled basicauth on traefik
+      - --password=admin
+    volumes:
+      - ./mantrae:/app
+    ports:
+      - 3000:3000 # remove this if you want to use traefik 
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
+    networks:
+      - proxy
+    restart: always
+
   traefik:
     image: docker.io/traefik:latest
     container_name: traefik

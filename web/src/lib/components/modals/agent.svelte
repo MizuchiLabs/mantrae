@@ -7,6 +7,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { upsertAgent } from '$lib/api';
 	import type { Agent } from '$lib/types/base';
+	import { toast } from 'svelte-sonner';
 
 	export let agent: Agent;
 	let newIP = '';
@@ -14,6 +15,8 @@
 	const setActiveIP = async (ip: string) => {
 		agent.activeIp = ip;
 		await upsertAgent(agent);
+
+		toast.success('IP address updated!');
 	};
 </script>
 

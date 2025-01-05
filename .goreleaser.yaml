@@ -1,7 +1,7 @@
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 version: 2
 project_name: mantrae
-dist: builds
+report_sizes: true
 
 before:
   hooks:
@@ -27,13 +27,93 @@ builds:
 
   - id: agent
     main: ./agent/cmd/main.go
-    binary: mantrae-agent
+    binary: mantrae_agent
     ldflags: -s -w -X github.com/MizuchiLabs/mantrae/agent/client.Version={{.Version}} -X github.com/MizuchiLabs/mantrae/agent/client.BuildDate={{.Date}} -X github.com/MizuchiLabs/mantrae/agent/client.Commit={{.Commit}}
     goos:
       - linux
     goarch:
       - amd64
       - arm64
+
+dockers:
+  # Build the images for the server -------------------------------------------
+  - ids:
+      - server
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-amd64"
+    use: buildx
+    goarch: amd64
+    skip_push: true
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--build-arg=BINARY=mantrae"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+  - ids:
+      - server
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-arm64"
+    use: buildx
+    goarch: arm64
+    skip_push: true
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--build-arg=BINARY=mantrae"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+  # Build the images for the agent --------------------------------------------
+  - ids:
+      - agent
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-amd64"
+    use: buildx
+    goarch: amd64
+    skip_push: true
+    dockerfile: ./agent/Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--build-arg=BINARY=mantrae-agent"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+  - ids:
+      - agent
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-arm64"
+    use: buildx
+    goarch: arm64
+    skip_push: true
+    dockerfile: ./agent/Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--build-arg=BINARY=mantrae-agent"
+      - "--build-arg=VERSION={{.Version}}"
+      - "--build-arg=COMMIT={{.Commit}}"
+      - "--build-arg=DATE={{.Date}}"
+
+docker_manifests:
+  - name_template: "ghcr.io/mizuchilabs/mantrae:latest"
+    skip_push: false
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-amd64"
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/mizuchilabs/mantrae:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-amd64"
+      - "ghcr.io/mizuchilabs/mantrae:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/mizuchilabs/mantrae-agent:latest"
+    skip_push: false
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-amd64"
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-amd64"
+      - "ghcr.io/mizuchilabs/mantrae-agent:{{ .Version }}-arm64"
 
 upx:
   - enabled: true
@@ -55,8 +135,6 @@ archives:
 
 snapshot:
   version_template: '{{ incpatch .Version }}-next'
-
-report_sizes: true
 
 changelog:
   sort: asc

@@ -96,9 +96,9 @@ func apiRoutes() http.Handler {
 
 	// Agent
 	register("GET", "/agent/{id}", jwtChain, GetAgents)
-	register("GET", "/agent/token/{id}", jwtChain, GetAgentToken)
 	register("PUT", "/agent", jwtChain, UpsertAgent)
-	register("DELETE", "/agent/{id}/{type}", jwtChain, DeleteAgent)
+	register("DELETE", "/agent/{id}", jwtChain, DeleteAgent)
+	register("POST", "/agent/token/{id}", jwtChain, RegenerateAgentToken)
 
 	// Backup
 	register("GET", "/backup", jwtChain, DownloadBackup)

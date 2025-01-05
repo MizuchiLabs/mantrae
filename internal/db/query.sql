@@ -662,7 +662,7 @@ INSERT INTO
     private_ips,
     containers,
     active_ip,
-    deleted,
+    token,
     last_seen
   )
 VALUES
@@ -681,7 +681,7 @@ SET
     agents.containers
   ),
   active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
-  deleted = COALESCE(NULLIF(EXCLUDED.deleted, FALSE), agents.deleted),
+  token = COALESCE(NULLIF(EXCLUDED.token, ''), agents.token),
   last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING *;
 
 -- name: DeleteAgentByID :exec

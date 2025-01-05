@@ -24,65 +24,20 @@ func (s *AgentServer) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[agentv1.HealthCheckRequest],
 ) (*connect.Response[agentv1.HealthCheckResponse], error) {
-	if err := validate(req.Header()); err != nil {
+	if _, err := validate(req.Header(), req.Msg.GetId()); err != nil {
 		return nil, err
-	}
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	agent, err := db.Query.GetAgentByID(context.Background(), req.Msg.GetId())
-	// No agent found, ignore since maybe a new agent wants to connect
-	if err != nil {
-		return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
-	}
-
-	if agent.Deleted {
-		if err := db.Query.DeleteAgentByID(context.Background(), agent.ID); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		util.Broadcast <- util.EventMessage{
-			Type:    "agent_updated",
-			Message: agent.ID,
-		}
-		return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: false}), nil
 	}
 
 	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
-}
-
-func (s *AgentServer) RefreshToken(
-	ctx context.Context,
-	req *connect.Request[agentv1.RefreshTokenRequest],
-) (*connect.Response[agentv1.RefreshTokenResponse], error) {
-	if err := validate(req.Header()); err != nil {
-		return nil, err
-	}
-
-	decoded, err := util.DecodeAgentJWT(req.Msg.GetToken())
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	token, err := util.EncodeAgentJWT(decoded.ProfileID, decoded.ServerURL)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return connect.NewResponse(&agentv1.RefreshTokenResponse{
-		Token: token,
-	}), nil
 }
 
 func (s *AgentServer) GetContainer(
 	ctx context.Context,
 	req *connect.Request[agentv1.GetContainerRequest],
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
-	if err := validate(req.Header()); err != nil {
-		return nil, err
-	}
-	decoded, err := util.DecodeAgentJWT(req.Msg.GetToken())
+	agent, err := validate(req.Header(), req.Msg.GetId())
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 
 	// Upsert agent
@@ -100,7 +55,7 @@ func (s *AgentServer) GetContainer(
 	lastSeen := req.Msg.GetLastSeen().AsTime()
 	if _, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
 		ID:         req.Msg.GetId(),
-		ProfileID:  decoded.ProfileID,
+		ProfileID:  agent.ProfileID,
 		Hostname:   req.Msg.GetHostname(),
 		PublicIp:   &req.Msg.PublicIp,
 		PrivateIps: privateIpsJSON,
@@ -123,20 +78,41 @@ func (s *AgentServer) GetContainer(
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 
-func validate(header http.Header) error {
+func validate(header http.Header, id string) (*db.Agent, error) {
 	auth := header.Get("authorization")
 	if len(auth) == 0 {
-		return connect.NewError(connect.CodeInvalidArgument, errors.New("missing authorization"))
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("missing authorization"),
+		)
 	}
 	if !strings.HasPrefix(auth, "Bearer ") {
-		return connect.NewError(connect.CodeUnauthenticated, errors.New("missing bearer prefix"))
+		return nil, connect.NewError(
+			connect.CodeUnauthenticated,
+			errors.New("missing bearer prefix"),
+		)
 	}
-	if strings.TrimSpace(util.App.Secret) != strings.TrimPrefix(auth, "Bearer ") {
-		return connect.NewError(
+
+	// Check if agent exists
+	agent, err := db.Query.GetAgentByID(context.Background(), id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
+	}
+
+	// Check if token is valid
+	if agent.Token != strings.TrimPrefix(auth, "Bearer ") {
+		return nil, connect.NewError(
 			connect.CodeUnauthenticated,
 			errors.New("failed to validate token"),
 		)
 	}
 
-	return nil
+	if _, err := util.DecodeAgentJWT(agent.Token); err != nil {
+		return nil, connect.NewError(
+			connect.CodeUnauthenticated,
+			errors.New("failed to decode token"),
+		)
+	}
+
+	return &agent, nil
 }

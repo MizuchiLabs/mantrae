@@ -1,4 +1,5 @@
-BIN=mantrae
+BIN_SERVER=mantrae
+BIN_AGENT=mantrae_agent
 
 VERSION=$(shell git describe --tags --abbrev=0)
 DATE=$(shell date -u +%Y-%m-%d)
@@ -14,48 +15,48 @@ clean:
 	rm -rf $(PWD)/$(BIN) $(PWD)/$(BIN)-agent $(PWD)/web/build $(PWD)/builds
 
 .PHONY: audit
-audit:
-	go fmt ./...
-	go vet ./...
-	go mod tidy
-	go mod verify
+audit-security:
 	- gosec --exclude=G104 ./...
 	- govulncheck -show=color ./...
 	- staticcheck -checks=all -f=stylish ./...
 
-.PHONY: test
-test:
+audit: audit-security
+	go fmt ./...
+	go vet ./...
+	go mod tidy
+	go mod verify
 	go test -v -coverprofile cover.out ./...
 	go tool cover -html cover.out -o cover.html
 
 .PHONY: build
-build: audit
+build-web: $(PWD)/web/build
+$(PWD)/web/build: $(shell find web/src -type f) web/package.json web/pnpm-lock.yaml
 	cd web && pnpm install && pnpm run build
-	go build $(LDFLAGS) -o $(BIN) main.go
-	go build $(LDFLAGS) -o $(BIN)-agent agent/cmd/main.go
-	upx $(BIN)
-	upx $(BIN)-agent
+	touch $(PWD)/web/build
 
-build-fast: audit
-	go build $(LDFLAGS) -o $(BIN) main.go
-	go build $(LDFLAGS) -o $(BIN)-agent agent/cmd/main.go
+build-server: build-web
+	 go build $(LDFLAGS) -o $(BIN_SERVER) main.go
 
-.PHONY: docker
-docker:
-	#cd web && pnpm install && pnpm run build
-	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o mantrae-linux-amd64 main.go
+build-agent:
+	 go build $(LDFLAGS) -o $(BIN_AGENT) agent/cmd/main.go
+
+docker-server: snapshot
 	docker buildx build \
-		--platform linux/amd64 \
-		--label "org.opencontainers.image.vendor=Mizuchi Labs" \
-		--label "org.opencontainers.image.source=https://github.com/MizuchiLabs/mantrae" \
-		--label "org.opencontainers.image.title=Mantrae" \
-		--label "org.opencontainers.image.description=A traefik web UI" \
-		--label "org.opencontainers.image.version=${VERSION}" \
-		--label "org.opencontainers.image.revision=${COMMIT}" \
-		--label "org.opencontainers.image.created=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-		--label "org.opencontainers.image.licenses=MIT" \
-		-t ghcr.io/mizuchilabs/mantrae:latest .
-	rm mantrae-linux-*
+		--platform linux/amd64,linux/arm64 \
+		--build-arg VERSION=${VERSION} \
+		--build-arg COMMIT=${COMMIT} \
+		--build-arg DATE=${DATE} \
+		-t ghcr.io/mizuchilabs/mantrae:latest \
+		.
+
+docker-agent: snapshot
+	docker buildx build \
+		--platform linux/amd64,linux/arm64 \
+		--build-arg VERSION=${VERSION} \
+		--build-arg COMMIT=${COMMIT} \
+		--build-arg DATE=${DATE} \
+		-t ghcr.io/mizuchilabs/mantrae-agent:latest \
+		.
 
 docker-push:
 	docker push ghcr.io/mizuchilabs/mantrae:latest
@@ -66,7 +67,7 @@ release:
 
 .PHONY: snapshot
 snapshot:
-	goreleaser release --snapshot --clean
+	goreleaser release --clean --snapshot
 
 .PHONY: upgrade
 upgrade:

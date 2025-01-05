@@ -351,7 +351,7 @@ func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) err
 
 const getAgentByHostname = `-- name: GetAgentByHostname :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
   agents
 WHERE
@@ -377,7 +377,7 @@ func (q *Queries) GetAgentByHostname(ctx context.Context, arg GetAgentByHostname
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
-		&i.Deleted,
+		&i.Token,
 		&i.LastSeen,
 	)
 	return i, err
@@ -385,7 +385,7 @@ func (q *Queries) GetAgentByHostname(ctx context.Context, arg GetAgentByHostname
 
 const getAgentByID = `-- name: GetAgentByID :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
   agents
 WHERE
@@ -405,7 +405,7 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
-		&i.Deleted,
+		&i.Token,
 		&i.LastSeen,
 	)
 	return i, err
@@ -821,7 +821,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
   agents
 `
@@ -843,7 +843,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
-			&i.Deleted,
+			&i.Token,
 			&i.LastSeen,
 		); err != nil {
 			return nil, err
@@ -861,7 +861,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfileID = `-- name: ListAgentsByProfileID :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
   agents
 WHERE
@@ -885,7 +885,7 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
-			&i.Deleted,
+			&i.Token,
 			&i.LastSeen,
 		); err != nil {
 			return nil, err
@@ -1733,7 +1733,7 @@ INSERT INTO
     private_ips,
     containers,
     active_ip,
-    deleted,
+    token,
     last_seen
   )
 VALUES
@@ -1752,8 +1752,8 @@ SET
     agents.containers
   ),
   active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
-  deleted = COALESCE(NULLIF(EXCLUDED.deleted, FALSE), agents.deleted),
-  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, deleted, last_seen
+  token = COALESCE(NULLIF(EXCLUDED.token, ''), agents.token),
+  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 `
 
 type UpsertAgentParams struct {
@@ -1764,7 +1764,7 @@ type UpsertAgentParams struct {
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
 	ActiveIp   *string     `json:"activeIp"`
-	Deleted    bool        `json:"deleted"`
+	Token      string      `json:"token"`
 	LastSeen   *time.Time  `json:"lastSeen"`
 }
 
@@ -1777,7 +1777,7 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 		arg.PrivateIps,
 		arg.Containers,
 		arg.ActiveIp,
-		arg.Deleted,
+		arg.Token,
 		arg.LastSeen,
 	)
 	var i Agent
@@ -1789,7 +1789,7 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
-		&i.Deleted,
+		&i.Token,
 		&i.LastSeen,
 	)
 	return i, err

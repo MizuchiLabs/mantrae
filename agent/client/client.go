@@ -20,12 +20,11 @@ import (
 )
 
 func Client(quit chan os.Signal) {
-	token := LoadToken()
+	token := os.Getenv("TOKEN")
 
 	// Decode the JWT to get auth token and server URL
 	claims, err := DecodeJWT(token)
 	if err != nil {
-		DeleteToken()
 		log.Fatalf("Failed to decode JWT: %v", err)
 	}
 
@@ -37,8 +36,8 @@ func Client(quit chan os.Signal) {
 	)
 
 	// Test connection
-	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID(), Token: token})
-	healthCheckRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
+	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID()})
+	healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
 	result, err := client.HealthCheck(context.Background(), healthCheckRequest)
 	if err != nil {
 		slog.Error("Failed to connect to server", "server", claims.ServerURL, "error", err)
@@ -46,7 +45,6 @@ func Client(quit chan os.Signal) {
 	}
 	if !result.Msg.Ok {
 		slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
-		DeleteToken()
 		quit <- os.Interrupt
 	} else {
 		slog.Info("Connected to", "server", claims.ServerURL)
@@ -60,7 +58,7 @@ func Client(quit chan os.Signal) {
 		connected := true
 		for range tickerContainer.C {
 			// Send machine/container info
-			_, err := client.GetContainer(context.Background(), sendContainer(claims.Secret))
+			_, err := client.GetContainer(context.Background(), sendContainer(token))
 
 			if err != nil && connected {
 				slog.Warn("Lost connection to server, retrying...", "server", claims.ServerURL)
@@ -72,42 +70,20 @@ func Client(quit chan os.Signal) {
 		}
 	}()
 
-	tickerRefresh := time.NewTicker(1 * time.Hour)
-	defer tickerRefresh.Stop()
-
-	// Start a separate goroutine for refreshing the token
-	go func() {
-		for range tickerRefresh.C {
-			// Refresh token
-			tokenRequest := connect.NewRequest(&agentv1.RefreshTokenRequest{Token: token})
-			tokenRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
-			newToken, err := client.RefreshToken(context.Background(), tokenRequest)
-			if err != nil {
-				slog.Error("Failed to refresh token", "server", claims.ServerURL, "error", err)
-			} else {
-				SaveToken(newToken.Msg.Token)
-				token = newToken.Msg.Token
-			}
-		}
-	}()
-
 	healthTicker := time.NewTicker(5 * time.Second)
 	defer healthTicker.Stop()
 
 	// Start a goroutine for sending health data
 	go func() {
 		for range healthTicker.C {
-			healthCheckRequest := connect.NewRequest(
-				&agentv1.HealthCheckRequest{Id: getID(), Token: token},
-			)
-			healthCheckRequest.Header().Set("Authorization", "Bearer "+claims.Secret)
+			healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID()})
+			healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
 			result, err := client.HealthCheck(context.Background(), healthCheckRequest)
 			if err != nil {
 				continue
 			}
 			if !result.Msg.Ok {
 				slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
-				DeleteToken()
 				quit <- os.Interrupt
 			}
 		}
@@ -117,30 +93,8 @@ func Client(quit chan os.Signal) {
 	<-quit
 }
 
-func LoadToken() string {
-	token, err := os.ReadFile("token")
-	if err != nil {
-		slog.Error("Failed to read token", "error", err)
-	}
-	return strings.TrimSpace(string(token))
-}
-
-func SaveToken(token string) {
-	err := os.WriteFile("token", []byte(token), 0600)
-	if err != nil {
-		slog.Error("Failed to write token", "error", err)
-	}
-}
-
-func DeleteToken() {
-	err := os.Remove("token")
-	if err != nil {
-		slog.Error("Failed to delete token", "error", err)
-	}
-}
-
 // sendContainer creates a GetContainerRequest with information about the local machine
-func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] {
+func sendContainer(token string) *connect.Request[agentv1.GetContainerRequest] {
 	var request agentv1.GetContainerRequest
 
 	// Get machine ID
@@ -152,7 +106,6 @@ func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] 
 		request.Hostname = "unknown"
 	}
 	request.Hostname = hostname
-	request.Token = LoadToken()
 	request.PublicIp, err = GetPublicIP()
 	if err != nil {
 		slog.Error("Failed to get public IP", "error", err)
@@ -168,7 +121,7 @@ func sendContainer(secret string) *connect.Request[agentv1.GetContainerRequest] 
 	request.LastSeen = timestamppb.New(time.Now())
 
 	req := connect.NewRequest(&request)
-	req.Header().Set("authorization", "Bearer "+secret)
+	req.Header().Set("authorization", "Bearer "+token)
 	return req
 }
 

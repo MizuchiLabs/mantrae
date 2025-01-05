@@ -989,6 +989,7 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+
 	if err := agent.Verify(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -1014,72 +1015,33 @@ func UpsertAgent(w http.ResponseWriter, r *http.Request) {
 // DeleteAgent removes a specific agent from the database using its ID and type (hard/soft).
 func DeleteAgent(w http.ResponseWriter, r *http.Request) {
 	agentID := r.PathValue("id")
-	deletionType := r.PathValue("type")
-	if deletionType == "" {
-		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
+
+	if err := db.Query.DeleteAgentByID(context.Background(), agentID); err != nil {
+		http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
 		return
 	}
 
-	_, err := db.Query.GetAgentByID(context.Background(), agentID)
+	// Delete all connected routers
+	routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
 	if err != nil {
-		http.Error(w, "Agent not found", http.StatusNotFound)
+		http.Error(w, "Failed to get routers", http.StatusInternalServerError)
 		return
+	}
+	for _, router := range routers {
+		if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
+			http.Error(w, "Failed to delete router", http.StatusInternalServerError)
+			return
+		}
 	}
 
-	switch deletionType {
-	case "hard":
-		if err := db.Query.DeleteAgentByID(context.Background(), agentID); err != nil {
-			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
-			return
-		}
-		// Delete all connected routers
-		routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
-		if err != nil {
-			http.Error(w, "Failed to get routers", http.StatusInternalServerError)
-			return
-		}
-		for _, router := range routers {
-			if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
-				http.Error(w, "Failed to delete router", http.StatusInternalServerError)
-				return
-			}
-		}
-		w.WriteHeader(http.StatusOK)
-		return
-	case "soft":
-		agent, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
-			ID:      r.PathValue("id"),
-			Deleted: true,
-		})
-		if err != nil {
-			http.Error(w, "Failed to delete agent", http.StatusInternalServerError)
-			return
-		}
-		// Delete all connected routers
-		routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agentID)
-		if err != nil {
-			http.Error(w, "Failed to get routers", http.StatusInternalServerError)
-			return
-		}
-		for _, router := range routers {
-			if err := db.Query.DeleteRouterByID(context.Background(), router.ID); err != nil {
-				http.Error(w, "Failed to delete router", http.StatusInternalServerError)
-				return
-			}
-		}
-		writeJSON(w, agent)
-		return
-	default:
-		http.Error(w, "Invalid deletion type", http.StatusBadRequest)
-		return
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
-// GetAgentToken generates and returns a JWT token for an agent.
-func GetAgentToken(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+// RegenerateAgentToken generates a new JWT token for an agent
+func RegenerateAgentToken(w http.ResponseWriter, r *http.Request) {
+	agent, err := db.Query.GetAgentByID(context.Background(), r.PathValue("id"))
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Parse error: %s", err.Error()), http.StatusNotFound)
+		http.Error(w, "Failed to get agent", http.StatusInternalServerError)
 		return
 	}
 
@@ -1093,7 +1055,7 @@ func GetAgentToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := util.EncodeAgentJWT(id, setting.Value)
+	token, err := util.EncodeAgentJWT(agent.ProfileID, setting.Value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
