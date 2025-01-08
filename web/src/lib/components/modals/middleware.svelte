@@ -1,7 +1,7 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { upsertMiddleware } from '$lib/api';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import type { Middleware } from '$lib/types/middlewares';
 	import MiddlewareForm from '../forms/middleware.svelte';
 	import { cleanEmptyObjects } from '../utils/validation';
@@ -19,7 +19,6 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Trigger />
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<MiddlewareForm bind:middleware {disabled} />
 		{#if disabled}

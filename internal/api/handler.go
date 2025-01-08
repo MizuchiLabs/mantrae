@@ -133,8 +133,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err = db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
-		ID:       dbUser.ID,
+	if _, err = db.Query.UpsertUser(context.Background(), db.UpsertUserParams{
 		Username: dbUser.Username,
 		Email:    dbUser.Email,
 		Password: string(hash),
@@ -280,9 +279,9 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, profile)
 }
 
-// CreateProfile inserts a new profile into the database.
-func CreateProfile(w http.ResponseWriter, r *http.Request) {
-	var profile db.CreateProfileParams
+// UpsertProfile updates an existing profile identified by its ID in the database.
+func UpsertProfile(w http.ResponseWriter, r *http.Request) {
+	var profile db.Profile
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 		http.Error(
 			w,
@@ -297,38 +296,13 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := db.Query.CreateProfile(context.Background(), profile)
-	if err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to create profile: %s", err.Error()),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	go traefik.GetTraefikConfig()
-	writeJSON(w, data)
-}
-
-// UpdateProfile updates an existing profile identified by its ID in the database.
-func UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	var profile db.UpdateProfileParams
-	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		http.Error(
-			w,
-			fmt.Sprintf("Failed to decode profile: %s", err.Error()),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	if err := profile.Verify(); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	data, err := db.Query.UpdateProfile(context.Background(), profile)
+	data, err := db.Query.UpsertProfile(context.Background(), db.UpsertProfileParams{
+		Name:     profile.Name,
+		Url:      profile.Url,
+		Username: profile.Username,
+		Password: profile.Password,
+		Tls:      profile.Tls,
+	})
 	if err != nil {
 		http.Error(
 			w,
@@ -411,41 +385,21 @@ func UpsertUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.ID == 0 {
-		data, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
-			Username: user.Username,
-			Password: user.Password,
-			Email:    user.Email,
-			IsAdmin:  user.IsAdmin,
-		})
-		if err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to update user: %s", err.Error()),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-		writeJSON(w, data)
-	} else {
-		params := db.UpdateUserParams{
-			ID:       user.ID,
-			Username: user.Username,
-			Password: user.Password,
-			Email:    user.Email,
-			IsAdmin:  user.IsAdmin,
-		}
-		data, err := db.Query.UpdateUser(context.Background(), params)
-		if err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to update user: %s", err.Error()),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-		writeJSON(w, data)
+	data, err := db.Query.UpsertUser(context.Background(), db.UpsertUserParams{
+		Username: user.Username,
+		Password: user.Password,
+		Email:    user.Email,
+		IsAdmin:  user.IsAdmin,
+	})
+	if err != nil {
+		http.Error(
+			w,
+			fmt.Sprintf("Failed to update user: %s", err.Error()),
+			http.StatusInternalServerError,
+		)
+		return
 	}
+	writeJSON(w, data)
 }
 
 // DeleteUser deletes a single user
@@ -501,7 +455,16 @@ func UpsertProvider(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := db.Query.UpsertProvider(context.Background(), db.UpsertProviderParams(provider))
+	data, err := db.Query.UpsertProvider(context.Background(), db.UpsertProviderParams(db.UpsertProviderParams{
+		Name:       provider.Name,
+		Type:       provider.Type,
+		ExternalIp: provider.ExternalIp,
+		ApiKey:     provider.ApiKey,
+		ApiUrl:     provider.ApiUrl,
+		ZoneType:   provider.ZoneType,
+		Proxied:    provider.Proxied,
+		IsActive:   provider.IsActive,
+	}))
 	if err != nil {
 		http.Error(
 			w,

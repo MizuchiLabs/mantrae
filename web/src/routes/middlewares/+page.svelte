@@ -8,7 +8,7 @@
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import Search from '$lib/components/tables/search.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
-	import { Eye, Pencil, X } from 'lucide-svelte';
+	import { Eye, Pencil, Plus, X } from 'lucide-svelte';
 	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
 	import { profile, getMiddlewares } from '$lib/api';
 
@@ -108,7 +108,7 @@
 					on:click={createModal}
 				>
 					<span>Add Middleware</span>
-					<iconify-icon icon="fa6-solid:plus" />
+					<Plus size="1rem" />
 				</Button>
 			</div>
 		</Card.Header>

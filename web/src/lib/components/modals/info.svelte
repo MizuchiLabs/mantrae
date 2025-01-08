@@ -13,6 +13,7 @@
 	import githubDark from 'svelte-highlight/styles/github-dark';
 	import { Copy, CopyCheck } from 'lucide-svelte';
 	import type { Overview, Version } from '$lib/types/overview';
+	import TraefikProxy from '$lib/images/traefikproxy.svg';
 
 	let version: Version;
 	let overview: Overview;
@@ -50,7 +51,7 @@
 <Dialog.Root>
 	<Dialog.Trigger>
 		<Button variant="ghost" on:click={getTraefikConfig}>
-			<iconify-icon icon="devicon:traefikproxy" width="24" />
+			<img src={TraefikProxy} alt="Traefik Proxy" width="24" class="dark:invert dark:filter" />
 		</Button>
 	</Dialog.Trigger>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">

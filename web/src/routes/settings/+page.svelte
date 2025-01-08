@@ -9,7 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import type { Setting } from '$lib/types/base';
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
-	import { Eye, EyeOff, Save } from 'lucide-svelte';
+	import { Download, Eye, EyeOff, Save, Upload } from 'lucide-svelte';
 
 	let fileInput: HTMLInputElement;
 	const handleFileUpload = (event: Event) => {
@@ -299,11 +299,16 @@
 							bind:this={fileInput}
 							required
 						/>
-						<Button variant="ghost" class="w-full bg-orange-400" on:click={() => fileInput.click()}>
-							<iconify-icon icon="fa6-solid:upload" width="16" height="16" />
+						<Button
+							variant="ghost"
+							class="w-full bg-orange-400"
+							on:click={() => fileInput.click()}
+							size="icon"
+						>
+							<Upload />
 						</Button>
-						<Button variant="default" class="w-full" on:click={() => downloadBackup()}>
-							<iconify-icon icon="fa6-solid:download" width="16" height="16" />
+						<Button variant="default" class="w-full" on:click={() => downloadBackup()} size="icon">
+							<Download />
 						</Button>
 					</div>
 				</div>

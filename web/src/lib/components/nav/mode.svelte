@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { darkMode } from '$lib/utils';
+	import { Moon, Sun } from 'lucide-svelte';
 	import Button from '../ui/button/button.svelte';
 
 	function handleSwitchDarkMode() {
@@ -26,10 +27,15 @@
 	}
 </script>
 
-<Button variant="ghost" on:click={handleSwitchDarkMode} class="mb-2 h-12 w-12 rounded-full">
-	{#if darkMode}
-		<iconify-icon icon="line-md:sunny-outline-to-moon-loop-transition" width="20" height="20" />
+<Button
+	variant="ghost"
+	on:click={handleSwitchDarkMode}
+	class="mb-2 rounded-full text-gray-600 dark:text-white"
+	size="icon"
+>
+	{#if $darkMode}
+		<Sun size="1.25rem" />
 	{:else}
-		<iconify-icon icon="line-md:moon-alt-to-sunny-outline-loop-transition" width="20" height="20" />
+		<Moon size="1.25rem" />
 	{/if}
 </Button>

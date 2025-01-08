@@ -10,99 +10,11 @@ import (
 	"time"
 )
 
-const createProfile = `-- name: CreateProfile :one
-INSERT INTO
-  profiles (name, url, username, password, tls)
-VALUES
-  (?, ?, ?, ?, ?) RETURNING id, name, url, username, password, tls
-`
-
-type CreateProfileParams struct {
-	Name     string  `json:"name"`
-	Url      string  `json:"url"`
-	Username *string `json:"username"`
-	Password *string `json:"password"`
-	Tls      bool    `json:"tls"`
-}
-
-func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error) {
-	row := q.queryRow(ctx, q.createProfileStmt, createProfile,
-		arg.Name,
-		arg.Url,
-		arg.Username,
-		arg.Password,
-		arg.Tls,
-	)
-	var i Profile
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Url,
-		&i.Username,
-		&i.Password,
-		&i.Tls,
-	)
-	return i, err
-}
-
-const createProvider = `-- name: CreateProvider :one
-INSERT INTO
-  providers (
-    name,
-    type,
-    external_ip,
-    api_key,
-    api_url,
-    zone_type,
-    proxied,
-    is_active
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
-`
-
-type CreateProviderParams struct {
-	Name       string  `json:"name"`
-	Type       string  `json:"type"`
-	ExternalIp string  `json:"externalIp"`
-	ApiKey     string  `json:"apiKey"`
-	ApiUrl     *string `json:"apiUrl"`
-	ZoneType   *string `json:"zoneType"`
-	Proxied    bool    `json:"proxied"`
-	IsActive   bool    `json:"isActive"`
-}
-
-func (q *Queries) CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error) {
-	row := q.queryRow(ctx, q.createProviderStmt, createProvider,
-		arg.Name,
-		arg.Type,
-		arg.ExternalIp,
-		arg.ApiKey,
-		arg.ApiUrl,
-		arg.ZoneType,
-		arg.Proxied,
-		arg.IsActive,
-	)
-	var i Provider
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Type,
-		&i.ExternalIp,
-		&i.ApiKey,
-		&i.ApiUrl,
-		&i.ZoneType,
-		&i.Proxied,
-		&i.IsActive,
-	)
-	return i, err
-}
-
 const createSetting = `-- name: CreateSetting :one
 INSERT INTO
-  settings (key, value)
+    settings (key, value)
 VALUES
-  (?, ?) RETURNING id, "key", value
+    (?, ?) RETURNING id, "key", value
 `
 
 type CreateSettingParams struct {
@@ -117,53 +29,10 @@ func (q *Queries) CreateSetting(ctx context.Context, arg CreateSettingParams) (S
 	return i, err
 }
 
-const createUser = `-- name: CreateUser :one
-INSERT INTO
-  users (username, password, email, is_admin)
-VALUES
-  (?, ?, ?, ?) RETURNING id, username, password, email, is_admin
-`
-
-type CreateUserParams struct {
-	Username string  `json:"username"`
-	Password string  `json:"password"`
-	Email    *string `json:"email"`
-	IsAdmin  bool    `json:"isAdmin"`
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.createUserStmt, createUser,
-		arg.Username,
-		arg.Password,
-		arg.Email,
-		arg.IsAdmin,
-	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Password,
-		&i.Email,
-		&i.IsAdmin,
-	)
-	return i, err
-}
-
-const deleteAgentByHostname = `-- name: DeleteAgentByHostname :exec
-DELETE FROM agents
-WHERE
-  hostname = ?
-`
-
-func (q *Queries) DeleteAgentByHostname(ctx context.Context, hostname string) error {
-	_, err := q.exec(ctx, q.deleteAgentByHostnameStmt, deleteAgentByHostname, hostname)
-	return err
-}
-
 const deleteAgentByID = `-- name: DeleteAgentByID :exec
 DELETE FROM agents
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteAgentByID(ctx context.Context, id string) error {
@@ -174,15 +43,15 @@ func (q *Queries) DeleteAgentByID(ctx context.Context, id string) error {
 const deleteEntryPointByName = `-- name: DeleteEntryPointByName :exec
 DELETE FROM entrypoints
 WHERE
-  profile_id = (
-    SELECT
-      id
-    FROM
-      profiles
-    WHERE
-      profiles.name = ?
-  )
-  AND entrypoints.name = ?
+    profile_id = (
+        SELECT
+            id
+        FROM
+            profiles
+        WHERE
+            profiles.name = ?
+    )
+    AND entrypoints.name = ?
 `
 
 type DeleteEntryPointByNameParams struct {
@@ -198,7 +67,7 @@ func (q *Queries) DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPoi
 const deleteMiddlewareByID = `-- name: DeleteMiddlewareByID :exec
 DELETE FROM middlewares
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteMiddlewareByID(ctx context.Context, id string) error {
@@ -206,21 +75,10 @@ func (q *Queries) DeleteMiddlewareByID(ctx context.Context, id string) error {
 	return err
 }
 
-const deleteMiddlewareByName = `-- name: DeleteMiddlewareByName :exec
-DELETE FROM middlewares
-WHERE
-  name = ?
-`
-
-func (q *Queries) DeleteMiddlewareByName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteMiddlewareByNameStmt, deleteMiddlewareByName, name)
-	return err
-}
-
 const deleteProfileByID = `-- name: DeleteProfileByID :exec
 DELETE FROM profiles
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteProfileByID(ctx context.Context, id int64) error {
@@ -231,7 +89,7 @@ func (q *Queries) DeleteProfileByID(ctx context.Context, id int64) error {
 const deleteProfileByName = `-- name: DeleteProfileByName :exec
 DELETE FROM profiles
 WHERE
-  name = ?
+    name = ?
 `
 
 func (q *Queries) DeleteProfileByName(ctx context.Context, name string) error {
@@ -242,7 +100,7 @@ func (q *Queries) DeleteProfileByName(ctx context.Context, name string) error {
 const deleteProviderByID = `-- name: DeleteProviderByID :exec
 DELETE FROM providers
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteProviderByID(ctx context.Context, id int64) error {
@@ -250,21 +108,10 @@ func (q *Queries) DeleteProviderByID(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteProviderByName = `-- name: DeleteProviderByName :exec
-DELETE FROM providers
-WHERE
-  name = ?
-`
-
-func (q *Queries) DeleteProviderByName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteProviderByNameStmt, deleteProviderByName, name)
-	return err
-}
-
 const deleteRouterByID = `-- name: DeleteRouterByID :exec
 DELETE FROM routers
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteRouterByID(ctx context.Context, id string) error {
@@ -275,7 +122,7 @@ func (q *Queries) DeleteRouterByID(ctx context.Context, id string) error {
 const deleteRouterByName = `-- name: DeleteRouterByName :exec
 DELETE FROM routers
 WHERE
-  name = ?
+    name = ?
 `
 
 func (q *Queries) DeleteRouterByName(ctx context.Context, name string) error {
@@ -286,7 +133,7 @@ func (q *Queries) DeleteRouterByName(ctx context.Context, name string) error {
 const deleteServiceByID = `-- name: DeleteServiceByID :exec
 DELETE FROM services
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteServiceByID(ctx context.Context, id string) error {
@@ -297,7 +144,7 @@ func (q *Queries) DeleteServiceByID(ctx context.Context, id string) error {
 const deleteServiceByName = `-- name: DeleteServiceByName :exec
 DELETE FROM services
 WHERE
-  name = ?
+    name = ?
 `
 
 func (q *Queries) DeleteServiceByName(ctx context.Context, name string) error {
@@ -308,7 +155,7 @@ func (q *Queries) DeleteServiceByName(ctx context.Context, name string) error {
 const deleteSettingByID = `-- name: DeleteSettingByID :exec
 DELETE FROM settings
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteSettingByID(ctx context.Context, id int64) error {
@@ -316,21 +163,10 @@ func (q *Queries) DeleteSettingByID(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteSettingByKey = `-- name: DeleteSettingByKey :exec
-DELETE FROM settings
-WHERE
-  key = ?
-`
-
-func (q *Queries) DeleteSettingByKey(ctx context.Context, key string) error {
-	_, err := q.exec(ctx, q.deleteSettingByKeyStmt, deleteSettingByKey, key)
-	return err
-}
-
 const deleteUserByID = `-- name: DeleteUserByID :exec
 DELETE FROM users
 WHERE
-  id = ?
+    id = ?
 `
 
 func (q *Queries) DeleteUserByID(ctx context.Context, id int64) error {
@@ -338,27 +174,16 @@ func (q *Queries) DeleteUserByID(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteUserByUsername = `-- name: DeleteUserByUsername :exec
-DELETE FROM users
-WHERE
-  username = ?
-`
-
-func (q *Queries) DeleteUserByUsername(ctx context.Context, username string) error {
-	_, err := q.exec(ctx, q.deleteUserByUsernameStmt, deleteUserByUsername, username)
-	return err
-}
-
 const getAgentByHostname = `-- name: GetAgentByHostname :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
-  agents
+    agents
 WHERE
-  hostname = ?
-  AND profile_id = ?
+    hostname = ?
+    AND profile_id = ?
 LIMIT
-  1
+    1
 `
 
 type GetAgentByHostnameParams struct {
@@ -385,13 +210,13 @@ func (q *Queries) GetAgentByHostname(ctx context.Context, arg GetAgentByHostname
 
 const getAgentByID = `-- name: GetAgentByID :one
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
-  agents
+    agents
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
@@ -413,13 +238,13 @@ func (q *Queries) GetAgentByID(ctx context.Context, id string) (Agent, error) {
 
 const getDefaultProvider = `-- name: GetDefaultProvider :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+    id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
 FROM
-  providers
+    providers
 WHERE
-  is_active = true
+    is_active = true
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetDefaultProvider(ctx context.Context) (Provider, error) {
@@ -441,14 +266,14 @@ func (q *Queries) GetDefaultProvider(ctx context.Context) (Provider, error) {
 
 const getEntryPointByName = `-- name: GetEntryPointByName :one
 SELECT
-  profile_id, name, address, as_default, http
+    profile_id, name, address, as_default, http
 FROM
-  entrypoints
+    entrypoints
 WHERE
-  name = ?
-  AND profile_id = ?
+    name = ?
+    AND profile_id = ?
 LIMIT
-  1
+    1
 `
 
 type GetEntryPointByNameParams struct {
@@ -471,13 +296,13 @@ func (q *Queries) GetEntryPointByName(ctx context.Context, arg GetEntryPointByNa
 
 const getMiddlewareByID = `-- name: GetMiddlewareByID :one
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, content
+    id, profile_id, name, provider, type, protocol, agent_id, content
 FROM
-  middlewares
+    middlewares
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetMiddlewareByID(ctx context.Context, id string) (Middleware, error) {
@@ -498,14 +323,14 @@ func (q *Queries) GetMiddlewareByID(ctx context.Context, id string) (Middleware,
 
 const getMiddlewareByName = `-- name: GetMiddlewareByName :one
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, content
+    id, profile_id, name, provider, type, protocol, agent_id, content
 FROM
-  middlewares
+    middlewares
 WHERE
-  name LIKE ?
-  AND profile_id = ?
+    name = ?
+    AND profile_id = ?
 LIMIT
-  1
+    1
 `
 
 type GetMiddlewareByNameParams struct {
@@ -531,13 +356,13 @@ func (q *Queries) GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNa
 
 const getProfileByID = `-- name: GetProfileByID :one
 SELECT
-  id, name, url, username, password, tls
+    id, name, url, username, password, tls
 FROM
-  profiles
+    profiles
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetProfileByID(ctx context.Context, id int64) (Profile, error) {
@@ -556,13 +381,13 @@ func (q *Queries) GetProfileByID(ctx context.Context, id int64) (Profile, error)
 
 const getProfileByName = `-- name: GetProfileByName :one
 SELECT
-  id, name, url, username, password, tls
+    id, name, url, username, password, tls
 FROM
-  profiles
+    profiles
 WHERE
-  name LIKE ?
+    name = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, error) {
@@ -581,13 +406,13 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 
 const getProviderByID = `-- name: GetProviderByID :one
 SELECT
-  id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+    id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
 FROM
-  providers
+    providers
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, error) {
@@ -609,13 +434,13 @@ func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, erro
 
 const getRouterByID = `-- name: GetRouterByID :one
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetRouterByID(ctx context.Context, id string) (Router, error) {
@@ -644,14 +469,14 @@ func (q *Queries) GetRouterByID(ctx context.Context, id string) (Router, error) 
 
 const getRouterByName = `-- name: GetRouterByName :one
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 WHERE
-  name LIKE ?
-  AND profile_id = ?
+    name = ?
+    AND profile_id = ?
 LIMIT
-  1
+    1
 `
 
 type GetRouterByNameParams struct {
@@ -685,13 +510,13 @@ func (q *Queries) GetRouterByName(ctx context.Context, arg GetRouterByNameParams
 
 const getServiceByID = `-- name: GetServiceByID :one
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 FROM
-  services
+    services
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetServiceByID(ctx context.Context, id string) (Service, error) {
@@ -717,14 +542,14 @@ func (q *Queries) GetServiceByID(ctx context.Context, id string) (Service, error
 
 const getServiceByName = `-- name: GetServiceByName :one
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 FROM
-  services
+    services
 WHERE
-  name LIKE ?
-  AND profile_id = ?
+    name = ?
+    AND profile_id = ?
 LIMIT
-  1
+    1
 `
 
 type GetServiceByNameParams struct {
@@ -755,13 +580,13 @@ func (q *Queries) GetServiceByName(ctx context.Context, arg GetServiceByNamePara
 
 const getSettingByKey = `-- name: GetSettingByKey :one
 SELECT
-  id, "key", value
+    id, "key", value
 FROM
-  settings
+    settings
 WHERE
-  key = ?
+    key = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetSettingByKey(ctx context.Context, key string) (Setting, error) {
@@ -773,13 +598,13 @@ func (q *Queries) GetSettingByKey(ctx context.Context, key string) (Setting, err
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-  id, username, password, email, is_admin
+    id, username, password, email, last_login, is_admin
 FROM
-  users
+    users
 WHERE
-  id = ?
+    id = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
@@ -790,6 +615,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.Password,
 		&i.Email,
+		&i.LastLogin,
 		&i.IsAdmin,
 	)
 	return i, err
@@ -797,13 +623,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-  id, username, password, email, is_admin
+    id, username, password, email, last_login, is_admin
 FROM
-  users
+    users
 WHERE
-  username = ?
+    username = ?
 LIMIT
-  1
+    1
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -814,6 +640,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
+		&i.LastLogin,
 		&i.IsAdmin,
 	)
 	return i, err
@@ -821,9 +648,9 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
-  agents
+    agents
 `
 
 func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
@@ -861,11 +688,11 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfileID = `-- name: ListAgentsByProfileID :many
 SELECT
-  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 FROM
-  agents
+    agents
 WHERE
-  profile_id = ?
+    profile_id = ?
 `
 
 func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([]Agent, error) {
@@ -903,9 +730,9 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 
 const listEntryPoints = `-- name: ListEntryPoints :many
 SELECT
-  profile_id, name, address, as_default, http
+    profile_id, name, address, as_default, http
 FROM
-  entrypoints
+    entrypoints
 `
 
 func (q *Queries) ListEntryPoints(ctx context.Context) ([]Entrypoint, error) {
@@ -939,11 +766,11 @@ func (q *Queries) ListEntryPoints(ctx context.Context) ([]Entrypoint, error) {
 
 const listEntryPointsByProfileID = `-- name: ListEntryPointsByProfileID :many
 SELECT
-  profile_id, name, address, as_default, http
+    profile_id, name, address, as_default, http
 FROM
-  entrypoints
+    entrypoints
 WHERE
-  profile_id = ?
+    profile_id = ?
 `
 
 func (q *Queries) ListEntryPointsByProfileID(ctx context.Context, profileID int64) ([]Entrypoint, error) {
@@ -977,9 +804,9 @@ func (q *Queries) ListEntryPointsByProfileID(ctx context.Context, profileID int6
 
 const listMiddlewares = `-- name: ListMiddlewares :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, content
+    id, profile_id, name, provider, type, protocol, agent_id, content
 FROM
-  middlewares
+    middlewares
 `
 
 func (q *Queries) ListMiddlewares(ctx context.Context) ([]Middleware, error) {
@@ -1016,11 +843,11 @@ func (q *Queries) ListMiddlewares(ctx context.Context) ([]Middleware, error) {
 
 const listMiddlewaresByProfileID = `-- name: ListMiddlewaresByProfileID :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, content
+    id, profile_id, name, provider, type, protocol, agent_id, content
 FROM
-  middlewares
+    middlewares
 WHERE
-  profile_id = ?
+    profile_id = ?
 `
 
 func (q *Queries) ListMiddlewaresByProfileID(ctx context.Context, profileID int64) ([]Middleware, error) {
@@ -1057,11 +884,11 @@ func (q *Queries) ListMiddlewaresByProfileID(ctx context.Context, profileID int6
 
 const listMiddlewaresByProvider = `-- name: ListMiddlewaresByProvider :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, content
+    id, profile_id, name, provider, type, protocol, agent_id, content
 FROM
-  middlewares
+    middlewares
 WHERE
-  provider = ?
+    provider = ?
 `
 
 func (q *Queries) ListMiddlewaresByProvider(ctx context.Context, provider string) ([]Middleware, error) {
@@ -1098,9 +925,9 @@ func (q *Queries) ListMiddlewaresByProvider(ctx context.Context, provider string
 
 const listProfiles = `-- name: ListProfiles :many
 SELECT
-  id, name, url, username, password, tls
+    id, name, url, username, password, tls
 FROM
-  profiles
+    profiles
 `
 
 func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
@@ -1135,9 +962,9 @@ func (q *Queries) ListProfiles(ctx context.Context) ([]Profile, error) {
 
 const listProviders = `-- name: ListProviders :many
 SELECT
-  id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+    id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
 FROM
-  providers
+    providers
 `
 
 func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
@@ -1175,9 +1002,9 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 
 const listRouters = `-- name: ListRouters :many
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 `
 
 func (q *Queries) ListRouters(ctx context.Context) ([]Router, error) {
@@ -1222,11 +1049,11 @@ func (q *Queries) ListRouters(ctx context.Context) ([]Router, error) {
 
 const listRoutersByAgentID = `-- name: ListRoutersByAgentID :many
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 WHERE
-  agent_id = ?
+    agent_id = ?
 `
 
 func (q *Queries) ListRoutersByAgentID(ctx context.Context, agentID *string) ([]Router, error) {
@@ -1271,11 +1098,11 @@ func (q *Queries) ListRoutersByAgentID(ctx context.Context, agentID *string) ([]
 
 const listRoutersByProfileID = `-- name: ListRoutersByProfileID :many
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 WHERE
-  profile_id = ?
+    profile_id = ?
 `
 
 func (q *Queries) ListRoutersByProfileID(ctx context.Context, profileID int64) ([]Router, error) {
@@ -1320,11 +1147,11 @@ func (q *Queries) ListRoutersByProfileID(ctx context.Context, profileID int64) (
 
 const listRoutersByProvider = `-- name: ListRoutersByProvider :many
 SELECT
-  id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 FROM
-  routers
+    routers
 WHERE
-  provider = ?
+    provider = ?
 `
 
 func (q *Queries) ListRoutersByProvider(ctx context.Context, provider string) ([]Router, error) {
@@ -1369,9 +1196,9 @@ func (q *Queries) ListRoutersByProvider(ctx context.Context, provider string) ([
 
 const listServices = `-- name: ListServices :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 FROM
-  services
+    services
 `
 
 func (q *Queries) ListServices(ctx context.Context) ([]Service, error) {
@@ -1413,11 +1240,11 @@ func (q *Queries) ListServices(ctx context.Context) ([]Service, error) {
 
 const listServicesByProfileID = `-- name: ListServicesByProfileID :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 FROM
-  services
+    services
 WHERE
-  profile_id = ?
+    profile_id = ?
 `
 
 func (q *Queries) ListServicesByProfileID(ctx context.Context, profileID int64) ([]Service, error) {
@@ -1459,11 +1286,11 @@ func (q *Queries) ListServicesByProfileID(ctx context.Context, profileID int64) 
 
 const listServicesByProvider = `-- name: ListServicesByProvider :many
 SELECT
-  id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 FROM
-  services
+    services
 WHERE
-  provider = ?
+    provider = ?
 `
 
 func (q *Queries) ListServicesByProvider(ctx context.Context, provider string) ([]Service, error) {
@@ -1505,9 +1332,9 @@ func (q *Queries) ListServicesByProvider(ctx context.Context, provider string) (
 
 const listSettings = `-- name: ListSettings :many
 SELECT
-  id, "key", value
+    id, "key", value
 FROM
-  settings
+    settings
 `
 
 func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
@@ -1535,9 +1362,9 @@ func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-  id, username, password, email, is_admin
+    id, username, password, email, last_login, is_admin
 FROM
-  users
+    users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -1554,6 +1381,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Password,
 			&i.Email,
+			&i.LastLogin,
 			&i.IsAdmin,
 		); err != nil {
 			return nil, err
@@ -1569,108 +1397,12 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateProfile = `-- name: UpdateProfile :one
-UPDATE profiles
-SET
-  name = ?,
-  url = ?,
-  username = ?,
-  password = ?,
-  tls = ?
-WHERE
-  id = ? RETURNING id, name, url, username, password, tls
-`
-
-type UpdateProfileParams struct {
-	Name     string  `json:"name"`
-	Url      string  `json:"url"`
-	Username *string `json:"username"`
-	Password *string `json:"password"`
-	Tls      bool    `json:"tls"`
-	ID       int64   `json:"id"`
-}
-
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
-	row := q.queryRow(ctx, q.updateProfileStmt, updateProfile,
-		arg.Name,
-		arg.Url,
-		arg.Username,
-		arg.Password,
-		arg.Tls,
-		arg.ID,
-	)
-	var i Profile
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Url,
-		&i.Username,
-		&i.Password,
-		&i.Tls,
-	)
-	return i, err
-}
-
-const updateProvider = `-- name: UpdateProvider :one
-UPDATE providers
-SET
-  name = ?,
-  type = ?,
-  external_ip = ?,
-  api_key = ?,
-  api_url = ?,
-  zone_type = ?,
-  proxied = ?,
-  is_active = ?
-WHERE
-  id = ? RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
-`
-
-type UpdateProviderParams struct {
-	Name       string  `json:"name"`
-	Type       string  `json:"type"`
-	ExternalIp string  `json:"externalIp"`
-	ApiKey     string  `json:"apiKey"`
-	ApiUrl     *string `json:"apiUrl"`
-	ZoneType   *string `json:"zoneType"`
-	Proxied    bool    `json:"proxied"`
-	IsActive   bool    `json:"isActive"`
-	ID         int64   `json:"id"`
-}
-
-func (q *Queries) UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error) {
-	row := q.queryRow(ctx, q.updateProviderStmt, updateProvider,
-		arg.Name,
-		arg.Type,
-		arg.ExternalIp,
-		arg.ApiKey,
-		arg.ApiUrl,
-		arg.ZoneType,
-		arg.Proxied,
-		arg.IsActive,
-		arg.ID,
-	)
-	var i Provider
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Type,
-		&i.ExternalIp,
-		&i.ApiKey,
-		&i.ApiUrl,
-		&i.ZoneType,
-		&i.Proxied,
-		&i.IsActive,
-	)
-	return i, err
-}
-
 const updateSetting = `-- name: UpdateSetting :one
 UPDATE settings
 SET
-  value = ?
+    value = ?
 WHERE
-  key = ? RETURNING id, "key", value
+    key = ? RETURNING id, "key", value
 `
 
 type UpdateSettingParams struct {
@@ -1685,75 +1417,37 @@ func (q *Queries) UpdateSetting(ctx context.Context, arg UpdateSettingParams) (S
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :one
-UPDATE users
-SET
-  username = ?,
-  password = ?,
-  email = ?,
-  is_admin = ?
-WHERE
-  id = ? RETURNING id, username, password, email, is_admin
-`
-
-type UpdateUserParams struct {
-	Username string  `json:"username"`
-	Password string  `json:"password"`
-	Email    *string `json:"email"`
-	IsAdmin  bool    `json:"isAdmin"`
-	ID       int64   `json:"id"`
-}
-
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
-		arg.Username,
-		arg.Password,
-		arg.Email,
-		arg.IsAdmin,
-		arg.ID,
-	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Password,
-		&i.Email,
-		&i.IsAdmin,
-	)
-	return i, err
-}
-
 const upsertAgent = `-- name: UpsertAgent :one
 INSERT INTO
-  agents (
-    id,
-    profile_id,
-    hostname,
-    public_ip,
-    private_ips,
-    containers,
-    active_ip,
-    token,
-    last_seen
-  )
+    agents (
+        id,
+        profile_id,
+        hostname,
+        public_ip,
+        private_ips,
+        containers,
+        active_ip,
+        token,
+        last_seen
+    )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
-  profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
-  hostname = COALESCE(NULLIF(EXCLUDED.hostname, ''), agents.hostname),
-  public_ip = COALESCE(NULLIF(EXCLUDED.public_ip, ''), agents.public_ip),
-  private_ips = COALESCE(
-    NULLIF(EXCLUDED.private_ips, ''),
-    agents.private_ips
-  ),
-  containers = COALESCE(
-    NULLIF(EXCLUDED.containers, ''),
-    agents.containers
-  ),
-  active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
-  token = COALESCE(NULLIF(EXCLUDED.token, ''), agents.token),
-  last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
+    profile_id = COALESCE(NULLIF(EXCLUDED.profile_id, 0), agents.profile_id),
+    hostname = COALESCE(NULLIF(EXCLUDED.hostname, ''), agents.hostname),
+    public_ip = COALESCE(NULLIF(EXCLUDED.public_ip, ''), agents.public_ip),
+    private_ips = COALESCE(
+        NULLIF(EXCLUDED.private_ips, ''),
+        agents.private_ips
+    ),
+    containers = COALESCE(
+        NULLIF(EXCLUDED.containers, ''),
+        agents.containers
+    ),
+    active_ip = COALESCE(NULLIF(EXCLUDED.active_ip, ''), agents.active_ip),
+    token = COALESCE(NULLIF(EXCLUDED.token, ''), agents.token),
+    last_seen = COALESCE(NULLIF(EXCLUDED.last_seen, ''), agents.last_seen) RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen
 `
 
 type UpsertAgentParams struct {
@@ -1797,14 +1491,14 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 
 const upsertEntryPoint = `-- name: UpsertEntryPoint :one
 INSERT INTO
-  entrypoints (profile_id, name, address, as_default, http)
+    entrypoints (profile_id, name, address, as_default, http)
 VALUES
-  (?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
+    (?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
 UPDATE
 SET
-  address = EXCLUDED.address,
-  as_default = EXCLUDED.as_default,
-  http = EXCLUDED.http RETURNING profile_id, name, address, as_default, http
+    address = EXCLUDED.address,
+    as_default = EXCLUDED.as_default,
+    http = EXCLUDED.http RETURNING profile_id, name, address, as_default, http
 `
 
 type UpsertEntryPointParams struct {
@@ -1836,34 +1530,34 @@ func (q *Queries) UpsertEntryPoint(ctx context.Context, arg UpsertEntryPointPara
 
 const upsertMiddleware = `-- name: UpsertMiddleware :one
 INSERT INTO
-  middlewares (
-    id,
-    profile_id,
-    name,
-    provider,
-    type,
-    protocol,
-    agent_id,
-    content
-  )
+    middlewares (
+        id,
+        profile_id,
+        name,
+        provider,
+        type,
+        protocol,
+        agent_id,
+        content
+    )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
 UPDATE
 SET
-  provider = COALESCE(
-    NULLIF(EXCLUDED.provider, ''),
-    middlewares.provider
-  ),
-  type = COALESCE(NULLIF(EXCLUDED.type, ''), middlewares.type),
-  protocol = COALESCE(
-    NULLIF(EXCLUDED.protocol, ''),
-    middlewares.protocol
-  ),
-  agent_id = COALESCE(
-    NULLIF(EXCLUDED.agent_id, ''),
-    middlewares.agent_id
-  ),
-  content = COALESCE(NULLIF(EXCLUDED.content, ''), middlewares.content) RETURNING id, profile_id, name, provider, type, protocol, agent_id, content
+    provider = COALESCE(
+        NULLIF(EXCLUDED.provider, ''),
+        middlewares.provider
+    ),
+    type = COALESCE(NULLIF(EXCLUDED.type, ''), middlewares.type),
+    protocol = COALESCE(
+        NULLIF(EXCLUDED.protocol, ''),
+        middlewares.protocol
+    ),
+    agent_id = COALESCE(
+        NULLIF(EXCLUDED.agent_id, ''),
+        middlewares.agent_id
+    ),
+    content = COALESCE(NULLIF(EXCLUDED.content, ''), middlewares.content) RETURNING id, profile_id, name, provider, type, protocol, agent_id, content
 `
 
 type UpsertMiddlewareParams struct {
@@ -1904,20 +1598,18 @@ func (q *Queries) UpsertMiddleware(ctx context.Context, arg UpsertMiddlewarePara
 
 const upsertProfile = `-- name: UpsertProfile :one
 INSERT INTO
-  profiles (id, name, url, username, password, tls)
+    profiles (name, url, username, password, tls)
 VALUES
-  (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?, ?) ON CONFLICT (name) DO
 UPDATE
 SET
-  name = EXCLUDED.name,
-  url = EXCLUDED.url,
-  username = EXCLUDED.username,
-  password = EXCLUDED.password,
-  tls = EXCLUDED.tls RETURNING id, name, url, username, password, tls
+    url = EXCLUDED.url,
+    username = EXCLUDED.username,
+    password = EXCLUDED.password,
+    tls = EXCLUDED.tls RETURNING id, name, url, username, password, tls
 `
 
 type UpsertProfileParams struct {
-	ID       int64   `json:"id"`
 	Name     string  `json:"name"`
 	Url      string  `json:"url"`
 	Username *string `json:"username"`
@@ -1927,7 +1619,6 @@ type UpsertProfileParams struct {
 
 func (q *Queries) UpsertProfile(ctx context.Context, arg UpsertProfileParams) (Profile, error) {
 	row := q.queryRow(ctx, q.upsertProfileStmt, upsertProfile,
-		arg.ID,
 		arg.Name,
 		arg.Url,
 		arg.Username,
@@ -1948,42 +1639,30 @@ func (q *Queries) UpsertProfile(ctx context.Context, arg UpsertProfileParams) (P
 
 const upsertProvider = `-- name: UpsertProvider :one
 INSERT INTO
-  providers (
-    id,
-    name,
-    type,
-    external_ip,
-    api_key,
-    api_url,
-    zone_type,
-    proxied,
-    is_active
-  )
+    providers (
+        name,
+        type,
+        external_ip,
+        api_key,
+        api_url,
+        zone_type,
+        proxied,
+        is_active
+    )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name) DO
 UPDATE
 SET
-  name = COALESCE(NULLIF(EXCLUDED.name, ''), providers.name),
-  type = COALESCE(NULLIF(EXCLUDED.type, ''), providers.type),
-  external_ip = COALESCE(
-    NULLIF(EXCLUDED.external_ip, ''),
-    providers.external_ip
-  ),
-  api_key = COALESCE(NULLIF(EXCLUDED.api_key, ''), providers.api_key),
-  api_url = COALESCE(NULLIF(EXCLUDED.api_url, ''), providers.api_url),
-  zone_type = COALESCE(
-    NULLIF(EXCLUDED.zone_type, ''),
-    providers.zone_type
-  ),
-  proxied = COALESCE(NULLIF(EXCLUDED.proxied, ''), providers.proxied),
-  is_active = COALESCE(
-    NULLIF(EXCLUDED.is_active, ''),
-    providers.is_active
-  ) RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
+    type = EXCLUDED.type,
+    external_ip = EXCLUDED.external_ip,
+    api_key = EXCLUDED.api_key,
+    api_url = EXCLUDED.api_url,
+    zone_type = EXCLUDED.zone_type,
+    proxied = EXCLUDED.proxied,
+    is_active = EXCLUDED.is_active RETURNING id, name, type, external_ip, api_key, api_url, zone_type, proxied, is_active
 `
 
 type UpsertProviderParams struct {
-	ID         int64   `json:"id"`
 	Name       string  `json:"name"`
 	Type       string  `json:"type"`
 	ExternalIp string  `json:"externalIp"`
@@ -1996,7 +1675,6 @@ type UpsertProviderParams struct {
 
 func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error) {
 	row := q.queryRow(ctx, q.upsertProviderStmt, upsertProvider,
-		arg.ID,
 		arg.Name,
 		arg.Type,
 		arg.ExternalIp,
@@ -2023,55 +1701,55 @@ func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) 
 
 const upsertRouter = `-- name: UpsertRouter :one
 INSERT INTO
-  routers (
-    id,
-    profile_id,
-    name,
-    provider,
-    protocol,
-    status,
-    agent_id,
-    entry_points,
-    middlewares,
-    rule,
-    rule_syntax,
-    service,
-    priority,
-    tls,
-    dns_provider,
-    errors
-  )
+    routers (
+        id,
+        profile_id,
+        name,
+        provider,
+        protocol,
+        status,
+        agent_id,
+        entry_points,
+        middlewares,
+        rule,
+        rule_syntax,
+        service,
+        priority,
+        tls,
+        dns_provider,
+        errors
+    )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
 UPDATE
 SET
-  id = COALESCE(NULLIF(EXCLUDED.id, ''), routers.id),
-  provider = COALESCE(NULLIF(EXCLUDED.provider, ''), routers.provider),
-  protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), routers.protocol),
-  status = COALESCE(NULLIF(EXCLUDED.status, ''), routers.status),
-  entry_points = COALESCE(
-    NULLIF(EXCLUDED.entry_points, ''),
-    routers.entry_points
-  ),
-  middlewares = COALESCE(
-    NULLIF(EXCLUDED.middlewares, ''),
-    routers.middlewares
-  ),
-  rule = COALESCE(NULLIF(EXCLUDED.rule, ''), routers.rule),
-  rule_syntax = COALESCE(
-    NULLIF(EXCLUDED.rule_syntax, ''),
-    routers.rule_syntax
-  ),
-  service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
-  priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
-  tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
-  dns_provider = CASE
-    WHEN EXCLUDED.dns_provider = 0 THEN NULL
-    WHEN EXCLUDED.dns_provider IS NOT NULL THEN EXCLUDED.dns_provider
-    ELSE routers.dns_provider
-  END,
-  agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
-  errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    id = COALESCE(NULLIF(EXCLUDED.id, ''), routers.id),
+    provider = COALESCE(NULLIF(EXCLUDED.provider, ''), routers.provider),
+    protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), routers.protocol),
+    status = COALESCE(NULLIF(EXCLUDED.status, ''), routers.status),
+    entry_points = COALESCE(
+        NULLIF(EXCLUDED.entry_points, ''),
+        routers.entry_points
+    ),
+    middlewares = COALESCE(
+        NULLIF(EXCLUDED.middlewares, ''),
+        routers.middlewares
+    ),
+    rule = COALESCE(NULLIF(EXCLUDED.rule, ''), routers.rule),
+    rule_syntax = COALESCE(
+        NULLIF(EXCLUDED.rule_syntax, ''),
+        routers.rule_syntax
+    ),
+    service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
+    priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
+    tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
+    dns_provider = CASE
+        WHEN EXCLUDED.dns_provider = 0 THEN NULL
+        WHEN EXCLUDED.dns_provider IS NOT NULL THEN EXCLUDED.dns_provider
+        ELSE routers.dns_provider
+    END,
+    agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
+    errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
 `
 
 type UpsertRouterParams struct {
@@ -2136,44 +1814,44 @@ func (q *Queries) UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Rou
 
 const upsertService = `-- name: UpsertService :one
 INSERT INTO
-  services (
-    id,
-    profile_id,
-    name,
-    provider,
-    type,
-    protocol,
-    agent_id,
-    status,
-    server_status,
-    load_balancer,
-    weighted,
-    mirroring,
-    failover
-  )
+    services (
+        id,
+        profile_id,
+        name,
+        provider,
+        type,
+        protocol,
+        agent_id,
+        status,
+        server_status,
+        load_balancer,
+        weighted,
+        mirroring,
+        failover
+    )
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
 UPDATE
 SET
-  provider = COALESCE(NULLIF(EXCLUDED.provider, ''), services.provider),
-  type = COALESCE(NULLIF(EXCLUDED.type, ''), services.type),
-  protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), services.protocol),
-  status = COALESCE(NULLIF(EXCLUDED.status, ''), services.status),
-  server_status = COALESCE(
-    NULLIF(EXCLUDED.server_status, ''),
-    services.server_status
-  ),
-  load_balancer = COALESCE(
-    NULLIF(EXCLUDED.load_balancer, ''),
-    services.load_balancer
-  ),
-  weighted = COALESCE(NULLIF(EXCLUDED.weighted, ''), services.weighted),
-  mirroring = COALESCE(
-    NULLIF(EXCLUDED.mirroring, ''),
-    services.mirroring
-  ),
-  failover = COALESCE(NULLIF(EXCLUDED.failover, ''), services.failover),
-  agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), services.agent_id) RETURNING id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
+    provider = COALESCE(NULLIF(EXCLUDED.provider, ''), services.provider),
+    type = COALESCE(NULLIF(EXCLUDED.type, ''), services.type),
+    protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), services.protocol),
+    status = COALESCE(NULLIF(EXCLUDED.status, ''), services.status),
+    server_status = COALESCE(
+        NULLIF(EXCLUDED.server_status, ''),
+        services.server_status
+    ),
+    load_balancer = COALESCE(
+        NULLIF(EXCLUDED.load_balancer, ''),
+        services.load_balancer
+    ),
+    weighted = COALESCE(NULLIF(EXCLUDED.weighted, ''), services.weighted),
+    mirroring = COALESCE(
+        NULLIF(EXCLUDED.mirroring, ''),
+        services.mirroring
+    ),
+    failover = COALESCE(NULLIF(EXCLUDED.failover, ''), services.failover),
+    agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), services.agent_id) RETURNING id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
 `
 
 type UpsertServiceParams struct {
@@ -2227,45 +1905,22 @@ func (q *Queries) UpsertService(ctx context.Context, arg UpsertServiceParams) (S
 	return i, err
 }
 
-const upsertSetting = `-- name: UpsertSetting :one
-INSERT INTO
-  settings (id, key, value)
-VALUES
-  (?, ?, ?) ON CONFLICT (id) DO
-UPDATE
-SET
-  key = EXCLUDED.key,
-  value = EXCLUDED.value RETURNING id, "key", value
-`
-
-type UpsertSettingParams struct {
-	ID    int64  `json:"id"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
-func (q *Queries) UpsertSetting(ctx context.Context, arg UpsertSettingParams) (Setting, error) {
-	row := q.queryRow(ctx, q.upsertSettingStmt, upsertSetting, arg.ID, arg.Key, arg.Value)
-	var i Setting
-	err := row.Scan(&i.ID, &i.Key, &i.Value)
-	return i, err
-}
-
 const upsertUser = `-- name: UpsertUser :one
 INSERT INTO
-  users (id, username, password, email, is_admin)
+    users (username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?) ON CONFLICT (username) DO
 UPDATE
 SET
-  username = COALESCE(NULLIF(EXCLUDED.username, ''), users.username),
-  password = COALESCE(NULLIF(EXCLUDED.password, ''), users.password),
-  email = COALESCE(NULLIF(EXCLUDED.email, ''), users.email),
-  is_admin = COALESCE(EXCLUDED.is_admin, users.is_admin) RETURNING id, username, password, email, is_admin
+    password = CASE
+        WHEN EXCLUDED.password != '' THEN EXCLUDED.password
+        ELSE users.password
+    END,
+    email = EXCLUDED.email,
+    is_admin = EXCLUDED.is_admin RETURNING id, username, password, email, last_login, is_admin
 `
 
 type UpsertUserParams struct {
-	ID       int64   `json:"id"`
 	Username string  `json:"username"`
 	Password string  `json:"password"`
 	Email    *string `json:"email"`
@@ -2274,7 +1929,6 @@ type UpsertUserParams struct {
 
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
 	row := q.queryRow(ctx, q.upsertUserStmt, upsertUser,
-		arg.ID,
 		arg.Username,
 		arg.Password,
 		arg.Email,
@@ -2286,6 +1940,7 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
+		&i.LastLogin,
 		&i.IsAdmin,
 	)
 	return i, err

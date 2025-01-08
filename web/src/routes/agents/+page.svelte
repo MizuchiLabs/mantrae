@@ -1,12 +1,11 @@
 <script lang="ts">
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button';
-	import AgentModal from '$lib/components/modals/agent.svelte';
 	import { agents, deleteAgent, getAgents, profile, upsertAgent } from '$lib/api';
+	import AgentModal from '$lib/components/modals/agent.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { newAgent, type Agent } from '$lib/types/base';
-	import { Bot, BotOff } from 'lucide-svelte';
-	import { onMount } from 'svelte';
+	import { Bot, BotOff, Plus } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
 
 	function checkLastSeen(agent: Agent) {
@@ -18,7 +17,8 @@
 
 	function addAgent() {
 		let agent = newAgent();
-		agent.profileId = $profile.id || 0;
+		if (!$profile.id) return;
+		agent.profileId = $profile.id;
 		agent.lastSeen = new Date('2000-01-01').toISOString();
 		upsertAgent(agent);
 
@@ -37,22 +37,21 @@
 		}, 2000);
 	};
 
-	onMount(async () => {
-		await getAgents();
+	profile.subscribe(async (value) => {
+		if (!value?.id) return;
+		await getAgents(value.id);
 	});
 </script>
 
-{#if $profile}
-	<div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
-		<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={addAgent}>
-			<span>Add Agent</span>
-			<iconify-icon icon="fa6-solid:plus" />
-		</Button>
-	</div>
-{/if}
+<div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
+	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={addAgent}>
+		<span>Add Agent</span>
+		<Plus size="1rem" />
+	</Button>
+</div>
 
 <div class="flex flex-col gap-4 px-4 md:flex-row">
-	{#if $agents}
+	{#if $agents && $agents.length > 0}
 		{#each $agents as a}
 			<Card.Root class="w-full md:w-[350px]">
 				<Card.Header>

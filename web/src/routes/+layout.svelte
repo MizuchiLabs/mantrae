@@ -20,41 +20,39 @@
 	import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	// Realtime updates
-	const eventSource = new EventSource(`${API_URL}/events`);
-	eventSource.onmessage = (event) => {
-		if (!$loggedIn) return;
-		let data = JSON.parse(event.data);
-		switch (data.type) {
-			case 'profile_updated':
-				getProfiles();
-				break;
-			case 'router_updated':
-				getRouters();
-				break;
-			case 'user_updated':
-				getUsers();
-				break;
-			case 'provider_updated':
-				getProviders();
-				break;
-			case 'agent_updated':
-				getAgents();
-				break;
-			case 'config_error':
-				configError.set(data.message);
-				break;
-			case 'config_ok':
-				configError.set('');
-				break;
-		}
-	};
+	// const eventSource = new EventSource(`${API_URL}/events`);
+	// eventSource.onmessage = (event) => {
+	// 	if (!$loggedIn) return;
+	// 	let data = JSON.parse(event.data);
+	// 	switch (data.type) {
+	// 		case 'profile_updated':
+	// 			getProfiles();
+	// 			break;
+	// 		case 'router_updated':
+	// 			getRouters();
+	// 			break;
+	// 		case 'user_updated':
+	// 			getUsers();
+	// 			break;
+	// 		case 'provider_updated':
+	// 			getProviders();
+	// 			break;
+	// 		case 'agent_updated':
+	// 			getAgents(data.message.profileId);
+	// 			break;
+	// 		case 'config_error':
+	// 			configError.set(data.message);
+	// 			break;
+	// 		case 'config_ok':
+	// 			configError.set('');
+	// 			break;
+	// 	}
+	// };
 
 	onMount(async () => {
 		if (!$loggedIn) return;
 		await getProfiles();
-		await getProviders();
 		await getVersion();
-		await getAgents();
 	});
 </script>
 

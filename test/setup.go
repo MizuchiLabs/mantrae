@@ -77,7 +77,7 @@ func seedMockData() error {
 		apiUrl := gofakeit.URL()
 		zonetype := dns.ZoneTypes[gofakeit.Number(0, len(dns.ZoneTypes)-1)]
 
-		data, err := db.Query.CreateProvider(context.Background(), db.CreateProviderParams{
+		data, err := db.Query.UpsertProvider(context.Background(), db.UpsertProviderParams{
 			Name:       gofakeit.Name(),
 			Type:       dns.DNSProviders[gofakeit.Number(0, len(dns.DNSProviders)-1)],
 			ExternalIp: gofakeit.IPv4Address(),
@@ -99,7 +99,7 @@ func seedMockData() error {
 	for i := 0; i < 5; i++ {
 		username := gofakeit.Username()
 		password := gofakeit.Password(true, true, true, true, true, 24)
-		data, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{
+		data, err := db.Query.UpsertProfile(context.Background(), db.UpsertProfileParams{
 			Name:     gofakeit.Name(),
 			Url:      gofakeit.URL(),
 			Username: &username,

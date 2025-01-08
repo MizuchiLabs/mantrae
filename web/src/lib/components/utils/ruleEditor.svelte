@@ -6,6 +6,7 @@
 	import { ValidateRule } from './ruleString';
 	import { onMount } from 'svelte';
 	import { RULE_EDITOR_TAB_SK } from '$lib/store';
+	import { CircleCheck, CircleX } from 'lucide-svelte';
 
 	export let rule: string;
 	export let type: string;
@@ -290,10 +291,10 @@
 				>
 					{#if valid}
 						<p>Valid</p>
-						<iconify-icon icon="fa6-solid:circle-check" />
+						<CircleCheck size="1rem" />
 					{:else}
 						<p>Invalid</p>
-						<iconify-icon icon="fa6-solid:circle-xmark" />
+						<CircleX size="1rem" />
 					{/if}
 				</div>
 			{/if}

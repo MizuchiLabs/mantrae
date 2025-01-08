@@ -6,6 +6,7 @@
 	import { goto } from '$app/navigation';
 	import InfoModal from '../modals/info.svelte';
 	import Warning from '../modals/warning.svelte';
+	import { ArrowLeft, LogOut } from 'lucide-svelte';
 
 	const handleLogout = () => {
 		logout();
@@ -17,8 +18,8 @@
 	<div class="ml-4 flex flex-row items-center gap-2">
 		<Profile />
 		{#if $profiles?.length === 0 || !$profiles}
-			<span class="ml-4 flex items-center gap-1 text-sm text-muted-foreground">
-				<iconify-icon icon="fa6-solid:arrow-left" />
+			<span class="ml-2 flex items-center gap-2 text-sm text-muted-foreground">
+				<ArrowLeft size="1rem" />
 				No profiles configured, create one here
 			</span>
 		{:else}
@@ -36,8 +37,8 @@
 		<!-- 	<Avatar.Image src="" alt="@user" /> -->
 		<!-- 	<Avatar.Fallback>AD</Avatar.Fallback> -->
 		<!-- </Avatar.Root> -->
-		<Button variant="ghost" on:click={handleLogout} class="h-8 w-8 rounded-full">
-			<iconify-icon icon="fa6-solid:right-from-bracket" />
+		<Button variant="ghost" on:click={handleLogout} size="icon">
+			<LogOut size="1rem" />
 		</Button>
 	</div>
 </nav>

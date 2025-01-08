@@ -102,9 +102,10 @@ type Setting struct {
 }
 
 type User struct {
-	ID       int64   `json:"id"`
-	Username string  `json:"username"`
-	Password string  `json:"password"`
-	Email    *string `json:"email"`
-	IsAdmin  bool    `json:"isAdmin"`
+	ID        int64      `json:"id"`
+	Username  string     `json:"username"`
+	Password  string     `json:"password"`
+	Email     *string    `json:"email"`
+	LastLogin *time.Time `json:"lastLogin"`
+	IsAdmin   bool       `json:"isAdmin"`
 }

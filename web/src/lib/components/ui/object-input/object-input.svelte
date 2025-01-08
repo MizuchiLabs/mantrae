@@ -2,10 +2,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input, type FormInputEvent } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { createEventDispatcher, onMount } from 'svelte';
-	import autoAnimate from '@formkit/auto-animate';
-	import { cn } from '$lib/utils';
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
+	import { cn } from '$lib/utils';
+	import autoAnimate from '@formkit/auto-animate';
+	import { Minus, Plus } from 'lucide-svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
 	let className: string | undefined | null = undefined;
 	export { className as class };
@@ -89,16 +90,17 @@
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
 						{#if index === 0}
 							<Button
-								class="h-8 w-4 rounded-full bg-red-400 text-black"
 								on:click={addItem}
+								class="h-8 w-8 rounded-full bg-red-400 text-black"
+								size="icon"
 								tabindex={-1}
 							>
-								<iconify-icon icon="fa6-solid:plus" />
+								<Plus size="1rem" />
 							</Button>
 						{/if}
 						{#if internalItems.length > 1 && index >= 1}
-							<Button on:click={() => removeItem(id)} class="h-8 w-4 rounded-full" tabindex={-1}>
-								<iconify-icon icon="fa6-solid:minus" />
+							<Button on:click={() => removeItem(id)} class="h-8 w-8 rounded-full" tabindex={-1}>
+								<Minus size="1rem" />
 							</Button>
 						{/if}
 					</div>

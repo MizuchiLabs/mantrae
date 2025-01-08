@@ -1,27 +1,28 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select';
-	import { Toggle } from '$lib/components/ui/toggle';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
 	import {
-		routers,
 		entrypoints,
 		middlewares,
+		profile,
 		provider,
-		toggleEntrypoint,
-		toggleMiddleware,
+		routers,
 		toggleDNSProvider,
-		profile
+		toggleEntrypoint,
+		toggleMiddleware
 	} from '$lib/api';
-	import { newRouter, type Router } from '$lib/types/config';
-	import RuleEditor from '../utils/ruleEditor.svelte';
-	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import * as Select from '$lib/components/ui/select';
+	import { Toggle } from '$lib/components/ui/toggle';
 	import logo from '$lib/images/logo.svg';
-	import { z } from 'zod';
-	import type { Selected } from 'bits-ui';
+	import { newRouter, type Router } from '$lib/types/config';
 	import autoAnimate from '@formkit/auto-animate';
+	import type { Selected } from 'bits-ui';
+	import { CircleCheck, Lock } from 'lucide-svelte';
+	import { z } from 'zod';
+	import ArrayInput from '../ui/array-input/array-input.svelte';
+	import RuleEditor from '../utils/ruleEditor.svelte';
 
 	export let router: Router;
 	export let disabled = false;
@@ -224,13 +225,13 @@
 						<Select.Value placeholder="Select an entrypoint" />
 					</Select.Trigger>
 					<Select.Content>
-						{#each $entrypoints || [] as entrypoint}
-							<Select.Item value={entrypoint.name}>
+						{#each $entrypoints || [] as e}
+							<Select.Item value={e.name}>
 								<div class="flex flex-row items-center gap-2">
-									{entrypoint.name}
-									{#if entrypoint.http}
-										{#if 'tls' in entrypoint.http}
-											<iconify-icon icon="fa6-solid:lock" class=" text-green-400" />
+									{e.name}
+									{#if e.http}
+										{#if 'tls' in e.http}
+											<Lock size="1rem" class="text-green-400" />
 										{/if}
 									{/if}
 								</div>
@@ -256,10 +257,10 @@
 						<Select.Value placeholder="Select a middleware" />
 					</Select.Trigger>
 					<Select.Content>
-						{#each $middlewares as middleware}
-							{#if router.protocol === middleware.protocol}
-								<Select.Item value={middleware.name}>
-									{middleware.name}
+						{#each $middlewares as m}
+							{#if router.protocol === m.protocol}
+								<Select.Item value={m.name}>
+									{m.name}
 								</Select.Item>
 							{/if}
 						{/each}
@@ -288,11 +289,11 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value={0} label="">None</Select.Item>
-						{#each $provider as provider}
-							<Select.Item value={provider.id} class="flex items-center gap-2">
-								{provider.name} ({provider.type})
-								{#if provider.isActive}
-									<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
+						{#each $provider as p}
+							<Select.Item value={p.id} class="flex items-center gap-2">
+								{p.name} ({p.type})
+								{#if p.isActive}
+									<CircleCheck size="1rem" class="text-green-400" />
 								{/if}
 							</Select.Item>
 						{/each}
@@ -318,10 +319,10 @@
 				<div class="grid grid-cols-4 flex-wrap items-center gap-1">
 					<div></div>
 					<div class="col-span-3">
-						{#each getCertResolver() || [] as resolver}
-							{#if router.tls?.certResolver !== resolver}
-								<div on:click={() => setCertResolver(resolver)} aria-hidden>
-									<Badge>{resolver}</Badge>
+						{#each getCertResolver() || [] as r}
+							{#if router.tls?.certResolver !== r}
+								<div on:click={() => setCertResolver(r)} aria-hidden="true">
+									<Badge>{r}</Badge>
 								</div>
 							{/if}
 						{/each}

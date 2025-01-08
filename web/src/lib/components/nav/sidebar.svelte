@@ -26,7 +26,7 @@
 		},
 		{
 			name: 'Users',
-			path: '/settings/users/',
+			path: '/users/',
 			icon: Users
 		},
 		{
@@ -36,7 +36,7 @@
 		},
 		{
 			name: 'DNS',
-			path: '/settings/dns/',
+			path: '/dns/',
 			icon: Globe
 		},
 		{

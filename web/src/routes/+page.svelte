@@ -27,6 +27,7 @@
 	import Search from '$lib/components/tables/search.svelte';
 	import { page } from '$app/stores';
 	import {
+		Lock,
 		Eye,
 		Pencil,
 		Bot,
@@ -34,7 +35,8 @@
 		SquareArrowOutUpRight,
 		ShieldAlert,
 		TriangleAlert,
-		BotOff
+		BotOff,
+		Plus
 	} from 'lucide-svelte';
 	import { LIMIT_SK, ROUTER_COLUMN_SK } from '$lib/store';
 
@@ -283,7 +285,7 @@
 					on:click={createModal}
 				>
 					<span>Create Router</span>
-					<iconify-icon icon="fa6-solid:plus" />
+					<Plus size="1rem" />
 				</Button>
 			</div>
 		</Card.Header>
@@ -457,7 +459,7 @@
 													{entrypoint.name}
 													{#if entrypoint.http}
 														{#if 'tls' in entrypoint.http}
-															<iconify-icon icon="fa6-solid:lock" class=" text-green-400" />
+															<Lock size="1rem" class=" text-green-400" />
 														{/if}
 													{/if}
 												</div>

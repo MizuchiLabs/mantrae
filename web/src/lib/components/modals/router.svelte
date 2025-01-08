@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { upsertRouter, upsertService } from '$lib/api';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { upsertService, upsertRouter } from '$lib/api';
 	import { type Router, type Service } from '$lib/types/config';
-	import ServiceForm from '../forms/service.svelte';
 	import RouterForm from '../forms/router.svelte';
+	import ServiceForm from '../forms/service.svelte';
 
 	export let router: Router;
 	export let service: Service;
@@ -29,7 +29,6 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Trigger />
 	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
 		<Tabs.Root value="router" class="mt-4">
 			<Tabs.List class="grid w-full grid-cols-2">

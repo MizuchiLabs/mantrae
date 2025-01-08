@@ -52,8 +52,7 @@ func apiRoutes() http.Handler {
 	// Profiles
 	register("GET", "/profile", jwtChain, GetProfiles)
 	register("GET", "/profile/{id}", jwtChain, GetProfile)
-	register("POST", "/profile", jwtChain, CreateProfile)
-	register("PUT", "/profile", jwtChain, UpdateProfile)
+	register("PUT", "/profile", jwtChain, UpsertProfile)
 	register("DELETE", "/profile/{id}", jwtChain, DeleteProfile)
 
 	// Routers

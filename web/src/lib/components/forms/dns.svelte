@@ -1,20 +1,19 @@
 <script lang="ts">
-	import * as Select from '$lib/components/ui/select';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Switch } from '$lib/components/ui/switch';
+	import { getPublicIP } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import * as Select from '$lib/components/ui/select';
+	import { Switch } from '$lib/components/ui/switch';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import type { DNSProvider } from '$lib/types/base';
-	import { getPublicIP } from '$lib/api';
-	import { Copy, Eye, EyeOff } from 'lucide-svelte';
-	import type { Selected } from 'bits-ui';
-	import HoverInfo from '../utils/hoverInfo.svelte';
 	import autoAnimate from '@formkit/auto-animate';
-	import { Toggle } from '../ui/toggle';
+	import type { Selected } from 'bits-ui';
+	import { Copy, Eye, EyeOff } from 'lucide-svelte';
 	import { z } from 'zod';
+	import { Toggle } from '../ui/toggle';
+	import HoverInfo from '../utils/hoverInfo.svelte';
 
 	export let provider: DNSProvider;
 	const providerTypes: Selected<string>[] = [
@@ -62,14 +61,6 @@
 	<Card.Header>
 		<Card.Title class="flex items-center justify-between gap-2">
 			<span>DNS Provider</span>
-			<div class="flex items-center gap-2">
-				<Badge variant="secondary" class="bg-blue-400">
-					{provider.type}
-				</Badge>
-				{#if provider.isActive}
-					<iconify-icon icon="fa6-solid:star" class="text-yellow-400" />
-				{/if}
-			</div>
 		</Card.Title>
 	</Card.Header>
 	<Card.Content class="space-y-2">

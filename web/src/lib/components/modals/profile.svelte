@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { createProfile, deleteProfile, updateProfile } from '$lib/api';
+	import { deleteProfile, upsertProfile } from '$lib/api';
 	import type { Profile } from '$lib/types/base';
 	import ProfileForm from '../forms/profile.svelte';
 
@@ -14,11 +14,7 @@
 			profile.url = profile.url.slice(0, -1);
 		}
 
-		if (profile.id) {
-			await updateProfile(profile);
-		} else {
-			await createProfile(profile);
-		}
+		await upsertProfile(profile);
 		open = false;
 	};
 </script>

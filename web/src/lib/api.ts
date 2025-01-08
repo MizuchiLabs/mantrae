@@ -1,12 +1,12 @@
 import { goto } from '$app/navigation';
-import { toast } from 'svelte-sonner';
-import type { Profile, DNSProvider, User, Setting, Agent, Entrypoint } from './types/base';
-import type { Plugin } from './types/plugins';
-import type { Middleware } from './types/middlewares';
-import { get, writable, type Writable } from 'svelte/store';
-import { type Router, type Service } from './types/config';
 import type { Selected } from 'bits-ui';
+import { toast } from 'svelte-sonner';
+import { get, writable, type Writable } from 'svelte/store';
 import { PROFILE_SK, TOKEN_SK } from './store';
+import type { Agent, DNSProvider, Entrypoint, Profile, Setting, User } from './types/base';
+import { type Router, type Service } from './types/config';
+import type { Middleware } from './types/middlewares';
+import type { Plugin } from './types/plugins';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -16,14 +16,14 @@ export const profiles: Writable<Profile[]> = writable();
 export const profile: Writable<Profile> = writable();
 export const entrypoints: Writable<Entrypoint[]> = writable();
 
-export const routers: Writable<Router[]> = writable();
-export const services: Writable<Service[]> = writable();
-export const middlewares: Writable<Middleware[]> = writable();
-export const users: Writable<User[]> = writable();
-export const agents: Writable<Agent[]> = writable();
-export const provider: Writable<DNSProvider[]> = writable();
-export const settings: Writable<Setting[]> = writable();
-export const plugins: Writable<Plugin[]> = writable();
+export const routers: Writable<Router[]> = writable([]);
+export const services: Writable<Service[]> = writable([]);
+export const middlewares: Writable<Middleware[]> = writable([]);
+export const users: Writable<User[]> = writable([]);
+export const agents: Writable<Agent[]> = writable([]);
+export const provider: Writable<DNSProvider[]> = writable([]);
+export const settings: Writable<Setting[]> = writable([]);
+export const plugins: Writable<Plugin[]> = writable([]);
 
 export const dynamic = writable('');
 export const version = writable('');
@@ -149,26 +149,21 @@ export async function getProfile(id: number) {
 	await getEntrypoints();
 }
 
-export async function createProfile(p: Profile): Promise<void> {
-	const response = await handleRequest('/profile', 'POST', p);
-	if (response) {
-		const data = await response.json();
-		profiles.update((items) => [...(items ?? []), data]);
-		toast.success(`Profile ${data.name} created`);
-
-		const profileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
-		if (!profileID) {
-			localStorage.setItem(PROFILE_SK, data.id.toString());
-			profile.set(data);
-		}
-	}
-}
-
-export async function updateProfile(p: Profile): Promise<void> {
+export async function upsertProfile(p: Profile): Promise<void> {
 	const response = await handleRequest(`/profile`, 'PUT', p);
 	if (response) {
 		const data = await response.json();
-		profiles.update((items) => items.map((i) => (i.id === p.id ? data : i)));
+		if (data && get(profiles)) {
+			profiles.update((items) => {
+				const index = items.findIndex((item) => item.id === p.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
+				} else {
+					return [...items, data];
+				}
+			});
+		}
 		toast.success(`Profile ${data.name} updated`);
 
 		if (get(profile) && get(profile).id === data.id) {
@@ -198,7 +193,7 @@ export async function getRouters() {
 	const response = await handleRequest(`/router/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		routers.set(data);
+		if (data) routers.set(data);
 	}
 }
 
@@ -208,15 +203,11 @@ export async function upsertRouter(r: Router): Promise<void> {
 		const data = await response.json();
 		if (data && get(routers)) {
 			routers.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === r.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === r.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -240,7 +231,7 @@ export async function getServices() {
 	const response = await handleRequest(`/service/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		services.set(data);
+		if (data) services.set(data);
 	}
 }
 
@@ -250,15 +241,11 @@ export async function upsertService(s: Service): Promise<void> {
 		const data = await response.json();
 		if (data && get(services)) {
 			services.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === s.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === s.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -281,7 +268,7 @@ export async function getMiddlewares() {
 	const response = await handleRequest(`/middleware/${profileID}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		middlewares.set(data);
+		if (data) middlewares.set(data);
 	}
 }
 
@@ -291,15 +278,11 @@ export async function upsertMiddleware(m: Middleware): Promise<void> {
 		const data = await response.json();
 		if (data && get(middlewares)) {
 			middlewares.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === m.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === m.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -321,17 +304,8 @@ export async function getUsers() {
 	const response = await handleRequest('/user', 'GET');
 	if (response) {
 		const data = await response.json();
-		users.set(data);
+		if (data) users.set(data);
 	}
-}
-
-export async function getUser(id: number): Promise<User> {
-	const response = await handleRequest(`/user/${id}`, 'GET');
-	if (response) {
-		const data = await response.json();
-		return data;
-	}
-	return {} as User;
 }
 
 export async function upsertUser(u: User): Promise<void> {
@@ -340,15 +314,11 @@ export async function upsertUser(u: User): Promise<void> {
 		const data = await response.json();
 		if (data && get(users)) {
 			users.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === u.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === u.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -370,7 +340,7 @@ export async function getProviders() {
 	const response = await handleRequest('/provider', 'GET');
 	if (response) {
 		const data = await response.json();
-		provider.set(data);
+		if (data) provider.set(data);
 	}
 }
 
@@ -380,15 +350,11 @@ export async function upsertProvider(p: DNSProvider): Promise<void> {
 		const data = await response.json();
 		if (data && get(provider)) {
 			provider.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === p.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === p.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -453,31 +419,25 @@ export async function updateSetting(s: Setting): Promise<void> {
 }
 
 // Agents ---------------------------------------------------------------------
-export async function getAgents() {
-	const profileID = get(profile)?.id;
-	if (!profileID) return;
-	const response = await handleRequest(`/agent/${profileID}`, 'GET');
+export async function getAgents(id: number) {
+	const response = await handleRequest(`/agent/${id}`, 'GET');
 	if (response) {
 		const data = await response.json();
-		agents.set(data);
+		if (data) agents.set(data);
 	}
 }
 
-export async function upsertAgent(a: Agent) {
-	const response = await handleRequest(`/agent`, 'PUT', a);
+export async function upsertAgent(agent: Agent) {
+	const response = await handleRequest(`/agent`, 'PUT', agent);
 	if (response) {
 		const data = await response.json();
 		if (data && get(agents)) {
 			agents.update((items) => {
-				const existingIndex = items.findIndex((item) => item.id === a.id);
-
-				if (existingIndex !== -1) {
-					// Update existing item
-					const updatedItems = [...items];
-					updatedItems[existingIndex] = data;
-					return updatedItems;
+				const index = items.findIndex((item) => item.id === agent.id);
+				if (index !== -1) {
+					items[index] = data;
+					return [...items];
 				} else {
-					// Add new item
 					return [...items, data];
 				}
 			});
@@ -490,17 +450,6 @@ export async function deleteAgent(id: string) {
 	if (response) {
 		agents.update((items) => items.filter((i) => i.id !== id));
 		toast.success(`Agent deleted`);
-	}
-}
-
-// Agent Token derived store
-export async function getAgentToken() {
-	const profileID = get(profile)?.id;
-	if (!profileID) return;
-	const response = await handleRequest(`/agent/token/${profileID}`, 'GET');
-	if (response) {
-		const data = await response.json();
-		agentToken.set(data.token || '');
 	}
 }
 

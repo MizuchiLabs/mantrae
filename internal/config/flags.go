@@ -84,7 +84,7 @@ func SetDefaultAdminUser() error {
 			return fmt.Errorf("failed to hash password: %w", err)
 		}
 
-		if _, err := db.Query.CreateUser(context.Background(), db.CreateUserParams{
+		if _, err := db.Query.UpsertUser(context.Background(), db.UpsertUserParams{
 			Username: "admin",
 			Password: hash,
 			IsAdmin:  true,
@@ -103,7 +103,7 @@ func SetDefaultAdminUser() error {
 			return fmt.Errorf("failed to hash password: %w", err)
 		}
 		slog.Info("Invalid credentials, regenerating...")
-		if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
+		if _, err := db.Query.UpsertUser(context.Background(), db.UpsertUserParams{
 			Username: "admin",
 			Password: hash,
 			IsAdmin:  true,
@@ -122,7 +122,7 @@ func SetDefaultProfile(url, username, password string) error {
 
 	profile, err := db.Query.GetProfileByName(context.Background(), "default")
 	if err != nil {
-		_, err := db.Query.CreateProfile(context.Background(), db.CreateProfileParams{
+		_, err := db.Query.UpsertProfile(context.Background(), db.UpsertProfileParams{
 			Name:     "default",
 			Url:      url,
 			Username: &username,
@@ -137,8 +137,7 @@ func SetDefaultProfile(url, username, password string) error {
 	}
 
 	if profile.Url != url || *profile.Username != username || *profile.Password != password {
-		if _, err := db.Query.UpdateProfile(context.Background(), db.UpdateProfileParams{
-			ID:       profile.ID,
+		if _, err := db.Query.UpsertProfile(context.Background(), db.UpsertProfileParams{
 			Name:     "default",
 			Url:      url,
 			Username: &username,
@@ -227,8 +226,7 @@ func ResetAdminUser() error {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	if _, err := db.Query.UpdateUser(context.Background(), db.UpdateUserParams{
-		ID:       creds.ID,
+	if _, err := db.Query.UpsertUser(context.Background(), db.UpsertUserParams{
 		Username: creds.Username,
 		Password: hash,
 		IsAdmin:  true,

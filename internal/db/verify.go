@@ -18,23 +18,7 @@ type Server struct {
 	Address string `json:"address,omitempty"`
 }
 
-func (p *CreateProfileParams) Verify() error {
-	if p.Name == "" {
-		return fmt.Errorf("name cannot be empty")
-	}
-	if p.Url == "" {
-		return fmt.Errorf("url cannot be empty")
-	}
-	if !util.IsValidURL(p.Url) {
-		return fmt.Errorf("url is not valid")
-	}
-	return nil
-}
-
-func (p *UpdateProfileParams) Verify() error {
-	if p.ID == 0 {
-		return fmt.Errorf("id cannot be empty")
-	}
+func (p *Profile) Verify() error {
 	if p.Name == "" {
 		return fmt.Errorf("name cannot be empty")
 	}

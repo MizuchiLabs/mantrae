@@ -9,27 +9,19 @@ import (
 )
 
 type Querier interface {
-	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
-	CreateProvider(ctx context.Context, arg CreateProviderParams) (Provider, error)
 	CreateSetting(ctx context.Context, arg CreateSettingParams) (Setting, error)
-	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	DeleteAgentByHostname(ctx context.Context, hostname string) error
 	DeleteAgentByID(ctx context.Context, id string) error
 	DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPointByNameParams) error
 	DeleteMiddlewareByID(ctx context.Context, id string) error
-	DeleteMiddlewareByName(ctx context.Context, name string) error
 	DeleteProfileByID(ctx context.Context, id int64) error
 	DeleteProfileByName(ctx context.Context, name string) error
 	DeleteProviderByID(ctx context.Context, id int64) error
-	DeleteProviderByName(ctx context.Context, name string) error
 	DeleteRouterByID(ctx context.Context, id string) error
 	DeleteRouterByName(ctx context.Context, name string) error
 	DeleteServiceByID(ctx context.Context, id string) error
 	DeleteServiceByName(ctx context.Context, name string) error
 	DeleteSettingByID(ctx context.Context, id int64) error
-	DeleteSettingByKey(ctx context.Context, key string) error
 	DeleteUserByID(ctx context.Context, id int64) error
-	DeleteUserByUsername(ctx context.Context, username string) error
 	GetAgentByHostname(ctx context.Context, arg GetAgentByHostnameParams) (Agent, error)
 	GetAgentByID(ctx context.Context, id string) (Agent, error)
 	GetDefaultProvider(ctx context.Context) (Provider, error)
@@ -64,10 +56,7 @@ type Querier interface {
 	ListServicesByProvider(ctx context.Context, provider string) ([]Service, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
-	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
-	UpdateProvider(ctx context.Context, arg UpdateProviderParams) (Provider, error)
 	UpdateSetting(ctx context.Context, arg UpdateSettingParams) (Setting, error)
-	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent, error)
 	UpsertEntryPoint(ctx context.Context, arg UpsertEntryPointParams) (Entrypoint, error)
 	UpsertMiddleware(ctx context.Context, arg UpsertMiddlewareParams) (Middleware, error)
@@ -75,7 +64,6 @@ type Querier interface {
 	UpsertProvider(ctx context.Context, arg UpsertProviderParams) (Provider, error)
 	UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Router, error)
 	UpsertService(ctx context.Context, arg UpsertServiceParams) (Service, error)
-	UpsertSetting(ctx context.Context, arg UpsertSettingParams) (Setting, error)
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 }
 
