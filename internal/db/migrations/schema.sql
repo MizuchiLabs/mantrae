@@ -5,38 +5,40 @@ CREATE TABLE IF NOT EXISTS profiles (
     url TEXT NOT NULL,
     username VARCHAR(255),
     password TEXT,
-    tls BOOLEAN NOT NULL DEFAULT FALSE
+    tls BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS traefik_api (
+CREATE TABLE IF NOT EXISTS traefik_config (
+    id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL,
-    entrypoints TEXT,
-    overview TEXT,
-    external TEXT,
-    internal TEXT,
+    source TEXT NOT NULL,
+    entrypoints JSON,
+    overview JSON,
+    config JSON,
+    last_sync TIMESTAMP,
     FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-    UNIQUE (profile_id)
+    UNIQUE (profile_id, source)
 );
 
-CREATE TABLE IF NOT EXISTS router_dns_provider (
-    profile_id INTEGER NOT NULL,
-    provider_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-    FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE CASCADE,
-    UNIQUE (profile_id, name)
-);
-
-CREATE TABLE IF NOT EXISTS providers (
+CREATE TABLE IF NOT EXISTS dns_providers (
     id INTEGER PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     type VARCHAR(255) NOT NULL,
-    external_ip TEXT NOT NULL,
-    api_key TEXT NOT NULL,
-    api_url TEXT,
-    zone_type TEXT,
-    proxied BOOLEAN NOT NULL DEFAULT FALSE,
-    is_active BOOLEAN NOT NULL DEFAULT FALSE
+    config JSON NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS router_dns_provider (
+    traefik_id INTEGER NOT NULL,
+    provider_id INTEGER NOT NULL,
+    router_name TEXT NOT NULL,
+    FOREIGN KEY (traefik_id) REFERENCES traefik (id) ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE CASCADE,
+    UNIQUE (traefik_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -45,13 +47,14 @@ CREATE TABLE IF NOT EXISTS users (
     password TEXT NOT NULL,
     email VARCHAR(255),
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-    last_login TIMESTAMP
+    last_login TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS settings (
-    id INTEGER PRIMARY KEY,
-    key VARCHAR(255) NOT NULL UNIQUE,
-    value TEXT NOT NULL
+    key VARCHAR(255) PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS agents (
@@ -59,11 +62,12 @@ CREATE TABLE IF NOT EXISTS agents (
     profile_id INTEGER NOT NULL,
     hostname TEXT NOT NULL,
     public_ip TEXT,
-    private_ips TEXT,
-    containers TEXT,
+    private_ips JSON,
+    containers JSON,
     active_ip TEXT,
     token TEXT NOT NULL,
     last_seen TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 

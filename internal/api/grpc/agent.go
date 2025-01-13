@@ -1,4 +1,4 @@
-package api
+package grpc
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
@@ -35,7 +34,7 @@ func (s *AgentServer) GetContainer(
 	ctx context.Context,
 	req *connect.Request[agentv1.GetContainerRequest],
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
-	agent, err := validate(req.Header(), req.Msg.GetId())
+	_, err := validate(req.Header(), req.Msg.GetId())
 	if err != nil {
 		return nil, err
 	}
@@ -52,15 +51,12 @@ func (s *AgentServer) GetContainer(
 		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	lastSeen := req.Msg.GetLastSeen().AsTime()
-	if _, err := db.Query.UpsertAgent(context.Background(), db.UpsertAgentParams{
+	if err := db.Query.UpdateAgent(context.Background(), db.UpdateAgentParams{
 		ID:         req.Msg.GetId(),
-		ProfileID:  agent.ProfileID,
 		Hostname:   req.Msg.GetHostname(),
 		PublicIp:   &req.Msg.PublicIp,
 		PrivateIps: privateIpsJSON,
 		Containers: containersJSON,
-		LastSeen:   &lastSeen,
 	}); err != nil {
 		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -71,10 +67,10 @@ func (s *AgentServer) GetContainer(
 	}
 	s.mu.Unlock()
 
-	err = traefik.DecodeFromLabels(req.Msg.GetId(), containersJSON)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
+	// err = traefik.DecodeFromLabels(req.Msg.GetId(), containersJSON)
+	// if err != nil {
+	// 	return nil, connect.NewError(connect.CodeInternal, err)
+	// }
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 
@@ -94,7 +90,7 @@ func validate(header http.Header, id string) (*db.Agent, error) {
 	}
 
 	// Check if agent exists
-	agent, err := db.Query.GetAgentByID(context.Background(), id)
+	agent, err := db.Query.GetAgent(context.Background(), id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
 	}

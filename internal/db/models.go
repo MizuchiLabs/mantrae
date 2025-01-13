@@ -6,59 +6,64 @@ package db
 
 import (
 	"time"
+
+	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
 type Agent struct {
-	ID         string     `json:"id"`
-	ProfileID  int64      `json:"profileId"`
-	Hostname   string     `json:"hostname"`
-	PublicIp   *string    `json:"publicIp"`
-	PrivateIps *string    `json:"privateIps"`
-	Containers *string    `json:"containers"`
-	ActiveIp   *string    `json:"activeIp"`
-	Token      string     `json:"token"`
-	LastSeen   *time.Time `json:"lastSeen"`
+	ID         string      `json:"id"`
+	ProfileID  int64       `json:"profileId"`
+	Hostname   string      `json:"hostname"`
+	PublicIp   *string     `json:"publicIp"`
+	PrivateIps interface{} `json:"privateIps"`
+	Containers interface{} `json:"containers"`
+	ActiveIp   *string     `json:"activeIp"`
+	Token      string      `json:"token"`
+	LastSeen   *time.Time  `json:"lastSeen"`
+	CreatedAt  *time.Time  `json:"createdAt"`
+}
+
+type DnsProvider struct {
+	ID        int64       `json:"id"`
+	Name      string      `json:"name"`
+	Type      string      `json:"type"`
+	Config    interface{} `json:"config"`
+	IsActive  bool        `json:"isActive"`
+	CreatedAt *time.Time  `json:"createdAt"`
+	UpdatedAt *time.Time  `json:"updatedAt"`
 }
 
 type Profile struct {
-	ID       int64   `json:"id"`
-	Name     string  `json:"name"`
-	Url      string  `json:"url"`
-	Username *string `json:"username"`
-	Password *string `json:"password"`
-	Tls      bool    `json:"tls"`
-}
-
-type Provider struct {
-	ID         int64   `json:"id"`
-	Name       string  `json:"name"`
-	Type       string  `json:"type"`
-	ExternalIp string  `json:"externalIp"`
-	ApiKey     string  `json:"apiKey"`
-	ApiUrl     *string `json:"apiUrl"`
-	ZoneType   *string `json:"zoneType"`
-	Proxied    bool    `json:"proxied"`
-	IsActive   bool    `json:"isActive"`
+	ID        int64      `json:"id"`
+	Name      string     `json:"name"`
+	Url       string     `json:"url"`
+	Username  *string    `json:"username"`
+	Password  *string    `json:"password"`
+	Tls       bool       `json:"tls"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
 type RouterDnsProvider struct {
-	ProfileID  int64  `json:"profileId"`
+	TraefikID  int64  `json:"traefikId"`
 	ProviderID int64  `json:"providerId"`
-	Name       string `json:"name"`
+	RouterName string `json:"routerName"`
 }
 
 type Setting struct {
-	ID    int64  `json:"id"`
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key       string     `json:"key"`
+	Value     string     `json:"value"`
+	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
-type TraefikApi struct {
-	ProfileID   int64               `json:"profileId"`
-	Entrypoints *TraefikEntryPoints `json:"entrypoints"`
-	Overview    *TraefikOverview    `json:"overview"`
-	External    *TraefikConfig      `json:"external"`
-	Internal    *TraefikConfig      `json:"internal"`
+type TraefikConfig struct {
+	ID          int64                  `json:"id"`
+	ProfileID   int64                  `json:"profileId"`
+	Source      string                 `json:"source"`
+	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
+	Overview    *TraefikOverview       `json:"overview"`
+	Config      *runtime.Configuration `json:"config"`
+	LastSync    *time.Time             `json:"lastSync"`
 }
 
 type User struct {
@@ -68,4 +73,5 @@ type User struct {
 	Email     *string    `json:"email"`
 	IsAdmin   bool       `json:"isAdmin"`
 	LastLogin *time.Time `json:"lastLogin"`
+	CreatedAt *time.Time `json:"createdAt"`
 }

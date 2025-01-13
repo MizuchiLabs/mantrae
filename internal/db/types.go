@@ -6,18 +6,38 @@ import (
 	"fmt"
 
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
-	"github.com/traefik/traefik/v3/pkg/config/runtime"
-	"github.com/traefik/traefik/v3/pkg/config/static"
 )
 
-type TraefikConfig runtime.Configuration
 type HTTPRouters map[string]*dynamic.Router
 type TCPRouters map[string]*dynamic.TCPRouter
 type UDPRouters map[string]*dynamic.UDPRouter
 
 type EntryPointAPI struct {
-	Name string `json:"name,omitempty"`
-	static.EntryPoint
+	Name            string       `json:"name,omitempty"`
+	Address         string       `json:"address,omitempty"`
+	AllowACMEByPass bool         `json:"allowACMEByPass,omitempty"`
+	ReusePort       bool         `json:"reusePort,omitempty"`
+	AsDefault       bool         `json:"asDefault,omitempty"`
+	HTTP            HTTPConfig   `json:"http,omitempty"`
+	HTTP2           *HTTP2Config `json:"http2,omitempty"`
+	HTTP3           *HTTP3Config `json:"http3,omitempty"`
+}
+type HTTPConfig struct {
+	Middlewares           []string   `json:"middlewares,omitempty"`
+	TLS                   *TLSConfig `json:"tls,omitempty"`
+	EncodeQuerySemicolons bool       `json:"encodeQuerySemicolons,omitempty"`
+	MaxHeaderBytes        int        `json:"maxHeaderBytes,omitempty"`
+}
+type HTTP2Config struct {
+	MaxConcurrentStreams int32 `json:"maxConcurrentStreams,omitempty"`
+}
+type HTTP3Config struct {
+	AdvertisedPort int `json:"advertisedPort,omitempty"`
+}
+type TLSConfig struct {
+	Options      string `json:"options,omitempty"`
+	CertResolver string `json:"certResolver,omitempty"`
+	// Domains      []types.Domain `json:"domains,omitempty"`
 }
 type TraefikEntryPoints []EntryPointAPI
 
@@ -43,18 +63,6 @@ type SchemeOverview struct {
 	Routers    Section `json:"routers,omitempty"`
 	Services   Section `json:"services,omitempty"`
 	Middleware Section `json:"middlewares,omitempty"`
-}
-
-func (c *TraefikConfig) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, (*runtime.Configuration)(c))
-}
-
-func (c TraefikConfig) Value() (driver.Value, error) {
-	return json.Marshal(runtime.Configuration(c))
 }
 
 func (e *TraefikEntryPoints) Scan(value interface{}) error {

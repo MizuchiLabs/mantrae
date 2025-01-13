@@ -3,14 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
-	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/api"
+	"github.com/MizuchiLabs/mantrae/internal/api/server"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/tasks"
@@ -63,30 +59,6 @@ func main() {
 	tasks.StartSync(ctx)
 
 	// Start the WebUI server
-	srv := &http.Server{
-		Addr:              ":" + util.App.Port,
-		Handler:           api.Server(),
-		ReadHeaderTimeout: 5 * time.Second,
-	}
-
-	slog.Info("Server running on", "port", util.App.Port)
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("ListenAndServe", "error", err)
-			os.Exit(1)
-		}
-	}()
-
-	// Wait for interrupt signal to gracefully shutdown the server
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	slog.Info("Shutting down server...")
-	cancel()
-
-	ctxShutdown, cancelShutdown := context.WithTimeout(ctx, 3*time.Second)
-	defer cancelShutdown()
-	if err := srv.Shutdown(ctxShutdown); err != nil {
-		slog.Error("Server forced to shutdown:", "error", err)
-	}
+	srv := server.NewServer(db.DB)
+	srv.Start(ctx)
 }

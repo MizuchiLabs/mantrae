@@ -24,13 +24,11 @@ var backupCron *cron.Cron
 
 // BackupData is the structure for the full manual backup
 type BackupData struct {
-	Profiles    []db.Profile    `json:"profiles"`
-	Providers   []db.Provider   `json:"providers"`
-	Settings    []db.Setting    `json:"settings"`
-	Users       []db.User       `json:"users"`
-	Routers     []db.Router     `json:"routers"`
-	Services    []db.Service    `json:"services"`
-	Middlewares []db.Middleware `json:"middlewares"`
+	Profiles  []db.Profile       `json:"profiles"`
+	Providers []db.DnsProvider   `json:"providers"`
+	Settings  []db.Setting       `json:"settings"`
+	Users     []db.User          `json:"users"`
+	Routers   []db.TraefikConfig `json:"traefik_configs"`
 }
 
 func DumpBackup(ctx context.Context) (*BackupData, error) {

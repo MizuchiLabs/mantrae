@@ -31,12 +31,12 @@ var (
 	managedTXT   = "\"managed-by=mantrae\""
 )
 
-func getProvider(id *int64) (DNSProvider, error) {
-	if id == nil || *id == 0 {
+func getProvider(id int64) (DNSProvider, error) {
+	if id == 0 {
 		return nil, fmt.Errorf("invalid provider id")
 	}
 
-	provider, err := db.Query.GetProviderByID(context.Background(), *id)
+	provider, err := db.Query.GetDNSProvider(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,10 @@ func UpdateDNS() {
 
 	// Get all local
 	for _, profile := range profiles {
-		routers, err := db.Query.GetInternalHTTPRoutersByProfileID(context.Background(), profile.ID)
+		routers, err := db.Query.GetHTTPRoutersBySource(context.Background(), db.GetHTTPRoutersBySourceParams{
+			ProfileID: profile.ID,
+			Source:    "internal",
+		})
 		if err != nil {
 			slog.Error("Failed to get routers", "error", err)
 			continue
@@ -105,11 +108,11 @@ func UpdateDNS() {
 
 			}
 			// Update routers
-			if _, err := db.Query.UpsertRouter(context.Background(), db.UpsertRouterParams{
-				ID:          router.ID,
-				ProfileID:   router.ProfileID,
-				Name:        router.Name,
-				DnsProvider: router.DnsProvider,
+			if err := db.Query.UpsertHTTPRouter(context.Background(), db.UpsertHTTPRouterParams{
+				ProfileID:  router.ProfileID,
+				Name:       router.Name,
+				Source:     "internal",
+				RouterJson: router.RouterJson,
 			}); err != nil {
 				slog.Error("Failed to update routers", "error", err)
 			}
@@ -117,27 +120,27 @@ func UpdateDNS() {
 	}
 }
 
-// DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(router db.Router) {
-	provider, err := getProvider(router.DnsProvider)
-	if err != nil {
-		slog.Error("Failed to get provider", "error", err)
-		return
-	}
+// // DeleteDNS deletes the DNS record for a router if it's managed by us
+// func DeleteDNS(router db.Router) {
+// 	provider, err := getProvider(router.DnsProvider)
+// 	if err != nil {
+// 		slog.Error("Failed to get provider", "error", err)
+// 		return
+// 	}
 
-	domains, err := util.ExtractDomainFromRule(router.Rule)
-	if err != nil {
-		slog.Error("Failed to extract domain from rule", "error", err)
-		return
-	}
+// 	domains, err := util.ExtractDomainFromRule(router.Rule)
+// 	if err != nil {
+// 		slog.Error("Failed to extract domain from rule", "error", err)
+// 		return
+// 	}
 
-	for _, domain := range domains {
-		if err := provider.DeleteRecord(domain); err != nil {
-			slog.Error("Failed to delete record", "error", err)
-			return
-		}
-	}
-}
+// 	for _, domain := range domains {
+// 		if err := provider.DeleteRecord(domain); err != nil {
+// 			slog.Error("Failed to delete record", "error", err)
+// 			return
+// 		}
+// 	}
+// }
 
 func getBaseDomain(domain string) (string, error) {
 	// Ensure the domain doesn't contain a scheme

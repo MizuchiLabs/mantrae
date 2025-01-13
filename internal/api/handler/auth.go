@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"encoding/json"
@@ -11,8 +11,6 @@ import (
 	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"golang.org/x/crypto/bcrypt"
 )
-
-// Authentication -------------------------------------------------------------
 
 // Login verifies user credentials using a normal password and returns a JWT token if successful.
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +43,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, map[string]string{"token": token})
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }
 
 // VerifyToken checks the validity of a JWT token provided in cookies or Authorization header.
@@ -71,7 +70,8 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, data)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
 }
 
 // ResetPassword allows users to reset their password using a valid JWT token.
@@ -113,10 +113,12 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err = db.Query.UpsertUser(r.Context(), db.UpsertUserParams{
+	if err = db.Query.UpdateUser(r.Context(), db.UpdateUserParams{
+		ID:       dbUser.ID,
 		Username: dbUser.Username,
 		Email:    dbUser.Email,
 		Password: string(hash),
+		IsAdmin:  dbUser.IsAdmin,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -176,4 +178,6 @@ func SendResetEmail(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }

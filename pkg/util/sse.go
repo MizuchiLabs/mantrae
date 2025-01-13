@@ -10,6 +10,14 @@ type EventMessage struct {
 	Message string `json:"message"`
 }
 
+const (
+	EventTypeError  = "error"
+	EventTypeInfo   = "info"
+	EventTypeCreate = "create"
+	EventTypeUpdate = "update"
+	EventTypeDelete = "delete"
+)
+
 // A channel to broadcast updates
 var Broadcast = make(chan EventMessage)
 
