@@ -8,6 +8,25 @@ CREATE TABLE IF NOT EXISTS profiles (
     tls BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TABLE IF NOT EXISTS traefik_api (
+    profile_id INTEGER NOT NULL,
+    entrypoints TEXT,
+    overview TEXT,
+    external TEXT,
+    internal TEXT,
+    FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+    UNIQUE (profile_id)
+);
+
+CREATE TABLE IF NOT EXISTS router_dns_provider (
+    profile_id INTEGER NOT NULL,
+    provider_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+    FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE CASCADE,
+    UNIQUE (profile_id, name)
+);
+
 CREATE TABLE IF NOT EXISTS entrypoints (
     profile_id INTEGER NOT NULL,
     name VARCHAR(255) NOT NULL,

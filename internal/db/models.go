@@ -9,34 +9,15 @@ import (
 )
 
 type Agent struct {
-	ID         string      `json:"id"`
-	ProfileID  int64       `json:"profileId"`
-	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	ActiveIp   *string     `json:"activeIp"`
-	Token      string      `json:"token"`
-	LastSeen   *time.Time  `json:"lastSeen"`
-}
-
-type Entrypoint struct {
-	ProfileID int64       `json:"profileId"`
-	Name      string      `json:"name"`
-	Address   string      `json:"address"`
-	AsDefault *bool       `json:"asDefault"`
-	Http      interface{} `json:"http"`
-}
-
-type Middleware struct {
-	ID        string      `json:"id"`
-	ProfileID int64       `json:"profileId"`
-	Name      string      `json:"name"`
-	Provider  string      `json:"provider"`
-	Type      string      `json:"type"`
-	Protocol  string      `json:"protocol"`
-	AgentID   *string     `json:"agentId"`
-	Content   interface{} `json:"content"`
+	ID         string     `json:"id"`
+	ProfileID  int64      `json:"profileId"`
+	Hostname   string     `json:"hostname"`
+	PublicIp   *string    `json:"publicIp"`
+	PrivateIps *string    `json:"privateIps"`
+	Containers *string    `json:"containers"`
+	ActiveIp   *string    `json:"activeIp"`
+	Token      string     `json:"token"`
+	LastSeen   *time.Time `json:"lastSeen"`
 }
 
 type Profile struct {
@@ -60,39 +41,10 @@ type Provider struct {
 	IsActive   bool    `json:"isActive"`
 }
 
-type Router struct {
-	ID          string      `json:"id"`
-	ProfileID   int64       `json:"profileId"`
-	Name        string      `json:"name"`
-	Provider    string      `json:"provider"`
-	Protocol    string      `json:"protocol"`
-	Status      *string     `json:"status"`
-	AgentID     *string     `json:"agentId"`
-	EntryPoints interface{} `json:"entryPoints"`
-	Middlewares interface{} `json:"middlewares"`
-	Rule        string      `json:"rule"`
-	RuleSyntax  *string     `json:"ruleSyntax"`
-	Service     string      `json:"service"`
-	Priority    *int64      `json:"priority"`
-	Tls         interface{} `json:"tls"`
-	DnsProvider *int64      `json:"dnsProvider"`
-	Errors      interface{} `json:"errors"`
-}
-
-type Service struct {
-	ID           string      `json:"id"`
-	ProfileID    int64       `json:"profileId"`
-	Name         string      `json:"name"`
-	Provider     string      `json:"provider"`
-	Type         string      `json:"type"`
-	Protocol     string      `json:"protocol"`
-	AgentID      *string     `json:"agentId"`
-	Status       *string     `json:"status"`
-	ServerStatus interface{} `json:"serverStatus"`
-	LoadBalancer interface{} `json:"loadBalancer"`
-	Weighted     interface{} `json:"weighted"`
-	Mirroring    interface{} `json:"mirroring"`
-	Failover     interface{} `json:"failover"`
+type RouterDnsProvider struct {
+	ProfileID  int64  `json:"profileId"`
+	ProviderID int64  `json:"providerId"`
+	Name       string `json:"name"`
 }
 
 type Setting struct {
@@ -101,11 +53,19 @@ type Setting struct {
 	Value string `json:"value"`
 }
 
+type TraefikApi struct {
+	ProfileID   int64               `json:"profileId"`
+	Entrypoints *TraefikEntryPoints `json:"entrypoints"`
+	Overview    *TraefikOverview    `json:"overview"`
+	External    *TraefikConfig      `json:"external"`
+	Internal    *TraefikConfig      `json:"internal"`
+}
+
 type User struct {
 	ID        int64      `json:"id"`
 	Username  string     `json:"username"`
 	Password  string     `json:"password"`
 	Email     *string    `json:"email"`
-	LastLogin *time.Time `json:"lastLogin"`
 	IsAdmin   bool       `json:"isAdmin"`
+	LastLogin *time.Time `json:"lastLogin"`
 }

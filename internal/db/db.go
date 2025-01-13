@@ -30,32 +30,35 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteAgentByIDStmt, err = db.PrepareContext(ctx, deleteAgentByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteAgentByID: %w", err)
 	}
-	if q.deleteEntryPointByNameStmt, err = db.PrepareContext(ctx, deleteEntryPointByName); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteEntryPointByName: %w", err)
+	if q.deleteInternalHTTPMiddlewareStmt, err = db.PrepareContext(ctx, deleteInternalHTTPMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalHTTPMiddleware: %w", err)
 	}
-	if q.deleteMiddlewareByIDStmt, err = db.PrepareContext(ctx, deleteMiddlewareByID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteMiddlewareByID: %w", err)
+	if q.deleteInternalHTTPRouterStmt, err = db.PrepareContext(ctx, deleteInternalHTTPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalHTTPRouter: %w", err)
+	}
+	if q.deleteInternalHTTPServiceStmt, err = db.PrepareContext(ctx, deleteInternalHTTPService); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalHTTPService: %w", err)
+	}
+	if q.deleteInternalTCPMiddlewareStmt, err = db.PrepareContext(ctx, deleteInternalTCPMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalTCPMiddleware: %w", err)
+	}
+	if q.deleteInternalTCPRouterStmt, err = db.PrepareContext(ctx, deleteInternalTCPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalTCPRouter: %w", err)
+	}
+	if q.deleteInternalTCPServiceStmt, err = db.PrepareContext(ctx, deleteInternalTCPService); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalTCPService: %w", err)
+	}
+	if q.deleteInternalUDPRouterStmt, err = db.PrepareContext(ctx, deleteInternalUDPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalUDPRouter: %w", err)
+	}
+	if q.deleteInternalUDPServiceStmt, err = db.PrepareContext(ctx, deleteInternalUDPService); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteInternalUDPService: %w", err)
 	}
 	if q.deleteProfileByIDStmt, err = db.PrepareContext(ctx, deleteProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfileByID: %w", err)
 	}
-	if q.deleteProfileByNameStmt, err = db.PrepareContext(ctx, deleteProfileByName); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteProfileByName: %w", err)
-	}
 	if q.deleteProviderByIDStmt, err = db.PrepareContext(ctx, deleteProviderByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProviderByID: %w", err)
-	}
-	if q.deleteRouterByIDStmt, err = db.PrepareContext(ctx, deleteRouterByID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteRouterByID: %w", err)
-	}
-	if q.deleteRouterByNameStmt, err = db.PrepareContext(ctx, deleteRouterByName); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteRouterByName: %w", err)
-	}
-	if q.deleteServiceByIDStmt, err = db.PrepareContext(ctx, deleteServiceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteServiceByID: %w", err)
-	}
-	if q.deleteServiceByNameStmt, err = db.PrepareContext(ctx, deleteServiceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteServiceByName: %w", err)
 	}
 	if q.deleteSettingByIDStmt, err = db.PrepareContext(ctx, deleteSettingByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSettingByID: %w", err)
@@ -72,14 +75,107 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDefaultProviderStmt, err = db.PrepareContext(ctx, getDefaultProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDefaultProvider: %w", err)
 	}
-	if q.getEntryPointByNameStmt, err = db.PrepareContext(ctx, getEntryPointByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetEntryPointByName: %w", err)
+	if q.getExternalHTTPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getExternalHTTPMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPMiddlewareByName: %w", err)
 	}
-	if q.getMiddlewareByIDStmt, err = db.PrepareContext(ctx, getMiddlewareByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetMiddlewareByID: %w", err)
+	if q.getExternalHTTPMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, getExternalHTTPMiddlewaresByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPMiddlewaresByProfileID: %w", err)
 	}
-	if q.getMiddlewareByNameStmt, err = db.PrepareContext(ctx, getMiddlewareByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetMiddlewareByName: %w", err)
+	if q.getExternalHTTPRouterByNameStmt, err = db.PrepareContext(ctx, getExternalHTTPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPRouterByName: %w", err)
+	}
+	if q.getExternalHTTPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getExternalHTTPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPRoutersByProfileID: %w", err)
+	}
+	if q.getExternalHTTPServiceByNameStmt, err = db.PrepareContext(ctx, getExternalHTTPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPServiceByName: %w", err)
+	}
+	if q.getExternalHTTPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getExternalHTTPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalHTTPServicesByProfileID: %w", err)
+	}
+	if q.getExternalTCPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getExternalTCPMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPMiddlewareByName: %w", err)
+	}
+	if q.getExternalTCPMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, getExternalTCPMiddlewaresByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPMiddlewaresByProfileID: %w", err)
+	}
+	if q.getExternalTCPRouterByNameStmt, err = db.PrepareContext(ctx, getExternalTCPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPRouterByName: %w", err)
+	}
+	if q.getExternalTCPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getExternalTCPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPRoutersByProfileID: %w", err)
+	}
+	if q.getExternalTCPServiceByNameStmt, err = db.PrepareContext(ctx, getExternalTCPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPServiceByName: %w", err)
+	}
+	if q.getExternalTCPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getExternalTCPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTCPServicesByProfileID: %w", err)
+	}
+	if q.getExternalTraefikConfigByProfileIDStmt, err = db.PrepareContext(ctx, getExternalTraefikConfigByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalTraefikConfigByProfileID: %w", err)
+	}
+	if q.getExternalUDPRouterByNameStmt, err = db.PrepareContext(ctx, getExternalUDPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalUDPRouterByName: %w", err)
+	}
+	if q.getExternalUDPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getExternalUDPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalUDPRoutersByProfileID: %w", err)
+	}
+	if q.getExternalUDPServiceByNameStmt, err = db.PrepareContext(ctx, getExternalUDPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalUDPServiceByName: %w", err)
+	}
+	if q.getExternalUDPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getExternalUDPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetExternalUDPServicesByProfileID: %w", err)
+	}
+	if q.getInternalHTTPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getInternalHTTPMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPMiddlewareByName: %w", err)
+	}
+	if q.getInternalHTTPMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, getInternalHTTPMiddlewaresByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPMiddlewaresByProfileID: %w", err)
+	}
+	if q.getInternalHTTPRouterByNameStmt, err = db.PrepareContext(ctx, getInternalHTTPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPRouterByName: %w", err)
+	}
+	if q.getInternalHTTPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getInternalHTTPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPRoutersByProfileID: %w", err)
+	}
+	if q.getInternalHTTPServiceByNameStmt, err = db.PrepareContext(ctx, getInternalHTTPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPServiceByName: %w", err)
+	}
+	if q.getInternalHTTPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getInternalHTTPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalHTTPServicesByProfileID: %w", err)
+	}
+	if q.getInternalTCPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getInternalTCPMiddlewareByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPMiddlewareByName: %w", err)
+	}
+	if q.getInternalTCPMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, getInternalTCPMiddlewaresByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPMiddlewaresByProfileID: %w", err)
+	}
+	if q.getInternalTCPRouterByNameStmt, err = db.PrepareContext(ctx, getInternalTCPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPRouterByName: %w", err)
+	}
+	if q.getInternalTCPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getInternalTCPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPRoutersByProfileID: %w", err)
+	}
+	if q.getInternalTCPServiceByNameStmt, err = db.PrepareContext(ctx, getInternalTCPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPServiceByName: %w", err)
+	}
+	if q.getInternalTCPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getInternalTCPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTCPServicesByProfileID: %w", err)
+	}
+	if q.getInternalTraefikConfigByProfileIDStmt, err = db.PrepareContext(ctx, getInternalTraefikConfigByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalTraefikConfigByProfileID: %w", err)
+	}
+	if q.getInternalUDPRouterByNameStmt, err = db.PrepareContext(ctx, getInternalUDPRouterByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalUDPRouterByName: %w", err)
+	}
+	if q.getInternalUDPRoutersByProfileIDStmt, err = db.PrepareContext(ctx, getInternalUDPRoutersByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalUDPRoutersByProfileID: %w", err)
+	}
+	if q.getInternalUDPServiceByNameStmt, err = db.PrepareContext(ctx, getInternalUDPServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalUDPServiceByName: %w", err)
+	}
+	if q.getInternalUDPServicesByProfileIDStmt, err = db.PrepareContext(ctx, getInternalUDPServicesByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetInternalUDPServicesByProfileID: %w", err)
 	}
 	if q.getProfileByIDStmt, err = db.PrepareContext(ctx, getProfileByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfileByID: %w", err)
@@ -90,20 +186,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProviderByIDStmt, err = db.PrepareContext(ctx, getProviderByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProviderByID: %w", err)
 	}
-	if q.getRouterByIDStmt, err = db.PrepareContext(ctx, getRouterByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRouterByID: %w", err)
-	}
-	if q.getRouterByNameStmt, err = db.PrepareContext(ctx, getRouterByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRouterByName: %w", err)
-	}
-	if q.getServiceByIDStmt, err = db.PrepareContext(ctx, getServiceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetServiceByID: %w", err)
-	}
-	if q.getServiceByNameStmt, err = db.PrepareContext(ctx, getServiceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetServiceByName: %w", err)
-	}
 	if q.getSettingByKeyStmt, err = db.PrepareContext(ctx, getSettingByKey); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSettingByKey: %w", err)
+	}
+	if q.getTraefikConfigByProfileIDStmt, err = db.PrepareContext(ctx, getTraefikConfigByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTraefikConfigByProfileID: %w", err)
+	}
+	if q.getTraefikEntrypointsByProfileIDStmt, err = db.PrepareContext(ctx, getTraefikEntrypointsByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTraefikEntrypointsByProfileID: %w", err)
+	}
+	if q.getTraefikOverviewByProfileIDStmt, err = db.PrepareContext(ctx, getTraefikOverviewByProfileID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTraefikOverviewByProfileID: %w", err)
 	}
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
@@ -117,47 +210,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listAgentsByProfileIDStmt, err = db.PrepareContext(ctx, listAgentsByProfileID); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgentsByProfileID: %w", err)
 	}
-	if q.listEntryPointsStmt, err = db.PrepareContext(ctx, listEntryPoints); err != nil {
-		return nil, fmt.Errorf("error preparing query ListEntryPoints: %w", err)
-	}
-	if q.listEntryPointsByProfileIDStmt, err = db.PrepareContext(ctx, listEntryPointsByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query ListEntryPointsByProfileID: %w", err)
-	}
-	if q.listMiddlewaresStmt, err = db.PrepareContext(ctx, listMiddlewares); err != nil {
-		return nil, fmt.Errorf("error preparing query ListMiddlewares: %w", err)
-	}
-	if q.listMiddlewaresByProfileIDStmt, err = db.PrepareContext(ctx, listMiddlewaresByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProfileID: %w", err)
-	}
-	if q.listMiddlewaresByProviderStmt, err = db.PrepareContext(ctx, listMiddlewaresByProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProvider: %w", err)
-	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
 	if q.listProvidersStmt, err = db.PrepareContext(ctx, listProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProviders: %w", err)
-	}
-	if q.listRoutersStmt, err = db.PrepareContext(ctx, listRouters); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRouters: %w", err)
-	}
-	if q.listRoutersByAgentIDStmt, err = db.PrepareContext(ctx, listRoutersByAgentID); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRoutersByAgentID: %w", err)
-	}
-	if q.listRoutersByProfileIDStmt, err = db.PrepareContext(ctx, listRoutersByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRoutersByProfileID: %w", err)
-	}
-	if q.listRoutersByProviderStmt, err = db.PrepareContext(ctx, listRoutersByProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRoutersByProvider: %w", err)
-	}
-	if q.listServicesStmt, err = db.PrepareContext(ctx, listServices); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServices: %w", err)
-	}
-	if q.listServicesByProfileIDStmt, err = db.PrepareContext(ctx, listServicesByProfileID); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServicesByProfileID: %w", err)
-	}
-	if q.listServicesByProviderStmt, err = db.PrepareContext(ctx, listServicesByProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServicesByProvider: %w", err)
 	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
@@ -171,11 +228,29 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.upsertAgentStmt, err = db.PrepareContext(ctx, upsertAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertAgent: %w", err)
 	}
-	if q.upsertEntryPointStmt, err = db.PrepareContext(ctx, upsertEntryPoint); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertEntryPoint: %w", err)
+	if q.upsertInternalHTTPMiddlewareStmt, err = db.PrepareContext(ctx, upsertInternalHTTPMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalHTTPMiddleware: %w", err)
 	}
-	if q.upsertMiddlewareStmt, err = db.PrepareContext(ctx, upsertMiddleware); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertMiddleware: %w", err)
+	if q.upsertInternalHTTPRouterStmt, err = db.PrepareContext(ctx, upsertInternalHTTPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalHTTPRouter: %w", err)
+	}
+	if q.upsertInternalHTTPServiceStmt, err = db.PrepareContext(ctx, upsertInternalHTTPService); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalHTTPService: %w", err)
+	}
+	if q.upsertInternalTCPMiddlewareStmt, err = db.PrepareContext(ctx, upsertInternalTCPMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalTCPMiddleware: %w", err)
+	}
+	if q.upsertInternalTCPRouterStmt, err = db.PrepareContext(ctx, upsertInternalTCPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalTCPRouter: %w", err)
+	}
+	if q.upsertInternalTCPServiceStmt, err = db.PrepareContext(ctx, upsertInternalTCPService); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalTCPService: %w", err)
+	}
+	if q.upsertInternalUDPRouterStmt, err = db.PrepareContext(ctx, upsertInternalUDPRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalUDPRouter: %w", err)
+	}
+	if q.upsertInternalUDPServiceStmt, err = db.PrepareContext(ctx, upsertInternalUDPService); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertInternalUDPService: %w", err)
 	}
 	if q.upsertProfileStmt, err = db.PrepareContext(ctx, upsertProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertProfile: %w", err)
@@ -183,11 +258,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.upsertProviderStmt, err = db.PrepareContext(ctx, upsertProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertProvider: %w", err)
 	}
-	if q.upsertRouterStmt, err = db.PrepareContext(ctx, upsertRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertRouter: %w", err)
-	}
-	if q.upsertServiceStmt, err = db.PrepareContext(ctx, upsertService); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertService: %w", err)
+	if q.upsertTraefikConfigStmt, err = db.PrepareContext(ctx, upsertTraefikConfig); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertTraefikConfig: %w", err)
 	}
 	if q.upsertUserStmt, err = db.PrepareContext(ctx, upsertUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertUser: %w", err)
@@ -207,14 +279,44 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteAgentByIDStmt: %w", cerr)
 		}
 	}
-	if q.deleteEntryPointByNameStmt != nil {
-		if cerr := q.deleteEntryPointByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteEntryPointByNameStmt: %w", cerr)
+	if q.deleteInternalHTTPMiddlewareStmt != nil {
+		if cerr := q.deleteInternalHTTPMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalHTTPMiddlewareStmt: %w", cerr)
 		}
 	}
-	if q.deleteMiddlewareByIDStmt != nil {
-		if cerr := q.deleteMiddlewareByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteMiddlewareByIDStmt: %w", cerr)
+	if q.deleteInternalHTTPRouterStmt != nil {
+		if cerr := q.deleteInternalHTTPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalHTTPRouterStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalHTTPServiceStmt != nil {
+		if cerr := q.deleteInternalHTTPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalHTTPServiceStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalTCPMiddlewareStmt != nil {
+		if cerr := q.deleteInternalTCPMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalTCPMiddlewareStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalTCPRouterStmt != nil {
+		if cerr := q.deleteInternalTCPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalTCPRouterStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalTCPServiceStmt != nil {
+		if cerr := q.deleteInternalTCPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalTCPServiceStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalUDPRouterStmt != nil {
+		if cerr := q.deleteInternalUDPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalUDPRouterStmt: %w", cerr)
+		}
+	}
+	if q.deleteInternalUDPServiceStmt != nil {
+		if cerr := q.deleteInternalUDPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteInternalUDPServiceStmt: %w", cerr)
 		}
 	}
 	if q.deleteProfileByIDStmt != nil {
@@ -222,34 +324,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteProfileByIDStmt: %w", cerr)
 		}
 	}
-	if q.deleteProfileByNameStmt != nil {
-		if cerr := q.deleteProfileByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteProfileByNameStmt: %w", cerr)
-		}
-	}
 	if q.deleteProviderByIDStmt != nil {
 		if cerr := q.deleteProviderByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteProviderByIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteRouterByIDStmt != nil {
-		if cerr := q.deleteRouterByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteRouterByIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteRouterByNameStmt != nil {
-		if cerr := q.deleteRouterByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteRouterByNameStmt: %w", cerr)
-		}
-	}
-	if q.deleteServiceByIDStmt != nil {
-		if cerr := q.deleteServiceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteServiceByIDStmt: %w", cerr)
-		}
-	}
-	if q.deleteServiceByNameStmt != nil {
-		if cerr := q.deleteServiceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteServiceByNameStmt: %w", cerr)
 		}
 	}
 	if q.deleteSettingByIDStmt != nil {
@@ -277,19 +354,174 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getDefaultProviderStmt: %w", cerr)
 		}
 	}
-	if q.getEntryPointByNameStmt != nil {
-		if cerr := q.getEntryPointByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getEntryPointByNameStmt: %w", cerr)
+	if q.getExternalHTTPMiddlewareByNameStmt != nil {
+		if cerr := q.getExternalHTTPMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPMiddlewareByNameStmt: %w", cerr)
 		}
 	}
-	if q.getMiddlewareByIDStmt != nil {
-		if cerr := q.getMiddlewareByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getMiddlewareByIDStmt: %w", cerr)
+	if q.getExternalHTTPMiddlewaresByProfileIDStmt != nil {
+		if cerr := q.getExternalHTTPMiddlewaresByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPMiddlewaresByProfileIDStmt: %w", cerr)
 		}
 	}
-	if q.getMiddlewareByNameStmt != nil {
-		if cerr := q.getMiddlewareByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getMiddlewareByNameStmt: %w", cerr)
+	if q.getExternalHTTPRouterByNameStmt != nil {
+		if cerr := q.getExternalHTTPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalHTTPRoutersByProfileIDStmt != nil {
+		if cerr := q.getExternalHTTPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalHTTPServiceByNameStmt != nil {
+		if cerr := q.getExternalHTTPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalHTTPServicesByProfileIDStmt != nil {
+		if cerr := q.getExternalHTTPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalHTTPServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPMiddlewareByNameStmt != nil {
+		if cerr := q.getExternalTCPMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPMiddlewareByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPMiddlewaresByProfileIDStmt != nil {
+		if cerr := q.getExternalTCPMiddlewaresByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPMiddlewaresByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPRouterByNameStmt != nil {
+		if cerr := q.getExternalTCPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPRoutersByProfileIDStmt != nil {
+		if cerr := q.getExternalTCPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPServiceByNameStmt != nil {
+		if cerr := q.getExternalTCPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTCPServicesByProfileIDStmt != nil {
+		if cerr := q.getExternalTCPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTCPServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalTraefikConfigByProfileIDStmt != nil {
+		if cerr := q.getExternalTraefikConfigByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalTraefikConfigByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalUDPRouterByNameStmt != nil {
+		if cerr := q.getExternalUDPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalUDPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalUDPRoutersByProfileIDStmt != nil {
+		if cerr := q.getExternalUDPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalUDPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getExternalUDPServiceByNameStmt != nil {
+		if cerr := q.getExternalUDPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalUDPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getExternalUDPServicesByProfileIDStmt != nil {
+		if cerr := q.getExternalUDPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getExternalUDPServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPMiddlewareByNameStmt != nil {
+		if cerr := q.getInternalHTTPMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPMiddlewareByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPMiddlewaresByProfileIDStmt != nil {
+		if cerr := q.getInternalHTTPMiddlewaresByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPMiddlewaresByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPRouterByNameStmt != nil {
+		if cerr := q.getInternalHTTPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPRoutersByProfileIDStmt != nil {
+		if cerr := q.getInternalHTTPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPServiceByNameStmt != nil {
+		if cerr := q.getInternalHTTPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalHTTPServicesByProfileIDStmt != nil {
+		if cerr := q.getInternalHTTPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalHTTPServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPMiddlewareByNameStmt != nil {
+		if cerr := q.getInternalTCPMiddlewareByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPMiddlewareByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPMiddlewaresByProfileIDStmt != nil {
+		if cerr := q.getInternalTCPMiddlewaresByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPMiddlewaresByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPRouterByNameStmt != nil {
+		if cerr := q.getInternalTCPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPRoutersByProfileIDStmt != nil {
+		if cerr := q.getInternalTCPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPServiceByNameStmt != nil {
+		if cerr := q.getInternalTCPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTCPServicesByProfileIDStmt != nil {
+		if cerr := q.getInternalTCPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTCPServicesByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalTraefikConfigByProfileIDStmt != nil {
+		if cerr := q.getInternalTraefikConfigByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalTraefikConfigByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalUDPRouterByNameStmt != nil {
+		if cerr := q.getInternalUDPRouterByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalUDPRouterByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalUDPRoutersByProfileIDStmt != nil {
+		if cerr := q.getInternalUDPRoutersByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalUDPRoutersByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getInternalUDPServiceByNameStmt != nil {
+		if cerr := q.getInternalUDPServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalUDPServiceByNameStmt: %w", cerr)
+		}
+	}
+	if q.getInternalUDPServicesByProfileIDStmt != nil {
+		if cerr := q.getInternalUDPServicesByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getInternalUDPServicesByProfileIDStmt: %w", cerr)
 		}
 	}
 	if q.getProfileByIDStmt != nil {
@@ -307,29 +539,24 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProviderByIDStmt: %w", cerr)
 		}
 	}
-	if q.getRouterByIDStmt != nil {
-		if cerr := q.getRouterByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRouterByIDStmt: %w", cerr)
-		}
-	}
-	if q.getRouterByNameStmt != nil {
-		if cerr := q.getRouterByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRouterByNameStmt: %w", cerr)
-		}
-	}
-	if q.getServiceByIDStmt != nil {
-		if cerr := q.getServiceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getServiceByIDStmt: %w", cerr)
-		}
-	}
-	if q.getServiceByNameStmt != nil {
-		if cerr := q.getServiceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getServiceByNameStmt: %w", cerr)
-		}
-	}
 	if q.getSettingByKeyStmt != nil {
 		if cerr := q.getSettingByKeyStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getSettingByKeyStmt: %w", cerr)
+		}
+	}
+	if q.getTraefikConfigByProfileIDStmt != nil {
+		if cerr := q.getTraefikConfigByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTraefikConfigByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getTraefikEntrypointsByProfileIDStmt != nil {
+		if cerr := q.getTraefikEntrypointsByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTraefikEntrypointsByProfileIDStmt: %w", cerr)
+		}
+	}
+	if q.getTraefikOverviewByProfileIDStmt != nil {
+		if cerr := q.getTraefikOverviewByProfileIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTraefikOverviewByProfileIDStmt: %w", cerr)
 		}
 	}
 	if q.getUserByIDStmt != nil {
@@ -352,31 +579,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listAgentsByProfileIDStmt: %w", cerr)
 		}
 	}
-	if q.listEntryPointsStmt != nil {
-		if cerr := q.listEntryPointsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listEntryPointsStmt: %w", cerr)
-		}
-	}
-	if q.listEntryPointsByProfileIDStmt != nil {
-		if cerr := q.listEntryPointsByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listEntryPointsByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.listMiddlewaresStmt != nil {
-		if cerr := q.listMiddlewaresStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listMiddlewaresStmt: %w", cerr)
-		}
-	}
-	if q.listMiddlewaresByProfileIDStmt != nil {
-		if cerr := q.listMiddlewaresByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listMiddlewaresByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.listMiddlewaresByProviderStmt != nil {
-		if cerr := q.listMiddlewaresByProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listMiddlewaresByProviderStmt: %w", cerr)
-		}
-	}
 	if q.listProfilesStmt != nil {
 		if cerr := q.listProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
@@ -385,41 +587,6 @@ func (q *Queries) Close() error {
 	if q.listProvidersStmt != nil {
 		if cerr := q.listProvidersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listProvidersStmt: %w", cerr)
-		}
-	}
-	if q.listRoutersStmt != nil {
-		if cerr := q.listRoutersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersStmt: %w", cerr)
-		}
-	}
-	if q.listRoutersByAgentIDStmt != nil {
-		if cerr := q.listRoutersByAgentIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersByAgentIDStmt: %w", cerr)
-		}
-	}
-	if q.listRoutersByProfileIDStmt != nil {
-		if cerr := q.listRoutersByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.listRoutersByProviderStmt != nil {
-		if cerr := q.listRoutersByProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersByProviderStmt: %w", cerr)
-		}
-	}
-	if q.listServicesStmt != nil {
-		if cerr := q.listServicesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServicesStmt: %w", cerr)
-		}
-	}
-	if q.listServicesByProfileIDStmt != nil {
-		if cerr := q.listServicesByProfileIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServicesByProfileIDStmt: %w", cerr)
-		}
-	}
-	if q.listServicesByProviderStmt != nil {
-		if cerr := q.listServicesByProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServicesByProviderStmt: %w", cerr)
 		}
 	}
 	if q.listSettingsStmt != nil {
@@ -442,14 +609,44 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing upsertAgentStmt: %w", cerr)
 		}
 	}
-	if q.upsertEntryPointStmt != nil {
-		if cerr := q.upsertEntryPointStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertEntryPointStmt: %w", cerr)
+	if q.upsertInternalHTTPMiddlewareStmt != nil {
+		if cerr := q.upsertInternalHTTPMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalHTTPMiddlewareStmt: %w", cerr)
 		}
 	}
-	if q.upsertMiddlewareStmt != nil {
-		if cerr := q.upsertMiddlewareStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertMiddlewareStmt: %w", cerr)
+	if q.upsertInternalHTTPRouterStmt != nil {
+		if cerr := q.upsertInternalHTTPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalHTTPRouterStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalHTTPServiceStmt != nil {
+		if cerr := q.upsertInternalHTTPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalHTTPServiceStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalTCPMiddlewareStmt != nil {
+		if cerr := q.upsertInternalTCPMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalTCPMiddlewareStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalTCPRouterStmt != nil {
+		if cerr := q.upsertInternalTCPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalTCPRouterStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalTCPServiceStmt != nil {
+		if cerr := q.upsertInternalTCPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalTCPServiceStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalUDPRouterStmt != nil {
+		if cerr := q.upsertInternalUDPRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalUDPRouterStmt: %w", cerr)
+		}
+	}
+	if q.upsertInternalUDPServiceStmt != nil {
+		if cerr := q.upsertInternalUDPServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertInternalUDPServiceStmt: %w", cerr)
 		}
 	}
 	if q.upsertProfileStmt != nil {
@@ -462,14 +659,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing upsertProviderStmt: %w", cerr)
 		}
 	}
-	if q.upsertRouterStmt != nil {
-		if cerr := q.upsertRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertRouterStmt: %w", cerr)
-		}
-	}
-	if q.upsertServiceStmt != nil {
-		if cerr := q.upsertServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertServiceStmt: %w", cerr)
+	if q.upsertTraefikConfigStmt != nil {
+		if cerr := q.upsertTraefikConfigStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertTraefikConfigStmt: %w", cerr)
 		}
 	}
 	if q.upsertUserStmt != nil {
@@ -514,125 +706,173 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                             DBTX
-	tx                             *sql.Tx
-	createSettingStmt              *sql.Stmt
-	deleteAgentByIDStmt            *sql.Stmt
-	deleteEntryPointByNameStmt     *sql.Stmt
-	deleteMiddlewareByIDStmt       *sql.Stmt
-	deleteProfileByIDStmt          *sql.Stmt
-	deleteProfileByNameStmt        *sql.Stmt
-	deleteProviderByIDStmt         *sql.Stmt
-	deleteRouterByIDStmt           *sql.Stmt
-	deleteRouterByNameStmt         *sql.Stmt
-	deleteServiceByIDStmt          *sql.Stmt
-	deleteServiceByNameStmt        *sql.Stmt
-	deleteSettingByIDStmt          *sql.Stmt
-	deleteUserByIDStmt             *sql.Stmt
-	getAgentByHostnameStmt         *sql.Stmt
-	getAgentByIDStmt               *sql.Stmt
-	getDefaultProviderStmt         *sql.Stmt
-	getEntryPointByNameStmt        *sql.Stmt
-	getMiddlewareByIDStmt          *sql.Stmt
-	getMiddlewareByNameStmt        *sql.Stmt
-	getProfileByIDStmt             *sql.Stmt
-	getProfileByNameStmt           *sql.Stmt
-	getProviderByIDStmt            *sql.Stmt
-	getRouterByIDStmt              *sql.Stmt
-	getRouterByNameStmt            *sql.Stmt
-	getServiceByIDStmt             *sql.Stmt
-	getServiceByNameStmt           *sql.Stmt
-	getSettingByKeyStmt            *sql.Stmt
-	getUserByIDStmt                *sql.Stmt
-	getUserByUsernameStmt          *sql.Stmt
-	listAgentsStmt                 *sql.Stmt
-	listAgentsByProfileIDStmt      *sql.Stmt
-	listEntryPointsStmt            *sql.Stmt
-	listEntryPointsByProfileIDStmt *sql.Stmt
-	listMiddlewaresStmt            *sql.Stmt
-	listMiddlewaresByProfileIDStmt *sql.Stmt
-	listMiddlewaresByProviderStmt  *sql.Stmt
-	listProfilesStmt               *sql.Stmt
-	listProvidersStmt              *sql.Stmt
-	listRoutersStmt                *sql.Stmt
-	listRoutersByAgentIDStmt       *sql.Stmt
-	listRoutersByProfileIDStmt     *sql.Stmt
-	listRoutersByProviderStmt      *sql.Stmt
-	listServicesStmt               *sql.Stmt
-	listServicesByProfileIDStmt    *sql.Stmt
-	listServicesByProviderStmt     *sql.Stmt
-	listSettingsStmt               *sql.Stmt
-	listUsersStmt                  *sql.Stmt
-	updateSettingStmt              *sql.Stmt
-	upsertAgentStmt                *sql.Stmt
-	upsertEntryPointStmt           *sql.Stmt
-	upsertMiddlewareStmt           *sql.Stmt
-	upsertProfileStmt              *sql.Stmt
-	upsertProviderStmt             *sql.Stmt
-	upsertRouterStmt               *sql.Stmt
-	upsertServiceStmt              *sql.Stmt
-	upsertUserStmt                 *sql.Stmt
+	db                                        DBTX
+	tx                                        *sql.Tx
+	createSettingStmt                         *sql.Stmt
+	deleteAgentByIDStmt                       *sql.Stmt
+	deleteInternalHTTPMiddlewareStmt          *sql.Stmt
+	deleteInternalHTTPRouterStmt              *sql.Stmt
+	deleteInternalHTTPServiceStmt             *sql.Stmt
+	deleteInternalTCPMiddlewareStmt           *sql.Stmt
+	deleteInternalTCPRouterStmt               *sql.Stmt
+	deleteInternalTCPServiceStmt              *sql.Stmt
+	deleteInternalUDPRouterStmt               *sql.Stmt
+	deleteInternalUDPServiceStmt              *sql.Stmt
+	deleteProfileByIDStmt                     *sql.Stmt
+	deleteProviderByIDStmt                    *sql.Stmt
+	deleteSettingByIDStmt                     *sql.Stmt
+	deleteUserByIDStmt                        *sql.Stmt
+	getAgentByHostnameStmt                    *sql.Stmt
+	getAgentByIDStmt                          *sql.Stmt
+	getDefaultProviderStmt                    *sql.Stmt
+	getExternalHTTPMiddlewareByNameStmt       *sql.Stmt
+	getExternalHTTPMiddlewaresByProfileIDStmt *sql.Stmt
+	getExternalHTTPRouterByNameStmt           *sql.Stmt
+	getExternalHTTPRoutersByProfileIDStmt     *sql.Stmt
+	getExternalHTTPServiceByNameStmt          *sql.Stmt
+	getExternalHTTPServicesByProfileIDStmt    *sql.Stmt
+	getExternalTCPMiddlewareByNameStmt        *sql.Stmt
+	getExternalTCPMiddlewaresByProfileIDStmt  *sql.Stmt
+	getExternalTCPRouterByNameStmt            *sql.Stmt
+	getExternalTCPRoutersByProfileIDStmt      *sql.Stmt
+	getExternalTCPServiceByNameStmt           *sql.Stmt
+	getExternalTCPServicesByProfileIDStmt     *sql.Stmt
+	getExternalTraefikConfigByProfileIDStmt   *sql.Stmt
+	getExternalUDPRouterByNameStmt            *sql.Stmt
+	getExternalUDPRoutersByProfileIDStmt      *sql.Stmt
+	getExternalUDPServiceByNameStmt           *sql.Stmt
+	getExternalUDPServicesByProfileIDStmt     *sql.Stmt
+	getInternalHTTPMiddlewareByNameStmt       *sql.Stmt
+	getInternalHTTPMiddlewaresByProfileIDStmt *sql.Stmt
+	getInternalHTTPRouterByNameStmt           *sql.Stmt
+	getInternalHTTPRoutersByProfileIDStmt     *sql.Stmt
+	getInternalHTTPServiceByNameStmt          *sql.Stmt
+	getInternalHTTPServicesByProfileIDStmt    *sql.Stmt
+	getInternalTCPMiddlewareByNameStmt        *sql.Stmt
+	getInternalTCPMiddlewaresByProfileIDStmt  *sql.Stmt
+	getInternalTCPRouterByNameStmt            *sql.Stmt
+	getInternalTCPRoutersByProfileIDStmt      *sql.Stmt
+	getInternalTCPServiceByNameStmt           *sql.Stmt
+	getInternalTCPServicesByProfileIDStmt     *sql.Stmt
+	getInternalTraefikConfigByProfileIDStmt   *sql.Stmt
+	getInternalUDPRouterByNameStmt            *sql.Stmt
+	getInternalUDPRoutersByProfileIDStmt      *sql.Stmt
+	getInternalUDPServiceByNameStmt           *sql.Stmt
+	getInternalUDPServicesByProfileIDStmt     *sql.Stmt
+	getProfileByIDStmt                        *sql.Stmt
+	getProfileByNameStmt                      *sql.Stmt
+	getProviderByIDStmt                       *sql.Stmt
+	getSettingByKeyStmt                       *sql.Stmt
+	getTraefikConfigByProfileIDStmt           *sql.Stmt
+	getTraefikEntrypointsByProfileIDStmt      *sql.Stmt
+	getTraefikOverviewByProfileIDStmt         *sql.Stmt
+	getUserByIDStmt                           *sql.Stmt
+	getUserByUsernameStmt                     *sql.Stmt
+	listAgentsStmt                            *sql.Stmt
+	listAgentsByProfileIDStmt                 *sql.Stmt
+	listProfilesStmt                          *sql.Stmt
+	listProvidersStmt                         *sql.Stmt
+	listSettingsStmt                          *sql.Stmt
+	listUsersStmt                             *sql.Stmt
+	updateSettingStmt                         *sql.Stmt
+	upsertAgentStmt                           *sql.Stmt
+	upsertInternalHTTPMiddlewareStmt          *sql.Stmt
+	upsertInternalHTTPRouterStmt              *sql.Stmt
+	upsertInternalHTTPServiceStmt             *sql.Stmt
+	upsertInternalTCPMiddlewareStmt           *sql.Stmt
+	upsertInternalTCPRouterStmt               *sql.Stmt
+	upsertInternalTCPServiceStmt              *sql.Stmt
+	upsertInternalUDPRouterStmt               *sql.Stmt
+	upsertInternalUDPServiceStmt              *sql.Stmt
+	upsertProfileStmt                         *sql.Stmt
+	upsertProviderStmt                        *sql.Stmt
+	upsertTraefikConfigStmt                   *sql.Stmt
+	upsertUserStmt                            *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                             tx,
-		tx:                             tx,
-		createSettingStmt:              q.createSettingStmt,
-		deleteAgentByIDStmt:            q.deleteAgentByIDStmt,
-		deleteEntryPointByNameStmt:     q.deleteEntryPointByNameStmt,
-		deleteMiddlewareByIDStmt:       q.deleteMiddlewareByIDStmt,
-		deleteProfileByIDStmt:          q.deleteProfileByIDStmt,
-		deleteProfileByNameStmt:        q.deleteProfileByNameStmt,
-		deleteProviderByIDStmt:         q.deleteProviderByIDStmt,
-		deleteRouterByIDStmt:           q.deleteRouterByIDStmt,
-		deleteRouterByNameStmt:         q.deleteRouterByNameStmt,
-		deleteServiceByIDStmt:          q.deleteServiceByIDStmt,
-		deleteServiceByNameStmt:        q.deleteServiceByNameStmt,
-		deleteSettingByIDStmt:          q.deleteSettingByIDStmt,
-		deleteUserByIDStmt:             q.deleteUserByIDStmt,
-		getAgentByHostnameStmt:         q.getAgentByHostnameStmt,
-		getAgentByIDStmt:               q.getAgentByIDStmt,
-		getDefaultProviderStmt:         q.getDefaultProviderStmt,
-		getEntryPointByNameStmt:        q.getEntryPointByNameStmt,
-		getMiddlewareByIDStmt:          q.getMiddlewareByIDStmt,
-		getMiddlewareByNameStmt:        q.getMiddlewareByNameStmt,
-		getProfileByIDStmt:             q.getProfileByIDStmt,
-		getProfileByNameStmt:           q.getProfileByNameStmt,
-		getProviderByIDStmt:            q.getProviderByIDStmt,
-		getRouterByIDStmt:              q.getRouterByIDStmt,
-		getRouterByNameStmt:            q.getRouterByNameStmt,
-		getServiceByIDStmt:             q.getServiceByIDStmt,
-		getServiceByNameStmt:           q.getServiceByNameStmt,
-		getSettingByKeyStmt:            q.getSettingByKeyStmt,
-		getUserByIDStmt:                q.getUserByIDStmt,
-		getUserByUsernameStmt:          q.getUserByUsernameStmt,
-		listAgentsStmt:                 q.listAgentsStmt,
-		listAgentsByProfileIDStmt:      q.listAgentsByProfileIDStmt,
-		listEntryPointsStmt:            q.listEntryPointsStmt,
-		listEntryPointsByProfileIDStmt: q.listEntryPointsByProfileIDStmt,
-		listMiddlewaresStmt:            q.listMiddlewaresStmt,
-		listMiddlewaresByProfileIDStmt: q.listMiddlewaresByProfileIDStmt,
-		listMiddlewaresByProviderStmt:  q.listMiddlewaresByProviderStmt,
-		listProfilesStmt:               q.listProfilesStmt,
-		listProvidersStmt:              q.listProvidersStmt,
-		listRoutersStmt:                q.listRoutersStmt,
-		listRoutersByAgentIDStmt:       q.listRoutersByAgentIDStmt,
-		listRoutersByProfileIDStmt:     q.listRoutersByProfileIDStmt,
-		listRoutersByProviderStmt:      q.listRoutersByProviderStmt,
-		listServicesStmt:               q.listServicesStmt,
-		listServicesByProfileIDStmt:    q.listServicesByProfileIDStmt,
-		listServicesByProviderStmt:     q.listServicesByProviderStmt,
-		listSettingsStmt:               q.listSettingsStmt,
-		listUsersStmt:                  q.listUsersStmt,
-		updateSettingStmt:              q.updateSettingStmt,
-		upsertAgentStmt:                q.upsertAgentStmt,
-		upsertEntryPointStmt:           q.upsertEntryPointStmt,
-		upsertMiddlewareStmt:           q.upsertMiddlewareStmt,
-		upsertProfileStmt:              q.upsertProfileStmt,
-		upsertProviderStmt:             q.upsertProviderStmt,
-		upsertRouterStmt:               q.upsertRouterStmt,
-		upsertServiceStmt:              q.upsertServiceStmt,
-		upsertUserStmt:                 q.upsertUserStmt,
+		db:                                        tx,
+		tx:                                        tx,
+		createSettingStmt:                         q.createSettingStmt,
+		deleteAgentByIDStmt:                       q.deleteAgentByIDStmt,
+		deleteInternalHTTPMiddlewareStmt:          q.deleteInternalHTTPMiddlewareStmt,
+		deleteInternalHTTPRouterStmt:              q.deleteInternalHTTPRouterStmt,
+		deleteInternalHTTPServiceStmt:             q.deleteInternalHTTPServiceStmt,
+		deleteInternalTCPMiddlewareStmt:           q.deleteInternalTCPMiddlewareStmt,
+		deleteInternalTCPRouterStmt:               q.deleteInternalTCPRouterStmt,
+		deleteInternalTCPServiceStmt:              q.deleteInternalTCPServiceStmt,
+		deleteInternalUDPRouterStmt:               q.deleteInternalUDPRouterStmt,
+		deleteInternalUDPServiceStmt:              q.deleteInternalUDPServiceStmt,
+		deleteProfileByIDStmt:                     q.deleteProfileByIDStmt,
+		deleteProviderByIDStmt:                    q.deleteProviderByIDStmt,
+		deleteSettingByIDStmt:                     q.deleteSettingByIDStmt,
+		deleteUserByIDStmt:                        q.deleteUserByIDStmt,
+		getAgentByHostnameStmt:                    q.getAgentByHostnameStmt,
+		getAgentByIDStmt:                          q.getAgentByIDStmt,
+		getDefaultProviderStmt:                    q.getDefaultProviderStmt,
+		getExternalHTTPMiddlewareByNameStmt:       q.getExternalHTTPMiddlewareByNameStmt,
+		getExternalHTTPMiddlewaresByProfileIDStmt: q.getExternalHTTPMiddlewaresByProfileIDStmt,
+		getExternalHTTPRouterByNameStmt:           q.getExternalHTTPRouterByNameStmt,
+		getExternalHTTPRoutersByProfileIDStmt:     q.getExternalHTTPRoutersByProfileIDStmt,
+		getExternalHTTPServiceByNameStmt:          q.getExternalHTTPServiceByNameStmt,
+		getExternalHTTPServicesByProfileIDStmt:    q.getExternalHTTPServicesByProfileIDStmt,
+		getExternalTCPMiddlewareByNameStmt:        q.getExternalTCPMiddlewareByNameStmt,
+		getExternalTCPMiddlewaresByProfileIDStmt:  q.getExternalTCPMiddlewaresByProfileIDStmt,
+		getExternalTCPRouterByNameStmt:            q.getExternalTCPRouterByNameStmt,
+		getExternalTCPRoutersByProfileIDStmt:      q.getExternalTCPRoutersByProfileIDStmt,
+		getExternalTCPServiceByNameStmt:           q.getExternalTCPServiceByNameStmt,
+		getExternalTCPServicesByProfileIDStmt:     q.getExternalTCPServicesByProfileIDStmt,
+		getExternalTraefikConfigByProfileIDStmt:   q.getExternalTraefikConfigByProfileIDStmt,
+		getExternalUDPRouterByNameStmt:            q.getExternalUDPRouterByNameStmt,
+		getExternalUDPRoutersByProfileIDStmt:      q.getExternalUDPRoutersByProfileIDStmt,
+		getExternalUDPServiceByNameStmt:           q.getExternalUDPServiceByNameStmt,
+		getExternalUDPServicesByProfileIDStmt:     q.getExternalUDPServicesByProfileIDStmt,
+		getInternalHTTPMiddlewareByNameStmt:       q.getInternalHTTPMiddlewareByNameStmt,
+		getInternalHTTPMiddlewaresByProfileIDStmt: q.getInternalHTTPMiddlewaresByProfileIDStmt,
+		getInternalHTTPRouterByNameStmt:           q.getInternalHTTPRouterByNameStmt,
+		getInternalHTTPRoutersByProfileIDStmt:     q.getInternalHTTPRoutersByProfileIDStmt,
+		getInternalHTTPServiceByNameStmt:          q.getInternalHTTPServiceByNameStmt,
+		getInternalHTTPServicesByProfileIDStmt:    q.getInternalHTTPServicesByProfileIDStmt,
+		getInternalTCPMiddlewareByNameStmt:        q.getInternalTCPMiddlewareByNameStmt,
+		getInternalTCPMiddlewaresByProfileIDStmt:  q.getInternalTCPMiddlewaresByProfileIDStmt,
+		getInternalTCPRouterByNameStmt:            q.getInternalTCPRouterByNameStmt,
+		getInternalTCPRoutersByProfileIDStmt:      q.getInternalTCPRoutersByProfileIDStmt,
+		getInternalTCPServiceByNameStmt:           q.getInternalTCPServiceByNameStmt,
+		getInternalTCPServicesByProfileIDStmt:     q.getInternalTCPServicesByProfileIDStmt,
+		getInternalTraefikConfigByProfileIDStmt:   q.getInternalTraefikConfigByProfileIDStmt,
+		getInternalUDPRouterByNameStmt:            q.getInternalUDPRouterByNameStmt,
+		getInternalUDPRoutersByProfileIDStmt:      q.getInternalUDPRoutersByProfileIDStmt,
+		getInternalUDPServiceByNameStmt:           q.getInternalUDPServiceByNameStmt,
+		getInternalUDPServicesByProfileIDStmt:     q.getInternalUDPServicesByProfileIDStmt,
+		getProfileByIDStmt:                        q.getProfileByIDStmt,
+		getProfileByNameStmt:                      q.getProfileByNameStmt,
+		getProviderByIDStmt:                       q.getProviderByIDStmt,
+		getSettingByKeyStmt:                       q.getSettingByKeyStmt,
+		getTraefikConfigByProfileIDStmt:           q.getTraefikConfigByProfileIDStmt,
+		getTraefikEntrypointsByProfileIDStmt:      q.getTraefikEntrypointsByProfileIDStmt,
+		getTraefikOverviewByProfileIDStmt:         q.getTraefikOverviewByProfileIDStmt,
+		getUserByIDStmt:                           q.getUserByIDStmt,
+		getUserByUsernameStmt:                     q.getUserByUsernameStmt,
+		listAgentsStmt:                            q.listAgentsStmt,
+		listAgentsByProfileIDStmt:                 q.listAgentsByProfileIDStmt,
+		listProfilesStmt:                          q.listProfilesStmt,
+		listProvidersStmt:                         q.listProvidersStmt,
+		listSettingsStmt:                          q.listSettingsStmt,
+		listUsersStmt:                             q.listUsersStmt,
+		updateSettingStmt:                         q.updateSettingStmt,
+		upsertAgentStmt:                           q.upsertAgentStmt,
+		upsertInternalHTTPMiddlewareStmt:          q.upsertInternalHTTPMiddlewareStmt,
+		upsertInternalHTTPRouterStmt:              q.upsertInternalHTTPRouterStmt,
+		upsertInternalHTTPServiceStmt:             q.upsertInternalHTTPServiceStmt,
+		upsertInternalTCPMiddlewareStmt:           q.upsertInternalTCPMiddlewareStmt,
+		upsertInternalTCPRouterStmt:               q.upsertInternalTCPRouterStmt,
+		upsertInternalTCPServiceStmt:              q.upsertInternalTCPServiceStmt,
+		upsertInternalUDPRouterStmt:               q.upsertInternalUDPRouterStmt,
+		upsertInternalUDPServiceStmt:              q.upsertInternalUDPServiceStmt,
+		upsertProfileStmt:                         q.upsertProfileStmt,
+		upsertProviderStmt:                        q.upsertProviderStmt,
+		upsertTraefikConfigStmt:                   q.upsertTraefikConfigStmt,
+		upsertUserStmt:                            q.upsertUserStmt,
 	}
 }

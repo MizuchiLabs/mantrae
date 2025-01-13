@@ -71,7 +71,7 @@ func UpdateDNS() {
 
 	// Get all local
 	for _, profile := range profiles {
-		routers, err := db.Query.ListRoutersByProfileID(context.Background(), profile.ID)
+		routers, err := db.Query.GetInternalHTTPRoutersByProfileID(context.Background(), profile.ID)
 		if err != nil {
 			slog.Error("Failed to get routers", "error", err)
 			continue

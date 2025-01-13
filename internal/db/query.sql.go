@@ -40,38 +40,147 @@ func (q *Queries) DeleteAgentByID(ctx context.Context, id string) error {
 	return err
 }
 
-const deleteEntryPointByName = `-- name: DeleteEntryPointByName :exec
-DELETE FROM entrypoints
+const deleteInternalHTTPMiddleware = `-- name: DeleteInternalHTTPMiddleware :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.middlewares.' || ?2)
 WHERE
-    profile_id = (
-        SELECT
-            id
-        FROM
-            profiles
-        WHERE
-            profiles.name = ?
-    )
-    AND entrypoints.name = ?
+    profile_id = ?
 `
 
-type DeleteEntryPointByNameParams struct {
-	Name   string `json:"name"`
-	Name_2 string `json:"name2"`
+type DeleteInternalHTTPMiddlewareParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
 }
 
-func (q *Queries) DeleteEntryPointByName(ctx context.Context, arg DeleteEntryPointByNameParams) error {
-	_, err := q.exec(ctx, q.deleteEntryPointByNameStmt, deleteEntryPointByName, arg.Name, arg.Name_2)
+func (q *Queries) DeleteInternalHTTPMiddleware(ctx context.Context, arg DeleteInternalHTTPMiddlewareParams) error {
+	_, err := q.exec(ctx, q.deleteInternalHTTPMiddlewareStmt, deleteInternalHTTPMiddleware, arg.Name, arg.ProfileID)
 	return err
 }
 
-const deleteMiddlewareByID = `-- name: DeleteMiddlewareByID :exec
-DELETE FROM middlewares
+const deleteInternalHTTPRouter = `-- name: DeleteInternalHTTPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.routers.' || ?2)
 WHERE
-    id = ?
+    profile_id = ?
 `
 
-func (q *Queries) DeleteMiddlewareByID(ctx context.Context, id string) error {
-	_, err := q.exec(ctx, q.deleteMiddlewareByIDStmt, deleteMiddlewareByID, id)
+type DeleteInternalHTTPRouterParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalHTTPRouter(ctx context.Context, arg DeleteInternalHTTPRouterParams) error {
+	_, err := q.exec(ctx, q.deleteInternalHTTPRouterStmt, deleteInternalHTTPRouter, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalHTTPService = `-- name: DeleteInternalHTTPService :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.services.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalHTTPServiceParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalHTTPService(ctx context.Context, arg DeleteInternalHTTPServiceParams) error {
+	_, err := q.exec(ctx, q.deleteInternalHTTPServiceStmt, deleteInternalHTTPService, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalTCPMiddleware = `-- name: DeleteInternalTCPMiddleware :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.tcpMiddlewares.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalTCPMiddlewareParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalTCPMiddleware(ctx context.Context, arg DeleteInternalTCPMiddlewareParams) error {
+	_, err := q.exec(ctx, q.deleteInternalTCPMiddlewareStmt, deleteInternalTCPMiddleware, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalTCPRouter = `-- name: DeleteInternalTCPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.tcpRouters.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalTCPRouterParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalTCPRouter(ctx context.Context, arg DeleteInternalTCPRouterParams) error {
+	_, err := q.exec(ctx, q.deleteInternalTCPRouterStmt, deleteInternalTCPRouter, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalTCPService = `-- name: DeleteInternalTCPService :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.tcpServices.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalTCPServiceParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalTCPService(ctx context.Context, arg DeleteInternalTCPServiceParams) error {
+	_, err := q.exec(ctx, q.deleteInternalTCPServiceStmt, deleteInternalTCPService, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalUDPRouter = `-- name: DeleteInternalUDPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.udpRouters.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalUDPRouterParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalUDPRouter(ctx context.Context, arg DeleteInternalUDPRouterParams) error {
+	_, err := q.exec(ctx, q.deleteInternalUDPRouterStmt, deleteInternalUDPRouter, arg.Name, arg.ProfileID)
+	return err
+}
+
+const deleteInternalUDPService = `-- name: DeleteInternalUDPService :exec
+UPDATE traefik_api
+SET
+    internal = json_remove (internal, '$.udpServices.' || ?2)
+WHERE
+    profile_id = ?
+`
+
+type DeleteInternalUDPServiceParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) DeleteInternalUDPService(ctx context.Context, arg DeleteInternalUDPServiceParams) error {
+	_, err := q.exec(ctx, q.deleteInternalUDPServiceStmt, deleteInternalUDPService, arg.Name, arg.ProfileID)
 	return err
 }
 
@@ -86,17 +195,6 @@ func (q *Queries) DeleteProfileByID(ctx context.Context, id int64) error {
 	return err
 }
 
-const deleteProfileByName = `-- name: DeleteProfileByName :exec
-DELETE FROM profiles
-WHERE
-    name = ?
-`
-
-func (q *Queries) DeleteProfileByName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteProfileByNameStmt, deleteProfileByName, name)
-	return err
-}
-
 const deleteProviderByID = `-- name: DeleteProviderByID :exec
 DELETE FROM providers
 WHERE
@@ -105,50 +203,6 @@ WHERE
 
 func (q *Queries) DeleteProviderByID(ctx context.Context, id int64) error {
 	_, err := q.exec(ctx, q.deleteProviderByIDStmt, deleteProviderByID, id)
-	return err
-}
-
-const deleteRouterByID = `-- name: DeleteRouterByID :exec
-DELETE FROM routers
-WHERE
-    id = ?
-`
-
-func (q *Queries) DeleteRouterByID(ctx context.Context, id string) error {
-	_, err := q.exec(ctx, q.deleteRouterByIDStmt, deleteRouterByID, id)
-	return err
-}
-
-const deleteRouterByName = `-- name: DeleteRouterByName :exec
-DELETE FROM routers
-WHERE
-    name = ?
-`
-
-func (q *Queries) DeleteRouterByName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteRouterByNameStmt, deleteRouterByName, name)
-	return err
-}
-
-const deleteServiceByID = `-- name: DeleteServiceByID :exec
-DELETE FROM services
-WHERE
-    id = ?
-`
-
-func (q *Queries) DeleteServiceByID(ctx context.Context, id string) error {
-	_, err := q.exec(ctx, q.deleteServiceByIDStmt, deleteServiceByID, id)
-	return err
-}
-
-const deleteServiceByName = `-- name: DeleteServiceByName :exec
-DELETE FROM services
-WHERE
-    name = ?
-`
-
-func (q *Queries) DeleteServiceByName(ctx context.Context, name string) error {
-	_, err := q.exec(ctx, q.deleteServiceByNameStmt, deleteServiceByName, name)
 	return err
 }
 
@@ -264,94 +318,628 @@ func (q *Queries) GetDefaultProvider(ctx context.Context) (Provider, error) {
 	return i, err
 }
 
-const getEntryPointByName = `-- name: GetEntryPointByName :one
+const getExternalHTTPMiddlewareByName = `-- name: GetExternalHTTPMiddlewareByName :one
 SELECT
-    profile_id, name, address, as_default, http
+    json_extract (external, '$.middlewares.' || ?2) as middleware
 FROM
-    entrypoints
+    traefik_api
 WHERE
-    name = ?
-    AND profile_id = ?
-LIMIT
-    1
+    profile_id = ?
 `
 
-type GetEntryPointByNameParams struct {
-	Name      string `json:"name"`
-	ProfileID int64  `json:"profileId"`
+type GetExternalHTTPMiddlewareByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
 }
 
-func (q *Queries) GetEntryPointByName(ctx context.Context, arg GetEntryPointByNameParams) (Entrypoint, error) {
-	row := q.queryRow(ctx, q.getEntryPointByNameStmt, getEntryPointByName, arg.Name, arg.ProfileID)
-	var i Entrypoint
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Name,
-		&i.Address,
-		&i.AsDefault,
-		&i.Http,
-	)
-	return i, err
+func (q *Queries) GetExternalHTTPMiddlewareByName(ctx context.Context, arg GetExternalHTTPMiddlewareByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPMiddlewareByNameStmt, getExternalHTTPMiddlewareByName, arg.Name, arg.ProfileID)
+	var middleware interface{}
+	err := row.Scan(&middleware)
+	return middleware, err
 }
 
-const getMiddlewareByID = `-- name: GetMiddlewareByID :one
+const getExternalHTTPMiddlewaresByProfileID = `-- name: GetExternalHTTPMiddlewaresByProfileID :one
 SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, content
+    json_extract (external, '$.middlewares') as middlewares
 FROM
-    middlewares
+    traefik_api
 WHERE
-    id = ?
-LIMIT
-    1
+    profile_id = ?
 `
 
-func (q *Queries) GetMiddlewareByID(ctx context.Context, id string) (Middleware, error) {
-	row := q.queryRow(ctx, q.getMiddlewareByIDStmt, getMiddlewareByID, id)
-	var i Middleware
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Content,
-	)
-	return i, err
+func (q *Queries) GetExternalHTTPMiddlewaresByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPMiddlewaresByProfileIDStmt, getExternalHTTPMiddlewaresByProfileID, profileID)
+	var middlewares interface{}
+	err := row.Scan(&middlewares)
+	return middlewares, err
 }
 
-const getMiddlewareByName = `-- name: GetMiddlewareByName :one
+const getExternalHTTPRouterByName = `-- name: GetExternalHTTPRouterByName :one
 SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, content
+    json_extract (external, '$.routers.' || ?2) as router
 FROM
-    middlewares
+    traefik_api
 WHERE
-    name = ?
-    AND profile_id = ?
-LIMIT
-    1
+    profile_id = ?
 `
 
-type GetMiddlewareByNameParams struct {
-	Name      string `json:"name"`
-	ProfileID int64  `json:"profileId"`
+type GetExternalHTTPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
 }
 
-func (q *Queries) GetMiddlewareByName(ctx context.Context, arg GetMiddlewareByNameParams) (Middleware, error) {
-	row := q.queryRow(ctx, q.getMiddlewareByNameStmt, getMiddlewareByName, arg.Name, arg.ProfileID)
-	var i Middleware
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Content,
-	)
-	return i, err
+func (q *Queries) GetExternalHTTPRouterByName(ctx context.Context, arg GetExternalHTTPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPRouterByNameStmt, getExternalHTTPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getExternalHTTPRoutersByProfileID = `-- name: GetExternalHTTPRoutersByProfileID :one
+SELECT
+    json_extract (external, '$.routers') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalHTTPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPRoutersByProfileIDStmt, getExternalHTTPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getExternalHTTPServiceByName = `-- name: GetExternalHTTPServiceByName :one
+SELECT
+    json_extract (external, '$.services.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalHTTPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalHTTPServiceByName(ctx context.Context, arg GetExternalHTTPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPServiceByNameStmt, getExternalHTTPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getExternalHTTPServicesByProfileID = `-- name: GetExternalHTTPServicesByProfileID :one
+SELECT
+    json_extract (external, '$.services') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalHTTPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalHTTPServicesByProfileIDStmt, getExternalHTTPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
+}
+
+const getExternalTCPMiddlewareByName = `-- name: GetExternalTCPMiddlewareByName :one
+SELECT
+    json_extract (external, '$.tcpMiddlewares.' || ?2) as middleware
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalTCPMiddlewareByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalTCPMiddlewareByName(ctx context.Context, arg GetExternalTCPMiddlewareByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPMiddlewareByNameStmt, getExternalTCPMiddlewareByName, arg.Name, arg.ProfileID)
+	var middleware interface{}
+	err := row.Scan(&middleware)
+	return middleware, err
+}
+
+const getExternalTCPMiddlewaresByProfileID = `-- name: GetExternalTCPMiddlewaresByProfileID :one
+SELECT
+    json_extract (external, '$.tcpMiddlewares') as middlewares
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalTCPMiddlewaresByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPMiddlewaresByProfileIDStmt, getExternalTCPMiddlewaresByProfileID, profileID)
+	var middlewares interface{}
+	err := row.Scan(&middlewares)
+	return middlewares, err
+}
+
+const getExternalTCPRouterByName = `-- name: GetExternalTCPRouterByName :one
+SELECT
+    json_extract (external, '$.tcpRouters.' || ?2) as router
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalTCPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalTCPRouterByName(ctx context.Context, arg GetExternalTCPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPRouterByNameStmt, getExternalTCPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getExternalTCPRoutersByProfileID = `-- name: GetExternalTCPRoutersByProfileID :one
+SELECT
+    json_extract (external, '$.tcpRouters') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalTCPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPRoutersByProfileIDStmt, getExternalTCPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getExternalTCPServiceByName = `-- name: GetExternalTCPServiceByName :one
+SELECT
+    json_extract (external, '$.tcpServices.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalTCPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalTCPServiceByName(ctx context.Context, arg GetExternalTCPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPServiceByNameStmt, getExternalTCPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getExternalTCPServicesByProfileID = `-- name: GetExternalTCPServicesByProfileID :one
+SELECT
+    json_extract (external, '$.tcpServices') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalTCPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalTCPServicesByProfileIDStmt, getExternalTCPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
+}
+
+const getExternalTraefikConfigByProfileID = `-- name: GetExternalTraefikConfigByProfileID :one
+SELECT
+    external
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalTraefikConfigByProfileID(ctx context.Context, profileID int64) (*TraefikConfig, error) {
+	row := q.queryRow(ctx, q.getExternalTraefikConfigByProfileIDStmt, getExternalTraefikConfigByProfileID, profileID)
+	var external *TraefikConfig
+	err := row.Scan(&external)
+	return external, err
+}
+
+const getExternalUDPRouterByName = `-- name: GetExternalUDPRouterByName :one
+SELECT
+    json_extract (external, '$.udpRouters.' || ?2) as router
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalUDPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalUDPRouterByName(ctx context.Context, arg GetExternalUDPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalUDPRouterByNameStmt, getExternalUDPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getExternalUDPRoutersByProfileID = `-- name: GetExternalUDPRoutersByProfileID :one
+SELECT
+    json_extract (external, '$.udpRouters') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalUDPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalUDPRoutersByProfileIDStmt, getExternalUDPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getExternalUDPServiceByName = `-- name: GetExternalUDPServiceByName :one
+SELECT
+    json_extract (external, '$.udpServices.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetExternalUDPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetExternalUDPServiceByName(ctx context.Context, arg GetExternalUDPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalUDPServiceByNameStmt, getExternalUDPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getExternalUDPServicesByProfileID = `-- name: GetExternalUDPServicesByProfileID :one
+SELECT
+    json_extract (external, '$.udpServices') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetExternalUDPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getExternalUDPServicesByProfileIDStmt, getExternalUDPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
+}
+
+const getInternalHTTPMiddlewareByName = `-- name: GetInternalHTTPMiddlewareByName :one
+SELECT
+    json_extract (internal, '$.middlewares.' || ?2) as middleware
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalHTTPMiddlewareByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalHTTPMiddlewareByName(ctx context.Context, arg GetInternalHTTPMiddlewareByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPMiddlewareByNameStmt, getInternalHTTPMiddlewareByName, arg.Name, arg.ProfileID)
+	var middleware interface{}
+	err := row.Scan(&middleware)
+	return middleware, err
+}
+
+const getInternalHTTPMiddlewaresByProfileID = `-- name: GetInternalHTTPMiddlewaresByProfileID :one
+SELECT
+    json_extract (internal, '$.middlewares') as middlewares
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalHTTPMiddlewaresByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPMiddlewaresByProfileIDStmt, getInternalHTTPMiddlewaresByProfileID, profileID)
+	var middlewares interface{}
+	err := row.Scan(&middlewares)
+	return middlewares, err
+}
+
+const getInternalHTTPRouterByName = `-- name: GetInternalHTTPRouterByName :one
+SELECT
+    json_extract (internal, '$.routers.' || ?2) as router
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalHTTPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalHTTPRouterByName(ctx context.Context, arg GetInternalHTTPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPRouterByNameStmt, getInternalHTTPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getInternalHTTPRoutersByProfileID = `-- name: GetInternalHTTPRoutersByProfileID :one
+SELECT
+    json_extract (internal, '$.routers') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalHTTPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPRoutersByProfileIDStmt, getInternalHTTPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getInternalHTTPServiceByName = `-- name: GetInternalHTTPServiceByName :one
+SELECT
+    json_extract (internal, '$.services.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalHTTPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalHTTPServiceByName(ctx context.Context, arg GetInternalHTTPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPServiceByNameStmt, getInternalHTTPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getInternalHTTPServicesByProfileID = `-- name: GetInternalHTTPServicesByProfileID :one
+SELECT
+    json_extract (internal, '$.services') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalHTTPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalHTTPServicesByProfileIDStmt, getInternalHTTPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
+}
+
+const getInternalTCPMiddlewareByName = `-- name: GetInternalTCPMiddlewareByName :one
+SELECT
+    json_extract (internal, '$.tcpMiddlewares.' || ?2) as middleware
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalTCPMiddlewareByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalTCPMiddlewareByName(ctx context.Context, arg GetInternalTCPMiddlewareByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPMiddlewareByNameStmt, getInternalTCPMiddlewareByName, arg.Name, arg.ProfileID)
+	var middleware interface{}
+	err := row.Scan(&middleware)
+	return middleware, err
+}
+
+const getInternalTCPMiddlewaresByProfileID = `-- name: GetInternalTCPMiddlewaresByProfileID :one
+SELECT
+    json_extract (internal, '$.tcpMiddlewares') as middlewares
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalTCPMiddlewaresByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPMiddlewaresByProfileIDStmt, getInternalTCPMiddlewaresByProfileID, profileID)
+	var middlewares interface{}
+	err := row.Scan(&middlewares)
+	return middlewares, err
+}
+
+const getInternalTCPRouterByName = `-- name: GetInternalTCPRouterByName :one
+SELECT
+    json_extract (internal, '$.tcpRouters.' || ?2) as router
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalTCPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalTCPRouterByName(ctx context.Context, arg GetInternalTCPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPRouterByNameStmt, getInternalTCPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getInternalTCPRoutersByProfileID = `-- name: GetInternalTCPRoutersByProfileID :one
+SELECT
+    json_extract (internal, '$.tcpRouters') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalTCPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPRoutersByProfileIDStmt, getInternalTCPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getInternalTCPServiceByName = `-- name: GetInternalTCPServiceByName :one
+SELECT
+    json_extract (internal, '$.tcpServices.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalTCPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalTCPServiceByName(ctx context.Context, arg GetInternalTCPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPServiceByNameStmt, getInternalTCPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getInternalTCPServicesByProfileID = `-- name: GetInternalTCPServicesByProfileID :one
+SELECT
+    json_extract (internal, '$.tcpServices') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalTCPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalTCPServicesByProfileIDStmt, getInternalTCPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
+}
+
+const getInternalTraefikConfigByProfileID = `-- name: GetInternalTraefikConfigByProfileID :one
+SELECT
+    internal
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalTraefikConfigByProfileID(ctx context.Context, profileID int64) (*TraefikConfig, error) {
+	row := q.queryRow(ctx, q.getInternalTraefikConfigByProfileIDStmt, getInternalTraefikConfigByProfileID, profileID)
+	var internal *TraefikConfig
+	err := row.Scan(&internal)
+	return internal, err
+}
+
+const getInternalUDPRouterByName = `-- name: GetInternalUDPRouterByName :one
+SELECT
+    json_extract (internal, '$.udpRouters.' || ?2) as router
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalUDPRouterByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalUDPRouterByName(ctx context.Context, arg GetInternalUDPRouterByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalUDPRouterByNameStmt, getInternalUDPRouterByName, arg.Name, arg.ProfileID)
+	var router interface{}
+	err := row.Scan(&router)
+	return router, err
+}
+
+const getInternalUDPRoutersByProfileID = `-- name: GetInternalUDPRoutersByProfileID :one
+SELECT
+    json_extract (internal, '$.udpRouters') as routers
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalUDPRoutersByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalUDPRoutersByProfileIDStmt, getInternalUDPRoutersByProfileID, profileID)
+	var routers interface{}
+	err := row.Scan(&routers)
+	return routers, err
+}
+
+const getInternalUDPServiceByName = `-- name: GetInternalUDPServiceByName :one
+SELECT
+    json_extract (internal, '$.udpServices.' || ?2) as service
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+type GetInternalUDPServiceByNameParams struct {
+	Name      *string `json:"name"`
+	ProfileID int64   `json:"profileId"`
+}
+
+func (q *Queries) GetInternalUDPServiceByName(ctx context.Context, arg GetInternalUDPServiceByNameParams) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalUDPServiceByNameStmt, getInternalUDPServiceByName, arg.Name, arg.ProfileID)
+	var service interface{}
+	err := row.Scan(&service)
+	return service, err
+}
+
+const getInternalUDPServicesByProfileID = `-- name: GetInternalUDPServicesByProfileID :one
+SELECT
+    json_extract (internal, '$.udpServices') as services
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetInternalUDPServicesByProfileID(ctx context.Context, profileID int64) (interface{}, error) {
+	row := q.queryRow(ctx, q.getInternalUDPServicesByProfileIDStmt, getInternalUDPServicesByProfileID, profileID)
+	var services interface{}
+	err := row.Scan(&services)
+	return services, err
 }
 
 const getProfileByID = `-- name: GetProfileByID :one
@@ -432,152 +1020,6 @@ func (q *Queries) GetProviderByID(ctx context.Context, id int64) (Provider, erro
 	return i, err
 }
 
-const getRouterByID = `-- name: GetRouterByID :one
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-WHERE
-    id = ?
-LIMIT
-    1
-`
-
-func (q *Queries) GetRouterByID(ctx context.Context, id string) (Router, error) {
-	row := q.queryRow(ctx, q.getRouterByIDStmt, getRouterByID, id)
-	var i Router
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Protocol,
-		&i.Status,
-		&i.AgentID,
-		&i.EntryPoints,
-		&i.Middlewares,
-		&i.Rule,
-		&i.RuleSyntax,
-		&i.Service,
-		&i.Priority,
-		&i.Tls,
-		&i.DnsProvider,
-		&i.Errors,
-	)
-	return i, err
-}
-
-const getRouterByName = `-- name: GetRouterByName :one
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-WHERE
-    name = ?
-    AND profile_id = ?
-LIMIT
-    1
-`
-
-type GetRouterByNameParams struct {
-	Name      string `json:"name"`
-	ProfileID int64  `json:"profileId"`
-}
-
-func (q *Queries) GetRouterByName(ctx context.Context, arg GetRouterByNameParams) (Router, error) {
-	row := q.queryRow(ctx, q.getRouterByNameStmt, getRouterByName, arg.Name, arg.ProfileID)
-	var i Router
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Protocol,
-		&i.Status,
-		&i.AgentID,
-		&i.EntryPoints,
-		&i.Middlewares,
-		&i.Rule,
-		&i.RuleSyntax,
-		&i.Service,
-		&i.Priority,
-		&i.Tls,
-		&i.DnsProvider,
-		&i.Errors,
-	)
-	return i, err
-}
-
-const getServiceByID = `-- name: GetServiceByID :one
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-FROM
-    services
-WHERE
-    id = ?
-LIMIT
-    1
-`
-
-func (q *Queries) GetServiceByID(ctx context.Context, id string) (Service, error) {
-	row := q.queryRow(ctx, q.getServiceByIDStmt, getServiceByID, id)
-	var i Service
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Status,
-		&i.ServerStatus,
-		&i.LoadBalancer,
-		&i.Weighted,
-		&i.Mirroring,
-		&i.Failover,
-	)
-	return i, err
-}
-
-const getServiceByName = `-- name: GetServiceByName :one
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-FROM
-    services
-WHERE
-    name = ?
-    AND profile_id = ?
-LIMIT
-    1
-`
-
-type GetServiceByNameParams struct {
-	Name      string `json:"name"`
-	ProfileID int64  `json:"profileId"`
-}
-
-func (q *Queries) GetServiceByName(ctx context.Context, arg GetServiceByNameParams) (Service, error) {
-	row := q.queryRow(ctx, q.getServiceByNameStmt, getServiceByName, arg.Name, arg.ProfileID)
-	var i Service
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Status,
-		&i.ServerStatus,
-		&i.LoadBalancer,
-		&i.Weighted,
-		&i.Mirroring,
-		&i.Failover,
-	)
-	return i, err
-}
-
 const getSettingByKey = `-- name: GetSettingByKey :one
 SELECT
     id, "key", value
@@ -596,9 +1038,65 @@ func (q *Queries) GetSettingByKey(ctx context.Context, key string) (Setting, err
 	return i, err
 }
 
+const getTraefikConfigByProfileID = `-- name: GetTraefikConfigByProfileID :one
+SELECT
+    profile_id, entrypoints, overview, external, internal
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+LIMIT
+    1
+`
+
+func (q *Queries) GetTraefikConfigByProfileID(ctx context.Context, profileID int64) (TraefikApi, error) {
+	row := q.queryRow(ctx, q.getTraefikConfigByProfileIDStmt, getTraefikConfigByProfileID, profileID)
+	var i TraefikApi
+	err := row.Scan(
+		&i.ProfileID,
+		&i.Entrypoints,
+		&i.Overview,
+		&i.External,
+		&i.Internal,
+	)
+	return i, err
+}
+
+const getTraefikEntrypointsByProfileID = `-- name: GetTraefikEntrypointsByProfileID :one
+SELECT
+    entrypoints
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetTraefikEntrypointsByProfileID(ctx context.Context, profileID int64) (*TraefikEntryPoints, error) {
+	row := q.queryRow(ctx, q.getTraefikEntrypointsByProfileIDStmt, getTraefikEntrypointsByProfileID, profileID)
+	var entrypoints *TraefikEntryPoints
+	err := row.Scan(&entrypoints)
+	return entrypoints, err
+}
+
+const getTraefikOverviewByProfileID = `-- name: GetTraefikOverviewByProfileID :one
+SELECT
+    overview
+FROM
+    traefik_api
+WHERE
+    profile_id = ?
+`
+
+func (q *Queries) GetTraefikOverviewByProfileID(ctx context.Context, profileID int64) (*TraefikOverview, error) {
+	row := q.queryRow(ctx, q.getTraefikOverviewByProfileIDStmt, getTraefikOverviewByProfileID, profileID)
+	var overview *TraefikOverview
+	err := row.Scan(&overview)
+	return overview, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-    id, username, password, email, last_login, is_admin
+    id, username, password, email, is_admin, last_login
 FROM
     users
 WHERE
@@ -615,15 +1113,15 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.LastLogin,
 		&i.IsAdmin,
+		&i.LastLogin,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    id, username, password, email, last_login, is_admin
+    id, username, password, email, is_admin, last_login
 FROM
     users
 WHERE
@@ -640,8 +1138,8 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.LastLogin,
 		&i.IsAdmin,
+		&i.LastLogin,
 	)
 	return i, err
 }
@@ -714,201 +1212,6 @@ func (q *Queries) ListAgentsByProfileID(ctx context.Context, profileID int64) ([
 			&i.ActiveIp,
 			&i.Token,
 			&i.LastSeen,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listEntryPoints = `-- name: ListEntryPoints :many
-SELECT
-    profile_id, name, address, as_default, http
-FROM
-    entrypoints
-`
-
-func (q *Queries) ListEntryPoints(ctx context.Context) ([]Entrypoint, error) {
-	rows, err := q.query(ctx, q.listEntryPointsStmt, listEntryPoints)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Entrypoint
-	for rows.Next() {
-		var i Entrypoint
-		if err := rows.Scan(
-			&i.ProfileID,
-			&i.Name,
-			&i.Address,
-			&i.AsDefault,
-			&i.Http,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listEntryPointsByProfileID = `-- name: ListEntryPointsByProfileID :many
-SELECT
-    profile_id, name, address, as_default, http
-FROM
-    entrypoints
-WHERE
-    profile_id = ?
-`
-
-func (q *Queries) ListEntryPointsByProfileID(ctx context.Context, profileID int64) ([]Entrypoint, error) {
-	rows, err := q.query(ctx, q.listEntryPointsByProfileIDStmt, listEntryPointsByProfileID, profileID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Entrypoint
-	for rows.Next() {
-		var i Entrypoint
-		if err := rows.Scan(
-			&i.ProfileID,
-			&i.Name,
-			&i.Address,
-			&i.AsDefault,
-			&i.Http,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listMiddlewares = `-- name: ListMiddlewares :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, content
-FROM
-    middlewares
-`
-
-func (q *Queries) ListMiddlewares(ctx context.Context) ([]Middleware, error) {
-	rows, err := q.query(ctx, q.listMiddlewaresStmt, listMiddlewares)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Middleware
-	for rows.Next() {
-		var i Middleware
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Content,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listMiddlewaresByProfileID = `-- name: ListMiddlewaresByProfileID :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, content
-FROM
-    middlewares
-WHERE
-    profile_id = ?
-`
-
-func (q *Queries) ListMiddlewaresByProfileID(ctx context.Context, profileID int64) ([]Middleware, error) {
-	rows, err := q.query(ctx, q.listMiddlewaresByProfileIDStmt, listMiddlewaresByProfileID, profileID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Middleware
-	for rows.Next() {
-		var i Middleware
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Content,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listMiddlewaresByProvider = `-- name: ListMiddlewaresByProvider :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, content
-FROM
-    middlewares
-WHERE
-    provider = ?
-`
-
-func (q *Queries) ListMiddlewaresByProvider(ctx context.Context, provider string) ([]Middleware, error) {
-	rows, err := q.query(ctx, q.listMiddlewaresByProviderStmt, listMiddlewaresByProvider, provider)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Middleware
-	for rows.Next() {
-		var i Middleware
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Content,
 		); err != nil {
 			return nil, err
 		}
@@ -1000,336 +1303,6 @@ func (q *Queries) ListProviders(ctx context.Context) ([]Provider, error) {
 	return items, nil
 }
 
-const listRouters = `-- name: ListRouters :many
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-`
-
-func (q *Queries) ListRouters(ctx context.Context) ([]Router, error) {
-	rows, err := q.query(ctx, q.listRoutersStmt, listRouters)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Router
-	for rows.Next() {
-		var i Router
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Protocol,
-			&i.Status,
-			&i.AgentID,
-			&i.EntryPoints,
-			&i.Middlewares,
-			&i.Rule,
-			&i.RuleSyntax,
-			&i.Service,
-			&i.Priority,
-			&i.Tls,
-			&i.DnsProvider,
-			&i.Errors,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listRoutersByAgentID = `-- name: ListRoutersByAgentID :many
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-WHERE
-    agent_id = ?
-`
-
-func (q *Queries) ListRoutersByAgentID(ctx context.Context, agentID *string) ([]Router, error) {
-	rows, err := q.query(ctx, q.listRoutersByAgentIDStmt, listRoutersByAgentID, agentID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Router
-	for rows.Next() {
-		var i Router
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Protocol,
-			&i.Status,
-			&i.AgentID,
-			&i.EntryPoints,
-			&i.Middlewares,
-			&i.Rule,
-			&i.RuleSyntax,
-			&i.Service,
-			&i.Priority,
-			&i.Tls,
-			&i.DnsProvider,
-			&i.Errors,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listRoutersByProfileID = `-- name: ListRoutersByProfileID :many
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-WHERE
-    profile_id = ?
-`
-
-func (q *Queries) ListRoutersByProfileID(ctx context.Context, profileID int64) ([]Router, error) {
-	rows, err := q.query(ctx, q.listRoutersByProfileIDStmt, listRoutersByProfileID, profileID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Router
-	for rows.Next() {
-		var i Router
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Protocol,
-			&i.Status,
-			&i.AgentID,
-			&i.EntryPoints,
-			&i.Middlewares,
-			&i.Rule,
-			&i.RuleSyntax,
-			&i.Service,
-			&i.Priority,
-			&i.Tls,
-			&i.DnsProvider,
-			&i.Errors,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listRoutersByProvider = `-- name: ListRoutersByProvider :many
-SELECT
-    id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
-FROM
-    routers
-WHERE
-    provider = ?
-`
-
-func (q *Queries) ListRoutersByProvider(ctx context.Context, provider string) ([]Router, error) {
-	rows, err := q.query(ctx, q.listRoutersByProviderStmt, listRoutersByProvider, provider)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Router
-	for rows.Next() {
-		var i Router
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Protocol,
-			&i.Status,
-			&i.AgentID,
-			&i.EntryPoints,
-			&i.Middlewares,
-			&i.Rule,
-			&i.RuleSyntax,
-			&i.Service,
-			&i.Priority,
-			&i.Tls,
-			&i.DnsProvider,
-			&i.Errors,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listServices = `-- name: ListServices :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-FROM
-    services
-`
-
-func (q *Queries) ListServices(ctx context.Context) ([]Service, error) {
-	rows, err := q.query(ctx, q.listServicesStmt, listServices)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Service
-	for rows.Next() {
-		var i Service
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Status,
-			&i.ServerStatus,
-			&i.LoadBalancer,
-			&i.Weighted,
-			&i.Mirroring,
-			&i.Failover,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listServicesByProfileID = `-- name: ListServicesByProfileID :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-FROM
-    services
-WHERE
-    profile_id = ?
-`
-
-func (q *Queries) ListServicesByProfileID(ctx context.Context, profileID int64) ([]Service, error) {
-	rows, err := q.query(ctx, q.listServicesByProfileIDStmt, listServicesByProfileID, profileID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Service
-	for rows.Next() {
-		var i Service
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Status,
-			&i.ServerStatus,
-			&i.LoadBalancer,
-			&i.Weighted,
-			&i.Mirroring,
-			&i.Failover,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listServicesByProvider = `-- name: ListServicesByProvider :many
-SELECT
-    id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-FROM
-    services
-WHERE
-    provider = ?
-`
-
-func (q *Queries) ListServicesByProvider(ctx context.Context, provider string) ([]Service, error) {
-	rows, err := q.query(ctx, q.listServicesByProviderStmt, listServicesByProvider, provider)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Service
-	for rows.Next() {
-		var i Service
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.Name,
-			&i.Provider,
-			&i.Type,
-			&i.Protocol,
-			&i.AgentID,
-			&i.Status,
-			&i.ServerStatus,
-			&i.LoadBalancer,
-			&i.Weighted,
-			&i.Mirroring,
-			&i.Failover,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listSettings = `-- name: ListSettings :many
 SELECT
     id, "key", value
@@ -1362,7 +1335,7 @@ func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-    id, username, password, email, last_login, is_admin
+    id, username, password, email, is_admin, last_login
 FROM
     users
 `
@@ -1381,8 +1354,8 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Username,
 			&i.Password,
 			&i.Email,
-			&i.LastLogin,
 			&i.IsAdmin,
+			&i.LastLogin,
 		); err != nil {
 			return nil, err
 		}
@@ -1451,15 +1424,15 @@ SET
 `
 
 type UpsertAgentParams struct {
-	ID         string      `json:"id"`
-	ProfileID  int64       `json:"profileId"`
-	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	ActiveIp   *string     `json:"activeIp"`
-	Token      string      `json:"token"`
-	LastSeen   *time.Time  `json:"lastSeen"`
+	ID         string     `json:"id"`
+	ProfileID  int64      `json:"profileId"`
+	Hostname   string     `json:"hostname"`
+	PublicIp   *string    `json:"publicIp"`
+	PrivateIps *string    `json:"privateIps"`
+	Containers *string    `json:"containers"`
+	ActiveIp   *string    `json:"activeIp"`
+	Token      string     `json:"token"`
+	LastSeen   *time.Time `json:"lastSeen"`
 }
 
 func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent, error) {
@@ -1489,111 +1462,212 @@ func (q *Queries) UpsertAgent(ctx context.Context, arg UpsertAgentParams) (Agent
 	return i, err
 }
 
-const upsertEntryPoint = `-- name: UpsertEntryPoint :one
-INSERT INTO
-    entrypoints (profile_id, name, address, as_default, http)
-VALUES
-    (?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
-UPDATE
+const upsertInternalHTTPMiddleware = `-- name: UpsertInternalHTTPMiddleware :exec
+UPDATE traefik_api
 SET
-    address = EXCLUDED.address,
-    as_default = EXCLUDED.as_default,
-    http = EXCLUDED.http RETURNING profile_id, name, address, as_default, http
-`
-
-type UpsertEntryPointParams struct {
-	ProfileID int64       `json:"profileId"`
-	Name      string      `json:"name"`
-	Address   string      `json:"address"`
-	AsDefault *bool       `json:"asDefault"`
-	Http      interface{} `json:"http"`
-}
-
-func (q *Queries) UpsertEntryPoint(ctx context.Context, arg UpsertEntryPointParams) (Entrypoint, error) {
-	row := q.queryRow(ctx, q.upsertEntryPointStmt, upsertEntryPoint,
-		arg.ProfileID,
-		arg.Name,
-		arg.Address,
-		arg.AsDefault,
-		arg.Http,
-	)
-	var i Entrypoint
-	err := row.Scan(
-		&i.ProfileID,
-		&i.Name,
-		&i.Address,
-		&i.AsDefault,
-		&i.Http,
-	)
-	return i, err
-}
-
-const upsertMiddleware = `-- name: UpsertMiddleware :one
-INSERT INTO
-    middlewares (
-        id,
-        profile_id,
-        name,
-        provider,
-        type,
-        protocol,
-        agent_id,
-        content
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.middlewares') IS NULL THEN json_set (internal, '$.middlewares', json ('{}'))
+            ELSE internal
+        END,
+        '$.middlewares.' || ?2,
+        json (?3)
     )
-VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
-UPDATE
-SET
-    provider = COALESCE(
-        NULLIF(EXCLUDED.provider, ''),
-        middlewares.provider
-    ),
-    type = COALESCE(NULLIF(EXCLUDED.type, ''), middlewares.type),
-    protocol = COALESCE(
-        NULLIF(EXCLUDED.protocol, ''),
-        middlewares.protocol
-    ),
-    agent_id = COALESCE(
-        NULLIF(EXCLUDED.agent_id, ''),
-        middlewares.agent_id
-    ),
-    content = COALESCE(NULLIF(EXCLUDED.content, ''), middlewares.content) RETURNING id, profile_id, name, provider, type, protocol, agent_id, content
+WHERE
+    profile_id = ?
 `
 
-type UpsertMiddlewareParams struct {
-	ID        string      `json:"id"`
+type UpsertInternalHTTPMiddlewareParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
 	ProfileID int64       `json:"profileId"`
-	Name      string      `json:"name"`
-	Provider  string      `json:"provider"`
-	Type      string      `json:"type"`
-	Protocol  string      `json:"protocol"`
-	AgentID   *string     `json:"agentId"`
-	Content   interface{} `json:"content"`
 }
 
-func (q *Queries) UpsertMiddleware(ctx context.Context, arg UpsertMiddlewareParams) (Middleware, error) {
-	row := q.queryRow(ctx, q.upsertMiddlewareStmt, upsertMiddleware,
-		arg.ID,
-		arg.ProfileID,
-		arg.Name,
-		arg.Provider,
-		arg.Type,
-		arg.Protocol,
-		arg.AgentID,
-		arg.Content,
-	)
-	var i Middleware
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Content,
-	)
-	return i, err
+func (q *Queries) UpsertInternalHTTPMiddleware(ctx context.Context, arg UpsertInternalHTTPMiddlewareParams) error {
+	_, err := q.exec(ctx, q.upsertInternalHTTPMiddlewareStmt, upsertInternalHTTPMiddleware, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalHTTPRouter = `-- name: UpsertInternalHTTPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.routers') IS NULL THEN json_set (internal, '$.routers', json ('{}'))
+            ELSE internal
+        END,
+        '$.routers.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalHTTPRouterParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalHTTPRouter(ctx context.Context, arg UpsertInternalHTTPRouterParams) error {
+	_, err := q.exec(ctx, q.upsertInternalHTTPRouterStmt, upsertInternalHTTPRouter, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalHTTPService = `-- name: UpsertInternalHTTPService :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.services') IS NULL THEN json_set (internal, '$.services', json ('{}'))
+            ELSE internal
+        END,
+        '$.services.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalHTTPServiceParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalHTTPService(ctx context.Context, arg UpsertInternalHTTPServiceParams) error {
+	_, err := q.exec(ctx, q.upsertInternalHTTPServiceStmt, upsertInternalHTTPService, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalTCPMiddleware = `-- name: UpsertInternalTCPMiddleware :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.tcpMiddlewares') IS NULL THEN json_set (internal, '$.tcpMiddlewares', json ('{}'))
+            ELSE internal
+        END,
+        '$.tcpMiddlewares.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalTCPMiddlewareParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalTCPMiddleware(ctx context.Context, arg UpsertInternalTCPMiddlewareParams) error {
+	_, err := q.exec(ctx, q.upsertInternalTCPMiddlewareStmt, upsertInternalTCPMiddleware, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalTCPRouter = `-- name: UpsertInternalTCPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.tcpRouters') IS NULL THEN json_set (internal, '$.tcpRouters', json ('{}'))
+            ELSE internal
+        END,
+        '$.tcpRouters.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalTCPRouterParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalTCPRouter(ctx context.Context, arg UpsertInternalTCPRouterParams) error {
+	_, err := q.exec(ctx, q.upsertInternalTCPRouterStmt, upsertInternalTCPRouter, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalTCPService = `-- name: UpsertInternalTCPService :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.tcpServices') IS NULL THEN json_set (internal, '$.tcpServices', json ('{}'))
+            ELSE internal
+        END,
+        '$.tcpServices.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalTCPServiceParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalTCPService(ctx context.Context, arg UpsertInternalTCPServiceParams) error {
+	_, err := q.exec(ctx, q.upsertInternalTCPServiceStmt, upsertInternalTCPService, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalUDPRouter = `-- name: UpsertInternalUDPRouter :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.udpRouters') IS NULL THEN json_set (internal, '$.udpRouters', json ('{}'))
+            ELSE internal
+        END,
+        '$.udpRouters.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalUDPRouterParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalUDPRouter(ctx context.Context, arg UpsertInternalUDPRouterParams) error {
+	_, err := q.exec(ctx, q.upsertInternalUDPRouterStmt, upsertInternalUDPRouter, arg.Name, arg.Body, arg.ProfileID)
+	return err
+}
+
+const upsertInternalUDPService = `-- name: UpsertInternalUDPService :exec
+UPDATE traefik_api
+SET
+    internal = json_set (
+        CASE
+            WHEN json_extract (internal, '$.udpServices') IS NULL THEN json_set (internal, '$.udpServices', json ('{}'))
+            ELSE internal
+        END,
+        '$.udpServices.' || ?2,
+        json (?3)
+    )
+WHERE
+    profile_id = ?
+`
+
+type UpsertInternalUDPServiceParams struct {
+	Name      *string     `json:"name"`
+	Body      interface{} `json:"body"`
+	ProfileID int64       `json:"profileId"`
+}
+
+func (q *Queries) UpsertInternalUDPService(ctx context.Context, arg UpsertInternalUDPServiceParams) error {
+	_, err := q.exec(ctx, q.upsertInternalUDPServiceStmt, upsertInternalUDPService, arg.Name, arg.Body, arg.ProfileID)
+	return err
 }
 
 const upsertProfile = `-- name: UpsertProfile :one
@@ -1699,208 +1773,48 @@ func (q *Queries) UpsertProvider(ctx context.Context, arg UpsertProviderParams) 
 	return i, err
 }
 
-const upsertRouter = `-- name: UpsertRouter :one
+const upsertTraefikConfig = `-- name: UpsertTraefikConfig :one
 INSERT INTO
-    routers (
-        id,
+    traefik_api (
         profile_id,
-        name,
-        provider,
-        protocol,
-        status,
-        agent_id,
-        entry_points,
-        middlewares,
-        rule,
-        rule_syntax,
-        service,
-        priority,
-        tls,
-        dns_provider,
-        errors
+        entrypoints,
+        overview,
+        external,
+        internal
     )
 VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
+    (?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO
 UPDATE
 SET
-    id = COALESCE(NULLIF(EXCLUDED.id, ''), routers.id),
-    provider = COALESCE(NULLIF(EXCLUDED.provider, ''), routers.provider),
-    protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), routers.protocol),
-    status = COALESCE(NULLIF(EXCLUDED.status, ''), routers.status),
-    entry_points = COALESCE(
-        NULLIF(EXCLUDED.entry_points, ''),
-        routers.entry_points
-    ),
-    middlewares = COALESCE(
-        NULLIF(EXCLUDED.middlewares, ''),
-        routers.middlewares
-    ),
-    rule = COALESCE(NULLIF(EXCLUDED.rule, ''), routers.rule),
-    rule_syntax = COALESCE(
-        NULLIF(EXCLUDED.rule_syntax, ''),
-        routers.rule_syntax
-    ),
-    service = COALESCE(NULLIF(EXCLUDED.service, ''), routers.service),
-    priority = COALESCE(NULLIF(EXCLUDED.priority, ''), routers.priority),
-    tls = COALESCE(NULLIF(EXCLUDED.tls, ''), routers.tls),
-    dns_provider = CASE
-        WHEN EXCLUDED.dns_provider = 0 THEN NULL
-        WHEN EXCLUDED.dns_provider IS NOT NULL THEN EXCLUDED.dns_provider
-        ELSE routers.dns_provider
-    END,
-    agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), routers.agent_id),
-    errors = COALESCE(NULLIF(EXCLUDED.errors, ''), routers.errors) RETURNING id, profile_id, name, provider, protocol, status, agent_id, entry_points, middlewares, rule, rule_syntax, service, priority, tls, dns_provider, errors
+    entrypoints = excluded.entrypoints,
+    overview = excluded.overview,
+    external = excluded.external,
+    internal = excluded.internal RETURNING profile_id, entrypoints, overview, external, internal
 `
 
-type UpsertRouterParams struct {
-	ID          string      `json:"id"`
-	ProfileID   int64       `json:"profileId"`
-	Name        string      `json:"name"`
-	Provider    string      `json:"provider"`
-	Protocol    string      `json:"protocol"`
-	Status      *string     `json:"status"`
-	AgentID     *string     `json:"agentId"`
-	EntryPoints interface{} `json:"entryPoints"`
-	Middlewares interface{} `json:"middlewares"`
-	Rule        string      `json:"rule"`
-	RuleSyntax  *string     `json:"ruleSyntax"`
-	Service     string      `json:"service"`
-	Priority    *int64      `json:"priority"`
-	Tls         interface{} `json:"tls"`
-	DnsProvider *int64      `json:"dnsProvider"`
-	Errors      interface{} `json:"errors"`
+type UpsertTraefikConfigParams struct {
+	ProfileID   int64               `json:"profileId"`
+	Entrypoints *TraefikEntryPoints `json:"entrypoints"`
+	Overview    *TraefikOverview    `json:"overview"`
+	External    *TraefikConfig      `json:"external"`
+	Internal    *TraefikConfig      `json:"internal"`
 }
 
-func (q *Queries) UpsertRouter(ctx context.Context, arg UpsertRouterParams) (Router, error) {
-	row := q.queryRow(ctx, q.upsertRouterStmt, upsertRouter,
-		arg.ID,
+func (q *Queries) UpsertTraefikConfig(ctx context.Context, arg UpsertTraefikConfigParams) (TraefikApi, error) {
+	row := q.queryRow(ctx, q.upsertTraefikConfigStmt, upsertTraefikConfig,
 		arg.ProfileID,
-		arg.Name,
-		arg.Provider,
-		arg.Protocol,
-		arg.Status,
-		arg.AgentID,
-		arg.EntryPoints,
-		arg.Middlewares,
-		arg.Rule,
-		arg.RuleSyntax,
-		arg.Service,
-		arg.Priority,
-		arg.Tls,
-		arg.DnsProvider,
-		arg.Errors,
+		arg.Entrypoints,
+		arg.Overview,
+		arg.External,
+		arg.Internal,
 	)
-	var i Router
+	var i TraefikApi
 	err := row.Scan(
-		&i.ID,
 		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Protocol,
-		&i.Status,
-		&i.AgentID,
-		&i.EntryPoints,
-		&i.Middlewares,
-		&i.Rule,
-		&i.RuleSyntax,
-		&i.Service,
-		&i.Priority,
-		&i.Tls,
-		&i.DnsProvider,
-		&i.Errors,
-	)
-	return i, err
-}
-
-const upsertService = `-- name: UpsertService :one
-INSERT INTO
-    services (
-        id,
-        profile_id,
-        name,
-        provider,
-        type,
-        protocol,
-        agent_id,
-        status,
-        server_status,
-        load_balancer,
-        weighted,
-        mirroring,
-        failover
-    )
-VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (name, profile_id) DO
-UPDATE
-SET
-    provider = COALESCE(NULLIF(EXCLUDED.provider, ''), services.provider),
-    type = COALESCE(NULLIF(EXCLUDED.type, ''), services.type),
-    protocol = COALESCE(NULLIF(EXCLUDED.protocol, ''), services.protocol),
-    status = COALESCE(NULLIF(EXCLUDED.status, ''), services.status),
-    server_status = COALESCE(
-        NULLIF(EXCLUDED.server_status, ''),
-        services.server_status
-    ),
-    load_balancer = COALESCE(
-        NULLIF(EXCLUDED.load_balancer, ''),
-        services.load_balancer
-    ),
-    weighted = COALESCE(NULLIF(EXCLUDED.weighted, ''), services.weighted),
-    mirroring = COALESCE(
-        NULLIF(EXCLUDED.mirroring, ''),
-        services.mirroring
-    ),
-    failover = COALESCE(NULLIF(EXCLUDED.failover, ''), services.failover),
-    agent_id = COALESCE(NULLIF(EXCLUDED.agent_id, ''), services.agent_id) RETURNING id, profile_id, name, provider, type, protocol, agent_id, status, server_status, load_balancer, weighted, mirroring, failover
-`
-
-type UpsertServiceParams struct {
-	ID           string      `json:"id"`
-	ProfileID    int64       `json:"profileId"`
-	Name         string      `json:"name"`
-	Provider     string      `json:"provider"`
-	Type         string      `json:"type"`
-	Protocol     string      `json:"protocol"`
-	AgentID      *string     `json:"agentId"`
-	Status       *string     `json:"status"`
-	ServerStatus interface{} `json:"serverStatus"`
-	LoadBalancer interface{} `json:"loadBalancer"`
-	Weighted     interface{} `json:"weighted"`
-	Mirroring    interface{} `json:"mirroring"`
-	Failover     interface{} `json:"failover"`
-}
-
-func (q *Queries) UpsertService(ctx context.Context, arg UpsertServiceParams) (Service, error) {
-	row := q.queryRow(ctx, q.upsertServiceStmt, upsertService,
-		arg.ID,
-		arg.ProfileID,
-		arg.Name,
-		arg.Provider,
-		arg.Type,
-		arg.Protocol,
-		arg.AgentID,
-		arg.Status,
-		arg.ServerStatus,
-		arg.LoadBalancer,
-		arg.Weighted,
-		arg.Mirroring,
-		arg.Failover,
-	)
-	var i Service
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Name,
-		&i.Provider,
-		&i.Type,
-		&i.Protocol,
-		&i.AgentID,
-		&i.Status,
-		&i.ServerStatus,
-		&i.LoadBalancer,
-		&i.Weighted,
-		&i.Mirroring,
-		&i.Failover,
+		&i.Entrypoints,
+		&i.Overview,
+		&i.External,
+		&i.Internal,
 	)
 	return i, err
 }
@@ -1917,7 +1831,7 @@ SET
         ELSE users.password
     END,
     email = EXCLUDED.email,
-    is_admin = EXCLUDED.is_admin RETURNING id, username, password, email, last_login, is_admin
+    is_admin = EXCLUDED.is_admin RETURNING id, username, password, email, is_admin, last_login
 `
 
 type UpsertUserParams struct {
@@ -1940,8 +1854,8 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.LastLogin,
 		&i.IsAdmin,
+		&i.LastLogin,
 	)
 	return i, err
 }

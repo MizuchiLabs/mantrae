@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	RawAPI             = "/api/rawdata"
 	EntrypointsAPI     = "/api/entrypoints"
 	OverviewAPI        = "/api/overview"
 	VersionAPI         = "/api/version"
@@ -607,6 +608,53 @@ func GetTraefikConfig() {
 
 	for _, profile := range profiles {
 		if profile.Url == "" {
+			continue
+		}
+
+		rawResponse, err := fetch(profile, RawAPI)
+		if err != nil {
+			slog.Error("Failed to fetch raw data", "error", err)
+			continue
+		}
+		defer rawResponse.Close()
+
+		var config db.TraefikConfig
+		if err := json.NewDecoder(rawResponse).Decode(&config); err != nil {
+			slog.Error("Failed to decode raw data", "error", err)
+			continue
+		}
+
+		epResponse, err := fetch(profile, EntrypointsAPI)
+		if err != nil {
+			slog.Error("Failed to fetch raw data", "error", err)
+			continue
+		}
+		defer epResponse.Close()
+
+		var entrypoints db.TraefikEntryPoints
+		if err := json.NewDecoder(epResponse).Decode(&entrypoints); err != nil {
+			slog.Error("Failed to decode raw data", "error", err)
+			continue
+		}
+		oResponse, err := fetch(profile, OverviewAPI)
+		if err != nil {
+			slog.Error("Failed to fetch raw data", "error", err)
+			continue
+		}
+		defer epResponse.Close()
+
+		var overview db.TraefikOverview
+		if err := json.NewDecoder(oResponse).Decode(&overview); err != nil {
+			slog.Error("Failed to decode raw data", "error", err)
+			continue
+		}
+		if _, err := db.Query.UpsertTraefikConfig(context.Background(), db.UpsertTraefikConfigParams{
+			ProfileID:   profile.ID,
+			Entrypoints: &entrypoints,
+			Overview:    &overview,
+			External:    &config,
+		}); err != nil {
+			slog.Error("Failed to upsert traefik api", "error", err)
 			continue
 		}
 

@@ -1,8 +1,10 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    queries: "internal/db/query.sql"
-    schema: "internal/db/migrations"
+    # queries: "internal/db/query.sql"
+    # schema: "internal/db/migrations"
+    queries: "query.sql"
+    schema: "schema.sql"
     gen:
       go:
         package: "db"
@@ -12,3 +14,29 @@ sql:
         emit_interface: true
         emit_pointers_for_null_types: true
         json_tags_case_style: "camel"
+        overrides:
+          - column: "traefik_api.entrypoints"
+            go_type:
+              type: "TraefikEntryPoints"
+              pointer: true
+          - column: "traefik_api.overview"
+            go_type:
+              type: "TraefikOverview"
+              pointer: true
+          - column: "traefik_api.external"
+            go_type:
+              type: "TraefikConfig"
+              pointer: true
+          - column: "traefik_api.internal"
+            go_type:
+              type: "TraefikConfig"
+              pointer: true
+          - column: "traefik_api.internal.routers"
+            go_type:
+              type: "HTTPRouters"
+          - column: "traefik_api.internal.tcp_routers"
+            go_type:
+              type: "TCPRouters"
+          - column: "traefik_api.internal.udp_routers"
+            go_type:
+              type: "UDPRouters"
