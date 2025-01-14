@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 const deleteHTTPService = `-- name: DeleteHTTPService :exec
@@ -20,9 +22,9 @@ WHERE
 `
 
 type DeleteHTTPServiceParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteHTTPService(ctx context.Context, arg DeleteHTTPServiceParams) error {
@@ -41,9 +43,9 @@ WHERE
 `
 
 type DeleteTCPServiceParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteTCPService(ctx context.Context, arg DeleteTCPServiceParams) error {
@@ -62,9 +64,9 @@ WHERE
 `
 
 type DeleteUDPServiceParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteUDPService(ctx context.Context, arg DeleteUDPServiceParams) error {
@@ -74,7 +76,7 @@ func (q *Queries) DeleteUDPService(ctx context.Context, arg DeleteUDPServicePara
 
 const getHTTPServiceByName = `-- name: GetHTTPServiceByName :one
 SELECT
-    json_extract (external, '$.services.' || ?3) as service
+    json_extract (config, '$.services.' || ?3) as service
 FROM
     traefik_config
 WHERE
@@ -83,9 +85,9 @@ WHERE
 `
 
 type GetHTTPServiceByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPServiceByName(ctx context.Context, arg GetHTTPServiceByNameParams) (interface{}, error) {
@@ -106,8 +108,8 @@ WHERE
 `
 
 type GetHTTPServicesBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPServicesBySource(ctx context.Context, arg GetHTTPServicesBySourceParams) (interface{}, error) {
@@ -119,7 +121,7 @@ func (q *Queries) GetHTTPServicesBySource(ctx context.Context, arg GetHTTPServic
 
 const getTCPServiceByName = `-- name: GetTCPServiceByName :one
 SELECT
-    json_extract (external, '$.tcpServices.' || ?3) as service
+    json_extract (config, '$.tcpServices.' || ?3) as service
 FROM
     traefik_config
 WHERE
@@ -128,9 +130,9 @@ WHERE
 `
 
 type GetTCPServiceByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPServiceByName(ctx context.Context, arg GetTCPServiceByNameParams) (interface{}, error) {
@@ -151,8 +153,8 @@ WHERE
 `
 
 type GetTCPServicesBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPServicesBySource(ctx context.Context, arg GetTCPServicesBySourceParams) (interface{}, error) {
@@ -164,7 +166,7 @@ func (q *Queries) GetTCPServicesBySource(ctx context.Context, arg GetTCPServices
 
 const getUDPServiceByName = `-- name: GetUDPServiceByName :one
 SELECT
-    json_extract (external, '$.udpServices.' || ?3) as service
+    json_extract (config, '$.udpServices.' || ?3) as service
 FROM
     traefik_config
 WHERE
@@ -173,9 +175,9 @@ WHERE
 `
 
 type GetUDPServiceByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetUDPServiceByName(ctx context.Context, arg GetUDPServiceByNameParams) (interface{}, error) {
@@ -196,8 +198,8 @@ WHERE
 `
 
 type GetUDPServicesBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetUDPServicesBySource(ctx context.Context, arg GetUDPServicesBySourceParams) (interface{}, error) {
@@ -222,10 +224,10 @@ WHERE
 `
 
 type UpsertHTTPServiceParams struct {
-	Name        *string     `json:"name"`
-	ServiceJson interface{} `json:"serviceJson"`
-	ProfileID   int64       `json:"profileId"`
-	Source      string      `json:"source"`
+	Name        *string       `json:"name"`
+	ServiceJson interface{}   `json:"serviceJson"`
+	ProfileID   int64         `json:"profileId"`
+	Source      source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertHTTPService(ctx context.Context, arg UpsertHTTPServiceParams) error {
@@ -253,10 +255,10 @@ WHERE
 `
 
 type UpsertTCPServiceParams struct {
-	Name        *string     `json:"name"`
-	ServiceJson interface{} `json:"serviceJson"`
-	ProfileID   int64       `json:"profileId"`
-	Source      string      `json:"source"`
+	Name        *string       `json:"name"`
+	ServiceJson interface{}   `json:"serviceJson"`
+	ProfileID   int64         `json:"profileId"`
+	Source      source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertTCPService(ctx context.Context, arg UpsertTCPServiceParams) error {
@@ -284,10 +286,10 @@ WHERE
 `
 
 type UpsertUDPServiceParams struct {
-	Name        *string     `json:"name"`
-	ServiceJson interface{} `json:"serviceJson"`
-	ProfileID   int64       `json:"profileId"`
-	Source      string      `json:"source"`
+	Name        *string       `json:"name"`
+	ServiceJson interface{}   `json:"serviceJson"`
+	ProfileID   int64         `json:"profileId"`
+	Source      source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertUDPService(ctx context.Context, arg UpsertUDPServiceParams) error {

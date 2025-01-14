@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 // GetVersion returns the current version of Mantrae as a plain text response.

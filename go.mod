@@ -17,14 +17,12 @@ require (
 	github.com/lmittmann/tint v1.0.6
 	github.com/pressly/goose/v3 v3.24.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/traefik/paerser v0.2.1
 	github.com/traefik/traefik/v3 v3.3.1
 	golang.org/x/crypto v0.32.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
 	golang.org/x/net v0.34.0
 	google.golang.org/protobuf v1.36.2
 	modernc.org/sqlite v1.34.4
-	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
@@ -65,6 +63,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
+	github.com/traefik/paerser v0.2.1 // indirect
 	github.com/unrolled/render v1.7.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect

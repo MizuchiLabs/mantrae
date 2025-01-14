@@ -20,15 +20,15 @@ type TechnitiumProvider struct {
 	ZoneType   string // primary, forwarder
 }
 
-func NewTechnitiumProvider(url, key, ip, zoneType string) *TechnitiumProvider {
-	if !slices.Contains(ZoneTypes, zoneType) {
-		slog.Error("Invalid zone type", "type", zoneType)
+func (d *DNSProviderConfig) NewTechnitiumProvider() *TechnitiumProvider {
+	if !slices.Contains(ZoneTypes, d.ZoneType) {
+		slog.Error("Invalid zone type", "type", d.ZoneType)
 	}
 	return &TechnitiumProvider{
-		BaseURL:    url,
-		APIKey:     key,
-		ExternalIP: ip,
-		ZoneType:   zoneType,
+		BaseURL:    d.APIUrl,
+		APIKey:     d.APIKey,
+		ExternalIP: d.TraefikIP,
+		ZoneType:   d.ZoneType,
 	}
 }
 

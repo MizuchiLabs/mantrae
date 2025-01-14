@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 const deleteHTTPMiddleware = `-- name: DeleteHTTPMiddleware :exec
@@ -20,9 +22,9 @@ WHERE
 `
 
 type DeleteHTTPMiddlewareParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteHTTPMiddleware(ctx context.Context, arg DeleteHTTPMiddlewareParams) error {
@@ -41,9 +43,9 @@ WHERE
 `
 
 type DeleteTCPMiddlewareParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteTCPMiddleware(ctx context.Context, arg DeleteTCPMiddlewareParams) error {
@@ -53,7 +55,7 @@ func (q *Queries) DeleteTCPMiddleware(ctx context.Context, arg DeleteTCPMiddlewa
 
 const getHTTPMiddlewareByName = `-- name: GetHTTPMiddlewareByName :one
 SELECT
-    json_extract (external, '$.middlewares.' || ?3) as middleware
+    json_extract (config, '$.middlewares.' || ?3) as middleware
 FROM
     traefik_config
 WHERE
@@ -62,9 +64,9 @@ WHERE
 `
 
 type GetHTTPMiddlewareByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPMiddlewareByName(ctx context.Context, arg GetHTTPMiddlewareByNameParams) (interface{}, error) {
@@ -85,8 +87,8 @@ WHERE
 `
 
 type GetHTTPMiddlewaresBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPMiddlewaresBySource(ctx context.Context, arg GetHTTPMiddlewaresBySourceParams) (interface{}, error) {
@@ -98,7 +100,7 @@ func (q *Queries) GetHTTPMiddlewaresBySource(ctx context.Context, arg GetHTTPMid
 
 const getTCPMiddlewareByName = `-- name: GetTCPMiddlewareByName :one
 SELECT
-    json_extract (external, '$.tcpMiddlewares.' || ?3) as middleware
+    json_extract (config, '$.tcpMiddlewares.' || ?3) as middleware
 FROM
     traefik_config
 WHERE
@@ -107,9 +109,9 @@ WHERE
 `
 
 type GetTCPMiddlewareByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPMiddlewareByName(ctx context.Context, arg GetTCPMiddlewareByNameParams) (interface{}, error) {
@@ -130,8 +132,8 @@ WHERE
 `
 
 type GetTCPMiddlewaresBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPMiddlewaresBySource(ctx context.Context, arg GetTCPMiddlewaresBySourceParams) (interface{}, error) {
@@ -156,10 +158,10 @@ WHERE
 `
 
 type UpsertHTTPMiddlewareParams struct {
-	Name           *string     `json:"name"`
-	MiddlewareJson interface{} `json:"middlewareJson"`
-	ProfileID      int64       `json:"profileId"`
-	Source         string      `json:"source"`
+	Name           *string       `json:"name"`
+	MiddlewareJson interface{}   `json:"middlewareJson"`
+	ProfileID      int64         `json:"profileId"`
+	Source         source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertHTTPMiddleware(ctx context.Context, arg UpsertHTTPMiddlewareParams) error {
@@ -187,10 +189,10 @@ WHERE
 `
 
 type UpsertTCPMiddlewareParams struct {
-	Name           *string     `json:"name"`
-	MiddlewareJson interface{} `json:"middlewareJson"`
-	ProfileID      int64       `json:"profileId"`
-	Source         string      `json:"source"`
+	Name           *string       `json:"name"`
+	MiddlewareJson interface{}   `json:"middlewareJson"`
+	ProfileID      int64         `json:"profileId"`
+	Source         source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertTCPMiddleware(ctx context.Context, arg UpsertTCPMiddlewareParams) error {

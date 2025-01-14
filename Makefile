@@ -74,6 +74,23 @@ upgrade:
 	go get -u && go mod tidy
 	cd web && pnpm update
 
+# Create a new migration
+db-new:
+	@read -p "Enter migration name: " name; \
+	atlas migrate diff $$name --env sqlite
+
+# Apply all pending migrations
+db-apply:
+	atlas migrate apply --env sqlite
+
+# Apply schema changes directly (without migrations)
+db-schema:
+	atlas schema apply --env sqlite
+
+# Check migration status
+db-status:
+	atlas migrate status --env sqlite
+
 .PHONY: run
 run-server:
 	go run main.go

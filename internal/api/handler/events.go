@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 // GetEvents streams server-sent events (SSE) for real-time updates.

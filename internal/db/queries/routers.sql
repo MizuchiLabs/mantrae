@@ -27,7 +27,7 @@ WHERE
 
 -- name: GetHTTPRouterByName :one
 SELECT
-    json_extract (external, '$.routers.' || sqlc.arg (name)) as router
+    json_extract (config, '$.routers.' || sqlc.arg (name)) as router
 FROM
     traefik_config
 WHERE
@@ -36,7 +36,7 @@ WHERE
 
 -- name: GetTCPRouterByName :one
 SELECT
-    json_extract (external, '$.tcpRouters.' || sqlc.arg (name)) as router
+    json_extract (config, '$.tcpRouters.' || sqlc.arg (name)) as router
 FROM
     traefik_config
 WHERE
@@ -45,7 +45,7 @@ WHERE
 
 -- name: GetUDPRouterByName :one
 SELECT
-    json_extract (external, '$.udpRouters.' || sqlc.arg (name)) as router
+    json_extract (config, '$.udpRouters.' || sqlc.arg (name)) as router
 FROM
     traefik_config
 WHERE

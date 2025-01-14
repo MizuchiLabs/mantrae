@@ -18,7 +18,7 @@ WHERE
 
 -- name: GetHTTPMiddlewareByName :one
 SELECT
-    json_extract (external, '$.middlewares.' || sqlc.arg (name)) as middleware
+    json_extract (config, '$.middlewares.' || sqlc.arg (name)) as middleware
 FROM
     traefik_config
 WHERE
@@ -27,7 +27,7 @@ WHERE
 
 -- name: GetTCPMiddlewareByName :one
 SELECT
-    json_extract (external, '$.tcpMiddlewares.' || sqlc.arg (name)) as middleware
+    json_extract (config, '$.tcpMiddlewares.' || sqlc.arg (name)) as middleware
 FROM
     traefik_config
 WHERE

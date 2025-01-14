@@ -1,21 +1,22 @@
-package util
+package mail
 
 import (
 	"fmt"
 	"html/template"
 	"net/smtp"
 
-	"github.com/MizuchiLabs/mantrae/pkg/templates"
+	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/mail/templates"
 	"github.com/domodwyer/mailyak/v3"
 )
 
-func SendMail(to, templateName string, config EmailConfig, data map[string]interface{}) error {
+func Send(to, templateName string, email config.EmailConfig, data map[string]interface{}) error {
 	client := mailyak.New(
-		config.EmailHost+":"+config.EmailPort,
-		smtp.PlainAuth("", config.EmailUsername, config.EmailPassword, config.EmailHost),
+		email.Host+":"+email.Port,
+		smtp.PlainAuth("", email.Username, email.Password, email.Host),
 	)
 	client.To(to)
-	client.From(config.EmailFrom)
+	client.From(email.From)
 
 	var subject string
 	switch templateName {

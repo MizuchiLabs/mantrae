@@ -27,7 +27,7 @@ WHERE
 
 -- name: GetHTTPServiceByName :one
 SELECT
-    json_extract (external, '$.services.' || sqlc.arg (name)) as service
+    json_extract (config, '$.services.' || sqlc.arg (name)) as service
 FROM
     traefik_config
 WHERE
@@ -36,7 +36,7 @@ WHERE
 
 -- name: GetTCPServiceByName :one
 SELECT
-    json_extract (external, '$.tcpServices.' || sqlc.arg (name)) as service
+    json_extract (config, '$.tcpServices.' || sqlc.arg (name)) as service
 FROM
     traefik_config
 WHERE
@@ -45,7 +45,7 @@ WHERE
 
 -- name: GetUDPServiceByName :one
 SELECT
-    json_extract (external, '$.udpServices.' || sqlc.arg (name)) as service
+    json_extract (config, '$.udpServices.' || sqlc.arg (name)) as service
 FROM
     traefik_config
 WHERE

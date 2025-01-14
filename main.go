@@ -4,61 +4,34 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"strings"
+	"os/signal"
+	"syscall"
 
 	"github.com/MizuchiLabs/mantrae/internal/api/server"
 	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/tasks"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
-	"github.com/lmittmann/tint"
 )
 
-// Set up global logger with specified configuration
-func init() {
-	levelMap := map[string]slog.Level{
-		"debug": slog.LevelDebug,
-		"info":  slog.LevelInfo,
-		"warn":  slog.LevelWarn,
-		"error": slog.LevelError,
-	}
-
-	logLevel, exists := levelMap[strings.ToLower(util.App.LogLevel)]
-	if !exists {
-		logLevel = slog.LevelInfo
-	}
-
-	opts := &tint.Options{Level: logLevel}
-	logger := slog.New(tint.NewHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
-}
-
 func main() {
-	if err := db.InitDB(); err != nil {
-		slog.Error("Failed to initialize database", "error", err)
-		return
-	}
-	defer db.DB.Close() // Close the database connection when the program exits
-
-	// Parse command-line flags and set default settings
-	if err := config.Parse(); err != nil {
-		slog.Error("Failed to parse flags", "error", err)
+	app, err := config.Setup()
+	if err != nil {
+		slog.Error("Setup failed", "error", err)
 		return
 	}
 
-	// Schedule backups
-	if err := config.ScheduleBackups(); err != nil {
-		slog.Error("Failed to schedule backups", "error", err)
-	}
-
-	// Create a context that will be used to signal background processes to stop
+	// Graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start the background sync processes
-	tasks.StartSync(ctx)
+	go func() {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		<-sigCh
+		cancel()
+	}()
 
-	// Start the WebUI server
-	srv := server.NewServer(db.DB)
-	srv.Start(ctx)
+	srv := server.NewServer(app)
+	if err := srv.Start(ctx); err != nil {
+		slog.Error("Server error", "error", err)
+		os.Exit(1)
+	}
 }

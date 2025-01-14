@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -22,8 +22,8 @@ const (
 	VersionAPI     = "/api/version"
 )
 
-func GetTraefikConfig() {
-	profiles, err := db.Query.ListProfiles(context.Background())
+func GetTraefikConfig(q *db.Queries) {
+	profiles, err := q.ListProfiles(context.Background())
 	if err != nil {
 		slog.Error("Failed to get profiles", "error", err)
 		return
@@ -78,9 +78,9 @@ func GetTraefikConfig() {
 		}
 
 		// Check if traefik config exists
-		traefikConfig, err := db.Query.GetTraefikConfig(context.Background(), profile.ID)
+		traefikConfig, err := q.GetTraefikConfig(context.Background(), profile.ID)
 		if err != nil {
-			if err := db.Query.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
+			if err := q.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
 				ProfileID:   profile.ID,
 				Entrypoints: &entrypoints,
 				Overview:    &overview,
@@ -91,7 +91,7 @@ func GetTraefikConfig() {
 				continue
 			}
 		} else {
-			if err := db.Query.UpdateTraefikConfig(context.Background(), db.UpdateTraefikConfigParams{
+			if err := q.UpdateTraefikConfig(context.Background(), db.UpdateTraefikConfigParams{
 				ID:          traefikConfig.ID,
 				Entrypoints: &entrypoints,
 				Overview:    &overview,

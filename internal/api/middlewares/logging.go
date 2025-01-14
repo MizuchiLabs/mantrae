@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code
@@ -30,7 +28,7 @@ func (rec *statusRecorder) Flush() {
 }
 
 // Log middleware to log HTTP requests
-func Log(next http.HandlerFunc) http.HandlerFunc {
+func (h *MiddlewareHandler) Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -38,7 +36,7 @@ func Log(next http.HandlerFunc) http.HandlerFunc {
 		recorder := &statusRecorder{ResponseWriter: w, statusCode: http.StatusOK}
 
 		// Serve the request
-		next(recorder, r)
+		next.ServeHTTP(recorder, r)
 		duration := time.Since(start)
 
 		if strings.HasPrefix(r.URL.Path, "/_app/") {
@@ -67,7 +65,7 @@ func Log(next http.HandlerFunc) http.HandlerFunc {
 			)
 			return
 		}
-		if status >= 200 && status < 400 && util.App.LogLevel == "debug" {
+		if status >= 200 && status < 400 {
 			slog.Info("Request",
 				"method", r.Method,
 				"url", r.URL.Path,

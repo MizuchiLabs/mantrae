@@ -6,26 +6,22 @@ import (
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-)
-
-// Valid sources
-const (
-	internalSource = "internal"
-	externalSource = "external"
+	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 func CreateTraefikConfig(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var traefik_config db.CreateTraefikConfigParams
-		if err := json.NewDecoder(r.Body).Decode(&traefik_config); err != nil {
+		var config db.CreateTraefikConfigParams
+		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if traefik_config.Source != internalSource && traefik_config.Source != externalSource {
+		if !config.Source.Valid() {
 			http.Error(w, "invalid source", http.StatusBadRequest)
 			return
 		}
-		if err := q.CreateTraefikConfig(r.Context(), traefik_config); err != nil {
+
+		if err := q.CreateTraefikConfig(r.Context(), config); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -58,7 +54,7 @@ func GetTraefikConfigBySource(q *db.Queries) http.HandlerFunc {
 		}
 		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
 			ProfileID: profile_id,
-			Source:    r.PathValue("source"),
+			Source:    source.Source(r.PathValue("source")),
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -76,7 +72,7 @@ func UpdateTraefikConfig(q *db.Queries) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if config.Source != internalSource && config.Source != externalSource {
+		if !config.Source.Valid() {
 			http.Error(w, "invalid source", http.StatusBadRequest)
 			return
 		}
@@ -115,7 +111,7 @@ func PublishTraefikConfig(q *db.Queries) http.HandlerFunc {
 		}
 		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
 			ProfileID: profile.ID,
-			Source:    "internal",
+			Source:    source.Local,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

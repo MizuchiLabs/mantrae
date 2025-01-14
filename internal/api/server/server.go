@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io/fs"
 	"log"
@@ -17,28 +16,29 @@ import (
 	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
 	"github.com/MizuchiLabs/mantrae/internal/api/grpc"
 	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/web"
 )
 
 type Server struct {
 	mux *http.ServeMux
-	db  *db.Queries
+	app *config.App
 }
 
-func NewServer(DB *sql.DB) *Server {
+func NewServer(app *config.App) *Server {
 	return &Server{
 		mux: http.NewServeMux(),
-		db:  db.New(DB),
+		app: app,
 	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	s.registerServices()
+	host := s.app.Config.Server.Host
+	port := s.app.Config.Server.Port
 
 	server := &http.Server{
-		Addr:              util.App.Host + ":" + util.App.Port,
+		Addr:              host + ":" + port,
 		Handler:           middlewares.CORS(s.mux),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
@@ -52,8 +52,8 @@ func (s *Server) Start(ctx context.Context) error {
 	// Start server in a goroutine
 	go func() {
 		slog.Info("Server starting",
-			"host", util.App.Host,
-			"port", util.App.Port,
+			"host", host,
+			"port", port,
 		)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err

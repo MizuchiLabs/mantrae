@@ -15,8 +15,8 @@ type CloudflareProvider struct {
 	Proxied    *bool
 }
 
-func NewCloudflareProvider(key, ip string, proxied bool) *CloudflareProvider {
-	client, err := cloudflare.NewWithAPIToken(key)
+func (d *DNSProviderConfig) NewCloudflareProvider() *CloudflareProvider {
+	client, err := cloudflare.NewWithAPIToken(d.APIKey)
 	if err != nil {
 		slog.Error("Failed to create Cloudflare client", "error", err)
 		return nil
@@ -24,8 +24,8 @@ func NewCloudflareProvider(key, ip string, proxied bool) *CloudflareProvider {
 
 	return &CloudflareProvider{
 		Client:     client,
-		ExternalIP: ip,
-		Proxied:    &proxied,
+		ExternalIP: d.TraefikIP,
+		Proxied:    &d.Proxied,
 	}
 }
 

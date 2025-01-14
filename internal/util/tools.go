@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -16,20 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
-
-type UserClaims struct {
-	Username string `json:"username,omitempty"`
-	jwt.RegisteredClaims
-}
-
-type AgentClaims struct {
-	ServerURL string `json:"serverUrl,omitempty"`
-	ProfileID int64  `json:"profileId,omitempty"`
-	jwt.RegisteredClaims
-}
 
 // IsTest returns true if the current program is running in a test environment
 func IsTest() bool {
@@ -73,77 +60,6 @@ func HashBasicAuth(userString string) (string, error) {
 		return "", err
 	}
 	return user + ":" + string(hash), nil
-}
-
-// EncodeUserJWT generates a JWT for user login
-func EncodeUserJWT(username string, expirationTime time.Time) (string, error) {
-	if username == "" {
-		return "", errors.New("username cannot be empty")
-	}
-	if expirationTime.IsZero() {
-		expirationTime = time.Now().Add(24 * time.Hour)
-	}
-	claims := &UserClaims{
-		Username: username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(App.Secret))
-}
-
-// EncodeAgentJWT generates a JWT for the agent (does not expire)
-func EncodeAgentJWT(profileID int64, serverURL string) (string, error) {
-	if profileID == 0 {
-		return "", errors.New("profileID cannot be empty")
-	}
-
-	claims := AgentClaims{
-		ServerURL: serverURL + ":" + App.Port,
-		ProfileID: profileID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(App.Secret))
-}
-
-// DecodeUserJWT decodes the user token and returns claims if valid
-func DecodeUserJWT(tokenString string) (*UserClaims, error) {
-	claims := &UserClaims{}
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		claims,
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(App.Secret), nil
-		},
-	)
-
-	if err != nil || !token.Valid {
-		return nil, err
-	}
-	return claims, nil
-}
-
-func DecodeAgentJWT(tokenString string) (*AgentClaims, error) {
-	claims := &AgentClaims{}
-	token, err := jwt.ParseWithClaims(
-		tokenString,
-		claims,
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(App.Secret), nil
-		},
-	)
-
-	if err != nil || !token.Valid {
-		return nil, err
-	}
-	return claims, nil
 }
 
 // IsValidURL checks if a URL is valid url string

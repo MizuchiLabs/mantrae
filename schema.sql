@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS router_dns_provider (
     provider_id INTEGER NOT NULL,
     router_name TEXT NOT NULL,
     FOREIGN KEY (traefik_id) REFERENCES traefik (id) ON DELETE CASCADE,
-    FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE CASCADE,
-    UNIQUE (traefik_id, name)
+    FOREIGN KEY (provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE,
+    UNIQUE (traefik_id, router_name)
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -72,8 +72,8 @@ CREATE TABLE IF NOT EXISTS agents (
 );
 
 -- +goose StatementBegin
-CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE providers
+CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
+UPDATE dns_providers
 SET
     is_active = 0
 WHERE
@@ -84,8 +84,8 @@ END;
 -- +goose StatementEnd
 -- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_update BEFORE
-UPDATE ON providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE providers
+UPDATE ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
+UPDATE dns_providers
 SET
     is_active = 0
 WHERE
@@ -97,7 +97,7 @@ END;
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
 
-DROP TABLE IF EXISTS providers;
+DROP TABLE IF EXISTS dns_providers;
 
 DROP TABLE IF EXISTS users;
 

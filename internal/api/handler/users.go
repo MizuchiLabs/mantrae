@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 func ListUsers(q *db.Queries) http.HandlerFunc {

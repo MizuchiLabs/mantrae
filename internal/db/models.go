@@ -7,6 +7,7 @@ package db
 import (
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -59,7 +60,7 @@ type Setting struct {
 type TraefikConfig struct {
 	ID          int64                  `json:"id"`
 	ProfileID   int64                  `json:"profileId"`
-	Source      string                 `json:"source"`
+	Source      source.Source          `json:"source"`
 	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
 	Overview    *TraefikOverview       `json:"overview"`
 	Config      *runtime.Configuration `json:"config"`

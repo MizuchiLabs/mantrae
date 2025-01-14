@@ -6,19 +6,13 @@ import (
 	"embed"
 	"fmt"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/pressly/goose/v3"
 	"modernc.org/sqlite"
-	//_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
 var migrations embed.FS
-
-var (
-	DB    *sql.DB
-	Query *Queries
-)
 
 // Default settings for sqlite db
 const initScript = `
@@ -33,14 +27,14 @@ const initScript = `
 	PRAGMA cache_size = -16000;
 `
 
-func InitDB() error {
+func InitDB() (*sql.DB, error) {
 	var db *sql.DB
 	var err error
 
 	if util.IsTest() {
 		db, err = sql.Open("sqlite", "file::memory:?cache=shared")
 		if err != nil {
-			return fmt.Errorf("failed to open database: %w", err)
+			return nil, fmt.Errorf("failed to open database: %w", err)
 		}
 	} else {
 		sqlite.RegisterConnectionHook(func(conn sqlite.ExecQuerierContext, _ string) error {
@@ -48,25 +42,23 @@ func InitDB() error {
 			return err
 		})
 
-		db, err = sql.Open("sqlite", "file:"+util.DBPath())
+		db, err = sql.Open("sqlite", "file:mantrae.db")
 		if err != nil {
-			return fmt.Errorf("failed to open database: %w", err)
+			return nil, fmt.Errorf("failed to open database: %w", err)
 		}
-		db.SetMaxOpenConns(1) // Only one writer
-		db.SetMaxIdleConns(1) // Prevent idle connections
+		db.SetMaxOpenConns(1)    // Only one writer
+		db.SetMaxIdleConns(1)    // Prevent idle connections
+		db.SetConnMaxLifetime(0) // Connections are reused forever
 	}
 
 	goose.SetBaseFS(migrations)
 	goose.SetLogger(goose.NopLogger())
 	if err := goose.SetDialect("sqlite3"); err != nil {
-		return fmt.Errorf("failed to set dialect: %w", err)
+		return nil, fmt.Errorf("failed to set dialect: %w", err)
 	}
 
 	if err := goose.Up(db, "migrations"); err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
+		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
-
-	DB = db
-	Query = New(db)
-	return nil
+	return db, nil
 }

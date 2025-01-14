@@ -14,12 +14,12 @@ type PowerDNSProvider struct {
 	ExternalIP string
 }
 
-func NewPowerDNSProvider(URL, key, ip string) *PowerDNSProvider {
-	client := powerdns.New(URL, "", powerdns.WithAPIKey(key))
+func (d *DNSProviderConfig) NewPowerDNSProvider() *PowerDNSProvider {
+	client := powerdns.New(d.APIUrl, "", powerdns.WithAPIKey(d.APIKey))
 
 	return &PowerDNSProvider{
 		Client:     client,
-		ExternalIP: ip,
+		ExternalIP: d.TraefikIP,
 	}
 }
 

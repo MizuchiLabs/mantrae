@@ -5,116 +5,131 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/api/handler"
 	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
 )
 
 func (s *Server) routes() {
+	DB := s.app.DB
+	// Create middleware handler with database access
+	mw := middlewares.NewMiddlewareHandler(DB, *s.app.Config)
+
+	// Middleware chains
+	logChain := middlewares.Chain(
+		mw.Logger,
+	)
+
+	jwtChain := middlewares.Chain(
+		mw.Logger,
+		mw.JWT,
+	)
+
+	basicChain := middlewares.Chain(
+		mw.Logger,
+		mw.BasicAuth,
+	)
+
 	// Helper for middleware registration
 	register := func(method, path string, chain middlewares.Middleware, handler http.HandlerFunc) {
 		s.mux.Handle(method+" "+path, chain(handler))
 	}
-	// Middlewares
-	logChain := middlewares.Chain(middlewares.Log)
-	jwtChain := middlewares.Chain(middlewares.Log, middlewares.JWT)
-	basicChain := middlewares.Chain(middlewares.Log, middlewares.BasicAuth)
 
 	// Auth
-	register("POST", "/login", logChain, handler.Login)
-	register("POST", "/verify", logChain, handler.VerifyToken)
-	register("POST", "/reset", logChain, handler.ResetPassword)
-	register("POST", "/reset/{name}", logChain, handler.SendResetEmail)
+	register("POST", "/login", logChain, handler.Login(DB, s.app.Config.Secret))
+	register("POST", "/verify", logChain, handler.VerifyToken(s.app.Config.Secret))
+	register("POST", "/reset", logChain, handler.ResetPassword(DB, s.app.Config.Secret))
+	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(DB, s.app.Config.Secret))
 
 	// Events
 	register("GET", "/events", logChain, handler.GetEvents)
 	register("GET", "/version", logChain, handler.GetVersion)
 
 	// Profiles
-	register("GET", "/profile", jwtChain, handler.ListProfiles(s.db))
-	register("GET", "/profile/{id}", jwtChain, handler.GetProfile(s.db))
-	register("POST", "/profile", jwtChain, handler.CreateProfile(s.db))
-	register("PUT", "/profile", jwtChain, handler.UpdateProfile(s.db))
-	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(s.db))
+	register("GET", "/profile", jwtChain, handler.ListProfiles(DB))
+	register("GET", "/profile/{id}", jwtChain, handler.GetProfile(DB))
+	register("POST", "/profile", jwtChain, handler.CreateProfile(DB))
+	register("PUT", "/profile", jwtChain, handler.UpdateProfile(DB))
+	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(DB))
 
 	// Routers
-	register("GET", "/routers/http", logChain, handler.GetHTTPRoutersBySource(s.db))
-	register("GET", "/routers/tcp", logChain, handler.GetTCPRoutersBySource(s.db))
-	register("GET", "/routers/udp", logChain, handler.GetUDPRoutersBySource(s.db))
-	register("GET", "/router/http", logChain, handler.GetHTTPRouterByName(s.db))
-	register("GET", "/router/tcp", logChain, handler.GetTCPRouterByName(s.db))
-	register("GET", "/router/udp", logChain, handler.GetUDPRouterByName(s.db))
-	register("POST", "/router/http", logChain, handler.UpsertHTTPRouter(s.db))
-	register("POST", "/router/tcp", logChain, handler.UpsertTCPRouter(s.db))
-	register("POST", "/router/udp", logChain, handler.UpsertUDPRouter(s.db))
-	register("DELETE", "/router/http", jwtChain, handler.DeleteHTTPRouter(s.db))
-	register("DELETE", "/router/tcp", jwtChain, handler.DeleteTCPRouter(s.db))
-	register("DELETE", "/router/udp", jwtChain, handler.DeleteUDPRouter(s.db))
+	register("GET", "/routers/http", logChain, handler.GetHTTPRoutersBySource(DB))
+	register("GET", "/routers/tcp", logChain, handler.GetTCPRoutersBySource(DB))
+	register("GET", "/routers/udp", logChain, handler.GetUDPRoutersBySource(DB))
+	register("GET", "/router/http", logChain, handler.GetHTTPRouterByName(DB))
+	register("GET", "/router/tcp", logChain, handler.GetTCPRouterByName(DB))
+	register("GET", "/router/udp", logChain, handler.GetUDPRouterByName(DB))
+	register("POST", "/router/http", logChain, handler.UpsertHTTPRouter(DB))
+	register("POST", "/router/tcp", logChain, handler.UpsertTCPRouter(DB))
+	register("POST", "/router/udp", logChain, handler.UpsertUDPRouter(DB))
+	register("DELETE", "/router/http", jwtChain, handler.DeleteHTTPRouter(DB))
+	register("DELETE", "/router/tcp", jwtChain, handler.DeleteTCPRouter(DB))
+	register("DELETE", "/router/udp", jwtChain, handler.DeleteUDPRouter(DB))
 
 	// Services
-	register("GET", "/services/http", logChain, handler.GetHTTPServicesBySource(s.db))
-	register("GET", "/services/tcp", logChain, handler.GetTCPServicesBySource(s.db))
-	register("GET", "/services/udp", logChain, handler.GetUDPServicesBySource(s.db))
-	register("GET", "/service/http", logChain, handler.GetHTTPServiceByName(s.db))
-	register("GET", "/service/tcp", logChain, handler.GetTCPServiceByName(s.db))
-	register("GET", "/service/udp", logChain, handler.GetUDPServiceByName(s.db))
-	register("POST", "/service/http", logChain, handler.UpsertHTTPService(s.db))
-	register("POST", "/service/tcp", logChain, handler.UpsertTCPService(s.db))
-	register("POST", "/service/udp", logChain, handler.UpsertUDPService(s.db))
-	register("DELETE", "/service/http", jwtChain, handler.DeleteHTTPService(s.db))
-	register("DELETE", "/service/tcp", jwtChain, handler.DeleteTCPService(s.db))
-	register("DELETE", "/service/udp", jwtChain, handler.DeleteUDPService(s.db))
+	register("GET", "/services/http", logChain, handler.GetHTTPServicesBySource(DB))
+	register("GET", "/services/tcp", logChain, handler.GetTCPServicesBySource(DB))
+	register("GET", "/services/udp", logChain, handler.GetUDPServicesBySource(DB))
+	register("GET", "/service/http", logChain, handler.GetHTTPServiceByName(DB))
+	register("GET", "/service/tcp", logChain, handler.GetTCPServiceByName(DB))
+	register("GET", "/service/udp", logChain, handler.GetUDPServiceByName(DB))
+	register("POST", "/service/http", logChain, handler.UpsertHTTPService(DB))
+	register("POST", "/service/tcp", logChain, handler.UpsertTCPService(DB))
+	register("POST", "/service/udp", logChain, handler.UpsertUDPService(DB))
+	register("DELETE", "/service/http", jwtChain, handler.DeleteHTTPService(DB))
+	register("DELETE", "/service/tcp", jwtChain, handler.DeleteTCPService(DB))
+	register("DELETE", "/service/udp", jwtChain, handler.DeleteUDPService(DB))
 
 	// Middlewares
-	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewaresBySource(s.db))
-	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewaresBySource(s.db))
-	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewareByName(s.db))
-	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewareByName(s.db))
-	register("POST", "/middleware/http", logChain, handler.UpsertHTTPMiddleware(s.db))
-	register("POST", "/middleware/tcp", logChain, handler.UpsertTCPMiddleware(s.db))
-	register("DELETE", "/middleware/http", jwtChain, handler.DeleteHTTPMiddleware(s.db))
-	register("DELETE", "/middleware/tcp", jwtChain, handler.DeleteTCPMiddleware(s.db))
+	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewaresBySource(DB))
+	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewaresBySource(DB))
+	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewareByName(DB))
+	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewareByName(DB))
+	register("POST", "/middleware/http", logChain, handler.UpsertHTTPMiddleware(DB))
+	register("POST", "/middleware/tcp", logChain, handler.UpsertTCPMiddleware(DB))
+	register("DELETE", "/middleware/http", jwtChain, handler.DeleteHTTPMiddleware(DB))
+	register("DELETE", "/middleware/tcp", jwtChain, handler.DeleteTCPMiddleware(DB))
 	register("GET", "/middleware/plugins", logChain, handler.GetMiddlewarePlugins)
 
 	// Users
-	register("GET", "/user", jwtChain, handler.ListUsers(s.db))
-	register("GET", "/user/{id}", jwtChain, handler.GetUser(s.db))
-	register("POST", "/user", jwtChain, handler.CreateUser(s.db))
-	register("PUT", "/user", jwtChain, handler.UpdateUser(s.db))
-	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(s.db))
+	register("GET", "/user", jwtChain, handler.ListUsers(DB))
+	register("GET", "/user/{id}", jwtChain, handler.GetUser(DB))
+	register("POST", "/user", jwtChain, handler.CreateUser(DB))
+	register("PUT", "/user", jwtChain, handler.UpdateUser(DB))
+	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(DB))
 
 	// DNS Provider
-	register("GET", "/provider", jwtChain, handler.ListDNSProviders(s.db))
-	register("GET", "/provider/{id}", jwtChain, handler.GetDNSProvider(s.db))
-	register("POST", "/provider", jwtChain, handler.CreateDNSProvider(s.db))
-	register("PUT", "/provider", jwtChain, handler.UpdateDNSProvider(s.db))
-	register("DELETE", "/provider/{id}", jwtChain, handler.DeleteDNSProvider(s.db))
+	register("GET", "/provider", jwtChain, handler.ListDNSProviders(DB))
+	register("GET", "/provider/{id}", jwtChain, handler.GetDNSProvider(DB))
+	register("POST", "/provider", jwtChain, handler.CreateDNSProvider(DB))
+	register("PUT", "/provider", jwtChain, handler.UpdateDNSProvider(DB))
+	register("DELETE", "/provider/{id}", jwtChain, handler.DeleteDNSProvider(DB))
 
 	// Settings
-	register("GET", "/settings", jwtChain, handler.ListSettings(s.db))
-	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(s.db))
-	register("PUT", "/settings", jwtChain, handler.UpsertSetting(s.db))
+	register("GET", "/settings", jwtChain, handler.ListSettings(DB))
+	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(DB))
+	register("PUT", "/settings", jwtChain, handler.UpsertSetting(DB))
 
 	// Agent
-	register("GET", "/agent", jwtChain, handler.ListAgents(s.db))
-	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(s.db))
-	register("POST", "/agent", jwtChain, handler.CreateAgent(s.db))
-	register("PUT", "/agent", jwtChain, handler.UpdateAgent(s.db))
-	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(s.db))
-	// register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.db))
+	register("GET", "/agent", jwtChain, handler.ListAgents(DB))
+	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(DB))
+	register("POST", "/agent", jwtChain, handler.CreateAgent(DB))
+	register("PUT", "/agent", jwtChain, handler.UpdateAgent(DB))
+	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(DB))
+	// register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(DB))
 
 	// Backup
-	register("GET", "/backup", jwtChain, handler.DownloadBackup)
-	register("POST", "/backup", jwtChain, handler.UploadBackup)
+	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))
+	register("GET", "/backup", jwtChain, handler.DownloadBackup(s.app.BM))
+	register("POST", "/backup", jwtChain, handler.RestoreBackup(s.app.BM))
 
 	// IP
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)
 
 	// Traefik
-	register("GET", "/traefik/{id}", jwtChain, handler.GetTraefikConfig(s.db))
+	register("GET", "/traefik/{id}", jwtChain, handler.GetTraefikConfig(DB))
 
 	// Dynamic config
-	if util.App.EnableBasicAuth {
-		register("GET", "/{name}", basicChain, handler.PublishTraefikConfig(s.db))
+	if s.app.Config.Server.BasicAuth {
+		register("GET", "/{name}", basicChain, handler.PublishTraefikConfig(DB))
 	} else {
-		register("GET", "/{name}", logChain, handler.PublishTraefikConfig(s.db))
+		register("GET", "/{name}", logChain, handler.PublishTraefikConfig(DB))
 	}
 }

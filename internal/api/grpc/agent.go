@@ -12,10 +12,11 @@ import (
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 type AgentServer struct {
+	db *db.Queries
 	mu sync.Mutex
 }
 
@@ -23,7 +24,7 @@ func (s *AgentServer) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[agentv1.HealthCheckRequest],
 ) (*connect.Response[agentv1.HealthCheckResponse], error) {
-	if _, err := validate(req.Header(), req.Msg.GetId()); err != nil {
+	if _, err := s.validate(req.Header(), req.Msg.GetId()); err != nil {
 		return nil, err
 	}
 
@@ -34,7 +35,7 @@ func (s *AgentServer) GetContainer(
 	ctx context.Context,
 	req *connect.Request[agentv1.GetContainerRequest],
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
-	_, err := validate(req.Header(), req.Msg.GetId())
+	_, err := s.validate(req.Header(), req.Msg.GetId())
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +52,7 @@ func (s *AgentServer) GetContainer(
 		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := db.Query.UpdateAgent(context.Background(), db.UpdateAgentParams{
+	if err := s.db.UpdateAgent(context.Background(), db.UpdateAgentParams{
 		ID:         req.Msg.GetId(),
 		Hostname:   req.Msg.GetHostname(),
 		PublicIp:   &req.Msg.PublicIp,
@@ -74,7 +75,7 @@ func (s *AgentServer) GetContainer(
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 
-func validate(header http.Header, id string) (*db.Agent, error) {
+func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error) {
 	auth := header.Get("authorization")
 	if len(auth) == 0 {
 		return nil, connect.NewError(
@@ -90,7 +91,7 @@ func validate(header http.Header, id string) (*db.Agent, error) {
 	}
 
 	// Check if agent exists
-	agent, err := db.Query.GetAgent(context.Background(), id)
+	agent, err := s.db.GetAgent(context.Background(), id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
 	}
@@ -103,12 +104,12 @@ func validate(header http.Header, id string) (*db.Agent, error) {
 		)
 	}
 
-	if _, err := util.DecodeAgentJWT(agent.Token); err != nil {
-		return nil, connect.NewError(
-			connect.CodeUnauthenticated,
-			errors.New("failed to decode token"),
-		)
-	}
+	// if _, err := util.DecodeAgentJWT(agent.Token); err != nil {
+	// 	return nil, connect.NewError(
+	// 		connect.CodeUnauthenticated,
+	// 		errors.New("failed to decode token"),
+	// 	)
+	// }
 
 	return &agent, nil
 }

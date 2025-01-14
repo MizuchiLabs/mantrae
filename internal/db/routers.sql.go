@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 const deleteHTTPRouter = `-- name: DeleteHTTPRouter :exec
@@ -20,9 +22,9 @@ WHERE
 `
 
 type DeleteHTTPRouterParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteHTTPRouter(ctx context.Context, arg DeleteHTTPRouterParams) error {
@@ -41,9 +43,9 @@ WHERE
 `
 
 type DeleteTCPRouterParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteTCPRouter(ctx context.Context, arg DeleteTCPRouterParams) error {
@@ -62,9 +64,9 @@ WHERE
 `
 
 type DeleteUDPRouterParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) DeleteUDPRouter(ctx context.Context, arg DeleteUDPRouterParams) error {
@@ -74,7 +76,7 @@ func (q *Queries) DeleteUDPRouter(ctx context.Context, arg DeleteUDPRouterParams
 
 const getHTTPRouterByName = `-- name: GetHTTPRouterByName :one
 SELECT
-    json_extract (external, '$.routers.' || ?3) as router
+    json_extract (config, '$.routers.' || ?3) as router
 FROM
     traefik_config
 WHERE
@@ -83,9 +85,9 @@ WHERE
 `
 
 type GetHTTPRouterByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPRouterByName(ctx context.Context, arg GetHTTPRouterByNameParams) (interface{}, error) {
@@ -106,8 +108,8 @@ WHERE
 `
 
 type GetHTTPRoutersBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetHTTPRoutersBySource(ctx context.Context, arg GetHTTPRoutersBySourceParams) (interface{}, error) {
@@ -119,7 +121,7 @@ func (q *Queries) GetHTTPRoutersBySource(ctx context.Context, arg GetHTTPRouters
 
 const getTCPRouterByName = `-- name: GetTCPRouterByName :one
 SELECT
-    json_extract (external, '$.tcpRouters.' || ?3) as router
+    json_extract (config, '$.tcpRouters.' || ?3) as router
 FROM
     traefik_config
 WHERE
@@ -128,9 +130,9 @@ WHERE
 `
 
 type GetTCPRouterByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPRouterByName(ctx context.Context, arg GetTCPRouterByNameParams) (interface{}, error) {
@@ -151,8 +153,8 @@ WHERE
 `
 
 type GetTCPRoutersBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTCPRoutersBySource(ctx context.Context, arg GetTCPRoutersBySourceParams) (interface{}, error) {
@@ -164,7 +166,7 @@ func (q *Queries) GetTCPRoutersBySource(ctx context.Context, arg GetTCPRoutersBy
 
 const getUDPRouterByName = `-- name: GetUDPRouterByName :one
 SELECT
-    json_extract (external, '$.udpRouters.' || ?3) as router
+    json_extract (config, '$.udpRouters.' || ?3) as router
 FROM
     traefik_config
 WHERE
@@ -173,9 +175,9 @@ WHERE
 `
 
 type GetUDPRouterByNameParams struct {
-	Name      *string `json:"name"`
-	ProfileID int64   `json:"profileId"`
-	Source    string  `json:"source"`
+	Name      *string       `json:"name"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetUDPRouterByName(ctx context.Context, arg GetUDPRouterByNameParams) (interface{}, error) {
@@ -196,8 +198,8 @@ WHERE
 `
 
 type GetUDPRoutersBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetUDPRoutersBySource(ctx context.Context, arg GetUDPRoutersBySourceParams) (interface{}, error) {
@@ -222,10 +224,10 @@ WHERE
 `
 
 type UpsertHTTPRouterParams struct {
-	Name       *string     `json:"name"`
-	RouterJson interface{} `json:"routerJson"`
-	ProfileID  int64       `json:"profileId"`
-	Source     string      `json:"source"`
+	Name       *string       `json:"name"`
+	RouterJson interface{}   `json:"routerJson"`
+	ProfileID  int64         `json:"profileId"`
+	Source     source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertHTTPRouter(ctx context.Context, arg UpsertHTTPRouterParams) error {
@@ -253,10 +255,10 @@ WHERE
 `
 
 type UpsertTCPRouterParams struct {
-	Name       *string     `json:"name"`
-	RouterJson interface{} `json:"routerJson"`
-	ProfileID  int64       `json:"profileId"`
-	Source     string      `json:"source"`
+	Name       *string       `json:"name"`
+	RouterJson interface{}   `json:"routerJson"`
+	ProfileID  int64         `json:"profileId"`
+	Source     source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertTCPRouter(ctx context.Context, arg UpsertTCPRouterParams) error {
@@ -284,10 +286,10 @@ WHERE
 `
 
 type UpsertUDPRouterParams struct {
-	Name       *string     `json:"name"`
-	RouterJson interface{} `json:"routerJson"`
-	ProfileID  int64       `json:"profileId"`
-	Source     string      `json:"source"`
+	Name       *string       `json:"name"`
+	RouterJson interface{}   `json:"routerJson"`
+	ProfileID  int64         `json:"profileId"`
+	Source     source.Source `json:"source"`
 }
 
 func (q *Queries) UpsertUDPRouter(ctx context.Context, arg UpsertUDPRouterParams) error {

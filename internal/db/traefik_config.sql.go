@@ -9,6 +9,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -28,7 +29,7 @@ VALUES
 
 type CreateTraefikConfigParams struct {
 	ProfileID   int64                  `json:"profileId"`
-	Source      string                 `json:"source"`
+	Source      source.Source          `json:"source"`
 	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
 	Overview    *TraefikOverview       `json:"overview"`
 	Config      *runtime.Configuration `json:"config"`
@@ -93,8 +94,8 @@ WHERE
 `
 
 type GetTraefikConfigBySourceParams struct {
-	ProfileID int64  `json:"profileId"`
-	Source    string `json:"source"`
+	ProfileID int64         `json:"profileId"`
+	Source    source.Source `json:"source"`
 }
 
 func (q *Queries) GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) (TraefikConfig, error) {
@@ -141,7 +142,7 @@ WHERE
 `
 
 type UpdateTraefikConfigParams struct {
-	Source      string                 `json:"source"`
+	Source      source.Source          `json:"source"`
 	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
 	Overview    *TraefikOverview       `json:"overview"`
 	Config      *runtime.Configuration `json:"config"`

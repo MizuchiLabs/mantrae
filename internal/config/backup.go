@@ -1,8 +1,6 @@
 package config
 
 import (
-	"archive/tar"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,369 +9,415 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/traefik"
-	"github.com/MizuchiLabs/mantrae/pkg/util"
 	"github.com/robfig/cron/v3"
 )
 
-var backupCron *cron.Cron
-
-// BackupData is the structure for the full manual backup
-type BackupData struct {
-	Profiles  []db.Profile       `json:"profiles"`
-	Providers []db.DnsProvider   `json:"providers"`
-	Settings  []db.Setting       `json:"settings"`
-	Users     []db.User          `json:"users"`
-	Routers   []db.TraefikConfig `json:"traefik_configs"`
+type BackupManager struct {
+	Config  BackupConfig
+	db      *db.Queries
+	DBType  string
+	DBPath  string
+	cronJob *cron.Cron
 }
 
-func DumpBackup(ctx context.Context) (*BackupData, error) {
-	var data BackupData
-	var err error
-
-	data.Profiles, err = db.Query.ListProfiles(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get profiles: %w", err)
-	}
-
-	data.Routers, err = db.Query.ListRoutersByProvider(ctx, "http")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get routers: %w", err)
-	}
-	data.Services, err = db.Query.ListServicesByProvider(ctx, "http")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get services: %w", err)
-	}
-	data.Middlewares, err = db.Query.ListMiddlewaresByProvider(ctx, "http")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get middlewares: %w", err)
-	}
-
-	for i, router := range data.Routers {
-		if err = router.DecodeFields(); err != nil {
-			slog.Error("Failed to decode router", "name", router.Name, "error", err)
-		}
-		data.Routers[i] = router
-	}
-	for i, service := range data.Services {
-		if err = service.DecodeFields(); err != nil {
-			slog.Error("Failed to decode service", "name", service.Name, "error", err)
-		}
-		data.Services[i] = service
-	}
-	for i, middleware := range data.Middlewares {
-		if err = middleware.DecodeFields(); err != nil {
-			slog.Error("Failed to decode middleware", "name", middleware.Name, "error", err)
-		}
-		data.Middlewares[i] = middleware
-	}
-
-	data.Providers, err = db.Query.ListProviders(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get providers: %w", err)
-	}
-
-	data.Settings, err = db.Query.ListSettings(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get settings: %w", err)
-	}
-
-	data.Users, err = db.Query.ListUsers(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get users: %w", err)
-	}
-
-	return &data, nil
+type BackupMetadata struct {
+	Filename string    `json:"filename"`
+	Size     int64     `json:"size"`
+	Created  time.Time `json:"created"`
+	DBType   string    `json:"db_type"`
+	Version  string    `json:"version"`
 }
 
-func RestoreBackup(ctx context.Context, data *BackupData) error {
-	var err error
-	db.DB.Close()
-
-	// Delete Database
-	if err = os.Remove(util.DBPath()); err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("failed to delete existing database: %w", err)
+func NewBackupManager(config Config, db *db.Queries) (*BackupManager, error) {
+	if err := os.MkdirAll(config.Backup.Dir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create backup directory: %w", err)
 	}
 
-	// Reopen the database connection
-	if err = db.InitDB(); err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
+	// enabled, err := db.GetSetting(context.Background(), "backup-enabled")
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// schedule, err := db.GetSetting(context.Background(), "backup-schedule")
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// keep, err := db.GetSetting(context.Background(), "backup-keep")
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	return &BackupManager{
+		Config:  config.Backup,
+		db:      db,
+		DBType:  config.Database.Type,
+		DBPath:  config.DBPath(),
+		cronJob: cron.New(),
+	}, nil
+}
+
+func (bm *BackupManager) Start(ctx context.Context) error {
+	if !bm.Config.Enabled {
+		return nil
 	}
 
-	// Create defaults
-	if err := SetDefaultAdminUser(); err != nil {
-		return err
+	// Schedule backup job
+	_, err := bm.cronJob.AddFunc(bm.Config.Schedule, func() {
+		if err := bm.CreateBackup(ctx); err != nil {
+			slog.Error("Scheduled backup failed", "error", err)
+		}
+	})
+	if err != nil {
+		return fmt.Errorf("failed to schedule backup: %w", err)
 	}
-	if err := SetDefaultSettings(); err != nil {
+
+	bm.cronJob.Start()
+	return nil
+}
+
+func (bm *BackupManager) Stop() {
+	if bm.cronJob != nil {
+		bm.cronJob.Stop()
+	}
+}
+
+func (bm *BackupManager) CreateBackup(ctx context.Context) error {
+	timestamp := time.Now().UTC()
+	backupName := fmt.Sprintf("backup_%s.db", timestamp.Format("20060102_150405"))
+	backupPath := filepath.Join(bm.Config.Dir, backupName)
+
+	// Create backup file
+	if err := bm.performBackup(ctx, backupPath); err != nil {
 		return err
 	}
 
-	for _, provider := range data.Providers {
-		params := db.UpsertProviderParams{
-			Name:       provider.Name,
-			Type:       provider.Type,
-			ExternalIp: provider.ExternalIp,
-			ApiKey:     provider.ApiKey,
-			ApiUrl:     provider.ApiUrl,
-			ZoneType:   provider.ZoneType,
-			Proxied:    provider.Proxied,
-			IsActive:   provider.IsActive,
-		}
-		if _, err := db.Query.UpsertProvider(ctx, params); err != nil {
-			return fmt.Errorf("failed to upsert provider: %w", err)
-		}
+	// Create metadata file
+	metadata := BackupMetadata{
+		Version: "1.0",
+		Created: timestamp,
+		DBType:  bm.DBType,
 	}
 
-	for _, setting := range data.Settings {
-		if _, err := db.Query.UpdateSetting(ctx, db.UpdateSettingParams{
-			Key:   setting.Key,
-			Value: setting.Value,
-		}); err != nil {
-			return fmt.Errorf("failed to upsert setting: %w", err)
-		}
+	metadataPath := backupPath + ".json"
+	if err := bm.saveMetadata(metadataPath, metadata); err != nil {
+		return err
 	}
 
-	for _, user := range data.Users {
-		params := db.UpsertUserParams{
-			Username: user.Username,
-			Password: user.Password,
-			Email:    user.Email,
-			IsAdmin:  user.IsAdmin,
-		}
-		if _, err := db.Query.UpsertUser(ctx, params); err != nil {
-			return fmt.Errorf("failed to upsert user: %w", err)
-		}
-	}
-
-	// Insert data
-	if len(data.Profiles) > 0 {
-		for _, profile := range data.Profiles {
-			params := db.UpsertProfileParams{
-				Name:     profile.Name,
-				Url:      profile.Url,
-				Username: profile.Username,
-				Password: profile.Password,
-				Tls:      profile.Tls,
-			}
-			if _, err := db.Query.UpsertProfile(ctx, params); err != nil {
-				return fmt.Errorf("failed to upsert profile: %w", err)
-			}
-		}
-
-		for _, router := range data.Routers {
-			if err := router.Verify(); err != nil {
-				continue
-			}
-			if _, err := db.Query.UpsertRouter(ctx, db.UpsertRouterParams(router)); err != nil {
-				return fmt.Errorf("failed to upsert router: %w", err)
-			}
-		}
-
-		for _, service := range data.Services {
-			if err := service.Verify(); err != nil {
-				continue
-			}
-			if _, err := db.Query.UpsertService(ctx, db.UpsertServiceParams(service)); err != nil {
-				return fmt.Errorf("failed to upsert service: %w", err)
-			}
-		}
-
-		for _, middleware := range data.Middlewares {
-			if err := middleware.Verify(); err != nil {
-				continue
-			}
-			if _, err := db.Query.UpsertMiddleware(ctx, db.UpsertMiddlewareParams(middleware)); err != nil {
-				return fmt.Errorf("failed to upsert middleware: %w", err)
-			}
-		}
-	}
-
-	// Trigger fetch
-	if len(data.Profiles) > 0 {
-		go traefik.GetTraefikConfig()
+	// Cleanup old backups
+	if err := bm.cleanup(); err != nil {
+		slog.Error("Backup cleanup failed", "error", err)
 	}
 
 	return nil
 }
 
-func BackupDatabase() error {
-	timestamp := time.Now().Format("2006-01-02")
-	backupName := fmt.Sprintf("backup-%s.tar.gz", timestamp)
-	backupPath := fmt.Sprintf("%s/%s", util.BackupPath(), backupName)
-
-	// Create the backup directory if it doesn't exist
-	backupDir := filepath.Dir(backupPath)
-	if _, err := os.Stat(backupDir); os.IsNotExist(err) {
-		if err := os.MkdirAll(backupDir, 0750); err != nil {
-			return fmt.Errorf("failed to create backup directory: %w", err)
-		}
+func (bm *BackupManager) performBackup(ctx context.Context, destPath string) error {
+	switch bm.DBType {
+	case "sqlite":
+		return bm.backupSQLite(ctx, destPath)
+	case "postgres":
+		return bm.backupPostgres(ctx, destPath)
+	default:
+		return fmt.Errorf("unsupported database type: %s", bm.DBType)
 	}
+}
 
-	// Check if the backup file already exists
-	if _, err := os.Stat(backupPath); err == nil {
-		return nil // Backup already exists
-	}
-
-	// Open the original database file
-	dbFile, err := os.Open(util.DBPath())
+func (bm *BackupManager) backupSQLite(ctx context.Context, destPath string) error {
+	// For SQLite, we can simply copy the database file
+	src, err := os.Open(bm.DBPath)
 	if err != nil {
-		return fmt.Errorf("failed to open original database file: %w", err)
+		return fmt.Errorf("failed to open source database: %w", err)
 	}
-	defer dbFile.Close()
+	defer src.Close()
 
-	// Create the gzip file
-	gzipFile, err := os.Create(backupPath)
+	dst, err := os.Create(destPath)
 	if err != nil {
-		return fmt.Errorf("failed to create gzip file: %w", err)
+		return fmt.Errorf("failed to create backup file: %w", err)
 	}
-	defer gzipFile.Close()
+	defer dst.Close()
 
-	// Create a gzip writer
-	gzipWriter := gzip.NewWriter(gzipFile)
-	defer gzipWriter.Close()
-
-	// Create a tar writer
-	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
-
-	info, err := dbFile.Stat()
-	if err != nil {
-		return err
+	if _, err := io.Copy(dst, src); err != nil {
+		return fmt.Errorf("failed to copy database: %w", err)
 	}
 
-	// Add the original database file to the tar archive
-	header, err := tar.FileInfoHeader(info, info.Name())
-	if err != nil {
-		return fmt.Errorf("failed to get file info header: %w", err)
-	}
-
-	header.Name = util.DBPath()
-	if err = tarWriter.WriteHeader(header); err != nil {
-		return fmt.Errorf("failed to write header: %w", err)
-	}
-	if _, err = io.Copy(tarWriter, dbFile); err != nil {
-		return fmt.Errorf("failed to copy database file: %w", err)
-	}
-
-	// Generate the JSON backup using DumpBackup
-	backupData, err := DumpBackup(context.Background())
-	if err != nil {
-		return fmt.Errorf("failed to dump backup data: %w", err)
-	}
-
-	// Marshal the JSON data
-	jsonData, err := json.MarshalIndent(backupData, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal backup data: %w", err)
-	}
-
-	// Add the JSON file to tar archive
-	jsonFileName := "backup.json"
-	jsonHeader := &tar.Header{
-		Name: jsonFileName,
-		Size: int64(len(jsonData)),
-		Mode: 0644,
-	}
-	if err := tarWriter.WriteHeader(jsonHeader); err != nil {
-		return fmt.Errorf("failed to write JSON header: %w", err)
-	}
-	if _, err := tarWriter.Write(jsonData); err != nil {
-		return fmt.Errorf("failed to write JSON data: %w", err)
-	}
-
-	slog.Info("Database backup created", "file", backupPath)
 	return nil
 }
 
-// CleanupBackups deletes the oldest backup files to keep only the specified number of backups
-func CleanupBackups() error {
-	keepSetting, err := db.Query.GetSettingByKey(context.Background(), "backup-keep")
+func (bm *BackupManager) backupPostgres(ctx context.Context, destPath string) error {
+	// Implement pg_dump here
+	// Example implementation:
+	/*
+		cmd := exec.CommandContext(ctx, "pg_dump",
+			"-h", host,
+			"-U", username,
+			"-d", dbname,
+			"-f", destPath,
+		)
+		return cmd.Run()
+	*/
+	return fmt.Errorf("postgres backup not implemented")
+}
+
+func (bm *BackupManager) saveMetadata(path string, metadata BackupMetadata) error {
+	file, err := os.Create(path)
 	if err != nil {
-		return fmt.Errorf("failed to get backup-keep setting: %w", err)
+		return fmt.Errorf("failed to create metadata file: %w", err)
 	}
-	if keepSetting.Value == "" {
-		return nil
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	if err := encoder.Encode(metadata); err != nil {
+		return fmt.Errorf("failed to write metadata: %w", err)
 	}
 
-	keep, err := strconv.Atoi(keepSetting.Value)
-	if err != nil {
-		return fmt.Errorf("failed to parse backup-keep setting: %w", err)
-	}
-	// If keep is 0, do not delete any backups
-	if keep == 0 {
-		return nil
-	}
+	return nil
+}
 
-	// Get the list of backup files
-	files, err := filepath.Glob(fmt.Sprintf("%s/backup-*.tar.gz", util.BackupPath()))
+func (bm *BackupManager) cleanup() error {
+	files, err := filepath.Glob(filepath.Join(bm.Config.Dir, "backup_*.db"))
 	if err != nil {
 		return fmt.Errorf("failed to list backup files: %w", err)
 	}
 
-	if len(files) <= keep {
+	if len(files) <= bm.Config.Keep {
 		return nil
 	}
 
-	// Sort the backup files by modification time (oldest to newest)
-	sort.Slice(files, func(i, j int) bool {
-		iInfo, _ := os.Stat(files[i])
-		jInfo, _ := os.Stat(files[j])
-		return iInfo.ModTime().Before(jInfo.ModTime())
+	// Sort files by modification time
+	type fileInfo struct {
+		path    string
+		modTime time.Time
+	}
+
+	fileInfos := make([]fileInfo, 0, len(files))
+	for _, file := range files {
+		info, err := os.Stat(file)
+		if err != nil {
+			continue
+		}
+		fileInfos = append(fileInfos, fileInfo{file, info.ModTime()})
+	}
+
+	// Sort by modification time (oldest first)
+	sort.Slice(fileInfos, func(i, j int) bool {
+		return fileInfos[i].modTime.Before(fileInfos[j].modTime)
 	})
 
-	// Delete the oldest backup files (the first N - keep files)
-	for i := 0; i < len(files)-keep; i++ {
-		if err := os.Remove(files[i]); err != nil {
-			return fmt.Errorf("failed to delete backup file: %w", err)
+	// Remove oldest files
+	for i := 0; i < len(fileInfos)-bm.Config.Keep; i++ {
+		if err := os.Remove(fileInfos[i].path); err != nil {
+			slog.Error("Failed to remove old backup", "file", fileInfos[i].path, "error", err)
+			continue
 		}
-		slog.Info("Deleted old backup file", "file", files[i])
+		// Also remove metadata file if it exists
+		metadataPath := fileInfos[i].path + ".json"
+		if err := os.Remove(metadataPath); err != nil && !os.IsNotExist(err) {
+			slog.Error("Failed to remove metadata file", "file", metadataPath, "error", err)
+		}
 	}
 
 	return nil
 }
 
-func ScheduleBackups() error {
-	enabled, err := db.Query.GetSettingByKey(context.Background(), "backup-enabled")
+// RestoreBackup restores a database from a backup file
+func (bm *BackupManager) RestoreBackup(ctx context.Context, backupPath string) error {
+	// Verify backup metadata
+	metadataPath := backupPath + ".json"
+	metadata, err := bm.loadMetadata(metadataPath)
 	if err != nil {
-		return fmt.Errorf("failed to get backup enabled setting: %w", err)
-	}
-	if enabled.Value != "true" {
-		stopBackupCron()
-		return nil
+		return fmt.Errorf("failed to load backup metadata: %w", err)
 	}
 
-	schedule, err := db.Query.GetSettingByKey(context.Background(), "backup-schedule")
-	if err != nil {
-		return fmt.Errorf("failed to get backup schedule: %w", err)
-	}
-	if schedule.Value == "" {
-		stopBackupCron()
-		return nil
+	if metadata.DBType != bm.DBType {
+		return fmt.Errorf("backup database type (%s) doesn't match current type (%s)",
+			metadata.DBType, bm.DBType)
 	}
 
-	backupCron = cron.New()
-	if _, err := backupCron.AddFunc(schedule.Value, func() {
-		if err := BackupDatabase(); err != nil {
-			slog.Error("Failed to backup database", "error", err)
-		}
-		if err := CleanupBackups(); err != nil {
-			slog.Error("Failed to cleanup backups", "error", err)
-		}
-	}); err != nil {
-		return fmt.Errorf("failed to schedule backup: %w", err)
+	switch bm.DBType {
+	case "sqlite":
+		return bm.restoreSQLite(ctx, backupPath)
+	case "postgres":
+		return bm.restorePostgres(ctx, backupPath)
+	default:
+		return fmt.Errorf("unsupported database type: %s", bm.DBType)
 	}
-	backupCron.Start()
+}
+
+func (bm *BackupManager) loadMetadata(path string) (BackupMetadata, error) {
+	var metadata BackupMetadata
+	file, err := os.Open(path)
+	if err != nil {
+		return metadata, fmt.Errorf("failed to open metadata file: %w", err)
+	}
+	defer file.Close()
+
+	if err := json.NewDecoder(file).Decode(&metadata); err != nil {
+		return metadata, fmt.Errorf("failed to decode metadata: %w", err)
+	}
+
+	return metadata, nil
+}
+
+func (bm *BackupManager) restoreSQLite(ctx context.Context, backupPath string) error {
+	// Create a temporary database path
+	tempDB := bm.DBPath + ".tmp"
+
+	// Copy backup to temporary location
+	if err := copyFile(backupPath, tempDB); err != nil {
+		return fmt.Errorf("failed to create temporary database: %w", err)
+	}
+
+	// Test the temporary database
+	if err := bm.testDatabase(tempDB); err != nil {
+		os.Remove(tempDB)
+		return fmt.Errorf("backup verification failed: %w", err)
+	}
+
+	// Replace the current database
+	if err := os.Rename(tempDB, bm.DBPath); err != nil {
+		os.Remove(tempDB)
+		return fmt.Errorf("failed to replace database: %w", err)
+	}
 
 	return nil
 }
 
-func stopBackupCron() {
-	if backupCron != nil {
-		backupCron.Stop()
-		backupCron = nil
+func (bm *BackupManager) restorePostgres(ctx context.Context, backupPath string) error {
+	// Implement pg_restore here
+	return fmt.Errorf("postgres restore not implemented")
+}
+
+func (bm *BackupManager) testDatabase(dbPath string) error {
+	// Implement database verification here
+	// For example, try to open the database and run a simple query
+	return nil
+}
+
+// ListBackups returns a list of available backups
+func (bm *BackupManager) ListBackups() ([]BackupMetadata, error) {
+	files, err := filepath.Glob(filepath.Join(bm.Config.Dir, "backup_*.db"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backup files: %w", err)
 	}
+
+	backups := make([]BackupMetadata, 0, len(files))
+	for _, file := range files {
+		info, err := os.Stat(file)
+		if err != nil {
+			continue
+		}
+
+		metadata, err := bm.loadMetadata(file + ".json")
+		if err != nil {
+			// If metadata is missing, use file info
+			backups = append(backups, BackupMetadata{
+				Filename: filepath.Base(file),
+				Size:     info.Size(),
+				Created:  info.ModTime(),
+				DBType:   bm.DBType,
+			})
+			continue
+		}
+
+		backups = append(backups, BackupMetadata{
+			Filename: filepath.Base(file),
+			Size:     info.Size(),
+			Created:  metadata.Created,
+			DBType:   metadata.DBType,
+			Version:  metadata.Version,
+		})
+	}
+
+	// Sort by creation time, newest first
+	sort.Slice(backups, func(i, j int) bool {
+		return backups[i].Created.After(backups[j].Created)
+	})
+
+	return backups, nil
+}
+
+// GetLatestBackup returns the filename of the most recent backup
+func (bm *BackupManager) GetLatestBackup() (string, error) {
+	backups, err := bm.ListBackups()
+	if err != nil {
+		return "", fmt.Errorf("failed to list backups: %w", err)
+	}
+
+	if len(backups) == 0 {
+		return "", fmt.Errorf("no backups found")
+	}
+
+	// Since ListBackups returns backups sorted by creation time (newest first),
+	// we can just return the first one
+	return backups[0].Filename, nil
+}
+
+// IsValidBackupFile checks if the given filename is a valid backup file
+func (bm *BackupManager) IsValidBackupFile(filename string) bool {
+	// Prevent directory traversal
+	if strings.Contains(filename, "..") {
+		return false
+	}
+
+	// Check if file matches expected pattern
+	matched, err := filepath.Match("backup_*.db", filename)
+	if err != nil || !matched {
+		return false
+	}
+
+	// Check if file exists in backup directory
+	fullPath := filepath.Join(bm.Config.Dir, filename)
+	if _, err := os.Stat(fullPath); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// GetBackupPath returns the full path for a given backup filename
+func (bm *BackupManager) GetBackupPath(filename string) (string, error) {
+	if !bm.IsValidBackupFile(filename) {
+		return "", fmt.Errorf("invalid backup filename: %s", filename)
+	}
+	return filepath.Join(bm.Config.Dir, filename), nil
+}
+
+// DeleteBackup removes a specific backup and its metadata
+func (bm *BackupManager) DeleteBackup(filename string) error {
+	if !bm.IsValidBackupFile(filename) {
+		return fmt.Errorf("invalid backup filename: %s", filename)
+	}
+
+	backupPath := filepath.Join(bm.Config.Dir, filename)
+	if err := os.Remove(backupPath); err != nil {
+		return fmt.Errorf("failed to delete backup file: %w", err)
+	}
+
+	// Try to remove metadata file if it exists
+	metadataPath := backupPath + ".json"
+	if err := os.Remove(metadataPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to delete metadata file: %w", err)
+	}
+
+	return nil
+}
+
+func copyFile(src, dst string) error {
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer destination.Close()
+
+	_, err = io.Copy(destination, source)
+	return err
 }
