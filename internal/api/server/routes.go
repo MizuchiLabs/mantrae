@@ -29,7 +29,7 @@ func (s *Server) routes() {
 
 	// Helper for middleware registration
 	register := func(method, path string, chain middlewares.Middleware, handler http.HandlerFunc) {
-		s.mux.Handle(method+" "+path, chain(handler))
+		s.mux.Handle(method+" /api"+path, chain(handler))
 	}
 
 	// Auth
@@ -73,9 +73,9 @@ func (s *Server) routes() {
 	register("DELETE", "/provider/{id}", jwtChain, handler.DeleteDNSProvider(DB))
 
 	// Settings
-	register("GET", "/settings", jwtChain, handler.ListSettings(DB))
-	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(DB))
-	register("PUT", "/settings", jwtChain, handler.UpsertSetting(DB))
+	register("GET", "/settings", jwtChain, handler.ListSettings(s.app.SM))
+	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(s.app.SM))
+	register("POST", "/settings", logChain, handler.UpsertSetting(s.app.SM))
 
 	// Agent
 	register("GET", "/agent", jwtChain, handler.ListAgents(DB))

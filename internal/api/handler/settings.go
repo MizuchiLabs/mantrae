@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
 
-func ListSettings(q *db.Queries) http.HandlerFunc {
+func ListSettings(sm *config.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		settings, err := q.ListSettings(r.Context())
+		settings, err := sm.GetAll(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -19,9 +20,9 @@ func ListSettings(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetSetting(q *db.Queries) http.HandlerFunc {
+func GetSetting(sm *config.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		setting, err := q.GetSetting(r.Context(), r.PathValue("key"))
+		setting, err := sm.Get(r.Context(), r.PathValue("key"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -31,14 +32,14 @@ func GetSetting(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpsertSetting(q *db.Queries) http.HandlerFunc {
+func UpsertSetting(sm *config.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var setting db.UpsertSettingParams
 		if err := json.NewDecoder(r.Body).Decode(&setting); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := q.UpsertSetting(r.Context(), setting); err != nil {
+		if err := sm.Set(r.Context(), setting.Key, setting.Value); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

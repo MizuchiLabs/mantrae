@@ -5,7 +5,8 @@ VALUES
     (?, ?) ON CONFLICT (key) DO
 UPDATE
 SET
-    value = excluded.value;
+    value = excluded.value,
+    updated_at = CURRENT_TIMESTAMP;
 
 -- name: GetSetting :one
 SELECT
@@ -13,7 +14,9 @@ SELECT
 FROM
     settings
 WHERE
-    key = ?;
+    key = ?
+LIMIT
+    1;
 
 -- name: ListSettings :many
 SELECT

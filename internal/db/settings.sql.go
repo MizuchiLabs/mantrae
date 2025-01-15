@@ -27,6 +27,8 @@ FROM
     settings
 WHERE
     key = ?
+LIMIT
+    1
 `
 
 func (q *Queries) GetSetting(ctx context.Context, key string) (Setting, error) {
@@ -73,7 +75,8 @@ VALUES
     (?, ?) ON CONFLICT (key) DO
 UPDATE
 SET
-    value = excluded.value
+    value = excluded.value,
+    updated_at = CURRENT_TIMESTAMP
 `
 
 type UpsertSettingParams struct {

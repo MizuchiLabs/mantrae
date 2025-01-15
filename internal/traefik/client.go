@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 const (
@@ -29,11 +29,6 @@ func GetTraefikConfig(q *db.Queries) {
 		return
 	}
 
-	// TODO: Ignore fetching for tests for now
-	if util.IsTest() {
-		return
-	}
-
 	for _, profile := range profiles {
 		if profile.Url == "" {
 			continue
@@ -46,7 +41,7 @@ func GetTraefikConfig(q *db.Queries) {
 		}
 		defer rawResponse.Close()
 
-		var config dynamic.Configuration
+		var config db.TraefikConfiguration
 		if err := json.NewDecoder(rawResponse).Decode(&config); err != nil {
 			slog.Error("Failed to decode raw data", "error", err)
 			continue
@@ -85,9 +80,9 @@ func GetTraefikConfig(q *db.Queries) {
 				Entrypoints: &entrypoints,
 				Overview:    &overview,
 				Config:      &config,
-				Source:      "external",
+				Source:      source.API,
 			}); err != nil {
-				slog.Error("Failed to upsert traefik api", "error", err)
+				slog.Error("Failed to update Traefik config", "error", err)
 				continue
 			}
 		} else {
@@ -96,9 +91,9 @@ func GetTraefikConfig(q *db.Queries) {
 				Entrypoints: &entrypoints,
 				Overview:    &overview,
 				Config:      &config,
-				Source:      "external",
+				Source:      source.API,
 			}); err != nil {
-				slog.Error("Failed to insert traefik config", "error", err)
+				slog.Error("Failed to update Traefik config", "error", err)
 				continue
 			}
 		}

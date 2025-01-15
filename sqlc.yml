@@ -15,8 +15,7 @@ sql:
         overrides:
           - column: "traefik.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
-              type: "Configuration"
+              type: "TraefikConfiguration"
               pointer: true
           - column: "traefik.entrypoints"
             go_type:

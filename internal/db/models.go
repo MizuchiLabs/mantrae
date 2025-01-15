@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Agent struct {
@@ -58,14 +57,14 @@ type Setting struct {
 }
 
 type Traefik struct {
-	ID          int64                  `json:"id"`
-	ProfileID   int64                  `json:"profileId"`
-	Source      source.Source          `json:"source"`
-	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
-	Overview    *TraefikOverview       `json:"overview"`
-	Config      *dynamic.Configuration `json:"config"`
-	CreatedAt   *time.Time             `json:"createdAt"`
-	UpdatedAt   *time.Time             `json:"updatedAt"`
+	ID          int64                 `json:"id"`
+	ProfileID   int64                 `json:"profileId"`
+	Source      source.Source         `json:"source"`
+	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
+	Overview    *TraefikOverview      `json:"overview"`
+	Config      *TraefikConfiguration `json:"config"`
+	CreatedAt   *time.Time            `json:"createdAt"`
+	UpdatedAt   *time.Time            `json:"updatedAt"`
 }
 
 type User struct {

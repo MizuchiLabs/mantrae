@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 const createTraefikConfig = `-- name: CreateTraefikConfig :exec
@@ -20,11 +19,11 @@ VALUES
 `
 
 type CreateTraefikConfigParams struct {
-	ProfileID   int64                  `json:"profileId"`
-	Source      source.Source          `json:"source"`
-	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
-	Overview    *TraefikOverview       `json:"overview"`
-	Config      *dynamic.Configuration `json:"config"`
+	ProfileID   int64                 `json:"profileId"`
+	Source      source.Source         `json:"source"`
+	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
+	Overview    *TraefikOverview      `json:"overview"`
+	Config      *TraefikConfiguration `json:"config"`
 }
 
 func (q *Queries) CreateTraefikConfig(ctx context.Context, arg CreateTraefikConfigParams) error {
@@ -118,11 +117,11 @@ WHERE
 `
 
 type UpdateTraefikConfigParams struct {
-	Source      source.Source          `json:"source"`
-	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
-	Overview    *TraefikOverview       `json:"overview"`
-	Config      *dynamic.Configuration `json:"config"`
-	ID          int64                  `json:"id"`
+	Source      source.Source         `json:"source"`
+	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
+	Overview    *TraefikOverview      `json:"overview"`
+	Config      *TraefikConfiguration `json:"config"`
+	ID          int64                 `json:"id"`
 }
 
 func (q *Queries) UpdateTraefikConfig(ctx context.Context, arg UpdateTraefikConfigParams) error {

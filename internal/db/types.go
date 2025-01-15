@@ -8,10 +8,6 @@ import (
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
-type HTTPRouters map[string]*dynamic.Router
-type TCPRouters map[string]*dynamic.TCPRouter
-type UDPRouters map[string]*dynamic.UDPRouter
-
 type EntryPointAPI struct {
 	Name            string       `json:"name,omitempty"`
 	Address         string       `json:"address,omitempty"`
@@ -65,6 +61,11 @@ type SchemeOverview struct {
 	Middleware Section `json:"middlewares,omitempty"`
 }
 
+type TraefikConfiguration struct {
+	*dynamic.Configuration
+}
+
+// Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
 func (e *TraefikEntryPoints) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
@@ -77,6 +78,7 @@ func (e TraefikEntryPoints) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
+// Handles the JSON marshalling and unmarshalling of the TraefikOverview type
 func (o *TraefikOverview) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
@@ -89,48 +91,25 @@ func (o TraefikOverview) Value() (driver.Value, error) {
 	return json.Marshal(o)
 }
 
-func (r *HTTPRouters) Scan(value interface{}) error {
+// Handles the JSON marshalling and unmarshalling of the ConfigurationWrapper type
+func (c *TraefikConfiguration) Scan(value interface{}) error {
+	if value == nil {
+		c.Configuration = nil
+		return nil
+	}
+
 	bytes, ok := value.([]byte)
 	if !ok {
-		if str, ok := value.(string); ok {
-			bytes = []byte(str)
-		} else {
-			return fmt.Errorf("expected bytes or string, got %T", value)
-		}
+		return fmt.Errorf("failed to scan Configuration: expected []byte, got %T", value)
 	}
-	return json.Unmarshal(bytes, r)
+
+	return json.Unmarshal(bytes, &c.Configuration)
 }
 
-func (r HTTPRouters) Value() (driver.Value, error) {
-	return json.Marshal(r)
-}
-
-func (r *TCPRouters) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		if str, ok := value.(string); ok {
-			bytes = []byte(str)
-		} else {
-			return fmt.Errorf("expected bytes or string, got %T", value)
-		}
+// Value implements driver.Valuer
+func (c TraefikConfiguration) Value() (driver.Value, error) {
+	if c.Configuration == nil {
+		return nil, nil
 	}
-	return json.Unmarshal(bytes, r)
-}
-func (r TCPRouters) Value() (driver.Value, error) {
-	return json.Marshal(r)
-}
-
-func (r *UDPRouters) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		if str, ok := value.(string); ok {
-			bytes = []byte(str)
-		} else {
-			return fmt.Errorf("expected bytes or string, got %T", value)
-		}
-	}
-	return json.Unmarshal(bytes, r)
-}
-func (r UDPRouters) Value() (driver.Value, error) {
-	return json.Marshal(r)
+	return json.Marshal(c.Configuration)
 }

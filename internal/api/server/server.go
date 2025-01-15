@@ -34,6 +34,7 @@ func NewServer(app *config.App) *Server {
 
 func (s *Server) Start(ctx context.Context) error {
 	s.registerServices()
+	defer s.app.DB.Close()
 	host := s.app.Config.Server.Host
 	port := s.app.Config.Server.Port
 

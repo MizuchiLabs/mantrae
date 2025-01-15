@@ -16,6 +16,7 @@ type App struct {
 	Config *Config
 	DB     *db.Queries
 	BM     *BackupManager
+	SM     *SettingsManager
 }
 
 func Setup() (*App, error) {
@@ -43,15 +44,21 @@ func Setup() (*App, error) {
 		return nil, fmt.Errorf("failed to create backup manager: %w", err)
 	}
 
+	// Setup settings manager
+	sm := NewSettingsManager(db.New(DB))
+	if err := sm.Initialize(context.Background()); err != nil {
+		return nil, fmt.Errorf("failed to initialize settings: %w", err)
+	}
+
 	app := App{
 		Config: config,
 		DB:     db.New(DB),
 		BM:     bm,
+		SM:     sm,
 	}
 
 	app.setupLogger()
 	app.setDefaultAdminUser()
-	app.setDefaultSettings()
 	app.setDefaultProfile()
 	if flags.Reset {
 		app.resetAdminUser()
@@ -159,65 +166,6 @@ func (a *App) setDefaultProfile() error {
 		return fmt.Errorf("failed to update default profile: %w", err)
 	}
 	slog.Info("Updated default profile", "url", a.Config.Traefik.URL, "username", a.Config.Traefik.Username, "password", a.Config.Traefik.Password)
-	return nil
-}
-
-func (a *App) setDefaultSettings() error {
-	baseSettings := []db.Setting{
-		{
-			Key:   "server-url",
-			Value: a.Config.Server.ServerURL,
-		},
-		{
-			Key:   "backup-enabled",
-			Value: "true",
-		},
-		{
-			Key:   "backup-schedule",
-			Value: "0 2 * * 1", // Weekly at 02:00 AM on Monday
-		},
-		{
-			Key:   "backup-keep",
-			Value: "3", // Keep 3 backups
-		},
-		{
-			Key:   "agent-cleanup-enabled",
-			Value: "true",
-		},
-		{
-			Key:   "agent-cleanup-timeout",
-			Value: "168h",
-		},
-		{
-			Key:   "email-host",
-			Value: a.Config.Email.Host,
-		},
-		{
-			Key:   "email-port",
-			Value: a.Config.Email.Port,
-		},
-		{
-			Key:   "email-username",
-			Value: a.Config.Email.Username,
-		},
-		{
-			Key:   "email-password",
-			Value: a.Config.Email.Password,
-		},
-		{
-			Key:   "email-from",
-			Value: a.Config.Email.From,
-		},
-	}
-
-	for _, setting := range baseSettings {
-		if err := a.DB.UpsertSetting(context.Background(), db.UpsertSettingParams{
-			Key:   setting.Key,
-			Value: setting.Value,
-		}); err != nil {
-			return fmt.Errorf("failed to create setting: %w", err)
-		}
-	}
 	return nil
 }
 

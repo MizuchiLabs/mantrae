@@ -46,6 +46,11 @@ func Login(q *db.Queries, secret string) http.HandlerFunc {
 			return
 		}
 
+		if err := q.UpdateUserLastLogin(r.Context(), dbUser.ID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"token": token})
 	}
