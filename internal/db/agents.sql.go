@@ -63,7 +63,7 @@ func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
 
 const getAgent = `-- name: GetAgent :one
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen, created_at
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
     agents
 WHERE
@@ -82,15 +82,15 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 		&i.Containers,
 		&i.ActiveIp,
 		&i.Token,
-		&i.LastSeen,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen, created_at
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
     agents
 ORDER BY
@@ -115,8 +115,8 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 			&i.Containers,
 			&i.ActiveIp,
 			&i.Token,
-			&i.LastSeen,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -133,7 +133,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfile = `-- name: ListAgentsByProfile :many
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, last_seen, created_at
+    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
     agents
 WHERE
@@ -158,8 +158,8 @@ func (q *Queries) ListAgentsByProfile(ctx context.Context, profileID int64) ([]A
 			&i.Containers,
 			&i.ActiveIp,
 			&i.Token,
-			&i.LastSeen,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -182,7 +182,7 @@ SET
     private_ips = ?,
     containers = ?,
     active_ip = ?,
-    last_seen = CURRENT_TIMESTAMP
+    updated_at = CURRENT_TIMESTAMP
 WHERE
     id = ?
 `
@@ -205,18 +205,5 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) error 
 		arg.ActiveIp,
 		arg.ID,
 	)
-	return err
-}
-
-const updateAgentLastSeen = `-- name: UpdateAgentLastSeen :exec
-UPDATE agents
-SET
-    last_seen = CURRENT_TIMESTAMP
-WHERE
-    id = ?
-`
-
-func (q *Queries) UpdateAgentLastSeen(ctx context.Context, id string) error {
-	_, err := q.exec(ctx, q.updateAgentLastSeenStmt, updateAgentLastSeen, id)
 	return err
 }

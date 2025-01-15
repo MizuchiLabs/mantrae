@@ -36,7 +36,8 @@ SET
     name = ?,
     type = ?,
     config = ?,
-    is_active = ?
+    is_active = ?,
+    updated_at = CURRENT_TIMESTAMP
 WHERE
     id = ?;
 

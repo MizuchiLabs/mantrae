@@ -49,9 +49,6 @@ func Setup() (*App, error) {
 		BM:     bm,
 	}
 
-	// Start background jobs
-	app.setupBackgroundJobs(context.Background())
-
 	app.setupLogger()
 	app.setDefaultAdminUser()
 	app.setDefaultSettings()
@@ -60,6 +57,11 @@ func Setup() (*App, error) {
 		app.resetAdminUser()
 	}
 
+	// Update self
+	util.UpdateSelf(flags.Update)
+
+	// Start background jobs
+	app.setupBackgroundJobs(context.Background())
 	return &app, nil
 }
 

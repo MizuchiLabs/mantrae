@@ -30,6 +30,5 @@ func ParseFlags() (*Flags, error) {
 		os.Exit(0)
 	}
 
-	util.UpdateSelf(f.Update)
 	return f, nil
 }

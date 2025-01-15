@@ -74,22 +74,22 @@ upgrade:
 	go get -u && go mod tidy
 	cd web && pnpm update
 
-# Create a new migration
-db-new:
-	@read -p "Enter migration name: " name; \
-	atlas migrate diff $$name --env sqlite
+.PHONY: db-up
+db-up:
+	goose sqlite3 mantrae.db -dir internal/db/migrations up
 
-# Apply all pending migrations
-db-apply:
-	atlas migrate apply --env sqlite
+.PHONY: db-down
+db-down:
+	goose sqlite3 mantrae.db -dir internal/db/migrations down
 
-# Apply schema changes directly (without migrations)
-db-schema:
-	atlas schema apply --env sqlite
+.PHONY: db-reset
+db-reset:
+	rm -f mantrae.db
+	goose sqlite3 mantrae.db -dir internal/db/migrations up
 
-# Check migration status
+.PHONY: db-status
 db-status:
-	atlas migrate status --env sqlite
+	goose sqlite3 mantrae.db -dir internal/db/migrations status
 
 .PHONY: run
 run-server:

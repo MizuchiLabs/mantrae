@@ -2,135 +2,170 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
-func GetHTTPRoutersBySource(q *db.Queries) http.HandlerFunc {
+type UpsertRouterParams struct {
+	Name       string              `json:"name"`
+	Type       string              `json:"type"`
+	Router     *dynamic.Router     `json:"router"`
+	TCPRouter  *dynamic.TCPRouter  `json:"tcpRouter"`
+	UDPRouter  *dynamic.UDPRouter  `json:"udpRouter"`
+	Service    *dynamic.Service    `json:"service"`
+	TCPService *dynamic.TCPService `json:"tcpService"`
+	UDPService *dynamic.UDPService `json:"udpService"`
+}
+
+// UpsertRouter handles both creation and updates of router/service pairs
+func UpsertRouter(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetHTTPRoutersBySourceParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
+		var params UpsertRouterParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if err := validateRouterParams(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		routers, err := q.GetHTTPRoutersBySource(r.Context(), router)
+		// Get existing config
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
+			return
+		}
+
+		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		})
+		if err != nil {
+			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Initialize maps if nil
+		if existingConfig.Config.HTTP.Routers == nil {
+			existingConfig.Config.HTTP.Routers = make(map[string]*dynamic.Router)
+		}
+		if existingConfig.Config.HTTP.Services == nil {
+			existingConfig.Config.HTTP.Services = make(map[string]*dynamic.Service)
+		}
+		if existingConfig.Config.TCP.Routers == nil {
+			existingConfig.Config.TCP.Routers = make(map[string]*dynamic.TCPRouter)
+		}
+		if existingConfig.Config.TCP.Services == nil {
+			existingConfig.Config.TCP.Services = make(map[string]*dynamic.TCPService)
+		}
+		if existingConfig.Config.UDP.Routers == nil {
+			existingConfig.Config.UDP.Routers = make(map[string]*dynamic.UDPRouter)
+		}
+		if existingConfig.Config.UDP.Services == nil {
+			existingConfig.Config.UDP.Services = make(map[string]*dynamic.UDPService)
+		}
+
+		// Ensure name has @http suffix
+		if !strings.HasSuffix(params.Name, "@http") {
+			params.Name = fmt.Sprintf("%s@http", strings.Split(params.Name, "@")[0])
+		}
+
+		// Update configuration based on type
+		switch params.Type {
+		case "http":
+			existingConfig.Config.HTTP.Routers[params.Name] = params.Router
+			existingConfig.Config.HTTP.Services[params.Name] = params.Service
+		case "tcp":
+			existingConfig.Config.TCP.Routers[params.Name] = params.TCPRouter
+			existingConfig.Config.TCP.Services[params.Name] = params.TCPService
+		case "udp":
+			existingConfig.Config.UDP.Routers[params.Name] = params.UDPRouter
+			existingConfig.Config.UDP.Services[params.Name] = params.UDPService
+		default:
+			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
+			return
+		}
+
+		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
+			ID:     existingConfig.ID,
+			Source: source.Local,
+			Config: existingConfig.Config,
+		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// Return the updated configuration
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(existingConfig.Config)
 	}
 }
 
-func GetTCPRoutersBySource(q *db.Queries) http.HandlerFunc {
+// DeleteRouter handles the removal of router/service pairs
+func DeleteRouter(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetTCPRoutersBySourceParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		routers, err := q.GetTCPRoutersBySource(r.Context(), router)
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
-	}
-}
+		routerName := r.PathValue("name")
+		routerType := r.PathValue("type")
 
-func GetUDPRoutersBySource(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetUDPRoutersBySourceParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if routerName == "" || routerType == "" {
+			http.Error(w, "Missing router name or type", http.StatusBadRequest)
 			return
 		}
 
-		routers, err := q.GetUDPRoutersBySource(r.Context(), router)
+		// Ensure name has @http suffix for consistency
+		if !strings.HasSuffix(routerName, "@http") {
+			routerName = fmt.Sprintf("%s@http", strings.Split(routerName, "@")[0])
+		}
+
+		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
-	}
-}
-
-func GetHTTPRouterByName(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetHTTPRouterByNameParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		// Remove router and service based on type
+		switch routerType {
+		case "http":
+			delete(existingConfig.Config.HTTP.Routers, routerName)
+			delete(existingConfig.Config.HTTP.Services, routerName)
+		case "tcp":
+			delete(existingConfig.Config.TCP.Routers, routerName)
+			delete(existingConfig.Config.TCP.Services, routerName)
+		case "udp":
+			delete(existingConfig.Config.UDP.Routers, routerName)
+			delete(existingConfig.Config.UDP.Services, routerName)
+		default:
+			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return
 		}
 
-		routers, err := q.GetHTTPRouterByName(r.Context(), router)
+		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
+			ID:     existingConfig.ID,
+			Source: source.Local,
+			Config: existingConfig.Config,
+		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
-	}
-}
-
-func GetTCPRouterByName(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetTCPRouterByNameParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		routers, err := q.GetTCPRouterByName(r.Context(), router)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
-	}
-}
-
-func GetUDPRouterByName(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.GetUDPRouterByNameParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		routers, err := q.GetUDPRouterByName(r.Context(), router)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(routers)
-	}
-}
-
-func UpsertHTTPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.UpsertHTTPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.UpsertHTTPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -138,87 +173,58 @@ func UpsertHTTPRouter(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpsertTCPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.UpsertTCPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+func validateRouterParams(params *UpsertRouterParams) error {
+	var (
+		ErrInvalidRouterType = errors.New("invalid router type: must be http, tcp, or udp")
+		ErrMissingRouter     = errors.New("missing router configuration")
+		ErrMissingService    = errors.New("missing service configuration")
+		ErrInvalidName       = errors.New("invalid router name")
+	)
 
-		if err := q.UpsertTCPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
+	if params.Name == "" {
+		return ErrInvalidName
 	}
-}
 
-func UpsertUDPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.UpsertUDPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	switch params.Type {
+	case "http":
+		if params.Router == nil {
+			return ErrMissingRouter
 		}
-
-		if err := q.UpsertUDPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if params.Service == nil {
+			return ErrMissingService
 		}
-
-		w.WriteHeader(http.StatusNoContent)
+		// Validate HTTP specific fields
+		if params.Router.Rule == "" {
+			return errors.New("http router requires a rule")
+		}
+		if len(params.Router.EntryPoints) == 0 {
+			return errors.New("http router requires at least one entrypoint")
+		}
+	case "tcp":
+		if params.TCPRouter == nil {
+			return ErrMissingRouter
+		}
+		if params.TCPService == nil {
+			return ErrMissingService
+		}
+		// Validate TCP specific fields
+		if params.TCPRouter.Rule == "" {
+			return errors.New("tcp router requires a rule")
+		}
+	case "udp":
+		if params.UDPRouter == nil {
+			return ErrMissingRouter
+		}
+		if params.UDPService == nil {
+			return ErrMissingService
+		}
+		// Validate UDP specific fields
+		if len(params.UDPRouter.EntryPoints) == 0 {
+			return errors.New("udp router requires at least one entrypoint")
+		}
+	default:
+		return ErrInvalidRouterType
 	}
-}
 
-func DeleteHTTPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.DeleteHTTPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.DeleteHTTPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func DeleteTCPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.DeleteTCPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.DeleteTCPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func DeleteUDPRouter(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var router db.DeleteUDPRouterParams
-		if err := json.NewDecoder(r.Body).Decode(&router); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.DeleteUDPRouter(r.Context(), router); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
+	return nil
 }

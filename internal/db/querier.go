@@ -6,7 +6,6 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 type Querier interface {
@@ -18,46 +17,21 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDNSProvider(ctx context.Context, id int64) error
-	DeleteHTTPMiddleware(ctx context.Context, arg DeleteHTTPMiddlewareParams) error
-	DeleteHTTPRouter(ctx context.Context, arg DeleteHTTPRouterParams) error
-	DeleteHTTPService(ctx context.Context, arg DeleteHTTPServiceParams) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteRouterDNSProvider(ctx context.Context, arg DeleteRouterDNSProviderParams) error
 	DeleteRouterDNSProvidersByTraefik(ctx context.Context, traefikID int64) error
 	DeleteSetting(ctx context.Context, key string) error
-	DeleteTCPMiddleware(ctx context.Context, arg DeleteTCPMiddlewareParams) error
-	DeleteTCPRouter(ctx context.Context, arg DeleteTCPRouterParams) error
-	DeleteTCPService(ctx context.Context, arg DeleteTCPServiceParams) error
 	DeleteTraefikConfig(ctx context.Context, id int64) error
-	DeleteUDPRouter(ctx context.Context, arg DeleteUDPRouterParams) error
-	DeleteUDPService(ctx context.Context, arg DeleteUDPServiceParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetActiveDNSProvider(ctx context.Context) (DnsProvider, error)
 	GetAgent(ctx context.Context, id string) (Agent, error)
 	GetDNSProvider(ctx context.Context, id int64) (DnsProvider, error)
-	GetHTTPMiddlewareByName(ctx context.Context, arg GetHTTPMiddlewareByNameParams) (interface{}, error)
-	GetHTTPMiddlewaresBySource(ctx context.Context, arg GetHTTPMiddlewaresBySourceParams) (interface{}, error)
-	GetHTTPRouterByName(ctx context.Context, arg GetHTTPRouterByNameParams) (interface{}, error)
-	GetHTTPRoutersBySource(ctx context.Context, arg GetHTTPRoutersBySourceParams) (interface{}, error)
-	GetHTTPServiceByName(ctx context.Context, arg GetHTTPServiceByNameParams) (interface{}, error)
-	GetHTTPServicesBySource(ctx context.Context, arg GetHTTPServicesBySourceParams) (interface{}, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetRouterDNSProviders(ctx context.Context, traefikID int64) ([]RouterDnsProvider, error)
 	GetSetting(ctx context.Context, key string) (Setting, error)
-	GetTCPMiddlewareByName(ctx context.Context, arg GetTCPMiddlewareByNameParams) (interface{}, error)
-	GetTCPMiddlewaresBySource(ctx context.Context, arg GetTCPMiddlewaresBySourceParams) (interface{}, error)
-	GetTCPRouterByName(ctx context.Context, arg GetTCPRouterByNameParams) (interface{}, error)
-	GetTCPRoutersBySource(ctx context.Context, arg GetTCPRoutersBySourceParams) (interface{}, error)
-	GetTCPServiceByName(ctx context.Context, arg GetTCPServiceByNameParams) (interface{}, error)
-	GetTCPServicesBySource(ctx context.Context, arg GetTCPServicesBySourceParams) (interface{}, error)
-	GetTraefikConfig(ctx context.Context, id int64) (TraefikConfig, error)
-	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) (TraefikConfig, error)
-	GetTraefikConfigLastSync(ctx context.Context, id int64) (*time.Time, error)
-	GetUDPRouterByName(ctx context.Context, arg GetUDPRouterByNameParams) (interface{}, error)
-	GetUDPRoutersBySource(ctx context.Context, arg GetUDPRoutersBySourceParams) (interface{}, error)
-	GetUDPServiceByName(ctx context.Context, arg GetUDPServiceByNameParams) (interface{}, error)
-	GetUDPServicesBySource(ctx context.Context, arg GetUDPServicesBySourceParams) (interface{}, error)
+	GetTraefikConfig(ctx context.Context, id int64) (Traefik, error)
+	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) (Traefik, error)
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAgents(ctx context.Context) ([]Agent, error)
@@ -67,22 +41,12 @@ type Querier interface {
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) error
-	UpdateAgentLastSeen(ctx context.Context, id string) error
 	UpdateDNSProvider(ctx context.Context, arg UpdateDNSProviderParams) error
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error
 	UpdateTraefikConfig(ctx context.Context, arg UpdateTraefikConfigParams) error
-	UpdateTraefikConfigLastSync(ctx context.Context, id int64) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserLastLogin(ctx context.Context, id int64) error
-	UpsertHTTPMiddleware(ctx context.Context, arg UpsertHTTPMiddlewareParams) error
-	UpsertHTTPRouter(ctx context.Context, arg UpsertHTTPRouterParams) error
-	UpsertHTTPService(ctx context.Context, arg UpsertHTTPServiceParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
-	UpsertTCPMiddleware(ctx context.Context, arg UpsertTCPMiddlewareParams) error
-	UpsertTCPRouter(ctx context.Context, arg UpsertTCPRouterParams) error
-	UpsertTCPService(ctx context.Context, arg UpsertTCPServiceParams) error
-	UpsertUDPRouter(ctx context.Context, arg UpsertUDPRouterParams) error
-	UpsertUDPService(ctx context.Context, arg UpsertUDPServiceParams) error
 }
 
 var _ Querier = (*Queries)(nil)

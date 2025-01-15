@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Agent struct {
@@ -20,8 +20,8 @@ type Agent struct {
 	Containers interface{} `json:"containers"`
 	ActiveIp   *string     `json:"activeIp"`
 	Token      string      `json:"token"`
-	LastSeen   *time.Time  `json:"lastSeen"`
 	CreatedAt  *time.Time  `json:"createdAt"`
+	UpdatedAt  *time.Time  `json:"updatedAt"`
 }
 
 type DnsProvider struct {
@@ -57,14 +57,15 @@ type Setting struct {
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
-type TraefikConfig struct {
+type Traefik struct {
 	ID          int64                  `json:"id"`
 	ProfileID   int64                  `json:"profileId"`
 	Source      source.Source          `json:"source"`
 	Entrypoints *TraefikEntryPoints    `json:"entrypoints"`
 	Overview    *TraefikOverview       `json:"overview"`
-	Config      *runtime.Configuration `json:"config"`
-	LastSync    *time.Time             `json:"lastSync"`
+	Config      *dynamic.Configuration `json:"config"`
+	CreatedAt   *time.Time             `json:"createdAt"`
+	UpdatedAt   *time.Time             `json:"updatedAt"`
 }
 
 type User struct {
@@ -75,4 +76,5 @@ type User struct {
 	IsAdmin   bool       `json:"isAdmin"`
 	LastLogin *time.Time `json:"lastLogin"`
 	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
 }

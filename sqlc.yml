@@ -1,8 +1,7 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    # schema: "internal/db/migrations"
-    schema: "schema.sql"
+    schema: "internal/db/migrations"
     queries: "internal/db/queries"
     gen:
       go:
@@ -14,20 +13,20 @@ sql:
         emit_pointers_for_null_types: true
         json_tags_case_style: "camel"
         overrides:
-          - column: "traefik_config.config"
+          - column: "traefik.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/runtime"
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
               type: "Configuration"
               pointer: true
-          - column: "traefik_config.entrypoints"
+          - column: "traefik.entrypoints"
             go_type:
               type: "TraefikEntryPoints"
               pointer: true
-          - column: "traefik_config.overview"
+          - column: "traefik.overview"
             go_type:
               type: "TraefikOverview"
               pointer: true
-          - column: "traefik_config.source"
+          - column: "traefik.source"
             go_type:
               import: "github.com/MizuchiLabs/mantrae/internal/source"
               type: "Source"

@@ -49,43 +49,13 @@ func (s *Server) routes() {
 	register("PUT", "/profile", jwtChain, handler.UpdateProfile(DB))
 	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(DB))
 
-	// Routers
-	register("GET", "/routers/http", logChain, handler.GetHTTPRoutersBySource(DB))
-	register("GET", "/routers/tcp", logChain, handler.GetTCPRoutersBySource(DB))
-	register("GET", "/routers/udp", logChain, handler.GetUDPRoutersBySource(DB))
-	register("GET", "/router/http", logChain, handler.GetHTTPRouterByName(DB))
-	register("GET", "/router/tcp", logChain, handler.GetTCPRouterByName(DB))
-	register("GET", "/router/udp", logChain, handler.GetUDPRouterByName(DB))
-	register("POST", "/router/http", logChain, handler.UpsertHTTPRouter(DB))
-	register("POST", "/router/tcp", logChain, handler.UpsertTCPRouter(DB))
-	register("POST", "/router/udp", logChain, handler.UpsertUDPRouter(DB))
-	register("DELETE", "/router/http", jwtChain, handler.DeleteHTTPRouter(DB))
-	register("DELETE", "/router/tcp", jwtChain, handler.DeleteTCPRouter(DB))
-	register("DELETE", "/router/udp", jwtChain, handler.DeleteUDPRouter(DB))
-
-	// Services
-	register("GET", "/services/http", logChain, handler.GetHTTPServicesBySource(DB))
-	register("GET", "/services/tcp", logChain, handler.GetTCPServicesBySource(DB))
-	register("GET", "/services/udp", logChain, handler.GetUDPServicesBySource(DB))
-	register("GET", "/service/http", logChain, handler.GetHTTPServiceByName(DB))
-	register("GET", "/service/tcp", logChain, handler.GetTCPServiceByName(DB))
-	register("GET", "/service/udp", logChain, handler.GetUDPServiceByName(DB))
-	register("POST", "/service/http", logChain, handler.UpsertHTTPService(DB))
-	register("POST", "/service/tcp", logChain, handler.UpsertTCPService(DB))
-	register("POST", "/service/udp", logChain, handler.UpsertUDPService(DB))
-	register("DELETE", "/service/http", jwtChain, handler.DeleteHTTPService(DB))
-	register("DELETE", "/service/tcp", jwtChain, handler.DeleteTCPService(DB))
-	register("DELETE", "/service/udp", jwtChain, handler.DeleteUDPService(DB))
+	// Routers/Services
+	register("POST", "/router/{id}", logChain, handler.UpsertRouter(DB))
+	register("DELETE", "/router/{id}/{name}/{type}", jwtChain, handler.DeleteRouter(DB))
 
 	// Middlewares
-	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewaresBySource(DB))
-	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewaresBySource(DB))
-	register("GET", "/middleware/http", logChain, handler.GetHTTPMiddlewareByName(DB))
-	register("GET", "/middleware/tcp", logChain, handler.GetTCPMiddlewareByName(DB))
-	register("POST", "/middleware/http", logChain, handler.UpsertHTTPMiddleware(DB))
-	register("POST", "/middleware/tcp", logChain, handler.UpsertTCPMiddleware(DB))
-	register("DELETE", "/middleware/http", jwtChain, handler.DeleteHTTPMiddleware(DB))
-	register("DELETE", "/middleware/tcp", jwtChain, handler.DeleteTCPMiddleware(DB))
+	register("POST", "/middleware/{id}", logChain, handler.UpsertMiddleware(DB))
+	register("DELETE", "/middleware/{id}/{name}/{type}", jwtChain, handler.DeleteMiddleware(DB))
 	register("GET", "/middleware/plugins", logChain, handler.GetMiddlewarePlugins)
 
 	// Users

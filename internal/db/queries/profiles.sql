@@ -35,7 +35,8 @@ SET
     url = ?,
     username = ?,
     password = ?,
-    tls = ?
+    tls = ?,
+    updated_at = CURRENT_TIMESTAMP
 WHERE
     id = ?;
 

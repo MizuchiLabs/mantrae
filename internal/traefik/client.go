@@ -12,7 +12,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 const (
@@ -46,7 +46,7 @@ func GetTraefikConfig(q *db.Queries) {
 		}
 		defer rawResponse.Close()
 
-		var config runtime.Configuration
+		var config dynamic.Configuration
 		if err := json.NewDecoder(rawResponse).Decode(&config); err != nil {
 			slog.Error("Failed to decode raw data", "error", err)
 			continue

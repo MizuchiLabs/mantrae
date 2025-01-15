@@ -10,14 +10,15 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS traefik_config (
+CREATE TABLE IF NOT EXISTS traefik (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL,
     source TEXT NOT NULL,
     entrypoints JSON,
     overview JSON,
     config JSON,
-    last_sync TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
     UNIQUE (profile_id, source)
 );
@@ -48,7 +49,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255),
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     last_login TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -66,8 +68,8 @@ CREATE TABLE IF NOT EXISTS agents (
     containers JSON,
     active_ip TEXT,
     token TEXT NOT NULL,
-    last_seen TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
@@ -97,7 +99,11 @@ END;
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
 
+DROP TABLE IF EXISTS traefik;
+
 DROP TABLE IF EXISTS dns_providers;
+
+DROP TABLE IF EXISTS router_dns_provider;
 
 DROP TABLE IF EXISTS users;
 

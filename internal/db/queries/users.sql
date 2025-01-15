@@ -34,7 +34,8 @@ SET
     username = ?,
     password = ?,
     email = ?,
-    is_admin = ?
+    is_admin = ?,
+    updated_at = CURRENT_TIMESTAMP
 WHERE
     id = ?;
 

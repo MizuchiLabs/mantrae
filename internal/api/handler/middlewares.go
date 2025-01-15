@@ -4,9 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
+
+type UpsertMiddlewareParams struct {
+	Name          string                 `json:"name"`
+	Type          string                 `json:"type"`
+	Middleware    *dynamic.Middleware    `json:"middleware"`
+	TCPMiddleware *dynamic.TCPMiddleware `json:"tcpMiddleware"`
+}
 
 type Plugin struct {
 	ID            string        `json:"id"`
@@ -30,143 +41,126 @@ type PluginSnippet struct {
 	Yaml string `json:"yaml"`
 }
 
-func GetHTTPMiddlewaresBySource(q *db.Queries) http.HandlerFunc {
+// UpsertMiddleware
+func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.GetHTTPMiddlewaresBySourceParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		var params UpsertMiddlewareParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
-		middlewares, err := q.GetHTTPMiddlewaresBySource(r.Context(), middleware)
+		// if err := validateRouterParams(&params); err != nil {
+		// 	http.Error(w, err.Error(), http.StatusBadRequest)
+		// 	return
+		// }
+
+		// Get existing config
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
+			return
+		}
+
+		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		})
+		if err != nil {
+			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Initialize maps if nil
+		if existingConfig.Config.HTTP.Middlewares == nil {
+			existingConfig.Config.HTTP.Middlewares = make(map[string]*dynamic.Middleware)
+		}
+		if existingConfig.Config.TCP.Middlewares == nil {
+			existingConfig.Config.TCP.Middlewares = make(map[string]*dynamic.TCPMiddleware)
+		}
+
+		// Ensure name has @http suffix
+		if !strings.HasSuffix(params.Name, "@http") {
+			params.Name = fmt.Sprintf("%s@http", strings.Split(params.Name, "@")[0])
+		}
+
+		// Update configuration based on type
+		switch params.Type {
+		case "http":
+			existingConfig.Config.HTTP.Middlewares[params.Name] = params.Middleware
+		case "tcp":
+			existingConfig.Config.TCP.Middlewares[params.Name] = params.TCPMiddleware
+		default:
+			http.Error(w, "invalid middleware type: must be http or tcp", http.StatusBadRequest)
+			return
+		}
+
+		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
+			ID:     existingConfig.ID,
+			Source: source.Local,
+			Config: existingConfig.Config,
+		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// Return the updated configuration
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(middlewares)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(existingConfig.Config)
 	}
 }
 
-func GetTCPMiddlewaresBySource(q *db.Queries) http.HandlerFunc {
+// DeleteMiddleware
+func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.GetTCPMiddlewaresBySourceParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		middlewares, err := q.GetTCPMiddlewaresBySource(r.Context(), middleware)
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(middlewares)
-	}
-}
+		mwName := r.PathValue("name")
+		mwType := r.PathValue("type")
 
-func GetHTTPMiddlewareByName(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.GetHTTPMiddlewareByNameParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if mwName == "" || mwType == "" {
+			http.Error(w, "Missing middleware name or type", http.StatusBadRequest)
 			return
 		}
 
-		middlewares, err := q.GetHTTPMiddlewareByName(r.Context(), middleware)
+		// Ensure name has @http suffix for consistency
+		if !strings.HasSuffix(mwName, "@http") {
+			mwName = fmt.Sprintf("%s@http", strings.Split(mwName, "@")[0])
+		}
+
+		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(middlewares)
-	}
-}
-
-func GetTCPMiddlewareByName(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.GetTCPMiddlewareByNameParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		// Remove router and service based on type
+		switch mwType {
+		case "http":
+			delete(existingConfig.Config.HTTP.Middlewares, mwName)
+		case "tcp":
+			delete(existingConfig.Config.TCP.Middlewares, mwName)
+		default:
+			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return
 		}
 
-		middlewares, err := q.GetTCPMiddlewareByName(r.Context(), middleware)
+		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
+			ID:     existingConfig.ID,
+			Source: source.Local,
+			Config: existingConfig.Config,
+		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(middlewares)
-	}
-}
-
-func UpsertHTTPMiddleware(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.UpsertHTTPMiddlewareParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.UpsertHTTPMiddleware(r.Context(), middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func UpsertTCPMiddleware(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.UpsertTCPMiddlewareParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.UpsertTCPMiddleware(r.Context(), middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func DeleteHTTPMiddleware(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.DeleteHTTPMiddlewareParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.DeleteHTTPMiddleware(r.Context(), middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func DeleteTCPMiddleware(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var middleware db.DeleteTCPMiddlewareParams
-		if err := json.NewDecoder(r.Body).Decode(&middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err := q.DeleteTCPMiddleware(r.Context(), middleware); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 

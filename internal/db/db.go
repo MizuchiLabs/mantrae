@@ -48,15 +48,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteDNSProviderStmt, err = db.PrepareContext(ctx, deleteDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteDNSProvider: %w", err)
 	}
-	if q.deleteHTTPMiddlewareStmt, err = db.PrepareContext(ctx, deleteHTTPMiddleware); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteHTTPMiddleware: %w", err)
-	}
-	if q.deleteHTTPRouterStmt, err = db.PrepareContext(ctx, deleteHTTPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteHTTPRouter: %w", err)
-	}
-	if q.deleteHTTPServiceStmt, err = db.PrepareContext(ctx, deleteHTTPService); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteHTTPService: %w", err)
-	}
 	if q.deleteProfileStmt, err = db.PrepareContext(ctx, deleteProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfile: %w", err)
 	}
@@ -69,23 +60,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteSettingStmt, err = db.PrepareContext(ctx, deleteSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSetting: %w", err)
 	}
-	if q.deleteTCPMiddlewareStmt, err = db.PrepareContext(ctx, deleteTCPMiddleware); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTCPMiddleware: %w", err)
-	}
-	if q.deleteTCPRouterStmt, err = db.PrepareContext(ctx, deleteTCPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTCPRouter: %w", err)
-	}
-	if q.deleteTCPServiceStmt, err = db.PrepareContext(ctx, deleteTCPService); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTCPService: %w", err)
-	}
 	if q.deleteTraefikConfigStmt, err = db.PrepareContext(ctx, deleteTraefikConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTraefikConfig: %w", err)
-	}
-	if q.deleteUDPRouterStmt, err = db.PrepareContext(ctx, deleteUDPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteUDPRouter: %w", err)
-	}
-	if q.deleteUDPServiceStmt, err = db.PrepareContext(ctx, deleteUDPService); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteUDPService: %w", err)
 	}
 	if q.deleteUserStmt, err = db.PrepareContext(ctx, deleteUser); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUser: %w", err)
@@ -99,24 +75,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDNSProviderStmt, err = db.PrepareContext(ctx, getDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDNSProvider: %w", err)
 	}
-	if q.getHTTPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getHTTPMiddlewareByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPMiddlewareByName: %w", err)
-	}
-	if q.getHTTPMiddlewaresBySourceStmt, err = db.PrepareContext(ctx, getHTTPMiddlewaresBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPMiddlewaresBySource: %w", err)
-	}
-	if q.getHTTPRouterByNameStmt, err = db.PrepareContext(ctx, getHTTPRouterByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPRouterByName: %w", err)
-	}
-	if q.getHTTPRoutersBySourceStmt, err = db.PrepareContext(ctx, getHTTPRoutersBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPRoutersBySource: %w", err)
-	}
-	if q.getHTTPServiceByNameStmt, err = db.PrepareContext(ctx, getHTTPServiceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPServiceByName: %w", err)
-	}
-	if q.getHTTPServicesBySourceStmt, err = db.PrepareContext(ctx, getHTTPServicesBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHTTPServicesBySource: %w", err)
-	}
 	if q.getProfileStmt, err = db.PrepareContext(ctx, getProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfile: %w", err)
 	}
@@ -129,44 +87,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getSettingStmt, err = db.PrepareContext(ctx, getSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSetting: %w", err)
 	}
-	if q.getTCPMiddlewareByNameStmt, err = db.PrepareContext(ctx, getTCPMiddlewareByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPMiddlewareByName: %w", err)
-	}
-	if q.getTCPMiddlewaresBySourceStmt, err = db.PrepareContext(ctx, getTCPMiddlewaresBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPMiddlewaresBySource: %w", err)
-	}
-	if q.getTCPRouterByNameStmt, err = db.PrepareContext(ctx, getTCPRouterByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPRouterByName: %w", err)
-	}
-	if q.getTCPRoutersBySourceStmt, err = db.PrepareContext(ctx, getTCPRoutersBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPRoutersBySource: %w", err)
-	}
-	if q.getTCPServiceByNameStmt, err = db.PrepareContext(ctx, getTCPServiceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPServiceByName: %w", err)
-	}
-	if q.getTCPServicesBySourceStmt, err = db.PrepareContext(ctx, getTCPServicesBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTCPServicesBySource: %w", err)
-	}
 	if q.getTraefikConfigStmt, err = db.PrepareContext(ctx, getTraefikConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTraefikConfig: %w", err)
 	}
 	if q.getTraefikConfigBySourceStmt, err = db.PrepareContext(ctx, getTraefikConfigBySource); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTraefikConfigBySource: %w", err)
-	}
-	if q.getTraefikConfigLastSyncStmt, err = db.PrepareContext(ctx, getTraefikConfigLastSync); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTraefikConfigLastSync: %w", err)
-	}
-	if q.getUDPRouterByNameStmt, err = db.PrepareContext(ctx, getUDPRouterByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUDPRouterByName: %w", err)
-	}
-	if q.getUDPRoutersBySourceStmt, err = db.PrepareContext(ctx, getUDPRoutersBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUDPRoutersBySource: %w", err)
-	}
-	if q.getUDPServiceByNameStmt, err = db.PrepareContext(ctx, getUDPServiceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUDPServiceByName: %w", err)
-	}
-	if q.getUDPServicesBySourceStmt, err = db.PrepareContext(ctx, getUDPServicesBySource); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUDPServicesBySource: %w", err)
 	}
 	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
@@ -195,9 +120,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
 	}
-	if q.updateAgentLastSeenStmt, err = db.PrepareContext(ctx, updateAgentLastSeen); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateAgentLastSeen: %w", err)
-	}
 	if q.updateDNSProviderStmt, err = db.PrepareContext(ctx, updateDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDNSProvider: %w", err)
 	}
@@ -207,41 +129,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateTraefikConfigStmt, err = db.PrepareContext(ctx, updateTraefikConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTraefikConfig: %w", err)
 	}
-	if q.updateTraefikConfigLastSyncStmt, err = db.PrepareContext(ctx, updateTraefikConfigLastSync); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateTraefikConfigLastSync: %w", err)
-	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
 	}
 	if q.updateUserLastLoginStmt, err = db.PrepareContext(ctx, updateUserLastLogin); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserLastLogin: %w", err)
 	}
-	if q.upsertHTTPMiddlewareStmt, err = db.PrepareContext(ctx, upsertHTTPMiddleware); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertHTTPMiddleware: %w", err)
-	}
-	if q.upsertHTTPRouterStmt, err = db.PrepareContext(ctx, upsertHTTPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertHTTPRouter: %w", err)
-	}
-	if q.upsertHTTPServiceStmt, err = db.PrepareContext(ctx, upsertHTTPService); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertHTTPService: %w", err)
-	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
-	}
-	if q.upsertTCPMiddlewareStmt, err = db.PrepareContext(ctx, upsertTCPMiddleware); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertTCPMiddleware: %w", err)
-	}
-	if q.upsertTCPRouterStmt, err = db.PrepareContext(ctx, upsertTCPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertTCPRouter: %w", err)
-	}
-	if q.upsertTCPServiceStmt, err = db.PrepareContext(ctx, upsertTCPService); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertTCPService: %w", err)
-	}
-	if q.upsertUDPRouterStmt, err = db.PrepareContext(ctx, upsertUDPRouter); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertUDPRouter: %w", err)
-	}
-	if q.upsertUDPServiceStmt, err = db.PrepareContext(ctx, upsertUDPService); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertUDPService: %w", err)
 	}
 	return &q, nil
 }
@@ -288,21 +183,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteDNSProviderStmt: %w", cerr)
 		}
 	}
-	if q.deleteHTTPMiddlewareStmt != nil {
-		if cerr := q.deleteHTTPMiddlewareStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteHTTPMiddlewareStmt: %w", cerr)
-		}
-	}
-	if q.deleteHTTPRouterStmt != nil {
-		if cerr := q.deleteHTTPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteHTTPRouterStmt: %w", cerr)
-		}
-	}
-	if q.deleteHTTPServiceStmt != nil {
-		if cerr := q.deleteHTTPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteHTTPServiceStmt: %w", cerr)
-		}
-	}
 	if q.deleteProfileStmt != nil {
 		if cerr := q.deleteProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteProfileStmt: %w", cerr)
@@ -323,34 +203,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteSettingStmt: %w", cerr)
 		}
 	}
-	if q.deleteTCPMiddlewareStmt != nil {
-		if cerr := q.deleteTCPMiddlewareStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTCPMiddlewareStmt: %w", cerr)
-		}
-	}
-	if q.deleteTCPRouterStmt != nil {
-		if cerr := q.deleteTCPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTCPRouterStmt: %w", cerr)
-		}
-	}
-	if q.deleteTCPServiceStmt != nil {
-		if cerr := q.deleteTCPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTCPServiceStmt: %w", cerr)
-		}
-	}
 	if q.deleteTraefikConfigStmt != nil {
 		if cerr := q.deleteTraefikConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteTraefikConfigStmt: %w", cerr)
-		}
-	}
-	if q.deleteUDPRouterStmt != nil {
-		if cerr := q.deleteUDPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteUDPRouterStmt: %w", cerr)
-		}
-	}
-	if q.deleteUDPServiceStmt != nil {
-		if cerr := q.deleteUDPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteUDPServiceStmt: %w", cerr)
 		}
 	}
 	if q.deleteUserStmt != nil {
@@ -373,36 +228,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getDNSProviderStmt: %w", cerr)
 		}
 	}
-	if q.getHTTPMiddlewareByNameStmt != nil {
-		if cerr := q.getHTTPMiddlewareByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPMiddlewareByNameStmt: %w", cerr)
-		}
-	}
-	if q.getHTTPMiddlewaresBySourceStmt != nil {
-		if cerr := q.getHTTPMiddlewaresBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPMiddlewaresBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getHTTPRouterByNameStmt != nil {
-		if cerr := q.getHTTPRouterByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPRouterByNameStmt: %w", cerr)
-		}
-	}
-	if q.getHTTPRoutersBySourceStmt != nil {
-		if cerr := q.getHTTPRoutersBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPRoutersBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getHTTPServiceByNameStmt != nil {
-		if cerr := q.getHTTPServiceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPServiceByNameStmt: %w", cerr)
-		}
-	}
-	if q.getHTTPServicesBySourceStmt != nil {
-		if cerr := q.getHTTPServicesBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHTTPServicesBySourceStmt: %w", cerr)
-		}
-	}
 	if q.getProfileStmt != nil {
 		if cerr := q.getProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProfileStmt: %w", cerr)
@@ -423,36 +248,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getSettingStmt: %w", cerr)
 		}
 	}
-	if q.getTCPMiddlewareByNameStmt != nil {
-		if cerr := q.getTCPMiddlewareByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPMiddlewareByNameStmt: %w", cerr)
-		}
-	}
-	if q.getTCPMiddlewaresBySourceStmt != nil {
-		if cerr := q.getTCPMiddlewaresBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPMiddlewaresBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getTCPRouterByNameStmt != nil {
-		if cerr := q.getTCPRouterByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPRouterByNameStmt: %w", cerr)
-		}
-	}
-	if q.getTCPRoutersBySourceStmt != nil {
-		if cerr := q.getTCPRoutersBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPRoutersBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getTCPServiceByNameStmt != nil {
-		if cerr := q.getTCPServiceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPServiceByNameStmt: %w", cerr)
-		}
-	}
-	if q.getTCPServicesBySourceStmt != nil {
-		if cerr := q.getTCPServicesBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTCPServicesBySourceStmt: %w", cerr)
-		}
-	}
 	if q.getTraefikConfigStmt != nil {
 		if cerr := q.getTraefikConfigStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTraefikConfigStmt: %w", cerr)
@@ -461,31 +256,6 @@ func (q *Queries) Close() error {
 	if q.getTraefikConfigBySourceStmt != nil {
 		if cerr := q.getTraefikConfigBySourceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTraefikConfigBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getTraefikConfigLastSyncStmt != nil {
-		if cerr := q.getTraefikConfigLastSyncStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTraefikConfigLastSyncStmt: %w", cerr)
-		}
-	}
-	if q.getUDPRouterByNameStmt != nil {
-		if cerr := q.getUDPRouterByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUDPRouterByNameStmt: %w", cerr)
-		}
-	}
-	if q.getUDPRoutersBySourceStmt != nil {
-		if cerr := q.getUDPRoutersBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUDPRoutersBySourceStmt: %w", cerr)
-		}
-	}
-	if q.getUDPServiceByNameStmt != nil {
-		if cerr := q.getUDPServiceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUDPServiceByNameStmt: %w", cerr)
-		}
-	}
-	if q.getUDPServicesBySourceStmt != nil {
-		if cerr := q.getUDPServicesBySourceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUDPServicesBySourceStmt: %w", cerr)
 		}
 	}
 	if q.getUserStmt != nil {
@@ -533,11 +303,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateAgentStmt: %w", cerr)
 		}
 	}
-	if q.updateAgentLastSeenStmt != nil {
-		if cerr := q.updateAgentLastSeenStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateAgentLastSeenStmt: %w", cerr)
-		}
-	}
 	if q.updateDNSProviderStmt != nil {
 		if cerr := q.updateDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateDNSProviderStmt: %w", cerr)
@@ -553,11 +318,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateTraefikConfigStmt: %w", cerr)
 		}
 	}
-	if q.updateTraefikConfigLastSyncStmt != nil {
-		if cerr := q.updateTraefikConfigLastSyncStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateTraefikConfigLastSyncStmt: %w", cerr)
-		}
-	}
 	if q.updateUserStmt != nil {
 		if cerr := q.updateUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserStmt: %w", cerr)
@@ -568,49 +328,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserLastLoginStmt: %w", cerr)
 		}
 	}
-	if q.upsertHTTPMiddlewareStmt != nil {
-		if cerr := q.upsertHTTPMiddlewareStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertHTTPMiddlewareStmt: %w", cerr)
-		}
-	}
-	if q.upsertHTTPRouterStmt != nil {
-		if cerr := q.upsertHTTPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertHTTPRouterStmt: %w", cerr)
-		}
-	}
-	if q.upsertHTTPServiceStmt != nil {
-		if cerr := q.upsertHTTPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertHTTPServiceStmt: %w", cerr)
-		}
-	}
 	if q.upsertSettingStmt != nil {
 		if cerr := q.upsertSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertSettingStmt: %w", cerr)
-		}
-	}
-	if q.upsertTCPMiddlewareStmt != nil {
-		if cerr := q.upsertTCPMiddlewareStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertTCPMiddlewareStmt: %w", cerr)
-		}
-	}
-	if q.upsertTCPRouterStmt != nil {
-		if cerr := q.upsertTCPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertTCPRouterStmt: %w", cerr)
-		}
-	}
-	if q.upsertTCPServiceStmt != nil {
-		if cerr := q.upsertTCPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertTCPServiceStmt: %w", cerr)
-		}
-	}
-	if q.upsertUDPRouterStmt != nil {
-		if cerr := q.upsertUDPRouterStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertUDPRouterStmt: %w", cerr)
-		}
-	}
-	if q.upsertUDPServiceStmt != nil {
-		if cerr := q.upsertUDPServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertUDPServiceStmt: %w", cerr)
 		}
 	}
 	return err
@@ -660,46 +380,21 @@ type Queries struct {
 	createUserStmt                        *sql.Stmt
 	deleteAgentStmt                       *sql.Stmt
 	deleteDNSProviderStmt                 *sql.Stmt
-	deleteHTTPMiddlewareStmt              *sql.Stmt
-	deleteHTTPRouterStmt                  *sql.Stmt
-	deleteHTTPServiceStmt                 *sql.Stmt
 	deleteProfileStmt                     *sql.Stmt
 	deleteRouterDNSProviderStmt           *sql.Stmt
 	deleteRouterDNSProvidersByTraefikStmt *sql.Stmt
 	deleteSettingStmt                     *sql.Stmt
-	deleteTCPMiddlewareStmt               *sql.Stmt
-	deleteTCPRouterStmt                   *sql.Stmt
-	deleteTCPServiceStmt                  *sql.Stmt
 	deleteTraefikConfigStmt               *sql.Stmt
-	deleteUDPRouterStmt                   *sql.Stmt
-	deleteUDPServiceStmt                  *sql.Stmt
 	deleteUserStmt                        *sql.Stmt
 	getActiveDNSProviderStmt              *sql.Stmt
 	getAgentStmt                          *sql.Stmt
 	getDNSProviderStmt                    *sql.Stmt
-	getHTTPMiddlewareByNameStmt           *sql.Stmt
-	getHTTPMiddlewaresBySourceStmt        *sql.Stmt
-	getHTTPRouterByNameStmt               *sql.Stmt
-	getHTTPRoutersBySourceStmt            *sql.Stmt
-	getHTTPServiceByNameStmt              *sql.Stmt
-	getHTTPServicesBySourceStmt           *sql.Stmt
 	getProfileStmt                        *sql.Stmt
 	getProfileByNameStmt                  *sql.Stmt
 	getRouterDNSProvidersStmt             *sql.Stmt
 	getSettingStmt                        *sql.Stmt
-	getTCPMiddlewareByNameStmt            *sql.Stmt
-	getTCPMiddlewaresBySourceStmt         *sql.Stmt
-	getTCPRouterByNameStmt                *sql.Stmt
-	getTCPRoutersBySourceStmt             *sql.Stmt
-	getTCPServiceByNameStmt               *sql.Stmt
-	getTCPServicesBySourceStmt            *sql.Stmt
 	getTraefikConfigStmt                  *sql.Stmt
 	getTraefikConfigBySourceStmt          *sql.Stmt
-	getTraefikConfigLastSyncStmt          *sql.Stmt
-	getUDPRouterByNameStmt                *sql.Stmt
-	getUDPRoutersBySourceStmt             *sql.Stmt
-	getUDPServiceByNameStmt               *sql.Stmt
-	getUDPServicesBySourceStmt            *sql.Stmt
 	getUserStmt                           *sql.Stmt
 	getUserByUsernameStmt                 *sql.Stmt
 	listAgentsStmt                        *sql.Stmt
@@ -709,22 +404,12 @@ type Queries struct {
 	listSettingsStmt                      *sql.Stmt
 	listUsersStmt                         *sql.Stmt
 	updateAgentStmt                       *sql.Stmt
-	updateAgentLastSeenStmt               *sql.Stmt
 	updateDNSProviderStmt                 *sql.Stmt
 	updateProfileStmt                     *sql.Stmt
 	updateTraefikConfigStmt               *sql.Stmt
-	updateTraefikConfigLastSyncStmt       *sql.Stmt
 	updateUserStmt                        *sql.Stmt
 	updateUserLastLoginStmt               *sql.Stmt
-	upsertHTTPMiddlewareStmt              *sql.Stmt
-	upsertHTTPRouterStmt                  *sql.Stmt
-	upsertHTTPServiceStmt                 *sql.Stmt
 	upsertSettingStmt                     *sql.Stmt
-	upsertTCPMiddlewareStmt               *sql.Stmt
-	upsertTCPRouterStmt                   *sql.Stmt
-	upsertTCPServiceStmt                  *sql.Stmt
-	upsertUDPRouterStmt                   *sql.Stmt
-	upsertUDPServiceStmt                  *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -739,46 +424,21 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUserStmt:                        q.createUserStmt,
 		deleteAgentStmt:                       q.deleteAgentStmt,
 		deleteDNSProviderStmt:                 q.deleteDNSProviderStmt,
-		deleteHTTPMiddlewareStmt:              q.deleteHTTPMiddlewareStmt,
-		deleteHTTPRouterStmt:                  q.deleteHTTPRouterStmt,
-		deleteHTTPServiceStmt:                 q.deleteHTTPServiceStmt,
 		deleteProfileStmt:                     q.deleteProfileStmt,
 		deleteRouterDNSProviderStmt:           q.deleteRouterDNSProviderStmt,
 		deleteRouterDNSProvidersByTraefikStmt: q.deleteRouterDNSProvidersByTraefikStmt,
 		deleteSettingStmt:                     q.deleteSettingStmt,
-		deleteTCPMiddlewareStmt:               q.deleteTCPMiddlewareStmt,
-		deleteTCPRouterStmt:                   q.deleteTCPRouterStmt,
-		deleteTCPServiceStmt:                  q.deleteTCPServiceStmt,
 		deleteTraefikConfigStmt:               q.deleteTraefikConfigStmt,
-		deleteUDPRouterStmt:                   q.deleteUDPRouterStmt,
-		deleteUDPServiceStmt:                  q.deleteUDPServiceStmt,
 		deleteUserStmt:                        q.deleteUserStmt,
 		getActiveDNSProviderStmt:              q.getActiveDNSProviderStmt,
 		getAgentStmt:                          q.getAgentStmt,
 		getDNSProviderStmt:                    q.getDNSProviderStmt,
-		getHTTPMiddlewareByNameStmt:           q.getHTTPMiddlewareByNameStmt,
-		getHTTPMiddlewaresBySourceStmt:        q.getHTTPMiddlewaresBySourceStmt,
-		getHTTPRouterByNameStmt:               q.getHTTPRouterByNameStmt,
-		getHTTPRoutersBySourceStmt:            q.getHTTPRoutersBySourceStmt,
-		getHTTPServiceByNameStmt:              q.getHTTPServiceByNameStmt,
-		getHTTPServicesBySourceStmt:           q.getHTTPServicesBySourceStmt,
 		getProfileStmt:                        q.getProfileStmt,
 		getProfileByNameStmt:                  q.getProfileByNameStmt,
 		getRouterDNSProvidersStmt:             q.getRouterDNSProvidersStmt,
 		getSettingStmt:                        q.getSettingStmt,
-		getTCPMiddlewareByNameStmt:            q.getTCPMiddlewareByNameStmt,
-		getTCPMiddlewaresBySourceStmt:         q.getTCPMiddlewaresBySourceStmt,
-		getTCPRouterByNameStmt:                q.getTCPRouterByNameStmt,
-		getTCPRoutersBySourceStmt:             q.getTCPRoutersBySourceStmt,
-		getTCPServiceByNameStmt:               q.getTCPServiceByNameStmt,
-		getTCPServicesBySourceStmt:            q.getTCPServicesBySourceStmt,
 		getTraefikConfigStmt:                  q.getTraefikConfigStmt,
 		getTraefikConfigBySourceStmt:          q.getTraefikConfigBySourceStmt,
-		getTraefikConfigLastSyncStmt:          q.getTraefikConfigLastSyncStmt,
-		getUDPRouterByNameStmt:                q.getUDPRouterByNameStmt,
-		getUDPRoutersBySourceStmt:             q.getUDPRoutersBySourceStmt,
-		getUDPServiceByNameStmt:               q.getUDPServiceByNameStmt,
-		getUDPServicesBySourceStmt:            q.getUDPServicesBySourceStmt,
 		getUserStmt:                           q.getUserStmt,
 		getUserByUsernameStmt:                 q.getUserByUsernameStmt,
 		listAgentsStmt:                        q.listAgentsStmt,
@@ -788,21 +448,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listSettingsStmt:                      q.listSettingsStmt,
 		listUsersStmt:                         q.listUsersStmt,
 		updateAgentStmt:                       q.updateAgentStmt,
-		updateAgentLastSeenStmt:               q.updateAgentLastSeenStmt,
 		updateDNSProviderStmt:                 q.updateDNSProviderStmt,
 		updateProfileStmt:                     q.updateProfileStmt,
 		updateTraefikConfigStmt:               q.updateTraefikConfigStmt,
-		updateTraefikConfigLastSyncStmt:       q.updateTraefikConfigLastSyncStmt,
 		updateUserStmt:                        q.updateUserStmt,
 		updateUserLastLoginStmt:               q.updateUserLastLoginStmt,
-		upsertHTTPMiddlewareStmt:              q.upsertHTTPMiddlewareStmt,
-		upsertHTTPRouterStmt:                  q.upsertHTTPRouterStmt,
-		upsertHTTPServiceStmt:                 q.upsertHTTPServiceStmt,
 		upsertSettingStmt:                     q.upsertSettingStmt,
-		upsertTCPMiddlewareStmt:               q.upsertTCPMiddlewareStmt,
-		upsertTCPRouterStmt:                   q.upsertTCPRouterStmt,
-		upsertTCPServiceStmt:                  q.upsertTCPServiceStmt,
-		upsertUDPRouterStmt:                   q.upsertUDPRouterStmt,
-		upsertUDPServiceStmt:                  q.upsertUDPServiceStmt,
 	}
 }

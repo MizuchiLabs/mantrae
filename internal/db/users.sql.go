@@ -46,7 +46,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 
 const getUser = `-- name: GetUser :one
 SELECT
-    id, username, password, email, is_admin, last_login, created_at
+    id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
     users
 WHERE
@@ -64,13 +64,14 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 		&i.IsAdmin,
 		&i.LastLogin,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    id, username, password, email, is_admin, last_login, created_at
+    id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
     users
 WHERE
@@ -88,13 +89,14 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.IsAdmin,
 		&i.LastLogin,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-    id, username, password, email, is_admin, last_login, created_at
+    id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
     users
 ORDER BY
@@ -118,6 +120,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.IsAdmin,
 			&i.LastLogin,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -138,7 +141,8 @@ SET
     username = ?,
     password = ?,
     email = ?,
-    is_admin = ?
+    is_admin = ?,
+    updated_at = CURRENT_TIMESTAMP
 WHERE
     id = ?
 `
