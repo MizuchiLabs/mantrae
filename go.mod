@@ -6,22 +6,20 @@ require (
 	connectrpc.com/connect v1.18.1
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.2.0
-	github.com/brianvoe/gofakeit/v7 v7.1.1
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cloudflare/cloudflare-go v0.113.0
 	github.com/docker/docker v27.4.1+incompatible
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/google/uuid v1.6.0
 	github.com/joeig/go-powerdns/v3 v3.14.1
 	github.com/lmittmann/tint v1.0.6
 	github.com/pressly/goose/v3 v3.24.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/traefik/traefik/v3 v3.3.1
+	github.com/traefik/traefik/v3 v3.3.2
 	golang.org/x/crypto v0.32.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
 	golang.org/x/net v0.34.0
-	google.golang.org/protobuf v1.36.2
+	google.golang.org/protobuf v1.36.3
 	modernc.org/sqlite v1.34.4
 )
 
@@ -45,6 +43,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
@@ -91,16 +90,9 @@ require (
 	google.golang.org/grpc v1.69.4 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
 	modernc.org/gc/v3 v3.0.0-20250105121824-520be1a3aee6 // indirect
-	modernc.org/libc v1.61.7 // indirect
+	modernc.org/libc v1.61.8 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
-	modernc.org/memory v1.8.1 // indirect
+	modernc.org/memory v1.8.2 // indirect
 	modernc.org/strutil v1.2.1 // indirect
 	modernc.org/token v1.1.0 // indirect
-)
-
-// Containous forks
-replace (
-	github.com/abbot/go-http-auth => github.com/containous/go-http-auth v0.4.1-0.20200324110947-a37a7636d23e
-	github.com/gorilla/mux => github.com/containous/mux v0.0.0-20220627093034-b2dd784e613f
-	github.com/mailgun/minheap => github.com/containous/minheap v0.0.0-20190809180810-6e71eb837595
 )
