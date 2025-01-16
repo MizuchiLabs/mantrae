@@ -4,8 +4,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 </script>
 
 <div class="grid grid-cols-4 items-center gap-2">

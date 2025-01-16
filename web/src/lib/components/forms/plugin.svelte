@@ -1,19 +1,27 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { Middleware } from '$lib/types/middlewares';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 
-	export let middleware: Middleware;
-	export let disabled = false;
-	let pluginData = '{}';
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
+	let pluginData = $state('{}');
 
 	function extractInnerPluginData() {
 		if (!middleware.content) return;
 		pluginData = JSON.stringify(middleware.content, null, 2) || '{}';
 	}
 
-	$: middleware.content, extractInnerPluginData();
-	let error = '';
+	run(() => {
+		middleware.content, extractInnerPluginData();
+	});
+	let error = $state('');
 	function validateJSON() {
 		if (!pluginData || !middleware.content) return;
 		try {

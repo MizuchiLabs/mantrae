@@ -2,7 +2,11 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { CircleHelp } from 'lucide-svelte';
 
-	export let text: string;
+	interface Props {
+		text: string;
+	}
+
+	let { text }: Props = $props();
 </script>
 
 <Tooltip.Root openDelay={500}>

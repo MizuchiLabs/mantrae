@@ -15,10 +15,10 @@
 	import type { Overview, Version } from '$lib/types/overview';
 	import TraefikProxy from '$lib/images/traefikproxy.svg';
 
-	let version: Version;
-	let overview: Overview;
+	let version: Version = $state();
+	let overview: Overview = $state();
 
-	let copyText = 'Copy';
+	let copyText = $state('Copy');
 	const copy = () => {
 		navigator.clipboard.writeText($dynamic);
 		copyText = 'Copied!';
@@ -179,7 +179,7 @@
 							Dynamic Config
 							{#if $dynamic}
 								<button
-									on:click={copy}
+									onclick={copy}
 									class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
 								>
 									{copyText}
@@ -198,9 +198,11 @@
 					<Card.Content class="text-sm">
 						{#if $dynamic}
 							<div class="flex items-center justify-center">
-								<Highlight code={$dynamic} language={yaml} let:highlighted>
-									<LineNumbers {highlighted} hideBorder wrapLines />
-								</Highlight>
+								<Highlight code={$dynamic} language={yaml} >
+									{#snippet children({ highlighted })}
+																		<LineNumbers {highlighted} hideBorder wrapLines />
+																										{/snippet}
+																</Highlight>
 							</div>
 						{:else}
 							<p class="flex items-center justify-center">

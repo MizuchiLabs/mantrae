@@ -10,9 +10,10 @@
 	import { onMount } from 'svelte';
 	import { PROFILE_SK } from '$lib/store';
 
-	let editProfile: Partial<Profile>;
-	let openPopover = false;
-	let openModal = false;
+	let editProfile: Partial<Profile> | undefined = $state();
+	let openPopover = $state(false);
+	let openModal = $state(false);
+	let triggerRef = $state<HTMLButtonElement>(null!);
 
 	const profileModal = (p?: Profile) => {
 		editProfile = p ?? {};
@@ -31,20 +32,22 @@
 	});
 </script>
 
-<ProfileModal bind:profile={editProfile} bind:open={openModal} />
+<ProfileModal profile={editProfile} bind:open={openModal} />
 
 <Popover.Root bind:open={openPopover}>
-	<Popover.Trigger asChild let:builder>
-		<Button
-			builders={[builder]}
-			variant="outline"
-			role="combobox"
-			aria-expanded={openPopover}
-			class="w-[200px] justify-between"
-		>
-			{$profile?.name ?? 'Select a profile'}
-			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-		</Button>
+	<Popover.Trigger bind:ref={triggerRef}>
+		{#snippet child({ props })}
+			<Button
+				variant="outline"
+				class="w-[200px] justify-between"
+				{...props}
+				role="combobox"
+				aria-expanded={openPopover}
+			>
+				{$profile?.name ?? 'Select a profile'}
+				<ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-[200px] p-0">
 		<Command.Root>
@@ -61,7 +64,7 @@
 							variant="ghost"
 							class="h-8 w-8 rounded-full bg-orange-400"
 							size="icon"
-							on:click={(event) => {
+							onclick={(event) => {
 								event.stopPropagation(); // Prevents the click from bubbling to Command.Item
 								profileModal(p);
 							}}

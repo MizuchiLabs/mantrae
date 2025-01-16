@@ -9,7 +9,11 @@
 	import { z } from 'zod';
 	import { CustomIPSchemaOptional } from '../utils/validation';
 
-	export let middleware: Middleware;
+	interface Props {
+		middleware: Middleware;
+	}
+
+	let { middleware = $bindable() }: Props = $props();
 	const emptyHeaders = {
 		// SSL and Security Headers (commonly used)
 		sslProxyHeaders: {},
@@ -123,7 +127,7 @@
 	});
 	middleware.content = headersSchema.parse({ ...middleware.content });
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = headersSchema.parse(middleware.content);
@@ -135,7 +139,7 @@
 		}
 	};
 
-	let isTemplate = false;
+	let isTemplate = $state(false);
 	const toggleTemplate = () => {
 		isTemplate = !isTemplate;
 		if (isTemplate) {

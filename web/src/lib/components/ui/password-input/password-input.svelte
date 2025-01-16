@@ -3,8 +3,12 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Eye, EyeOff } from 'lucide-svelte';
 
-	let showPassword = false;
-	export let password: string | undefined;
+	let showPassword = $state(false);
+	interface Props {
+		password: string | undefined;
+	}
+
+	let { password = $bindable() }: Props = $props();
 </script>
 
 <div class="flex flex-row items-center justify-end gap-1">
@@ -17,7 +21,7 @@
 		variant="ghost"
 		size="icon"
 		class="absolute hover:bg-transparent hover:text-red-400"
-		on:click={() => (showPassword = !showPassword)}
+		onclick={() => (showPassword = !showPassword)}
 	>
 		{#if showPassword}
 			<Eye size="1rem" />

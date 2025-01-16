@@ -7,9 +7,9 @@
 	import { newUser, type User } from '$lib/types/base';
 	import { UserIcon, Plus, Crown } from 'lucide-svelte';
 
-	let user: User;
-	let openModal = false;
-	let disabled = false;
+	let user: User = $state();
+	let openModal = $state(false);
+	let disabled = $state(false);
 
 	const createModal = () => {
 		user = newUser();

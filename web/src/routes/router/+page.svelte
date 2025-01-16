@@ -1,3 +1,5 @@
+<!-- @migration-task Error while migrating Svelte code: `$routers` is an illegal variable name. To reference a global variable called `$routers`, use `globalThis.$routers`
+https://svelte.dev/e/global_reference_invalid -->
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';

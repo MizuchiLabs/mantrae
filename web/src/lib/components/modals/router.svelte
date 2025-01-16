@@ -7,13 +7,22 @@
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
 
-	export let router: Router;
-	export let service: Service;
-	export let open = false;
-	export let disabled = false;
+	interface Props {
+		router: Router;
+		service: Service;
+		open?: boolean;
+		disabled?: boolean;
+	}
 
-	let routerForm: RouterForm;
-	let serviceForm: ServiceForm;
+	let {
+		router = $bindable(),
+		service = $bindable(),
+		open = $bindable(false),
+		disabled = false
+	}: Props = $props();
+
+	let routerForm: RouterForm = $state();
+	let serviceForm: ServiceForm = $state();
 
 	const update = async () => {
 		const rValid = routerForm.validate();

@@ -7,8 +7,12 @@
 	import type { Profile } from '$lib/types/base';
 	import { Eye, EyeOff } from 'lucide-svelte';
 
-	export let profile: Profile;
-	let showPassword = false;
+	interface Props {
+		profile: Profile;
+	}
+
+	let { profile = $bindable() }: Props = $props();
+	let showPassword = $state(false);
 </script>
 
 <div class="grid gap-4 py-4">

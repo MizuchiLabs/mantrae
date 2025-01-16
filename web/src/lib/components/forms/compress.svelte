@@ -5,8 +5,12 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import { z } from 'zod';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	const schema = z.object({
 		minResponseBodyBytes: z
@@ -23,7 +27,7 @@
 	});
 	middleware.content = schema.parse({ ...middleware.content });
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = schema.parse(middleware.content); // Parse the compress object

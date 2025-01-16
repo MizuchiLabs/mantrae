@@ -11,6 +11,11 @@
 	import { onMount } from 'svelte';
 	import { api, profiles, profile, user } from '$lib/api';
 	import { PROFILE_SK } from '$lib/store';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 	// import type { User } from '$lib/types';
 	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
@@ -64,13 +69,13 @@
 		<div class="flex flex-1 flex-col sm:pl-16">
 			<Header />
 			<main class="flex flex-grow flex-col gap-4 sm:px-2" use:autoAnimate={{ duration: 100 }}>
-				<slot />
+				{@render children?.()}
 			</main>
 			<Footer />
 		</div>
 	{:else}
 		<div class="flex h-screen flex-col items-center justify-center">
-			<slot />
+			{@render children?.()}
 		</div>
 	{/if}
 </div>

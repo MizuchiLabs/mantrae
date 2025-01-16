@@ -11,7 +11,7 @@
 	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
 	import { Download, Eye, EyeOff, Save, Upload } from 'lucide-svelte';
 
-	let fileInput: HTMLInputElement;
+	let fileInput: HTMLInputElement = $state();
 	const handleFileUpload = (event: Event) => {
 		const file = (event.target as HTMLInputElement).files?.[0];
 		if (file) {
@@ -21,12 +21,12 @@
 	};
 
 	// Settings
-	let agentCleanupEnabled: boolean;
-	let backupEnabled: boolean;
+	let agentCleanupEnabled: boolean = $state();
+	let backupEnabled: boolean = $state();
 
-	let settingsMap: Record<string, string> = {};
-	let changedSettings: Record<string, string> = {};
-	let showEmailPassword = false;
+	let settingsMap: Record<string, string> = $state({});
+	let changedSettings: Record<string, string> = $state({});
+	let showEmailPassword = $state(false);
 
 	const update = async (key: string) => {
 		const setting = { key, value: settingsMap[key] };
@@ -295,7 +295,7 @@
 							type="file"
 							accept=".json"
 							class="hidden"
-							on:change={handleFileUpload}
+							onchange={handleFileUpload}
 							bind:this={fileInput}
 							required
 						/>

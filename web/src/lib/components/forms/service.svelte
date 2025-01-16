@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -7,13 +9,16 @@
 	import { z } from 'zod';
 	import { services } from '$lib/api';
 
-	export let router: Router;
-	export let service: Service;
-	export let disabled = false;
-	$: router, routerChange();
+	interface Props {
+		router: Router;
+		service: Service;
+		disabled?: boolean;
+	}
 
-	let passHostHeader = service?.loadBalancer?.passHostHeader ?? true;
-	let servers: string[] = [];
+	let { router, service = $bindable(), disabled = false }: Props = $props();
+
+	let passHostHeader = $state(service?.loadBalancer?.passHostHeader ?? true);
+	let servers: string[] = $state([]);
 
 	const schema = z.object({
 		provider: z.string().trim().nullish(),
@@ -43,7 +48,7 @@
 		})
 	});
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	export const validate = () => {
 		try {
 			if (service.provider === 'http') {
@@ -97,6 +102,9 @@
 	// 	servers = service.loadBalancer?.servers?.map((s) => s.url ?? s.address ?? '') ?? [];
 	// 	update();
 	// });
+	run(() => {
+		router, routerChange();
+	});
 </script>
 
 <Card.Root>

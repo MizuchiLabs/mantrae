@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { deleteMiddleware, middlewares } from '$lib/api';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
@@ -12,21 +14,14 @@
 	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
 	import { profile, getMiddlewares } from '$lib/api';
 
-	let search = '';
-	let count = 0;
-	let currentPage = 1;
-	let fMiddlewares: Middleware[] = [];
-	let perPage: Selected<number> | undefined = JSON.parse(
+	let search = $state('');
+	let count = $state(0);
+	let currentPage = $state(1);
+	let fMiddlewares: Middleware[] = $state([]);
+	let perPage: Selected<number> | undefined = $state(JSON.parse(
 		localStorage.getItem(LIMIT_SK) ?? '{"value": 10, "label": "10"}'
-	);
-	$: search, $middlewares, currentPage, perPage, searchMiddleware();
+	));
 
-	// Reset the page to 1 when the search input changes
-	$: {
-		if (search) {
-			currentPage = 1;
-		}
-	}
 
 	function searchMiddleware() {
 		if ($middlewares === undefined) return;
@@ -50,9 +45,9 @@
 		return middlewares?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) ?? [];
 	};
 
-	let middleware = newMiddleware();
-	let openModal = false;
-	let disabled = false;
+	let middleware = $state(newMiddleware());
+	let openModal = $state(false);
+	let disabled = $state(false);
 	const createModal = async () => {
 		middleware = newMiddleware();
 		disabled = false;
@@ -73,13 +68,22 @@
 		{ value: 'provider', label: 'Provider' },
 		{ value: 'type', label: 'Type' }
 	];
-	let fColumns: string[] = JSON.parse(
+	let fColumns: string[] = $state(JSON.parse(
 		localStorage.getItem(MIDDLEWARE_COLUMN_SK) ?? JSON.stringify(columns.map((c) => c.value))
-	);
+	));
 
 	profile.subscribe((value) => {
 		if (!value?.id) return;
 		getMiddlewares();
+	});
+	// Reset the page to 1 when the search input changes
+	run(() => {
+		if (search) {
+			currentPage = 1;
+		}
+	});
+	run(() => {
+		search, $middlewares, currentPage, perPage, searchMiddleware();
 	});
 </script>
 
@@ -143,7 +147,7 @@
 							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									on:click={() => (search = `@provider:${middleware.provider}`)}
+									onclick={() => (search = `@provider:${middleware.provider}`)}
 									aria-hidden
 								>
 									{middleware.provider}
@@ -152,7 +156,7 @@
 							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
 								<span
 									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									on:click={() => (search = `@type:${middleware.type}`)}
+									onclick={() => (search = `@type:${middleware.type}`)}
 									aria-hidden
 								>
 									{middleware.type}

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { darkMode } from '$lib/utils';
 	import { Moon, Sun } from 'lucide-svelte';
 	import Button from '../ui/button/button.svelte';
 
+	let darkMode = $state(false);
 	function handleSwitchDarkMode() {
-		darkMode.update((d) => !d);
-		localStorage.setItem('mode', $darkMode ? 'dark' : 'light');
+		darkMode = !darkMode;
+		localStorage.setItem('mode', darkMode ? 'dark' : 'light');
 
-		$darkMode
+		darkMode
 			? document.documentElement.classList.add('dark')
 			: document.documentElement.classList.remove('dark');
 	}
@@ -19,21 +19,21 @@
 			(!('mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
 		) {
 			document.documentElement.classList.add('dark');
-			darkMode.set(true);
+			darkMode = true;
 		} else {
 			document.documentElement.classList.remove('dark');
-			darkMode.set(false);
+			darkMode = false;
 		}
 	}
 </script>
 
 <Button
 	variant="ghost"
-	on:click={handleSwitchDarkMode}
+	onclick={handleSwitchDarkMode}
 	class="mb-2 rounded-full text-gray-600 dark:text-white"
 	size="icon"
 >
-	{#if $darkMode}
+	{#if darkMode}
 		<Sun size="1.25rem" />
 	{:else}
 		<Moon size="1.25rem" />

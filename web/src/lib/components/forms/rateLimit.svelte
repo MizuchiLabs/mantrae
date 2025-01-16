@@ -8,8 +8,12 @@
 	import { z } from 'zod';
 	import { onDestroy } from 'svelte';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	const schema = z.object({
 		period: z.string({ required_error: 'Period is required' }).trim().default('1s'),
@@ -39,7 +43,7 @@
 	});
 	middleware.content = schema.parse({ ...middleware.content });
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = schema.parse(middleware.content); // Parse the rateLimit object

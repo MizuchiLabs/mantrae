@@ -6,8 +6,12 @@
 	import { CustomTimeUnitSchemaOptional } from '../utils/validation';
 	import { onDestroy } from 'svelte';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	const schema = z.object({
 		expression: z
@@ -25,7 +29,7 @@
 	});
 	middleware.content = schema.parse({ ...middleware.content });
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = schema.parse(middleware.content);

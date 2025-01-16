@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -12,8 +14,12 @@
 	import { onMount, SvelteComponent } from 'svelte';
 	import logo from '$lib/images/logo.svg';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	const HTTPMiddlewareTypes: Selected<string>[] = [
 		{ label: 'Rate Limit', value: 'rateLimit' },
@@ -45,10 +51,10 @@
 	];
 
 	// Load the initial form component
-	let isHTTP = middleware.protocol == 'http' ? true : false;
-	let middlewareType: Selected<string> | undefined;
+	let isHTTP = $state(middleware.protocol == 'http' ? true : false);
+	let middlewareType: Selected<string> | undefined = $state();
 
-	let form: typeof SvelteComponent | null = null;
+	let form: typeof SvelteComponent | null = $state(null);
 	const setMiddlewareType = async (type: Selected<string> | undefined) => {
 		if (!type || !$profile.id) return;
 		// Delete previous middleware form
@@ -65,7 +71,6 @@
 		form = await LoadMiddlewareForm(middleware);
 	};
 
-	$: isHTTP, setType();
 	const setType = () => {
 		if (middleware.type === '') {
 			if (isHTTP) setMiddlewareType(HTTPMiddlewareTypes[0]);
@@ -88,12 +93,15 @@
 		}
 	};
 
-	// Check if middleware name is taken
-	$: nameTaken = $middlewares.some((m) => m.id !== middleware.id && m.name === middleware.name);
 
 	onMount(async () => {
 		form = await LoadMiddlewareForm(middleware);
 	});
+	run(() => {
+		isHTTP, setType();
+	});
+	// Check if middleware name is taken
+	let nameTaken = $derived($middlewares.some((m) => m.id !== middleware.id && m.name === middleware.name));
 </script>
 
 <Card.Root class="mt-4">
@@ -168,22 +176,22 @@
 							<img src={logo} alt="HTTP" width="20" />
 						{/if}
 						{#if middleware.provider === 'internal' || middleware.provider === 'file'}
-							<iconify-icon icon="devicon:traefikproxy" height="20" />
+							<iconify-icon icon="devicon:traefikproxy" height="20"></iconify-icon>
 						{/if}
 						{#if middleware.provider === 'docker' || middleware.provider === 'swarm'}
-							<iconify-icon icon="logos:docker-icon" height="20" />
+							<iconify-icon icon="logos:docker-icon" height="20"></iconify-icon>
 						{/if}
 						{#if middleware.provider === 'kubernetes' || middleware.provider === 'kubernetescrd'}
-							<iconify-icon icon="logos:kubernetes" height="20" />
+							<iconify-icon icon="logos:kubernetes" height="20"></iconify-icon>
 						{/if}
 						{#if middleware.provider === 'consul'}
-							<iconify-icon icon="logos:consul" height="20" />
+							<iconify-icon icon="logos:consul" height="20"></iconify-icon>
 						{/if}
 						{#if middleware.provider === 'nomad'}
-							<iconify-icon icon="logos:nomad-icon" height="20" />
+							<iconify-icon icon="logos:nomad-icon" height="20"></iconify-icon>
 						{/if}
 						{#if middleware.provider === 'kv'}
-							<iconify-icon icon="logos:redis" height="20" />
+							<iconify-icon icon="logos:redis" height="20"></iconify-icon>
 						{/if}
 					</span>
 				{/if}
@@ -195,8 +203,9 @@
 
 		<!-- Dynamic Form -->
 		{#if form !== null}
+			{@const SvelteComponent_1 = form}
 			<div class="mt-6 flex flex-col gap-2">
-				<svelte:component this={form} bind:middleware {disabled} />
+				<SvelteComponent_1 bind:middleware {disabled} />
 			</div>
 		{/if}
 	</Card.Content>

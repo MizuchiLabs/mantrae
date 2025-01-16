@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -8,9 +10,13 @@
 	import { RULE_EDITOR_TAB_SK } from '$lib/store';
 	import { CircleCheck, CircleX } from 'lucide-svelte';
 
-	export let rule: string;
-	export let type: string;
-	export let disabled = false;
+	interface Props {
+		rule: string;
+		type: string;
+		disabled?: boolean;
+	}
+
+	let { rule = $bindable(), type, disabled = false }: Props = $props();
 
 	// HTTP Rules
 	const httpRules = [
@@ -34,11 +40,11 @@
 		'ALPN(`protocol`)'
 	];
 
-	let valid = true;
+	let valid = $state(true);
 	let cursorPosition = 0;
-	let showDropdown = false;
-	let filteredRules: string[] = [];
-	let selectedRuleIndex = 0;
+	let showDropdown = $state(false);
+	let filteredRules: string[] = $state([]);
+	let selectedRuleIndex = $state(0);
 	let placeholderPositions: { start: number; end: number }[] = [];
 	let currentPlaceholderIndex = 0;
 	function handleRuleInput(event: InputEvent) {
@@ -167,10 +173,8 @@
 
 	// Simple mode handler
 	let host =
-		type === 'http' ? rule?.match(/Host\(`(.*?)`\)/)?.[1] : rule?.match(/HostSNI\(`(.*?)`\)/)?.[1];
-	let path = rule?.match(/Path\(`(.*?)`\)/)?.[1];
-	$: type, handleSimpleInput();
-	$: rule, checkConditions();
+		$state(type === 'http' ? rule?.match(/Host\(`(.*?)`\)/)?.[1] : rule?.match(/HostSNI\(`(.*?)`\)/)?.[1]);
+	let path = $state(rule?.match(/Path\(`(.*?)`\)/)?.[1]);
 	const handleSimpleInput = () => {
 		if (type === 'http') {
 			if (host && path) {
@@ -188,8 +192,8 @@
 		}
 	};
 
-	let simpleDisabled = false;
-	let currentTab = 'simple';
+	let simpleDisabled = $state(false);
+	let currentTab = $state('simple');
 	const checkConditions = () => {
 		let conditions = rule.split(/(&&|\|\|)/);
 		if (conditions.length > 3) {
@@ -214,6 +218,12 @@
 			currentTab = simpleDisabled ? 'advanced' : 'simple';
 		}
 		checkConditions();
+	});
+	run(() => {
+		type, handleSimpleInput();
+	});
+	run(() => {
+		rule, checkConditions();
 	});
 </script>
 
@@ -276,7 +286,7 @@
 							<li
 								class="cursor-pointer font-mono text-sm hover:bg-gray-200"
 								class:bg-gray-200={i === selectedRuleIndex}
-								on:click={() => insertRule(rule)}
+								onclick={() => insertRule(rule)}
 								aria-hidden
 							>
 								{rule}

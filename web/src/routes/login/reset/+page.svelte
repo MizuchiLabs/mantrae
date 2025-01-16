@@ -7,8 +7,8 @@
 	import { page } from '$app/stores';
 
 	let token = $page.url.searchParams.get('token');
-	let password = '';
-	let showPassword = false;
+	let password = $state('');
+	let showPassword = $state(false);
 
 	const handleSubmit = async () => {
 		if (!token) return;
@@ -27,7 +27,7 @@
 		<Card.Description>Set your new password</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<div class="grid w-full items-center gap-4" on:keydown={handleKeydown} aria-hidden>
+		<div class="grid w-full items-center gap-4" onkeydown={handleKeydown} aria-hidden>
 			<div class="flex flex-col space-y-1.5">
 				<Label for="password">Password</Label>
 				<div class="flex flex-row items-center justify-end gap-1">

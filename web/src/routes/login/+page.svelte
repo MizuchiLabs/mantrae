@@ -8,9 +8,9 @@
 	import { api } from '$lib/api';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 
-	let username = '';
-	let password = '';
-	let remember = false;
+	let username = $state('');
+	let password = $state('');
+	let remember = $state(false);
 	const handleReset = async () => {
 		if (username.length > 0) {
 			// await api.sendResetEmail(username);
@@ -34,7 +34,7 @@
 		<Card.Description>Login to your account</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<div class="grid w-full items-center gap-4" on:keydown={handleKeydown} aria-hidden>
+		<div class="grid w-full items-center gap-4" onkeydown={handleKeydown} aria-hidden>
 			<div class="flex flex-col gap-2">
 				<Label for="username">Username</Label>
 				<Input id="username" bind:value={username} />
@@ -50,7 +50,7 @@
 							<Label for="terms1" class="text-sm">Remember me</Label>
 						</div>
 					</div>
-					<button class="text-xs text-muted-foreground" on:click={handleReset}>
+					<button class="text-xs text-muted-foreground" onclick={handleReset}>
 						Forgot password?
 					</button>
 				</div>

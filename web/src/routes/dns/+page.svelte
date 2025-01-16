@@ -9,8 +9,8 @@
 	import { onMount } from 'svelte';
 	import { CircleCheck, Globe, Plus, Sparkles, Star } from 'lucide-svelte';
 
-	let dnsProvider: DNSProvider;
-	let openModal = false;
+	let dnsProvider: DNSProvider = $state();
+	let openModal = $state(false);
 
 	const createModal = () => {
 		dnsProvider = newProvider();

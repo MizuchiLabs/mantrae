@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import {
 		entrypoints,
 		middlewares,
@@ -24,8 +26,12 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 
-	export let router: Router;
-	export let disabled = false;
+	interface Props {
+		router: Router;
+		disabled?: boolean;
+	}
+
+	let { router = $bindable(), disabled = false }: Props = $props();
 
 	const schema = z.object({
 		name: z.string().trim().min(1, 'Name is required').max(255),
@@ -61,7 +67,7 @@
 	// 	}
 	//);
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	export const validate = () => {
 		try {
 			schema.parse({ ...router });
@@ -119,10 +125,12 @@
 	};
 
 	// Check if router name is taken unless self
-	$: nameTaken = $routers.some((r) => r.id !== router.id && r.name === router.name);
+	let nameTaken = $derived($routers.some((r) => r.id !== router.id && r.name === router.name));
 
 	// Set default TLS settings
-	$: router.tls = router.tls || {};
+	run(() => {
+		router.tls = router.tls || {};
+	});
 </script>
 
 <Card.Root>
@@ -184,22 +192,22 @@
 							<img src={logo} alt="HTTP" width="20" />
 						{/if}
 						{#if router.provider === 'internal' || router.provider === 'file'}
-							<iconify-icon icon="devicon:traefikproxy" height="20" />
+							<iconify-icon icon="devicon:traefikproxy" height="20"></iconify-icon>
 						{/if}
 						{#if router.provider?.includes('docker')}
-							<iconify-icon icon="logos:docker-icon" height="20" />
+							<iconify-icon icon="logos:docker-icon" height="20"></iconify-icon>
 						{/if}
 						{#if router.provider?.includes('kubernetes')}
-							<iconify-icon icon="logos:kubernetes" height="20" />
+							<iconify-icon icon="logos:kubernetes" height="20"></iconify-icon>
 						{/if}
 						{#if router.provider === 'consul'}
-							<iconify-icon icon="logos:consul" height="20" />
+							<iconify-icon icon="logos:consul" height="20"></iconify-icon>
 						{/if}
 						{#if router.provider === 'nomad'}
-							<iconify-icon icon="logos:nomad-icon" height="20" />
+							<iconify-icon icon="logos:nomad-icon" height="20"></iconify-icon>
 						{/if}
 						{#if router.provider === 'kv'}
-							<iconify-icon icon="logos:redis" height="20" />
+							<iconify-icon icon="logos:redis" height="20"></iconify-icon>
 						{/if}
 					</span>
 				{/if}
@@ -321,7 +329,7 @@
 					<div class="col-span-3">
 						{#each getCertResolver() || [] as r}
 							{#if router.tls?.certResolver !== r}
-								<div on:click={() => setCertResolver(r)} aria-hidden="true">
+								<div onclick={() => setCertResolver(r)} aria-hidden="true">
 									<Badge>{r}</Badge>
 								</div>
 							{/if}

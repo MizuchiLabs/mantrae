@@ -28,7 +28,7 @@
 	</div>
 
 	<div class="mr-2 flex flex-row items-center gap-2">
-		<Button variant="ghost" on:click={handleLogout} size="icon">
+		<Button variant="ghost" onclick={handleLogout} size="icon">
 			<LogOut size="1rem" />
 		</Button>
 	</div>

@@ -6,13 +6,17 @@
 	import { middlewares } from '$lib/api';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	// Create a reactive variable for selected middlewares
-	let selectedMiddlewares: Selected<string>[] | undefined = middleware.content?.middlewares?.map(
+	let selectedMiddlewares: Selected<string>[] | undefined = $state(middleware.content?.middlewares?.map(
 		(m: string) => ({ value: m, label: m })
-	);
+	));
 
 	const changeMiddlewares = (middlewares: Selected<string>[] | undefined) => {
 		if (!middleware.content) return;

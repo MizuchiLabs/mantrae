@@ -5,11 +5,15 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import type { User } from '$lib/types/base';
 
-	export let user: User;
-	export let disabled = false;
-	export let open = false;
+	interface Props {
+		user: User;
+		disabled?: boolean;
+		open?: boolean;
+	}
 
-	let userForm: UserForm;
+	let { user = $bindable(), disabled = false, open = $bindable(false) }: Props = $props();
+
+	let userForm: UserForm = $state();
 	const update = async () => {
 		const valid = userForm.validate();
 		if (!valid) return;

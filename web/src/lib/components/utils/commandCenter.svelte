@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import * as Command from '$lib/components/ui/command';
 	import { goto } from '$app/navigation';
 	import { getMiddlewares, getRouters, middlewares, profile, routers, services } from '$lib/api';
@@ -9,11 +11,11 @@
 	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
 	import { Earth, Layers, Route, Settings, Users } from 'lucide-svelte';
 
-	let open = false;
-	let searchQuery = '';
+	let open = $state(false);
+	let searchQuery = $state('');
 	let timeout: NodeJS.Timeout;
-	let fRouters: Router[] = [];
-	let fMiddlewares: Middleware[] = [];
+	let fRouters: Router[] = $state([]);
+	let fMiddlewares: Middleware[] = $state([]);
 
 	// Debounced search function
 	function debounceSearch() {
@@ -29,14 +31,16 @@
 		}, 300);
 	}
 
-	$: debounceSearch(); // Trigger debounce on every searchQuery change
+	run(() => {
+		debounceSearch();
+	}); // Trigger debounce on every searchQuery change
 
-	let router: Router;
-	let service: Service;
-	let middleware: Middleware;
-	let disabled = false;
-	let openRouterModal = false;
-	let openMiddlewareModal = false;
+	let router: Router = $state();
+	let service: Service = $state();
+	let middleware: Middleware = $state();
+	let disabled = $state(false);
+	let openRouterModal = $state(false);
+	let openMiddlewareModal = $state(false);
 
 	const createRouter = async () => {
 		open = false;
@@ -191,7 +195,7 @@
 							goto(route.path);
 						}}
 					>
-						<svelte:component this={route.icon} class="mr-2 h-4 w-4" />
+						<route.icon class="mr-2 h-4 w-4" />
 						<span>{route.name}</span>
 						<Command.Shortcut>⌘{route.name[0]}</Command.Shortcut>
 					</Command.Item>

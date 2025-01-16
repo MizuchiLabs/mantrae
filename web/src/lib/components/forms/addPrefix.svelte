@@ -5,8 +5,12 @@
 	import { z } from 'zod';
 	import { onDestroy } from 'svelte';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	// Define validation schema for addPrefix content
 	const schema = z.object({
@@ -19,7 +23,7 @@
 	middleware.content = schema.parse({ ...middleware.content });
 
 	// Parse and validate middleware.content for addPrefix
-	let errors: Record<string, string[] | undefined> = {};
+	let errors: Record<string, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = schema.parse(middleware.content);

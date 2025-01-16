@@ -9,8 +9,7 @@
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 
-	export let profile: Partial<Profile> = {};
-	export let open = false;
+	let { profile = $bindable({} as Profile), open = $bindable(false) } = $props();
 
 	const handleSubmit = async () => {
 		try {
@@ -56,7 +55,7 @@
 			<Dialog.Description>Configure your Traefik instance connection details.</Dialog.Description>
 		</Dialog.Header>
 
-		<form on:submit|preventDefault={handleSubmit} class="space-y-4">
+		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="space-y-1">
 				<Label for="name">Name</Label>
 				<Input id="name" bind:value={profile.name} required placeholder="traefik-site" />
@@ -84,7 +83,7 @@
 
 			<Dialog.Footer>
 				{#if profile.id}
-					<Button type="button" variant="destructive" on:click={handleDelete} disabled={$loading}>
+					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}>
 						Delete
 					</Button>
 				{/if}

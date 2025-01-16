@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input, type FormInputEvent } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
@@ -8,19 +10,27 @@
 	import { Minus, Plus } from 'lucide-svelte';
 	import { createEventDispatcher, onMount } from 'svelte';
 
-	let className: string | undefined | null = undefined;
-	export { className as class };
-	export let label: string;
-	export let keyPlaceholder: string;
-	export let valuePlaceholder: string;
-	export let items: Record<string, string> | undefined;
-	export let disabled = false;
-	export let helpText: string | undefined = undefined;
-	let internalItems: { id: string; key: string; value: string }[] = [];
-	const dispatch = createEventDispatcher();
+	interface Props {
+		class?: string | undefined | null;
+		label: string;
+		keyPlaceholder: string;
+		valuePlaceholder: string;
+		items: Record<string, string> | undefined;
+		disabled?: boolean;
+		helpText?: string | undefined;
+	}
 
-	// Watch `items` prop and convert to array when it changes
-	$: items, convertToInternal();
+	let {
+		class: className = undefined,
+		label,
+		keyPlaceholder,
+		valuePlaceholder,
+		items = $bindable(),
+		disabled = false,
+		helpText = undefined
+	}: Props = $props();
+	let internalItems: { id: string; key: string; value: string }[] = $state([]);
+	const dispatch = createEventDispatcher();
 
 	const convertToInternal = () => {
 		if (items && typeof items === 'object' && Object.keys(items).length > 0) {
@@ -74,6 +84,10 @@
 	onMount(() => {
 		convertToInternal();
 	});
+	// Watch `items` prop and convert to array when it changes
+	run(() => {
+		items, convertToInternal();
+	});
 </script>
 
 <div class={cn('grid grid-cols-4 items-center gap-4', className)}>
@@ -90,7 +104,7 @@
 					<div class="absolute mr-2 flex flex-row items-center justify-between gap-1">
 						{#if index === 0}
 							<Button
-								on:click={addItem}
+								onclick={addItem}
 								class="h-8 w-8 rounded-full bg-red-400 text-black"
 								size="icon"
 								tabindex={-1}
@@ -99,7 +113,7 @@
 							</Button>
 						{/if}
 						{#if internalItems.length > 1 && index >= 1}
-							<Button on:click={() => removeItem(id)} class="h-8 w-8 rounded-full" tabindex={-1}>
+							<Button onclick={() => removeItem(id)} class="h-8 w-8 rounded-full" tabindex={-1}>
 								<Minus size="1rem" />
 							</Button>
 						{/if}
@@ -110,7 +124,7 @@
 					type="text"
 					bind:value={key}
 					placeholder={disabled ? '' : keyPlaceholder}
-					on:input={(e) => updateKey(id, e)}
+					oninput={(e) => updateKey(id, e)}
 					{disabled}
 				/>
 				<Input

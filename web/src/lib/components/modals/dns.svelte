@@ -5,9 +5,13 @@
 	import type { DNSProvider } from '$lib/types/base';
 	import DNSForm from '../forms/dns.svelte';
 
-	export let dnsProvider: DNSProvider;
-	export let open = false;
-	let dnsForm: DNSForm;
+	interface Props {
+		dnsProvider: DNSProvider;
+		open?: boolean;
+	}
+
+	let { dnsProvider = $bindable(), open = $bindable(false) }: Props = $props();
+	let dnsForm: DNSForm = $state();
 
 	const update = async () => {
 		const valid = dnsForm.validate();

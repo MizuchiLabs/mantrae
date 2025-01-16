@@ -8,8 +8,12 @@
 	import { CustomIPSchema, CustomIPSchemaOptional } from '../utils/validation';
 	import { onDestroy } from 'svelte';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 
 	const templateRange = ['192.168.0.0/16', '172.16.0.0/12', '127.0.0.1/32', '10.0.0.0/8'];
 
@@ -27,7 +31,7 @@
 	});
 	middleware.content = ipAllowListSchema.parse({ ...middleware.content });
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	const validate = () => {
 		try {
 			middleware.content = ipAllowListSchema.parse(middleware.content);
@@ -39,7 +43,7 @@
 		}
 	};
 
-	let isTemplate = middleware.content?.sourceRange?.length > 0;
+	let isTemplate = $state(middleware.content?.sourceRange?.length > 0);
 	const toggleIpAllowList = () => {
 		isTemplate = !isTemplate;
 		if (isTemplate) {

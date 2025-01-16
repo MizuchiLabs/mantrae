@@ -28,7 +28,7 @@
 		});
 	}
 
-	let copyText = 'Copy Token';
+	let copyText = $state('Copy Token');
 	const copyToken = (agent: Agent) => {
 		navigator.clipboard.writeText(agent.token);
 		copyText = 'Copied!';

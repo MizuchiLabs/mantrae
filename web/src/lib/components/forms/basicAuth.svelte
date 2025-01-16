@@ -5,8 +5,12 @@
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import type { Middleware } from '$lib/types/middlewares';
 
-	export let middleware: Middleware;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), disabled = false }: Props = $props();
 </script>
 
 <ArrayInput

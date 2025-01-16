@@ -6,9 +6,13 @@
 	import MiddlewareForm from '../forms/middleware.svelte';
 	import { cleanEmptyObjects } from '../utils/validation';
 
-	export let middleware: Middleware;
-	export let open = false;
-	export let disabled = false;
+	interface Props {
+		middleware: Middleware;
+		open?: boolean;
+		disabled?: boolean;
+	}
+
+	let { middleware = $bindable(), open = $bindable(false), disabled = false }: Props = $props();
 
 	const update = async () => {
 		if (middleware.name === '') return;

@@ -15,14 +15,18 @@
 	import { Toggle } from '../ui/toggle';
 	import HoverInfo from '../utils/hoverInfo.svelte';
 
-	export let provider: DNSProvider;
+	interface Props {
+		provider: DNSProvider;
+	}
+
+	let { provider = $bindable() }: Props = $props();
 	const providerTypes: Selected<string>[] = [
 		{ label: 'Cloudflare', value: 'cloudflare' },
 		{ label: 'PowerDNS', value: 'powerdns' },
 		{ label: 'Technitium', value: 'technitium' }
 	];
 
-	let showAPIKey = false;
+	let showAPIKey = $state(false);
 	let providerType: Selected<string> | undefined = providerTypes.find(
 		(t) => t.value === provider.type
 	);
@@ -42,7 +46,7 @@
 		apiUrl: z.string().trim().optional()
 	});
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	export const validate = () => {
 		try {
 			schema.parse({ ...provider });

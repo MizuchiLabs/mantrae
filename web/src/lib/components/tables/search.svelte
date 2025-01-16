@@ -8,10 +8,19 @@
 	import { onMount } from 'svelte';
 	import { LOCAL_PROVIDER_SK } from '$lib/store';
 
-	export let search: string;
-	export let columns: Selected<string>[];
-	export let columnName: string;
-	export let fColumns: string[];
+	interface Props {
+		search: string;
+		columns: Selected<string>[];
+		columnName: string;
+		fColumns: string[];
+	}
+
+	let {
+		search = $bindable(),
+		columns,
+		columnName,
+		fColumns = $bindable()
+	}: Props = $props();
 
 	const clearSearch = () => {
 		search = '';
@@ -20,7 +29,7 @@
 	};
 
 	// Only show local routers not external ones
-	let localProvider = localStorage.getItem(LOCAL_PROVIDER_SK) === 'true';
+	let localProvider = $state(localStorage.getItem(LOCAL_PROVIDER_SK) === 'true');
 	const toggleProvider = () => {
 		localProvider = !localProvider;
 		search = localProvider ? '@provider:http' : '';
@@ -65,7 +74,7 @@
 					class={buttonVariants({ variant: 'outline' })}
 					class:bg-primary={localProvider}
 					class:text-primary-foreground={localProvider}
-					on:click={toggleProvider}
+					onclick={toggleProvider}
 				>
 					Local
 				</button>

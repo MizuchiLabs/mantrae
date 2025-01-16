@@ -9,8 +9,12 @@
 	import type { Agent } from '$lib/types/base';
 	import { toast } from 'svelte-sonner';
 
-	export let agent: Agent;
-	let newIP = '';
+	interface Props {
+		agent: Agent;
+	}
+
+	let { agent = $bindable() }: Props = $props();
+	let newIP = $state('');
 
 	const setActiveIP = async (ip: string) => {
 		agent.activeIp = ip;
@@ -46,7 +50,7 @@
 						{#if agent.activeIp === agent.publicIp || !agent.activeIp}
 							<Badge variant="default">{agent.publicIp}</Badge>
 						{:else}
-							<button on:click={() => setActiveIP(agent.publicIp)}>
+							<button onclick={() => setActiveIP(agent.publicIp)}>
 								<Badge variant="secondary">{agent.publicIp}</Badge>
 							</button>
 						{/if}
@@ -59,7 +63,7 @@
 							{#if agent.activeIp === ip}
 								<Badge variant="default">{ip}</Badge>
 							{:else}
-								<button on:click={() => setActiveIP(ip)}>
+								<button onclick={() => setActiveIP(ip)}>
 									<Badge variant="secondary">{ip}</Badge>
 								</button>
 							{/if}

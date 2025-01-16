@@ -7,10 +7,14 @@
 	import { Crown, UserIcon } from 'lucide-svelte';
 	import { z } from 'zod';
 
-	export let user: User;
-	export let disabled = false;
-	let pw = '';
-	let pwconfirm = '';
+	interface Props {
+		user: User;
+		disabled?: boolean;
+	}
+
+	let { user = $bindable(), disabled = false }: Props = $props();
+	let pw = $state('');
+	let pwconfirm = $state('');
 
 	const schema = z.object({
 		username: z.string().trim().min(1, 'Username is required').max(255),
@@ -25,7 +29,7 @@
 			})
 	});
 
-	let errors: Record<any, string[] | undefined> = {};
+	let errors: Record<any, string[] | undefined> = $state({});
 	export const validate = () => {
 		try {
 			schema.parse({
