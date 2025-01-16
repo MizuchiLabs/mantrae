@@ -4,14 +4,19 @@
 	import Mode from './mode.svelte';
 	import { page } from '$app/stores';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Settings, Users, Route, Layers, Globe, Blocks, Bot } from 'lucide-svelte';
+	import { Settings, Users, Route, Layers, Globe, Blocks, Bot, Home } from 'lucide-svelte';
 
 	$: active = $page.url.pathname;
 
 	export const routes = [
 		{
-			name: 'Router',
+			name: 'Home',
 			path: '/',
+			icon: Home
+		},
+		{
+			name: 'Router',
+			path: '/router/',
 			icon: Route
 		},
 		{

@@ -4,8 +4,8 @@ package util
 import (
 	"crypto/rand"
 	"crypto/tls"
-	"encoding/base64"
 	"fmt"
+	"math/big"
 	"net"
 	"net/http"
 	"net/url"
@@ -25,11 +25,17 @@ func IsTest() bool {
 
 // GenPassword generates a random password of the specified length
 func GenPassword(length int) string {
-	bytes := make([]byte, length)
-	if _, err := rand.Read(bytes); err != nil {
-		return ""
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+	password := make([]byte, length)
+	charsetLength := big.NewInt(int64(len(charset)))
+	for i := range password {
+		index, err := rand.Int(rand.Reader, charsetLength)
+		if err != nil {
+			return ""
+		}
+		password[i] = charset[index.Int64()]
 	}
-	return base64.RawURLEncoding.EncodeToString(bytes)[:length]
+	return string(password)
 }
 
 // HashPassword hashes a password using bcrypt

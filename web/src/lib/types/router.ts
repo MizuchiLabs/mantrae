@@ -1,37 +1,22 @@
-import type { Domain } from './tls';
-
 export interface Router {
-	// Common fields
-	id: string;
-	profileId: number;
-	name: string;
-	provider?: string;
-	protocol: string;
-	status?: string;
-	errors?: Errors;
-	agentId?: string;
-	dnsProvider?: number;
-
 	entryPoints?: string[];
 	middlewares?: string[];
 	service: string;
 	rule: string;
 	ruleSyntax?: string;
 	priority?: number;
-	tls: TLSConfig;
+	tls: TLS;
+	observability?: Observability;
+	status?: string;
+	using?: string[];
 }
 
 export function newRouter(): Router {
 	return {
-		id: '',
-		profileId: 0,
-		name: '',
-		provider: 'http',
-		status: '',
-		protocol: 'http',
 		entryPoints: [],
 		middlewares: [],
 		rule: '',
+		ruleSyntax: 'v3',
 		service: '',
 		tls: {
 			passthrough: false,
@@ -43,47 +28,39 @@ export function newRouter(): Router {
 }
 
 export interface Service {
-	// Common fields
-	id: string;
-	profileId: number;
-	name: string;
-	provider?: string;
-	type?: string;
-	status?: string;
-	protocol: string;
-	agentId?: string;
-	serverStatus?: Record<string, string>;
-
 	loadBalancer?: ServersLoadBalancer;
 	weighted?: WeightedRoundRobin;
 	mirroring?: Mirroring;
 	failover?: Failover;
+	status?: string;
+	usedBy?: string[];
+	serverStatus?: Record<string, string>;
 }
 
 export function newService(): Service {
 	return {
-		id: '',
-		profileId: 0,
-		name: '',
-		provider: 'http',
-		type: '',
-		status: '',
-		protocol: 'http',
-		serverStatus: {}
+		loadBalancer: {
+			servers: []
+		}
 	};
 }
 
-export interface Errors {
-	ssl?: string;
-	dns?: string;
-	agent?: string;
-}
-
-export interface TLSConfig {
+export interface TLS {
 	passthrough?: boolean; // TCP Router only
 	options?: string;
 	certResolver?: string;
 	domains?: Domain[];
+}
+
+export interface Domain {
+	main?: string;
+	sans?: string[];
+}
+
+export interface Observability {
+	accessLogs: boolean;
+	tracing: boolean;
+	metrics: boolean;
 }
 
 export interface ServersLoadBalancer {

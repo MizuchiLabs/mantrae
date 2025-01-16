@@ -1,7 +1,15 @@
 <script lang="ts">
-	import { version } from '$lib/api';
 	import { BookText } from 'lucide-svelte';
 	import { Button } from '../ui/button';
+	import { onMount } from 'svelte';
+	import { api } from '$lib/api';
+	import { writable } from 'svelte/store';
+
+	let version = writable('');
+	onMount(async () => {
+		const data = await api.getVersion();
+		version.set(data);
+	});
 </script>
 
 <footer

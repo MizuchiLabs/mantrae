@@ -1,27 +1,10 @@
-import type { ClientTLS } from './tls';
-
-// HTTP  Middlewares ----------------------------------------------------------
+// HTTP Middlewares ----------------------------------------------------------
 export interface Middleware {
-	// Common fields
-	id: string;
-	profileId: number;
-	name: string;
-	provider?: string;
-	type?: string;
-	status?: string;
-	protocol: string;
-	content: Record<string, any>;
+	content: Record<string, unknown>;
 }
 
 export function newMiddleware(): Middleware {
 	return {
-		id: '',
-		profileId: 0,
-		name: '',
-		provider: 'http',
-		type: '',
-		status: '',
-		protocol: 'http',
 		content: {}
 	};
 }
@@ -87,6 +70,14 @@ export interface ForwardAuth {
 	authResponseHeadersRegex?: string;
 	authRequestHeaders?: string[];
 	addAuthCookiesToResponse?: string[];
+}
+
+export interface ClientTLS {
+	ca?: string;
+	caOptional?: boolean;
+	cert?: string;
+	key?: string;
+	insecureSkipVerify?: boolean;
 }
 
 export interface Headers {

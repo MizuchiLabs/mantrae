@@ -92,7 +92,7 @@ func (a *App) setupLogger() {
 
 func (a *App) setDefaultAdminUser() error {
 	// check if default admin user exists
-	creds, err := a.DB.GetUserByUsername(context.Background(), "admin")
+	user, err := a.DB.GetUserByUsername(context.Background(), "admin")
 	if err != nil {
 		password := util.GenPassword(32)
 		hash, err := util.HashPassword(password)
@@ -112,7 +112,7 @@ func (a *App) setDefaultAdminUser() error {
 	}
 
 	// Validate credentials
-	if creds.Username != "admin" || creds.Password == "" {
+	if user.Username != "admin" || user.Password == "" {
 		password := util.GenPassword(32)
 		hash, err := util.HashPassword(password)
 		if err != nil {
@@ -120,6 +120,7 @@ func (a *App) setDefaultAdminUser() error {
 		}
 		slog.Info("Invalid credentials, regenerating...")
 		if err := a.DB.UpdateUser(context.Background(), db.UpdateUserParams{
+			ID:       user.ID,
 			Username: "admin",
 			Password: hash,
 			IsAdmin:  true,
@@ -171,7 +172,7 @@ func (a *App) setDefaultProfile() error {
 
 // ResetAdminUser resets the default admin user with a new password.
 func (a *App) resetAdminUser() error {
-	creds, err := a.DB.GetUserByUsername(context.Background(), "admin")
+	user, err := a.DB.GetUserByUsername(context.Background(), "admin")
 	if err != nil {
 		return fmt.Errorf("failed to get default admin user: %w", err)
 	}
@@ -183,7 +184,8 @@ func (a *App) resetAdminUser() error {
 	}
 
 	if err := a.DB.UpdateUser(context.Background(), db.UpdateUserParams{
-		Username: creds.Username,
+		ID:       user.ID,
+		Username: user.Username,
 		Password: hash,
 		IsAdmin:  true,
 	}); err != nil {

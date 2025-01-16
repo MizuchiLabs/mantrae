@@ -1,23 +1,18 @@
-<script>
+<script lang="ts">
 	import '../app.css';
-	import Sidebar from '$lib/components/nav/sidebar.svelte';
-	import Header from '$lib/components/nav/header.svelte';
+	// import Sidebar from '$lib/components/nav/sidebar.svelte';
+	// import Header from '$lib/components/nav/header.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import {
-		API_URL,
-		getProfiles,
-		loggedIn,
-		getProviders,
-		getUsers,
-		getVersion,
-		configError,
-		getAgents,
-		getRouters
-	} from '$lib/api';
-	import Footer from '$lib/components/nav/footer.svelte';
+	// import Footer from '$lib/components/nav/footer.svelte';
 	import autoAnimate from '@formkit/auto-animate';
+	import Header from '$lib/components/nav/header.svelte';
+	import Footer from '$lib/components/nav/footer.svelte';
+	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import { onMount } from 'svelte';
-	import CommandCenter from '$lib/components/utils/commandCenter.svelte';
+	import { api, profiles, profile, user } from '$lib/api';
+	import { PROFILE_SK } from '$lib/store';
+	// import type { User } from '$lib/types';
+	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	// Realtime updates
 	// const eventSource = new EventSource(`${API_URL}/events`);
@@ -50,19 +45,23 @@
 	// };
 
 	onMount(async () => {
-		if (!$loggedIn) return;
-		await getProfiles();
-		await getVersion();
+		if (!$user) return;
+		await api.listProfiles();
+		if ($profiles.length === 0) return;
+
+		const savedProfileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
+		const switchProfile = $profiles.find((p) => p.id === savedProfileID) ?? $profiles[0];
+		profile.set(switchProfile);
 	});
 </script>
 
 <Toaster />
-<CommandCenter />
+<!-- <CommandCenter /> -->
 
 <div class="app flex min-h-screen flex-col">
-	{#if $loggedIn}
+	{#if $user}
 		<Sidebar />
-		<div class="flex flex-1 flex-col sm:pl-14">
+		<div class="flex flex-1 flex-col sm:pl-16">
 			<Header />
 			<main class="flex flex-grow flex-col gap-4 sm:px-2" use:autoAnimate={{ duration: 100 }}>
 				<slot />

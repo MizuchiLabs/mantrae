@@ -29,9 +29,12 @@ func Login(q *db.Queries, secret string) http.HandlerFunc {
 		}
 
 		dbUser, err := q.GetUserByUsername(r.Context(), user.Username)
-		if err != nil ||
-			bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)) != nil {
-			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+			http.Error(w, "Invalid username or password "+err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -57,7 +60,7 @@ func Login(q *db.Queries, secret string) http.HandlerFunc {
 }
 
 // VerifyToken checks the validity of a JWT token provided in cookies or Authorization header.
-func VerifyToken(secret string) http.HandlerFunc {
+func VerifyToken(q *db.Queries, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var token string
 
@@ -80,8 +83,14 @@ func VerifyToken(secret string) http.HandlerFunc {
 			return
 		}
 
+		user, err := q.GetUserByUsername(r.Context(), data.Username)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(data)
+		json.NewEncoder(w).Encode(user)
 	}
 }
 

@@ -34,7 +34,7 @@ func (s *Server) routes() {
 
 	// Auth
 	register("POST", "/login", logChain, handler.Login(DB, s.app.Config.Secret))
-	register("POST", "/verify", logChain, handler.VerifyToken(s.app.Config.Secret))
+	register("POST", "/verify", logChain, handler.VerifyToken(DB, s.app.Config.Secret))
 	register("POST", "/reset", logChain, handler.ResetPassword(DB, s.app.Config.Secret))
 	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(DB, s.app.Config.Secret))
 
@@ -95,6 +95,7 @@ func (s *Server) routes() {
 
 	// Traefik
 	register("GET", "/traefik/{id}", jwtChain, handler.GetTraefikConfig(DB))
+	register("GET", "/traefik/{id}/{source}", jwtChain, handler.GetTraefikConfigBySource(DB))
 
 	// Dynamic config
 	if s.app.Config.Server.BasicAuth {

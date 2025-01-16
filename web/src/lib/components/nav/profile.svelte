@@ -4,43 +4,45 @@
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import ProfileModal from '../modals/profile.svelte';
-	import { profiles, getProfile, profile as currentProfile } from '$lib/api';
-	import { newProfile, type Profile } from '$lib/types/base';
+	import { api, profiles, profile } from '$lib/api';
+	import type { Profile } from '$lib/types';
 	import { Pencil, Plus } from 'lucide-svelte';
+	import { onMount } from 'svelte';
+	import { PROFILE_SK } from '$lib/store';
 
-	let profile: Profile;
-	let open = false;
+	let editProfile: Partial<Profile>;
+	let openPopover = false;
 	let openModal = false;
 
-	const createModal = () => {
-		profile = newProfile();
+	const profileModal = (p?: Profile) => {
+		editProfile = p ?? {};
 		openModal = true;
-		open = false;
-	};
-	const updateModal = (p: Profile) => {
-		profile = p;
-		openModal = true;
-		open = false;
+		openPopover = false;
 	};
 
-	function handleProfileClick(id: number) {
-		getProfile(id);
-		open = false;
+	function changeProfile(p: Profile) {
+		localStorage.setItem(PROFILE_SK, p.id.toString());
+		profile.set(p);
+		openPopover = false;
 	}
+
+	onMount(async () => {
+		await api.listProfiles();
+	});
 </script>
 
-<ProfileModal bind:profile bind:open={openModal} />
+<ProfileModal bind:profile={editProfile} bind:open={openModal} />
 
-<Popover.Root bind:open>
+<Popover.Root bind:open={openPopover}>
 	<Popover.Trigger asChild let:builder>
 		<Button
 			builders={[builder]}
 			variant="outline"
 			role="combobox"
-			aria-expanded={open}
+			aria-expanded={openPopover}
 			class="w-[200px] justify-between"
 		>
-			{$currentProfile?.name ?? 'Select a profile'}
+			{$profile?.name ?? 'Select a profile'}
 			<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 		</Button>
 	</Popover.Trigger>
@@ -52,7 +54,7 @@
 				{#each $profiles ?? [] as p}
 					<Command.Item
 						class="flex w-full flex-row items-center justify-between"
-						onSelect={() => handleProfileClick(p.id)}
+						onSelect={() => changeProfile(p)}
 					>
 						<span>{p.name}</span>
 						<Button
@@ -61,7 +63,7 @@
 							size="icon"
 							on:click={(event) => {
 								event.stopPropagation(); // Prevents the click from bubbling to Command.Item
-								updateModal(p);
+								profileModal(p);
 							}}
 						>
 							<Pencil size="1rem" />
@@ -70,7 +72,7 @@
 				{/each}
 				<Command.Item
 					class="flex w-full flex-row items-center justify-between"
-					onSelect={createModal}
+					onSelect={() => profileModal()}
 				>
 					<span>New Profile</span>
 					<Button variant="ghost" class="h-8 w-8 rounded-full bg-green-400" size="icon">
