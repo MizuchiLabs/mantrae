@@ -11,12 +11,12 @@
 	import { CircleCheck, CircleX } from 'lucide-svelte';
 
 	interface Props {
-		rule: string;
+		rule: string | undefined;
 		type: string;
 		disabled?: boolean;
 	}
 
-	let { rule = $bindable(), type, disabled = false }: Props = $props();
+	let { rule = $bindable(), type = $bindable(), disabled = false }: Props = $props();
 
 	// HTTP Rules
 	const httpRules = [
@@ -172,8 +172,9 @@
 	}
 
 	// Simple mode handler
-	let host =
-		$state(type === 'http' ? rule?.match(/Host\(`(.*?)`\)/)?.[1] : rule?.match(/HostSNI\(`(.*?)`\)/)?.[1]);
+	let host = $state(
+		type === 'http' ? rule?.match(/Host\(`(.*?)`\)/)?.[1] : rule?.match(/HostSNI\(`(.*?)`\)/)?.[1]
+	);
 	let path = $state(rule?.match(/Path\(`(.*?)`\)/)?.[1]);
 	const handleSimpleInput = () => {
 		if (type === 'http') {
@@ -195,6 +196,10 @@
 	let simpleDisabled = $state(false);
 	let currentTab = $state('simple');
 	const checkConditions = () => {
+		if (!rule) {
+			simpleDisabled = false;
+			return;
+		}
 		let conditions = rule.split(/(&&|\|\|)/);
 		if (conditions.length > 3) {
 			simpleDisabled = true;
@@ -219,6 +224,7 @@
 		}
 		checkConditions();
 	});
+
 	run(() => {
 		type, handleSimpleInput();
 	});
@@ -247,7 +253,7 @@
 			<Input
 				id="host"
 				bind:value={host}
-				on:input={handleSimpleInput}
+				oninput={handleSimpleInput}
 				placeholder="example.com"
 				class={type === 'http' ? 'col-span-5' : 'col-span-7'}
 				{disabled}
@@ -256,7 +262,7 @@
 				<Input
 					id="path"
 					bind:value={path}
-					on:input={handleSimpleInput}
+					oninput={handleSimpleInput}
 					placeholder="/path"
 					class="col-span-2"
 					{disabled}
@@ -274,8 +280,8 @@
 					id="rulesTextarea"
 					bind:value={rule}
 					class="w-full border-0 font-mono text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-					on:input={handleRuleInput}
-					on:keydown={handleRuleKeys}
+					oninput={handleRuleInput}
+					onkeydown={handleRuleKeys}
 					{disabled}
 				/>
 				{#if showDropdown}

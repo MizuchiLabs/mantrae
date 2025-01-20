@@ -1,12 +1,40 @@
+import type { BaseTraefikConfig } from '$lib/types';
+
 // HTTP Middlewares ----------------------------------------------------------
 export interface Middleware {
+	name: string;
+	type: 'http' | 'tcp';
 	content: Record<string, unknown>;
 }
 
 export function newMiddleware(): Middleware {
 	return {
+		name: '',
+		type: 'http',
 		content: {}
 	};
+}
+
+export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
+	const flatMiddleware: Middleware[] = [];
+
+	Object.entries(config.Middlewares || {}).forEach(([name, middleware]) => {
+		flatMiddleware.push({
+			name,
+			type: 'http',
+			content: middleware.content
+		});
+	});
+
+	Object.entries(config.TCPMiddlewares || {}).forEach(([name, middleware]) => {
+		flatMiddleware.push({
+			name,
+			type: 'tcp',
+			content: middleware.content
+		});
+	});
+
+	return flatMiddleware;
 }
 
 export interface AddPrefix {

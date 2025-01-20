@@ -1,135 +1,38 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import {
-		entrypoints,
-		middlewares,
-		profile,
-		provider,
-		routers,
-		toggleDNSProvider,
-		toggleEntrypoint,
-		toggleMiddleware
-	} from '$lib/api';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import * as Select from '$lib/components/ui/select';
-	import { Toggle } from '$lib/components/ui/toggle';
-	import logo from '$lib/images/logo.svg';
-	import { newRouter, type Router } from '$lib/types/config';
-	import autoAnimate from '@formkit/auto-animate';
-	import type { Selected } from 'bits-ui';
-	import { CircleCheck, Lock } from 'lucide-svelte';
-	import { z } from 'zod';
 	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import RuleEditor from '../utils/ruleEditor.svelte';
+	import autoAnimate from '@formkit/auto-animate';
+	import logo from '$lib/images/logo.svg';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { CircleCheck, Lock } from 'lucide-svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Toggle } from '$lib/components/ui/toggle';
+	import { api, dnsProviders, entrypoints, routers, middlewares } from '$lib/api';
+	import { onMount } from 'svelte';
+	import { type Router } from '$lib/types/router';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select';
 
 	interface Props {
-		router: Router;
+		router: Router | undefined;
 		disabled?: boolean;
 	}
 
-	let { router = $bindable(), disabled = false }: Props = $props();
+	let { router = $bindable({} as Router), disabled = false }: Props = $props();
+	let routerProvider = router.name ? router.name.split('@')[1].toLowerCase() : 'http';
 
-	const schema = z.object({
-		name: z.string().trim().min(1, 'Name is required').max(255),
-		provider: z.string().trim().nullish(),
-		status: z.string().trim().nullish(),
-		protocol: z
-			.string()
-			.trim()
-			.toLowerCase()
-			.regex(/^(http|tcp|udp)$/),
-		dnsProvider: z.coerce.number().int().nullish(),
-		entrypoints: z.array(z.string()).nullish(),
-		middlewares: z.array(z.string()).nullish(),
-		rule: z.string().trim().optional(),
-		priority: z.coerce.number().int().nonnegative().optional(),
-		tls: z
-			.object({
-				certResolver: z.string().trim().nullish()
-			})
-			.optional()
-	});
-	// .refine(
-	// 	(data: Router) => {
-	// 		// Conditionally check if `rule` is required for `http` or `tcp`
-	// 		if (['http', 'tcp'].includes(data.protocol) && !data.rule) {
-	// 			return false;
-	// 		}
-	// 		return true;
-	// 	},
-	// 	{
-	// 		message: 'Rule is required for HTTP and TCP routers',
-	// 		path: ['rule'] // This points to the 'rule' field
-	// 	}
-	//);
-
-	let errors: Record<any, string[] | undefined> = $state({});
-	export const validate = () => {
-		try {
-			schema.parse({ ...router });
-			errors = {};
-			return true;
-		} catch (err: any) {
-			if (err instanceof z.ZodError) {
-				errors = err.flatten().fieldErrors;
-			}
-			return false;
-		}
-	};
-
-	const changeRouterType = (value: string, oldRouter: Router) => {
-		router = newRouter();
-		router.profileId = $profile?.id ?? 0;
-		router.name = oldRouter.name;
-		router.entryPoints = oldRouter.entryPoints;
-		router.middlewares = oldRouter.middlewares;
-		router.dnsProvider = oldRouter.dnsProvider;
-		router.priority = oldRouter.priority;
-		router.tls = oldRouter.tls;
-		router.protocol = value;
-		if (value === 'udp') {
-			router.rule = '';
-		}
-	};
-	const getSelectedEntrypoints = (router: Router): Selected<unknown>[] => {
-		let list = router?.entryPoints?.map((ep) => {
-			return { value: ep, label: ep };
-		});
-		return list ?? [];
-	};
-	const getSelectedMiddlewares = (router: Router): Selected<unknown>[] => {
-		let list = router?.middlewares?.map((middleware) => {
-			return { value: middleware, label: middleware };
-		});
-		return list ?? [];
-	};
-	const getSelectedDNSProvider = (router: Router): Selected<number> | undefined => {
-		let name = $provider.find((p) => p.id === router.dnsProvider)?.name;
-		return router?.dnsProvider ? { value: router.dnsProvider, label: name } : undefined;
-	};
 	const getCertResolver = () => {
 		const certResolvers = $routers
 			.filter((item) => item.tls && item.tls.certResolver)
-			.map((item) => item.tls.certResolver);
+			.map((item) => item.tls?.certResolver);
 
-		// Use a Set to remove duplicates and return as an array
+		// Remove duplicates
 		return [...new Set(certResolvers)];
 	};
-	const setCertResolver = (resolver: string | undefined) => {
-		router.tls = router.tls || {};
-		router.tls.certResolver = resolver;
-	};
 
-	// Check if router name is taken unless self
-	let nameTaken = $derived($routers.some((r) => r.id !== router.id && r.name === router.name));
-
-	// Set default TLS settings
-	run(() => {
-		router.tls = router.tls || {};
+	onMount(async () => {
+		await api.listDNSProviders();
 	});
 </script>
 
@@ -139,29 +42,29 @@
 		<Card.Description>Configure your router settings</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
-		<!-- Protocol -->
-		{#if router.provider === 'http'}
+		<!-- Provider -->
+		{#if routerProvider === 'http'}
 			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
 				<Toggle
 					size="sm"
-					pressed={router.protocol === 'http'}
-					onPressedChange={() => changeRouterType('http', router)}
+					pressed={router.type === 'http'}
+					onPressedChange={() => (router.type = 'http')}
 					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
 				>
 					HTTP
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.protocol === 'tcp'}
-					onPressedChange={() => changeRouterType('tcp', router)}
+					pressed={router.type === 'tcp'}
+					onPressedChange={() => (router.type = 'tcp')}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
 					TCP
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.protocol === 'udp'}
-					onPressedChange={() => changeRouterType('udp', router)}
+					pressed={router.type === 'udp'}
+					onPressedChange={() => (router.type = 'udp')}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
 					UDP
@@ -178,59 +81,56 @@
 					name="name"
 					type="text"
 					bind:value={router.name}
-					on:input={validate}
 					placeholder="Name of the router"
 					required
 					{disabled}
 				/>
 				<!-- Icon based on provider -->
-				{#if router.provider !== ''}
+				{#if routerProvider !== ''}
 					<span
 						class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
 					>
-						{#if router.provider === 'http'}
+						{#if routerProvider === 'http'}
 							<img src={logo} alt="HTTP" width="20" />
 						{/if}
-						{#if router.provider === 'internal' || router.provider === 'file'}
+						{#if routerProvider === 'internal' || routerProvider === 'file'}
 							<iconify-icon icon="devicon:traefikproxy" height="20"></iconify-icon>
 						{/if}
-						{#if router.provider?.includes('docker')}
+						{#if routerProvider?.includes('docker')}
 							<iconify-icon icon="logos:docker-icon" height="20"></iconify-icon>
 						{/if}
-						{#if router.provider?.includes('kubernetes')}
+						{#if routerProvider?.includes('kubernetes')}
 							<iconify-icon icon="logos:kubernetes" height="20"></iconify-icon>
 						{/if}
-						{#if router.provider === 'consul'}
+						{#if routerProvider === 'consul'}
 							<iconify-icon icon="logos:consul" height="20"></iconify-icon>
 						{/if}
-						{#if router.provider === 'nomad'}
+						{#if routerProvider === 'nomad'}
 							<iconify-icon icon="logos:nomad-icon" height="20"></iconify-icon>
 						{/if}
-						{#if router.provider === 'kv'}
+						{#if routerProvider === 'kv'}
 							<iconify-icon icon="logos:redis" height="20"></iconify-icon>
 						{/if}
 					</span>
 				{/if}
 			</div>
-			{#if nameTaken}
-				<div class="col-span-4 text-right text-sm text-red-500">Name already taken</div>
-			{/if}
-			{#if errors.name}
-				<div class="col-span-4 text-right text-sm text-red-500">{errors.name}</div>
-			{/if}
 		</div>
 
 		<!-- Entrypoints -->
-		{#if router.provider === 'http'}
+		{#if routerProvider === 'http'}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label for="entrypoints" class="mr-2 text-right">Entrypoints</Label>
 				<Select.Root
-					multiple={true}
-					selected={getSelectedEntrypoints(router)}
-					onSelectedChange={(value) => toggleEntrypoint(router, value, false)}
+					type="multiple"
+					bind:value={router.entryPoints}
+					onValueChange={(value) => (router.entryPoints = value)}
 				>
 					<Select.Trigger class="col-span-3">
-						<Select.Value placeholder="Select an entrypoint" />
+						{#if router.entryPoints && router.entryPoints.length > 0}
+							{router.entryPoints.join(', ')}
+						{:else}
+							Select an entrypoint
+						{/if}
 					</Select.Trigger>
 					<Select.Content>
 						{#each $entrypoints || [] as e}
@@ -249,24 +149,33 @@
 				</Select.Root>
 			</div>
 		{:else}
-			<ArrayInput bind:items={router.entryPoints} label="Entrypoints" placeholder="" {disabled} />
+			<ArrayInput
+				bind:items={router.entryPoints}
+				label="Entrypoints"
+				placeholder=""
+				disabled={true}
+			/>
 		{/if}
 
 		<!-- Middlewares -->
-		{#if router.provider === 'http'}
-			<div class="grid grid-cols-4 items-center gap-1" class:hidden={router.protocol === 'udp'}>
+		{#if routerProvider === 'http' && router.type !== 'udp'}
+			<div class="grid grid-cols-4 items-center gap-1">
 				<Label for="middlewares" class="mr-2 text-right">Middlewares</Label>
 				<Select.Root
-					multiple={true}
-					selected={getSelectedMiddlewares(router)}
-					onSelectedChange={(value) => toggleMiddleware(router, value, false)}
+					type="multiple"
+					value={router.middlewares}
+					onValueChange={(value) => (router.middlewares = value)}
 				>
 					<Select.Trigger class="col-span-3">
-						<Select.Value placeholder="Select a middleware" />
+						{#if router.middlewares && router.middlewares.length > 0}
+							{router.middlewares.join(', ')}
+						{:else}
+							Select middlewares
+						{/if}
 					</Select.Trigger>
 					<Select.Content>
 						{#each $middlewares as m}
-							{#if router.protocol === m.protocol}
+							{#if router.type === m.type}
 								<Select.Item value={m.name}>
 									{m.name}
 								</Select.Item>
@@ -275,32 +184,27 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
-		{:else}
+		{:else if router.type !== 'udp'}
 			<ArrayInput
 				bind:items={router.middlewares}
 				label="Middlewares"
 				placeholder="None"
-				{disabled}
+				disabled={true}
 			/>
 		{/if}
 
 		<!-- DNS Provider -->
-		{#if $provider}
+		{#if $dnsProviders}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label for="provider" class="mr-2 text-right">DNS Provider</Label>
-				<Select.Root
-					selected={getSelectedDNSProvider(router)}
-					onSelectedChange={(value) => toggleDNSProvider(router, value, false)}
-				>
-					<Select.Trigger class="col-span-3">
-						<Select.Value placeholder="Select a dns provider" />
-					</Select.Trigger>
+				<Select.Root type="single">
+					<Select.Trigger class="col-span-3">Select a dns provider</Select.Trigger>
 					<Select.Content>
-						<Select.Item value={0} label="">None</Select.Item>
-						{#each $provider as p}
-							<Select.Item value={p.id} class="flex items-center gap-2">
-								{p.name} ({p.type})
-								{#if p.isActive}
+						<Select.Item value="" label="">None</Select.Item>
+						{#each $dnsProviders as dns}
+							<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
+								{dns.name} ({dns.type})
+								{#if dns.is_active}
 									<CircleCheck size="1rem" class="text-green-400" />
 								{/if}
 							</Select.Item>
@@ -311,7 +215,7 @@
 		{/if}
 
 		<!-- CertResolver -->
-		{#if router.provider === 'http' && router.protocol !== 'udp'}
+		{#if routerProvider === 'http' && router.type !== 'udp' && router.tls}
 			<div class="space-y-0.5">
 				<div class="grid grid-cols-4 items-center gap-1">
 					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
@@ -328,8 +232,8 @@
 					<div></div>
 					<div class="col-span-3">
 						{#each getCertResolver() || [] as r}
-							{#if router.tls?.certResolver !== r}
-								<div onclick={() => setCertResolver(r)} aria-hidden="true">
+							{#if router.tls.certResolver !== r}
+								<div onclick={() => (router.tls.certResolver = r)} aria-hidden="true">
 									<Badge>{r}</Badge>
 								</div>
 							{/if}
@@ -340,11 +244,8 @@
 		{/if}
 
 		<!-- Rule -->
-		{#if router.protocol === 'http' || router.protocol === 'tcp'}
-			{#if errors.rule}
-				<div class="col-span-4 text-right text-sm text-red-500">{errors.rule}</div>
-			{/if}
-			<RuleEditor bind:rule={router.rule} bind:type={router.protocol} {disabled} />
+		{#if router.type === 'http' || router.type === 'tcp'}
+			<RuleEditor bind:rule={router.rule} bind:type={router.type} {disabled} />
 		{/if}
 	</Card.Content>
 </Card.Root>

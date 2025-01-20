@@ -20,7 +20,7 @@
 		"@types/eslint": "^9.6.1",
 		"@types/node": "^22.10.7",
 		"autoprefixer": "^10.4.20",
-		"bits-ui": "1.0.0-next.77",
+		"bits-ui": "1.0.0-next.78",
 		"clsx": "^2.1.1",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^9.1.0",
@@ -48,6 +48,8 @@
 	"type": "module",
 	"dependencies": {
 		"@formkit/auto-animate": "^0.8.2",
+		"@tanstack/match-sorter-utils": "^8.19.4",
+		"@tanstack/table-core": "^8.20.5",
 		"yaml": "^2.7.0",
 		"zod": "^3.24.1"
 	},

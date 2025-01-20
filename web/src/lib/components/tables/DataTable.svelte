@@ -1,0 +1,339 @@
+<script lang="ts" generics="TData, TValue, TModalProps">
+	import {
+		type ColumnDef,
+		type PaginationState,
+		type SortingState,
+		type ColumnFiltersState,
+		getCoreRowModel,
+		getPaginationRowModel,
+		getSortedRowModel,
+		getFilteredRowModel,
+		type VisibilityState,
+		type RowSelectionState
+	} from '@tanstack/table-core';
+	import { rankItem } from '@tanstack/match-sorter-utils';
+	import {
+		createSvelteTable,
+		FlexRender,
+		renderComponent
+	} from '$lib/components/ui/data-table/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { Input } from '$lib/components/ui/input';
+	import { Button } from '$lib/components/ui/button';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import {
+		ArrowDown,
+		ArrowUp,
+		ChevronLeft,
+		ChevronRight,
+		ChevronsLeft,
+		ChevronsRight,
+		Delete,
+		Plus,
+		Search
+	} from 'lucide-svelte';
+	import type { Component } from 'svelte';
+
+	type DataTableProps<TData, TValue, TModalProps extends Record<string, unknown>> = {
+		columns: ColumnDef<TData, TValue>[];
+		data: TData[];
+		createButton?: {
+			label: string;
+			modal: Component<TModalProps>;
+			props?: TModalProps;
+		};
+		onRowSelection?: (selectedRows: TData[]) => void;
+	};
+
+	let { data, columns, createButton }: DataTableProps<TData, TValue, TModalProps> = $props();
+
+	// Pagination
+	const pageSizeOptions = [10, 20, 30, 40, 50];
+	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	let sorting = $state<SortingState>([]);
+	let columnFilters = $state<ColumnFiltersState>([]);
+	let columnVisibility = $state<VisibilityState>({});
+	let rowSelection = $state<RowSelectionState>({});
+	let globalFilter = $state<string>('');
+	let modalOpen = $state(false);
+
+	// Table
+	const table = createSvelteTable({
+		get data() {
+			return data;
+		},
+		columns: [
+			{
+				id: 'select',
+				header: ({ table }) =>
+					renderComponent(Checkbox, {
+						checked: table.getIsAllPageRowsSelected(),
+						indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
+						onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
+						'aria-label': 'Select all'
+					}),
+				cell: ({ row }) =>
+					renderComponent(Checkbox, {
+						checked: row.getIsSelected(),
+						onCheckedChange: (value) => row.toggleSelected(!!value),
+						'aria-label': 'Select row'
+					}),
+				enableSorting: false,
+				enableHiding: false
+			},
+			...columns
+		],
+		filterFns: {
+			fuzzy: (row, columnId, value, addMeta) => {
+				const itemRank = rankItem(row.getValue(columnId), value);
+				addMeta({ itemRank });
+				return itemRank.passed;
+			}
+		},
+		globalFilterFn: (row, columnId, value, addMeta) => {
+			const itemRank = rankItem(row.getValue(columnId), value);
+			addMeta({ itemRank });
+			return itemRank.passed;
+		},
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		onPaginationChange: (updater) => {
+			if (typeof updater === 'function') {
+				pagination = updater(pagination);
+			} else {
+				pagination = updater;
+			}
+		},
+		onSortingChange: (updater) => {
+			if (typeof updater === 'function') {
+				sorting = updater(sorting);
+			} else {
+				sorting = updater;
+			}
+		},
+		onColumnFiltersChange: (updater) => {
+			if (typeof updater === 'function') {
+				columnFilters = updater(columnFilters);
+			} else {
+				columnFilters = updater;
+			}
+		},
+		onColumnVisibilityChange: (updater) => {
+			if (typeof updater === 'function') {
+				columnVisibility = updater(columnVisibility);
+			} else {
+				columnVisibility = updater;
+			}
+		},
+		onRowSelectionChange: (updater) => {
+			if (typeof updater === 'function') {
+				rowSelection = updater(rowSelection);
+			} else {
+				rowSelection = updater;
+			}
+		},
+		onGlobalFilterChange: (updater) => {
+			if (typeof updater === 'function') {
+				globalFilter = updater(globalFilter);
+			} else {
+				globalFilter = updater;
+			}
+		},
+		state: {
+			get pagination() {
+				return pagination;
+			},
+			get sorting() {
+				return sorting;
+			},
+			get columnFilters() {
+				return columnFilters;
+			},
+			get columnVisibility() {
+				return columnVisibility;
+			},
+			get rowSelection() {
+				return rowSelection;
+			},
+			get globalFilter() {
+				return globalFilter;
+			}
+		}
+	});
+</script>
+
+{#if createButton}
+	{@const CreateModal = createButton.modal}
+	<CreateModal bind:open={modalOpen} {...createButton.props} />
+{/if}
+
+<div>
+	<div class="flex items-center justify-between gap-4 py-4">
+		<div class="relative flex items-center">
+			<Search class="absolute left-3 text-muted-foreground" size={16} />
+			<Input
+				placeholder="Search..."
+				bind:value={globalFilter}
+				oninput={() => table.setGlobalFilter(String(globalFilter))}
+				class="w-[200px] pl-9 lg:w-[350px]"
+			/>
+			<Delete
+				class="absolute right-4 text-muted-foreground"
+				size={16}
+				onclick={() => table.setGlobalFilter('')}
+			/>
+		</div>
+
+		<!-- Column Visibility -->
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="outline" class="ml-auto">Columns</Button>
+				{/snippet}
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
+					<DropdownMenu.CheckboxItem
+						class="capitalize"
+						closeOnSelect={false}
+						bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
+					>
+						{column.id}
+					</DropdownMenu.CheckboxItem>
+				{/each}
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
+
+		{#if createButton}
+			<Button variant="default" onclick={() => (modalOpen = true)}>
+				<Plus />
+				{createButton.label}
+			</Button>
+		{/if}
+	</div>
+
+	{#if table.getSelectedRowModel().rows.length > 0}
+		<div class="my-2 flex items-center gap-2 rounded-md bg-muted/50 p-2">
+			<span class="text-sm text-muted-foreground">
+				{table.getSelectedRowModel().rows.length} item(s) selected
+			</span>
+			<Button variant="destructive" size="sm">Delete Selected</Button>
+		</div>
+	{/if}
+
+	<!-- Table -->
+	<div class="rounded-md border">
+		<Table.Root>
+			<Table.Header>
+				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+					<Table.Row>
+						{#each headerGroup.headers as header (header.id)}
+							<Table.Head>
+								{#if !header.isPlaceholder}
+									<div class="flex items-center">
+										<Button
+											variant="ghost"
+											size="sm"
+											class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+											data-sortable={header.column.getCanSort()}
+											onclick={() => header.column.toggleSorting()}
+										>
+											<FlexRender
+												content={header.column.columnDef.header}
+												context={header.getContext()}
+											/>
+											{#if header.column.getCanSort()}
+												{#if header.column.getIsSorted() === 'asc'}
+													<ArrowDown />
+												{:else if header.column.getIsSorted() === 'desc'}
+													<ArrowUp />
+												{/if}
+											{/if}
+										</Button>
+									</div>
+								{/if}
+							</Table.Head>
+						{/each}
+					</Table.Row>
+				{/each}
+			</Table.Header>
+			<Table.Body>
+				{#each table.getRowModel().rows as row (row.id)}
+					<Table.Row data-state={row.getIsSelected() && 'selected'}>
+						{#each row.getVisibleCells() as cell (cell.id)}
+							<Table.Cell>
+								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+							</Table.Cell>
+						{/each}
+					</Table.Row>
+				{:else}
+					<Table.Row>
+						<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+					</Table.Row>
+				{/each}
+			</Table.Body>
+		</Table.Root>
+	</div>
+
+	<!-- Pagination -->
+	<div class="flex items-center justify-between py-4">
+		<div>
+			<Select.Root
+				type="single"
+				allowDeselect={false}
+				value={pagination.pageSize.toString()}
+				onValueChange={(value) => (pagination.pageSize = Number(value))}
+			>
+				<Select.Trigger class="w-[180px]">
+					{pagination.pageSize}
+				</Select.Trigger>
+				<Select.Content>
+					{#each pageSizeOptions as size}
+						<Select.Item value={size.toString()}>{size}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
+		<div class="flex items-center justify-end gap-2">
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={() => (pagination.pageIndex = 0)}
+				disabled={!table.getCanPreviousPage()}
+			>
+				<ChevronsLeft />
+			</Button>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={() => table.previousPage()}
+				disabled={!table.getCanPreviousPage()}
+			>
+				<ChevronLeft />
+			</Button>
+			<span class="text-sm text-muted-foreground">
+				Page {pagination.pageIndex + 1} / {table.getPageCount()}
+			</span>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={() => table.nextPage()}
+				disabled={!table.getCanNextPage()}
+			>
+				<ChevronRight />
+			</Button>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={() => (pagination.pageIndex = table.getPageCount() - 1)}
+				disabled={!table.getCanNextPage()}
+			>
+				<ChevronsRight />
+			</Button>
+		</div>
+	</div>
+</div>

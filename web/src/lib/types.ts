@@ -28,8 +28,13 @@ export interface TraefikConfig {
 
 export interface BaseTraefikConfig {
 	Routers: Record<string, Router>;
+	TCPRouters: Record<string, Router>;
+	UDPRouters: Record<string, Router>;
 	Services: Record<string, Service>;
+	TCPServices: Record<string, Service>;
+	UDPServices: Record<string, Service>;
 	Middlewares: Record<string, Middleware>;
+	TCPMiddlewares: Record<string, Middleware>;
 }
 
 export interface DNSProvider {

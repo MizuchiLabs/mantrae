@@ -45,33 +45,40 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profileID,
-			Source:    source.Local,
-		})
+		existingConfig, err := q.GetTraefikConfigBySource(
+			r.Context(),
+			db.GetTraefikConfigBySourceParams{
+				ProfileID: profileID,
+				Source:    source.Local,
+			},
+		)
 		if err != nil {
-			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		// Initialize maps if nil
-		if existingConfig.Config.HTTP.Routers == nil {
-			existingConfig.Config.HTTP.Routers = make(map[string]*dynamic.Router)
+		if existingConfig.Config.Routers == nil {
+			existingConfig.Config.Routers = make(map[string]*dynamic.Router)
 		}
-		if existingConfig.Config.HTTP.Services == nil {
-			existingConfig.Config.HTTP.Services = make(map[string]*dynamic.Service)
+		if existingConfig.Config.Services == nil {
+			existingConfig.Config.Services = make(map[string]*dynamic.Service)
 		}
-		if existingConfig.Config.TCP.Routers == nil {
-			existingConfig.Config.TCP.Routers = make(map[string]*dynamic.TCPRouter)
+		if existingConfig.Config.TCPRouters == nil {
+			existingConfig.Config.TCPRouters = make(map[string]*dynamic.TCPRouter)
 		}
-		if existingConfig.Config.TCP.Services == nil {
-			existingConfig.Config.TCP.Services = make(map[string]*dynamic.TCPService)
+		if existingConfig.Config.TCPServices == nil {
+			existingConfig.Config.TCPServices = make(map[string]*dynamic.TCPService)
 		}
-		if existingConfig.Config.UDP.Routers == nil {
-			existingConfig.Config.UDP.Routers = make(map[string]*dynamic.UDPRouter)
+		if existingConfig.Config.UDPRouters == nil {
+			existingConfig.Config.UDPRouters = make(map[string]*dynamic.UDPRouter)
 		}
-		if existingConfig.Config.UDP.Services == nil {
-			existingConfig.Config.UDP.Services = make(map[string]*dynamic.UDPService)
+		if existingConfig.Config.UDPServices == nil {
+			existingConfig.Config.UDPServices = make(map[string]*dynamic.UDPService)
 		}
 
 		// Ensure name has @http suffix
@@ -82,14 +89,14 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 		// Update configuration based on type
 		switch params.Type {
 		case "http":
-			existingConfig.Config.HTTP.Routers[params.Name] = params.Router
-			existingConfig.Config.HTTP.Services[params.Name] = params.Service
+			existingConfig.Config.Routers[params.Name] = params.Router
+			existingConfig.Config.Services[params.Name] = params.Service
 		case "tcp":
-			existingConfig.Config.TCP.Routers[params.Name] = params.TCPRouter
-			existingConfig.Config.TCP.Services[params.Name] = params.TCPService
+			existingConfig.Config.TCPRouters[params.Name] = params.TCPRouter
+			existingConfig.Config.TCPServices[params.Name] = params.TCPService
 		case "udp":
-			existingConfig.Config.UDP.Routers[params.Name] = params.UDPRouter
-			existingConfig.Config.UDP.Services[params.Name] = params.UDPService
+			existingConfig.Config.UDPRouters[params.Name] = params.UDPRouter
+			existingConfig.Config.UDPServices[params.Name] = params.UDPService
 		default:
 			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return
@@ -129,31 +136,39 @@ func DeleteRouter(q *db.Queries) http.HandlerFunc {
 			return
 		}
 
-		// Ensure name has @http suffix for consistency
+		// Ensure name has @http suffix
 		if !strings.HasSuffix(routerName, "@http") {
-			routerName = fmt.Sprintf("%s@http", strings.Split(routerName, "@")[0])
+			http.Error(w, "Invalid router provider", http.StatusBadRequest)
+			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profileID,
-			Source:    source.Local,
-		})
+		existingConfig, err := q.GetTraefikConfigBySource(
+			r.Context(),
+			db.GetTraefikConfigBySourceParams{
+				ProfileID: profileID,
+				Source:    source.Local,
+			},
+		)
 		if err != nil {
-			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		// Remove router and service based on type
 		switch routerType {
 		case "http":
-			delete(existingConfig.Config.HTTP.Routers, routerName)
-			delete(existingConfig.Config.HTTP.Services, routerName)
+			delete(existingConfig.Config.Routers, routerName)
+			delete(existingConfig.Config.Services, routerName)
 		case "tcp":
-			delete(existingConfig.Config.TCP.Routers, routerName)
-			delete(existingConfig.Config.TCP.Services, routerName)
+			delete(existingConfig.Config.TCPRouters, routerName)
+			delete(existingConfig.Config.TCPServices, routerName)
 		case "udp":
-			delete(existingConfig.Config.UDP.Routers, routerName)
-			delete(existingConfig.Config.UDP.Services, routerName)
+			delete(existingConfig.Config.UDPRouters, routerName)
+			delete(existingConfig.Config.UDPServices, routerName)
 		default:
 			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return

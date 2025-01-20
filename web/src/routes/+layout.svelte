@@ -66,11 +66,13 @@
 <div class="app flex min-h-screen flex-col">
 	{#if $user}
 		<Sidebar />
-		<div class="flex flex-1 flex-col sm:pl-16">
+		<div class="flex w-full flex-1 flex-col sm:pl-16">
 			<Header />
-			<main class="flex flex-grow flex-col gap-4 sm:px-2" use:autoAnimate={{ duration: 100 }}>
+
+			<main class="flex-1 overflow-auto p-6" use:autoAnimate={{ duration: 100 }}>
 				{@render children?.()}
 			</main>
+
 			<Footer />
 		</div>
 	{:else}

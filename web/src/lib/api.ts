@@ -1,6 +1,9 @@
 import { get, writable, type Writable } from 'svelte/store';
 import type { Agent, DNSProvider, Plugin, Profile, Setting, TraefikConfig, User } from './types';
 import { PROFILE_SK, TOKEN_SK } from './store';
+import { flattenRouterData, flattenServiceData, type Router, type Service } from './types/router';
+import type { EntryPoints } from './types/entrypoints';
+import { flattenMiddlewareData, type Middleware } from './types/middlewares';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -8,7 +11,11 @@ export const BASE_URL = import.meta.env.PROD ? '/api' : `http://127.0.0.1:${BACK
 
 // Stores
 export const profiles: Writable<Profile[]> = writable();
-export const traefik: Writable<TraefikConfig[]> = writable();
+export const traefik: Writable<TraefikConfig> = writable();
+export const entrypoints: Writable<EntryPoints[]> = writable([]);
+export const routers: Writable<Router[]> = writable([]);
+export const services: Writable<Service[]> = writable([]);
+export const middlewares: Writable<Middleware[]> = writable([]);
 export const users: Writable<User[]> = writable([]);
 export const dnsProviders: Writable<DNSProvider[]> = writable([]);
 export const agents: Writable<Agent[]> = writable([]);
@@ -137,10 +144,15 @@ export const api = {
 
 	// Traefik -------------------------------------------------------------------
 	async getTraefikConfig(id: number) {
-		return await send(`/traefik/${id}`);
+		const res = await send(`/traefik/${id}`);
+		traefik.set(res);
+		entrypoints.set(res.entrypoints);
+		routers.set(flattenRouterData(res.config));
+		services.set(flattenServiceData(res.config));
+		middlewares.set(flattenMiddlewareData(res.config));
 	},
 
-	async upsertRouter(id: number, data: any) {
+	async upsertRouter(id: number, data: unknown) {
 		return await send(`/router/${id}`, {
 			method: 'POST',
 			body: data
@@ -153,7 +165,7 @@ export const api = {
 		});
 	},
 
-	async upsertMiddleware(id: number, data: any) {
+	async upsertMiddleware(id: number, data: unknown) {
 		return await send(`/middleware/${id}`, {
 			method: 'POST',
 			body: data
@@ -170,7 +182,6 @@ export const api = {
 	async listDNSProviders() {
 		const data = await send('/provider');
 		dnsProviders.set(data);
-		return data;
 	},
 
 	async getDNSProvider(id: number) {

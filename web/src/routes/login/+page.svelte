@@ -57,7 +57,7 @@
 			</div>
 
 			<div class="mt-4 flex flex-col">
-				<Button type="submit" on:click={handleSubmit}>Login</Button>
+				<Button type="submit" onclick={handleSubmit}>Login</Button>
 			</div>
 		</div>
 	</Card.Content>

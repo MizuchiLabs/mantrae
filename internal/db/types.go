@@ -62,7 +62,14 @@ type SchemeOverview struct {
 }
 
 type TraefikConfiguration struct {
-	*dynamic.Configuration
+	Routers        map[string]*dynamic.Router
+	Middlewares    map[string]*dynamic.Middleware
+	Services       map[string]*dynamic.Service
+	TCPRouters     map[string]*dynamic.TCPRouter
+	TCPMiddlewares map[string]*dynamic.TCPMiddleware
+	TCPServices    map[string]*dynamic.TCPService
+	UDPRouters     map[string]*dynamic.UDPRouter
+	UDPServices    map[string]*dynamic.UDPService
 }
 
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
@@ -94,7 +101,7 @@ func (o TraefikOverview) Value() (driver.Value, error) {
 // Handles the JSON marshalling and unmarshalling of the ConfigurationWrapper type
 func (c *TraefikConfiguration) Scan(value interface{}) error {
 	if value == nil {
-		c.Configuration = nil
+		c = nil
 		return nil
 	}
 
@@ -103,13 +110,17 @@ func (c *TraefikConfiguration) Scan(value interface{}) error {
 		return fmt.Errorf("failed to scan Configuration: expected []byte, got %T", value)
 	}
 
-	return json.Unmarshal(bytes, &c.Configuration)
+	return json.Unmarshal(bytes, &c)
 }
 
 // Value implements driver.Valuer
 func (c TraefikConfiguration) Value() (driver.Value, error) {
-	if c.Configuration == nil {
+	if c.Routers == nil && c.Middlewares == nil && c.Services == nil && c.TCPRouters == nil &&
+		c.TCPMiddlewares == nil &&
+		c.TCPServices == nil &&
+		c.UDPRouters == nil &&
+		c.UDPServices == nil {
 		return nil, nil
 	}
-	return json.Marshal(c.Configuration)
+	return json.Marshal(c)
 }

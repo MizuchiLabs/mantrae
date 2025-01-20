@@ -94,8 +94,8 @@ func (s *Server) routes() {
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)
 
 	// Traefik
-	register("GET", "/traefik/{id}", jwtChain, handler.GetTraefikConfig(DB))
-	register("GET", "/traefik/{id}/{source}", jwtChain, handler.GetTraefikConfigBySource(DB))
+	register("GET", "/traefik/{id}", logChain, handler.GetTraefikConfig(DB))
+	register("GET", "/traefik/{id}/{source}", logChain, handler.GetTraefikConfigBySource(DB))
 
 	// Dynamic config
 	if s.app.Config.Server.BasicAuth {

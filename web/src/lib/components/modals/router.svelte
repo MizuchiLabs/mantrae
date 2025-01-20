@@ -1,40 +1,43 @@
 <script lang="ts">
-	import { upsertRouter, upsertService } from '$lib/api';
+	import { api, profile } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { type Router, type Service } from '$lib/types/config';
+	import { type Router, type Service } from '$lib/types/router';
+	import { toast } from 'svelte-sonner';
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
 
 	interface Props {
-		router: Router;
-		service: Service;
+		router: Router | undefined;
+		service: Service | undefined;
 		open?: boolean;
 		disabled?: boolean;
 	}
 
 	let {
-		router = $bindable(),
-		service = $bindable(),
+		router = $bindable({} as Router),
+		service = $bindable({} as Service),
 		open = $bindable(false),
 		disabled = false
 	}: Props = $props();
 
-	let routerForm: RouterForm = $state();
-	let serviceForm: ServiceForm = $state();
-
 	const update = async () => {
-		const rValid = routerForm.validate();
-		const sValid = serviceForm.validate();
-		if (rValid && sValid) {
-			await upsertRouter(router);
-			if (service.provider === 'http') {
-				await upsertService(service);
-			}
+		try {
+			await api.upsertRouter($profile.id, router);
 			open = false;
+		} catch (e) {
+			toast.error('Failed to save router', {
+				description: e.message
+			});
 		}
 	};
+
+	// Set defaults
+	$effect(() => {
+		router.type = router.type || 'http';
+		router.tls = router.tls || {};
+	});
 </script>
 
 <Dialog.Root bind:open>
@@ -45,12 +48,12 @@
 				<Tabs.Trigger value="service">Service</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="router">
-				<RouterForm bind:router {disabled} bind:this={routerForm} />
+				<RouterForm {router} {disabled} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service bind:router {disabled} bind:this={serviceForm} />
+				<ServiceForm {service} {router} {disabled} />
 			</Tabs.Content>
 		</Tabs.Root>
-		<Button class="w-full" on:click={() => update()}>Save</Button>
+		<Button class="w-full" onclick={() => update()}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

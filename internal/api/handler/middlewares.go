@@ -62,21 +62,28 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profileID,
-			Source:    source.Local,
-		})
+		existingConfig, err := q.GetTraefikConfigBySource(
+			r.Context(),
+			db.GetTraefikConfigBySourceParams{
+				ProfileID: profileID,
+				Source:    source.Local,
+			},
+		)
 		if err != nil {
-			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		// Initialize maps if nil
-		if existingConfig.Config.HTTP.Middlewares == nil {
-			existingConfig.Config.HTTP.Middlewares = make(map[string]*dynamic.Middleware)
+		if existingConfig.Config.Middlewares == nil {
+			existingConfig.Config.Middlewares = make(map[string]*dynamic.Middleware)
 		}
-		if existingConfig.Config.TCP.Middlewares == nil {
-			existingConfig.Config.TCP.Middlewares = make(map[string]*dynamic.TCPMiddleware)
+		if existingConfig.Config.TCPMiddlewares == nil {
+			existingConfig.Config.TCPMiddlewares = make(map[string]*dynamic.TCPMiddleware)
 		}
 
 		// Ensure name has @http suffix
@@ -87,9 +94,9 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 		// Update configuration based on type
 		switch params.Type {
 		case "http":
-			existingConfig.Config.HTTP.Middlewares[params.Name] = params.Middleware
+			existingConfig.Config.Middlewares[params.Name] = params.Middleware
 		case "tcp":
-			existingConfig.Config.TCP.Middlewares[params.Name] = params.TCPMiddleware
+			existingConfig.Config.TCPMiddlewares[params.Name] = params.TCPMiddleware
 		default:
 			http.Error(w, "invalid middleware type: must be http or tcp", http.StatusBadRequest)
 			return
@@ -134,21 +141,28 @@ func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 			mwName = fmt.Sprintf("%s@http", strings.Split(mwName, "@")[0])
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profileID,
-			Source:    source.Local,
-		})
+		existingConfig, err := q.GetTraefikConfigBySource(
+			r.Context(),
+			db.GetTraefikConfigBySourceParams{
+				ProfileID: profileID,
+				Source:    source.Local,
+			},
+		)
 		if err != nil {
-			http.Error(w, "Failed to get existing config: "+err.Error(), http.StatusInternalServerError)
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		// Remove router and service based on type
 		switch mwType {
 		case "http":
-			delete(existingConfig.Config.HTTP.Middlewares, mwName)
+			delete(existingConfig.Config.Middlewares, mwName)
 		case "tcp":
-			delete(existingConfig.Config.TCP.Middlewares, mwName)
+			delete(existingConfig.Config.TCPMiddlewares, mwName)
 		default:
 			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return

@@ -1,18 +1,23 @@
+import type { BaseTraefikConfig } from '$lib/types';
+
 export interface Router {
+	name: string;
+	type: 'http' | 'tcp' | 'udp';
 	entryPoints?: string[];
 	middlewares?: string[];
 	service: string;
-	rule: string;
+	rule?: string;
 	ruleSyntax?: string;
 	priority?: number;
-	tls: TLS;
+	tls?: TLS;
 	observability?: Observability;
 	status?: string;
-	using?: string[];
 }
 
 export function newRouter(): Router {
 	return {
+		name: '',
+		type: 'http',
 		entryPoints: [],
 		middlewares: [],
 		rule: '',
@@ -27,22 +32,122 @@ export function newRouter(): Router {
 	};
 }
 
+// Transform function to flatten the router data
+export function flattenRouterData(config: BaseTraefikConfig): Router[] {
+	const flatRouters: Router[] = [];
+
+	// Process HTTP Routers
+	Object.entries(config.Routers || {}).forEach(([name, router]) => {
+		flatRouters.push({
+			name,
+			type: 'http',
+			entryPoints: router.entryPoints || [],
+			middlewares: router.middlewares || [],
+			service: router.service,
+			rule: router.rule,
+			ruleSyntax: router.ruleSyntax,
+			priority: router.priority,
+			tls: router.tls,
+			observability: router.observability,
+			status: router.status
+		});
+	});
+
+	// Process TCP Routers
+	Object.entries(config.TCPRouters || {}).forEach(([name, router]) => {
+		flatRouters.push({
+			name,
+			type: 'tcp',
+			entryPoints: router.entryPoints || [],
+			middlewares: router.middlewares || [],
+			service: router.service,
+			rule: router.rule,
+			ruleSyntax: router.ruleSyntax,
+			priority: router.priority,
+			tls: router.tls,
+			observability: router.observability,
+			status: router.status
+		});
+	});
+
+	// Process UDP Routers
+	Object.entries(config.UDPRouters || {}).forEach(([name, router]) => {
+		flatRouters.push({
+			name,
+			type: 'udp',
+			entryPoints: router.entryPoints || [],
+			service: router.service,
+			observability: router.observability,
+			status: router.status
+		});
+	});
+
+	return flatRouters;
+}
+
 export interface Service {
+	name: string;
+	type: 'http' | 'tcp' | 'udp';
 	loadBalancer?: ServersLoadBalancer;
 	weighted?: WeightedRoundRobin;
 	mirroring?: Mirroring;
 	failover?: Failover;
 	status?: string;
-	usedBy?: string[];
 	serverStatus?: Record<string, string>;
 }
 
 export function newService(): Service {
 	return {
+		name: '',
+		type: 'http',
 		loadBalancer: {
 			servers: []
 		}
 	};
+}
+
+export function flattenServiceData(config: BaseTraefikConfig): Service[] {
+	const flatServices: Service[] = [];
+
+	// Process HTTP Services
+	Object.entries(config.Services || {}).forEach(([name, service]) => {
+		flatServices.push({
+			name,
+			type: 'http',
+			loadBalancer: service.loadBalancer,
+			weighted: service.weighted,
+			mirroring: service.mirroring,
+			failover: service.failover,
+			status: service.status,
+			serverStatus: service.serverStatus
+		});
+	});
+
+	// Process TCP Services
+	Object.entries(config.TCPServices || {}).forEach(([name, service]) => {
+		flatServices.push({
+			name,
+			type: 'tcp',
+			loadBalancer: service.loadBalancer,
+			weighted: service.weighted,
+			status: service.status,
+			serverStatus: service.serverStatus
+		});
+	});
+
+	// Process UDP Services
+	Object.entries(config.UDPServices || {}).forEach(([name, service]) => {
+		flatServices.push({
+			name,
+			type: 'udp',
+			loadBalancer: service.loadBalancer,
+			weighted: service.weighted,
+			status: service.status,
+			serverStatus: service.serverStatus
+		});
+	});
+
+	return flatServices;
 }
 
 export interface TLS {
