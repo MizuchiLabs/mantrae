@@ -9,14 +9,14 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
 type UpsertMiddlewareParams struct {
-	Name          string                 `json:"name"`
-	Type          string                 `json:"type"`
-	Middleware    *dynamic.Middleware    `json:"middleware"`
-	TCPMiddleware *dynamic.TCPMiddleware `json:"tcpMiddleware"`
+	Name          string                     `json:"name"`
+	Type          string                     `json:"type"`
+	Middleware    *runtime.MiddlewareInfo    `json:"middleware"`
+	TCPMiddleware *runtime.TCPMiddlewareInfo `json:"tcpMiddleware"`
 }
 
 type Plugin struct {
@@ -80,10 +80,10 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 
 		// Initialize maps if nil
 		if existingConfig.Config.Middlewares == nil {
-			existingConfig.Config.Middlewares = make(map[string]*dynamic.Middleware)
+			existingConfig.Config.Middlewares = make(map[string]*runtime.MiddlewareInfo)
 		}
 		if existingConfig.Config.TCPMiddlewares == nil {
-			existingConfig.Config.TCPMiddlewares = make(map[string]*dynamic.TCPMiddleware)
+			existingConfig.Config.TCPMiddlewares = make(map[string]*runtime.TCPMiddlewareInfo)
 		}
 
 		// Ensure name has @http suffix
@@ -103,9 +103,9 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ID:     existingConfig.ID,
-			Source: source.Local,
-			Config: existingConfig.Config,
+			ProfileID: profileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -169,9 +169,9 @@ func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ID:     existingConfig.ID,
-			Source: source.Local,
-			Config: existingConfig.Config,
+			ProfileID: profileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
 		})
 		if err != nil {
 			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)

@@ -14,30 +14,24 @@ export interface Router {
 	status?: string;
 }
 
-export function newRouter(): Router {
-	return {
-		name: '',
-		type: 'http',
-		entryPoints: [],
-		middlewares: [],
-		rule: '',
-		ruleSyntax: 'v3',
-		service: '',
-		tls: {
-			passthrough: false,
-			options: '',
-			certResolver: '',
-			domains: []
-		}
-	};
+export interface UpsertRouterParams {
+	name: string;
+	type: 'http' | 'tcp' | 'udp';
+	router?: Router;
+	tcpRouter?: Router;
+	udpRouter?: Router;
+	service?: Service;
+	tcpService?: Service;
+	udpService?: Service;
 }
 
 // Transform function to flatten the router data
 export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	const flatRouters: Router[] = [];
+	if (!config) return flatRouters;
 
 	// Process HTTP Routers
-	Object.entries(config.Routers || {}).forEach(([name, router]) => {
+	Object.entries(config.routers || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
 			type: 'http',
@@ -54,7 +48,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	});
 
 	// Process TCP Routers
-	Object.entries(config.TCPRouters || {}).forEach(([name, router]) => {
+	Object.entries(config.tcpRouters || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
 			type: 'tcp',
@@ -71,7 +65,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	});
 
 	// Process UDP Routers
-	Object.entries(config.UDPRouters || {}).forEach(([name, router]) => {
+	Object.entries(config.udpRouters || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
 			type: 'udp',
@@ -108,9 +102,10 @@ export function newService(): Service {
 
 export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	const flatServices: Service[] = [];
+	if (!config) return flatServices;
 
 	// Process HTTP Services
-	Object.entries(config.Services || {}).forEach(([name, service]) => {
+	Object.entries(config.services || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
 			type: 'http',
@@ -124,7 +119,7 @@ export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	});
 
 	// Process TCP Services
-	Object.entries(config.TCPServices || {}).forEach(([name, service]) => {
+	Object.entries(config.tcpServices || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
 			type: 'tcp',
@@ -136,7 +131,7 @@ export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	});
 
 	// Process UDP Services
-	Object.entries(config.UDPServices || {}).forEach(([name, service]) => {
+	Object.entries(config.udpServices || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
 			type: 'udp',

@@ -9,7 +9,12 @@
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 
-	let { profile = $bindable({} as Profile), open = $bindable(false) } = $props();
+	interface Props {
+		profile?: Profile;
+		open?: boolean;
+	}
+
+	let { profile = $bindable({} as Profile), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
@@ -26,7 +31,8 @@
 				toast.success('Profile created successfully');
 			}
 			open = false;
-		} catch (e) {
+		} catch (err: unknown) {
+			const e = err as Error;
 			toast.error('Failed to save profile', {
 				description: e.message
 			});
@@ -40,7 +46,8 @@
 			await api.deleteProfile(profile.id);
 			toast.success('Profile deleted successfully');
 			open = false;
-		} catch (e) {
+		} catch (err: unknown) {
+			const e = err as Error;
 			toast.error('Failed to delete profile', {
 				description: e.message
 			});
@@ -77,7 +84,7 @@
 			</div>
 
 			<div class="flex items-center space-x-2">
-				<Checkbox id="tls" bind:checked={profile.tls} />
+				<Checkbox id="tls" checked={profile.tls} />
 				<Label for="tls">Enable TLS</Label>
 			</div>
 

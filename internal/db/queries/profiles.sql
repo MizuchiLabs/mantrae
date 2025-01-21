@@ -1,46 +1,46 @@
--- name: CreateProfile :exec
+-- name: CreateProfile :one
 INSERT INTO
-    profiles (name, url, username, password, tls)
+  profiles (name, url, username, password, tls)
 VALUES
-    (?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?) RETURNING id;
 
 -- name: GetProfile :one
 SELECT
-    *
+  *
 FROM
-    profiles
+  profiles
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: GetProfileByName :one
 SELECT
-    *
+  *
 FROM
-    profiles
+  profiles
 WHERE
-    name = ?;
+  name = ?;
 
 -- name: ListProfiles :many
 SELECT
-    *
+  *
 FROM
-    profiles
+  profiles
 ORDER BY
-    name;
+  name;
 
 -- name: UpdateProfile :exec
 UPDATE profiles
 SET
-    name = ?,
-    url = ?,
-    username = ?,
-    password = ?,
-    tls = ?,
-    updated_at = CURRENT_TIMESTAMP
+  name = ?,
+  url = ?,
+  username = ?,
+  password = ?,
+  tls = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: DeleteProfile :exec
 DELETE FROM profiles
 WHERE
-    id = ?;
+  id = ?;

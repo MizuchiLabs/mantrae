@@ -28,28 +28,16 @@ func CreateTraefikConfig(q *db.Queries) http.HandlerFunc {
 		w.WriteHeader(http.StatusCreated)
 	}
 }
-func GetTraefikConfig(q *db.Queries) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		config, err := q.GetTraefikConfig(r.Context(), id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(config)
-	}
-}
 
-func GetTraefikConfigBySource(q *db.Queries) http.HandlerFunc {
+func GetTraefikConfig(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if !source.Source(r.PathValue("source")).Valid() {
+			http.Error(w, "invalid source", http.StatusBadRequest)
 			return
 		}
 		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{

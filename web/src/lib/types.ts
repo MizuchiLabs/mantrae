@@ -18,7 +18,7 @@ export interface Profile {
 export interface TraefikConfig {
 	id: number;
 	profile_id: number;
-	source: string;
+	source: TraefikSource;
 	entrypoints: EntryPoints;
 	overview: Overview;
 	config: BaseTraefikConfig;
@@ -26,15 +26,21 @@ export interface TraefikConfig {
 	updated_at: string;
 }
 
+export enum TraefikSource {
+	API = 'api',
+	LOCAL = 'local',
+	AGENT = 'agent'
+}
+
 export interface BaseTraefikConfig {
-	Routers: Record<string, Router>;
-	TCPRouters: Record<string, Router>;
-	UDPRouters: Record<string, Router>;
-	Services: Record<string, Service>;
-	TCPServices: Record<string, Service>;
-	UDPServices: Record<string, Service>;
-	Middlewares: Record<string, Middleware>;
-	TCPMiddlewares: Record<string, Middleware>;
+	routers: Record<string, Router>;
+	tcpRouters: Record<string, Router>;
+	udpRouters: Record<string, Router>;
+	services: Record<string, Service>;
+	tcpServices: Record<string, Service>;
+	udpServices: Record<string, Service>;
+	middlewares: Record<string, Middleware>;
+	tcpMiddlewares: Record<string, Middleware>;
 }
 
 export interface DNSProvider {

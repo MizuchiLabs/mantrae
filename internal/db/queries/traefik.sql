@@ -1,38 +1,46 @@
 -- name: CreateTraefikConfig :exec
 INSERT INTO
-    traefik (profile_id, source, entrypoints, overview, config)
+  traefik (
+    profile_id,
+    source,
+    entrypoints,
+    overview,
+    version,
+    config
+  )
 VALUES
-    (?, ?, ?, ?, ?);
+  (?, ?, ?, ?, ?, ?);
 
 -- name: GetTraefikConfig :one
 SELECT
-    *
+  *
 FROM
-    traefik
+  traefik
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: GetTraefikConfigBySource :one
 SELECT
-    *
+  *
 FROM
-    traefik
+  traefik
 WHERE
-    profile_id = ?
-    AND source = ?;
+  profile_id = ?
+  AND source = ?;
 
 -- name: UpdateTraefikConfig :exec
 UPDATE traefik
 SET
-    source = ?,
-    entrypoints = ?,
-    overview = ?,
-    config = ?,
-    updated_at = CURRENT_TIMESTAMP
+  entrypoints = ?,
+  overview = ?,
+  config = ?,
+  version = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?;
+  profile_id = ?
+  AND source = ?;
 
 -- name: DeleteTraefikConfig :exec
 DELETE FROM traefik
 WHERE
-    id = ?;
+  id = ?;

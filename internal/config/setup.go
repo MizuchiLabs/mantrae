@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/lmittmann/tint"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type App struct {
@@ -60,9 +62,6 @@ func Setup() (*App, error) {
 	app.setupLogger()
 	app.setDefaultAdminUser()
 	app.setDefaultProfile()
-	if flags.Reset {
-		app.resetAdminUser()
-	}
 
 	// Update self
 	util.UpdateSelf(flags.Update)
@@ -91,43 +90,58 @@ func (a *App) setupLogger() {
 }
 
 func (a *App) setDefaultAdminUser() error {
-	// check if default admin user exists
-	user, err := a.DB.GetUserByUsername(context.Background(), "admin")
-	if err != nil {
-		password := util.GenPassword(32)
-		hash, err := util.HashPassword(password)
-		if err != nil {
-			return fmt.Errorf("failed to hash password: %w", err)
-		}
+	ctx := context.Background()
 
-		if err := a.DB.CreateUser(context.Background(), db.CreateUserParams{
-			Username: "admin",
+	// Generate password if not provided
+	password := a.Config.Admin.Password
+	if password == "" {
+		password = util.GenPassword(32)
+	}
+
+	hash, err := util.HashPassword(password)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	// Try to get existing admin user
+	user, err := a.DB.GetUserByUsername(ctx, a.Config.Admin.Username)
+	// If user doesn't exist, create new admin
+	if err != nil {
+		if err := a.DB.CreateUser(ctx, db.CreateUserParams{
+			Username: a.Config.Admin.Username,
+			Email:    &a.Config.Admin.Email,
 			Password: hash,
 			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to create default admin user: %w", err)
 		}
-		slog.Info("Generated default admin user", "username", "admin", "password", password)
+		slog.Info("Generated default admin user",
+			"username", a.Config.Admin.Username,
+			"password", password)
 		return nil
 	}
 
-	// Validate credentials
-	if user.Username != "admin" || user.Password == "" {
-		password := util.GenPassword(32)
-		hash, err := util.HashPassword(password)
-		if err != nil {
-			return fmt.Errorf("failed to hash password: %w", err)
-		}
-		slog.Info("Invalid credentials, regenerating...")
-		if err := a.DB.UpdateUser(context.Background(), db.UpdateUserParams{
+	// Skip if password is correct
+	passwordErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if passwordErr == nil {
+		return nil
+	}
+
+	// Update existing admin if credentials changed or password provided
+	if user.Username != a.Config.Admin.Username ||
+		user.Email != &a.Config.Admin.Email ||
+		a.Config.Admin.Password != "" {
+
+		if err := a.DB.UpdateUser(ctx, db.UpdateUserParams{
 			ID:       user.ID,
-			Username: "admin",
+			Username: a.Config.Admin.Username,
+			Email:    &a.Config.Admin.Email,
 			Password: hash,
 			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to update default admin user: %w", err)
 		}
-		slog.Info("Generated default admin user", "username", "admin", "password", password)
+		slog.Info("Updated admin user", "username", a.Config.Admin.Username)
 	}
 	return nil
 }
@@ -137,13 +151,14 @@ func (a *App) setDefaultProfile() error {
 		return nil
 	}
 
-	if !strings.HasPrefix(a.Config.Traefik.URL, "http://") && !strings.HasPrefix(a.Config.Traefik.URL, "https://") {
+	if !strings.HasPrefix(a.Config.Traefik.URL, "http://") &&
+		!strings.HasPrefix(a.Config.Traefik.URL, "https://") {
 		a.Config.Traefik.URL = "http://" + a.Config.Traefik.URL
 	}
 
 	_, err := a.DB.GetProfileByName(context.Background(), a.Config.Traefik.Profile)
 	if err != nil {
-		err := a.DB.CreateProfile(context.Background(), db.CreateProfileParams{
+		profileID, err := a.DB.CreateProfile(context.Background(), db.CreateProfileParams{
 			Name:     a.Config.Traefik.Profile,
 			Url:      a.Config.Traefik.URL,
 			Username: &a.Config.Traefik.Username,
@@ -153,7 +168,34 @@ func (a *App) setDefaultProfile() error {
 		if err != nil {
 			return fmt.Errorf("failed to create default profile: %w", err)
 		}
-		slog.Info("Created default profile", "url", a.Config.Traefik.URL, "username", a.Config.Traefik.Username, "password", a.Config.Traefik.Password)
+
+		// Create configs for all source types
+		sources := []source.Source{source.Local, source.API, source.Agent}
+		for _, src := range sources {
+			if err := a.DB.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
+				ProfileID:   profileID,
+				Source:      src,
+				Entrypoints: nil,
+				Overview:    nil,
+				Config:      nil,
+			}); err != nil {
+				return fmt.Errorf(
+					"failed to create default traefik config for source %s: %w",
+					src,
+					err,
+				)
+			}
+		}
+
+		slog.Info(
+			"Created default profile",
+			"url",
+			a.Config.Traefik.URL,
+			"username",
+			a.Config.Traefik.Username,
+			"password",
+			a.Config.Traefik.Password,
+		)
 		return nil
 	}
 
@@ -166,31 +208,14 @@ func (a *App) setDefaultProfile() error {
 	}); err != nil {
 		return fmt.Errorf("failed to update default profile: %w", err)
 	}
-	slog.Info("Updated default profile", "url", a.Config.Traefik.URL, "username", a.Config.Traefik.Username, "password", a.Config.Traefik.Password)
-	return nil
-}
-
-// ResetAdminUser resets the default admin user with a new password.
-func (a *App) resetAdminUser() error {
-	user, err := a.DB.GetUserByUsername(context.Background(), "admin")
-	if err != nil {
-		return fmt.Errorf("failed to get default admin user: %w", err)
-	}
-
-	password := util.GenPassword(32)
-	hash, err := util.HashPassword(password)
-	if err != nil {
-		return fmt.Errorf("failed to hash password: %w", err)
-	}
-
-	if err := a.DB.UpdateUser(context.Background(), db.UpdateUserParams{
-		ID:       user.ID,
-		Username: user.Username,
-		Password: hash,
-		IsAdmin:  true,
-	}); err != nil {
-		return fmt.Errorf("failed to update default admin user: %w", err)
-	}
-	slog.Info("Reset default admin user", "username", "admin", "password", password)
+	slog.Info(
+		"Updated default profile",
+		"url",
+		a.Config.Traefik.URL,
+		"username",
+		a.Config.Traefik.Username,
+		"password",
+		a.Config.Traefik.Password,
+	)
 	return nil
 }

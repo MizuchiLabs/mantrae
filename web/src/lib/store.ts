@@ -6,3 +6,4 @@ export const LOCAL_PROVIDER_SK = 'local-provider';
 export const ROUTER_COLUMN_SK = 'router-columns';
 export const MIDDLEWARE_COLUMN_SK = 'middleware-columns';
 export const RULE_EDITOR_TAB_SK = 'rule-editor-tab';
+export const SOURCE_TAB_SK = 'traefik-source-tab';

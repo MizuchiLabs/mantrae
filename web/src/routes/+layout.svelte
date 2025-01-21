@@ -69,7 +69,7 @@
 		<div class="flex w-full flex-1 flex-col sm:pl-16">
 			<Header />
 
-			<main class="flex-1 overflow-auto p-6" use:autoAnimate={{ duration: 100 }}>
+			<main class="flex-1 overflow-auto p-8 px-8" use:autoAnimate={{ duration: 100 }}>
 				{@render children?.()}
 			</main>
 

@@ -5,7 +5,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Settings, Users, Route, Layers, Globe, Blocks, Bot, Home } from 'lucide-svelte';
 
-	let active = $state(page.url.pathname);
+	let active = $derived(page.url.pathname ?? '/');
 
 	export const routes = [
 		{

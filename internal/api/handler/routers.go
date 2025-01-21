@@ -10,18 +10,18 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
 type UpsertRouterParams struct {
-	Name       string              `json:"name"`
-	Type       string              `json:"type"`
-	Router     *dynamic.Router     `json:"router"`
-	TCPRouter  *dynamic.TCPRouter  `json:"tcpRouter"`
-	UDPRouter  *dynamic.UDPRouter  `json:"udpRouter"`
-	Service    *dynamic.Service    `json:"service"`
-	TCPService *dynamic.TCPService `json:"tcpService"`
-	UDPService *dynamic.UDPService `json:"udpService"`
+	Name       string                  `json:"name"`
+	Type       string                  `json:"type"`
+	Router     *runtime.RouterInfo     `json:"router"`
+	TCPRouter  *runtime.TCPRouterInfo  `json:"tcpRouter"`
+	UDPRouter  *runtime.UDPRouterInfo  `json:"udpRouter"`
+	Service    *db.ServiceInfo         `json:"service"`
+	TCPService *runtime.TCPServiceInfo `json:"tcpService"`
+	UDPService *runtime.UDPServiceInfo `json:"udpService"`
 }
 
 // UpsertRouter handles both creation and updates of router/service pairs
@@ -63,22 +63,22 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 
 		// Initialize maps if nil
 		if existingConfig.Config.Routers == nil {
-			existingConfig.Config.Routers = make(map[string]*dynamic.Router)
+			existingConfig.Config.Routers = make(map[string]*runtime.RouterInfo)
 		}
 		if existingConfig.Config.Services == nil {
-			existingConfig.Config.Services = make(map[string]*dynamic.Service)
+			existingConfig.Config.Services = make(map[string]*db.ServiceInfo)
 		}
 		if existingConfig.Config.TCPRouters == nil {
-			existingConfig.Config.TCPRouters = make(map[string]*dynamic.TCPRouter)
+			existingConfig.Config.TCPRouters = make(map[string]*runtime.TCPRouterInfo)
 		}
 		if existingConfig.Config.TCPServices == nil {
-			existingConfig.Config.TCPServices = make(map[string]*dynamic.TCPService)
+			existingConfig.Config.TCPServices = make(map[string]*runtime.TCPServiceInfo)
 		}
 		if existingConfig.Config.UDPRouters == nil {
-			existingConfig.Config.UDPRouters = make(map[string]*dynamic.UDPRouter)
+			existingConfig.Config.UDPRouters = make(map[string]*runtime.UDPRouterInfo)
 		}
 		if existingConfig.Config.UDPServices == nil {
-			existingConfig.Config.UDPServices = make(map[string]*dynamic.UDPService)
+			existingConfig.Config.UDPServices = make(map[string]*runtime.UDPServiceInfo)
 		}
 
 		// Ensure name has @http suffix
@@ -103,9 +103,9 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ID:     existingConfig.ID,
-			Source: source.Local,
-			Config: existingConfig.Config,
+			ProfileID: profileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -175,9 +175,9 @@ func DeleteRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ID:     existingConfig.ID,
-			Source: source.Local,
-			Config: existingConfig.Config,
+			ProfileID: profileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
 		})
 		if err != nil {
 			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)

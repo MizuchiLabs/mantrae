@@ -1,7 +1,5 @@
 <script lang="ts">
-	import ArrayInput from '../ui/array-input/array-input.svelte';
 	import RuleEditor from '../utils/ruleEditor.svelte';
-	import autoAnimate from '@formkit/auto-animate';
 	import logo from '$lib/images/logo.svg';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { CircleCheck, Lock } from 'lucide-svelte';
@@ -15,21 +13,27 @@
 	import * as Select from '$lib/components/ui/select';
 
 	interface Props {
-		router: Router | undefined;
+		router: Router;
+		mode: 'create' | 'edit';
 		disabled?: boolean;
 	}
 
-	let { router = $bindable({} as Router), disabled = false }: Props = $props();
-	let routerProvider = router.name ? router.name.split('@')[1].toLowerCase() : 'http';
+	let { router = $bindable({} as Router), mode, disabled = false }: Props = $props();
 
-	const getCertResolver = () => {
-		const certResolvers = $routers
-			.filter((item) => item.tls && item.tls.certResolver)
-			.map((item) => item.tls?.certResolver);
+	// Computed properties
+	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
+	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
+	let isHttpType = $derived(router.type === 'http');
+	let certResolvers = $derived([
+		...new Set(
+			$routers.filter((item) => item.tls?.certResolver).map((item) => item.tls?.certResolver)
+		)
+	]);
 
-		// Remove duplicates
-		return [...new Set(certResolvers)];
-	};
+	function handleTypeChange(type: 'http' | 'tcp' | 'udp') {
+		if (disabled) return;
+		router.type = type;
+	}
 
 	onMount(async () => {
 		await api.listDNSProviders();
@@ -38,25 +42,29 @@
 
 <Card.Root>
 	<Card.Header>
-		<Card.Title>Router</Card.Title>
-		<Card.Description>Configure your router settings</Card.Description>
+		<Card.Title>{mode === 'create' ? 'Add' : 'Update'} Router</Card.Title>
+		<Card.Description>
+			{mode === 'create' ? 'Create a new router' : 'Edit existing router'}
+		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
-		<!-- Provider -->
-		{#if routerProvider === 'http'}
-			<div class="flex items-center justify-end gap-1 font-mono text-sm" use:autoAnimate>
+		<!-- Provider Type Toggles -->
+		{#if isHttpProvider}
+			<div class="flex items-center justify-end gap-1 font-mono text-sm">
 				<Toggle
 					size="sm"
 					pressed={router.type === 'http'}
-					onPressedChange={() => (router.type = 'http')}
-					class="font-bold data-[state=on]:bg-green-300  dark:data-[state=on]:text-black"
+					onPressedChange={() => handleTypeChange('http')}
+					{disabled}
+					class="font-bold data-[state=on]:bg-green-300 dark:data-[state=on]:text-black"
 				>
 					HTTP
 				</Toggle>
 				<Toggle
 					size="sm"
 					pressed={router.type === 'tcp'}
-					onPressedChange={() => (router.type = 'tcp')}
+					onPressedChange={() => handleTypeChange('tcp')}
+					{disabled}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
 					TCP
@@ -64,7 +72,8 @@
 				<Toggle
 					size="sm"
 					pressed={router.type === 'udp'}
-					onPressedChange={() => (router.type = 'udp')}
+					onPressedChange={() => handleTypeChange('udp')}
+					{disabled}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
 					UDP
@@ -78,19 +87,18 @@
 			<div class="relative col-span-3">
 				<Input
 					id="name"
-					name="name"
-					type="text"
 					bind:value={router.name}
-					placeholder="Name of the router"
+					placeholder="Router name"
+					disabled={mode === 'edit'}
 					required
-					{disabled}
+					class="col-span-3"
 				/>
 				<!-- Icon based on provider -->
 				{#if routerProvider !== ''}
 					<span
 						class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
 					>
-						{#if routerProvider === 'http'}
+						{#if isHttpProvider}
 							<img src={logo} alt="HTTP" width="20" />
 						{/if}
 						{#if routerProvider === 'internal' || routerProvider === 'file'}
@@ -117,30 +125,20 @@
 		</div>
 
 		<!-- Entrypoints -->
-		{#if routerProvider === 'http'}
+		{#if isHttpProvider}
 			<div class="grid grid-cols-4 items-center gap-1">
-				<Label for="entrypoints" class="mr-2 text-right">Entrypoints</Label>
-				<Select.Root
-					type="multiple"
-					bind:value={router.entryPoints}
-					onValueChange={(value) => (router.entryPoints = value)}
-				>
+				<Label class="mr-2 text-right">Entrypoints</Label>
+				<Select.Root type="multiple" bind:value={router.entryPoints} {disabled}>
 					<Select.Trigger class="col-span-3">
-						{#if router.entryPoints && router.entryPoints.length > 0}
-							{router.entryPoints.join(', ')}
-						{:else}
-							Select an entrypoint
-						{/if}
+						{router.entryPoints?.length ? router.entryPoints.join(', ') : 'Select entrypoints'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each $entrypoints || [] as e}
-							<Select.Item value={e.name}>
-								<div class="flex flex-row items-center gap-2">
-									{e.name}
-									{#if e.http}
-										{#if 'tls' in e.http}
-											<Lock size="1rem" class="text-green-400" />
-										{/if}
+						{#each $entrypoints as ep}
+							<Select.Item value={ep.name}>
+								<div class="flex items-center gap-2">
+									{ep.name}
+									{#if ep.http?.tls}
+										<Lock size="1rem" class="text-green-400" />
 									{/if}
 								</div>
 							</Select.Item>
@@ -148,49 +146,51 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
-		{:else}
-			<ArrayInput
-				bind:items={router.entryPoints}
-				label="Entrypoints"
-				placeholder=""
-				disabled={true}
-			/>
 		{/if}
 
 		<!-- Middlewares -->
-		{#if routerProvider === 'http' && router.type !== 'udp'}
+		{#if router.type !== 'udp'}
 			<div class="grid grid-cols-4 items-center gap-1">
-				<Label for="middlewares" class="mr-2 text-right">Middlewares</Label>
-				<Select.Root
-					type="multiple"
-					value={router.middlewares}
-					onValueChange={(value) => (router.middlewares = value)}
-				>
+				<Label class="mr-2 text-right">Middlewares</Label>
+				<Select.Root type="multiple" bind:value={router.middlewares} {disabled}>
 					<Select.Trigger class="col-span-3">
-						{#if router.middlewares && router.middlewares.length > 0}
-							{router.middlewares.join(', ')}
-						{:else}
-							Select middlewares
-						{/if}
+						{router.middlewares?.length ? router.middlewares.join(', ') : 'Select middlewares'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each $middlewares as m}
-							{#if router.type === m.type}
-								<Select.Item value={m.name}>
-									{m.name}
-								</Select.Item>
-							{/if}
+						{#each $middlewares.filter((m) => m.type === router.type) as middleware}
+							<Select.Item value={middleware.name}>
+								{middleware.name}
+							</Select.Item>
 						{/each}
 					</Select.Content>
 				</Select.Root>
 			</div>
-		{:else if router.type !== 'udp'}
-			<ArrayInput
-				bind:items={router.middlewares}
-				label="Middlewares"
-				placeholder="None"
-				disabled={true}
-			/>
+		{/if}
+
+		<!-- TLS Configuration -->
+		{#if isHttpType && router.type !== 'udp' && router.tls}
+			<div class="grid grid-cols-4 items-center gap-1">
+				<Label class="mr-2 text-right">Cert Resolver</Label>
+				<div class="col-span-3 space-y-2">
+					<Input
+						bind:value={router.tls.certResolver}
+						placeholder="Certificate resolver"
+						{disabled}
+					/>
+					<div class="flex flex-wrap gap-1">
+						{#each certResolvers as resolver}
+							{#if resolver !== router.tls.certResolver}
+								<Badge
+									onclick={() => !disabled && router.tls && (router.tls.certResolver = resolver)}
+									class={disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+								>
+									{resolver}
+								</Badge>
+							{/if}
+						{/each}
+					</div>
+				</div>
+			</div>
 		{/if}
 
 		<!-- DNS Provider -->
@@ -211,35 +211,6 @@
 						{/each}
 					</Select.Content>
 				</Select.Root>
-			</div>
-		{/if}
-
-		<!-- CertResolver -->
-		{#if routerProvider === 'http' && router.type !== 'udp' && router.tls}
-			<div class="space-y-0.5">
-				<div class="grid grid-cols-4 items-center gap-1">
-					<Label for="certresolver" class="mr-2 text-right">CertResolver</Label>
-					<Input
-						id="certresolver"
-						name="certresolver"
-						type="text"
-						class="col-span-3 focus-visible:ring-0 focus-visible:ring-offset-0"
-						bind:value={router.tls.certResolver}
-						placeholder="Certificate resolver"
-					/>
-				</div>
-				<div class="grid grid-cols-4 flex-wrap items-center gap-1">
-					<div></div>
-					<div class="col-span-3">
-						{#each getCertResolver() || [] as r}
-							{#if router.tls.certResolver !== r}
-								<div onclick={() => (router.tls.certResolver = r)} aria-hidden="true">
-									<Badge>{r}</Badge>
-								</div>
-							{/if}
-						{/each}
-					</div>
-				</div>
 			</div>
 		{/if}
 

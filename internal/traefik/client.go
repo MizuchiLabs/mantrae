@@ -72,30 +72,29 @@ func GetTraefikConfig(q *db.Queries) {
 			continue
 		}
 
-		// Check if traefik config exists
-		traefikConfig, err := q.GetTraefikConfig(context.Background(), profile.ID)
+		vResponse, err := fetch(profile, VersionAPI)
 		if err != nil {
-			if err := q.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
-				ProfileID:   profile.ID,
-				Entrypoints: &entrypoints,
-				Overview:    &overview,
-				Config:      &config,
-				Source:      source.API,
-			}); err != nil {
-				slog.Error("Failed to update Traefik config", "error", err)
-				continue
-			}
-		} else {
-			if err := q.UpdateTraefikConfig(context.Background(), db.UpdateTraefikConfigParams{
-				ID:          traefikConfig.ID,
-				Entrypoints: &entrypoints,
-				Overview:    &overview,
-				Config:      &config,
-				Source:      source.API,
-			}); err != nil {
-				slog.Error("Failed to update Traefik config", "error", err)
-				continue
-			}
+			slog.Error("Failed to fetch raw data", "error", err)
+			continue
+		}
+		defer vResponse.Close()
+
+		var version db.TraefikVersion
+		if err := json.NewDecoder(vResponse).Decode(&version); err != nil {
+			slog.Error("Failed to decode raw data", "error", err)
+			continue
+		}
+
+		if err := q.UpdateTraefikConfig(context.Background(), db.UpdateTraefikConfigParams{
+			ProfileID:   profile.ID,
+			Entrypoints: &entrypoints,
+			Overview:    &overview,
+			Version:     &version.Version,
+			Config:      &config,
+			Source:      source.API,
+		}); err != nil {
+			slog.Error("Failed to update Traefik config", "error", err)
+			continue
 		}
 	}
 

@@ -3,41 +3,84 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { type Router, type Service } from '$lib/types/router';
+	import { type Router, type Service, type UpsertRouterParams } from '$lib/types/router';
 	import { toast } from 'svelte-sonner';
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
 
 	interface Props {
-		router: Router | undefined;
-		service: Service | undefined;
+		router?: Router;
+		service?: Service;
 		open?: boolean;
-		disabled?: boolean;
+		mode: 'create' | 'edit';
 	}
 
+	const defaultRouter: Router = {
+		name: '',
+		type: 'http',
+		tls: {},
+		entryPoints: [],
+		middlewares: [],
+		rule: '',
+		service: ''
+	};
+
+	const defaultService: Service = {
+		name: '',
+		type: 'http',
+		loadBalancer: {
+			servers: [],
+			passHostHeader: true
+		}
+	};
+
 	let {
-		router = $bindable({} as Router),
-		service = $bindable({} as Service),
+		router = $bindable(defaultRouter),
+		service = $bindable(defaultService),
 		open = $bindable(false),
-		disabled = false
+		mode = 'create'
 	}: Props = $props();
 
 	const update = async () => {
 		try {
-			await api.upsertRouter($profile.id, router);
+			// Ensure proper name formatting and synchronization
+			if (!router.name.includes('@')) {
+				router.name = `${router.name}@http`;
+			}
+
+			// Sync service name with router
+			service.name = router.name;
+			router.service = router.name;
+
+			let params: UpsertRouterParams = {
+				name: router.name,
+				type: router.type
+			};
+			switch (router.type) {
+				case 'http':
+					params.router = router;
+					params.service = service;
+					break;
+				case 'tcp':
+					params.tcpRouter = router;
+					params.tcpService = service;
+					break;
+				case 'udp':
+					params.udpRouter = router;
+					params.udpService = service;
+					break;
+			}
+
+			await api.upsertRouter($profile.id, params);
 			open = false;
-		} catch (e) {
-			toast.error('Failed to save router', {
+			toast.success(`Router ${mode === 'create' ? 'created' : 'updated'} successfully`);
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(`Failed to ${mode} router`, {
 				description: e.message
 			});
 		}
 	};
-
-	// Set defaults
-	$effect(() => {
-		router.type = router.type || 'http';
-		router.tls = router.tls || {};
-	});
 </script>
 
 <Dialog.Root bind:open>
@@ -48,10 +91,18 @@
 				<Tabs.Trigger value="service">Service</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="router">
-				<RouterForm {router} {disabled} />
+				<RouterForm
+					bind:router
+					{mode}
+					disabled={mode === 'edit' && router.name?.split('@')[1] !== 'http'}
+				/>
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm {service} {router} {disabled} />
+				<ServiceForm
+					bind:service
+					{router}
+					disabled={mode === 'edit' && router.name?.split('@')[1] !== 'http'}
+				/>
 			</Tabs.Content>
 		</Tabs.Root>
 		<Button class="w-full" onclick={() => update()}>Save</Button>

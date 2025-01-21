@@ -1,7 +1,8 @@
-import { goto } from '$app/navigation';
-import { api, user } from '$lib/api';
-import { TOKEN_SK } from '$lib/store';
 import type { LayoutLoad } from './$types';
+import { TOKEN_SK } from '$lib/store';
+import { api, user } from '$lib/api';
+import { goto } from '$app/navigation';
+import { toast } from 'svelte-sonner';
 
 export const ssr = false;
 export const prerender = true;
@@ -35,13 +36,15 @@ export const load: LayoutLoad = async ({ url }) => {
 				await goto('/');
 			}
 			return;
-		} catch (error) {
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err : new Error(String(err));
 			// Token verification failed
 			api.logout();
 			if (!isPublicRoute) {
-				await goto('/login/');
+				await goto('/login');
 			}
 			user.set(null);
+			toast.error('Session expired', { description: error.message });
 			return;
 		}
 	}

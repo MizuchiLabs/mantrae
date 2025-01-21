@@ -17,8 +17,9 @@ export function newMiddleware(): Middleware {
 
 export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 	const flatMiddleware: Middleware[] = [];
+	if (!config) return flatMiddleware;
 
-	Object.entries(config.Middlewares || {}).forEach(([name, middleware]) => {
+	Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
 		flatMiddleware.push({
 			name,
 			type: 'http',
@@ -26,7 +27,7 @@ export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 		});
 	});
 
-	Object.entries(config.TCPMiddlewares || {}).forEach(([name, middleware]) => {
+	Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
 		flatMiddleware.push({
 			name,
 			type: 'tcp',

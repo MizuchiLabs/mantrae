@@ -1,9 +1,27 @@
-import { get, writable, type Writable } from 'svelte/store';
-import type { Agent, DNSProvider, Plugin, Profile, Setting, TraefikConfig, User } from './types';
-import { PROFILE_SK, TOKEN_SK } from './store';
-import { flattenRouterData, flattenServiceData, type Router, type Service } from './types/router';
+import {
+	TraefikSource,
+	type Agent,
+	type DNSProvider,
+	type Plugin,
+	type Profile,
+	type Setting,
+	type TraefikConfig,
+	type User
+} from './types';
 import type { EntryPoints } from './types/entrypoints';
+import { PROFILE_SK, TOKEN_SK } from './store';
 import { flattenMiddlewareData, type Middleware } from './types/middlewares';
+import {
+	flattenRouterData,
+	flattenServiceData,
+	type Router,
+	type Service,
+	type UpsertRouterParams
+} from './types/router';
+import { get, writable, type Writable } from 'svelte/store';
+import { toast } from 'svelte-sonner';
+import { goto } from '$app/navigation';
+import type { Overview } from './types/overview';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -13,6 +31,8 @@ export const BASE_URL = import.meta.env.PROD ? '/api' : `http://127.0.0.1:${BACK
 export const profiles: Writable<Profile[]> = writable();
 export const traefik: Writable<TraefikConfig> = writable();
 export const entrypoints: Writable<EntryPoints[]> = writable([]);
+export const overview: Writable<Overview> = writable({} as Overview);
+export const version: Writable<string> = writable('');
 export const routers: Writable<Router[]> = writable([]);
 export const services: Writable<Service[]> = writable([]);
 export const middlewares: Writable<Middleware[]> = writable([]);
@@ -25,6 +45,7 @@ export const plugins: Writable<Plugin[]> = writable([]);
 // App state
 export const profile: Writable<Profile> = writable({} as Profile);
 export const user: Writable<User | null> = writable({} as User);
+export const source: Writable<TraefikSource> = writable({} as TraefikSource);
 
 // Loading and error states
 export const loading = writable<boolean>(false);
@@ -58,9 +79,9 @@ async function send(endpoint: string, options: APIOptions = {}) {
 		if (response.status !== 204) {
 			return await response.json();
 		}
-	} catch (e) {
-		error.set(e.message);
-		throw e;
+	} catch (err: unknown) {
+		error.set(err instanceof Error ? err.message : String(err));
+		throw err;
 	} finally {
 		loading.set(false);
 	}
@@ -76,6 +97,7 @@ export const api = {
 		});
 		if (data.token) {
 			localStorage.setItem(TOKEN_SK, data.token);
+			goto('/');
 		}
 		return data;
 	},
@@ -88,8 +110,10 @@ export const api = {
 				body: token
 			});
 			return data;
-		} catch (_) {
-			localStorage.removeItem(TOKEN_SK);
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Session expired', { description: error });
+			api.logout();
 			return;
 		}
 	},
@@ -104,13 +128,13 @@ export const api = {
 
 	logout() {
 		localStorage.removeItem(TOKEN_SK);
+		goto('/login');
 	},
 
 	// Profiles ------------------------------------------------------------------
 	async listProfiles() {
 		const data = await send('/profile');
 		profiles.set(data);
-		return data;
 	},
 
 	async getProfile(id: number) {
@@ -143,16 +167,21 @@ export const api = {
 	},
 
 	// Traefik -------------------------------------------------------------------
-	async getTraefikConfig(id: number) {
-		const res = await send(`/traefik/${id}`);
-		traefik.set(res);
-		entrypoints.set(res.entrypoints);
-		routers.set(flattenRouterData(res.config));
-		services.set(flattenServiceData(res.config));
-		middlewares.set(flattenMiddlewareData(res.config));
+	async getTraefikConfig(id: number, source: TraefikSource) {
+		if (source === TraefikSource.API) {
+			// For API source, fetch everything from Traefik
+			const hasMetadata = await fetchTraefikMetadata(id);
+			if (hasMetadata) {
+				await fetchTraefikConfig(id, source);
+			}
+		} else {
+			// For everything else, fetch metadata from API and config from source
+			await fetchTraefikMetadata(id);
+			await fetchTraefikConfig(id, source);
+		}
 	},
 
-	async upsertRouter(id: number, data: unknown) {
+	async upsertRouter(id: number, data: UpsertRouterParams) {
 		return await send(`/router/${id}`, {
 			method: 'POST',
 			body: data
@@ -296,6 +325,42 @@ export const api = {
 		return data;
 	}
 };
+
+// Helper
+async function fetchTraefikMetadata(id: number) {
+	const res = await send(`/traefik/${id}/${TraefikSource.API}`);
+	if (!res) {
+		// Reset metadata stores
+		traefik.set({} as TraefikConfig);
+		overview.set({} as Overview);
+		entrypoints.set([]);
+		version.set('');
+		return false;
+	}
+
+	// Set metadata stores
+	traefik.set(res);
+	overview.set(res.overview);
+	entrypoints.set(res.entrypoints);
+	version.set(res.version);
+	return true;
+}
+
+async function fetchTraefikConfig(id: number, source: TraefikSource) {
+	const res = await send(`/traefik/${id}/${source}`);
+	if (!res) {
+		// Reset routing stores
+		routers.set([]);
+		services.set([]);
+		middlewares.set([]);
+		return;
+	}
+
+	// Set routing stores
+	routers.set(flattenRouterData(res.config));
+	services.set(flattenServiceData(res.config));
+	middlewares.set(flattenMiddlewareData(res.config));
+}
 
 // Login ----------------------------------------------------------------------
 // export async function login(username: string, password: string, remember: boolean) {

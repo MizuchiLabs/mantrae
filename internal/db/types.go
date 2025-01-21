@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
 type EntryPointAPI struct {
@@ -61,15 +61,26 @@ type SchemeOverview struct {
 	Middleware Section `json:"middlewares,omitempty"`
 }
 
+type TraefikVersion struct {
+	Version   string `json:"version,omitempty"`
+	Codename  string `json:"codename,omitempty"`
+	StartDate string `json:"startDate,omitempty"`
+}
+
+type ServiceInfo struct {
+	*runtime.ServiceInfo
+	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+}
+
 type TraefikConfiguration struct {
-	Routers        map[string]*dynamic.Router
-	Middlewares    map[string]*dynamic.Middleware
-	Services       map[string]*dynamic.Service
-	TCPRouters     map[string]*dynamic.TCPRouter
-	TCPMiddlewares map[string]*dynamic.TCPMiddleware
-	TCPServices    map[string]*dynamic.TCPService
-	UDPRouters     map[string]*dynamic.UDPRouter
-	UDPServices    map[string]*dynamic.UDPService
+	Routers        map[string]*runtime.RouterInfo        `json:"routers,omitempty"`
+	Middlewares    map[string]*runtime.MiddlewareInfo    `json:"middlewares,omitempty"`
+	Services       map[string]*ServiceInfo               `json:"services,omitempty"`
+	TCPRouters     map[string]*runtime.TCPRouterInfo     `json:"tcpRouters,omitempty"`
+	TCPMiddlewares map[string]*runtime.TCPMiddlewareInfo `json:"tcpMiddlewares,omitempty"`
+	TCPServices    map[string]*runtime.TCPServiceInfo    `json:"tcpServices,omitempty"`
+	UDPRouters     map[string]*runtime.UDPRouterInfo     `json:"udpRouters,omitempty"`
+	UDPServices    map[string]*runtime.UDPServiceInfo    `json:"udpServices,omitempty"`
 }
 
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type

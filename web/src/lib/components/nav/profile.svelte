@@ -10,18 +10,18 @@
 	import { onMount } from 'svelte';
 	import { PROFILE_SK } from '$lib/store';
 
-	let editProfile: Partial<Profile> | undefined = $state();
+	let editProfile: Profile = $state({} as Profile);
 	let openPopover = $state(false);
 	let openModal = $state(false);
 	let triggerRef = $state<HTMLButtonElement>(null!);
 
 	const profileModal = (p?: Profile) => {
-		editProfile = p ?? {};
+		editProfile = p ?? ({} as Profile);
 		openModal = true;
 		openPopover = false;
 	};
 
-	function changeProfile(p: Profile) {
+	async function changeProfile(p: Profile) {
 		localStorage.setItem(PROFILE_SK, p.id.toString());
 		profile.set(p);
 		openPopover = false;

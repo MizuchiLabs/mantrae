@@ -34,20 +34,18 @@
 		Plus,
 		Search
 	} from 'lucide-svelte';
-	import type { Component } from 'svelte';
 
-	type DataTableProps<TData, TValue, TModalProps extends Record<string, unknown>> = {
+	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
 		createButton?: {
 			label: string;
-			modal: Component<TModalProps>;
-			props?: TModalProps;
+			onClick: () => void;
 		};
 		onRowSelection?: (selectedRows: TData[]) => void;
 	};
 
-	let { data, columns, createButton }: DataTableProps<TData, TValue, TModalProps> = $props();
+	let { data, columns, createButton }: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
 	const pageSizeOptions = [10, 20, 30, 40, 50];
@@ -166,11 +164,6 @@
 	});
 </script>
 
-{#if createButton}
-	{@const CreateModal = createButton.modal}
-	<CreateModal bind:open={modalOpen} {...createButton.props} />
-{/if}
-
 <div>
 	<div class="flex items-center justify-between gap-4 py-4">
 		<div class="relative flex items-center">
@@ -209,7 +202,7 @@
 		</DropdownMenu.Root>
 
 		{#if createButton}
-			<Button variant="default" onclick={() => (modalOpen = true)}>
+			<Button variant="default" onclick={createButton.onClick}>
 				<Plus />
 				{createButton.label}
 			</Button>
@@ -219,7 +212,8 @@
 	{#if table.getSelectedRowModel().rows.length > 0}
 		<div class="my-2 flex items-center gap-2 rounded-md bg-muted/50 p-2">
 			<span class="text-sm text-muted-foreground">
-				{table.getSelectedRowModel().rows.length} item(s) selected
+				{table.getFilteredSelectedRowModel().rows.length} of{' '}
+				{table.getFilteredRowModel().rows.length} item(s) selected.
 			</span>
 			<Button variant="destructive" size="sm">Delete Selected</Button>
 		</div>
@@ -286,7 +280,9 @@
 				type="single"
 				allowDeselect={false}
 				value={pagination.pageSize.toString()}
-				onValueChange={(value) => (pagination.pageSize = Number(value))}
+				onValueChange={(value) => (
+					table.setPageSize(Number(value)), (pagination.pageSize = Number(value))
+				)}
 			>
 				<Select.Trigger class="w-[180px]">
 					{pagination.pageSize}

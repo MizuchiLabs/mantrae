@@ -13,14 +13,12 @@ import (
 type Flags struct {
 	Version bool
 	Update  bool
-	Reset   bool
 }
 
 func ParseFlags() (*Flags, error) {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
-	flag.BoolVar(&f.Reset, "reset", false, "Reset the default admin password")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
