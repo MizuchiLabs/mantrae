@@ -8,10 +8,9 @@
 	import type { Router, Service, TLS } from '$lib/types/router';
 	import { Edit, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, profile, routers, services } from '$lib/api';
+	import { api, profile, routers, services, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { SOURCE_TAB_SK } from '$lib/store';
 
 	interface RouterModalState {
 		isOpen: boolean;
@@ -162,8 +161,7 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				const provider = row.getValue('provider') as string;
-				if (provider === 'http') {
+				if ($source === TraefikSource.LOCAL) {
 					return renderComponent(TableActions, {
 						actions: [
 							{
@@ -200,26 +198,6 @@
 		}
 	];
 
-	let selectedTab = $state(localStorage.getItem(SOURCE_TAB_SK) || TraefikSource.LOCAL);
-
-	// Update localStorage and fetch config when tab changes
-	function handleTabChange(value: string) {
-		localStorage.setItem(SOURCE_TAB_SK, value);
-		selectedTab = value;
-		fetchTraefikConfig();
-	}
-
-	// Fetch config based on selected source
-	async function fetchTraefikConfig() {
-		if (!$profile?.id) return;
-		const source = selectedTab === TraefikSource.API ? TraefikSource.API : TraefikSource.LOCAL;
-		await api.getTraefikConfig($profile.id, source);
-	}
-
-	profile.subscribe(async (value) => {
-		if (!value?.id) return;
-		await fetchTraefikConfig();
-	});
 	$effect(() => {
 		if ($routers?.length) {
 			mergedData = $routers.map((router) => {
@@ -239,7 +217,7 @@
 	<title>Routers</title>
 </svelte:head>
 
-<Tabs.Root value={selectedTab} onValueChange={handleTabChange}>
+<Tabs.Root value={$source}>
 	<Tabs.Content value={TraefikSource.LOCAL}>
 		<div class="flex flex-col gap-4">
 			<div class="flex flex-col justify-start">

@@ -182,29 +182,33 @@ export const api = {
 	},
 
 	async upsertRouter(id: number, data: UpsertRouterParams) {
-		return await send(`/router/${id}`, {
+		await send(`/router/${id}`, {
 			method: 'POST',
 			body: data
 		});
+		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
 	async deleteRouter(id: number, name: string, type: string) {
-		return await send(`/router/${id}/${name}/${type}`, {
+		await send(`/router/${id}/${name}/${type}`, {
 			method: 'DELETE'
 		});
+		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
 	async upsertMiddleware(id: number, data: unknown) {
-		return await send(`/middleware/${id}`, {
+		await send(`/middleware/${id}`, {
 			method: 'POST',
 			body: data
 		});
+		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
 	async deleteMiddleware(id: number, name: string, type: string) {
-		return await send(`/middleware/${id}/${name}/${type}`, {
+		await send(`/middleware/${id}/${name}/${type}`, {
 			method: 'DELETE'
 		});
+		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
 	// DNS Providers -------------------------------------------------------------

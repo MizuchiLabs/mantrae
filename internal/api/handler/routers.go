@@ -62,6 +62,9 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Initialize maps if nil
+		if existingConfig.Config == nil {
+			existingConfig.Config = &db.TraefikConfiguration{}
+		}
 		if existingConfig.Config.Routers == nil {
 			existingConfig.Config.Routers = make(map[string]*runtime.RouterInfo)
 		}

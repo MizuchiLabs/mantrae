@@ -89,7 +89,7 @@
 					id="name"
 					bind:value={router.name}
 					placeholder="Router name"
-					disabled={mode === 'edit'}
+					disabled={!isHttpProvider}
 					required
 					class="col-span-3"
 				/>
