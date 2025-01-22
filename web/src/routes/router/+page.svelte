@@ -12,14 +12,14 @@
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 
-	interface RouterModalState {
+	interface ModalState {
 		isOpen: boolean;
 		mode: 'create' | 'edit';
 		router?: Router;
 		service?: Service;
 	}
 
-	const initialModalState: RouterModalState = {
+	const initialModalState: ModalState = {
 		isOpen: false,
 		mode: 'create'
 	};
@@ -74,13 +74,13 @@
 			}
 		},
 		{
-			header: 'Type',
-			accessorFn: (row) => row.router.type,
-			id: 'type',
+			header: 'Protocol',
+			accessorFn: (row) => row.router.protocol,
+			id: 'protocol',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const type = row.getValue('type') as string;
-				return renderComponent(ColumnBadge, { label: type });
+				const protocol = row.getValue('protocol') as string;
+				return renderComponent(ColumnBadge, { label: protocol });
 			}
 		},
 		{
@@ -176,7 +176,7 @@
 								icon: Trash,
 								variant: 'destructive',
 								onClick: () => {
-									deleteRouter(row.original.router.name, row.original.router.type);
+									deleteRouter(row.original.router.name, row.original.router.protocol);
 								}
 							}
 						]
@@ -197,6 +197,12 @@
 			}
 		}
 	];
+
+	profile.subscribe((value) => {
+		if (value.id) {
+			api.getTraefikConfig(value.id, $source);
+		}
+	});
 
 	$effect(() => {
 		if ($routers?.length) {

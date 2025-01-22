@@ -1,89 +1,154 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { deleteMiddleware, middlewares } from '$lib/api';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import Pagination from '$lib/components/tables/pagination.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import type { Selected } from 'bits-ui';
-	import { newMiddleware, type Middleware } from '$lib/types/middlewares';
-	import Search from '$lib/components/tables/search.svelte';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
+	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
-	import { Eye, Pencil, Plus, X } from 'lucide-svelte';
-	import { LIMIT_SK, MIDDLEWARE_COLUMN_SK } from '$lib/store';
-	import { profile, getMiddlewares } from '$lib/api';
+	import TableActions from '$lib/components/tables/TableActions.svelte';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import type { Middleware } from '$lib/types/middlewares';
+	import { Edit, Trash } from 'lucide-svelte';
+	import { TraefikSource } from '$lib/types';
+	import { api, profile, middlewares, source } from '$lib/api';
+	import { renderComponent } from '$lib/components/ui/data-table';
+	import { toast } from 'svelte-sonner';
 
-	let search = $state('');
-	let count = $state(0);
-	let currentPage = $state(1);
-	let fMiddlewares: Middleware[] = $state([]);
-	let perPage: Selected<number> | undefined = $state(JSON.parse(
-		localStorage.getItem(LIMIT_SK) ?? '{"value": 10, "label": "10"}'
-	));
-
-
-	function searchMiddleware() {
-		if ($middlewares === undefined) return;
-		let items = $middlewares?.filter((middleware) => {
-			const searchParts = search.toLowerCase().split(' ');
-			return searchParts.every((part) =>
-				part.startsWith('@provider:')
-					? middleware.provider?.toLowerCase() === part.split(':')[1]
-					: part.startsWith('@type:')
-						? middleware.type?.toLowerCase() === part.split(':')[1]
-						: middleware.name.toLowerCase().includes(part)
-			);
-		});
-
-		count = items?.length || 1;
-		fMiddlewares = paginate(items);
+	interface ModalState {
+		isOpen: boolean;
+		mode: 'create' | 'edit';
+		middleware?: Middleware;
 	}
 
-	const paginate = (middlewares: Middleware[]) => {
-		const itemsPerPage = perPage?.value ?? 10;
-		return middlewares?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) ?? [];
+	const initialModalState: ModalState = {
+		isOpen: false,
+		mode: 'create'
 	};
 
-	let middleware = $state(newMiddleware());
-	let openModal = $state(false);
-	let disabled = $state(false);
-	const createModal = async () => {
-		middleware = newMiddleware();
-		disabled = false;
-		openModal = true;
-	};
-	const updateModal = async (m: Middleware) => {
-		if (m.provider === 'http') {
-			disabled = false;
-		} else {
-			disabled = true;
+	let modalState = $state(initialModalState);
+
+	function openCreateModal() {
+		modalState = {
+			isOpen: true,
+			mode: 'create'
+		};
+	}
+
+	function openEditModal(middleware: Middleware) {
+		modalState = {
+			isOpen: true,
+			mode: 'edit',
+			middleware
+		};
+	}
+
+	const deleteMiddleware = async (name: string | undefined, type: string) => {
+		if (!name) return;
+		try {
+			let provider = name.split('@')[1];
+			if (provider !== 'http') {
+				toast.error('Middleware not managed by Mantrae!');
+				return;
+			}
+
+			await api.deleteRouter($profile.id, name, type);
+			toast.success('Middleware deleted');
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(e.message);
 		}
-		middleware = m;
-		openModal = true;
 	};
 
-	let columns: Selected<string>[] | undefined = [
-		{ value: 'name', label: 'Name' },
-		{ value: 'provider', label: 'Provider' },
-		{ value: 'type', label: 'Type' }
+	const columns: ColumnDef<Middleware>[] = [
+		{
+			header: 'Name',
+			accessorKey: 'name',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const name = row.getValue('name') as string;
+				if (!name) return;
+				return name.split('@')[0];
+			}
+		},
+		{
+			header: 'Protocol',
+			accessorKey: 'protocol',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const protocol = row.getValue('protocol') as string;
+				if (!protocol) return;
+				return renderComponent(ColumnBadge, { label: protocol });
+			}
+		},
+		{
+			header: 'Type',
+			accessorKey: 'type',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const type = row.getValue('type') as string;
+				if (!type) return;
+				return renderComponent(ColumnBadge, { label: type });
+			}
+		},
+		{
+			header: 'Provider',
+			accessorFn: (row) => row.name,
+			id: 'provider',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const name = row.getValue('provider') as string;
+				if (!name) return;
+				return renderComponent(ColumnBadge, {
+					label: name.split('@')[1].toLowerCase(),
+					variant: 'secondary'
+				});
+			}
+		},
+		{
+			id: 'actions',
+			cell: ({ row }) => {
+				if ($source === TraefikSource.LOCAL) {
+					return renderComponent(TableActions, {
+						actions: [
+							{
+								label: 'Edit Middleware',
+								icon: Edit,
+								onClick: () => {
+									openEditModal(row.original);
+								}
+							},
+							{
+								label: 'Delete Middleware',
+								icon: Trash,
+								variant: 'destructive',
+								onClick: () => {
+									deleteMiddleware(row.original.name, row.original.protocol);
+								}
+							}
+						]
+					});
+				} else {
+					return renderComponent(TableActions, {
+						actions: [
+							{
+								label: 'Edit Middleware',
+								icon: Edit,
+								onClick: () => {
+									openEditModal(row.original);
+								}
+							}
+						]
+					});
+				}
+			}
+		}
 	];
-	let fColumns: string[] = $state(JSON.parse(
-		localStorage.getItem(MIDDLEWARE_COLUMN_SK) ?? JSON.stringify(columns.map((c) => c.value))
-	));
 
 	profile.subscribe((value) => {
-		if (!value?.id) return;
-		getMiddlewares();
-	});
-	// Reset the page to 1 when the search input changes
-	run(() => {
-		if (search) {
-			currentPage = 1;
+		if (value.id) {
+			api.getTraefikConfig(value.id, $source);
 		}
 	});
-	run(() => {
-		search, $middlewares, currentPage, perPage, searchMiddleware();
+	$effect(() => {
+		console.log($middlewares);
 	});
 </script>
 
@@ -91,119 +156,43 @@
 	<title>Middlewares</title>
 </svelte:head>
 
-<MiddlewareModal {middleware} bind:open={openModal} bind:disabled />
-
-<div class="mt-4 flex flex-col gap-4 p-4">
-	<Search bind:search {columns} columnName="middleware-columns" bind:fColumns />
-
-	<Card.Root>
-		<Card.Header class="grid grid-cols-2 items-center justify-between">
-			<div>
-				<Card.Title>Middlewares</Card.Title>
-				<Card.Description
-					>Total middlewares managed by Mantrae {$middlewares?.filter((m) => m.provider === 'http')
-						.length}</Card.Description
-				>
+<Tabs.Root value={$source}>
+	<Tabs.Content value={TraefikSource.LOCAL}>
+		<div class="flex flex-col gap-4">
+			<div class="flex flex-col justify-start">
+				<h1 class="text-2xl font-bold">Middleware Management</h1>
+				<span class="text-sm text-muted-foreground">Total Middlewares: {$middlewares.length}</span>
 			</div>
-			<div class="justify-self-end">
-				<Button
-					variant="secondary"
-					class="flex items-center gap-2 bg-red-400 text-black"
-					on:click={createModal}
-				>
-					<span>Add Middleware</span>
-					<Plus size="1rem" />
-				</Button>
+			<DataTable
+				{columns}
+				data={$middlewares || []}
+				createButton={{
+					label: 'Add Middleware',
+					onClick: openCreateModal
+				}}
+			/>
+		</div>
+	</Tabs.Content>
+	<Tabs.Content value={TraefikSource.API}>
+		<div class="flex flex-col gap-4">
+			<div class="flex flex-col justify-start">
+				<h1 class="text-2xl font-bold">Middleware Management</h1>
+				<span class="text-sm text-muted-foreground">Total Middlewares: {$middlewares.length}</span>
 			</div>
-		</Card.Header>
-		<Card.Content>
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						{#if fColumns.includes('name')}
-							<Table.Head>Name</Table.Head>
-						{/if}
-						{#if fColumns.includes('provider')}
-							<Table.Head>Provider</Table.Head>
-						{/if}
-						{#if fColumns.includes('type')}
-							<Table.Head class="hidden md:table-cell">Type</Table.Head>
-						{/if}
-						<Table.Head>
-							<span class="sr-only">Delete</span>
-						</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each fMiddlewares as middleware}
-						<Table.Row>
-							<Table.Cell
-								class={fColumns.includes('name')
-									? 'max-w-[180px] overflow-hidden text-ellipsis whitespace-nowrap'
-									: 'hidden'}
-							>
-								{middleware.name.split('@')[0]}
-							</Table.Cell>
-							<Table.Cell class={fColumns.includes('provider') ? 'font-medium' : 'hidden'}>
-								<span
-									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									onclick={() => (search = `@provider:${middleware.provider}`)}
-									aria-hidden
-								>
-									{middleware.provider}
-								</span>
-							</Table.Cell>
-							<Table.Cell class={fColumns.includes('type') ? 'font-medium' : 'hidden'}>
-								<span
-									class="inline-flex cursor-pointer select-none items-center rounded-full bg-slate-300 px-2.5 py-0.5 text-xs font-semibold text-slate-800 hover:bg-red-300 focus:outline-none"
-									onclick={() => (search = `@type:${middleware.type}`)}
-									aria-hidden
-								>
-									{middleware.type}
-								</span>
-							</Table.Cell>
-							<Table.Cell class="min-w-[100px]">
-								{#if middleware.provider === 'http'}
-									<Button
-										variant="ghost"
-										class="h-8 w-8 rounded-full bg-orange-400"
-										size="icon"
-										on:click={() => updateModal(middleware)}
-									>
-										<Pencil size="1rem" />
-									</Button>
-									<Button
-										variant="ghost"
-										class="h-8 w-8 rounded-full bg-red-400"
-										size="icon"
-										on:click={() => deleteMiddleware(middleware)}
-									>
-										<X size="1rem" />
-									</Button>
-								{:else}
-									<Button
-										variant="ghost"
-										class="h-8 w-8 rounded-full bg-green-400"
-										size="icon"
-										on:click={() => updateModal(middleware)}
-									>
-										<Eye size="1rem" />
-									</Button>
-								{/if}
-							</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
-		</Card.Content>
-		<Card.Footer>
-			<div class="text-xs text-muted-foreground">
-				Showing <strong>{fMiddlewares?.length > 0 ? 1 : 0}-{fMiddlewares?.length ?? 0}</strong>
-				of
-				<strong>{$middlewares?.length ?? 0}</strong> middlewares
-			</div>
-		</Card.Footer>
-	</Card.Root>
+			<DataTable
+				{columns}
+				data={$middlewares || []}
+				createButton={{
+					label: 'Add Middleware',
+					onClick: openCreateModal
+				}}
+			/>
+		</div>
+	</Tabs.Content>
+</Tabs.Root>
 
-	<Pagination {count} bind:perPage bind:currentPage />
-</div>
+<MiddlewareModal
+	bind:open={modalState.isOpen}
+	mode={modalState.mode}
+	middleware={modalState.middleware}
+/>

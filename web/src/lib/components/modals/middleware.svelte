@@ -1,34 +1,66 @@
 <script lang="ts">
-	import { upsertMiddleware } from '$lib/api';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import type { Middleware } from '$lib/types/middlewares';
 	import MiddlewareForm from '../forms/middleware.svelte';
-	import { cleanEmptyObjects } from '../utils/validation';
+	import type { Middleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { api, profile } from '$lib/api';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
-		middleware: Middleware;
+		middleware?: Middleware;
 		open?: boolean;
-		disabled?: boolean;
+		mode: 'create' | 'edit';
 	}
 
-	let { middleware = $bindable(), open = $bindable(false), disabled = false }: Props = $props();
+	const defaultMiddleware: Middleware = {
+		name: '',
+		protocol: 'http'
+	};
+
+	let {
+		middleware = $bindable(defaultMiddleware),
+		open = $bindable(false),
+		mode = 'create'
+	}: Props = $props();
+
+	let disabled = middleware.name.split('@')[1] !== 'http';
 
 	const update = async () => {
-		if (middleware.name === '') return;
-		cleanEmptyObjects(middleware.content);
-		await upsertMiddleware(middleware);
-		open = false;
+		try {
+			// Ensure proper name formatting and synchronization
+			if (!middleware.name.includes('@')) {
+				middleware.name = `${middleware.name}@http`;
+			}
+
+			let params: UpsertMiddlewareParams = {
+				name: middleware.name,
+				protocol: middleware.protocol,
+				type: middleware.type
+			};
+			switch (middleware.type) {
+				case 'http':
+					params.middleware = middleware;
+					break;
+				case 'tcp':
+					params.tcpMiddleware = middleware;
+					break;
+			}
+
+			await api.upsertMiddleware($profile.id, params.middleware);
+			open = false;
+			toast.success(`Middleware ${mode === 'create' ? 'created' : 'updated'} successfully`);
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(`Failed to ${mode} router`, {
+				description: e.message
+			});
+		}
 	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
-		<MiddlewareForm bind:middleware {disabled} />
-		{#if disabled}
-			<Button class="w-full" on:click={() => (open = false)}>Close</Button>
-		{:else}
-			<Button type="submit" class="w-full" on:click={() => update()}>Save</Button>
-		{/if}
+		<MiddlewareForm bind:middleware {mode} {disabled} />
+		<Button type="submit" class="w-full" onclick={() => update()}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

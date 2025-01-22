@@ -23,16 +23,16 @@
 	// Computed properties
 	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
 	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
-	let isHttpType = $derived(router.type === 'http');
+	let isHttpType = $derived(router.protocol === 'http');
 	let certResolvers = $derived([
 		...new Set(
 			$routers.filter((item) => item.tls?.certResolver).map((item) => item.tls?.certResolver)
 		)
 	]);
 
-	function handleTypeChange(type: 'http' | 'tcp' | 'udp') {
+	function handleTypeChange(protocol: 'http' | 'tcp' | 'udp') {
 		if (disabled) return;
-		router.type = type;
+		router.protocol = protocol;
 	}
 
 	onMount(async () => {
@@ -53,7 +53,7 @@
 			<div class="flex items-center justify-end gap-1 font-mono text-sm">
 				<Toggle
 					size="sm"
-					pressed={router.type === 'http'}
+					pressed={router.protocol === 'http'}
 					onPressedChange={() => handleTypeChange('http')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-green-300 dark:data-[state=on]:text-black"
@@ -62,7 +62,7 @@
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.type === 'tcp'}
+					pressed={router.protocol === 'tcp'}
 					onPressedChange={() => handleTypeChange('tcp')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
@@ -71,7 +71,7 @@
 				</Toggle>
 				<Toggle
 					size="sm"
-					pressed={router.type === 'udp'}
+					pressed={router.protocol === 'udp'}
 					onPressedChange={() => handleTypeChange('udp')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
@@ -149,7 +149,7 @@
 		{/if}
 
 		<!-- Middlewares -->
-		{#if router.type !== 'udp'}
+		{#if router.protocol !== 'udp'}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label class="mr-2 text-right">Middlewares</Label>
 				<Select.Root type="multiple" bind:value={router.middlewares} {disabled}>
@@ -157,7 +157,7 @@
 						{router.middlewares?.length ? router.middlewares.join(', ') : 'Select middlewares'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each $middlewares.filter((m) => m.type === router.type) as middleware}
+						{#each $middlewares.filter((m) => m.protocol === router.protocol) as middleware}
 							<Select.Item value={middleware.name}>
 								{middleware.name}
 							</Select.Item>
@@ -168,7 +168,7 @@
 		{/if}
 
 		<!-- TLS Configuration -->
-		{#if isHttpType && router.type !== 'udp' && router.tls}
+		{#if isHttpType && router.protocol !== 'udp' && router.tls}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label class="mr-2 text-right">Cert Resolver</Label>
 				<div class="col-span-3 space-y-2">
@@ -215,8 +215,8 @@
 		{/if}
 
 		<!-- Rule -->
-		{#if router.type === 'http' || router.type === 'tcp'}
-			<RuleEditor bind:rule={router.rule} bind:type={router.type} {disabled} />
+		{#if router.protocol === 'http' || router.protocol === 'tcp'}
+			<RuleEditor bind:rule={router.rule} bind:type={router.protocol} {disabled} />
 		{/if}
 	</Card.Content>
 </Card.Root>

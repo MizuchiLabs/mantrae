@@ -16,7 +16,7 @@
 	let passHostHeader = $derived(service.loadBalancer?.passHostHeader ?? true);
 	let servers = $state(
 		service.loadBalancer?.servers
-			?.map((s) => (router.type === 'http' ? s.url : s.address))
+			?.map((s) => (router.protocol === 'http' ? s.url : s.address))
 			.filter((s): s is string => s !== undefined) ?? []
 	);
 
@@ -25,9 +25,9 @@
 			service.loadBalancer = { servers: [] };
 		}
 
-		service.type = router.type;
+		service.protocol = router.protocol;
 		service.loadBalancer.servers = newServers.map((s) =>
-			router.type === 'http' ? { url: s } : { address: s }
+			router.protocol === 'http' ? { url: s } : { address: s }
 		);
 	}
 
@@ -42,11 +42,11 @@
 <Card.Root>
 	<Card.Header>
 		<Card.Title>Service Configuration</Card.Title>
-		<Card.Description>Configure your {router.type} service settings</Card.Description>
+		<Card.Description>Configure your {router.protocol} service settings</Card.Description>
 	</Card.Header>
 
 	<Card.Content class="flex flex-col gap-2">
-		{#if router.type === 'http'}
+		{#if router.protocol === 'http'}
 			<div class="grid grid-cols-4 items-center gap-4">
 				<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
 				<Switch
@@ -63,7 +63,7 @@
 			bind:items={servers}
 			on:update={({ detail }) => updateServers(detail)}
 			label="Servers"
-			placeholder={router.type === 'http' ? 'http://192.168.1.1:8080' : '192.168.1.1:8080'}
+			placeholder={router.protocol === 'http' ? 'http://192.168.1.1:8080' : '192.168.1.1:8080'}
 			{disabled}
 		/>
 	</Card.Content>

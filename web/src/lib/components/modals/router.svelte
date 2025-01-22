@@ -17,7 +17,7 @@
 
 	const defaultRouter: Router = {
 		name: '',
-		type: 'http',
+		protocol: 'http',
 		tls: {},
 		entryPoints: [],
 		middlewares: [],
@@ -27,7 +27,7 @@
 
 	const defaultService: Service = {
 		name: '',
-		type: 'http',
+		protocol: 'http',
 		loadBalancer: {
 			servers: [],
 			passHostHeader: true
@@ -54,9 +54,9 @@
 
 			let params: UpsertRouterParams = {
 				name: router.name,
-				type: router.type
+				protocol: router.protocol
 			};
-			switch (router.type) {
+			switch (router.protocol) {
 				case 'http':
 					params.router = router;
 					params.service = service;

@@ -3,16 +3,39 @@ import type { BaseTraefikConfig } from '$lib/types';
 // HTTP Middlewares ----------------------------------------------------------
 export interface Middleware {
 	name: string;
-	type: 'http' | 'tcp';
-	content: Record<string, unknown>;
+	protocol: 'http' | 'tcp';
+	type?: string;
+	addPrefix?: AddPrefix;
+	basicAuth?: BasicAuth;
+	digestAuth?: DigestAuth;
+	buffering?: Buffering;
+	chain?: Chain;
+	circuitBreaker?: CircuitBreaker;
+	compress?: Compress;
+	errorPage?: ErrorPage;
+	forwardAuth?: ForwardAuth;
+	headers?: Headers;
+	ipAllowList?: IPAllowList;
+	inFlightReq?: InFlightReq;
+	passTLSClientCert?: PassTLSClientCert;
+	rateLimit?: RateLimit;
+	redirectRegex?: RedirectRegex;
+	redirectScheme?: RedirectScheme;
+	replacePath?: ReplacePath;
+	replacePathRegex?: ReplacePathRegex;
+	retry?: Retry;
+	stripPrefix?: StripPrefix;
+	stripPrefixRegex?: StripPrefixRegex;
+	tcpIpAllowList?: IPAllowList;
+	tcpInFlightReq?: InFlightReq;
 }
 
-export function newMiddleware(): Middleware {
-	return {
-		name: '',
-		type: 'http',
-		content: {}
-	};
+export interface UpsertMiddlewareParams {
+	name: string;
+	protocol: 'http' | 'tcp';
+	type?: string;
+	middleware?: Middleware;
+	tcpMiddleware?: Middleware;
 }
 
 export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
@@ -20,18 +43,22 @@ export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 	if (!config) return flatMiddleware;
 
 	Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
+		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
 		flatMiddleware.push({
 			name,
-			type: 'http',
-			content: middleware.content
+			protocol: 'http',
+			type,
+			...details
 		});
 	});
 
 	Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
+		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
 		flatMiddleware.push({
 			name,
-			type: 'tcp',
-			content: middleware.content
+			protocol: 'tcp',
+			type,
+			...details
 		});
 	});
 

@@ -2,7 +2,7 @@ import type { BaseTraefikConfig } from '$lib/types';
 
 export interface Router {
 	name: string;
-	type: 'http' | 'tcp' | 'udp';
+	protocol: 'http' | 'tcp' | 'udp';
 	entryPoints?: string[];
 	middlewares?: string[];
 	service: string;
@@ -16,7 +16,7 @@ export interface Router {
 
 export interface UpsertRouterParams {
 	name: string;
-	type: 'http' | 'tcp' | 'udp';
+	protocol: 'http' | 'tcp' | 'udp';
 	router?: Router;
 	tcpRouter?: Router;
 	udpRouter?: Router;
@@ -34,7 +34,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	Object.entries(config.routers || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
-			type: 'http',
+			protocol: 'http',
 			entryPoints: router.entryPoints || [],
 			middlewares: router.middlewares || [],
 			service: router.service,
@@ -51,7 +51,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	Object.entries(config.tcpRouters || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
-			type: 'tcp',
+			protocol: 'tcp',
 			entryPoints: router.entryPoints || [],
 			middlewares: router.middlewares || [],
 			service: router.service,
@@ -68,7 +68,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 	Object.entries(config.udpRouters || {}).forEach(([name, router]) => {
 		flatRouters.push({
 			name,
-			type: 'udp',
+			protocol: 'udp',
 			entryPoints: router.entryPoints || [],
 			service: router.service,
 			observability: router.observability,
@@ -81,7 +81,7 @@ export function flattenRouterData(config: BaseTraefikConfig): Router[] {
 
 export interface Service {
 	name: string;
-	type: 'http' | 'tcp' | 'udp';
+	protocol: 'http' | 'tcp' | 'udp';
 	loadBalancer?: ServersLoadBalancer;
 	weighted?: WeightedRoundRobin;
 	mirroring?: Mirroring;
@@ -93,7 +93,7 @@ export interface Service {
 export function newService(): Service {
 	return {
 		name: '',
-		type: 'http',
+		protocol: 'http',
 		loadBalancer: {
 			servers: []
 		}
@@ -108,7 +108,7 @@ export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	Object.entries(config.services || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
-			type: 'http',
+			protocol: 'http',
 			loadBalancer: service.loadBalancer,
 			weighted: service.weighted,
 			mirroring: service.mirroring,
@@ -122,7 +122,7 @@ export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	Object.entries(config.tcpServices || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
-			type: 'tcp',
+			protocol: 'tcp',
 			loadBalancer: service.loadBalancer,
 			weighted: service.weighted,
 			status: service.status,
@@ -134,7 +134,7 @@ export function flattenServiceData(config: BaseTraefikConfig): Service[] {
 	Object.entries(config.udpServices || {}).forEach(([name, service]) => {
 		flatServices.push({
 			name,
-			type: 'udp',
+			protocol: 'udp',
 			loadBalancer: service.loadBalancer,
 			weighted: service.weighted,
 			status: service.status,
@@ -164,7 +164,7 @@ export interface Observability {
 }
 
 export interface ServersLoadBalancer {
-	servers?: Server[]; // for every service type
+	servers?: Server[]; // for every service protocol
 	sticky?: Sticky;
 	healthCheck?: ServerHealthCheck;
 	passHostHeader?: boolean;
@@ -175,7 +175,7 @@ export interface ServersLoadBalancer {
 }
 
 export interface WeightedRoundRobin {
-	services?: WRRService[]; // for every service type
+	services?: WRRService[]; // for every service protocol
 	sticky?: Sticky; // HTTP only
 	healthCheck?: Record<string, unknown>; // HTTP only
 }

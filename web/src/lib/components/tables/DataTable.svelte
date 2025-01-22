@@ -55,7 +55,6 @@
 	let columnVisibility = $state<VisibilityState>({});
 	let rowSelection = $state<RowSelectionState>({});
 	let globalFilter = $state<string>('');
-	let modalOpen = $state(false);
 
 	// Table
 	const table = createSvelteTable({
