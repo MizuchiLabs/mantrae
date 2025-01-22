@@ -269,6 +269,14 @@
 					</Table.Row>
 				{/each}
 			</Table.Body>
+			<Table.Footer>
+				<Table.Row class="border-t">
+					<Table.Cell colspan={columns.length}>Total</Table.Cell>
+					<Table.Cell class="mr-4 text-right"
+						>{table.getPrePaginationRowModel().rows.length}</Table.Cell
+					>
+				</Table.Row>
+			</Table.Footer>
 		</Table.Root>
 	</div>
 

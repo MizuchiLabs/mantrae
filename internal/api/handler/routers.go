@@ -15,7 +15,7 @@ import (
 
 type UpsertRouterParams struct {
 	Name       string                  `json:"name"`
-	Type       string                  `json:"type"`
+	Protocol   string                  `json:"protocol"`
 	Router     *runtime.RouterInfo     `json:"router"`
 	TCPRouter  *runtime.TCPRouterInfo  `json:"tcpRouter"`
 	UDPRouter  *runtime.UDPRouterInfo  `json:"udpRouter"`
@@ -90,7 +90,7 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Update configuration based on type
-		switch params.Type {
+		switch params.Protocol {
 		case "http":
 			existingConfig.Config.Routers[params.Name] = params.Router
 			existingConfig.Config.Services[params.Name] = params.Service
@@ -203,7 +203,7 @@ func validateRouterParams(params *UpsertRouterParams) error {
 		return ErrInvalidName
 	}
 
-	switch params.Type {
+	switch params.Protocol {
 	case "http":
 		if params.Router == nil {
 			return ErrMissingRouter

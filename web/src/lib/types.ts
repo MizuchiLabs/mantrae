@@ -48,9 +48,9 @@ export interface DNSProvider {
 	name: string;
 	type: string;
 	config: Record<string, unknown>;
-	is_active: boolean;
-	created_at: string;
-	updated_at: string;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface User {
@@ -58,29 +58,29 @@ export interface User {
 	username: string;
 	password?: string;
 	email?: string;
-	is_admin: boolean;
-	last_login?: string;
-	created_at: string;
-	updated_at: string;
+	isAdmin: boolean;
+	lastLogin?: string;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface Agent {
 	id: string;
-	profile_id: number;
+	profileId: number;
 	hostname: string;
-	public_ip?: string;
+	publicIp?: string;
 	private_ips: string[];
 	containers: Record<string, unknown>[];
-	active_ip?: string;
+	activeIp?: string;
 	token: string;
-	created_at: string;
-	updated_at: string;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface Setting {
 	key: string;
 	value: string;
-	updated_at: string;
+	updatedAt: string;
 }
 
 export interface Plugin {

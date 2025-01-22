@@ -1,3 +1,13 @@
+// Some global constants
+export const DateFormat = new Intl.DateTimeFormat('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+	hour: 'numeric',
+	minute: 'numeric',
+	second: 'numeric'
+});
+
 // Localstorage keys
 export const PROFILE_SK = 'profile';
 export const TOKEN_SK = 'token';

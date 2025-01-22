@@ -28,6 +28,7 @@ export interface Middleware {
 	stripPrefixRegex?: StripPrefixRegex;
 	tcpIpAllowList?: IPAllowList;
 	tcpInFlightReq?: InFlightReq;
+	plugin?: Record<string, unknown>;
 }
 
 export interface UpsertMiddlewareParams {
@@ -43,6 +44,13 @@ export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 	if (!config) return flatMiddleware;
 
 	Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
+		if (!middleware) {
+			flatMiddleware.push({
+				name,
+				protocol: 'http'
+			});
+			return;
+		}
 		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
 		flatMiddleware.push({
 			name,
@@ -53,6 +61,13 @@ export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 	});
 
 	Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
+		if (!middleware) {
+			flatMiddleware.push({
+				name,
+				protocol: 'http'
+			});
+			return;
+		}
 		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
 		flatMiddleware.push({
 			name,

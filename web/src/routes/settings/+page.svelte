@@ -1,72 +1,66 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Card from '$lib/components/ui/card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
+	import { Button } from '$lib/components/ui/button';
+	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
-	import { downloadBackup, getSettings, uploadBackup, settings, updateSetting } from '$lib/api';
-	import { onMount } from 'svelte';
 	import { Input } from '$lib/components/ui/input';
-	import type { Setting } from '$lib/types/base';
-	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
+	import { Separator } from '$lib/components/ui/separator';
 	import { Download, Eye, EyeOff, Save, Upload } from 'lucide-svelte';
+	import { settings, api } from '$lib/api';
+	import type { Setting } from '$lib/types';
+	import { onMount } from 'svelte';
 
-	let fileInput: HTMLInputElement = $state();
-	const handleFileUpload = (event: Event) => {
-		const file = (event.target as HTMLInputElement).files?.[0];
-		if (file) {
-			uploadBackup(file);
-		}
-		fileInput.value = '';
-	};
-
-	// Settings
-	let agentCleanupEnabled: boolean = $state();
-	let backupEnabled: boolean = $state();
-
-	let settingsMap: Record<string, string> = $state({});
-	let changedSettings: Record<string, string> = $state({});
+	// State management
+	// let fileInput = $state<HTMLInputElement>();
 	let showEmailPassword = $state(false);
+	let settingsMap = $state<Record<string, string>>({});
+	let changedSettings = $state<Record<string, string>>({});
 
-	const update = async (key: string) => {
-		const setting = { key, value: settingsMap[key] };
-		await updateSetting(setting);
-	};
-	const markAsChanged = (key: string) => {
-		const changed = $settings.find((s: Setting) => s.key === key)?.value;
-		if (settingsMap[key] !== changed) {
+	// Computed values
+	// let agentCleanupEnabled = $derived(settingsMap['agent-cleanup-enabled'] === 'true');
+	// let backupEnabled = $derived(settingsMap['backup-enabled'] === 'true');
+	let hasChanges = $derived(Object.keys(changedSettings).length > 0);
+
+	// async function handleFileUpload(event: Event) {
+	// 	const file = (event.target as HTMLInputElement).files?.[0];
+	// 	if (file) {
+	// 		await uploadBackup(file);
+	// 		fileInput.value = '';
+	// 	}
+	// }
+
+	async function updateSetting(key: string) {
+		await api.upsertSetting({ key, value: settingsMap[key] } as Setting);
+		// const { [key]: _, ...rest } = changedSettings;
+		// changedSettings = rest;
+	}
+
+	function markAsChanged(key: string) {
+		const originalValue = $settings.find((s: Setting) => s.key === key)?.value;
+		if (settingsMap[key] !== originalValue) {
 			changedSettings = { ...changedSettings, [key]: settingsMap[key] };
-		} else {
-			// Remove it from changedSettings if the value hasn't changed
-			const { [key]: _, ...rest } = changedSettings;
-			changedSettings = rest;
+			// } else {
+			// const { [key]: _, ...rest } = changedSettings;
+			// changedSettings = rest;
 		}
-	};
-	const saveChanges = async (): Promise<void> => {
-		for (const key in changedSettings) {
-			if (changedSettings.hasOwnProperty(key)) {
-				await update(key);
-			}
-		}
+	}
 
-		// Reset
+	async function saveAllChanges() {
+		await Promise.all(Object.keys(changedSettings).map((key) => updateSetting(key)));
 		changedSettings = {};
-	};
+	}
 
-	const onKeydown = (e: KeyboardEvent, key: string) => {
-		if (e.key === 'Enter') {
-			update(key);
-		}
-	};
+	function handleKeydown(e: KeyboardEvent, key: string) {
+		if (e.key === 'Enter') updateSetting(key);
+	}
 
 	onMount(async () => {
-		await getSettings();
-		settingsMap = $settings.reduce(
-			(acc, setting) => ({ ...acc, [setting.key]: setting.value }),
-			{}
-		);
-		agentCleanupEnabled = settingsMap['agent-cleanup-enabled'] === 'true';
-		backupEnabled = settingsMap['backup-enabled'] === 'true';
+		await api.listSettings();
+		// settingsMap = $settings.reduce(
+		// 	(acc, setting) => ({ ...acc, [setting.key]: setting.value }),
+		// 	{}
+		// );
 	});
 </script>
 
@@ -74,245 +68,113 @@
 	<title>Settings</title>
 </svelte:head>
 
-<div class="mt-4 flex flex-col gap-4 p-4">
-	<div class="container flex flex-col items-center justify-center gap-4 py-4">
-		<Card.Root class="w-full sm:w-3/4 md:w-2/3">
-			<Card.Header>
-				<Card.Title class="flex flex-row items-center justify-between gap-2 text-xl font-bold">
-					Settings
-					{#if Object.keys(changedSettings)?.length > 0}
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<Button variant="ghost" size="icon" on:click={saveChanges}>
-									<Save size="1rem" class="animate-pulse" />
-								</Button>
-							</Tooltip.Trigger>
-							<Tooltip.Content>
-								<p>Save changes</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
+<div class="container mx-auto max-w-4xl p-6">
+	<Card.Root>
+		<Card.Header>
+			<div class="flex items-center justify-between">
+				<Card.Title class="text-2xl font-bold">Settings</Card.Title>
+				{#if hasChanges}
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<Button variant="outline" size="icon" onclick={saveAllChanges}>
+								<Save class="h-4 w-4 animate-pulse text-green-500" />
+							</Button>
+						</Tooltip.Trigger>
+						<Tooltip.Content>Save all changes</Tooltip.Content>
+					</Tooltip.Root>
+				{/if}
+			</div>
+		</Card.Header>
+
+		<Card.Content class="space-y-6">
+			{#each $settings as setting}
+				{setting.key}
+				<div class="grid grid-cols-4 items-center gap-4">
+					<div class="flex items-center gap-2">
+						<Label for={setting.key} class="font-medium">
+							{setting.key
+								.split('_')
+								.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+								.join(' ')}
+						</Label>
+						<!-- {#if setting.description} -->
+						<!-- 	<HoverInfo text={setting.description} /> -->
+						<!-- {/if} -->
+					</div>
+
+					{#if setting.key.includes('enabled')}
+						<Switch
+							id={setting.key}
+							checked={settingsMap[setting.key] === 'true'}
+							onCheckedChange={(value) => {
+								settingsMap[setting.key] = value.toString();
+								updateSetting(setting.key);
+							}}
+							class="col-span-3 justify-self-end"
+						/>
+					{:else if setting.key === 'email-password'}
+						<div class="relative col-span-3">
+							<Input
+								id={setting.key}
+								type={showEmailPassword ? 'text' : 'password'}
+								value={settingsMap[setting.key]}
+								oninput={() => markAsChanged(setting.key)}
+								onkeydown={(e) => handleKeydown(e, setting.key)}
+								class="pr-10"
+							/>
+							<Button
+								variant="ghost"
+								size="icon"
+								class="absolute right-2 top-1/2 -translate-y-1/2"
+								onclick={() => (showEmailPassword = !showEmailPassword)}
+							>
+								{#if showEmailPassword}
+									<Eye class="h-4 w-4" />
+								{:else}
+									<EyeOff class="h-4 w-4" />
+								{/if}
+							</Button>
+						</div>
+					{:else}
+						<Input
+							id={setting.key}
+							type="text"
+							value={settingsMap[setting.key]}
+							oninput={() => markAsChanged(setting.key)}
+							onkeydown={(e) => handleKeydown(e, setting.key)}
+							class="col-span-3"
+						/>
 					{/if}
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="mt-4 flex flex-col gap-4">
-				<h2 class="border-b border-gray-200 pb-2 text-lg">Server</h2>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
-						Server URL
-						<HoverInfo text="The URL of the server which agents should use." />
-					</Label>
-					<Input
-						name="server-url"
-						type="text"
-						bind:value={settingsMap['server-url']}
-						on:keydown={(e) => onKeydown(e, 'server-url')}
-						on:input={() => markAsChanged('server-url')}
-						class="col-span-3 text-right"
-					/>
 				</div>
 
-				<h2 class="border-b border-gray-200 pb-2 text-lg">Agents</h2>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
-						Cleanup
-						<HoverInfo
-							text="Automatically cleanup disconnected agents after a certain amount of time."
-						/>
-					</Label>
-					<Switch
-						name="agent-cleanup-enabled"
-						class="col-span-3 justify-self-end"
-						bind:checked={agentCleanupEnabled}
-						onCheckedChange={(value) =>
-							updateSetting({ key: 'agent-cleanup-enabled', value: value.toString() })}
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="server-url" class="col-span-1 flex items-center gap-0.5">
-						Timout
-						<HoverInfo
-							text="The amount of time after which disconnected agents should be cleaned up. Valid time units are ns, us, ms, s, m, h."
-						/>
-					</Label>
-					<Input
-						name="agent-cleanup-timeout"
-						type="text"
-						bind:value={settingsMap['agent-cleanup-timeout']}
-						on:keydown={(e) => onKeydown(e, 'agent-cleanup-timeout')}
-						on:input={() => markAsChanged('agent-cleanup-timeout')}
-						class="col-span-3 text-right"
-					/>
-				</div>
+				<Separator />
+			{/each}
 
-				<!-- Email -->
-				<h2 class="border-b border-gray-200 pb-2 text-lg">Email</h2>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="ehost" class="col-span-1 flex items-center gap-0.5">
-						Host
-						<HoverInfo text="The IP/Domain of the smtp server." />
-					</Label>
-					<Input
-						name="ehost"
-						type="text"
-						bind:value={settingsMap['email-host']}
-						on:keydown={(e) => onKeydown(e, 'email-host')}
-						on:input={() => markAsChanged('email-host')}
-						class="col-span-3 text-right"
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="eport" class="col-span-1 flex items-center gap-0.5">
-						Port
-						<HoverInfo text="The port of the smtp server." />
-					</Label>
-					<Input
-						name="eport"
-						type="text"
-						bind:value={settingsMap['email-port']}
-						on:keydown={(e) => onKeydown(e, 'email-port')}
-						on:input={() => markAsChanged('email-port')}
-						class="col-span-3 text-right"
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="mail-user" class="col-span-1 flex items-center gap-0.5">
-						Username
-						<HoverInfo text="The username of the smtp server." />
-					</Label>
-					<Input
-						name="mail-user"
-						type="text"
-						bind:value={settingsMap['email-username']}
-						on:keydown={(e) => onKeydown(e, 'email-username')}
-						on:input={() => markAsChanged('email-username')}
-						class="col-span-3 text-right"
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="mail-password" class="col-span-1 flex items-center gap-0.5">
-						Password
-						<HoverInfo text="The password of the smtp server." />
-					</Label>
-					<div class="col-span-3 flex flex-row items-center justify-end gap-1">
-						{#if showEmailPassword}
-							<Input
-								name="mail-password"
-								type="text"
-								bind:value={settingsMap['email-password']}
-								on:keydown={(e) => onKeydown(e, 'email-password')}
-								on:input={() => markAsChanged('email-password')}
-								class="pr-10 text-right"
-							/>
-						{:else}
-							<Input
-								name="mail-password"
-								type="password"
-								bind:value={settingsMap['email-password']}
-								on:keydown={(e) => onKeydown(e, 'email-password')}
-								on:input={() => markAsChanged('email-password')}
-								class="pr-10 text-right"
-							/>
-						{/if}
-						<Button
-							variant="ghost"
-							size="icon"
-							class="absolute hover:bg-transparent hover:text-red-400"
-							on:click={() => (showEmailPassword = !showEmailPassword)}
-						>
-							{#if showEmailPassword}
-								<Eye size="1rem" />
-							{:else}
-								<EyeOff size="1rem" />
-							{/if}
-						</Button>
-					</div>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="from" class="col-span-1 flex items-center gap-0.5">
-						Sender
-						<HoverInfo text="The from address of the email account." />
-					</Label>
-					<Input
-						name="from"
-						type="text"
-						bind:value={settingsMap['email-from']}
-						on:keydown={(e) => onKeydown(e, 'email-from')}
-						on:input={() => markAsChanged('email-from')}
-						class="col-span-3 text-right"
-					/>
-				</div>
-
-				<h2 class="border-b border-gray-200 pb-2 text-lg">Backups</h2>
-				<div class="mt-4 grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup-enabled" class="col-span-1">Enabled</Label>
-					<Switch
-						name="backup-enabled"
-						class="col-span-3 justify-self-end"
-						bind:checked={backupEnabled}
-						onCheckedChange={(value) =>
-							updateSetting({ key: 'backup-enabled', value: value.toString() })}
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup-keep" class="col-span-1 flex items-center gap-0.5">
-						Retention
-						<HoverInfo text="How many backups to keep. Set to 0 to keep all backups." />
-					</Label>
-					<Input
-						name="backup-keep"
-						type="text"
-						bind:value={settingsMap['backup-keep']}
-						on:keydown={(e) => onKeydown(e, 'backup-keep')}
-						on:input={() => markAsChanged('backup-keep')}
-						class="col-span-3 text-right"
-						placeholder="3"
-					/>
-				</div>
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup-schedule" class="col-span-1 flex items-center gap-0.5">
-						Schedule
-						<HoverInfo
-							text="Cron expression for the backup schedule (e.g., * * * * *, or special keywords: @yearly, @annually, @monthly, @weekly, @daily"
-						/>
-					</Label>
-					<Input
-						name="backup-schedule"
-						type="text"
-						bind:value={settingsMap['backup-schedule']}
-						on:keydown={(e) => onKeydown(e, 'backup-schedule')}
-						class="col-span-3 text-right"
-						placeholder="0 0 * * *"
-					/>
-				</div>
-
-				<div class="grid grid-cols-4 items-center justify-between gap-2">
-					<Label for="backup" class="col-span-1 flex items-center gap-0.5">
-						Backup & Restore
-						<HoverInfo text="Manually backup and restore the database." />
-					</Label>
-					<div class="col-span-3 flex w-full gap-2">
-						<input
-							type="file"
-							accept=".json"
-							class="hidden"
-							onchange={handleFileUpload}
-							bind:this={fileInput}
-							required
-						/>
-						<Button
-							variant="ghost"
-							class="w-full bg-orange-400"
-							on:click={() => fileInput.click()}
-							size="icon"
-						>
-							<Upload />
-						</Button>
-						<Button variant="default" class="w-full" on:click={() => downloadBackup()} size="icon">
-							<Download />
-						</Button>
-					</div>
-				</div>
-			</Card.Content>
-		</Card.Root>
-	</div>
+			<!-- <div class="flex gap-4 pt-4"> -->
+			<!-- 	<input -->
+			<!-- 		type="file" -->
+			<!-- 		accept=".json" -->
+			<!-- 		class="hidden" -->
+			<!-- 		onchange={handleFileUpload} -->
+			<!-- 		bind:this={fileInput} -->
+			<!-- 	/> -->
+			<!-- 	<Button  -->
+			<!-- 		variant="outline"  -->
+			<!-- 		class="flex-1"  -->
+			<!-- 		onclick={() => fileInput.click()} -->
+			<!-- 	> -->
+			<!-- 		<Upload class="mr-2 h-4 w-4" /> -->
+			<!-- 		Upload Backup -->
+			<!-- 	</Button> -->
+			<!-- 	<Button  -->
+			<!-- 		variant="default"  -->
+			<!-- 		class="flex-1"  -->
+			<!-- 		onclick={() => downloadBackup()} -->
+			<!-- 	> -->
+			<!-- 		<Download class="mr-2 h-4 w-4" /> -->
+			<!-- 		Download Backup -->
+			<!-- 	</Button> -->
+			<!-- </div> -->
+		</Card.Content>
+	</Card.Root>
 </div>

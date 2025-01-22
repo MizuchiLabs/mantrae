@@ -14,7 +14,7 @@ import (
 
 type UpsertMiddlewareParams struct {
 	Name          string                     `json:"name"`
-	Type          string                     `json:"type"`
+	Protocol      string                     `json:"protocol"`
 	Middleware    *runtime.MiddlewareInfo    `json:"middleware"`
 	TCPMiddleware *runtime.TCPMiddlewareInfo `json:"tcpMiddleware"`
 }
@@ -79,6 +79,9 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Initialize maps if nil
+		if existingConfig.Config == nil {
+			existingConfig.Config = &db.TraefikConfiguration{}
+		}
 		if existingConfig.Config.Middlewares == nil {
 			existingConfig.Config.Middlewares = make(map[string]*runtime.MiddlewareInfo)
 		}
@@ -92,7 +95,7 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Update configuration based on type
-		switch params.Type {
+		switch params.Protocol {
 		case "http":
 			existingConfig.Config.Middlewares[params.Name] = params.Middleware
 		case "tcp":
@@ -129,9 +132,9 @@ func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		mwName := r.PathValue("name")
-		mwType := r.PathValue("type")
+		mwProto := r.PathValue("protocol")
 
-		if mwName == "" || mwType == "" {
+		if mwName == "" || mwProto == "" {
 			http.Error(w, "Missing middleware name or type", http.StatusBadRequest)
 			return
 		}
@@ -158,7 +161,7 @@ func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Remove router and service based on type
-		switch mwType {
+		switch mwProto {
 		case "http":
 			delete(existingConfig.Config.Middlewares, mwName)
 		case "tcp":

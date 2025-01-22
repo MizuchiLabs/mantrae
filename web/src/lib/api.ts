@@ -10,7 +10,11 @@ import {
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
 import { PROFILE_SK, TOKEN_SK } from './store';
-import { flattenMiddlewareData, type Middleware } from './types/middlewares';
+import {
+	flattenMiddlewareData,
+	type Middleware,
+	type UpsertMiddlewareParams
+} from './types/middlewares';
 import {
 	flattenRouterData,
 	flattenServiceData,
@@ -189,14 +193,14 @@ export const api = {
 		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
-	async deleteRouter(id: number, name: string, type: string) {
-		await send(`/router/${id}/${name}/${type}`, {
+	async deleteRouter(id: number, data: Router) {
+		await send(`/router/${id}/${data.name}/${data.protocol}`, {
 			method: 'DELETE'
 		});
 		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
-	async upsertMiddleware(id: number, data: unknown) {
+	async upsertMiddleware(id: number, data: UpsertMiddlewareParams) {
 		await send(`/middleware/${id}`, {
 			method: 'POST',
 			body: data
@@ -204,8 +208,8 @@ export const api = {
 		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
-	async deleteMiddleware(id: number, name: string, type: string) {
-		await send(`/middleware/${id}/${name}/${type}`, {
+	async deleteMiddleware(id: number, data: Middleware) {
+		await send(`/middleware/${id}/${data.name}/${data.protocol}`, {
 			method: 'DELETE'
 		});
 		await api.getTraefikConfig(id, TraefikSource.LOCAL);
@@ -218,44 +222,36 @@ export const api = {
 	},
 
 	async getDNSProvider(id: number) {
-		const data = await send(`/provider/${id}`);
-		return data;
+		return await send(`/provider/${id}`);
 	},
 
 	async createDNSProvider(provider: Omit<DNSProvider, 'id' | 'created_at' | 'updated_at'>) {
-		const data = await send('/provider', {
+		await send('/provider', {
 			method: 'POST',
 			body: provider
 		});
 		await api.listDNSProviders();
-		return data;
 	},
 
-	async updateDNSProvider(
-		id: number,
-		provider: Omit<DNSProvider, 'id' | 'created_at' | 'updated_at'>
-	) {
-		const data = await send(`/provider/${id}`, {
+	async updateDNSProvider(provider: Omit<DNSProvider, 'created_at' | 'updated_at'>) {
+		await send(`/provider/${provider.id}`, {
 			method: 'PUT',
 			body: provider
 		});
 		await api.listDNSProviders();
-		return data;
 	},
 
 	async deleteDNSProvider(id: number) {
-		const data = await send(`/provider/${id}`, {
+		await send(`/provider/${id}`, {
 			method: 'DELETE'
 		});
 		await api.listDNSProviders();
-		return data;
 	},
 
 	// Users ---------------------------------------------------------------------
 	async listUsers() {
 		const data = await send('/user');
 		users.set(data);
-		return data;
 	},
 
 	async getUser(id: number) {
@@ -264,69 +260,60 @@ export const api = {
 	},
 
 	async createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>) {
-		const data = await send('/user', {
+		await send('/user', {
 			method: 'POST',
 			body: user
 		});
 		await api.listUsers();
-		return data;
 	},
 
-	async updateUser(id: number, user: Omit<User, 'id' | 'created_at' | 'updated_at'>) {
-		const data = await send(`/user/${id}`, {
+	async updateUser(user: Omit<User, 'created_at' | 'updated_at'>) {
+		await send(`/user/${user.id}`, {
 			method: 'PUT',
 			body: user
 		});
 		await api.listUsers();
-		return data;
 	},
 
 	async deleteUser(id: number) {
-		const data = await send(`/user/${id}`, {
+		await send(`/user/${id}`, {
 			method: 'DELETE'
 		});
 		await api.listUsers();
-		return data;
 	},
 
 	// Agents
 	async listAgents() {
 		const data = await send('/agent');
 		agents.set(data);
-		return data;
 	},
 
 	// Settings ------------------------------------------------------------------
 	async listSettings() {
 		const data = await send('/settings');
 		settings.set(data);
-		return data;
 	},
 
 	async getSetting(id: number) {
-		const data = await send(`/settings/${id}`);
-		return data;
+		return await send(`/settings/${id}`);
 	},
 
-	async upsertSetting(id: number, setting: Omit<Setting, 'id' | 'created_at' | 'updated_at'>) {
-		const data = await send(`/settings/${id}`, {
+	async upsertSetting(setting: Setting) {
+		await send(`/settings`, {
 			method: 'POST',
 			body: setting
 		});
 		await api.listSettings();
-		return data;
 	},
 
 	// Plugins
 	async getMiddlewarePlugins() {
 		const data = await send('/middleware/plugins');
 		plugins.set(data);
-		return data;
 	},
 
 	async getVersion() {
-		const data = await send('/version');
-		return data;
+		return await send('/version');
 	}
 };
 

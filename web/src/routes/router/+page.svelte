@@ -6,7 +6,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Router, Service, TLS } from '$lib/types/router';
-	import { Edit, Trash } from 'lucide-svelte';
+	import { Edit, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, routers, services, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
@@ -42,16 +42,15 @@
 		};
 	}
 
-	const deleteRouter = async (name: string | undefined, type: string) => {
-		if (!name) return;
+	const deleteRouter = async (router: Router) => {
 		try {
-			let routerProvider = name.split('@')[1];
+			let routerProvider = router.name.split('@')[1];
 			if (routerProvider !== 'http') {
 				toast.error('Router not managed by Mantrae!');
 				return;
 			}
 
-			await api.deleteRouter($profile.id, name, type);
+			await api.deleteRouter($profile.id, router);
 			toast.success('Router deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -176,7 +175,7 @@
 								icon: Trash,
 								variant: 'destructive',
 								onClick: () => {
-									deleteRouter(row.original.router.name, row.original.router.protocol);
+									deleteRouter(row.original.router);
 								}
 							}
 						]
@@ -226,9 +225,9 @@
 <Tabs.Root value={$source}>
 	<Tabs.Content value={TraefikSource.LOCAL}>
 		<div class="flex flex-col gap-4">
-			<div class="flex flex-col justify-start">
+			<div class="flex items-center justify-start gap-2">
+				<Route />
 				<h1 class="text-2xl font-bold">Router Management</h1>
-				<span class="text-sm text-muted-foreground">Total Routers: {$routers.length}</span>
 			</div>
 			<DataTable
 				{columns}
@@ -242,9 +241,9 @@
 	</Tabs.Content>
 	<Tabs.Content value={TraefikSource.API}>
 		<div class="flex flex-col gap-4">
-			<div class="flex flex-col justify-start">
+			<div class="flex items-center justify-start gap-2">
+				<Route />
 				<h1 class="text-2xl font-bold">Router Management</h1>
-				<span class="text-sm text-muted-foreground">Total Routers: {$routers.length}</span>
 			</div>
 			<DataTable
 				{columns}

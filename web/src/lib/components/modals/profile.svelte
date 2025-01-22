@@ -94,7 +94,7 @@
 						Delete
 					</Button>
 				{/if}
-				<Button type="submit" disabled={$loading}>Save</Button>
+				<Button type="submit" disabled={$loading}>{profile.id ? 'Update' : 'Save'}</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

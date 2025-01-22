@@ -6,7 +6,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Middleware } from '$lib/types/middlewares';
-	import { Edit, Trash } from 'lucide-svelte';
+	import { Edit, Layers, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, middlewares, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
@@ -40,16 +40,15 @@
 		};
 	}
 
-	const deleteMiddleware = async (name: string | undefined, type: string) => {
-		if (!name) return;
+	const deleteMiddleware = async (middleware: Middleware) => {
 		try {
-			let provider = name.split('@')[1];
+			let provider = middleware.name.split('@')[1];
 			if (provider !== 'http') {
 				toast.error('Middleware not managed by Mantrae!');
 				return;
 			}
 
-			await api.deleteRouter($profile.id, name, type);
+			await api.deleteMiddleware($profile.id, middleware);
 			toast.success('Middleware deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -120,7 +119,7 @@
 								icon: Trash,
 								variant: 'destructive',
 								onClick: () => {
-									deleteMiddleware(row.original.name, row.original.protocol);
+									deleteMiddleware(row.original);
 								}
 							}
 						]
@@ -159,9 +158,9 @@
 <Tabs.Root value={$source}>
 	<Tabs.Content value={TraefikSource.LOCAL}>
 		<div class="flex flex-col gap-4">
-			<div class="flex flex-col justify-start">
+			<div class="flex items-center justify-start gap-2">
+				<Layers />
 				<h1 class="text-2xl font-bold">Middleware Management</h1>
-				<span class="text-sm text-muted-foreground">Total Middlewares: {$middlewares.length}</span>
 			</div>
 			<DataTable
 				{columns}
@@ -175,10 +174,11 @@
 	</Tabs.Content>
 	<Tabs.Content value={TraefikSource.API}>
 		<div class="flex flex-col gap-4">
-			<div class="flex flex-col justify-start">
+			<div class="flex items-center justify-start gap-2">
+				<Layers />
 				<h1 class="text-2xl font-bold">Middleware Management</h1>
-				<span class="text-sm text-muted-foreground">Total Middlewares: {$middlewares.length}</span>
 			</div>
+
 			<DataTable
 				{columns}
 				data={$middlewares || []}

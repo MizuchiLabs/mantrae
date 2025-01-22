@@ -1,115 +1,104 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Pagination from '$lib/components/ui/pagination/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
 	import { Delete } from 'lucide-svelte';
-	import type { Plugin } from '$lib/types/plugins';
-	import { profile, getPlugins, plugins, upsertMiddleware } from '$lib/api';
+	import type { Plugin } from '$lib/types';
+	import { profile, api, plugins } from '$lib/api';
 	import { onMount } from 'svelte';
-	import type { Selected } from 'bits-ui';
-	import { LIMIT_SK } from '$lib/store';
-	import Pagination from '$lib/components/tables/pagination.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { toast } from 'svelte-sonner';
 	import YAML from 'yaml';
-	import { newMiddleware } from '$lib/types/middlewares';
+	import type { Middleware } from '$lib/types/middlewares';
 
+	// State
 	let open = $state(false);
-	let search: string = $state('');
-	let fPlugins: Plugin[] = $state([]);
-	let count = $state(0);
+	let search = $state('');
 	let currentPage = $state(1);
-	let perPage: Selected<number> | undefined = $state(JSON.parse(
-		localStorage.getItem(LIMIT_SK) ?? '{"value": 10, "label": "10"}'
-	));
+	let perPage = $state(10);
+	let selectedPlugin = $state<Plugin | undefined>(undefined);
+	let yamlSnippet = $state('');
 
-
-
-	const getFilteredPlugins = (plugins: Plugin[], search: string) => {
-		if (!search) return plugins; // Return all if no search
-		return plugins.filter(
+	// Derived values
+	let filteredPlugins = $derived(
+		$plugins.filter(
 			(plugin) =>
+				!search ||
 				plugin.name.toLowerCase().includes(search.toLowerCase()) ||
 				plugin.displayName.toLowerCase().includes(search.toLowerCase())
-		);
-	};
+		)
+	);
 
-	const paginate = (plugins: Plugin[], page: number, itemsPerPage: number) => {
-		const start = (page - 1) * itemsPerPage;
-		return plugins?.slice(start, start + itemsPerPage);
-	};
+	let paginatedPlugins = $derived(() => {
+		const start = (currentPage - 1) * perPage;
+		return [...filteredPlugins].slice(start, start + perPage);
+	});
 
-	let selectedPlugin: Plugin | undefined = $state();
-	let yamlSnippet: string = $state('');
-	const installPlugin = async (plugin: Plugin) => {
+	// When search changes, reset to first page
+	$effect(() => {
+		if (search) currentPage = 1;
+	});
+
+	async function installPlugin(plugin: Plugin) {
 		if (!$profile.id) return;
+
 		const data = YAML.parse(plugin.snippet.yaml);
-		const content = getPluginContent(data);
-		let name = Object.keys(content)[0];
-		if (name.startsWith('my-')) {
-			name = name.slice(3);
-		}
-		let middleware = newMiddleware();
-		middleware.name = name;
-		middleware.content = Object.values(content)[0];
-		middleware.profileId = $profile.id;
-		middleware.provider = 'http';
-		middleware.protocol = 'http';
-		middleware.type = 'plugin';
-		await upsertMiddleware(middleware);
+		const pluginContent = extractPluginContent(data);
+		const name = Object.keys(pluginContent)[0].replace(/^my-/, '');
+
+		console.log(Object.values(pluginContent)[0]);
+		const middleware: Middleware = {
+			name,
+			protocol: 'http',
+			type: 'plugin',
+			plugin: Object.values(pluginContent)[0]
+		};
+
+		await api.upsertMiddleware($profile.id, middleware);
+
 		selectedPlugin = plugin;
-		yamlSnippet = `experimental:
-  plugins:
-    ${plugin.name.split('/').slice(-1)[0]}:
-      moduleName: ${plugin.name}
-      version: ${plugin.latestVersion}`;
+		yamlSnippet = generateYamlSnippet(plugin);
 		open = true;
-	};
+	}
 
-	function getPluginContent(data: any) {
-		let content: Record<string, Record<string, any>> = {};
+	function extractPluginContent(data: Record<string, Record<string, unknown>>) {
+		const content: Record<string, Record<string, unknown>> = {};
 
-		// Iterate through HTTP middlewares
-		if (data.http && data.http.middlewares) {
-			Object.entries(data.http.middlewares).forEach(([name, middleware]: any) => {
-				if (middleware.plugin) {
-					// There should only be one plugin key, which is the last part we need
-					const pluginNames = Object.keys(middleware.plugin);
-					if (pluginNames.length > 0) {
-						const lastPluginName = pluginNames[pluginNames.length - 1];
-						content[name] = middleware.plugin[lastPluginName]; // Get the content of the last plugin
+		if (data.http?.middlewares) {
+			Object.entries(data.http.middlewares).forEach(
+				([name, middleware]: [string, Record<string, unknown>]) => {
+					if (middleware.plugin) {
+						const pluginNames = Object.keys(middleware.plugin);
+						if (pluginNames.length > 0) {
+							content[name] = middleware.plugin[pluginNames[pluginNames.length - 1]];
+						}
 					}
 				}
-			});
+			);
 		}
 
 		return content;
 	}
 
-	const copyToClipboard = () => {
+	function generateYamlSnippet(plugin: Plugin) {
+		return `experimental:
+  plugins:
+    ${plugin.name.split('/').slice(-1)[0]}:
+      moduleName: ${plugin.name}
+      version: ${plugin.latestVersion}`;
+	}
+
+	function copyToClipboard() {
 		navigator.clipboard.writeText(yamlSnippet);
 		toast.success('Copied!');
-	};
+	}
 
 	onMount(async () => {
-		await getPlugins();
-	});
-	// Reset the page to 1 when the search input changes
-	run(() => {
-		search, (currentPage = 1);
-	});
-	// Watch for changes in search or currentPage
-	run(() => {
-		fPlugins = getFilteredPlugins($plugins, search);
-	});
-	let paginatedPlugins = $derived(paginate(fPlugins, currentPage, perPage?.value ?? 10));
-	run(() => {
-		count = fPlugins?.length || 1;
+		await api.getMiddlewarePlugins();
 	});
 </script>
 
@@ -130,7 +119,7 @@
 			<Button
 				variant="ghost"
 				class="absolute right-0 mr-1 rounded-full hover:bg-transparent"
-				on:click={() => (search = '')}
+				onclick={() => (search = '')}
 				size="icon"
 				aria-hidden
 			>
@@ -139,30 +128,58 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-		{#each paginatedPlugins || [] as plugin}
+	<!-- Plugin Grid -->
+	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+		{#each paginatedPlugins() as plugin (plugin.name)}
 			<Card.Root class="flex h-[300px] w-full flex-col">
 				<Card.Header class="flex-grow">
 					<Card.Title class="mb-2 flex flex-row items-center gap-4">
 						<Avatar.Root class="h-12 w-12">
-							<Avatar.Image src={plugin.iconUrl} alt="@shadcn" />
+							<Avatar.Image src={plugin.iconUrl} alt={plugin.displayName} />
 							<Avatar.Fallback>{plugin.displayName.slice(0, 2)}</Avatar.Fallback>
 						</Avatar.Root>
 						{plugin.displayName}
 					</Card.Title>
-					<Card.Description class="line-clamp-3 overflow-hidden text-ellipsis"
-						>{plugin.summary}</Card.Description
-					>
+					<Card.Description class="line-clamp-3">{plugin.summary}</Card.Description>
 				</Card.Header>
 				<Card.Content class="mt-auto flex flex-row items-center justify-between">
 					<Badge variant="secondary">{plugin.latestVersion}</Badge>
-					<Button variant="default" on:click={() => installPlugin(plugin)}>Install</Button>
+					<Button onclick={() => installPlugin(plugin)}>Install</Button>
 				</Card.Content>
 			</Card.Root>
 		{/each}
 	</div>
 
-	<Pagination {count} bind:perPage bind:currentPage />
+	<!-- Pagination -->
+	<Pagination.Root
+		count={filteredPlugins.length}
+		{perPage}
+		onPageChange={(page) => (currentPage = page)}
+	>
+		{#snippet children({ pages, currentPage })}
+			<Pagination.Content>
+				<Pagination.Item>
+					<Pagination.PrevButton />
+				</Pagination.Item>
+				{#each pages as page (page.key)}
+					{#if page.type === 'ellipsis'}
+						<Pagination.Item>
+							<Pagination.Ellipsis />
+						</Pagination.Item>
+					{:else}
+						<Pagination.Item>
+							<Pagination.Link {page} isActive={currentPage === page.value}>
+								{page.value}
+							</Pagination.Link>
+						</Pagination.Item>
+					{/if}
+				{/each}
+				<Pagination.Item>
+					<Pagination.NextButton />
+				</Pagination.Item>
+			</Pagination.Content>
+		{/snippet}
+	</Pagination.Root>
 </div>
 
 <Dialog.Root bind:open>
@@ -178,7 +195,7 @@
 			<Textarea
 				bind:value={yamlSnippet}
 				rows={yamlSnippet?.split('\n').length || 5}
-				on:click={copyToClipboard}
+				onclick={copyToClipboard}
 				class="p-2"
 				readonly
 			/>
