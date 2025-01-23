@@ -41,6 +41,7 @@ type Querier interface {
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) error
+	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error
 	UpdateDNSProvider(ctx context.Context, arg UpdateDNSProviderParams) error
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error
 	UpdateTraefikConfig(ctx context.Context, arg UpdateTraefikConfigParams) error

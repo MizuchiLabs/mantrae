@@ -12,7 +12,7 @@ import (
 const deleteSetting = `-- name: DeleteSetting :exec
 DELETE FROM settings
 WHERE
-    key = ?
+  key = ?
 `
 
 func (q *Queries) DeleteSetting(ctx context.Context, key string) error {
@@ -22,27 +22,32 @@ func (q *Queries) DeleteSetting(ctx context.Context, key string) error {
 
 const getSetting = `-- name: GetSetting :one
 SELECT
-    "key", value, updated_at
+  "key", value, description, updated_at
 FROM
-    settings
+  settings
 WHERE
-    key = ?
+  key = ?
 LIMIT
-    1
+  1
 `
 
 func (q *Queries) GetSetting(ctx context.Context, key string) (Setting, error) {
 	row := q.queryRow(ctx, q.getSettingStmt, getSetting, key)
 	var i Setting
-	err := row.Scan(&i.Key, &i.Value, &i.UpdatedAt)
+	err := row.Scan(
+		&i.Key,
+		&i.Value,
+		&i.Description,
+		&i.UpdatedAt,
+	)
 	return i, err
 }
 
 const listSettings = `-- name: ListSettings :many
 SELECT
-    "key", value, updated_at
+  "key", value, description, updated_at
 FROM
-    settings
+  settings
 `
 
 func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
@@ -54,7 +59,12 @@ func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
 	var items []Setting
 	for rows.Next() {
 		var i Setting
-		if err := rows.Scan(&i.Key, &i.Value, &i.UpdatedAt); err != nil {
+		if err := rows.Scan(
+			&i.Key,
+			&i.Value,
+			&i.Description,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -70,21 +80,23 @@ func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
 
 const upsertSetting = `-- name: UpsertSetting :exec
 INSERT INTO
-    settings (key, value)
+  settings (key, value, description)
 VALUES
-    (?, ?) ON CONFLICT (key) DO
+  (?, ?, ?) ON CONFLICT (key) DO
 UPDATE
 SET
-    value = excluded.value,
-    updated_at = CURRENT_TIMESTAMP
+  value = excluded.value,
+  description = excluded.description,
+  updated_at = CURRENT_TIMESTAMP
 `
 
 type UpsertSettingParams struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Key         string  `json:"key"`
+	Value       string  `json:"value"`
+	Description *string `json:"description"`
 }
 
 func (q *Queries) UpsertSetting(ctx context.Context, arg UpsertSettingParams) error {
-	_, err := q.exec(ctx, q.upsertSettingStmt, upsertSetting, arg.Key, arg.Value)
+	_, err := q.exec(ctx, q.upsertSettingStmt, upsertSetting, arg.Key, arg.Value, arg.Description)
 	return err
 }

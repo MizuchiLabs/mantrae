@@ -77,10 +77,19 @@ export interface Agent {
 	updatedAt: string;
 }
 
+export interface Settings {
+	key: Record<string, Setting>;
+}
+
 export interface Setting {
+	value: string | number | boolean;
+	description: string;
+}
+
+export interface UpsertSettingsParams {
 	key: string;
 	value: string;
-	updatedAt: string;
+	description: string;
 }
 
 export interface Plugin {

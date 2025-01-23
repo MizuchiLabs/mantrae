@@ -5,27 +5,48 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { entrypoints, overview, version } from '$lib/api';
+	import { api, entrypoints, overview, profile, version } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
-	import yaml from 'svelte-highlight/languages/yaml';
-	import github from 'svelte-highlight/styles/github';
-	import githubDark from 'svelte-highlight/styles/github-dark';
 	import { Copy, CopyCheck } from 'lucide-svelte';
 	import TraefikProxy from '$lib/images/traefikproxy.svg';
+	import { json, yaml } from 'svelte-highlight/languages';
+	import YAML from 'yaml';
 
+	let code = $state('');
+	let displayCode = $state('');
+
+	let isYaml = $state(false);
 	let copyText = $state('Copy');
-	// const copy = () => {
-	// 	navigator.clipboard.writeText($dynamic);
-	// 	copyText = 'Copied!';
-	// 	setTimeout(() => {
-	// 		copyText = 'Copy';
-	// 	}, 2000);
-	// };
-</script>
 
-<svelte:head>
-	{@html github}
-</svelte:head>
+	const copy = () => {
+		navigator.clipboard.writeText(displayCode);
+		copyText = 'Copied!';
+		setTimeout(() => {
+			copyText = 'Copy';
+		}, 2000);
+	};
+
+	const toggleFormat = () => {
+		try {
+			if (isYaml) {
+				displayCode = code;
+			} else {
+				displayCode = YAML.stringify(JSON.parse(code));
+			}
+			isYaml = !isYaml;
+		} catch (error) {
+			console.error('Failed to convert:', error);
+		}
+	};
+
+	profile.subscribe(async (value) => {
+		if (value.id) {
+			const config = await api.getDynamicConfig(value.name);
+			code = JSON.stringify(config, null, 2);
+			displayCode = code;
+		}
+	});
+</script>
 
 <Dialog.Root>
 	<Dialog.Trigger>
@@ -176,38 +197,39 @@
 					<Card.Header>
 						<Card.Title class="flex items-center justify-between gap-2">
 							Dynamic Config
-							<!-- {#if $dynamic} -->
-							<!-- 	<button -->
-							<!-- 		onclick={copy} -->
-							<!-- 		class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100" -->
-							<!-- 	> -->
-							<!-- 		{copyText} -->
-							<!-- 		{#if copyText === 'Copied!'} -->
-							<!-- 			<CopyCheck size="1rem" /> -->
-							<!-- 		{:else} -->
-							<!-- 			<Copy size="1rem" /> -->
-							<!-- 		{/if} -->
-							<!-- 	</button> -->
-							<!-- {/if} -->
+							<div class="flex items-center gap-2">
+								<Button variant="outline" size="sm" onclick={toggleFormat}>
+									{isYaml ? 'Show JSON' : 'Show YAML'}
+								</Button>
+								{#if displayCode}
+									<button
+										onclick={copy}
+										class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
+									>
+										{copyText}
+										{#if copyText === 'Copied!'}
+											<CopyCheck size="1rem" />
+										{:else}
+											<Copy size="1rem" />
+										{/if}
+									</button>
+								{/if}
+							</div>
 						</Card.Title>
 						<Card.Description>
 							This is the current dynamic configuration your Traefik instance is using.
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="text-sm">
-						<!-- {#if $dynamic} -->
-						<!-- 	<div class="flex items-center justify-center"> -->
-						<!-- 		<Highlight code={$dynamic} language={yaml}> -->
-						<!-- 			{#snippet children({ highlighted })} -->
-						<!-- 				<LineNumbers {highlighted} hideBorder wrapLines /> -->
-						<!-- 			{/snippet} -->
-						<!-- 		</Highlight> -->
-						<!-- 	</div> -->
-						<!-- {:else} -->
-						<!-- 	<p class="flex items-center justify-center"> -->
-						<!-- 		No dynamic configuration, add some routers. -->
-						<!-- 	</p> -->
-						<!-- {/if} -->
+						{#if displayCode}
+							<Highlight language={isYaml ? yaml : json} code={displayCode} let:highlighted>
+								<LineNumbers {highlighted} />
+							</Highlight>
+						{:else}
+							<p class="flex items-center justify-center">
+								No dynamic configuration, add some routers.
+							</p>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>

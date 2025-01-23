@@ -135,7 +135,7 @@ func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
 		mwProto := r.PathValue("protocol")
 
 		if mwName == "" || mwProto == "" {
-			http.Error(w, "Missing middleware name or type", http.StatusBadRequest)
+			http.Error(w, "Missing middleware name or protocol", http.StatusBadRequest)
 			return
 		}
 

@@ -3,7 +3,7 @@
 	import MiddlewareForm from '../forms/middleware.svelte';
 	import type { Middleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { api, profile } from '$lib/api';
+	import { api, profile, loading } from '$lib/api';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -46,7 +46,7 @@
 					break;
 			}
 
-			await api.upsertMiddleware($profile.id, params.middleware);
+			await api.upsertMiddleware($profile.id, params);
 			open = false;
 			toast.success(`Middleware ${mode === 'create' ? 'created' : 'updated'} successfully`);
 		} catch (err: unknown) {
@@ -56,11 +56,39 @@
 			});
 		}
 	};
+
+	const handleDelete = async () => {
+		if (!middleware.name) return;
+
+		try {
+			let params: Middleware = {
+				name: middleware.name,
+				protocol: middleware.protocol
+			};
+			await api.deleteMiddleware($profile.id, params);
+			toast.success('Middleware deleted successfully');
+			open = false;
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error('Failed to delete middleware', {
+				description: e.message
+			});
+		}
+	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<MiddlewareForm bind:middleware {mode} {disabled} />
-		<Button type="submit" class="w-full" onclick={() => update()}>Save</Button>
+		<Dialog.Footer>
+			{#if middleware.name}
+				<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}
+					>Delete</Button
+				>
+			{/if}
+			<Button type="submit" onclick={() => update()} disabled={$loading}
+				>{middleware.name ? 'Update' : 'Save'}</Button
+			>
+		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

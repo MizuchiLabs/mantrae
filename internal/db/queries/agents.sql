@@ -1,55 +1,53 @@
 -- name: CreateAgent :exec
 INSERT INTO
-    agents (
-        id,
-        profile_id,
-        hostname,
-        public_ip,
-        private_ips,
-        containers,
-        active_ip,
-        token
-    )
+  agents (id, profile_id, token)
 VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?);
+  (?, ?, ?);
 
 -- name: GetAgent :one
 SELECT
-    *
+  *
 FROM
-    agents
+  agents
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: ListAgents :many
 SELECT
-    *
+  *
 FROM
-    agents
+  agents
 ORDER BY
-    hostname;
+  hostname;
 
 -- name: ListAgentsByProfile :many
 SELECT
-    *
+  *
 FROM
-    agents
+  agents
 WHERE
-    profile_id = ?;
+  profile_id = ?;
 
 -- name: UpdateAgent :exec
 UPDATE agents
 SET
-    hostname = ?,
-    public_ip = ?,
-    private_ips = ?,
-    containers = ?,
-    active_ip = ?,
-    updated_at = CURRENT_TIMESTAMP
+  hostname = ?,
+  public_ip = ?,
+  private_ips = ?,
+  containers = ?,
+  active_ip = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?;
+  id = ?;
+
+-- name: UpdateAgentToken :exec
+UPDATE agents
+SET
+  token = ?
+WHERE
+  id = ?;
 
 -- name: DeleteAgent :exec
 DELETE FROM agents
 WHERE
-    id = ?;
+  id = ?;

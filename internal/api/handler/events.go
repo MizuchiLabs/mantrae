@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -26,20 +24,5 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		util.ClientsMutex.Unlock()
 	}()
 
-	for {
-		select {
-		case message := <-util.Broadcast:
-			// Serialize the EventMessage to JSON
-			data, err := json.Marshal(message)
-			if err != nil {
-				fmt.Printf("Error marshalling message: %v\n", err)
-				continue
-			}
-			// Send the data to the client
-			fmt.Fprintf(w, "data: %s\n\n", data)
-			w.(http.Flusher).Flush()
-		case <-r.Context().Done():
-			return
-		}
-	}
+	<-r.Context().Done()
 }

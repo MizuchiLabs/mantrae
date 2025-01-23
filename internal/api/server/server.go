@@ -14,9 +14,10 @@ import (
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
 	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
-	"github.com/MizuchiLabs/mantrae/internal/api/grpc"
+	"github.com/MizuchiLabs/mantrae/internal/api/agent"
 	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
 	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/MizuchiLabs/mantrae/web"
 )
 
@@ -33,6 +34,9 @@ func NewServer(app *config.App) *Server {
 }
 
 func (s *Server) Start(ctx context.Context) error {
+	// Start the event processor before registering services
+	util.StartEventProcessor(ctx)
+
 	s.registerServices()
 	defer s.app.DB.Close()
 	host := s.app.Config.Server.Host
@@ -65,7 +69,7 @@ func (s *Server) Start(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		slog.Info("Shutting down server gracefully...")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
@@ -87,16 +91,18 @@ func (s *Server) registerServices() {
 		// 	middleware.Authentication(),
 		// 	middleware.Logging(),
 		// ),
-		connect.WithRecover(func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
-			// Log the panic with context
-			slog.Error("panic recovered in RPC call",
-				"method", spec.Procedure,
-				"panic", panic,
-				"trace", string(debug.Stack()),
-			)
-			header.Set("X-Error-Type", "panic")
-			return connect.NewError(connect.CodeInternal, fmt.Errorf("internal server error"))
-		}),
+		connect.WithRecover(
+			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
+				// Log the panic with context
+				slog.Error("panic recovered in RPC call",
+					"method", spec.Procedure,
+					"panic", panic,
+					"trace", string(debug.Stack()),
+				)
+				header.Set("X-Error-Type", "panic")
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("internal server error"))
+			},
+		),
 	}
 
 	// Static files
@@ -109,14 +115,12 @@ func (s *Server) registerServices() {
 	// Routes
 	s.routes()
 
-	// Reflection service
-	reflector := grpcreflect.NewStaticReflector(
-		"agent.v1.AgentService",
-	)
-	// Health check service
-	checker := grpchealth.NewStaticChecker(
-		"agent.v1.AgentService",
-	)
+	serviceNames := []string{
+		agentv1connect.AgentServiceName,
+	}
+
+	reflector := grpcreflect.NewStaticReflector(serviceNames...)
+	checker := grpchealth.NewStaticChecker(serviceNames...)
 
 	s.mux.Handle(grpchealth.NewHandler(checker))
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
@@ -134,5 +138,5 @@ func (s *Server) registerServices() {
 	// })
 
 	// Service implementations
-	s.mux.Handle(agentv1connect.NewAgentServiceHandler(&grpc.AgentServer{}, opts...))
+	s.mux.Handle(agentv1connect.NewAgentServiceHandler(&agent.AgentServer{}, opts...))
 }

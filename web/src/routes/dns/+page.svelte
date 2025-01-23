@@ -4,9 +4,9 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import DNSModal from '$lib/components/modals/dns.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { Edit, Globe, Trash } from 'lucide-svelte';
-	import { TraefikSource, type DNSProvider } from '$lib/types';
-	import { api, dnsProviders, source } from '$lib/api';
+	import { Globe, Pencil, Trash } from 'lucide-svelte';
+	import { type DNSProvider } from '$lib/types';
+	import { api, dnsProviders } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
@@ -61,7 +61,7 @@
 			}
 		},
 		{
-			header: 'Created At',
+			header: 'Created',
 			accessorKey: 'createdAt',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -72,45 +72,28 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				if ($source === TraefikSource.LOCAL) {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit DNSProvider',
-								icon: Edit,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										dnsProvider: row.original
-									};
-								}
-							},
-							{
-								label: 'Delete DNSProvider',
-								icon: Trash,
-								variant: 'destructive',
-								onClick: () => {
-									deleteUser(row.original);
-								}
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							label: 'Edit DNSProvider',
+							icon: Pencil,
+							onClick: () => {
+								modalState = {
+									isOpen: true,
+									dnsProvider: row.original
+								};
 							}
-						]
-					});
-				} else {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit DNSProvider',
-								icon: Edit,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										dnsProvider: row.original
-									};
-								}
+						},
+						{
+							label: 'Delete DNSProvider',
+							icon: Trash,
+							classProps: 'text-destructive',
+							onClick: () => {
+								deleteUser(row.original);
 							}
-						]
-					});
-				}
+						}
+					]
+				});
 			}
 		}
 	];

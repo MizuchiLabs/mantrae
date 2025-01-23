@@ -129,7 +129,6 @@ func (a *App) setDefaultAdminUser() error {
 
 	// Update existing admin if credentials changed or password provided
 	if user.Username != a.Config.Admin.Username ||
-		user.Email != &a.Config.Admin.Email ||
 		a.Config.Admin.Password != "" {
 
 		if err := a.DB.UpdateUser(ctx, db.UpdateUserParams{

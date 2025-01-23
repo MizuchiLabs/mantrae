@@ -4,8 +4,9 @@ import {
 	type DNSProvider,
 	type Plugin,
 	type Profile,
-	type Setting,
+	type Settings,
 	type TraefikConfig,
+	type UpsertSettingsParams,
 	type User
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
@@ -43,7 +44,7 @@ export const middlewares: Writable<Middleware[]> = writable([]);
 export const users: Writable<User[]> = writable([]);
 export const dnsProviders: Writable<DNSProvider[]> = writable([]);
 export const agents: Writable<Agent[]> = writable([]);
-export const settings: Writable<Setting[]> = writable([]);
+export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
 
 // App state
@@ -62,19 +63,28 @@ interface APIOptions {
 	headers?: Record<string, string>;
 }
 
-async function send(endpoint: string, options: APIOptions = {}) {
+async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof window.fetch) {
 	const token = localStorage.getItem(TOKEN_SK);
-	const headers = {
-		'Content-Type': 'application/json',
-		...(token && { Authorization: `Bearer ${token}` }),
-		...options.headers
+
+	// Custom fetch function that adds the Authorization header
+	const customFetch: typeof window.fetch = async (url, options) => {
+		const headers = new Headers(options?.headers); // Get existing headers
+		if (token) {
+			headers.set('Authorization', 'Bearer ' + token); // Add the Authorization header
+		}
+		const customOptions = {
+			'Content-Type': 'application/json',
+			...options,
+			headers
+		};
+		return fetch ? fetch(url, customOptions) : window.fetch(url, customOptions); // Use custom fetch or default
 	};
+
 	try {
 		loading.set(true);
-		const response = await fetch(`${BASE_URL}${endpoint}`, {
+		const response = await customFetch(`${BASE_URL}${endpoint}`, {
 			method: options.method || 'GET',
-			body: options.body ? JSON.stringify(options.body) : undefined,
-			headers
+			body: options.body ? JSON.stringify(options.body) : undefined
 		});
 
 		if (!response.ok) {
@@ -85,6 +95,7 @@ async function send(endpoint: string, options: APIOptions = {}) {
 		}
 	} catch (err: unknown) {
 		error.set(err instanceof Error ? err.message : String(err));
+		loading.set(false);
 		throw err;
 	} finally {
 		loading.set(false);
@@ -106,13 +117,17 @@ export const api = {
 		return data;
 	},
 
-	async verify() {
+	async verify(fetch: typeof window.fetch = window.fetch) {
 		const token = localStorage.getItem(TOKEN_SK);
 		try {
-			const data = await send('/verify', {
-				method: 'POST',
-				body: token
-			});
+			const data = await send(
+				'/verify',
+				{
+					method: 'POST',
+					body: token
+				},
+				fetch
+			);
 			return data;
 		} catch (err: unknown) {
 			const error = err instanceof Error ? err.message : String(err);
@@ -185,6 +200,11 @@ export const api = {
 		}
 	},
 
+	async getDynamicConfig(profileName: string) {
+		return await send(`/${profileName}`);
+	},
+
+	// Routers -------------------------------------------------------------------
 	async upsertRouter(id: number, data: UpsertRouterParams) {
 		await send(`/router/${id}`, {
 			method: 'POST',
@@ -200,6 +220,7 @@ export const api = {
 		await api.getTraefikConfig(id, TraefikSource.LOCAL);
 	},
 
+	// Middlewares ---------------------------------------------------------------
 	async upsertMiddleware(id: number, data: UpsertMiddlewareParams) {
 		await send(`/middleware/${id}`, {
 			method: 'POST',
@@ -268,7 +289,7 @@ export const api = {
 	},
 
 	async updateUser(user: Omit<User, 'created_at' | 'updated_at'>) {
-		await send(`/user/${user.id}`, {
+		await send(`/user`, {
 			method: 'PUT',
 			body: user
 		});
@@ -288,6 +309,30 @@ export const api = {
 		agents.set(data);
 	},
 
+	async getAgent(id: string) {
+		return await send(`/agent/${id}`);
+	},
+
+	async createAgent(profileID: number) {
+		await send(`/agent/${profileID}`, { method: 'POST' });
+		await api.listAgents();
+	},
+
+	async updateAgent(agent: Omit<Agent, 'created_at' | 'updated_at'>) {
+		await send(`/agent/${agent.id}`, {
+			method: 'PUT',
+			body: agent
+		});
+		await api.listAgents();
+	},
+
+	async deleteAgent(id: string) {
+		await send(`/agent/${id}`, {
+			method: 'DELETE'
+		});
+		await api.listAgents();
+	},
+
 	// Settings ------------------------------------------------------------------
 	async listSettings() {
 		const data = await send('/settings');
@@ -298,7 +343,7 @@ export const api = {
 		return await send(`/settings/${id}`);
 	},
 
-	async upsertSetting(setting: Setting) {
+	async upsertSetting(setting: UpsertSettingsParams) {
 		await send(`/settings`, {
 			method: 'POST',
 			body: setting
@@ -405,483 +450,5 @@ async function fetchTraefikConfig(id: number, source: TraefikSource) {
 // 			description: await response.text(),
 // 			duration: 3000
 // 		});
-// 	}
-// }
-
-// export async function logout() {
-// 	localStorage.removeItem(TOKEN_SK);
-// 	loggedIn.set(false);
-// }
-
-// // Profiles -------------------------------------------------------------------
-// export async function getProfiles() {
-// 	const response = await handleRequest('/profile', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) {
-// 			profiles.set(data);
-
-// 			// Get saved profile
-// 			const profileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
-// 			if (profileID) {
-// 				getProfile(profileID);
-// 				return;
-// 			}
-// 			if (data === undefined) return;
-// 			if (!get(profile) && data.length > 0) {
-// 				getProfile(data[0].id);
-// 			}
-// 		}
-// 	}
-// }
-
-// export async function getProfile(id: number) {
-// 	const response = await handleRequest(`/profile/${id}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		profile.set(data);
-// 		localStorage.setItem(PROFILE_SK, data.id.toString());
-// 	} else {
-// 		localStorage.removeItem(PROFILE_SK);
-// 		return;
-// 	}
-// 	await getEntrypoints();
-// }
-
-// export async function upsertProfile(p: Profile): Promise<void> {
-// 	const response = await handleRequest(`/profile`, 'PUT', p);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(profiles)) {
-// 			profiles.update((items) => {
-// 				const index = items.findIndex((item) => item.id === p.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 		}
-// 		toast.success(`Profile ${data.name} updated`);
-
-// 		if (get(profile) && get(profile).id === data.id) {
-// 			profile.set(data);
-// 			localStorage.setItem(PROFILE_SK, data.id.toString());
-// 		}
-// 	}
-// }
-
-// export async function deleteProfile(p: Profile): Promise<void> {
-// 	const response = await handleRequest(`/profile/${p.id}`, 'DELETE', p);
-// 	if (response) {
-// 		profiles.update((items) => items.filter((i) => i.id !== p.id));
-// 		toast.success(`Profile deleted`);
-
-// 		if (get(profile).id === p.id) {
-// 			profile.set({} as Profile);
-// 			localStorage.removeItem(PROFILE_SK);
-// 		}
-// 	}
-// }
-
-// // Routers ----------------------------------------------------------------------
-// export async function getRouters() {
-// 	const profileID = get(profile)?.id;
-// 	if (!profileID) return;
-// 	const response = await handleRequest(`/router/${profileID}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) routers.set(data);
-// 	}
-// }
-
-// export async function upsertRouter(r: Router): Promise<void> {
-// 	const response = await handleRequest(`/router`, 'POST', r);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(routers)) {
-// 			routers.update((items) => {
-// 				const index = items.findIndex((item) => item.id === r.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 			toast.success(`Router ${r.name} updated`);
-// 		}
-// 	}
-// }
-
-// export async function deleteRouter(r: Router): Promise<void> {
-// 	const response = await handleRequest(`/router/${r.id}`, 'DELETE');
-// 	if (response) {
-// 		routers.update((items) => items.filter((i) => i.id !== r.id));
-// 		toast.success(`Router ${r.name} deleted`);
-// 	}
-// }
-
-// // Services ----------------------------------------------------------------------
-// export async function getServices() {
-// 	const profileID = get(profile)?.id;
-// 	if (!profileID) return;
-// 	const response = await handleRequest(`/service/${profileID}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) services.set(data);
-// 	}
-// }
-
-// export async function upsertService(s: Service): Promise<void> {
-// 	const response = await handleRequest(`/service`, 'POST', s);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(services)) {
-// 			services.update((items) => {
-// 				const index = items.findIndex((item) => item.id === s.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 			//toast.success(`Service ${data.name} created`);
-// 		}
-// 	}
-// }
-
-// export async function deleteService(s: Service): Promise<void> {
-// 	const response = await handleRequest(`/service/${s.id}`, 'DELETE');
-// 	if (response) {
-// 		services.update((items) => items.filter((i) => i.id !== s.id));
-// 	}
-// }
-
-// // Middleware -----------------------------------------------------------------
-// export async function getMiddlewares() {
-// 	const profileID = get(profile)?.id;
-// 	if (!profileID) return;
-// 	const response = await handleRequest(`/middleware/${profileID}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) middlewares.set(data);
-// 	}
-// }
-
-// export async function upsertMiddleware(m: Middleware): Promise<void> {
-// 	const response = await handleRequest(`/middleware`, 'POST', m);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(middlewares)) {
-// 			middlewares.update((items) => {
-// 				const index = items.findIndex((item) => item.id === m.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 			toast.success(`Middleware ${data.name} updated`);
-// 		}
-// 	}
-// }
-
-// export async function deleteMiddleware(m: Middleware): Promise<void> {
-// 	const response = await handleRequest(`/middleware/${m.id}`, 'DELETE');
-// 	if (response) {
-// 		middlewares.update((items) => items.filter((i) => i.id !== m.id));
-// 		toast.success(`Middleware ${m.name} deleted`);
-// 	}
-// }
-
-// // Users ----------------------------------------------------------------------
-// export async function getUsers() {
-// 	const response = await handleRequest('/user', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) users.set(data);
-// 	}
-// }
-
-// export async function upsertUser(u: User): Promise<void> {
-// 	const response = await handleRequest(`/user`, 'POST', u);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(users)) {
-// 			users.update((items) => {
-// 				const index = items.findIndex((item) => item.id === u.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 			toast.success(`User ${data.username} updated`);
-// 		}
-// 	}
-// }
-
-// export async function deleteUser(id: number): Promise<void> {
-// 	const response = await handleRequest(`/user/${id}`, 'DELETE');
-// 	if (response) {
-// 		users.update((items) => items.filter((i) => i.id !== id));
-// 		toast.success(`User deleted`);
-// 	}
-// }
-
-// // Provider -------------------------------------------------------------------
-// export async function getProviders() {
-// 	const response = await handleRequest('/provider', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) provider.set(data);
-// 	}
-// }
-
-// export async function upsertProvider(p: DNSProvider): Promise<void> {
-// 	const response = await handleRequest(`/provider`, 'POST', p);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(provider)) {
-// 			provider.update((items) => {
-// 				const index = items.findIndex((item) => item.id === p.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 			toast.success(`Provider ${data.name} updated`);
-// 		}
-// 	}
-// }
-
-// export async function deleteProvider(id: number): Promise<void> {
-// 	const response = await handleRequest(`/provider/${id}`, 'DELETE');
-// 	if (response) {
-// 		provider.update((items) => items.filter((i) => i.id !== id));
-// 		toast.success(`Provider deleted`);
-// 	}
-// }
-
-// // Entrypoints ----------------------------------------------------------------
-// export async function getEntrypoints() {
-// 	const profileID = get(profile)?.id;
-// 	if (!profileID) return;
-// 	const response = await handleRequest(`/entrypoint/${profileID}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		entrypoints.set(data);
-// 	}
-// }
-
-// export async function deleteRouterDNS(r: Router): Promise<void> {
-// 	if (!r || !r.dnsProvider) return;
-
-// 	const response = await handleRequest(`/dns`, 'POST', r);
-// 	if (response) {
-// 		toast.success(`DNS record of router ${r.name} deleted`);
-// 	}
-// }
-
-// // Settings -------------------------------------------------------------------
-// export async function getSettings(): Promise<void> {
-// 	const response = await handleRequest('/settings', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		settings.set(data);
-// 	}
-// }
-
-// export async function getSetting(key: string) {
-// 	const response = await handleRequest(`/settings/${key}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		return data;
-// 	}
-// 	return {} as Setting;
-// }
-
-// export async function updateSetting(s: Setting): Promise<void> {
-// 	const response = await handleRequest(`/settings`, 'PUT', s);
-// 	if (response) {
-// 		const data = await response.json();
-// 		settings.update((items) => items.map((i) => (i.key === s.key ? data : i)));
-// 		toast.success(`Setting ${s.key} updated`);
-// 	}
-// }
-
-// // Agents ---------------------------------------------------------------------
-// export async function getAgents(id: number) {
-// 	const response = await handleRequest(`/agent/${id}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data) agents.set(data);
-// 	}
-// }
-
-// export async function upsertAgent(agent: Agent) {
-// 	const response = await handleRequest(`/agent`, 'PUT', agent);
-// 	if (response) {
-// 		const data = await response.json();
-// 		if (data && get(agents)) {
-// 			agents.update((items) => {
-// 				const index = items.findIndex((item) => item.id === agent.id);
-// 				if (index !== -1) {
-// 					items[index] = data;
-// 					return [...items];
-// 				} else {
-// 					return [...items, data];
-// 				}
-// 			});
-// 		}
-// 	}
-// }
-
-// export async function deleteAgent(id: string) {
-// 	const response = await handleRequest(`/agent/${id}`, 'DELETE');
-// 	if (response) {
-// 		agents.update((items) => items.filter((i) => i.id !== id));
-// 		toast.success(`Agent deleted`);
-// 	}
-// }
-
-// // Backup ---------------------------------------------------------------------
-// export async function downloadBackup() {
-// 	const response = await handleRequest('/backup', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		const jsonString = JSON.stringify(data, null, 2);
-// 		const blob = new Blob([jsonString], { type: 'application/json' });
-// 		const url = URL.createObjectURL(blob);
-// 		const link = document.createElement('a');
-// 		link.href = url;
-// 		link.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
-// 		document.body.appendChild(link);
-// 		link.click();
-// 		URL.revokeObjectURL(url);
-// 		document.body.removeChild(link);
-// 	}
-// }
-
-// export async function uploadBackup(file: File) {
-// 	const formData = new FormData();
-// 	formData.append('file', file);
-// 	const token = localStorage.getItem(TOKEN_SK);
-// 	await fetch(`${BASE_URL}/restore`, {
-// 		method: 'POST',
-// 		body: formData,
-// 		headers: { Authorization: `Bearer ${token}` }
-// 	});
-// 	toast.success('Backup restored!');
-// 	await getProfiles();
-// 	await getUsers();
-// 	await getProviders();
-// 	await getEntrypoints();
-// 	await getSettings();
-// }
-
-// // Plugins --------------------------------------------------------------------
-// export async function getPlugins() {
-// 	const response = await handleRequest('/middleware/plugins', 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		plugins.set(data);
-// 	}
-// }
-
-// // Extras ---------------------------------------------------------------------
-// export async function getVersion() {
-// 	const response = await handleRequest('/version', 'GET');
-// 	if (response) {
-// 		const data = await response.text();
-// 		version.set(data);
-// 	}
-// }
-
-// export async function getPublicIP() {
-// 	const response = await handleRequest(`/ip/${get(profile).id}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		return data.ip;
-// 	}
-// 	return '';
-// }
-
-// export async function getTraefikOverview() {
-// 	const profileID = get(profile)?.id;
-// 	if (!profileID) return;
-// 	const response = await handleRequest(`/traefik/${profileID}`, 'GET');
-// 	if (response) {
-// 		const data = await response.json();
-// 		traefikError.set('');
-// 		return data;
-// 	} else {
-// 		traefikError.set('No connection to Traefik');
-// 	}
-// 	return '';
-// }
-
-// export async function getTraefikConfig() {
-// 	const profileName = get(profile)?.name;
-// 	if (!profileName) return;
-
-// 	const response = await handleRequest(`/${profileName}?yaml=true`, 'GET');
-// 	if (response) {
-// 		const data = await response.text();
-// 		if (!data.includes('{}')) {
-// 			dynamic.set(data);
-// 		}
-// 	} else {
-// 		dynamic.set('');
-// 	}
-// }
-
-// // Toggle functions -----------------------------------------------------------
-// export async function toggleEntrypoint(
-// 	router: Router,
-// 	item: Selected<unknown>[] | undefined,
-// 	update: boolean
-// ) {
-// 	if (item === undefined) return;
-// 	router.entryPoints = item.map((i) => i.value) as string[];
-
-// 	if (update) {
-// 		upsertRouter(router);
-// 	}
-// }
-
-// export async function toggleMiddleware(
-// 	router: Router,
-// 	item: Selected<unknown>[] | undefined,
-// 	update: boolean
-// ) {
-// 	if (item === undefined) return;
-// 	router.middlewares = item.map((i) => i.value) as string[];
-
-// 	if (update) {
-// 		upsertRouter(router);
-// 	}
-// }
-
-// export async function toggleDNSProvider(
-// 	router: Router,
-// 	item: Selected<unknown> | undefined,
-// 	update: boolean
-// ) {
-// 	const providerID = (item?.value as number) ?? 0;
-// 	if (providerID === 0 && router.dnsProvider !== 0) {
-// 		deleteRouterDNS(router);
-// 	}
-// 	router.dnsProvider = providerID;
-
-// 	if (update) {
-// 		upsertRouter(router);
 // 	}
 // }

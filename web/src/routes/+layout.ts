@@ -10,7 +10,7 @@ export const trailingSlash = 'always';
 
 const PUBLIC_ROUTES = ['/login/', '/reset/'];
 
-export const load: LayoutLoad = async ({ url }) => {
+export const load: LayoutLoad = async ({ url, fetch }) => {
 	const isPublicRoute = PUBLIC_ROUTES.includes(url.pathname);
 	const token = localStorage.getItem(TOKEN_SK);
 
@@ -24,7 +24,7 @@ export const load: LayoutLoad = async ({ url }) => {
 	// Case 2: Has token, verify it
 	if (token) {
 		try {
-			const verified = await api.verify();
+			const verified = await api.verify(fetch);
 
 			// Token is valid
 			if (verified) {

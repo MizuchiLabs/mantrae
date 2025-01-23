@@ -13,7 +13,7 @@ import (
 type Agent struct {
 	ID         string      `json:"id"`
 	ProfileID  int64       `json:"profileId"`
-	Hostname   string      `json:"hostname"`
+	Hostname   *string     `json:"hostname"`
 	PublicIp   *string     `json:"publicIp"`
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
@@ -51,9 +51,10 @@ type RouterDnsProvider struct {
 }
 
 type Setting struct {
-	Key       string     `json:"key"`
-	Value     string     `json:"value"`
-	UpdatedAt *time.Time `json:"updatedAt"`
+	Key         string     `json:"key"`
+	Value       string     `json:"value"`
+	Description *string    `json:"description"`
+	UpdatedAt   *time.Time `json:"updatedAt"`
 }
 
 type Traefik struct {

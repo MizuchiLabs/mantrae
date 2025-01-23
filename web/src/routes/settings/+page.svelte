@@ -1,26 +1,18 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Download, Eye, EyeOff, Save, Upload } from 'lucide-svelte';
+	import { SaveIcon, Settings } from 'lucide-svelte';
 	import { settings, api } from '$lib/api';
-	import type { Setting } from '$lib/types';
 	import { onMount } from 'svelte';
+	import type { Setting } from '$lib/types';
+	import { toast } from 'svelte-sonner';
 
 	// State management
 	// let fileInput = $state<HTMLInputElement>();
-	let showEmailPassword = $state(false);
-	let settingsMap = $state<Record<string, string>>({});
-	let changedSettings = $state<Record<string, string>>({});
-
-	// Computed values
-	// let agentCleanupEnabled = $derived(settingsMap['agent-cleanup-enabled'] === 'true');
-	// let backupEnabled = $derived(settingsMap['backup-enabled'] === 'true');
-	let hasChanges = $derived(Object.keys(changedSettings).length > 0);
 
 	// async function handleFileUpload(event: Event) {
 	// 	const file = (event.target as HTMLInputElement).files?.[0];
@@ -30,37 +22,78 @@
 	// 	}
 	// }
 
-	async function updateSetting(key: string) {
-		await api.upsertSetting({ key, value: settingsMap[key] } as Setting);
-		// const { [key]: _, ...rest } = changedSettings;
-		// changedSettings = rest;
+	let hasChanges = $state(false);
+	let changedValues = $state<Record<string, Setting['value']>>({});
+
+	function parseDuration(str: string): string {
+		// Just clean up and validate the duration string
+		const cleanStr = str.trim();
+		try {
+			// Validate the duration string format
+			const patterns = /^(\d+h)?(\d+m)?(\d+s)?$/;
+			if (!patterns.test(cleanStr)) {
+				throw new Error('Invalid duration format');
+			}
+			return cleanStr;
+		} catch (err) {
+			const error = err as Error;
+			toast.error('Invalid duration format. Use format like "24h0m0s"', {
+				description: error.message
+			});
+			return str;
+		}
 	}
 
-	function markAsChanged(key: string) {
-		const originalValue = $settings.find((s: Setting) => s.key === key)?.value;
-		if (settingsMap[key] !== originalValue) {
-			changedSettings = { ...changedSettings, [key]: settingsMap[key] };
-			// } else {
-			// const { [key]: _, ...rest } = changedSettings;
-			// changedSettings = rest;
+	// Helper to convert camelCase/snake_case to Title Case
+	const formatSettingName = (key: string) => {
+		return key
+			.split(/[_\s]/)
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ');
+	};
+
+	// Determine the input type based on the setting value
+	const getInputType = (value: Setting) => {
+		if (typeof value === 'boolean') return 'boolean';
+		if (typeof value === 'number') return 'number';
+		if (value?.toString().includes('://')) return 'url';
+		if (value?.toString().includes('@')) return 'email';
+		return 'text';
+	};
+
+	function handleChange(key: string, value: Setting['value']) {
+		changedValues[key] = value;
+		hasChanges = true;
+	}
+
+	async function saveSetting(key: string, value: Setting['value']) {
+		try {
+			await api.upsertSetting({
+				key,
+				value: value.toString(),
+				description: $settings[key].description
+			});
+			delete changedValues[key];
+			hasChanges = Object.keys(changedValues).length > 0;
+			toast.success('Setting updated successfully');
+		} catch (error) {
+			toast.error('Failed to save setting', { description: (error as Error).message });
 		}
 	}
 
 	async function saveAllChanges() {
-		await Promise.all(Object.keys(changedSettings).map((key) => updateSetting(key)));
-		changedSettings = {};
+		for (const [key, value] of Object.entries(changedValues)) {
+			await saveSetting(key, value);
+		}
+		hasChanges = false;
 	}
 
-	function handleKeydown(e: KeyboardEvent, key: string) {
-		if (e.key === 'Enter') updateSetting(key);
+	function handleKeydown(e: KeyboardEvent, key: string, value: Setting['value']) {
+		if (e.key === 'Enter') saveSetting(key, value);
 	}
 
 	onMount(async () => {
 		await api.listSettings();
-		// settingsMap = $settings.reduce(
-		// 	(acc, setting) => ({ ...acc, [setting.key]: setting.value }),
-		// 	{}
-		// );
 	});
 </script>
 
@@ -68,113 +101,71 @@
 	<title>Settings</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-4xl p-6">
+<div class="container">
 	<Card.Root>
 		<Card.Header>
-			<div class="flex items-center justify-between">
-				<Card.Title class="text-2xl font-bold">Settings</Card.Title>
-				{#if hasChanges}
-					<Tooltip.Root>
-						<Tooltip.Trigger>
-							<Button variant="outline" size="icon" onclick={saveAllChanges}>
-								<Save class="h-4 w-4 animate-pulse text-green-500" />
-							</Button>
-						</Tooltip.Trigger>
-						<Tooltip.Content>Save all changes</Tooltip.Content>
-					</Tooltip.Root>
-				{/if}
-			</div>
+			<Card.Title class="mb-3">
+				<div class="flex items-center gap-2">
+					<Settings class="size-8" />
+					<h1 class="text-3xl font-bold">Settings</h1>
+				</div>
+			</Card.Title>
+			<Separator />
 		</Card.Header>
+		<Card.Content class="flex  flex-col gap-6">
+			{#each Object.entries($settings) as [key, setting]}
+				<div class="flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
+					<Label>
+						{formatSettingName(key)}
+						{#if setting.description}
+							<p class="text-sm text-muted-foreground">{setting.description}</p>
+						{/if}
+					</Label>
 
-		<Card.Content class="space-y-6">
-			{#each $settings as setting}
-				{setting.key}
-				<div class="grid grid-cols-4 items-center gap-4">
-					<div class="flex items-center gap-2">
-						<Label for={setting.key} class="font-medium">
-							{setting.key
-								.split('_')
-								.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-								.join(' ')}
-						</Label>
-						<!-- {#if setting.description} -->
-						<!-- 	<HoverInfo text={setting.description} /> -->
-						<!-- {/if} -->
-					</div>
-
-					{#if setting.key.includes('enabled')}
-						<Switch
-							id={setting.key}
-							checked={settingsMap[setting.key] === 'true'}
-							onCheckedChange={(value) => {
-								settingsMap[setting.key] = value.toString();
-								updateSetting(setting.key);
-							}}
-							class="col-span-3 justify-self-end"
-						/>
-					{:else if setting.key === 'email-password'}
-						<div class="relative col-span-3">
-							<Input
-								id={setting.key}
-								type={showEmailPassword ? 'text' : 'password'}
-								value={settingsMap[setting.key]}
-								oninput={() => markAsChanged(setting.key)}
-								onkeydown={(e) => handleKeydown(e, setting.key)}
-								class="pr-10"
+					<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
+						{#if getInputType(setting.value) === 'boolean'}
+							<Switch
+								id={key}
+								checked={setting.value}
+								onCheckedChange={(checked) => saveSetting(key, checked)}
 							/>
-							<Button
-								variant="ghost"
-								size="icon"
-								class="absolute right-2 top-1/2 -translate-y-1/2"
-								onclick={() => (showEmailPassword = !showEmailPassword)}
-							>
-								{#if showEmailPassword}
-									<Eye class="h-4 w-4" />
-								{:else}
-									<EyeOff class="h-4 w-4" />
-								{/if}
-							</Button>
-						</div>
-					{:else}
-						<Input
-							id={setting.key}
-							type="text"
-							value={settingsMap[setting.key]}
-							oninput={() => markAsChanged(setting.key)}
-							onkeydown={(e) => handleKeydown(e, setting.key)}
-							class="col-span-3"
-						/>
-					{/if}
+						{:else if key.includes('interval')}
+							<Input
+								type="text"
+								id={key}
+								value={setting.value}
+								onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
+								onkeydown={(e) => handleKeydown(e, key, parseDuration(e.currentTarget.value))}
+							/>
+						{:else if key.includes('port')}
+							<Input
+								type="number"
+								id={key}
+								value={setting.value}
+								min="1"
+								max="65535"
+								onchange={(e) => handleChange(key, parseInt(e.currentTarget.value))}
+								onkeydown={(e) => handleKeydown(e, key, parseInt(e.currentTarget.value))}
+							/>
+						{:else}
+							<Input
+								type="text"
+								value={setting.value}
+								onchange={(e) => handleChange(key, e.currentTarget.value)}
+								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+							/>
+						{/if}
+					</div>
 				</div>
 
 				<Separator />
 			{/each}
 
-			<!-- <div class="flex gap-4 pt-4"> -->
-			<!-- 	<input -->
-			<!-- 		type="file" -->
-			<!-- 		accept=".json" -->
-			<!-- 		class="hidden" -->
-			<!-- 		onchange={handleFileUpload} -->
-			<!-- 		bind:this={fileInput} -->
-			<!-- 	/> -->
-			<!-- 	<Button  -->
-			<!-- 		variant="outline"  -->
-			<!-- 		class="flex-1"  -->
-			<!-- 		onclick={() => fileInput.click()} -->
-			<!-- 	> -->
-			<!-- 		<Upload class="mr-2 h-4 w-4" /> -->
-			<!-- 		Upload Backup -->
-			<!-- 	</Button> -->
-			<!-- 	<Button  -->
-			<!-- 		variant="default"  -->
-			<!-- 		class="flex-1"  -->
-			<!-- 		onclick={() => downloadBackup()} -->
-			<!-- 	> -->
-			<!-- 		<Download class="mr-2 h-4 w-4" /> -->
-			<!-- 		Download Backup -->
-			<!-- 	</Button> -->
-			<!-- </div> -->
+			<div class="flex justify-end">
+				<Button variant={hasChanges ? 'default' : 'outline'} onclick={saveAllChanges} size="icon">
+					<SaveIcon />
+				</Button>
+			</div>
 		</Card.Content>
 	</Card.Root>
 </div>

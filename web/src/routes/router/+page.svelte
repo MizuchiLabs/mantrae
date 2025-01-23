@@ -6,11 +6,12 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Router, Service, TLS } from '$lib/types/router';
-	import { Edit, Route, Trash } from 'lucide-svelte';
+	import { Pencil, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, routers, services, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
+	import { SOURCE_TAB_SK } from '$lib/store';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -19,11 +20,7 @@
 		service?: Service;
 	}
 
-	const initialModalState: ModalState = {
-		isOpen: false,
-		mode: 'create'
-	};
-
+	const initialModalState: ModalState = { isOpen: false, mode: 'create' };
 	let modalState = $state(initialModalState);
 
 	function openCreateModal() {
@@ -128,8 +125,12 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const resolver = row.getValue('resolver') as TLS;
-				if (!resolver) {
-					return renderComponent(ColumnBadge, { label: 'None', variant: 'secondary' });
+				if (!resolver.certResolver) {
+					return renderComponent(ColumnBadge, {
+						label: 'None',
+						variant: 'secondary',
+						class: 'bg-slate-300 dark:bg-slate-700'
+					});
 				}
 				return renderComponent(ColumnBadge, {
 					label: resolver.certResolver as string,
@@ -165,7 +166,7 @@
 						actions: [
 							{
 								label: 'Edit Router',
-								icon: Edit,
+								icon: Pencil,
 								onClick: () => {
 									openEditModal(row.original.router, row.original.service);
 								}
@@ -173,7 +174,7 @@
 							{
 								label: 'Delete Router',
 								icon: Trash,
-								variant: 'destructive',
+								classProps: 'text-destructive',
 								onClick: () => {
 									deleteRouter(row.original.router);
 								}
@@ -185,7 +186,7 @@
 						actions: [
 							{
 								label: 'Edit Router',
-								icon: Edit,
+								icon: Pencil,
 								onClick: () => {
 									openEditModal(row.original.router, row.original.service);
 								}
@@ -199,7 +200,11 @@
 
 	profile.subscribe((value) => {
 		if (value.id) {
-			api.getTraefikConfig(value.id, $source);
+			let savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
+			if (savedSource) {
+				source.set(savedSource);
+				api.getTraefikConfig(value.id, savedSource);
+			}
 		}
 	});
 
@@ -232,6 +237,7 @@
 			<DataTable
 				{columns}
 				data={mergedData || []}
+				showSourceTabs={true}
 				createButton={{
 					label: 'Add Router',
 					onClick: openCreateModal
@@ -248,6 +254,7 @@
 			<DataTable
 				{columns}
 				data={mergedData || []}
+				showSourceTabs={true}
 				createButton={{
 					label: 'Add Router',
 					onClick: openCreateModal

@@ -6,11 +6,13 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Middleware } from '$lib/types/middlewares';
-	import { Edit, Layers, Trash } from 'lucide-svelte';
+	import { Layers, Pencil, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, middlewares, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
+	import { SOURCE_TAB_SK } from '$lib/store';
+	import { onMount } from 'svelte';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -109,7 +111,7 @@
 						actions: [
 							{
 								label: 'Edit Middleware',
-								icon: Edit,
+								icon: Pencil,
 								onClick: () => {
 									openEditModal(row.original);
 								}
@@ -117,7 +119,7 @@
 							{
 								label: 'Delete Middleware',
 								icon: Trash,
-								variant: 'destructive',
+								classProps: 'text-destructive',
 								onClick: () => {
 									deleteMiddleware(row.original);
 								}
@@ -129,7 +131,7 @@
 						actions: [
 							{
 								label: 'Edit Middleware',
-								icon: Edit,
+								icon: Pencil,
 								onClick: () => {
 									openEditModal(row.original);
 								}
@@ -146,8 +148,12 @@
 			api.getTraefikConfig(value.id, $source);
 		}
 	});
-	$effect(() => {
-		console.log($middlewares);
+
+	onMount(async () => {
+		let savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
+		if (savedSource) {
+			source.set(savedSource);
+		}
 	});
 </script>
 
@@ -165,6 +171,7 @@
 			<DataTable
 				{columns}
 				data={$middlewares || []}
+				showSourceTabs={true}
 				createButton={{
 					label: 'Add Middleware',
 					onClick: openCreateModal
@@ -182,6 +189,7 @@
 			<DataTable
 				{columns}
 				data={$middlewares || []}
+				showSourceTabs={true}
 				createButton={{
 					label: 'Add Middleware',
 					onClick: openCreateModal

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import Ellipsis from 'lucide-svelte/icons/ellipsis';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { Button, type ButtonProps } from '$lib/components/ui/button/index.js';
 	import type { SvelteComponent } from 'svelte';
 	import type { IconProps } from 'lucide-svelte';
 
@@ -9,37 +8,36 @@
 		label: string;
 		icon?: typeof SvelteComponent<IconProps>;
 		onClick: () => void;
-		variant?: 'default' | 'destructive';
+		variant?: ButtonProps['variant'];
+		classProps?: ButtonProps['class'];
 	};
 
 	let { actions }: { actions: Action[] } = $props();
 </script>
 
-<DropdownMenu.Root>
-	<DropdownMenu.Trigger>
-		{#snippet child({ props })}
-			<Button {...props} variant="ghost" size="icon">
-				<span class="sr-only">Open menu</span>
-				<Ellipsis class="size-4" />
-			</Button>
-		{/snippet}
-	</DropdownMenu.Trigger>
-	<DropdownMenu.Content align="end">
-		<DropdownMenu.Group>
-			{#each actions as action}
-				<DropdownMenu.Item
-					onclick={action.onClick}
-					class={action.variant === 'destructive' ? 'text-destructive' : ''}
-				>
-					<div class="flex flex-row items-center justify-between gap-4">
+<div class="flex flex-row items-center gap-2">
+	{#each actions as action}
+		<Tooltip.Provider>
+			<Tooltip.Root delayDuration={300}>
+				<Tooltip.Trigger>
+					<Button
+						variant={action.variant ?? 'ghost'}
+						onclick={action.onClick}
+						class={action.classProps}
+						size="icon"
+					>
 						{#if action.icon}
 							{@const Icon = action.icon}
 							<Icon size={16} />
+						{:else}
+							{action.label}
 						{/if}
-						<span>{action.label}</span>
-					</div>
-				</DropdownMenu.Item>
-			{/each}
-		</DropdownMenu.Group>
-	</DropdownMenu.Content>
-</DropdownMenu.Root>
+					</Button>
+				</Tooltip.Trigger>
+				<Tooltip.Content side="top" align="center" class="max-w-sm">
+					{action.label}
+				</Tooltip.Content>
+			</Tooltip.Root>
+		</Tooltip.Provider>
+	{/each}
+</div>

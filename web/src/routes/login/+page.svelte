@@ -34,31 +34,33 @@
 		<Card.Description>Login to your account</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<div class="grid w-full items-center gap-4" onkeydown={handleKeydown} aria-hidden>
-			<div class="flex flex-col gap-2">
-				<Label for="username">Username</Label>
-				<Input id="username" bind:value={username} />
-			</div>
+		<form onsubmit={handleSubmit} class="space-y-4">
+			<div class="grid w-full items-center gap-4" onkeydown={handleKeydown} aria-hidden>
+				<div class="flex flex-col gap-2">
+					<Label for="username">Username</Label>
+					<Input id="username" bind:value={username} />
+				</div>
 
-			<div class="flex flex-col gap-2">
-				<Label for="password">Password</Label>
-				<PasswordInput bind:password />
-				<div class="mt-1 flex flex-row items-center justify-between">
-					<div class="items-top flex items-center justify-end gap-2">
-						<Checkbox id="remember" bind:checked={remember} />
-						<div class="grid gap-2 leading-none">
-							<Label for="terms1" class="text-sm">Remember me</Label>
+				<div class="flex flex-col gap-2">
+					<Label for="password">Password</Label>
+					<PasswordInput bind:password />
+					<div class="mt-1 flex flex-row items-center justify-between">
+						<div class="items-top flex items-center justify-end gap-2">
+							<Checkbox id="remember" bind:checked={remember} />
+							<div class="grid gap-2 leading-none">
+								<Label for="terms1" class="text-sm">Remember me</Label>
+							</div>
 						</div>
+						<button class="text-xs text-muted-foreground" onclick={handleReset}>
+							Forgot password?
+						</button>
 					</div>
-					<button class="text-xs text-muted-foreground" onclick={handleReset}>
-						Forgot password?
-					</button>
+				</div>
+
+				<div class="mt-4 flex flex-col">
+					<Button type="submit">Login</Button>
 				</div>
 			</div>
-
-			<div class="mt-4 flex flex-col">
-				<Button type="submit" onclick={handleSubmit}>Login</Button>
-			</div>
-		</div>
+		</form>
 	</Card.Content>
 </Card.Root>

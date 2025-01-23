@@ -18,7 +18,7 @@
 		"@sveltejs/kit": "^2.16.1",
 		"@sveltejs/vite-plugin-svelte": "^4.0.4",
 		"@types/eslint": "^9.6.1",
-		"@types/node": "^22.10.7",
+		"@types/node": "^22.10.9",
 		"autoprefixer": "^10.4.20",
 		"bits-ui": "1.0.0-next.78",
 		"clsx": "^2.1.1",
@@ -46,14 +46,14 @@
 		"typescript": "^5.7.3",
 		"typescript-eslint": "^8.21.0",
 		"vite": "^5.4.14",
+		"yaml": "^2.7.0",
 		"zod": "^3.24.1"
 	},
 	"type": "module",
 	"dependencies": {
 		"@formkit/auto-animate": "^0.8.2",
 		"@tanstack/match-sorter-utils": "^8.19.4",
-		"@tanstack/table-core": "^8.20.5",
-		"yaml": "^2.7.0"
+		"@tanstack/table-core": "^8.20.5"
 	},
 	"packageManager": "pnpm@9.4.0+sha512.f549b8a52c9d2b8536762f99c0722205efc5af913e77835dbccc3b0b0b2ca9e7dc8022b78062c17291c48e88749c70ce88eb5a74f1fa8c4bf5e18bb46c8bd83a"
 }

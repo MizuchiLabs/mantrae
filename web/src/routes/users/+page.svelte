@@ -3,10 +3,10 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { Edit, Trash, Users } from 'lucide-svelte';
-	import { TraefikSource, type User } from '$lib/types';
+	import { Pencil, Trash, Users } from 'lucide-svelte';
+	import { type User } from '$lib/types';
 	import UserModal from '$lib/components/modals/user.svelte';
-	import { api, users, source } from '$lib/api';
+	import { api, users } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
@@ -70,7 +70,7 @@
 			}
 		},
 		{
-			header: 'Created At',
+			header: 'Created',
 			accessorKey: 'createdAt',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -81,45 +81,28 @@
 		{
 			id: 'actions',
 			cell: ({ row }) => {
-				if ($source === TraefikSource.LOCAL) {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit User',
-								icon: Edit,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										user: row.original
-									};
-								}
-							},
-							{
-								label: 'Delete User',
-								icon: Trash,
-								variant: 'destructive',
-								onClick: () => {
-									deleteUser(row.original);
-								}
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							label: 'Edit User',
+							icon: Pencil,
+							onClick: () => {
+								modalState = {
+									isOpen: true,
+									user: row.original
+								};
 							}
-						]
-					});
-				} else {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit User',
-								icon: Edit,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										user: row.original
-									};
-								}
+						},
+						{
+							label: 'Delete User',
+							icon: Trash,
+							classProps: 'text-destructive',
+							onClick: () => {
+								deleteUser(row.original);
 							}
-						]
-					});
-				}
+						}
+					]
+				});
 			}
 		}
 	];

@@ -1,107 +1,158 @@
 <script lang="ts">
-	import { agents, deleteAgent, getAgents, profile, upsertAgent } from '$lib/api';
+	import DataTable from '$lib/components/tables/DataTable.svelte';
+	import TableActions from '$lib/components/tables/TableActions.svelte';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import { Bot, KeyRound, Pencil, Trash } from 'lucide-svelte';
+	import { type Agent } from '$lib/types';
 	import AgentModal from '$lib/components/modals/agent.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { newAgent, type Agent } from '$lib/types/base';
-	import { Bot, BotOff, Plus } from 'lucide-svelte';
+	import { api, agents, profile } from '$lib/api';
+	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
+	import { DateFormat } from '$lib/store';
 
-	function checkLastSeen(agent: Agent) {
-		const lastSeenDate = new Date(agent.lastSeen);
-		const now = new Date();
-		const diffInMinutes = (Number(now) - Number(lastSeenDate)) / (1000 * 60); // Explicitly convert to number
-		return diffInMinutes < 1;
+	interface ModalState {
+		isOpen: boolean;
+		agent?: Agent;
 	}
 
-	function addAgent() {
-		let agent = newAgent();
-		if (!$profile.id) return;
-		agent.profileId = $profile.id;
-		agent.lastSeen = new Date('2000-01-01').toISOString();
-		upsertAgent(agent);
+	const initialModalState: ModalState = { isOpen: false };
+	let modalState = $state(initialModalState);
 
-		toast.success('Agent added!', {
-			description: 'Copy the agent token to setup your new agent.',
-			duration: 3000
-		});
-	}
-
-	let copyText = $state('Copy Token');
-	const copyToken = (agent: Agent) => {
-		navigator.clipboard.writeText(agent.token);
-		copyText = 'Copied!';
-		setTimeout(() => {
-			copyText = 'Copy Token';
-		}, 2000);
+	const deleteAgent = async (agent: Agent) => {
+		try {
+			await api.deleteAgent(agent.id);
+			toast.success('Agent deleted');
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(e.message);
+		}
 	};
 
-	profile.subscribe(async (value) => {
-		if (!value?.id) return;
-		await getAgents(value.id);
+	const copyToken = async (agent: Agent) => {
+		try {
+			await navigator.clipboard.writeText(agent.token);
+			toast.success('Token copied to clipboard');
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(e.message);
+		}
+	};
+
+	const columns: ColumnDef<Agent>[] = [
+		{
+			header: 'Hostname',
+			accessorKey: 'hostname',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const name = row.getValue('hostname') as string;
+				if (!name) {
+					return 'Connect your agent!';
+				} else {
+					return name;
+				}
+			}
+		},
+		{
+			header: 'Endpoint',
+			accessorKey: 'activeIp',
+			enableSorting: true
+		},
+		// {
+		// 	header: 'Containers',
+		// 	accessorKey: 'containers',
+		// 	enableSorting: true,
+		// 	cell: ({ row }) => {
+		// 		const admin = row.getValue('isAdmin') as boolean;
+		// 		if (admin) {
+		// 			return renderComponent(ColumnBadge, {
+		// 				label: 'Yes',
+		// 				variant: 'default'
+		// 			});
+		// 		} else {
+		// 			return renderComponent(ColumnBadge, {
+		// 				label: 'No',
+		// 				variant: 'secondary'
+		// 			});
+		// 		}
+		// 	}
+		// },
+		{
+			header: 'Last Seen',
+			accessorKey: 'updatedAt',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const date = row.getValue('updatedAt') as string;
+				return DateFormat.format(new Date(date));
+			}
+		},
+		{
+			header: 'Created At',
+			accessorKey: 'createdAt',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const date = row.getValue('createdAt') as string;
+				return DateFormat.format(new Date(date));
+			}
+		},
+		{
+			id: 'actions',
+			cell: ({ row }) => {
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							label: 'Edit Agent',
+							icon: Pencil,
+							onClick: () => {
+								modalState = {
+									isOpen: true,
+									agent: row.original
+								};
+							}
+						},
+						{
+							label: 'Copy Token',
+							icon: KeyRound,
+							classProps: 'text-green-500',
+							onClick: () => copyToken(row.original)
+						},
+						{
+							label: 'Delete Agent',
+							icon: Trash,
+							classProps: 'text-destructive',
+							onClick: () => {
+								deleteAgent(row.original);
+							}
+						}
+					]
+				});
+			}
+		}
+	];
+
+	profile.subscribe((value) => {
+		if (value.id) {
+			api.listAgents();
+		}
 	});
 </script>
 
-<div class="mt-4 flex flex-col gap-4 px-4 md:flex-row">
-	<Button class="flex items-center gap-2 bg-red-400 text-black" on:click={addAgent}>
-		<span>Add Agent</span>
-		<Plus size="1rem" />
-	</Button>
+<svelte:head>
+	<title>Agents</title>
+</svelte:head>
+
+<div class="flex flex-col gap-4">
+	<div class="flex items-center justify-start gap-2">
+		<Bot />
+		<h1 class="text-2xl font-bold">Agent Management</h1>
+	</div>
+	<DataTable
+		{columns}
+		data={$agents || []}
+		createButton={{
+			label: 'Add Agent',
+			onClick: () => api.createAgent($profile.id)
+		}}
+	/>
 </div>
 
-<div class="flex flex-col gap-4 px-4 md:flex-row">
-	{#if $agents && $agents.length > 0}
-		{#each $agents as a}
-			<Card.Root class="w-full md:w-[350px]">
-				<Card.Header>
-					<Card.Title class="flex items-center justify-between gap-2">
-						<span>{a.hostname}</span>
-						{#if checkLastSeen(a)}
-							<Tooltip.Root>
-								<Tooltip.Trigger>
-									<Bot size="1.5rem" class="z-10 animate-pulse text-green-500" />
-								</Tooltip.Trigger>
-								<Tooltip.Content>
-									<p>Agent connected</p>
-								</Tooltip.Content>
-							</Tooltip.Root>
-						{:else}
-							<Tooltip.Root>
-								<Tooltip.Trigger>
-									<BotOff size="1.5rem" class="text-red-500" />
-								</Tooltip.Trigger>
-								<Tooltip.Content>
-									<p>Agent disconnected</p>
-								</Tooltip.Content>
-							</Tooltip.Root>
-						{/if}
-					</Card.Title>
-				</Card.Header>
-				{#if a.publicIp}
-					<Card.Content class="space-y-2">
-						IP: {a.publicIp}
-					</Card.Content>
-				{/if}
-				<Card.Footer class="flex flex-col items-center gap-4">
-					<div class="flex w-full flex-row gap-2">
-						<AgentModal agent={a} />
-						<Button
-							variant="ghost"
-							class="w-full bg-red-400 text-black"
-							on:click={() => deleteAgent(a.id)}>Delete</Button
-						>
-					</div>
-					<Button variant="secondary" size="sm" class="w-full" on:click={() => copyToken(a)}
-						>{copyText}</Button
-					>
-				</Card.Footer>
-			</Card.Root>
-		{/each}
-	{:else}
-		<div class="flex h-[calc(75vh)] w-full flex-col items-center justify-center gap-2">
-			<BotOff size="8rem" />
-			<span class="text-xl font-semibold">No agents connected</span>
-		</div>
-	{/if}
-</div>
+<AgentModal bind:open={modalState.isOpen} agent={modalState.agent} />

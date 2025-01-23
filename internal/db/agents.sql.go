@@ -11,49 +11,26 @@ import (
 
 const createAgent = `-- name: CreateAgent :exec
 INSERT INTO
-    agents (
-        id,
-        profile_id,
-        hostname,
-        public_ip,
-        private_ips,
-        containers,
-        active_ip,
-        token
-    )
+  agents (id, profile_id, token)
 VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?)
+  (?, ?, ?)
 `
 
 type CreateAgentParams struct {
-	ID         string      `json:"id"`
-	ProfileID  int64       `json:"profileId"`
-	Hostname   string      `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	ActiveIp   *string     `json:"activeIp"`
-	Token      string      `json:"token"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
+	Token     string `json:"token"`
 }
 
 func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) error {
-	_, err := q.exec(ctx, q.createAgentStmt, createAgent,
-		arg.ID,
-		arg.ProfileID,
-		arg.Hostname,
-		arg.PublicIp,
-		arg.PrivateIps,
-		arg.Containers,
-		arg.ActiveIp,
-		arg.Token,
-	)
+	_, err := q.exec(ctx, q.createAgentStmt, createAgent, arg.ID, arg.ProfileID, arg.Token)
 	return err
 }
 
 const deleteAgent = `-- name: DeleteAgent :exec
 DELETE FROM agents
 WHERE
-    id = ?
+  id = ?
 `
 
 func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
@@ -63,11 +40,11 @@ func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
 
 const getAgent = `-- name: GetAgent :one
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
-    agents
+  agents
 WHERE
-    id = ?
+  id = ?
 `
 
 func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
@@ -90,11 +67,11 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
-    agents
+  agents
 ORDER BY
-    hostname
+  hostname
 `
 
 func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
@@ -133,11 +110,11 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfile = `-- name: ListAgentsByProfile :many
 SELECT
-    id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
-    agents
+  agents
 WHERE
-    profile_id = ?
+  profile_id = ?
 `
 
 func (q *Queries) ListAgentsByProfile(ctx context.Context, profileID int64) ([]Agent, error) {
@@ -177,18 +154,18 @@ func (q *Queries) ListAgentsByProfile(ctx context.Context, profileID int64) ([]A
 const updateAgent = `-- name: UpdateAgent :exec
 UPDATE agents
 SET
-    hostname = ?,
-    public_ip = ?,
-    private_ips = ?,
-    containers = ?,
-    active_ip = ?,
-    updated_at = CURRENT_TIMESTAMP
+  hostname = ?,
+  public_ip = ?,
+  private_ips = ?,
+  containers = ?,
+  active_ip = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?
+  id = ?
 `
 
 type UpdateAgentParams struct {
-	Hostname   string      `json:"hostname"`
+	Hostname   *string     `json:"hostname"`
 	PublicIp   *string     `json:"publicIp"`
 	PrivateIps interface{} `json:"privateIps"`
 	Containers interface{} `json:"containers"`
@@ -205,5 +182,23 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) error 
 		arg.ActiveIp,
 		arg.ID,
 	)
+	return err
+}
+
+const updateAgentToken = `-- name: UpdateAgentToken :exec
+UPDATE agents
+SET
+  token = ?
+WHERE
+  id = ?
+`
+
+type UpdateAgentTokenParams struct {
+	Token string `json:"token"`
+	ID    string `json:"id"`
+}
+
+func (q *Queries) UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error {
+	_, err := q.exec(ctx, q.updateAgentTokenStmt, updateAgentToken, arg.Token, arg.ID)
 	return err
 }

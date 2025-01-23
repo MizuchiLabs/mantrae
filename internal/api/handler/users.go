@@ -64,6 +64,22 @@ func UpdateUser(q *db.Queries) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		dbUser, err := q.GetUser(r.Context(), user.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if user.Password == "" {
+			user.Password = dbUser.Password
+		} else {
+			hashedPassword, err := util.HashPassword(user.Password)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			user.Password = hashedPassword
+		}
 		if err := q.UpdateUser(r.Context(), user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

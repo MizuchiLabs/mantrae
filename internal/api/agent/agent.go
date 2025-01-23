@@ -1,4 +1,4 @@
-package grpc
+package agent
 
 import (
 	"context"
@@ -54,7 +54,7 @@ func (s *AgentServer) GetContainer(
 	}
 	if err := s.db.UpdateAgent(context.Background(), db.UpdateAgentParams{
 		ID:         req.Msg.GetId(),
-		Hostname:   req.Msg.GetHostname(),
+		Hostname:   &req.Msg.Hostname,
 		PublicIp:   &req.Msg.PublicIp,
 		PrivateIps: privateIpsJSON,
 		Containers: containersJSON,

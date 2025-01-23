@@ -132,10 +132,10 @@ func DeleteRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		routerName := r.PathValue("name")
-		routerType := r.PathValue("type")
+		routerProto := r.PathValue("protocol")
 
-		if routerName == "" || routerType == "" {
-			http.Error(w, "Missing router name or type", http.StatusBadRequest)
+		if routerName == "" || routerProto == "" {
+			http.Error(w, "Missing router name or protocol", http.StatusBadRequest)
 			return
 		}
 
@@ -162,7 +162,7 @@ func DeleteRouter(q *db.Queries) http.HandlerFunc {
 		}
 
 		// Remove router and service based on type
-		switch routerType {
+		switch routerProto {
 		case "http":
 			delete(existingConfig.Config.Routers, routerName)
 			delete(existingConfig.Config.Services, routerName)

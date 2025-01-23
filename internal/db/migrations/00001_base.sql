@@ -57,13 +57,14 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS settings (
   key VARCHAR(255) PRIMARY KEY,
   value TEXT NOT NULL,
+  description TEXT,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS agents (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
-  hostname TEXT NOT NULL,
+  hostname TEXT,
   public_ip TEXT,
   private_ips JSON,
   containers JSON,

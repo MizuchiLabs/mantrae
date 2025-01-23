@@ -9,7 +9,7 @@
 	let { text }: Props = $props();
 </script>
 
-<Tooltip.Root openDelay={500}>
+<Tooltip.Root delayDuration={300}>
 	<Tooltip.Trigger>
 		<CircleHelp size="1rem" />
 	</Tooltip.Trigger>

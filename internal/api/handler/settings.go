@@ -39,7 +39,7 @@ func UpsertSetting(sm *config.SettingsManager) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := sm.Set(r.Context(), setting.Key, setting.Value); err != nil {
+		if err := sm.Set(r.Context(), setting.Key, setting.Value, setting.Description); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

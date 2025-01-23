@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import HoverInfo from '$lib/components/utils/hoverInfo.svelte';
+	import HoverInfo from '$lib/components/utils/HoverInfo.svelte';
 	import { cn } from '$lib/utils';
 	import autoAnimate from '@formkit/auto-animate';
 	import { Minus, Plus } from 'lucide-svelte';

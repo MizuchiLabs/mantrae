@@ -1,6 +1,10 @@
 package util
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 )
@@ -18,11 +22,61 @@ const (
 	EventTypeDelete = "delete"
 )
 
-// A channel to broadcast updates
-var Broadcast = make(chan EventMessage)
-
-// A list of clients connected to SSE
 var (
+	Broadcast    = make(chan EventMessage, 100)
+	done         = make(chan struct{})
 	Clients      = make(map[http.ResponseWriter]bool)
 	ClientsMutex = &sync.Mutex{}
 )
+
+func StartEventProcessor(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case msg := <-Broadcast:
+				ClientsMutex.Lock()
+				for client := range Clients {
+					// Non-blocking send to each client
+					go func(w http.ResponseWriter, message EventMessage) {
+						if err := sendEventToClient(w, message); err != nil {
+							slog.Error("Failed to send event", "error", err)
+							// Optionally remove failed clients
+							ClientsMutex.Lock()
+							delete(Clients, w)
+							ClientsMutex.Unlock()
+						}
+					}(client, msg)
+				}
+				ClientsMutex.Unlock()
+
+				// If no clients, log the dropped event
+				if len(Clients) == 0 {
+					slog.Debug("Event dropped - no clients connected",
+						"type", msg.Type,
+						"message", msg.Message)
+				}
+			case <-ctx.Done():
+				close(done)
+				return
+			}
+		}
+	}()
+}
+
+func sendEventToClient(w http.ResponseWriter, msg EventMessage) error {
+	// Implementation of sending event to a single client
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintf(w, "data: %s\n\n", data)
+	if err != nil {
+		return err
+	}
+
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+	return nil
+}

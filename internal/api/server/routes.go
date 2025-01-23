@@ -50,13 +50,13 @@ func (s *Server) routes() {
 	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(DB))
 
 	// Routers/Services
-	register("POST", "/router/{id}", logChain, handler.UpsertRouter(DB))
-	register("DELETE", "/router/{id}/{name}/{type}", jwtChain, handler.DeleteRouter(DB))
+	register("POST", "/router/{id}", jwtChain, handler.UpsertRouter(DB))
+	register("DELETE", "/router/{id}/{name}/{protocol}", jwtChain, handler.DeleteRouter(DB))
 
 	// Middlewares
-	register("POST", "/middleware/{id}", logChain, handler.UpsertMiddleware(DB))
-	register("DELETE", "/middleware/{id}/{name}/{type}", jwtChain, handler.DeleteMiddleware(DB))
-	register("GET", "/middleware/plugins", logChain, handler.GetMiddlewarePlugins)
+	register("POST", "/middleware/{id}", jwtChain, handler.UpsertMiddleware(DB))
+	register("DELETE", "/middleware/{id}/{name}/{protocol}", jwtChain, handler.DeleteMiddleware(DB))
+	register("GET", "/middleware/plugins", jwtChain, handler.GetMiddlewarePlugins)
 
 	// Users
 	register("GET", "/user", jwtChain, handler.ListUsers(DB))
@@ -75,15 +75,15 @@ func (s *Server) routes() {
 	// Settings
 	register("GET", "/settings", jwtChain, handler.ListSettings(s.app.SM))
 	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(s.app.SM))
-	register("POST", "/settings", logChain, handler.UpsertSetting(s.app.SM))
+	register("POST", "/settings", jwtChain, handler.UpsertSetting(s.app.SM))
 
 	// Agent
 	register("GET", "/agent", jwtChain, handler.ListAgents(DB))
 	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(DB))
-	register("POST", "/agent", jwtChain, handler.CreateAgent(DB))
+	register("POST", "/agent/{id}", jwtChain, handler.CreateAgent(s.app))
 	register("PUT", "/agent", jwtChain, handler.UpdateAgent(DB))
 	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(DB))
-	// register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(DB))
+	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
 	// Backup
 	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))

@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData, TValue, TModalProps">
+<script lang="ts" generics="TData, TValue">
 	import {
 		type ColumnDef,
 		type PaginationState,
@@ -20,9 +20,13 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { TraefikSource } from '$lib/types';
+	import { SOURCE_TAB_SK } from '$lib/store';
+	import { api, profile, source } from '$lib/api';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -42,10 +46,11 @@
 			label: string;
 			onClick: () => void;
 		};
+		showSourceTabs?: boolean;
 		onRowSelection?: (selectedRows: TData[]) => void;
 	};
 
-	let { data, columns, createButton }: DataTableProps<TData, TValue> = $props();
+	let { data, columns, createButton, showSourceTabs }: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
 	const pageSizeOptions = [10, 20, 30, 40, 50];
@@ -161,6 +166,14 @@
 			}
 		}
 	});
+
+	// Update localStorage and fetch config when tab changes
+	async function handleTabChange(value: TraefikSource) {
+		localStorage.setItem(SOURCE_TAB_SK, value);
+		source.set(value);
+		if (!$profile?.id) return;
+		await api.getTraefikConfig($profile.id, $source);
+	}
 </script>
 
 <div>
@@ -179,6 +192,16 @@
 				onclick={() => table.setGlobalFilter('')}
 			/>
 		</div>
+
+		<!-- Tabs -->
+		{#if showSourceTabs}
+			<Tabs.Root value={$source} onValueChange={(value) => handleTabChange(value as TraefikSource)}>
+				<Tabs.List class="grid w-[400px] grid-cols-2">
+					<Tabs.Trigger value={TraefikSource.LOCAL}>Local</Tabs.Trigger>
+					<Tabs.Trigger value={TraefikSource.API}>API</Tabs.Trigger>
+				</Tabs.List>
+			</Tabs.Root>
+		{/if}
 
 		<!-- Column Visibility -->
 		<DropdownMenu.Root>

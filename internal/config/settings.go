@@ -10,19 +10,24 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/db"
 )
 
+type SettingWithDescription struct {
+	Value       interface{} `json:"value"`
+	Description *string     `json:"description,omitempty"`
+}
+
 // Settings defines all application settings
 type Settings struct {
-	ServerURL            string        `setting:"server_url" default:"http://localhost:3000"`
-	BackupEnabled        bool          `setting:"backup_enabled" default:"true"`
-	BackupInterval       time.Duration `setting:"backup_interval" default:"24h"`
-	BackupKeep           int           `setting:"backup_keep" default:"3"`
-	EmailHost            string        `setting:"email_host" default:"localhost"`
-	EmailPort            int           `setting:"email_port" default:"587"`
-	EmailUser            string        `setting:"email_user" default:""`
-	EmailPass            string        `setting:"email_pass" default:""`
-	EmailFrom            string        `setting:"email_from" default:"mantrae@localhost"`
-	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled" default:"true"`
-	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"`
+	ServerURL            string        `setting:"server_url"             default:"http://localhost:3000" description:"Base URL for the server"`
+	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable automatic backups"`
+	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Interval between backups"`
+	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"Number of backups to retain"`
+	EmailHost            string        `setting:"email_host"             default:"localhost"             description:"SMTP server hostname"`
+	EmailPort            int           `setting:"email_port"             default:"587"                   description:"SMTP server port"`
+	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP username"`
+	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP password"`
+	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"From email address"`
+	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic agent cleanup"`
+	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Interval for agent cleanup"`
 }
 
 type SettingsManager struct {
@@ -178,18 +183,11 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 	return nil
 }
 
-func (sm *SettingsManager) GetAll(ctx context.Context) (*Settings, error) {
-	settings := &Settings{} // Start with empty settings
-	v := reflect.ValueOf(settings).Elem()
+// Modified GetAll to return settings with descriptions
+func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDescription, error) {
+	settings := make(map[string]SettingWithDescription)
+	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
-
-	// Create map of field info
-	fieldMap := make(map[string]int)
-	for i := 0; i < t.NumField(); i++ {
-		if key := t.Field(i).Tag.Get("setting"); key != "" {
-			fieldMap[key] = i
-		}
-	}
 
 	// Get all settings from database
 	dbSettings, err := sm.q.ListSettings(ctx)
@@ -197,13 +195,12 @@ func (sm *SettingsManager) GetAll(ctx context.Context) (*Settings, error) {
 		return nil, err
 	}
 
-	// Create map of database settings for easier lookup
-	dbMap := make(map[string]string)
+	// Create map of database settings
+	dbMap := make(map[string]db.Setting)
 	for _, setting := range dbSettings {
-		dbMap[setting.Key] = setting.Value
+		dbMap[setting.Key] = setting
 	}
 
-	// Iterate through fields and set values
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		key := field.Tag.Get("setting")
@@ -211,47 +208,78 @@ func (sm *SettingsManager) GetAll(ctx context.Context) (*Settings, error) {
 			continue
 		}
 
+		fieldValue := reflect.New(field.Type).Elem()
+		description := field.Tag.Get("description")
+
 		// If value exists in database, use it
-		if value, exists := dbMap[key]; exists {
-			if err := parseValue(v.Field(i), value); err != nil {
+		if dbSetting, exists := dbMap[key]; exists {
+			if err := parseValue(fieldValue, dbSetting.Value); err != nil {
 				return nil, fmt.Errorf("error parsing setting %s: %w", key, err)
 			}
+			if dbSetting.Description != nil {
+				description = *dbSetting.Description
+			}
 		} else {
-			// If no value in database, use default
+			// Use default value
 			defaultVal := field.Tag.Get("default")
 			if defaultVal != "" {
-				if err := parseValue(v.Field(i), defaultVal); err != nil {
+				if err := parseValue(fieldValue, defaultVal); err != nil {
 					return nil, fmt.Errorf("error parsing default value for %s: %w", key, err)
 				}
 			}
+		}
+
+		desc := &description
+		if description == "" {
+			desc = nil
+		}
+
+		// Convert duration fields to formatted strings
+		var value interface{}
+		if field.Type == reflect.TypeOf(time.Duration(0)) {
+			value = fieldValue.Interface().(time.Duration).String()
+		} else {
+			value = fieldValue.Interface()
+		}
+
+		settings[key] = SettingWithDescription{
+			Value:       value,
+			Description: desc,
 		}
 	}
 
 	return settings, nil
 }
 
-func (sm *SettingsManager) Get(ctx context.Context, key string) (interface{}, error) {
+// Modified Get to return setting with description
+func (sm *SettingsManager) Get(ctx context.Context, key string) (*SettingWithDescription, error) {
 	setting, err := sm.q.GetSetting(ctx, key)
 	if err != nil {
 		return nil, err
 	}
 
-	// Find the corresponding field and its type in Settings struct
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
 
 	for i := 0; i < t.NumField(); i++ {
 		if t.Field(i).Tag.Get("setting") == key {
-			// Create a new value of the correct type
 			fieldValue := reflect.New(t.Field(i).Type).Elem()
-
-			// Parse the string value to the correct type
 			if err := parseValue(fieldValue, setting.Value); err != nil {
 				return nil, fmt.Errorf("error parsing setting %s: %w", key, err)
 			}
 
-			// Return the interface{} value
-			return fieldValue.Interface(), nil
+			// Convert duration fields to formatted strings
+			var value interface{}
+			if t.Field(i).Type == reflect.TypeOf(time.Duration(0)) {
+				value = fieldValue.Interface().(time.Duration).String()
+			} else {
+				value = fieldValue.Interface()
+			}
+
+			return &SettingWithDescription{
+				Value:       value,
+				Description: setting.Description,
+			}, nil
 		}
 	}
 
@@ -259,7 +287,11 @@ func (sm *SettingsManager) Get(ctx context.Context, key string) (interface{}, er
 }
 
 // Set updates a setting with proper type conversion from string input
-func (sm *SettingsManager) Set(ctx context.Context, key string, strValue string) error {
+func (sm *SettingsManager) Set(
+	ctx context.Context,
+	key, strValue string,
+	description *string,
+) error {
 	// Find the corresponding field to validate and convert the type
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
@@ -273,11 +305,14 @@ func (sm *SettingsManager) Set(ctx context.Context, key string, strValue string)
 			if err := parseValue(fieldValue, strValue); err != nil {
 				return fmt.Errorf("invalid value for setting %s: %w", key, err)
 			}
-
-			return sm.q.UpsertSetting(ctx, db.UpsertSettingParams{
+			params := db.UpsertSettingParams{
 				Key:   key,
 				Value: strValue,
-			})
+			}
+			if description != nil {
+				params.Description = description
+			}
+			return sm.q.UpsertSetting(ctx, params)
 		}
 	}
 

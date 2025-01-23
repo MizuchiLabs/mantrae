@@ -11,6 +11,7 @@
 	import { onMount } from 'svelte';
 	import { api, profiles, profile, user } from '$lib/api';
 	import { PROFILE_SK } from '$lib/store';
+
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
