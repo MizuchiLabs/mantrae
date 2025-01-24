@@ -8,10 +8,12 @@
 	interface Props {
 		service: Service;
 		router: Router;
-		disabled?: boolean;
 	}
 
-	let { service = $bindable({} as Service), router, disabled = false }: Props = $props();
+	let { service = $bindable({} as Service), router }: Props = $props();
+
+	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
+	let disabled = $derived(routerProvider !== 'http');
 
 	let passHostHeader = $derived(service.loadBalancer?.passHostHeader ?? true);
 	let servers = $state(

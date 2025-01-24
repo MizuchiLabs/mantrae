@@ -1,27 +1,40 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import type { DNSProvider } from '$lib/types';
+	import { type DNSProvider, DNSProviderTypes } from '$lib/types';
+	import { Toggle } from '$lib/components/ui/toggle';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { api, loading } from '$lib/api';
 	import { toast } from 'svelte-sonner';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		dns: DNSProvider | undefined;
 		open?: boolean;
 	}
+	const defaultDNS: DNSProvider = {
+		id: 0,
+		name: '',
+		type: DNSProviderTypes.CLOUDFLARE,
+		isActive: false,
+		config: {
+			apiKey: '',
+			apiUrl: '',
+			traefikIp: '',
+			proxied: false,
+			zoneType: 'primary'
+		}
+	};
 
-	let { dns: dns = $bindable({} as DNSProvider), open = $bindable(false) }: Props = $props();
+	let { dns: dns = $bindable(defaultDNS), open = $bindable(false) }: Props = $props();
 
-	let providerTypes = [
-		{ value: 'cloudflare', label: 'Cloudflare' },
-		{ value: 'powerdns', label: 'PowerDNS' },
-		{ value: 'technitium', label: 'Technitium' }
-	];
+	const dnsProviders = Object.entries(DNSProviderTypes).map(([key, value]) => ({
+		label: value.charAt(0).toUpperCase() + value.slice(1),
+		value: key.toLowerCase()
+	}));
 	const handleSubmit = async () => {
 		try {
 			if (dns.id) {
@@ -60,30 +73,23 @@
 	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[550px]">
 		<Dialog.Header>
 			<Dialog.Title>{dns.id ? 'Edit' : 'Add'} Provider</Dialog.Title>
-			<!-- <Dialog.Description>Configure your Traefik instance connection details.</Dialog.Description> -->
+			<Dialog.Description>Setup dns provider for automated dns records</Dialog.Description>
 		</Dialog.Header>
 
 		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="mb-4 flex items-center justify-end gap-2">
-				<Tooltip.Root>
-					<Tooltip.Trigger>
-						<Label for="is_active" class="text-right">Default</Label>
-						<Switch name="is_active" bind:checked={dns.isActive} required />
-					</Tooltip.Trigger>
-					<Tooltip.Content class="max-w-sm">
-						<p>Sets this provider as the default, any new router created will use this provider</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
+				<Label for="is_active" class="text-right">Default</Label>
+				<Switch name="is_active" checked={dns.isActive} />
 			</div>
 
-			<div class="grid grid-cols-4 items-center gap-2 space-y-2">
+			<div class="space-y-1 pb-2">
 				<Label for="current" class="text-right">Type</Label>
 				<Select.Root type="single" value={dns.type} onValueChange={(value) => (dns.type = value)}>
 					<Select.Trigger class="col-span-3">
 						{dns.type ? dns.type : 'Select type'}
 					</Select.Trigger>
 					<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-						{#each providerTypes as type}
+						{#each dnsProviders as type}
 							<Select.Item value={type.value} label={type.label}>
 								{type.label}
 							</Select.Item>
@@ -92,8 +98,31 @@
 				</Select.Root>
 			</div>
 
-			<div class="grid grid-cols-4 items-center gap-2">
-				<Label for="name" class="text-right">Name</Label>
+			<Separator />
+
+			{#if dns.type === DNSProviderTypes.TECHNITIUM}
+				<div class="flex items-center justify-end gap-2">
+					<Toggle
+						size="sm"
+						pressed={dns.config.zoneType === 'primary'}
+						onPressedChange={() => (dns.config.zoneType = 'primary')}
+						class="font-bold data-[state=on]:bg-green-300 dark:data-[state=on]:text-black"
+					>
+						Primary
+					</Toggle>
+					<Toggle
+						size="sm"
+						pressed={dns.config.zoneType === 'forwarder'}
+						onPressedChange={() => (dns.config.zoneType = 'forwarder')}
+						class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
+					>
+						Forwarder
+					</Toggle>
+				</div>
+			{/if}
+
+			<div class="space-y-1">
+				<Label for="name">Name</Label>
 				<Input
 					name="name"
 					type="text"
@@ -102,12 +131,51 @@
 					required
 				/>
 			</div>
+			<div class="space-y-1">
+				<Label for="traefikIp">Traefik IP</Label>
+				<Input
+					name="traefikIp"
+					type="text"
+					bind:value={dns.config.traefikIp}
+					placeholder="IP of your Traefik instance"
+					required
+				/>
+			</div>
+
+			{#if dns.type === DNSProviderTypes.CLOUDFLARE}
+				<div class="flex items-center gap-2">
+					<Label for="proxied">Proxied?</Label>
+					<Switch bind:checked={dns.config.proxied} />
+				</div>
+			{/if}
+			{#if dns.type === DNSProviderTypes.POWERDNS || dns.type === DNSProviderTypes.TECHNITIUM}
+				<div class="space-y-1">
+					<Label for="url">Endpoint</Label>
+					<Input
+						name="url"
+						type="text"
+						bind:value={dns.config.apiUrl}
+						placeholder="Endpoint for {dns.type}"
+						required
+					/>
+				</div>
+				<div class="space-y-1">
+					<Label for="key">API Key</Label>
+					<Input
+						name="key"
+						type="text"
+						bind:value={dns.config.apiKey}
+						placeholder="API Key for {dns.type}"
+						required
+					/>
+				</div>
+			{/if}
 
 			<Dialog.Footer>
 				{#if dns.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}
-						>Delete</Button
-					>
+					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}>
+						Delete
+					</Button>
 				{/if}
 				<Button type="submit" disabled={$loading}>{dns.id ? 'Update' : 'Save'}</Button>
 			</Dialog.Footer>

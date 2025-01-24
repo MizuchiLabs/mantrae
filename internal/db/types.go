@@ -83,6 +83,14 @@ type TraefikConfiguration struct {
 	UDPServices    map[string]*runtime.UDPServiceInfo    `json:"udpServices,omitempty"`
 }
 
+type DNSProviderConfig struct {
+	APIKey    string `json:"apiKey"`
+	APIUrl    string `json:"apiUrl"`
+	TraefikIP string `json:"traefikIp"`
+	Proxied   bool   `json:"proxied"`
+	ZoneType  string `json:"zoneType"`
+}
+
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
 func (e *TraefikEntryPoints) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
@@ -133,5 +141,17 @@ func (c TraefikConfiguration) Value() (driver.Value, error) {
 		c.UDPServices == nil {
 		return nil, nil
 	}
+	return json.Marshal(c)
+}
+
+func (c *DNSProviderConfig) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("expected bytes, got %T", value)
+	}
+	return json.Unmarshal(bytes, c)
+}
+
+func (c DNSProviderConfig) Value() (driver.Value, error) {
 	return json.Marshal(c)
 }

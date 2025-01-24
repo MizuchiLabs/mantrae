@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+
+	"github.com/MizuchiLabs/mantrae/internal/db"
 )
 
 type TechnitiumProvider struct {
@@ -20,7 +22,7 @@ type TechnitiumProvider struct {
 	ZoneType   string // primary, forwarder
 }
 
-func (d *DNSProviderConfig) NewTechnitiumProvider() *TechnitiumProvider {
+func NewTechnitiumProvider(d *db.DNSProviderConfig) *TechnitiumProvider {
 	if !slices.Contains(ZoneTypes, d.ZoneType) {
 		slog.Error("Invalid zone type", "type", d.ZoneType)
 	}

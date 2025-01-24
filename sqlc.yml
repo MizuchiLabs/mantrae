@@ -29,3 +29,7 @@ sql:
             go_type:
               import: "github.com/MizuchiLabs/mantrae/internal/source"
               type: "Source"
+          - column: "dns_providers.config"
+            go_type:
+              type: "DNSProviderConfig"
+              pointer: true

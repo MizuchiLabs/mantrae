@@ -51,6 +51,7 @@ export const plugins: Writable<Plugin[]> = writable([]);
 export const profile: Writable<Profile> = writable({} as Profile);
 export const user: Writable<User | null> = writable({} as User);
 export const source: Writable<TraefikSource> = writable({} as TraefikSource);
+export const mwNames: Writable<string[]> = writable([]);
 
 // Loading and error states
 export const loading = writable<boolean>(false);
@@ -90,12 +91,11 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 		if (!response.ok) {
 			throw new Error(`${await response.text()}`);
 		}
-		if (response.status !== 204) {
+		if (response.status !== 204 && response.status !== 201) {
 			return await response.json();
 		}
 	} catch (err: unknown) {
 		error.set(err instanceof Error ? err.message : String(err));
-		loading.set(false);
 		throw err;
 	} finally {
 		loading.set(false);
@@ -238,16 +238,16 @@ export const api = {
 
 	// DNS Providers -------------------------------------------------------------
 	async listDNSProviders() {
-		const data = await send('/provider');
+		const data = await send('/dns');
 		dnsProviders.set(data);
 	},
 
 	async getDNSProvider(id: number) {
-		return await send(`/provider/${id}`);
+		return await send(`/dns/${id}`);
 	},
 
 	async createDNSProvider(provider: Omit<DNSProvider, 'id' | 'created_at' | 'updated_at'>) {
-		await send('/provider', {
+		await send('/dns', {
 			method: 'POST',
 			body: provider
 		});
@@ -255,7 +255,7 @@ export const api = {
 	},
 
 	async updateDNSProvider(provider: Omit<DNSProvider, 'created_at' | 'updated_at'>) {
-		await send(`/provider/${provider.id}`, {
+		await send(`/dns`, {
 			method: 'PUT',
 			body: provider
 		});
@@ -263,10 +263,31 @@ export const api = {
 	},
 
 	async deleteDNSProvider(id: number) {
-		await send(`/provider/${id}`, {
+		await send(`/dns/${id}`, {
 			method: 'DELETE'
 		});
 		await api.listDNSProviders();
+	},
+
+	async getRouterDNSProvider(traefikId: number, routerName: string) {
+		return await send(`/dns/router`, {
+			method: 'GET',
+			body: { traefikId, routerName }
+		});
+	},
+
+	async setRouterDNSProvider(traefikId: number, providerId: number, routerName: string) {
+		return await send(`/dns/router`, {
+			method: 'POST',
+			body: { traefikId, providerId, routerName }
+		});
+	},
+
+	async deleteRouterDNSProvider(traefikId: number, routerName: string) {
+		return await send(`/dns/router`, {
+			method: 'DELETE',
+			body: { traefikId, routerName }
+		});
 	},
 
 	// Users ---------------------------------------------------------------------
@@ -379,6 +400,10 @@ async function fetchTraefikMetadata(id: number) {
 	overview.set(res.overview);
 	entrypoints.set(res.entrypoints);
 	version.set(res.version);
+
+	// Set middleware names (used for chain)
+	const middlewares = flattenMiddlewareData(res.config);
+	mwNames.set(middlewares.map((mw) => mw.name));
 	return true;
 }
 

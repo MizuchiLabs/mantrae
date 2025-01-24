@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -15,7 +16,7 @@ type CloudflareProvider struct {
 	Proxied    *bool
 }
 
-func (d *DNSProviderConfig) NewCloudflareProvider() *CloudflareProvider {
+func NewCloudflareProvider(d *db.DNSProviderConfig) *CloudflareProvider {
 	client, err := cloudflare.NewWithAPIToken(d.APIKey)
 	if err != nil {
 		slog.Error("Failed to create Cloudflare client", "error", err)

@@ -43,14 +43,28 @@ export interface BaseTraefikConfig {
 	tcpMiddlewares: Record<string, Middleware>;
 }
 
+export interface DNSProviderConfig {
+	apiKey: string;
+	apiUrl: string;
+	traefikIp: string;
+	proxied: boolean;
+	zoneType: string;
+}
+
 export interface DNSProvider {
 	id: number;
 	name: string;
 	type: string;
-	config: Record<string, unknown>;
+	config: DNSProviderConfig;
 	isActive: boolean;
-	createdAt: string;
-	updatedAt: string;
+	createdAt?: string;
+	updatedAt?: string;
+}
+
+export enum DNSProviderTypes {
+	CLOUDFLARE = 'cloudflare',
+	POWERDNS = 'powerdns',
+	TECHNITIUM = 'technitium'
 }
 
 export interface User {

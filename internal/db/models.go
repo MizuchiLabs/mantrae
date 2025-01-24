@@ -24,13 +24,13 @@ type Agent struct {
 }
 
 type DnsProvider struct {
-	ID        int64       `json:"id"`
-	Name      string      `json:"name"`
-	Type      string      `json:"type"`
-	Config    interface{} `json:"config"`
-	IsActive  bool        `json:"isActive"`
-	CreatedAt *time.Time  `json:"createdAt"`
-	UpdatedAt *time.Time  `json:"updatedAt"`
+	ID        int64              `json:"id"`
+	Name      string             `json:"name"`
+	Type      string             `json:"type"`
+	Config    *DNSProviderConfig `json:"config"`
+	IsActive  bool               `json:"isActive"`
+	CreatedAt *time.Time         `json:"createdAt"`
+	UpdatedAt *time.Time         `json:"updatedAt"`
 }
 
 type Profile struct {

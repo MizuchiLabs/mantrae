@@ -6,17 +6,18 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Middleware } from '$lib/types/middlewares';
-	import { Layers, Pencil, Trash } from 'lucide-svelte';
+	import { Eye, Layers, Pencil, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, middlewares, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { SOURCE_TAB_SK } from '$lib/store';
 	import { onMount } from 'svelte';
+	import type { SupportedMiddleware } from '$lib/components/forms/mw_registry';
 
 	interface ModalState {
 		isOpen: boolean;
-		mode: 'create' | 'edit';
+		mode: 'create' | 'edit' | 'view';
 		middleware?: Middleware;
 	}
 
@@ -31,14 +32,6 @@
 		modalState = {
 			isOpen: true,
 			mode: 'create'
-		};
-	}
-
-	function openEditModal(middleware: Middleware) {
-		modalState = {
-			isOpen: true,
-			mode: 'edit',
-			middleware
 		};
 	}
 
@@ -84,7 +77,7 @@
 			accessorKey: 'type',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const type = row.getValue('type') as string;
+				const type = row.getValue('type') as SupportedMiddleware;
 				if (!type) return;
 				return renderComponent(ColumnBadge, { label: type });
 			}
@@ -113,7 +106,11 @@
 								label: 'Edit Middleware',
 								icon: Pencil,
 								onClick: () => {
-									openEditModal(row.original);
+									modalState = {
+										isOpen: true,
+										mode: 'edit',
+										middleware: row.original
+									};
 								}
 							},
 							{
@@ -130,10 +127,14 @@
 					return renderComponent(TableActions, {
 						actions: [
 							{
-								label: 'Edit Middleware',
-								icon: Pencil,
+								label: 'View Middleware',
+								icon: Eye,
 								onClick: () => {
-									openEditModal(row.original);
+									modalState = {
+										isOpen: true,
+										mode: 'view',
+										middleware: row.original
+									};
 								}
 							}
 						]

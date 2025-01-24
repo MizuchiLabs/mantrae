@@ -91,18 +91,10 @@
 				<Tabs.Trigger value="service">Service</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value="router">
-				<RouterForm
-					bind:router
-					{mode}
-					disabled={mode === 'edit' && router.name?.split('@')[1] !== 'http'}
-				/>
+				<RouterForm bind:router {mode} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm
-					bind:service
-					{router}
-					disabled={mode === 'edit' && router.name?.split('@')[1] !== 'http'}
-				/>
+				<ServiceForm bind:service {router} />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Button class="w-full" onclick={() => update()}>Save</Button>

@@ -17,10 +17,10 @@ VALUES
 `
 
 type CreateDNSProviderParams struct {
-	Name     string      `json:"name"`
-	Type     string      `json:"type"`
-	Config   interface{} `json:"config"`
-	IsActive bool        `json:"isActive"`
+	Name     string             `json:"name"`
+	Type     string             `json:"type"`
+	Config   *DNSProviderConfig `json:"config"`
+	IsActive bool               `json:"isActive"`
 }
 
 func (q *Queries) CreateDNSProvider(ctx context.Context, arg CreateDNSProviderParams) error {
@@ -147,11 +147,11 @@ WHERE
 `
 
 type UpdateDNSProviderParams struct {
-	Name     string      `json:"name"`
-	Type     string      `json:"type"`
-	Config   interface{} `json:"config"`
-	IsActive bool        `json:"isActive"`
-	ID       int64       `json:"id"`
+	Name     string             `json:"name"`
+	Type     string             `json:"type"`
+	Config   *DNSProviderConfig `json:"config"`
+	IsActive bool               `json:"isActive"`
+	ID       int64              `json:"id"`
 }
 
 func (q *Queries) UpdateDNSProvider(ctx context.Context, arg UpdateDNSProviderParams) error {

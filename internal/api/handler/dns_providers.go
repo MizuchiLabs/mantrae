@@ -82,3 +82,42 @@ func DeleteDNSProvider(q *db.Queries) http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+func SetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var dns_provider db.UpsertRouterDNSProviderParams
+		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := q.UpsertRouterDNSProvider(r.Context(), dns_provider); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func GetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var dns_provider db.GetRouterDNSProviderParams
+		providers, err := q.GetRouterDNSProvider(r.Context(), dns_provider)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(providers)
+	}
+}
+
+func DeleteRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var dns_provider db.DeleteRouterDNSProviderParams
+		if err := q.DeleteRouterDNSProvider(r.Context(), dns_provider); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}

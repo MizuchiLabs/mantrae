@@ -42,7 +42,7 @@
 			enableSorting: true
 		},
 		{
-			header: 'Active',
+			header: 'Default Provider',
 			accessorKey: 'isActive',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -66,6 +66,15 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const date = row.getValue('createdAt') as string;
+				return DateFormat.format(new Date(date));
+			}
+		},
+		{
+			header: 'Updated',
+			accessorKey: 'updatedAt',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const date = row.getValue('updatedAt') as string;
 				return DateFormat.format(new Date(date));
 			}
 		},

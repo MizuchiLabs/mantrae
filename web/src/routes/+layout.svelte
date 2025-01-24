@@ -53,7 +53,7 @@
 	onMount(async () => {
 		if (!$user) return;
 		await api.listProfiles();
-		if ($profiles.length === 0) return;
+		if (!$profiles) return;
 
 		const savedProfileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
 		const switchProfile = $profiles.find((p) => p.id === savedProfileID) ?? $profiles[0];

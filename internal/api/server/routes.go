@@ -66,11 +66,16 @@ func (s *Server) routes() {
 	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(DB))
 
 	// DNS Provider
-	register("GET", "/provider", jwtChain, handler.ListDNSProviders(DB))
-	register("GET", "/provider/{id}", jwtChain, handler.GetDNSProvider(DB))
-	register("POST", "/provider", jwtChain, handler.CreateDNSProvider(DB))
-	register("PUT", "/provider", jwtChain, handler.UpdateDNSProvider(DB))
-	register("DELETE", "/provider/{id}", jwtChain, handler.DeleteDNSProvider(DB))
+	register("GET", "/dns", jwtChain, handler.ListDNSProviders(DB))
+	register("GET", "/dns/{id}", jwtChain, handler.GetDNSProvider(DB))
+	register("POST", "/dns", jwtChain, handler.CreateDNSProvider(DB))
+	register("PUT", "/dns", jwtChain, handler.UpdateDNSProvider(DB))
+	register("DELETE", "/dns/{id}", jwtChain, handler.DeleteDNSProvider(DB))
+
+	// DNS To Router
+	register("GET", "/dns/router", jwtChain, handler.GetRouterDNSProvider(DB))
+	register("POST", "/dns/router", jwtChain, handler.SetRouterDNSProvider(DB))
+	register("DELETE", "/dns/router", jwtChain, handler.DeleteRouterDNSProvider(DB))
 
 	// Settings
 	register("GET", "/settings", jwtChain, handler.ListSettings(s.app.SM))

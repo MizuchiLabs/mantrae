@@ -33,9 +33,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createProfileStmt, err = db.PrepareContext(ctx, createProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateProfile: %w", err)
 	}
-	if q.createRouterDNSProviderStmt, err = db.PrepareContext(ctx, createRouterDNSProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateRouterDNSProvider: %w", err)
-	}
 	if q.createTraefikConfigStmt, err = db.PrepareContext(ctx, createTraefikConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateTraefikConfig: %w", err)
 	}
@@ -53,9 +50,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteRouterDNSProviderStmt, err = db.PrepareContext(ctx, deleteRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteRouterDNSProvider: %w", err)
-	}
-	if q.deleteRouterDNSProvidersByTraefikStmt, err = db.PrepareContext(ctx, deleteRouterDNSProvidersByTraefik); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteRouterDNSProvidersByTraefik: %w", err)
 	}
 	if q.deleteSettingStmt, err = db.PrepareContext(ctx, deleteSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteSetting: %w", err)
@@ -81,8 +75,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProfileByNameStmt, err = db.PrepareContext(ctx, getProfileByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfileByName: %w", err)
 	}
-	if q.getRouterDNSProvidersStmt, err = db.PrepareContext(ctx, getRouterDNSProviders); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRouterDNSProviders: %w", err)
+	if q.getRouterDNSProviderStmt, err = db.PrepareContext(ctx, getRouterDNSProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterDNSProvider: %w", err)
 	}
 	if q.getSettingStmt, err = db.PrepareContext(ctx, getSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSetting: %w", err)
@@ -111,6 +105,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
+	if q.listRouterDNSProvidersByTraefikIDStmt, err = db.PrepareContext(ctx, listRouterDNSProvidersByTraefikID); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRouterDNSProvidersByTraefikID: %w", err)
+	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
 	}
@@ -138,6 +135,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserLastLoginStmt, err = db.PrepareContext(ctx, updateUserLastLogin); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserLastLogin: %w", err)
 	}
+	if q.upsertRouterDNSProviderStmt, err = db.PrepareContext(ctx, upsertRouterDNSProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertRouterDNSProvider: %w", err)
+	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
 	}
@@ -159,11 +159,6 @@ func (q *Queries) Close() error {
 	if q.createProfileStmt != nil {
 		if cerr := q.createProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createProfileStmt: %w", cerr)
-		}
-	}
-	if q.createRouterDNSProviderStmt != nil {
-		if cerr := q.createRouterDNSProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createRouterDNSProviderStmt: %w", cerr)
 		}
 	}
 	if q.createTraefikConfigStmt != nil {
@@ -194,11 +189,6 @@ func (q *Queries) Close() error {
 	if q.deleteRouterDNSProviderStmt != nil {
 		if cerr := q.deleteRouterDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteRouterDNSProviderStmt: %w", cerr)
-		}
-	}
-	if q.deleteRouterDNSProvidersByTraefikStmt != nil {
-		if cerr := q.deleteRouterDNSProvidersByTraefikStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteRouterDNSProvidersByTraefikStmt: %w", cerr)
 		}
 	}
 	if q.deleteSettingStmt != nil {
@@ -241,9 +231,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProfileByNameStmt: %w", cerr)
 		}
 	}
-	if q.getRouterDNSProvidersStmt != nil {
-		if cerr := q.getRouterDNSProvidersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRouterDNSProvidersStmt: %w", cerr)
+	if q.getRouterDNSProviderStmt != nil {
+		if cerr := q.getRouterDNSProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterDNSProviderStmt: %w", cerr)
 		}
 	}
 	if q.getSettingStmt != nil {
@@ -291,6 +281,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
 		}
 	}
+	if q.listRouterDNSProvidersByTraefikIDStmt != nil {
+		if cerr := q.listRouterDNSProvidersByTraefikIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRouterDNSProvidersByTraefikIDStmt: %w", cerr)
+		}
+	}
 	if q.listSettingsStmt != nil {
 		if cerr := q.listSettingsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listSettingsStmt: %w", cerr)
@@ -334,6 +329,11 @@ func (q *Queries) Close() error {
 	if q.updateUserLastLoginStmt != nil {
 		if cerr := q.updateUserLastLoginStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUserLastLoginStmt: %w", cerr)
+		}
+	}
+	if q.upsertRouterDNSProviderStmt != nil {
+		if cerr := q.upsertRouterDNSProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertRouterDNSProviderStmt: %w", cerr)
 		}
 	}
 	if q.upsertSettingStmt != nil {
@@ -383,14 +383,12 @@ type Queries struct {
 	createAgentStmt                       *sql.Stmt
 	createDNSProviderStmt                 *sql.Stmt
 	createProfileStmt                     *sql.Stmt
-	createRouterDNSProviderStmt           *sql.Stmt
 	createTraefikConfigStmt               *sql.Stmt
 	createUserStmt                        *sql.Stmt
 	deleteAgentStmt                       *sql.Stmt
 	deleteDNSProviderStmt                 *sql.Stmt
 	deleteProfileStmt                     *sql.Stmt
 	deleteRouterDNSProviderStmt           *sql.Stmt
-	deleteRouterDNSProvidersByTraefikStmt *sql.Stmt
 	deleteSettingStmt                     *sql.Stmt
 	deleteTraefikConfigStmt               *sql.Stmt
 	deleteUserStmt                        *sql.Stmt
@@ -399,7 +397,7 @@ type Queries struct {
 	getDNSProviderStmt                    *sql.Stmt
 	getProfileStmt                        *sql.Stmt
 	getProfileByNameStmt                  *sql.Stmt
-	getRouterDNSProvidersStmt             *sql.Stmt
+	getRouterDNSProviderStmt              *sql.Stmt
 	getSettingStmt                        *sql.Stmt
 	getTraefikConfigStmt                  *sql.Stmt
 	getTraefikConfigBySourceStmt          *sql.Stmt
@@ -409,6 +407,7 @@ type Queries struct {
 	listAgentsByProfileStmt               *sql.Stmt
 	listDNSProvidersStmt                  *sql.Stmt
 	listProfilesStmt                      *sql.Stmt
+	listRouterDNSProvidersByTraefikIDStmt *sql.Stmt
 	listSettingsStmt                      *sql.Stmt
 	listUsersStmt                         *sql.Stmt
 	updateAgentStmt                       *sql.Stmt
@@ -418,6 +417,7 @@ type Queries struct {
 	updateTraefikConfigStmt               *sql.Stmt
 	updateUserStmt                        *sql.Stmt
 	updateUserLastLoginStmt               *sql.Stmt
+	upsertRouterDNSProviderStmt           *sql.Stmt
 	upsertSettingStmt                     *sql.Stmt
 }
 
@@ -428,14 +428,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createAgentStmt:                       q.createAgentStmt,
 		createDNSProviderStmt:                 q.createDNSProviderStmt,
 		createProfileStmt:                     q.createProfileStmt,
-		createRouterDNSProviderStmt:           q.createRouterDNSProviderStmt,
 		createTraefikConfigStmt:               q.createTraefikConfigStmt,
 		createUserStmt:                        q.createUserStmt,
 		deleteAgentStmt:                       q.deleteAgentStmt,
 		deleteDNSProviderStmt:                 q.deleteDNSProviderStmt,
 		deleteProfileStmt:                     q.deleteProfileStmt,
 		deleteRouterDNSProviderStmt:           q.deleteRouterDNSProviderStmt,
-		deleteRouterDNSProvidersByTraefikStmt: q.deleteRouterDNSProvidersByTraefikStmt,
 		deleteSettingStmt:                     q.deleteSettingStmt,
 		deleteTraefikConfigStmt:               q.deleteTraefikConfigStmt,
 		deleteUserStmt:                        q.deleteUserStmt,
@@ -444,7 +442,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getDNSProviderStmt:                    q.getDNSProviderStmt,
 		getProfileStmt:                        q.getProfileStmt,
 		getProfileByNameStmt:                  q.getProfileByNameStmt,
-		getRouterDNSProvidersStmt:             q.getRouterDNSProvidersStmt,
+		getRouterDNSProviderStmt:              q.getRouterDNSProviderStmt,
 		getSettingStmt:                        q.getSettingStmt,
 		getTraefikConfigStmt:                  q.getTraefikConfigStmt,
 		getTraefikConfigBySourceStmt:          q.getTraefikConfigBySourceStmt,
@@ -454,6 +452,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listAgentsByProfileStmt:               q.listAgentsByProfileStmt,
 		listDNSProvidersStmt:                  q.listDNSProvidersStmt,
 		listProfilesStmt:                      q.listProfilesStmt,
+		listRouterDNSProvidersByTraefikIDStmt: q.listRouterDNSProvidersByTraefikIDStmt,
 		listSettingsStmt:                      q.listSettingsStmt,
 		listUsersStmt:                         q.listUsersStmt,
 		updateAgentStmt:                       q.updateAgentStmt,
@@ -463,6 +462,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateTraefikConfigStmt:               q.updateTraefikConfigStmt,
 		updateUserStmt:                        q.updateUserStmt,
 		updateUserLastLoginStmt:               q.updateUserLastLoginStmt,
+		upsertRouterDNSProviderStmt:           q.upsertRouterDNSProviderStmt,
 		upsertSettingStmt:                     q.upsertSettingStmt,
 	}
 }

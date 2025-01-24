@@ -12,14 +12,12 @@ type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) error
 	CreateDNSProvider(ctx context.Context, arg CreateDNSProviderParams) error
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (int64, error)
-	CreateRouterDNSProvider(ctx context.Context, arg CreateRouterDNSProviderParams) error
 	CreateTraefikConfig(ctx context.Context, arg CreateTraefikConfigParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDNSProvider(ctx context.Context, id int64) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteRouterDNSProvider(ctx context.Context, arg DeleteRouterDNSProviderParams) error
-	DeleteRouterDNSProvidersByTraefik(ctx context.Context, traefikID int64) error
 	DeleteSetting(ctx context.Context, key string) error
 	DeleteTraefikConfig(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
@@ -28,7 +26,7 @@ type Querier interface {
 	GetDNSProvider(ctx context.Context, id int64) (DnsProvider, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
-	GetRouterDNSProviders(ctx context.Context, traefikID int64) ([]RouterDnsProvider, error)
+	GetRouterDNSProvider(ctx context.Context, arg GetRouterDNSProviderParams) (GetRouterDNSProviderRow, error)
 	GetSetting(ctx context.Context, key string) (Setting, error)
 	GetTraefikConfig(ctx context.Context, id int64) (Traefik, error)
 	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) (Traefik, error)
@@ -38,6 +36,7 @@ type Querier interface {
 	ListAgentsByProfile(ctx context.Context, profileID int64) ([]Agent, error)
 	ListDNSProviders(ctx context.Context) ([]DnsProvider, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
+	ListRouterDNSProvidersByTraefikID(ctx context.Context, traefikID int64) ([]ListRouterDNSProvidersByTraefikIDRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) error
@@ -47,6 +46,7 @@ type Querier interface {
 	UpdateTraefikConfig(ctx context.Context, arg UpdateTraefikConfigParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserLastLogin(ctx context.Context, id int64) error
+	UpsertRouterDNSProvider(ctx context.Context, arg UpsertRouterDNSProviderParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
 }
 

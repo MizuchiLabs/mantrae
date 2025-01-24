@@ -6,24 +6,25 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
-	import { api, dnsProviders, entrypoints, routers, middlewares } from '$lib/api';
+	import { api, dnsProviders, entrypoints, routers, middlewares, traefik } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { type Router } from '$lib/types/router';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
+	import { toast } from 'svelte-sonner';
 
 	interface Props {
 		router: Router;
 		mode: 'create' | 'edit';
-		disabled?: boolean;
 	}
 
-	let { router = $bindable({} as Router), mode, disabled = false }: Props = $props();
+	let { router = $bindable({} as Router), mode }: Props = $props();
 
 	// Computed properties
 	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
 	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
 	let isHttpType = $derived(router.protocol === 'http');
+	let disabled = $derived(routerProvider !== 'http' && mode === 'edit');
 	let certResolvers = $derived([
 		...new Set(
 			$routers.filter((item) => item.tls?.certResolver).map((item) => item.tls?.certResolver)
@@ -35,8 +36,31 @@
 		router.protocol = protocol;
 	}
 
+	// let routerDNSProvider = $derived(router.dnsProvider);
+	async function handleDNSProviderChange(providerId: string) {
+		try {
+			if (providerId === '') {
+				await api.deleteRouterDNSProvider($traefik.id, router.name);
+				toast.success('DNS Provider deleted successfully');
+			} else {
+				if (providerId === undefined) return;
+				await api.setRouterDNSProvider($traefik.id, parseInt(providerId), router.name);
+				toast.success('DNS Provider updated successfully');
+			}
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error('Failed to save dnsProvider', {
+				description: e.message
+			});
+		}
+	}
+
 	onMount(async () => {
 		await api.listDNSProviders();
+		// if (router.name) {
+		// 	let dns = await api.getRouterDNSProvider($traefik.id, router.name);
+		// 	console.log(dns);
+		// }
 	});
 </script>
 
@@ -89,9 +113,10 @@
 					id="name"
 					bind:value={router.name}
 					placeholder="Router name"
-					disabled={!isHttpProvider}
-					required
+					oninput={() => (router.name = router.name.split('@')[0])}
 					class="col-span-3"
+					required
+					disabled={disabled || mode === 'edit'}
 				/>
 				<!-- Icon based on provider -->
 				{#if routerProvider !== ''}
@@ -171,7 +196,7 @@
 		{#if isHttpType && router.protocol !== 'udp' && router.tls}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label class="mr-2 text-right">Cert Resolver</Label>
-				<div class="col-span-3 space-y-2">
+				<div class="col-span-3">
 					<Input
 						bind:value={router.tls.certResolver}
 						placeholder="Certificate resolver"
@@ -194,17 +219,17 @@
 		{/if}
 
 		<!-- DNS Provider -->
-		{#if $dnsProviders}
+		{#if $dnsProviders && mode === 'edit'}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label for="provider" class="mr-2 text-right">DNS Provider</Label>
-				<Select.Root type="single">
+				<Select.Root type="single" onValueChange={handleDNSProviderChange}>
 					<Select.Trigger class="col-span-3">Select a dns provider</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="" label="">None</Select.Item>
 						{#each $dnsProviders as dns}
 							<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
 								{dns.name} ({dns.type})
-								{#if dns.is_active}
+								{#if dns.isActive}
 									<CircleCheck size="1rem" class="text-green-400" />
 								{/if}
 							</Select.Item>
