@@ -1,16 +1,14 @@
 <script lang="ts">
 	import '../app.css';
-	// import Sidebar from '$lib/components/nav/sidebar.svelte';
-	// import Header from '$lib/components/nav/header.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
+	import AppHeader from '$lib/components/nav/AppHeader.svelte';
+	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
-	// import Footer from '$lib/components/nav/footer.svelte';
-	import autoAnimate from '@formkit/auto-animate';
-	import Header from '$lib/components/nav/header.svelte';
-	import Footer from '$lib/components/nav/footer.svelte';
-	import Sidebar from '$lib/components/nav/sidebar.svelte';
 	import { onMount } from 'svelte';
-	import { api, profiles, profile, user } from '$lib/api';
 	import { PROFILE_SK } from '$lib/store';
+	import { api, profiles, profile, user } from '$lib/api';
+	import autoAnimate from '@formkit/auto-animate';
 
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -64,21 +62,23 @@
 <Toaster />
 <!-- <CommandCenter /> -->
 
-<div class="app flex min-h-screen flex-col">
+<Sidebar.Provider>
 	{#if $user}
-		<Sidebar />
-		<div class="flex w-full flex-1 flex-col sm:pl-16">
-			<Header />
+		<div class="flex h-screen w-full bg-background">
+			<AppSidebar />
+			<div class="flex w-full flex-1 flex-col">
+				<AppHeader />
 
-			<main class="flex-1 overflow-auto p-8 px-8" use:autoAnimate={{ duration: 100 }}>
-				{@render children?.()}
-			</main>
+				<main class="flex-1 overflow-auto p-8 px-8" use:autoAnimate={{ duration: 100 }}>
+					{@render children?.()}
+				</main>
 
-			<Footer />
+				<AppFooter />
+			</div>
 		</div>
 	{:else}
-		<div class="flex h-screen flex-col items-center justify-center">
+		<main class="flex h-screen w-full items-center justify-center">
 			{@render children?.()}
-		</div>
+		</main>
 	{/if}
-</div>
+</Sidebar.Provider>

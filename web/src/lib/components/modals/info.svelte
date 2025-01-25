@@ -7,8 +7,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { api, entrypoints, overview, profile, version } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
-	import { Copy, CopyCheck } from 'lucide-svelte';
-	import TraefikProxy from '$lib/images/traefikproxy.svg';
+	import { Copy, CopyCheck, Zap } from 'lucide-svelte';
 	import { json, yaml } from 'svelte-highlight/languages';
 	import YAML from 'yaml';
 
@@ -17,6 +16,8 @@
 
 	let isYaml = $state(false);
 	let copyText = $state('Copy');
+
+	let { ...restProps } = $props();
 
 	const copy = () => {
 		navigator.clipboard.writeText(displayCode);
@@ -49,10 +50,9 @@
 </script>
 
 <Dialog.Root>
-	<Dialog.Trigger>
-		<Button variant="ghost">
-			<img src={TraefikProxy} alt="Traefik Proxy" width="24" class="dark:invert dark:filter" />
-		</Button>
+	<Dialog.Trigger {...restProps}>
+		<Zap />
+		<span>Traefik Status</span>
 	</Dialog.Trigger>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<Tabs.Root value="overview" class="mt-4 max-w-2xl">

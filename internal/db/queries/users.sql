@@ -1,52 +1,52 @@
 -- name: CreateUser :exec
 INSERT INTO
-    users (username, password, email, is_admin)
+  users (username, password, email, is_admin)
 VALUES
-    (?, ?, ?, ?);
+  (?, ?, ?, ?);
 
 -- name: GetUser :one
 SELECT
-    *
+  *
 FROM
-    users
+  users
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: GetUserByUsername :one
 SELECT
-    *
+  *
 FROM
-    users
+  users
 WHERE
-    username = ?;
+  username = ?;
 
 -- name: ListUsers :many
 SELECT
-    *
+  *
 FROM
-    users
+  users
 ORDER BY
-    username;
+  username;
 
 -- name: UpdateUser :exec
 UPDATE users
 SET
-    username = ?,
-    password = ?,
-    email = ?,
-    is_admin = ?,
-    updated_at = CURRENT_TIMESTAMP
+  username = ?,
+  password = ?,
+  email = ?,
+  is_admin = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: UpdateUserLastLogin :exec
 UPDATE users
 SET
-    last_login = CURRENT_TIMESTAMP
+  last_login = CURRENT_TIMESTAMP
 WHERE
-    id = ?;
+  id = ?;
 
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE
-    id = ?;
+  id = ?;
