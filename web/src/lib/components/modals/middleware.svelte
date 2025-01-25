@@ -10,10 +10,11 @@
 	import {
 		type SupportedMiddleware,
 		GetSchema,
-		MiddlewareTypes
+		MiddlewareTypes,
+		type ZodObjectOrRecord
 	} from '$lib/components/forms/mw_registry';
-	import type { z } from 'zod';
 	import Separator from '../ui/separator/separator.svelte';
+	import { z } from 'zod';
 
 	interface Props {
 		middleware?: Middleware;
@@ -34,15 +35,53 @@
 
 	let disabled = $state(mode === 'view');
 
-	let schema: z.AnyZodObject = $state(GetSchema(middleware.type));
+	let schema: ZodObjectOrRecord = $state(GetSchema(middleware.type));
 
 	const handleSelect = (value: string) => {
 		middleware.type = value as SupportedMiddleware;
 		schema = GetSchema(middleware.type);
 	};
 
+	function getBaseType(fieldSchema: z.ZodTypeAny | unknown) {
+		if (fieldSchema instanceof z.ZodOptional || fieldSchema instanceof z.ZodDefault) {
+			return fieldSchema._def.innerType;
+		}
+		return fieldSchema;
+	}
+
 	const onSubmit = async (data: FormData) => {
-		let formData = Object.fromEntries(data.entries());
+		let formData: Record<string, unknown> = {};
+
+		// Special handling for arrays from FormData
+		const entries = Array.from(data.entries());
+		entries.forEach(([key, value]) => {
+			// Check if the key is for an array (ends with [])
+			if (key.endsWith('[]')) {
+				const cleanKey = key.replace('[]', '');
+				if (!formData[cleanKey]) {
+					formData[cleanKey] = [];
+				}
+				(formData[cleanKey] as unknown[]).push(value);
+			} else {
+				formData[key] = value;
+			}
+		});
+
+		// Coerce number fields based on schema
+		if (schema instanceof z.ZodObject) {
+			Object.entries(schema.shape).forEach(([key, field]) => {
+				const baseType = getBaseType(field);
+				if (baseType instanceof z.ZodNumber && typeof formData[key] === 'string') {
+					formData[key] = Number(formData[key]);
+				}
+				// Handle array fields specifically for chain middleware
+				if (baseType instanceof z.ZodArray && Array.isArray(formData[key])) {
+					// Ensure the array is preserved
+					formData[key] = [...formData[key]];
+				}
+			});
+		}
+
 		middleware = {
 			...middleware,
 			[middleware.type as string]: formData

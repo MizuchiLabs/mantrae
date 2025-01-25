@@ -8,9 +8,10 @@
 	import { z } from 'zod';
 	import { Plus, Trash } from 'lucide-svelte';
 	import Textarea from '../ui/textarea/textarea.svelte';
+	import type { ZodObjectOrRecord } from './mw_registry';
 
 	type Props = {
-		schema: z.AnyZodObject;
+		schema: ZodObjectOrRecord;
 		// eslint-disable-next-line
 		data: Record<string, any>;
 		subData?: string[];
@@ -90,7 +91,7 @@
 					}
 				}
 				// Initialize arrays
-				if (baseSchema instanceof z.ZodArray && !subData) {
+				if (baseSchema instanceof z.ZodArray) {
 					if (!$formData[fieldName] && baseSchema instanceof z.ZodOptional) {
 						$formData[fieldName] = [];
 					} else if (!Array.isArray($formData[fieldName])) {
@@ -210,17 +211,25 @@
 							<Select.Root
 								type={subMultiple ? 'multiple' : 'single'}
 								bind:value={$formData[fieldName]}
-								name={fieldName}
-								on:change={() => ($formData[fieldName] = $formData[fieldName])}
+								name={`${fieldName}[]`}
+								on:change={(event) => {
+									if (subMultiple) {
+										$formData[fieldName] = Array.isArray(event.detail)
+											? event.detail
+											: event.detail
+												? [event.detail]
+												: [];
+									} else {
+										$formData[fieldName] = event.detail;
+									}
+								}}
 								disabled={$submitting}
 							>
 								<Select.Trigger {...props}>
-									{Array.isArray($formData[fieldName])
-										? $formData[fieldName].join(', ')
-										: 'Select...'}
+									{$formData[fieldName]?.length > 0 ? $formData[fieldName].join(', ') : 'Select...'}
 								</Select.Trigger>
 								<Select.Content>
-									{#each subData as item}
+									{#each subData ?? [] as item}
 										<Select.Item value={item}>{item}</Select.Item>
 									{/each}
 								</Select.Content>

@@ -27,7 +27,7 @@ import {
 	PluginSchema
 } from '$lib/types/middlewares';
 
-type ZodObjectOrRecord = z.ZodObject<any, any> | z.ZodRecord<any, any>;
+export type ZodObjectOrRecord = z.ZodObject<any, any> | z.ZodRecord<any, any>;
 
 // Create a mapping of SupportedMiddleware keys to their corresponding schemas
 export const MiddlewareSchemaMap: Record<SupportedMiddleware, ZodObjectOrRecord> = {
