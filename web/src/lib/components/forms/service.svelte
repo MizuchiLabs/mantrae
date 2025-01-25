@@ -44,7 +44,11 @@
 <Card.Root>
 	<Card.Header>
 		<Card.Title>Service Configuration</Card.Title>
-		<Card.Description>Configure your {router.protocol} service settings</Card.Description>
+		<Card.Description>
+			Configure your
+			<b>{router.service}</b>
+			settings
+		</Card.Description>
 	</Card.Header>
 
 	<Card.Content class="flex flex-col gap-2">

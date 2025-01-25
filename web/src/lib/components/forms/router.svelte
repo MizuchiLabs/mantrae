@@ -6,12 +6,13 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
-	import { api, dnsProviders, entrypoints, routers, middlewares, traefik } from '$lib/api';
+	import { api, dnsProviders, entrypoints, routers, middlewares, traefik, rdps } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { type Router } from '$lib/types/router';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { toast } from 'svelte-sonner';
+	import type { RouterDNSProvider } from '$lib/types';
 
 	interface Props {
 		router: Router;
@@ -21,6 +22,10 @@
 	let { router = $bindable({} as Router), mode }: Props = $props();
 
 	// Computed properties
+	let routerDNS: RouterDNSProvider = $derived(
+		$rdps?.filter((item) => item.routerName === router.name)[0]
+	);
+	let rdpName = $derived(routerDNS ? routerDNS.providerName : '');
 	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
 	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
 	let isHttpType = $derived(router.protocol === 'http');
@@ -57,10 +62,6 @@
 
 	onMount(async () => {
 		await api.listDNSProviders();
-		// if (router.name) {
-		// 	let dns = await api.getRouterDNSProvider($traefik.id, router.name);
-		// 	console.log(dns);
-		// }
 	});
 </script>
 
@@ -222,8 +223,10 @@
 		{#if $dnsProviders && mode === 'edit'}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label for="provider" class="mr-2 text-right">DNS Provider</Label>
-				<Select.Root type="single" onValueChange={handleDNSProviderChange}>
-					<Select.Trigger class="col-span-3">Select a dns provider</Select.Trigger>
+				<Select.Root type="single" value={rdpName} onValueChange={handleDNSProviderChange}>
+					<Select.Trigger class="col-span-3">
+						{rdpName ? rdpName : 'Select DNS provider'}
+					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="" label="">None</Select.Item>
 						{#each $dnsProviders as dns}

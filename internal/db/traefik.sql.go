@@ -115,6 +115,36 @@ func (q *Queries) GetTraefikConfigBySource(ctx context.Context, arg GetTraefikCo
 	return i, err
 }
 
+const listTraefikIDs = `-- name: ListTraefikIDs :many
+SELECT
+  id
+FROM
+  traefik
+`
+
+func (q *Queries) ListTraefikIDs(ctx context.Context) ([]int64, error) {
+	rows, err := q.query(ctx, q.listTraefikIDsStmt, listTraefikIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateTraefikConfig = `-- name: UpdateTraefikConfig :exec
 UPDATE traefik
 SET

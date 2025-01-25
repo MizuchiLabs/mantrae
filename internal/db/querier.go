@@ -38,6 +38,7 @@ type Querier interface {
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListRouterDNSProvidersByTraefikID(ctx context.Context, traefikID int64) ([]ListRouterDNSProvidersByTraefikIDRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
+	ListTraefikIDs(ctx context.Context) ([]int64, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) error
 	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error

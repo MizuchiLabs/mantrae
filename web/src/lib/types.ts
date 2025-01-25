@@ -106,6 +106,14 @@ export interface UpsertSettingsParams {
 	description: string;
 }
 
+export interface RouterDNSProvider {
+	traefikId: number;
+	providerId: number;
+	routerName: string;
+	providerName: string;
+	providerType: string;
+}
+
 export interface Plugin {
 	id: string;
 	name: string;

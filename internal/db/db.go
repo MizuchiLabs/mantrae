@@ -111,6 +111,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
 	}
+	if q.listTraefikIDsStmt, err = db.PrepareContext(ctx, listTraefikIDs); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTraefikIDs: %w", err)
+	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
 	}
@@ -291,6 +294,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listSettingsStmt: %w", cerr)
 		}
 	}
+	if q.listTraefikIDsStmt != nil {
+		if cerr := q.listTraefikIDsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTraefikIDsStmt: %w", cerr)
+		}
+	}
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
@@ -409,6 +417,7 @@ type Queries struct {
 	listProfilesStmt                      *sql.Stmt
 	listRouterDNSProvidersByTraefikIDStmt *sql.Stmt
 	listSettingsStmt                      *sql.Stmt
+	listTraefikIDsStmt                    *sql.Stmt
 	listUsersStmt                         *sql.Stmt
 	updateAgentStmt                       *sql.Stmt
 	updateAgentTokenStmt                  *sql.Stmt
@@ -454,6 +463,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listProfilesStmt:                      q.listProfilesStmt,
 		listRouterDNSProvidersByTraefikIDStmt: q.listRouterDNSProvidersByTraefikIDStmt,
 		listSettingsStmt:                      q.listSettingsStmt,
+		listTraefikIDsStmt:                    q.listTraefikIDsStmt,
 		listUsersStmt:                         q.listUsersStmt,
 		updateAgentStmt:                       q.updateAgentStmt,
 		updateAgentTokenStmt:                  q.updateAgentTokenStmt,

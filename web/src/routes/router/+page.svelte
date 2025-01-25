@@ -56,7 +56,22 @@
 	};
 
 	type RouterWithService = { router: Router; service: Service };
-	let mergedData: RouterWithService[] = $state([]);
+	let mergedData: RouterWithService[] = $derived(
+		$routers.map((router) => {
+			const routerProvider = router.name.split('@')[1];
+			let serviceName = router.service; // api@internal
+
+			// Most of time the service name doesn't include the provider
+			if (!router.service.includes('@')) {
+				serviceName = router.service + '@' + routerProvider;
+			}
+			const service = $services.find((service) => service.name === serviceName);
+			return {
+				router,
+				service: service || ({} as Service)
+			};
+		})
+	);
 
 	const columns: ColumnDef<RouterWithService>[] = [
 		{
@@ -146,7 +161,7 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const status = row.getValue('serverStatus') as Record<string, string>;
-				if (!status) return;
+				if (!status) return renderComponent(ColumnBadge, { label: 'N/A', variant: 'secondary' });
 				const upCount = Object.values(status).filter((status) => status === 'UP').length;
 				const totalCount = Object.values(status).length;
 				const greenBadge = 'bg-green-300 dark:bg-green-600';
@@ -205,20 +220,6 @@
 				source.set(savedSource);
 				api.getTraefikConfig(value.id, savedSource);
 			}
-		}
-	});
-
-	$effect(() => {
-		if ($routers?.length) {
-			mergedData = $routers.map((router) => {
-				const service = $services.find((service) => service.name === router.name);
-				return {
-					router,
-					service: service || ({} as Service)
-				};
-			});
-		} else {
-			mergedData = [];
 		}
 	});
 </script>

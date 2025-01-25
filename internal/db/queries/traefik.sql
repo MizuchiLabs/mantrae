@@ -19,6 +19,12 @@ FROM
 WHERE
   id = ?;
 
+-- name: ListTraefikIDs :many
+SELECT
+  id
+FROM
+  traefik;
+
 -- name: GetTraefikConfigBySource :one
 SELECT
   *

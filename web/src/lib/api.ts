@@ -4,6 +4,7 @@ import {
 	type DNSProvider,
 	type Plugin,
 	type Profile,
+	type RouterDNSProvider,
 	type Settings,
 	type TraefikConfig,
 	type UpsertSettingsParams,
@@ -42,6 +43,7 @@ export const routers: Writable<Router[]> = writable([]);
 export const services: Writable<Service[]> = writable([]);
 export const middlewares: Writable<Middleware[]> = writable([]);
 export const users: Writable<User[]> = writable([]);
+export const rdps: Writable<RouterDNSProvider[]> = writable([]);
 export const dnsProviders: Writable<DNSProvider[]> = writable([]);
 export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
@@ -187,17 +189,8 @@ export const api = {
 
 	// Traefik -------------------------------------------------------------------
 	async getTraefikConfig(id: number, source: TraefikSource) {
-		if (source === TraefikSource.API) {
-			// For API source, fetch everything from Traefik
-			const hasMetadata = await fetchTraefikMetadata(id);
-			if (hasMetadata) {
-				await fetchTraefikConfig(id, source);
-			}
-		} else {
-			// For everything else, fetch metadata from API and config from source
-			await fetchTraefikMetadata(id);
-			await fetchTraefikConfig(id, source);
-		}
+		await fetchTraefikMetadata(id);
+		await fetchTraefikConfig(id, source);
 	},
 
 	async getDynamicConfig(profileName: string) {
@@ -276,18 +269,27 @@ export const api = {
 		});
 	},
 
+	async listRouterDNSProviders(traefikId: number) {
+		const data = await send(`/dns/router/${traefikId}`, {
+			method: 'GET'
+		});
+		rdps.set(data);
+	},
+
 	async setRouterDNSProvider(traefikId: number, providerId: number, routerName: string) {
-		return await send(`/dns/router`, {
+		await send(`/dns/router`, {
 			method: 'POST',
 			body: { traefikId, providerId, routerName }
 		});
+		await api.listRouterDNSProviders(traefikId);
 	},
 
 	async deleteRouterDNSProvider(traefikId: number, routerName: string) {
-		return await send(`/dns/router`, {
+		await send(`/dns/router`, {
 			method: 'DELETE',
 			body: { traefikId, routerName }
 		});
+		await api.listRouterDNSProviders(traefikId);
 	},
 
 	// Users ---------------------------------------------------------------------
@@ -388,7 +390,6 @@ async function fetchTraefikMetadata(id: number) {
 	const res = await send(`/traefik/${id}/${TraefikSource.API}`);
 	if (!res) {
 		// Reset metadata stores
-		traefik.set({} as TraefikConfig);
 		overview.set({} as Overview);
 		entrypoints.set([]);
 		version.set('');
@@ -396,7 +397,6 @@ async function fetchTraefikMetadata(id: number) {
 	}
 
 	// Set metadata stores
-	traefik.set(res);
 	overview.set(res.overview);
 	entrypoints.set(res.entrypoints);
 	version.set(res.version);
@@ -408,19 +408,25 @@ async function fetchTraefikMetadata(id: number) {
 }
 
 async function fetchTraefikConfig(id: number, source: TraefikSource) {
+	// Reset stores
+	traefik.set({} as TraefikConfig);
+	routers.set([]);
+	services.set([]);
+	middlewares.set([]);
+
 	const res = await send(`/traefik/${id}/${source}`);
 	if (!res) {
-		// Reset routing stores
-		routers.set([]);
-		services.set([]);
-		middlewares.set([]);
 		return;
 	}
 
-	// Set routing stores
+	// Set stores
+	traefik.set(res);
 	routers.set(flattenRouterData(res.config));
 	services.set(flattenServiceData(res.config));
 	middlewares.set(flattenMiddlewareData(res.config));
+
+	// Fetch the router dns relations
+	await api.listRouterDNSProviders(res.id);
 }
 
 // Login ----------------------------------------------------------------------

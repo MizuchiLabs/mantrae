@@ -50,7 +50,6 @@
 		const pluginContent = extractPluginContent(data);
 		const name = Object.keys(pluginContent)[0].replace(/^my-/, '');
 
-		console.log(Object.values(pluginContent)[0]);
 		const middleware: Middleware = {
 			name,
 			protocol: 'http',

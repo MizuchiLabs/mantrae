@@ -5,13 +5,14 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/dns"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 )
 
 func (a *App) setupBackgroundJobs(ctx context.Context) {
 	slog.Info("Starting background tasks...")
 	go a.traefikSync(ctx)
-	// go a.syncDNS(ctx)
+	go a.syncDNS(ctx)
 	// go sslCheck(ctx)
 	// go cleanupAgents(ctx)
 	// go cleanupRouters(ctx)
@@ -33,21 +34,25 @@ func (a *App) traefikSync(ctx context.Context) {
 	}
 }
 
-// // syncDNS periodically syncs the DNS records
-// func (a *App) syncDNS(ctx context.Context) {
-// 	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.DNS))
-// 	defer ticker.Stop()
+// syncDNS periodically syncs the DNS records
+func (a *App) syncDNS(ctx context.Context) {
+	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.DNS))
+	defer ticker.Stop()
 
-// 	dns.UpdateDNS()
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			return
-// 		case <-ticker.C:
-// 			dns.UpdateDNS()
-// 		}
-// 	}
-// }
+	if err := dns.UpdateDNS(a.DB); err != nil {
+		slog.Error("Failed to update DNS", "error", err)
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if err := dns.UpdateDNS(a.DB); err != nil {
+				slog.Error("Failed to update DNS", "error", err)
+			}
+		}
+	}
+}
 
 // func sslCheck(ctx context.Context) {
 // 	ticker := time.NewTicker(time.Second * time.Duration(util.App.SSLInterval))

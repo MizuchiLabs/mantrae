@@ -3,9 +3,11 @@ package dns
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -52,83 +54,95 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
-// func UpdateDNS(q *db.Queries) {
-// 	profiles, err := q.ListProfiles(context.Background())
-// 	if err != nil {
-// 		slog.Error("Failed to get profiles", "error", err)
-// 	}
+func UpdateDNS(q *db.Queries) (err error) {
+	traefikIDs, err := q.ListTraefikIDs(context.Background())
+	if err != nil {
+		return err
+	}
 
-// 	// Get all local
-// 	for _, profile := range profiles {
-// 		routers, err := q.GetHTTPRoutersBySource(context.Background(), db.GetHTTPRoutersBySourceParams{
-// 			ProfileID: profile.ID,
-// 			Source:    "internal",
-// 		})
-// 		if err != nil {
-// 			slog.Error("Failed to get routers", "error", err)
-// 			continue
-// 		}
-//
-// for i, router := range routers {
-// 	if router.DnsProvider != nil {
-// 		provider, err := getProvider(router.DnsProvider, q)
-// 		if err != nil {
-// 			slog.Error("Failed to get provider", "error", err)
+	for _, id := range traefikIDs {
+		rdps, err := q.ListRouterDNSProvidersByTraefikID(context.Background(), id)
+		if err != nil {
+			continue
+		}
 
-// 			// Delete provider from router
-// 			router.DnsProvider = nil
-// 			routers[i] = router
-// 			continue
-// 		}
+		for _, rdp := range rdps {
+			provider, err := getProvider(rdp.ProviderID, q)
+			if err != nil {
+				slog.Error("Failed to get provider", "error", err)
+				continue
+			}
+			config, err := q.GetTraefikConfig(context.Background(), rdp.TraefikID)
+			if err != nil {
+				slog.Error("Failed to get traefik config", "error", err)
+				continue
+			}
+			router := config.Config.Routers[rdp.RouterName]
+			if router == nil || router.Rule == "" {
+				continue
+			}
+			domains, err := util.ExtractDomainFromRule(router.Rule)
+			if err != nil {
+				slog.Error("Failed to extract domain from rule", "error", err)
+				continue
+			}
+			for _, domain := range domains {
+				if err := provider.UpsertRecord(domain); err != nil {
+					slog.Error("Failed to upsert record", "error", err)
+				}
+			}
+		}
+	}
+	return nil
+}
 
-// 		domains, err := util.ExtractDomainFromRule(router.Rule)
-// 		if err != nil {
-// 			slog.Error("Failed to extract domain from rule", "error", err)
-// 			continue
-// 		}
-// 		for _, domain := range domains {
-// 			if err := provider.UpsertRecord(domain); err != nil {
-// 				slog.Error("Failed to upsert record", "error", err)
-// 				router.UpdateError("dns", err.Error())
-// 			} else {
-// 				router.UpdateError("dns", "")
-// 			}
-// 		}
-// 	}
-// Update routers
-// 	if err := q.UpsertHTTPRouter(context.Background(), db.UpsertHTTPRouterParams{
-// 		ProfileID:  router.ProfileID,
-// 		Name:       router.Name,
-// 		Source:     "internal",
-// 		RouterJson: router.RouterJson,
-// 	}); err != nil {
-// 		slog.Error("Failed to update routers", "error", err)
-// 	}
-// }
-// 	}
-// }
+// DeleteDNS deletes the DNS record for a router if it's managed by us
+func DeleteDNS(q *db.Queries, traefikID int64, routerName string) error {
+	// Get DNS provider mapping before deletion
+	params := db.GetRouterDNSProviderParams{
+		TraefikID:  traefikID,
+		RouterName: routerName,
+	}
 
-// // DeleteDNS deletes the DNS record for a router if it's managed by us
-// func DeleteDNS(router db.Router) {
-// 	provider, err := getProvider(router.DnsProvider)
-// 	if err != nil {
-// 		slog.Error("Failed to get provider", "error", err)
-// 		return
-// 	}
+	rdp, err := q.GetRouterDNSProvider(context.Background(), params)
+	if err != nil {
+		return fmt.Errorf("failed to get router DNS provider: %w", err)
+	}
 
-// 	domains, err := util.ExtractDomainFromRule(router.Rule)
-// 	if err != nil {
-// 		slog.Error("Failed to extract domain from rule", "error", err)
-// 		return
-// 	}
+	// Get traefik config to extract domains
+	config, err := q.GetTraefikConfig(context.Background(), traefikID)
+	if err != nil {
+		return fmt.Errorf("failed to get traefik config: %w", err)
+	}
 
-// 	for _, domain := range domains {
-// 		if err := provider.DeleteRecord(domain); err != nil {
-// 			slog.Error("Failed to delete record", "error", err)
-// 			return
-// 		}
-// 	}
-// }
+	router := config.Config.Routers[routerName]
+	if router == nil {
+		return fmt.Errorf("router not found: %s", routerName)
+	}
+
+	// Get domains from router rule
+	domains, err := util.ExtractDomainFromRule(router.Rule)
+	if err != nil {
+		return fmt.Errorf("failed to extract domains: %w", err)
+	}
+
+	// Get DNS provider and delete records
+	provider, err := getProvider(rdp.ProviderID, q)
+	if err != nil {
+		return fmt.Errorf("failed to get DNS provider: %w", err)
+	}
+
+	for _, domain := range domains {
+		if err := provider.DeleteRecord(domain); err != nil {
+			slog.Error("Failed to delete DNS record",
+				"domain", domain,
+				"error", err,
+			)
+		}
+	}
+
+	return nil
+}
 
 func getBaseDomain(domain string) (string, error) {
 	// Ensure the domain doesn't contain a scheme

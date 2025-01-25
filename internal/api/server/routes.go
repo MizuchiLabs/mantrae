@@ -74,6 +74,7 @@ func (s *Server) routes() {
 
 	// DNS To Router
 	register("GET", "/dns/router", jwtChain, handler.GetRouterDNSProvider(DB))
+	register("GET", "/dns/router/{id}", jwtChain, handler.ListRouterDNSProviders(DB))
 	register("POST", "/dns/router", jwtChain, handler.SetRouterDNSProvider(DB))
 	register("DELETE", "/dns/router", jwtChain, handler.DeleteRouterDNSProvider(DB))
 

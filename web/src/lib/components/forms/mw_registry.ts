@@ -23,11 +23,14 @@ import {
 	StripPrefixRegexSchema,
 	TCPIPAllowListSchema,
 	TCPInFlightConnSchema,
-	type Middleware
+	type Middleware,
+	PluginSchema
 } from '$lib/types/middlewares';
 
+type ZodObjectOrRecord = z.ZodObject<any, any> | z.ZodRecord<any, any>;
+
 // Create a mapping of SupportedMiddleware keys to their corresponding schemas
-export const MiddlewareSchemaMap: Record<SupportedMiddleware, AnyZodObject> = {
+export const MiddlewareSchemaMap: Record<SupportedMiddleware, ZodObjectOrRecord> = {
 	addPrefix: AddPrefixSchema,
 	basicAuth: BasicAuthSchema,
 	digestAuth: DigestAuthSchema,
@@ -51,7 +54,7 @@ export const MiddlewareSchemaMap: Record<SupportedMiddleware, AnyZodObject> = {
 	stripPrefixRegex: StripPrefixRegexSchema,
 	tcpIpAllowList: TCPIPAllowListSchema,
 	tcpInFlightConn: TCPInFlightConnSchema,
-	plugin: z.object({ plugin: z.string() }) // Generic handling for plugins
+	plugin: PluginSchema
 };
 export const GetSchema = (type: SupportedMiddleware | undefined) => {
 	if (!type) return z.object({});
