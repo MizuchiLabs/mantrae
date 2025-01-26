@@ -131,3 +131,11 @@ export interface Plugin {
 	snippet: Record<string, string>;
 	createdAt: string;
 }
+
+export interface BackupMetadata {
+	filename: string;
+	size: number;
+	created: string;
+	dbType: string;
+	version: string;
+}

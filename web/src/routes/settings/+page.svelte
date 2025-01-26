@@ -1,26 +1,17 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { SaveIcon, Settings } from 'lucide-svelte';
-	import { settings, api } from '$lib/api';
+	import { Download, List, SaveIcon, Settings, Upload } from 'lucide-svelte';
+	import { settings, api, backups, loading } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-
-	// State management
-	// let fileInput = $state<HTMLInputElement>();
-
-	// async function handleFileUpload(event: Event) {
-	// 	const file = (event.target as HTMLInputElement).files?.[0];
-	// 	if (file) {
-	// 		await uploadBackup(file);
-	// 		fileInput.value = '';
-	// 	}
-	// }
+	import { DateFormat } from '$lib/store';
 
 	let hasChanges = $state(false);
 	let changedValues = $state<Record<string, Setting['value']>>({});
@@ -92,8 +83,18 @@
 		if (e.key === 'Enter') saveSetting(key, value);
 	}
 
+	// Backup handling
+	let fileInput: HTMLInputElement;
+	let showBackupList = $state(false);
+
+	function humanFileSize(size: number) {
+		var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+		return +(size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+	}
+
 	onMount(async () => {
 		await api.listSettings();
+		await api.listBackups();
 	});
 </script>
 
@@ -101,7 +102,39 @@
 	<title>Settings</title>
 </svelte:head>
 
-<div class="container">
+<div class="container flex flex-col gap-6">
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>Backup Management</Card.Title>
+			<Card.Description>Download or restore database backups</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<div class="flex items-center gap-4">
+				<Button onclick={() => api.downloadBackup()} variant="outline">
+					<Download class="mr-2 size-4" />
+					Download Backup
+				</Button>
+
+				<Button variant="outline" onclick={() => fileInput?.click()} disabled={$loading}>
+					<Upload class="mr-2 size-4" />
+					{$loading ? 'Uploading...' : 'Restore Backup'}
+				</Button>
+
+				<input
+					type="file"
+					accept=".sql,.db"
+					class="hidden"
+					bind:this={fileInput}
+					onchange={(e) => api.restoreBackup(e.currentTarget.files)}
+				/>
+
+				<Button variant="outline" onclick={() => (showBackupList = true)}>
+					<List class="mr-2 size-4" />
+					View Backups
+				</Button>
+			</div>
+		</Card.Content>
+	</Card.Root>
 	<Card.Root>
 		<Card.Header>
 			<Card.Title class="mb-3">
@@ -169,3 +202,25 @@
 		</Card.Content>
 	</Card.Root>
 </div>
+
+<Dialog.Root bind:open={showBackupList}>
+	<Dialog.Content class="max-w-[600px]">
+		<Dialog.Header>
+			<Dialog.Title>Available Backups</Dialog.Title>
+		</Dialog.Header>
+		<div class="flex flex-col gap-2">
+			{#each $backups as backup}
+				<Button variant="link" class="flex items-center justify-between p-3">
+					<span class="font-mono text-sm">
+						Backup:
+						{DateFormat.format(new Date(backup.created))}
+					</span>
+					<span class="font-mono text-sm">{humanFileSize(backup.size)}</span>
+				</Button>
+			{/each}
+			{#if $backups.length === 0}
+				<p class="text-center text-sm text-muted-foreground">No backups available</p>
+			{/if}
+		</div>
+	</Dialog.Content>
+</Dialog.Root>

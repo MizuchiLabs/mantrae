@@ -1,6 +1,7 @@
 import {
 	TraefikSource,
 	type Agent,
+	type BackupMetadata,
 	type DNSProvider,
 	type Plugin,
 	type Profile,
@@ -48,6 +49,7 @@ export const dnsProviders: Writable<DNSProvider[]> = writable([]);
 export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
+export const backups: Writable<BackupMetadata[]> = writable([]);
 
 // App state
 export const profile: Writable<Profile> = writable({} as Profile);
@@ -75,10 +77,15 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 		if (token) {
 			headers.set('Authorization', 'Bearer ' + token); // Add the Authorization header
 		}
+		// Don't set Content-Type for FormData
+		const isFormData = options?.body instanceof FormData;
+		if (!isFormData) {
+			headers.set('Content-Type', 'application/json');
+		}
 		const customOptions = {
-			'Content-Type': 'application/json',
 			...options,
-			headers
+			headers,
+			body: isFormData ? options?.body : options?.body ? JSON.stringify(options.body) : undefined
 		};
 		return fetch ? fetch(url, customOptions) : window.fetch(url, customOptions); // Use custom fetch or default
 	};
@@ -87,14 +94,17 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 		loading.set(true);
 		const response = await customFetch(`${BASE_URL}${endpoint}`, {
 			method: options.method || 'GET',
-			body: options.body ? JSON.stringify(options.body) : undefined
+			body: options.body,
+			headers: options.headers
 		});
 
 		if (!response.ok) {
-			throw new Error(`${await response.text()}`);
+			throw new Error(await response.text());
 		}
-		if (response.status !== 204 && response.status !== 201) {
+		if (response.headers.get('Content-Type') === 'application/json') {
 			return await response.json();
+		} else {
+			return response;
 		}
 	} catch (err: unknown) {
 		error.set(err instanceof Error ? err.message : String(err));
@@ -391,6 +401,49 @@ export const api = {
 			body: setting
 		});
 		await api.listSettings();
+	},
+
+	// Backups -------------------------------------------------------------------
+	async listBackups() {
+		const data = await send('/backup/list');
+		backups.set(data);
+	},
+
+	async createBackup() {
+		await send('/backup', { method: 'POST' });
+		await api.listBackups();
+	},
+
+	async downloadBackup() {
+		try {
+			const response = await send('/backup');
+
+			const blob = await response.blob();
+			const filename =
+				response.headers.get('content-disposition')?.split('filename=')[1] || 'backup.db';
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		} catch (error) {
+			throw new Error(`Failed to download backup: ${error}`);
+		}
+	},
+
+	async restoreBackup(files: FileList | null) {
+		if (!files?.length) return;
+		const formData = new FormData();
+		formData.append('file', files[0]);
+
+		await send(`/backup/restore`, {
+			method: 'POST',
+			body: formData
+		});
+		toast.success('Backup restored successfully');
 	},
 
 	// Plugins

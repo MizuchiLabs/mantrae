@@ -27,6 +27,12 @@ func (s *Server) routes() {
 		mw.BasicAuth,
 	)
 
+	// adminChain := middlewares.Chain(
+	// 	mw.Logger,
+	// 	mw.JWT,
+	// 	mw.AdminOnly,
+	// )
+
 	// Helper for middleware registration
 	register := func(method, path string, chain middlewares.Middleware, handler http.HandlerFunc) {
 		s.mux.Handle(method+" /api"+path, chain(handler))
@@ -93,9 +99,10 @@ func (s *Server) routes() {
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
 	// Backup
-	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))
+	register("GET", "/backup/list", jwtChain, handler.ListBackups(s.app.BM))
 	register("GET", "/backup", jwtChain, handler.DownloadBackup(s.app.BM))
-	register("POST", "/backup", jwtChain, handler.RestoreBackup(s.app.BM))
+	register("POST", "/backup/restore", jwtChain, handler.RestoreBackup(s.app.BM))
+	register("POST", "/backup", jwtChain, handler.CreateBackup(s.app.BM))
 
 	// IP
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)

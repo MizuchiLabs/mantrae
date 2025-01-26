@@ -22,12 +22,6 @@ type App struct {
 }
 
 func Setup() (*App, error) {
-	// Initialize database
-	DB, err := db.InitDB()
-	if err != nil {
-		return nil, err
-	}
-
 	// Read environment variables
 	config, err := ReadConfig()
 	if err != nil {
@@ -40,28 +34,32 @@ func Setup() (*App, error) {
 		return nil, err
 	}
 
-	// Setup backup manager
-	bm, err := NewBackupManager(*config, db.New(DB))
+	// Setup backup manager and initialize database
+	bm, err := NewBackupManager(context.Background(), *config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create backup manager: %w", err)
 	}
 
 	// Setup settings manager
-	sm := NewSettingsManager(db.New(DB))
+	sm := NewSettingsManager(bm.q)
 	if err := sm.Initialize(context.Background()); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
 
 	app := App{
 		Config: config,
-		DB:     db.New(DB),
+		DB:     bm.q,
 		BM:     bm,
 		SM:     sm,
 	}
 
 	app.setupLogger()
-	app.setDefaultAdminUser()
-	app.setDefaultProfile()
+	if err := app.setDefaultAdminUser(); err != nil {
+		return nil, err
+	}
+	if err := app.setDefaultProfile(); err != nil {
+		return nil, err
+	}
 
 	// Update self
 	util.UpdateSelf(flags.Update)

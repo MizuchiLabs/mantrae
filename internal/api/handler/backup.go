@@ -20,7 +20,11 @@ func DownloadBackup(bm *config.BackupManager) http.HandlerFunc {
 			bm.CreateBackup(r.Context())
 			filename, err = bm.GetLatestBackup()
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to create backup: %v", err), http.StatusInternalServerError)
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to create backup: %v", err),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 		}
@@ -35,6 +39,21 @@ func DownloadBackup(bm *config.BackupManager) http.HandlerFunc {
 		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 		w.Header().Set("Content-Type", "application/octet-stream")
 		http.ServeFile(w, r, backupPath)
+	}
+}
+
+func CreateBackup(bm *config.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := bm.CreateBackup(r.Context())
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to create backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 
@@ -66,7 +85,11 @@ func RestoreBackup(bm *config.BackupManager) http.HandlerFunc {
 		// Create destination file
 		dst, err := os.Create(backupPath)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to create backup file: %v", err), http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to create backup file: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 		defer dst.Close()
@@ -81,7 +104,11 @@ func RestoreBackup(bm *config.BackupManager) http.HandlerFunc {
 		if err := bm.RestoreBackup(r.Context(), backupPath); err != nil {
 			// Clean up the uploaded file if restore fails.
 			os.Remove(backupPath)
-			http.Error(w, fmt.Sprintf("Failed to restore backup: %v", err), http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to restore backup: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -98,13 +125,21 @@ func ListBackups(bm *config.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		backups, err := bm.ListBackups()
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to list backups: %v", err), http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to list backups: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(backups); err != nil {
-			http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to encode response: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 	}
