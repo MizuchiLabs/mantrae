@@ -193,6 +193,19 @@ export const api = {
 		await fetchTraefikConfig(id, source);
 	},
 
+	async getTraefikConfigLocal(id: number) {
+		// Get the local config without mutating the stores
+		const res = await send(`/traefik/${id}/${TraefikSource.LOCAL}`);
+		if (!res) {
+			return;
+		}
+		const traefik = res as TraefikConfig;
+		const routers = flattenRouterData(res.config);
+		const services = flattenServiceData(res.config);
+		const middlewares = flattenMiddlewareData(res.config);
+		return { traefik, routers, services, middlewares };
+	},
+
 	async getDynamicConfig(profileName: string) {
 		return await send(`/${profileName}`);
 	},
@@ -327,9 +340,15 @@ export const api = {
 	},
 
 	// Agents
-	async listAgents() {
-		const data = await send('/agent');
+	async listAgents(): Promise<Agent[]> {
+		const data = await send(`/agent`);
+		return data;
+	},
+
+	async listAgentsByProfile(): Promise<Agent[]> {
+		const data = await send(`/agent/list/${get(profile).id}`);
 		agents.set(data);
+		return data;
 	},
 
 	async getAgent(id: string) {
@@ -338,7 +357,7 @@ export const api = {
 
 	async createAgent(profileID: number) {
 		await send(`/agent/${profileID}`, { method: 'POST' });
-		await api.listAgents();
+		await api.listAgentsByProfile();
 	},
 
 	async updateAgent(agent: Omit<Agent, 'created_at' | 'updated_at'>) {
@@ -346,14 +365,14 @@ export const api = {
 			method: 'PUT',
 			body: agent
 		});
-		await api.listAgents();
+		await api.listAgentsByProfile();
 	},
 
 	async deleteAgent(id: string) {
 		await send(`/agent/${id}`, {
 			method: 'DELETE'
 		});
-		await api.listAgents();
+		await api.listAgentsByProfile();
 	},
 
 	// Settings ------------------------------------------------------------------

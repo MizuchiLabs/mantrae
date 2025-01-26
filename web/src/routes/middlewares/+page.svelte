@@ -17,13 +17,16 @@
 
 	interface ModalState {
 		isOpen: boolean;
-		mode: 'create' | 'edit' | 'view';
-		middleware?: Middleware;
+		middleware: Middleware;
 	}
 
 	const initialModalState: ModalState = {
 		isOpen: false,
-		mode: 'create'
+		middleware: {
+			name: '',
+			protocol: 'http',
+			type: undefined
+		}
 	};
 
 	let modalState = $state(initialModalState);
@@ -31,7 +34,7 @@
 	function openCreateModal() {
 		modalState = {
 			isOpen: true,
-			mode: 'create'
+			middleware: initialModalState.middleware
 		};
 	}
 
@@ -106,9 +109,9 @@
 								label: 'Edit Middleware',
 								icon: Pencil,
 								onClick: () => {
+									console.log(row.original);
 									modalState = {
 										isOpen: true,
-										mode: 'edit',
 										middleware: row.original
 									};
 								}
@@ -132,7 +135,6 @@
 								onClick: () => {
 									modalState = {
 										isOpen: true,
-										mode: 'view',
 										middleware: row.original
 									};
 								}
@@ -200,8 +202,4 @@
 	</Tabs.Content>
 </Tabs.Root>
 
-<MiddlewareModal
-	bind:open={modalState.isOpen}
-	mode={modalState.mode}
-	middleware={modalState.middleware}
-/>
+<MiddlewareModal bind:open={modalState.isOpen} bind:middleware={modalState.middleware} />

@@ -23,14 +23,21 @@ import {
 	StripPrefixRegexSchema,
 	TCPIPAllowListSchema,
 	TCPInFlightConnSchema,
-	type Middleware,
-	PluginSchema
+	PluginSchema,
+	type HTTPMiddleware,
+	type TCPMiddleware
 } from '$lib/types/middlewares';
 
-export type ZodObjectOrRecord = z.ZodObject<any, any> | z.ZodRecord<any, any>;
+export type ZodObjectOrRecord = AnyZodObject | z.ZodRecord<any, any>;
 
-// Create a mapping of SupportedMiddleware keys to their corresponding schemas
-export const MiddlewareSchemaMap: Record<SupportedMiddleware, ZodObjectOrRecord> = {
+// Split middleware types into HTTP and TCP
+export type SupportedMiddlewareHTTP = keyof Omit<HTTPMiddleware, 'name' | 'protocol' | 'type'>;
+
+export type SupportedMiddlewareTCP = keyof Omit<TCPMiddleware, 'name' | 'protocol' | 'type'>;
+
+export type SupportedMiddleware = SupportedMiddlewareHTTP | SupportedMiddlewareTCP;
+
+export const HTTPMiddlewareSchemaMap: Record<SupportedMiddlewareHTTP, ZodObjectOrRecord> = {
 	addPrefix: AddPrefixSchema,
 	basicAuth: BasicAuthSchema,
 	digestAuth: DigestAuthSchema,
@@ -52,21 +59,39 @@ export const MiddlewareSchemaMap: Record<SupportedMiddleware, ZodObjectOrRecord>
 	retry: RetrySchema,
 	stripPrefix: StripPrefixSchema,
 	stripPrefixRegex: StripPrefixRegexSchema,
-	tcpIpAllowList: TCPIPAllowListSchema,
-	tcpInFlightConn: TCPInFlightConnSchema,
 	plugin: PluginSchema
 };
-export const GetSchema = (type: SupportedMiddleware | undefined) => {
-	if (!type) return z.object({});
-	return MiddlewareSchemaMap[type as SupportedMiddleware];
+export const TCPMiddlewareSchemaMap: Record<SupportedMiddlewareTCP, ZodObjectOrRecord> = {
+	ipAllowList: TCPIPAllowListSchema,
+	inFlightConn: TCPInFlightConnSchema
 };
 
-// Type definition for SupportedMiddleware
-export type SupportedMiddleware = keyof Omit<Middleware, 'name' | 'protocol' | 'type'>;
-export const MiddlewareTypes = Object.keys(MiddlewareSchemaMap).map((key) => ({
+// Combined schema map
+export const MiddlewareSchemaMap: Record<SupportedMiddleware, ZodObjectOrRecord> = {
+	...HTTPMiddlewareSchemaMap,
+	...TCPMiddlewareSchemaMap
+};
+
+export const GetSchema = (type: SupportedMiddleware | undefined) => {
+	if (!type) return z.object({});
+	return MiddlewareSchemaMap[type];
+};
+
+// Split middleware types for UI
+export const HTTPMiddlewareTypes = Object.keys(HTTPMiddlewareSchemaMap).map((key) => ({
 	value: key,
 	label: key
-		.split(/(?=[A-Z])/) // Split on capital letters
+		.split(/(?=[A-Z])/)
 		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
 		.join(' ')
 }));
+
+export const TCPMiddlewareTypes = Object.keys(TCPMiddlewareSchemaMap).map((key) => ({
+	value: key,
+	label: key
+		.split(/(?=[A-Z])/)
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(' ')
+}));
+
+export const MiddlewareTypes = [...HTTPMiddlewareTypes, ...TCPMiddlewareTypes];

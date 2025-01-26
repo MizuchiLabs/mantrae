@@ -13,7 +13,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { toast } from 'svelte-sonner';
 	import YAML from 'yaml';
-	import type { Middleware } from '$lib/types/middlewares';
+	import type { HTTPMiddleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
 
 	// State
 	let open = $state(false);
@@ -48,15 +48,21 @@
 
 		const data = YAML.parse(plugin.snippet.yaml);
 		const pluginContent = extractPluginContent(data);
-		const name = Object.keys(pluginContent)[0].replace(/^my-/, '');
+		const name = Object.keys(pluginContent)[0];
 
-		const middleware: Middleware = {
-			name,
+		const middleware: UpsertMiddlewareParams = {
+			name: `${name}@http`,
 			protocol: 'http',
 			type: 'plugin',
-			plugin: Object.values(pluginContent)[0]
+			middleware: {
+				name: name,
+				protocol: 'http',
+				plugin: {
+					[name]: pluginContent[name]
+				}
+			}
 		};
-
+		console.log(middleware);
 		await api.upsertMiddleware($profile.id, middleware);
 
 		selectedPlugin = plugin;
@@ -64,23 +70,12 @@
 		open = true;
 	}
 
-	function extractPluginContent(data: Record<string, Record<string, unknown>>) {
-		const content: Record<string, Record<string, unknown>> = {};
+	function extractPluginContent(data: Record<string, any>) {
+		const middlewares = data.http?.middlewares;
+		if (!middlewares) return null;
 
-		if (data.http?.middlewares) {
-			Object.entries(data.http.middlewares).forEach(
-				([name, middleware]: [string, Record<string, unknown>]) => {
-					if (middleware.plugin) {
-						const pluginNames = Object.keys(middleware.plugin);
-						if (pluginNames.length > 0) {
-							content[name] = middleware.plugin[pluginNames[pluginNames.length - 1]];
-						}
-					}
-				}
-			);
-		}
-
-		return content;
+		const firstMiddleware = Object.values(middlewares)[0];
+		return firstMiddleware?.plugin || null;
 	}
 
 	function generateYamlSnippet(plugin: Plugin) {

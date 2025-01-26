@@ -22,7 +22,7 @@
 	let { schema, data, subData, subMultiple, onSubmit }: Props = $props();
 
 	const form = superForm(data, {
-		id: schema._def.typeName || 'form', // Unique ID per schema
+		id: schema._def.typeName ?? 'form', // Unique ID per schema
 		SPA: true,
 		resetForm: true,
 		dataType: 'json',
@@ -115,15 +115,6 @@
 			return fieldSchema._def.innerType;
 		}
 		return fieldSchema;
-	}
-
-	function formatPluginConfig(pluginData: Record<string, unknown>): string {
-		if (!pluginData) return '';
-
-		const knownKeys = ['name', 'protocol', 'type'];
-		const configKey = Object.keys(pluginData).find((key) => !knownKeys.includes(key));
-
-		return configKey ? JSON.stringify(pluginData[configKey], null, 2) : '';
 	}
 
 	$effect(() => {
@@ -350,14 +341,15 @@
 	{/if}
 
 	{#if schema instanceof z.ZodRecord}
-		<Form.Field {form} name="record">
+		<Form.Field {form} name={$formData.name.split('@')[0]}>
 			<Form.Control>
 				{#snippet children({ props })}
-					<div class="flex items-center gap-2">
+					<div class="flex flex-col items-start gap-2">
+						<Form.Label>Plugin</Form.Label>
 						<Textarea
 							{...props}
-							value={formatPluginConfig($formData)}
-							rows={10}
+							value={JSON.stringify($formData[$formData.name.split('@')[0]], null, 2)}
+							rows={JSON.stringify($formData, null, 2).split('\n').length + 1}
 							disabled={$submitting}
 						/>
 					</div>

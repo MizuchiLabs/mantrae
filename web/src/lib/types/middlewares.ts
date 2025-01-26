@@ -1,12 +1,17 @@
-import type { SupportedMiddleware } from '$lib/components/forms/mw_registry';
+import type {
+	SupportedMiddlewareHTTP,
+	SupportedMiddlewareTCP
+} from '$lib/components/forms/mw_registry';
 import type { BaseTraefikConfig } from '$lib/types';
 import { z } from 'zod';
 
+export type Middleware = HTTPMiddleware | TCPMiddleware;
+
 // HTTP Middlewares ----------------------------------------------------------
-export interface Middleware {
+export interface HTTPMiddleware {
 	name: string;
-	protocol: 'http' | 'tcp';
-	type?: SupportedMiddleware;
+	protocol: 'http';
+	type?: SupportedMiddlewareHTTP;
 	addPrefix?: AddPrefix;
 	basicAuth?: BasicAuth;
 	digestAuth?: DigestAuth;
@@ -28,17 +33,24 @@ export interface Middleware {
 	retry?: Retry;
 	stripPrefix?: StripPrefix;
 	stripPrefixRegex?: StripPrefixRegex;
-	tcpIpAllowList?: TCPIPAllowList;
-	tcpInFlightConn?: TCPInFlightConn;
 	plugin?: Plugin;
+}
+
+// TCP Middlewares -----------------------------------------------------------
+export interface TCPMiddleware {
+	name: string;
+	protocol: 'tcp';
+	type?: SupportedMiddlewareTCP;
+	ipAllowList?: TCPIPAllowList;
+	inFlightConn?: TCPInFlightConn;
 }
 
 export interface UpsertMiddlewareParams {
 	name: string;
 	protocol: 'http' | 'tcp';
 	type?: string;
-	middleware?: Middleware;
-	tcpMiddleware?: Middleware;
+	middleware?: HTTPMiddleware;
+	tcpMiddleware?: TCPMiddleware;
 }
 
 export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
@@ -46,37 +58,37 @@ export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
 	if (!config) return flatMiddleware;
 
 	Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
-		if (!middleware) {
+		if (middleware) {
+			const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
+			flatMiddleware.push({
+				name,
+				protocol: 'http',
+				type,
+				...details
+			});
+		} else {
 			flatMiddleware.push({
 				name,
 				protocol: 'http'
 			});
-			return;
 		}
-		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
-		flatMiddleware.push({
-			name,
-			protocol: 'http',
-			type,
-			...details
-		});
 	});
 
 	Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
-		if (!middleware) {
+		if (middleware) {
+			const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
 			flatMiddleware.push({
 				name,
-				protocol: 'http'
+				protocol: 'tcp',
+				type,
+				...details
 			});
-			return;
+		} else {
+			flatMiddleware.push({
+				name,
+				protocol: 'tcp'
+			});
 		}
-		const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
-		flatMiddleware.push({
-			name,
-			protocol: 'tcp',
-			type,
-			...details
-		});
 	});
 
 	return flatMiddleware;
@@ -329,5 +341,5 @@ export const TCPInFlightConnSchema = z.object({
 });
 type TCPInFlightConn = z.infer<typeof TCPInFlightConnSchema>;
 
-export const PluginSchema = z.record(z.string(), z.any());
+export const PluginSchema = z.record(z.string(), z.record(z.string(), z.any()));
 type Plugin = z.infer<typeof PluginSchema>;

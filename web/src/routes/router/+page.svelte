@@ -140,7 +140,7 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const resolver = row.getValue('resolver') as TLS;
-				if (!resolver.certResolver) {
+				if (!resolver?.certResolver) {
 					return renderComponent(ColumnBadge, {
 						label: 'None',
 						variant: 'secondary',

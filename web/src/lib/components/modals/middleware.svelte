@@ -5,41 +5,39 @@
 	import type { Middleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { api, profile, mwNames } from '$lib/api';
 	import { toast } from 'svelte-sonner';
 	import {
 		type SupportedMiddleware,
 		GetSchema,
-		MiddlewareTypes,
-		type ZodObjectOrRecord
+		type ZodObjectOrRecord,
+		HTTPMiddlewareTypes,
+		TCPMiddlewareTypes,
+		MiddlewareTypes
 	} from '$lib/components/forms/mw_registry';
 	import Separator from '../ui/separator/separator.svelte';
 	import { z } from 'zod';
 
 	interface Props {
-		middleware?: Middleware;
+		middleware: Middleware;
 		open?: boolean;
-		mode: 'create' | 'edit' | 'view';
 	}
 
-	const defaultMiddleware: Middleware = {
-		name: '',
-		protocol: 'http'
-	};
+	let { middleware = $bindable(), open = $bindable(false) }: Props = $props();
 
-	let {
-		middleware = $bindable(defaultMiddleware),
-		open = $bindable(false),
-		mode = 'view'
-	}: Props = $props();
+	let mwProvider = $derived(middleware.name ? middleware.name.split('@')[1] : 'http');
+	let disabled = $derived(mwProvider !== 'http' && mwProvider !== undefined);
+	let schema: ZodObjectOrRecord = $derived(
+		middleware.type ? GetSchema(middleware.type) : z.object({})
+	);
 
-	let disabled = $state(mode === 'view');
-
-	let schema: ZodObjectOrRecord = $state(GetSchema(middleware.type));
-
-	const handleSelect = (value: string) => {
+	const handleTypeChange = (value: string) => {
 		middleware.type = value as SupportedMiddleware;
-		schema = GetSchema(middleware.type);
+	};
+	const handleProtocolChange = () => {
+		middleware.protocol = middleware.protocol === 'http' ? 'tcp' : 'http';
+		middleware.type = undefined; // Reset type when protocol changes
 	};
 
 	function getBaseType(fieldSchema: z.ZodTypeAny | unknown) {
@@ -82,10 +80,23 @@
 			});
 		}
 
-		middleware = {
-			...middleware,
-			[middleware.type as string]: formData
-		};
+		// TODO: Handle plugin name change
+		if (middleware.type === 'plugin') {
+			const pluginName = middleware.name.split('@')[0];
+			middleware = {
+				name: pluginName,
+				protocol: 'http',
+				type: 'plugin',
+				plugin: {
+					[pluginName]: JSON.parse((formData[pluginName] as string) ?? '{}')
+				}
+			};
+		} else {
+			middleware = {
+				...middleware,
+				[middleware.type as string]: formData
+			};
+		}
 		try {
 			// Ensure proper name formatting and synchronization
 			if (!middleware.name) return;
@@ -101,21 +112,24 @@
 			};
 
 			await api.upsertMiddleware($profile.id, params);
-			open = false;
-			toast.success(`Middleware ${mode === 'create' ? 'created' : 'updated'} successfully`);
+			toast.success(`Middleware updated successfully`);
+			resetForm();
 		} catch (err: unknown) {
 			const e = err as Error;
-			toast.error(`Failed to ${mode} router`, {
+			toast.error(`Failed to update middleware`, {
 				description: e.message
 			});
 		}
 	};
 
-	$effect(() => {
-		if (open && middleware.type) {
-			schema = GetSchema(middleware.type);
-		}
-	});
+	function resetForm() {
+		open = false;
+		middleware = {
+			name: '',
+			protocol: 'http',
+			type: undefined
+		};
+	}
 </script>
 
 <Dialog.Root bind:open>
@@ -127,24 +141,41 @@
 
 		<div class="flex flex-col gap-4 py-2">
 			<div class="flex flex-col gap-2">
-				<span class="text-sm text-primary">Middleware Type</span>
-				<Select.Root
-					type="single"
-					bind:value={middleware.type}
-					onValueChange={handleSelect}
-					{disabled}
-				>
-					<Select.Trigger>
-						{middleware.type
-							? MiddlewareTypes.find((t) => t.value === middleware.type)?.label
-							: 'Select a middleware type'}
-					</Select.Trigger>
-					<Select.Content>
-						{#each MiddlewareTypes as type}
-							<Select.Item value={type.value}>{type.label}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
+				<span class="text-sm text-primary">Middleware Type & Protocol</span>
+				<div class="flex items-center gap-4">
+					<Select.Root
+						type="single"
+						bind:value={middleware.type}
+						onValueChange={handleTypeChange}
+						{disabled}
+					>
+						<Select.Trigger>
+							{middleware.type
+								? MiddlewareTypes.find((t) => t.value === middleware.type)?.label
+								: 'Select a middleware type'}
+						</Select.Trigger>
+						<Select.Content>
+							{#if middleware.protocol === 'http'}
+								{#each HTTPMiddlewareTypes as type}
+									<Select.Item value={type.value}>{type.label}</Select.Item>
+								{/each}
+							{:else if middleware.protocol === 'tcp'}
+								{#each TCPMiddlewareTypes as type}
+									<Select.Item value={type.value}>{type.label}</Select.Item>
+								{/each}
+							{/if}
+						</Select.Content>
+					</Select.Root>
+					<div class="flex items-center gap-2">
+						<Label for="protocol">{middleware.protocol.toUpperCase()}</Label>
+						<Switch
+							name="protocol"
+							checked={middleware.protocol === 'http'}
+							onCheckedChange={handleProtocolChange}
+							{disabled}
+						/>
+					</div>
+				</div>
 			</div>
 			<div class="flex flex-col gap-2">
 				<Label for="name">Name</Label>
@@ -155,7 +186,7 @@
 		<Separator />
 
 		{#if schema}
-			{#if middleware.type === 'chain'}
+			{#if middleware.protocol === 'http' && middleware.type === 'chain'}
 				<BaseForm {schema} data={middleware} subData={$mwNames} subMultiple={true} {onSubmit} />
 			{:else}
 				<BaseForm {schema} data={middleware} {onSubmit} />

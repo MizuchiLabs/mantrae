@@ -23,6 +23,24 @@ func ListAgents(q *db.Queries) http.HandlerFunc {
 	}
 }
 
+func ListAgentsByProfile(q *db.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		agents, err := q.ListAgentsByProfile(r.Context(), profileID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(agents)
+	}
+}
+
 func GetAgent(q *db.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		agent, err := q.GetAgent(r.Context(), r.PathValue("id"))

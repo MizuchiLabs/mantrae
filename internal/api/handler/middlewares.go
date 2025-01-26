@@ -97,6 +97,7 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
+			fmt.Printf("params.Middleware: %+v\n", params)
 			existingConfig.Config.Middlewares[params.Name] = params.Middleware
 		case "tcp":
 			existingConfig.Config.TCPMiddlewares[params.Name] = params.TCPMiddleware
