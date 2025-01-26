@@ -3,12 +3,11 @@
 	import { Button } from '../ui/button';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';
-	import { writable } from 'svelte/store';
 
-	let version = writable('');
+	let version = $state('');
 	onMount(async () => {
 		const data = await api.getVersion();
-		version.set(data);
+		version = data.version;
 	});
 </script>
 
@@ -36,8 +35,8 @@
 			class="flex items-center gap-1 text-xs"
 		>
 			Mantrae
-			{#if $version && $version !== 'unknown'}
-				v{$version}
+			{#if version && version !== 'unknown'}
+				v{version}
 			{:else}
 				<span class="italic">latest</span>
 			{/if}

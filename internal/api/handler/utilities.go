@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -8,10 +9,8 @@ import (
 
 // GetVersion returns the current version of Mantrae as a plain text response.
 func GetVersion(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(util.Version)); err != nil {
-		http.Error(w, "Failed to write response", http.StatusInternalServerError)
-	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"version": util.Version})
 }
 
 // GetPublicIP attempts to resolve the public IP address of a Traefik instance by its profile ID.
