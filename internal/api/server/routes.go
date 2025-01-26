@@ -99,10 +99,17 @@ func (s *Server) routes() {
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
 	// Backup
-	register("GET", "/backup/list", jwtChain, handler.ListBackups(s.app.BM))
-	register("GET", "/backup", jwtChain, handler.DownloadBackup(s.app.BM))
-	register("POST", "/backup/restore", jwtChain, handler.RestoreBackup(s.app.BM))
-	register("POST", "/backup", jwtChain, handler.CreateBackup(s.app.BM))
+	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))
+	register("GET", "/backups/download", jwtChain, handler.DownloadBackup(s.app.BM))
+	register(
+		"GET",
+		"/backups/download/{filename}",
+		jwtChain,
+		handler.DownloadBackupByName(s.app.BM),
+	)
+	register("POST", "/backups", jwtChain, handler.CreateBackup(s.app.BM))
+	register("POST", "/backups/restore", jwtChain, handler.RestoreBackup(s.app.BM))
+	register("DELETE", "/backups/{filename}", jwtChain, handler.DeleteBackup(s.app.BM))
 
 	// IP
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)

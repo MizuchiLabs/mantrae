@@ -132,10 +132,8 @@ export interface Plugin {
 	createdAt: string;
 }
 
-export interface BackupMetadata {
-	filename: string;
+export interface BackupFile {
+	name: string;
 	size: number;
-	created: string;
-	dbType: string;
-	version: string;
+	timestamp: string;
 }

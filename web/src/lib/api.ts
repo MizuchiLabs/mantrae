@@ -1,7 +1,7 @@
 import {
 	TraefikSource,
 	type Agent,
-	type BackupMetadata,
+	type BackupFile,
 	type DNSProvider,
 	type Plugin,
 	type Profile,
@@ -49,7 +49,7 @@ export const dnsProviders: Writable<DNSProvider[]> = writable([]);
 export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
-export const backups: Writable<BackupMetadata[]> = writable([]);
+export const backups: Writable<BackupFile[]> = writable([]);
 
 // App state
 export const profile: Writable<Profile> = writable({} as Profile);
@@ -199,11 +199,13 @@ export const api = {
 
 	// Traefik -------------------------------------------------------------------
 	async getTraefikConfig(id: number, source: TraefikSource) {
+		if (!id) return;
 		await fetchTraefikMetadata(id);
 		await fetchTraefikConfig(id, source);
 	},
 
 	async getTraefikConfigLocal(id: number) {
+		if (!id) return;
 		// Get the local config without mutating the stores
 		const res = await send(`/traefik/${id}/${TraefikSource.LOCAL}`);
 		if (!res) {
@@ -356,6 +358,7 @@ export const api = {
 	},
 
 	async listAgentsByProfile(): Promise<Agent[]> {
+		if (!get(profile).id) return [];
 		const data = await send(`/agent/list/${get(profile).id}`);
 		agents.set(data);
 		return data;
@@ -405,22 +408,40 @@ export const api = {
 
 	// Backups -------------------------------------------------------------------
 	async listBackups() {
-		const data = await send('/backup/list');
+		const data = await send('/backups');
 		backups.set(data);
 	},
 
 	async createBackup() {
-		await send('/backup', { method: 'POST' });
+		await send('/backups', { method: 'POST' });
 		await api.listBackups();
 	},
 
 	async downloadBackup() {
 		try {
-			const response = await send('/backup');
+			const response = await send('/backups/download', { method: 'GET' });
 
 			const blob = await response.blob();
 			const filename =
 				response.headers.get('content-disposition')?.split('filename=')[1] || 'backup.db';
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		} catch (error) {
+			throw new Error(`Failed to download backup: ${error}`);
+		}
+	},
+
+	async downloadBackupByName(name: string) {
+		try {
+			const response = await send(`/backups/download/${name}`, { method: 'GET' });
+			const blob = await response.blob();
+			const filename = response.headers.get('content-disposition')?.split('filename=')[1] || name;
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
@@ -439,11 +460,18 @@ export const api = {
 		const formData = new FormData();
 		formData.append('file', files[0]);
 
-		await send(`/backup/restore`, {
+		await send(`/backups/restore`, {
 			method: 'POST',
 			body: formData
 		});
 		toast.success('Backup restored successfully');
+	},
+
+	async deleteBackup(name: string) {
+		await send(`/backups/${name}`, {
+			method: 'DELETE'
+		});
+		await api.listBackups();
 	},
 
 	// Plugins

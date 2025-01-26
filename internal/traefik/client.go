@@ -3,6 +3,7 @@ package traefik
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,7 +23,8 @@ const (
 	VersionAPI     = "/api/version"
 )
 
-func GetTraefikConfig(q *db.Queries) {
+func GetTraefikConfig(DB *sql.DB) {
+	q := db.New(DB)
 	profiles, err := q.ListProfiles(context.Background())
 	if err != nil {
 		slog.Error("Failed to get profiles", "error", err)

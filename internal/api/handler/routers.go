@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,8 +26,9 @@ type UpsertRouterParams struct {
 }
 
 // UpsertRouter handles both creation and updates of router/service pairs
-func UpsertRouter(q *db.Queries) http.HandlerFunc {
+func UpsertRouter(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var params UpsertRouterParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -123,8 +125,9 @@ func UpsertRouter(q *db.Queries) http.HandlerFunc {
 }
 
 // DeleteRouter handles the removal of router/service pairs
-func DeleteRouter(q *db.Queries) http.HandlerFunc {
+func DeleteRouter(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid profile ID", http.StatusBadRequest)

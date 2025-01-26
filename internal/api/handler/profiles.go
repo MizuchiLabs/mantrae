@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,8 +10,9 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
-func ListProfiles(q *db.Queries) http.HandlerFunc {
+func ListProfiles(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profiles, err := q.ListProfiles(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -21,8 +23,9 @@ func ListProfiles(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetProfile(q *db.Queries) http.HandlerFunc {
+func GetProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,8 +41,9 @@ func GetProfile(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func CreateProfile(q *db.Queries) http.HandlerFunc {
+func CreateProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var profile db.CreateProfileParams
 		if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,8 +74,9 @@ func CreateProfile(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpdateProfile(q *db.Queries) http.HandlerFunc {
+func UpdateProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var profile db.UpdateProfileParams
 		if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -85,8 +90,9 @@ func UpdateProfile(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteProfile(q *db.Queries) http.HandlerFunc {
+func DeleteProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

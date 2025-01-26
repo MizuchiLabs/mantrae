@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,7 +20,8 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := h.db.GetUserByUsername(r.Context(), username)
+		q := db.New(h.db)
+		user, err := q.GetUserByUsername(r.Context(), username)
 		if err != nil {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -59,7 +61,8 @@ func (h *MiddlewareHandler) JWT(next http.Handler) http.Handler {
 		}
 
 		// Verify user exists in database
-		user, err := h.db.GetUserByUsername(r.Context(), claims.Username)
+		q := db.New(h.db)
+		user, err := q.GetUserByUsername(r.Context(), claims.Username)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusUnauthorized)
 			return
@@ -80,7 +83,8 @@ func (h *MiddlewareHandler) AdminOnly(next http.Handler) http.Handler {
 			return
 		}
 
-		user, err := h.db.GetUserByUsername(context.Background(), username)
+		q := db.New(h.db)
+		user, err := q.GetUserByUsername(context.Background(), username)
 		if err != nil {
 			http.Error(w, "Admin privileges required", http.StatusForbidden)
 			return

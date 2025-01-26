@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -11,8 +12,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func ListAgents(q *db.Queries) http.HandlerFunc {
+func ListAgents(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		agents, err := q.ListAgents(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -23,8 +25,9 @@ func ListAgents(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func ListAgentsByProfile(q *db.Queries) http.HandlerFunc {
+func ListAgentsByProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -41,8 +44,9 @@ func ListAgentsByProfile(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetAgent(q *db.Queries) http.HandlerFunc {
+func GetAgent(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		agent, err := q.GetAgent(r.Context(), r.PathValue("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,8 +75,8 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		if err := a.DB.CreateAgent(r.Context(), db.CreateAgentParams{
+		q := db.New(a.DB)
+		if err := q.CreateAgent(r.Context(), db.CreateAgentParams{
 			ID:        uuid.New().String(),
 			ProfileID: profileID,
 			Token:     token,
@@ -84,8 +88,9 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 	}
 }
 
-func UpdateAgent(q *db.Queries) http.HandlerFunc {
+func UpdateAgent(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var agent db.UpdateAgentParams
 		if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -99,8 +104,9 @@ func UpdateAgent(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteAgent(q *db.Queries) http.HandlerFunc {
+func DeleteAgent(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		agent, err := q.GetAgent(r.Context(), r.PathValue("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -116,7 +122,8 @@ func DeleteAgent(q *db.Queries) http.HandlerFunc {
 
 func RotateAgentToken(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		dbAgent, err := a.DB.GetAgent(r.Context(), r.PathValue("id"))
+		q := db.New(a.DB)
+		dbAgent, err := q.GetAgent(r.Context(), r.PathValue("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -134,7 +141,7 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		if err := a.DB.UpdateAgentToken(r.Context(), db.UpdateAgentTokenParams{
+		if err := q.UpdateAgentToken(r.Context(), db.UpdateAgentTokenParams{
 			ID:    dbAgent.ID,
 			Token: token,
 		}); err != nil {

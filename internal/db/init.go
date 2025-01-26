@@ -15,7 +15,7 @@ import (
 var migrations embed.FS
 
 // Default settings for sqlite db
-const initScript = `
+const InitScript = `
 	PRAGMA busy_timeout = 5000;
 	PRAGMA journal_mode = WAL;
 	PRAGMA journal_size_limit = 200000000;
@@ -38,7 +38,7 @@ func InitDB() (*sql.DB, error) {
 		}
 	} else {
 		sqlite.RegisterConnectionHook(func(conn sqlite.ExecQuerierContext, _ string) error {
-			_, err = conn.ExecContext(context.Background(), initScript, nil)
+			_, err = conn.ExecContext(context.Background(), InitScript, nil)
 			return err
 		})
 

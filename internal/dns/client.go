@@ -2,6 +2,7 @@ package dns
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -54,7 +55,8 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
-func UpdateDNS(q *db.Queries) (err error) {
+func UpdateDNS(DB *sql.DB) (err error) {
+	q := db.New(DB)
 	traefikIDs, err := q.ListTraefikIDs(context.Background())
 	if err != nil {
 		return err
@@ -97,7 +99,9 @@ func UpdateDNS(q *db.Queries) (err error) {
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(q *db.Queries, traefikID int64, routerName string) error {
+func DeleteDNS(DB *sql.DB, traefikID int64, routerName string) error {
+	q := db.New(DB)
+
 	// Get DNS provider mapping before deletion
 	params := db.GetRouterDNSProviderParams{
 		TraefikID:  traefikID,

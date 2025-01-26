@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,8 +10,9 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
-func ListUsers(q *db.Queries) http.HandlerFunc {
+func ListUsers(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		users, err := q.ListUsers(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -21,8 +23,9 @@ func ListUsers(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetUser(q *db.Queries) http.HandlerFunc {
+func GetUser(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		user_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -38,8 +41,9 @@ func GetUser(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func CreateUser(q *db.Queries) http.HandlerFunc {
+func CreateUser(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var user db.CreateUserParams
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -57,8 +61,9 @@ func CreateUser(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpdateUser(q *db.Queries) http.HandlerFunc {
+func UpdateUser(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var user db.UpdateUserParams
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -93,8 +98,9 @@ func UpdateUser(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteUser(q *db.Queries) http.HandlerFunc {
+func DeleteUser(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		user_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

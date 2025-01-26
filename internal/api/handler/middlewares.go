@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -42,8 +43,9 @@ type PluginSnippet struct {
 }
 
 // UpsertMiddleware
-func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
+func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var params UpsertMiddlewareParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -124,8 +126,9 @@ func UpsertMiddleware(q *db.Queries) http.HandlerFunc {
 }
 
 // DeleteMiddleware
-func DeleteMiddleware(q *db.Queries) http.HandlerFunc {
+func DeleteMiddleware(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid profile ID", http.StatusBadRequest)

@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/mail"
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -15,8 +16,9 @@ import (
 )
 
 // Login verifies user credentials using a normal password and returns a JWT token if successful.
-func Login(q *db.Queries, secret string) http.HandlerFunc {
+func Login(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var user db.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, "Failed to decode credentials", http.StatusBadRequest)
@@ -60,8 +62,9 @@ func Login(q *db.Queries, secret string) http.HandlerFunc {
 }
 
 // VerifyToken checks the validity of a JWT token provided in cookies or Authorization header.
-func VerifyToken(q *db.Queries, secret string) http.HandlerFunc {
+func VerifyToken(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var token string
 
 		// Check for token in cookies and Authorization header
@@ -95,8 +98,9 @@ func VerifyToken(q *db.Queries, secret string) http.HandlerFunc {
 }
 
 // ResetPassword allows users to reset their password using a valid JWT token.
-func ResetPassword(q *db.Queries, secret string) http.HandlerFunc {
+func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var data struct {
 			Password string `json:"password"`
 		}
@@ -150,8 +154,9 @@ func ResetPassword(q *db.Queries, secret string) http.HandlerFunc {
 }
 
 // SendResetEmail sends an email with a password reset link to the user's registered email address.
-func SendResetEmail(q *db.Queries, secret string) http.HandlerFunc {
+func SendResetEmail(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		user, err := q.GetUserByUsername(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
@@ -159,7 +164,11 @@ func SendResetEmail(q *db.Queries, secret string) http.HandlerFunc {
 		}
 
 		if user.Email == nil {
-			http.Error(w, fmt.Sprintf("%s has no email address", user.Username), http.StatusBadRequest)
+			http.Error(
+				w,
+				fmt.Sprintf("%s has no email address", user.Username),
+				http.StatusBadRequest,
+			)
 			return
 		}
 
@@ -175,7 +184,7 @@ func SendResetEmail(q *db.Queries, secret string) http.HandlerFunc {
 			return
 		}
 
-		var config config.EmailConfig
+		var config app.EmailConfig
 		var resetLink string
 		for _, setting := range settings {
 			switch setting.Key {

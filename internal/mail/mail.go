@@ -5,12 +5,12 @@ import (
 	"html/template"
 	"net/smtp"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/mail/templates"
 	"github.com/domodwyer/mailyak/v3"
 )
 
-func Send(to, templateName string, email config.EmailConfig, data map[string]interface{}) error {
+func Send(to, templateName string, email app.EmailConfig, data map[string]interface{}) error {
 	client := mailyak.New(
 		email.Host+":"+email.Port,
 		smtp.PlainAuth("", email.Username, email.Password, email.Host),

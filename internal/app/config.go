@@ -1,11 +1,11 @@
-package config
+package app
 
 import (
 	"fmt"
 	"log"
-	"log/slog"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -59,10 +59,11 @@ type TraefikConfig struct {
 }
 
 type BackupConfig struct {
-	Enabled  bool   `env:"BACKUP_ENABLED"  envDefault:"true"`
-	Dir      string `env:"BACKUP_DIR"      envDefault:"backups"`
-	Schedule string `env:"BACKUP_SCHEDULE" envDefault:"0 2 * * 1"`
-	Keep     int    `env:"BACKUP_KEEP"     envDefault:"3"`
+	Enabled      bool          `env:"BACKUP_ENABLED"  envDefault:"true"`
+	BackupPath   string        `env:"BACKUP_PATH"     envDefault:"backups"`
+	DatabaseName string        `env:"DATABASE_NAME"   envDefault:"mantrae"`
+	Interval     time.Duration `env:"BACKUP_INTERVAL" envDefault:"24h"`
+	Keep         int           `env:"BACKUP_KEEP"     envDefault:"3"`
 }
 
 type BackgroundJobs struct {
@@ -93,14 +94,4 @@ func Path(rel string) string {
 	}
 
 	return filepath.Join(cwd, rel)
-}
-
-func (c *Config) DBPath() string {
-	if c.Database.Type == "sqlite" && c.Database.Name != "" {
-		slog.Debug("Using SQLite database", "path", Path(c.Database.Name+".db"))
-		return Path(c.Database.Name + ".db")
-	}
-
-	slog.Error("Invalid database type", "type", c.Database.Type, "name", c.Database.Name)
-	return ""
 }

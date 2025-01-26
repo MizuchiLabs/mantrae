@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 )
 
 type AgentServer struct {
-	db *db.Queries
+	db *sql.DB
 	mu sync.Mutex
 }
 
@@ -52,7 +53,8 @@ func (s *AgentServer) GetContainer(
 		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.db.UpdateAgent(context.Background(), db.UpdateAgentParams{
+	q := db.New(s.db)
+	if err := q.UpdateAgent(context.Background(), db.UpdateAgentParams{
 		ID:         req.Msg.GetId(),
 		Hostname:   &req.Msg.Hostname,
 		PublicIp:   &req.Msg.PublicIp,
@@ -91,7 +93,8 @@ func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error)
 	}
 
 	// Check if agent exists
-	agent, err := s.db.GetAgent(context.Background(), id)
+	q := db.New(s.db)
+	agent, err := q.GetAgent(context.Background(), id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
 	}

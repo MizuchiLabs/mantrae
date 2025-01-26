@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,8 +10,9 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
-func CreateTraefikConfig(q *db.Queries) http.HandlerFunc {
+func CreateTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var config db.CreateTraefikConfigParams
 		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -29,8 +31,9 @@ func CreateTraefikConfig(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetTraefikConfig(q *db.Queries) http.HandlerFunc {
+func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -53,8 +56,9 @@ func GetTraefikConfig(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpdateTraefikConfig(q *db.Queries) http.HandlerFunc {
+func UpdateTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var config db.UpdateTraefikConfigParams
 		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -74,8 +78,9 @@ func UpdateTraefikConfig(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteTraefikConfig(q *db.Queries) http.HandlerFunc {
+func DeleteTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,8 +95,9 @@ func DeleteTraefikConfig(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func PublishTraefikConfig(q *db.Queries) http.HandlerFunc {
+func PublishTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		profile, err := q.GetProfileByName(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -6,7 +6,7 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Download, List, SaveIcon, Settings, Upload } from 'lucide-svelte';
+	import { Download, List, SaveIcon, Settings, Trash, Upload } from 'lucide-svelte';
 	import { settings, api, backups, loading } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
@@ -205,20 +205,36 @@
 
 <Dialog.Root bind:open={showBackupList}>
 	<Dialog.Content class="max-w-[600px]">
-		<Dialog.Header>
+		<Dialog.Header class="mb-4">
 			<Dialog.Title>Available Backups</Dialog.Title>
+			<Dialog.Description class="flex items-start justify-between gap-2">
+				Click on a backup to download it or click the trash icon to delete it
+				<Button variant="default" onclick={() => api.createBackup()}>Create Backup</Button>
+			</Dialog.Description>
 		</Dialog.Header>
 		<div class="flex flex-col gap-2">
-			{#each $backups as backup}
-				<Button variant="link" class="flex items-center justify-between p-3">
+			{#each $backups || [] as backup}
+				<Button
+					variant="link"
+					class="flex items-center justify-between p-3"
+					onclick={() => api.downloadBackupByName(backup.name)}
+				>
 					<span class="font-mono text-sm">
 						Backup:
-						{DateFormat.format(new Date(backup.created))}
+						{DateFormat.format(new Date(backup.timestamp))}
 					</span>
-					<span class="font-mono text-sm">{humanFileSize(backup.size)}</span>
+					<span class="flex items-center font-mono text-sm">
+						{humanFileSize(backup.size)}
+						<button
+							class="ml-2 rounded-full p-2 hover:bg-red-300"
+							onclick={() => api.deleteBackup(backup.name)}
+						>
+							<Trash />
+						</button>
+					</span>
 				</Button>
 			{/each}
-			{#if $backups.length === 0}
+			{#if !$backups || $backups.length === 0}
 				<p class="text-center text-sm text-muted-foreground">No backups available</p>
 			{/if}
 		</div>

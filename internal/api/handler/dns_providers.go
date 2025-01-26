@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -10,8 +11,9 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/dns"
 )
 
-func ListDNSProviders(q *db.Queries) http.HandlerFunc {
+func ListDNSProviders(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		dns_providers, err := q.ListDNSProviders(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -22,8 +24,9 @@ func ListDNSProviders(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetDNSProvider(q *db.Queries) http.HandlerFunc {
+func GetDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		dns_provider_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -39,8 +42,9 @@ func GetDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func CreateDNSProvider(q *db.Queries) http.HandlerFunc {
+func CreateDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var dns_provider db.CreateDNSProviderParams
 		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -54,8 +58,9 @@ func CreateDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func UpdateDNSProvider(q *db.Queries) http.HandlerFunc {
+func UpdateDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var dns_provider db.UpdateDNSProviderParams
 		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -69,8 +74,9 @@ func UpdateDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteDNSProvider(q *db.Queries) http.HandlerFunc {
+func DeleteDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		dns_provider_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -85,8 +91,9 @@ func DeleteDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func ListRouterDNSProviders(q *db.Queries) http.HandlerFunc {
+func ListRouterDNSProviders(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		traefik_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -102,8 +109,9 @@ func ListRouterDNSProviders(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func SetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+func SetRouterDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var dns_provider db.UpsertRouterDNSProviderParams
 		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -129,7 +137,7 @@ func SetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
 
 		// Update DNS
 		go func() {
-			err := dns.UpdateDNS(q)
+			err := dns.UpdateDNS(DB)
 			if err != nil {
 				slog.Error("Failed to delete DNS record", "error", err)
 			}
@@ -138,8 +146,9 @@ func SetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func GetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+func GetRouterDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var dns_provider db.GetRouterDNSProviderParams
 		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -155,15 +164,16 @@ func GetRouterDNSProvider(q *db.Queries) http.HandlerFunc {
 	}
 }
 
-func DeleteRouterDNSProvider(q *db.Queries) http.HandlerFunc {
+func DeleteRouterDNSProvider(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := db.New(DB)
 		var dns_provider db.DeleteRouterDNSProviderParams
 		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		go func() {
-			err := dns.DeleteDNS(q, dns_provider.TraefikID, dns_provider.RouterName)
+			err := dns.DeleteDNS(DB, dns_provider.TraefikID, dns_provider.RouterName)
 			if err != nil {
 				slog.Error("Failed to delete DNS record", "error", err)
 			}

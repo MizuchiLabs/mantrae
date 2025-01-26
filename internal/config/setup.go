@@ -2,11 +2,14 @@ package config
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/app"
+	"github.com/MizuchiLabs/mantrae/internal/backup"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -15,15 +18,15 @@ import (
 )
 
 type App struct {
-	Config *Config
-	DB     *db.Queries
-	BM     *BackupManager
+	Config *app.Config
+	DB     *sql.DB
+	BM     *backup.BackupManager
 	SM     *SettingsManager
 }
 
 func Setup() (*App, error) {
 	// Read environment variables
-	config, err := ReadConfig()
+	config, err := app.ReadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -34,21 +37,25 @@ func Setup() (*App, error) {
 		return nil, err
 	}
 
-	// Setup backup manager and initialize database
-	bm, err := NewBackupManager(context.Background(), *config)
+	// Setup backup manager
+	storage, err := backup.NewLocalStorage(config.Backup.BackupPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create backup manager: %w", err)
+		return nil, err
+	}
+	bm, err := backup.NewManager(config.Backup, storage)
+	if err != nil {
+		return nil, err
 	}
 
 	// Setup settings manager
-	sm := NewSettingsManager(bm.q)
+	sm := NewSettingsManager(bm.DB)
 	if err := sm.Initialize(context.Background()); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
 
 	app := App{
 		Config: config,
-		DB:     bm.q,
+		DB:     bm.DB,
 		BM:     bm,
 		SM:     sm,
 	}
@@ -102,10 +109,11 @@ func (a *App) setDefaultAdminUser() error {
 	}
 
 	// Try to get existing admin user
-	user, err := a.DB.GetUserByUsername(ctx, a.Config.Admin.Username)
+	q := db.New(a.DB)
+	user, err := q.GetUserByUsername(ctx, a.Config.Admin.Username)
 	// If user doesn't exist, create new admin
 	if err != nil {
-		if err := a.DB.CreateUser(ctx, db.CreateUserParams{
+		if err := q.CreateUser(ctx, db.CreateUserParams{
 			Username: a.Config.Admin.Username,
 			Email:    &a.Config.Admin.Email,
 			Password: hash,
@@ -129,7 +137,7 @@ func (a *App) setDefaultAdminUser() error {
 	if user.Username != a.Config.Admin.Username ||
 		a.Config.Admin.Password != "" {
 
-		if err := a.DB.UpdateUser(ctx, db.UpdateUserParams{
+		if err := q.UpdateUser(ctx, db.UpdateUserParams{
 			ID:       user.ID,
 			Username: a.Config.Admin.Username,
 			Email:    &a.Config.Admin.Email,
@@ -153,9 +161,10 @@ func (a *App) setDefaultProfile() error {
 		a.Config.Traefik.URL = "http://" + a.Config.Traefik.URL
 	}
 
-	_, err := a.DB.GetProfileByName(context.Background(), a.Config.Traefik.Profile)
+	q := db.New(a.DB)
+	_, err := q.GetProfileByName(context.Background(), a.Config.Traefik.Profile)
 	if err != nil {
-		profileID, err := a.DB.CreateProfile(context.Background(), db.CreateProfileParams{
+		profileID, err := q.CreateProfile(context.Background(), db.CreateProfileParams{
 			Name:     a.Config.Traefik.Profile,
 			Url:      a.Config.Traefik.URL,
 			Username: &a.Config.Traefik.Username,
@@ -169,7 +178,7 @@ func (a *App) setDefaultProfile() error {
 		// Create configs for all source types
 		sources := []source.Source{source.Local, source.API, source.Agent}
 		for _, src := range sources {
-			if err := a.DB.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
+			if err := q.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
 				ProfileID:   profileID,
 				Source:      src,
 				Entrypoints: nil,
@@ -196,7 +205,7 @@ func (a *App) setDefaultProfile() error {
 		return nil
 	}
 
-	if err := a.DB.UpdateProfile(context.Background(), db.UpdateProfileParams{
+	if err := q.UpdateProfile(context.Background(), db.UpdateProfileParams{
 		Name:     a.Config.Traefik.Profile,
 		Url:      a.Config.Traefik.URL,
 		Username: &a.Config.Traefik.Username,

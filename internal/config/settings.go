@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -31,13 +32,13 @@ type Settings struct {
 }
 
 type SettingsManager struct {
-	q        *db.Queries
+	db       *sql.DB
 	defaults *Settings
 }
 
-func NewSettingsManager(q *db.Queries) *SettingsManager {
+func NewSettingsManager(db *sql.DB) *SettingsManager {
 	return &SettingsManager{
-		q:        q,
+		db:       db,
 		defaults: getDefaults(),
 	}
 }
@@ -144,7 +145,8 @@ func getDefaults() *Settings {
 // Initialize ensures all settings exist with default values
 func (sm *SettingsManager) Initialize(ctx context.Context) error {
 	// First get existing settings
-	existingSettings, err := sm.q.ListSettings(ctx)
+	q := db.New(sm.db)
+	existingSettings, err := q.ListSettings(ctx)
 	if err != nil {
 		return err
 	}
@@ -173,7 +175,7 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 
 		// Only set default value if setting doesn't exist
 		value := valueToString(v.Field(i))
-		if err := sm.q.UpsertSetting(ctx, db.UpsertSettingParams{
+		if err := q.UpsertSetting(ctx, db.UpsertSettingParams{
 			Key:   key,
 			Value: value,
 		}); err != nil {
@@ -185,12 +187,13 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 
 // Modified GetAll to return settings with descriptions
 func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDescription, error) {
+	q := db.New(sm.db)
 	settings := make(map[string]SettingWithDescription)
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
 
 	// Get all settings from database
-	dbSettings, err := sm.q.ListSettings(ctx)
+	dbSettings, err := q.ListSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +256,8 @@ func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDe
 
 // Modified Get to return setting with description
 func (sm *SettingsManager) Get(ctx context.Context, key string) (*SettingWithDescription, error) {
-	setting, err := sm.q.GetSetting(ctx, key)
+	q := db.New(sm.db)
+	setting, err := q.GetSetting(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -292,6 +296,7 @@ func (sm *SettingsManager) Set(
 	key, strValue string,
 	description *string,
 ) error {
+	q := db.New(sm.db)
 	// Find the corresponding field to validate and convert the type
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
@@ -312,7 +317,7 @@ func (sm *SettingsManager) Set(
 			if description != nil {
 				params.Description = description
 			}
-			return sm.q.UpsertSetting(ctx, params)
+			return q.UpsertSetting(ctx, params)
 		}
 	}
 

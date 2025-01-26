@@ -5,46 +5,99 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/MizuchiLabs/mantrae/internal/backup"
 )
 
-// DownloadBackup creates a backup of the database and returns it as a JSON response.
-func DownloadBackup(bm *config.BackupManager) http.HandlerFunc {
+// DownloadBackup fetches the latest backup of the database and returns it
+func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		filename, err := bm.GetLatestBackup()
+		files, err := bm.Backend.List(r.Context())
 		if err != nil {
-			bm.CreateBackup(r.Context())
-			filename, err = bm.GetLatestBackup()
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to list backups: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		if len(files) == 0 {
+			bm.Create(r.Context())
+			files, err = bm.Backend.List(r.Context())
 			if err != nil {
 				http.Error(
 					w,
-					fmt.Sprintf("Failed to create backup: %v", err),
+					fmt.Sprintf("Failed to list backups: %v", err),
 					http.StatusInternalServerError,
 				)
 				return
 			}
 		}
-		backupPath := filepath.Join(bm.Config.Dir, filename)
 
-		// Validate filename to prevent directory traversal
-		if !bm.IsValidBackupFile(filename) {
-			http.Error(w, "Invalid backup file", http.StatusBadRequest)
+		filename := files[0].Name
+		reader, err := bm.Backend.Retrieve(r.Context(), filename)
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to retrieve backup: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
+		defer reader.Close()
 
 		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 		w.Header().Set("Content-Type", "application/octet-stream")
-		http.ServeFile(w, r, backupPath)
+		if _, err := io.Copy(w, reader); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to write backup data: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 	}
 }
 
-func CreateBackup(bm *config.BackupManager) http.HandlerFunc {
+func DownloadBackupByName(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := bm.CreateBackup(r.Context())
+		filename := r.PathValue("filename")
+
+		if !bm.IsValidBackupFile(filename) {
+			http.Error(w, "Invalid backup filename", http.StatusBadRequest)
+			return
+		}
+
+		reader, err := bm.Backend.Retrieve(r.Context(), filename)
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to retrieve backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		defer reader.Close()
+
+		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+		w.Header().Set("Content-Type", "application/octet-stream")
+		if _, err := io.Copy(w, reader); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to write backup data: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+}
+
+func CreateBackup(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := bm.Create(r.Context())
 		if err != nil {
 			http.Error(
 				w,
@@ -58,7 +111,7 @@ func CreateBackup(bm *config.BackupManager) http.HandlerFunc {
 }
 
 // RestoreBackup restores a backup from a provided file.
-func RestoreBackup(bm *config.BackupManager) http.HandlerFunc {
+func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Limit request size to prevent memory issues
 		r.Body = http.MaxBytesReader(w, r.Body, 100<<20) // 100MB limit
@@ -80,33 +133,42 @@ func RestoreBackup(bm *config.BackupManager) http.HandlerFunc {
 			time.Now().UTC().Format("20060102_150405"),
 			filepath.Ext(header.Filename))
 
-		backupPath := filepath.Join(bm.Config.Dir, filename)
-
-		// Create destination file
-		dst, err := os.Create(backupPath)
-		if err != nil {
+		// Store the uploaded backup using the backend
+		if err = bm.Backend.Store(r.Context(), filename, file); err != nil {
 			http.Error(
 				w,
-				fmt.Sprintf("Failed to create backup file: %v", err),
+				fmt.Sprintf("Failed to store backup file: %v", err),
 				http.StatusInternalServerError,
 			)
 			return
 		}
-		defer dst.Close()
-
-		// Copy uploaded file to destination
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, "Failed to save backup file", http.StatusInternalServerError)
-			return
-		}
 
 		// Attempt to restore the backup
-		if err := bm.RestoreBackup(r.Context(), backupPath); err != nil {
-			// Clean up the uploaded file if restore fails.
-			os.Remove(backupPath)
+		if err := bm.Restore(r.Context(), filename); err != nil {
+			// Clean up the uploaded file if restore fails
+			if err = bm.Backend.Delete(r.Context(), filename); err != nil {
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to delete backup file: %v", err),
+					http.StatusInternalServerError,
+				)
+				return
+			}
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to restore backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		time.Sleep(100 * time.Millisecond)
+
+		// Test the connection
+		if err := bm.DB.PingContext(r.Context()); err != nil {
+			http.Error(
+				w,
+				"Database connection failed after restore",
 				http.StatusInternalServerError,
 			)
 			return
@@ -121,9 +183,9 @@ func RestoreBackup(bm *config.BackupManager) http.HandlerFunc {
 	}
 }
 
-func ListBackups(bm *config.BackupManager) http.HandlerFunc {
+func ListBackups(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		backups, err := bm.ListBackups()
+		backups, err := bm.Backend.List(r.Context())
 		if err != nil {
 			http.Error(
 				w,
@@ -142,5 +204,20 @@ func ListBackups(bm *config.BackupManager) http.HandlerFunc {
 			)
 			return
 		}
+	}
+}
+
+func DeleteBackup(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		filename := r.PathValue("filename")
+		if err := bm.Backend.Delete(r.Context(), filename); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to delete backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
