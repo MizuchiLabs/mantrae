@@ -20,17 +20,19 @@ message Container {
 }
 
 message GetContainerRequest {
-  string id = 1;
-  string hostname = 2;
-  string public_ip = 3;
-  repeated string private_ips = 4;
-  repeated Container containers = 5;
-  google.protobuf.Timestamp last_seen = 6;
+  string agent_id = 1;
+  int64 profile_id = 2;
+  string hostname = 3;
+  string public_ip = 4;
+  repeated string private_ips = 5;
+  repeated Container containers = 6;
+  google.protobuf.Timestamp updated = 7;
 }
 message GetContainerResponse {}
 
 message HealthCheckRequest {
-  string id = 1;
+  string agent_id = 1;
+  int64 profile_id = 2;
 }
 message HealthCheckResponse {
   bool ok = 1;

@@ -31,20 +31,22 @@ func Client(quit chan os.Signal) {
 	// Create a new client instance
 	client := agentv1connect.NewAgentServiceClient(
 		http.DefaultClient,
-		claims.ServerURL+"/grpc",
+		claims.ServerURL,
 		connect.WithGRPC(),
 	)
 
 	// Test connection
-	healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID()})
+	healthCheckRequest := connect.NewRequest(
+		&agentv1.HealthCheckRequest{AgentId: claims.AgentID, ProfileId: claims.ProfileID},
+	)
 	healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
 	result, err := client.HealthCheck(context.Background(), healthCheckRequest)
 	if err != nil {
-		slog.Error("Failed to connect to server", "server", claims.ServerURL, "error", err)
+		slog.Error("Failed to connect to server", "error", err)
 		os.Exit(1)
 	}
 	if !result.Msg.Ok {
-		slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
+		slog.Warn("Agent was deleted, cleaning up...")
 		quit <- os.Interrupt
 	} else {
 		slog.Info("Connected to", "server", claims.ServerURL)
@@ -58,13 +60,23 @@ func Client(quit chan os.Signal) {
 		connected := true
 		for range tickerContainer.C {
 			// Send machine/container info
-			_, err := client.GetContainer(context.Background(), sendContainer(token))
+			_, err := client.GetContainer(context.Background(), sendContainer(token, claims))
+
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				slog.Warn("Agent was deleted, cleaning up...")
+				quit <- os.Interrupt
+			}
+
+			if connect.CodeOf(err) == connect.CodeInternal {
+				slog.Error("Server error", "error", err)
+				continue
+			}
 
 			if err != nil && connected {
-				slog.Warn("Lost connection to server, retrying...", "server", claims.ServerURL)
+				slog.Warn("Lost connection to server, retrying...")
 				connected = false
 			} else if err == nil && !connected {
-				slog.Info("Reconnected to server", "server", claims.ServerURL)
+				slog.Info("Reconnected!")
 				connected = true
 			}
 		}
@@ -76,14 +88,16 @@ func Client(quit chan os.Signal) {
 	// Start a goroutine for sending health data
 	go func() {
 		for range healthTicker.C {
-			healthCheckRequest := connect.NewRequest(&agentv1.HealthCheckRequest{Id: getID()})
+			healthCheckRequest := connect.NewRequest(
+				&agentv1.HealthCheckRequest{AgentId: claims.AgentID, ProfileId: claims.ProfileID},
+			)
 			healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
 			result, err := client.HealthCheck(context.Background(), healthCheckRequest)
 			if err != nil {
 				continue
 			}
 			if !result.Msg.Ok {
-				slog.Warn("Agent was deleted, cleaning up...", "server", claims.ServerURL)
+				slog.Warn("Agent was deleted, cleaning up...")
 				quit <- os.Interrupt
 			}
 		}
@@ -94,11 +108,10 @@ func Client(quit chan os.Signal) {
 }
 
 // sendContainer creates a GetContainerRequest with information about the local machine
-func sendContainer(token string) *connect.Request[agentv1.GetContainerRequest] {
+func sendContainer(token string, claims *Claims) *connect.Request[agentv1.GetContainerRequest] {
 	var request agentv1.GetContainerRequest
-
-	// Get machine ID
-	request.Id = getID()
+	request.AgentId = claims.AgentID
+	request.ProfileId = claims.ProfileID
 
 	// Get hostname
 	hostname, err := os.Hostname()
@@ -118,7 +131,7 @@ func sendContainer(token string) *connect.Request[agentv1.GetContainerRequest] {
 	if err != nil {
 		slog.Error("Failed to get containers", "error", err)
 	}
-	request.LastSeen = timestamppb.New(time.Now())
+	request.Updated = timestamppb.New(time.Now())
 
 	req := connect.NewRequest(&request)
 	req.Header().Set("authorization", "Bearer "+token)
@@ -212,18 +225,4 @@ func getContainers() ([]*agentv1.Container, error) {
 	}
 
 	return result, nil
-}
-
-// Get machine ID
-func getID() string {
-	var id string
-	machineID, err := os.ReadFile("/etc/machine-id")
-	if err != nil {
-		id = "unknown"
-	}
-
-	if len(machineID) > 0 {
-		id = strings.TrimSpace(string(machineID))
-	}
-	return id
 }

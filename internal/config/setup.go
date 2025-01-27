@@ -24,7 +24,7 @@ type App struct {
 	SM     *SettingsManager
 }
 
-func Setup() (*App, error) {
+func Setup(ctx context.Context) (*App, error) {
 	// Read environment variables
 	config, err := app.ReadConfig()
 	if err != nil {
@@ -46,10 +46,11 @@ func Setup() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	bm.Start(ctx)
 
 	// Setup settings manager
 	sm := NewSettingsManager(bm.DB)
-	if err := sm.Initialize(context.Background()); err != nil {
+	if err := sm.Initialize(ctx); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
 
@@ -61,10 +62,10 @@ func Setup() (*App, error) {
 	}
 
 	app.setupLogger()
-	if err := app.setDefaultAdminUser(); err != nil {
+	if err := app.setDefaultAdminUser(ctx); err != nil {
 		return nil, err
 	}
-	if err := app.setDefaultProfile(); err != nil {
+	if err := app.setDefaultProfile(ctx); err != nil {
 		return nil, err
 	}
 
@@ -72,7 +73,7 @@ func Setup() (*App, error) {
 	util.UpdateSelf(flags.Update)
 
 	// Start background jobs
-	app.setupBackgroundJobs(context.Background())
+	app.setupBackgroundJobs(ctx)
 	return &app, nil
 }
 
@@ -94,9 +95,7 @@ func (a *App) setupLogger() {
 	slog.SetDefault(logger)
 }
 
-func (a *App) setDefaultAdminUser() error {
-	ctx := context.Background()
-
+func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	// Generate password if not provided
 	password := a.Config.Admin.Password
 	if password == "" {
@@ -151,7 +150,7 @@ func (a *App) setDefaultAdminUser() error {
 	return nil
 }
 
-func (a *App) setDefaultProfile() error {
+func (a *App) setDefaultProfile(ctx context.Context) error {
 	if a.Config.Traefik.URL == "" {
 		return nil
 	}
@@ -162,9 +161,9 @@ func (a *App) setDefaultProfile() error {
 	}
 
 	q := db.New(a.DB)
-	_, err := q.GetProfileByName(context.Background(), a.Config.Traefik.Profile)
+	_, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
 	if err != nil {
-		profileID, err := q.CreateProfile(context.Background(), db.CreateProfileParams{
+		profileID, err := q.CreateProfile(ctx, db.CreateProfileParams{
 			Name:     a.Config.Traefik.Profile,
 			Url:      a.Config.Traefik.URL,
 			Username: &a.Config.Traefik.Username,
@@ -178,7 +177,7 @@ func (a *App) setDefaultProfile() error {
 		// Create configs for all source types
 		sources := []source.Source{source.Local, source.API, source.Agent}
 		for _, src := range sources {
-			if err := q.CreateTraefikConfig(context.Background(), db.CreateTraefikConfigParams{
+			if err := q.CreateTraefikConfig(ctx, db.CreateTraefikConfigParams{
 				ProfileID:   profileID,
 				Source:      src,
 				Entrypoints: nil,
@@ -205,7 +204,7 @@ func (a *App) setDefaultProfile() error {
 		return nil
 	}
 
-	if err := q.UpdateProfile(context.Background(), db.UpdateProfileParams{
+	if err := q.UpdateProfile(ctx, db.UpdateProfileParams{
 		Name:     a.Config.Traefik.Profile,
 		Url:      a.Config.Traefik.URL,
 		Username: &a.Config.Traefik.Username,

@@ -196,9 +196,10 @@
 		<!-- Tabs -->
 		{#if showSourceTabs}
 			<Tabs.Root value={$source} onValueChange={(value) => handleTabChange(value as TraefikSource)}>
-				<Tabs.List class="grid w-[400px] grid-cols-2">
+				<Tabs.List class="grid w-[400px] grid-cols-3">
 					<Tabs.Trigger value={TraefikSource.LOCAL}>Local</Tabs.Trigger>
 					<Tabs.Trigger value={TraefikSource.API}>API</Tabs.Trigger>
+					<Tabs.Trigger value={TraefikSource.AGENT}>Agent</Tabs.Trigger>
 				</Tabs.List>
 			</Tabs.Root>
 		{/if}
@@ -217,7 +218,7 @@
 						closeOnSelect={false}
 						bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
 					>
-						{column.id}
+						{column.columnDef.header}
 					</DropdownMenu.CheckboxItem>
 				{/each}
 			</DropdownMenu.Content>

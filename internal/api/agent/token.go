@@ -8,24 +8,22 @@ import (
 )
 
 type AgentClaims struct {
-	ServerURL string `json:"serverUrl,omitempty"`
+	AgentID   string `json:"agentId,omitempty"`
 	ProfileID int64  `json:"profileId,omitempty"`
+	ServerURL string `json:"serverUrl,omitempty"`
 	jwt.RegisteredClaims
 }
 
 // EncodeJWT generates a JWT for agents
-func EncodeJWT(
-	serverurl string,
-	profileid int64,
-	secret string,
-) (string, error) {
-	if serverurl == "" || profileid == 0 {
+func (a *AgentClaims) EncodeJWT(secret string) (string, error) {
+	if a.ServerURL == "" || a.ProfileID == 0 {
 		return "", errors.New("serverUrl and profileID cannot be empty")
 	}
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &AgentClaims{
-		ServerURL: serverurl,
-		ProfileID: profileid,
+		AgentID:   a.AgentID,
+		ProfileID: a.ProfileID,
+		ServerURL: a.ServerURL,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

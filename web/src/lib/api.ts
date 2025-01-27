@@ -8,11 +8,12 @@ import {
 	type RouterDNSProvider,
 	type Settings,
 	type TraefikConfig,
+	type UpdateAgentIPParams,
 	type UpsertSettingsParams,
 	type User
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
-import { PROFILE_SK, TOKEN_SK } from './store';
+import { PROFILE_SK, SOURCE_TAB_SK, TOKEN_SK } from './store';
 import {
 	flattenMiddlewareData,
 	type Middleware,
@@ -126,6 +127,8 @@ export const api = {
 			localStorage.setItem(TOKEN_SK, data.token);
 			goto('/');
 		}
+
+		await api.load();
 		return data;
 	},
 
@@ -155,6 +158,30 @@ export const api = {
 			body: { token, password }
 		});
 		return data;
+	},
+
+	async load() {
+		// Load profiles
+		await api.listProfiles();
+		const savedProfileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
+		if (get(profiles)) {
+			const switchProfile =
+				get(profiles).find((item) => item.id === savedProfileID) ?? get(profiles)[0];
+			profile.set(switchProfile);
+			localStorage.setItem(PROFILE_SK, switchProfile.id.toString());
+		}
+
+		// Load source
+		const savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
+		if (Object.values(TraefikSource).includes(savedSource)) {
+			source.set(savedSource);
+		} else {
+			source.set(TraefikSource.LOCAL);
+		}
+		localStorage.setItem(SOURCE_TAB_SK, get(source));
+
+		// Load Traefik Config
+		await api.getTraefikConfig(get(profile).id, get(source));
 	},
 
 	logout() {
@@ -199,7 +226,7 @@ export const api = {
 
 	// Traefik -------------------------------------------------------------------
 	async getTraefikConfig(id: number, source: TraefikSource) {
-		if (!id) return;
+		if (!id || !Object.values(TraefikSource).includes(source)) return;
 		await fetchTraefikMetadata(id);
 		await fetchTraefikConfig(id, source);
 	},
@@ -368,15 +395,16 @@ export const api = {
 		return await send(`/agent/${id}`);
 	},
 
-	async createAgent(profileID: number) {
-		await send(`/agent/${profileID}`, { method: 'POST' });
+	async createAgent() {
+		if (!get(profile).id) return;
+		await send(`/agent/${get(profile).id}`, { method: 'POST' });
 		await api.listAgentsByProfile();
 	},
 
-	async updateAgent(agent: Omit<Agent, 'created_at' | 'updated_at'>) {
-		await send(`/agent/${agent.id}`, {
+	async updateAgentIP(params: UpdateAgentIPParams) {
+		await send(`/agent`, {
 			method: 'PUT',
-			body: agent
+			body: params
 		});
 		await api.listAgentsByProfile();
 	},

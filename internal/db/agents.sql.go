@@ -151,30 +151,30 @@ func (q *Queries) ListAgentsByProfile(ctx context.Context, profileID int64) ([]A
 	return items, nil
 }
 
-const updateAgent = `-- name: UpdateAgent :exec
+const updateAgent = `-- name: UpdateAgent :one
 UPDATE agents
 SET
-  hostname = ?,
-  public_ip = ?,
-  private_ips = ?,
-  containers = ?,
-  active_ip = ?,
+  hostname = COALESCE(?, hostname),
+  public_ip = COALESCE(?, public_ip),
+  private_ips = COALESCE(?, private_ips),
+  containers = COALESCE(?, containers),
+  active_ip = COALESCE(?, active_ip),
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ?
+  id = ? RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 `
 
 type UpdateAgentParams struct {
-	Hostname   *string     `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	ActiveIp   *string     `json:"activeIp"`
-	ID         string      `json:"id"`
+	Hostname   *string          `json:"hostname"`
+	PublicIp   *string          `json:"publicIp"`
+	PrivateIps *AgentPrivateIPs `json:"privateIps"`
+	Containers *AgentContainers `json:"containers"`
+	ActiveIp   *string          `json:"activeIp"`
+	ID         string           `json:"id"`
 }
 
-func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) error {
-	_, err := q.exec(ctx, q.updateAgentStmt, updateAgent,
+func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {
+	row := q.queryRow(ctx, q.updateAgentStmt, updateAgent,
 		arg.Hostname,
 		arg.PublicIp,
 		arg.PrivateIps,
@@ -182,6 +182,37 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) error 
 		arg.ActiveIp,
 		arg.ID,
 	)
+	var i Agent
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.Hostname,
+		&i.PublicIp,
+		&i.PrivateIps,
+		&i.Containers,
+		&i.ActiveIp,
+		&i.Token,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateAgentIP = `-- name: UpdateAgentIP :exec
+UPDATE agents
+SET
+  active_ip = ?
+WHERE
+  id = ?
+`
+
+type UpdateAgentIPParams struct {
+	ActiveIp *string `json:"activeIp"`
+	ID       string  `json:"id"`
+}
+
+func (q *Queries) UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error {
+	_, err := q.exec(ctx, q.updateAgentIPStmt, updateAgentIP, arg.ActiveIp, arg.ID)
 	return err
 }
 

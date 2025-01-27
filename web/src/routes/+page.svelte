@@ -38,11 +38,11 @@
 		await api.listUsers();
 		await api.listProfiles();
 		const agents = await api.listAgents();
-		stats.totalProfiles = $profiles.length;
-		stats.totalAgents = agents.length;
-		stats.totalUsers = $users.length;
+		stats.totalProfiles = $profiles?.length;
+		stats.totalAgents = agents?.length;
+		stats.totalUsers = $users?.length;
 		stats.dnsProviders = $dnsProviders;
-		stats.activeDNSProvider = $dnsProviders.find((d) => d.isActive === true)?.name ?? '';
+		stats.activeDNSProvider = $dnsProviders?.find((d) => d.isActive === true)?.name ?? '';
 		if (!$profiles) return;
 		await getTraefikStats($profile.id);
 		await api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
@@ -90,7 +90,7 @@
 					{stats.activeDNSProvider || 'None'}
 				</div>
 				<p class="text-xs text-muted-foreground">
-					{stats.dnsProviders.length} providers configured
+					{stats.dnsProviders?.length} providers configured
 				</p>
 			</Card.Content>
 		</Card.Root>
@@ -156,17 +156,17 @@
 								</div>
 							</div>
 							<div class="flex items-center gap-2">
-								<Badge variant={profileStats.agents.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.agents.length}
-									{profileStats.agents.length === 1 ? 'Agent' : 'Agents'}
+								<Badge variant={profileStats.agents?.length > 0 ? 'default' : 'secondary'}>
+									{profileStats.agents?.length}
+									{profileStats.agents?.length === 1 ? 'Agent' : 'Agents'}
 								</Badge>
-								<Badge variant={profileStats.routers.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.routers.length}
-									{profileStats.routers.length === 1 ? 'Router' : 'Routers'}
+								<Badge variant={profileStats.routers?.length > 0 ? 'default' : 'secondary'}>
+									{profileStats.routers?.length}
+									{profileStats.routers?.length === 1 ? 'Router' : 'Routers'}
 								</Badge>
-								<Badge variant={profileStats.middlewares.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.middlewares.length}
-									{profileStats.middlewares.length === 1 ? 'Middleware' : 'Middlewares'}
+								<Badge variant={profileStats.middlewares?.length > 0 ? 'default' : 'secondary'}>
+									{profileStats.middlewares?.length}
+									{profileStats.middlewares?.length === 1 ? 'Middleware' : 'Middlewares'}
 								</Badge>
 							</div>
 						</div>

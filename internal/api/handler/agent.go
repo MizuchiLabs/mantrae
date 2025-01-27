@@ -70,15 +70,21 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		token, err := agent.EncodeJWT(serverUrl.Value.(string), profileID, a.Config.Secret)
+		claims := &agent.AgentClaims{
+			AgentID:   uuid.New().String(),
+			ProfileID: profileID,
+			ServerURL: serverUrl.Value.(string),
+		}
+		token, err := claims.EncodeJWT(a.Config.Secret)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		q := db.New(a.DB)
 		if err := q.CreateAgent(r.Context(), db.CreateAgentParams{
-			ID:        uuid.New().String(),
-			ProfileID: profileID,
+			ID:        claims.AgentID,
+			ProfileID: claims.ProfileID,
 			Token:     token,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -88,15 +94,15 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 	}
 }
 
-func UpdateAgent(DB *sql.DB) http.HandlerFunc {
+func UpdateAgentIP(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
-		var agent db.UpdateAgentParams
+		var agent db.UpdateAgentIPParams
 		if err := json.NewDecoder(r.Body).Decode(&agent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := q.UpdateAgent(r.Context(), agent); err != nil {
+		if err := q.UpdateAgentIP(r.Context(), agent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -135,7 +141,13 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		token, err := agent.EncodeJWT(serverUrl.Value.(string), dbAgent.ProfileID, a.Config.Secret)
+		claims := &agent.AgentClaims{
+			AgentID:   dbAgent.ID,
+			ProfileID: dbAgent.ProfileID,
+			ServerURL: serverUrl.Value.(string),
+		}
+
+		token, err := claims.EncodeJWT(a.Config.Secret)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

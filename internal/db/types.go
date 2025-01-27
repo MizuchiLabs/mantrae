@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
@@ -69,6 +70,8 @@ type TraefikVersion struct {
 
 type ServiceInfo struct {
 	*runtime.ServiceInfo
+	*runtime.TCPServiceInfo
+	*runtime.UDPServiceInfo
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 }
 
@@ -90,6 +93,22 @@ type DNSProviderConfig struct {
 	Proxied   bool   `json:"proxied"`
 	ZoneType  string `json:"zoneType"`
 }
+
+type AgentPrivateIPs struct {
+	IPs []string `json:"privateIps,omitempty"`
+}
+
+type AgentContainer struct {
+	ID      string            `json:"id,omitempty"`
+	Name    string            `json:"name,omitempty"`
+	Labels  map[string]string `json:"labels,omitempty"`
+	Image   string            `json:"image,omitempty"`
+	Portmap map[int32]int32   `json:"portmap,omitempty"`
+	Status  string            `json:"status,omitempty"`
+	Created time.Time         `json:"created,omitempty"`
+}
+
+type AgentContainers []AgentContainer
 
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
 func (e *TraefikEntryPoints) Scan(value interface{}) error {
@@ -153,5 +172,29 @@ func (c *DNSProviderConfig) Scan(value interface{}) error {
 }
 
 func (c DNSProviderConfig) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+func (c *AgentPrivateIPs) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("expected bytes, got %T", value)
+	}
+	return json.Unmarshal(bytes, c)
+}
+
+func (c AgentPrivateIPs) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+func (c *AgentContainers) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("expected bytes, got %T", value)
+	}
+	return json.Unmarshal(bytes, c)
+}
+
+func (c AgentContainers) Value() (driver.Value, error) {
 	return json.Marshal(c)
 }

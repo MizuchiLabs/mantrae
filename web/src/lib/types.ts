@@ -83,12 +83,21 @@ export interface Agent {
 	profileId: number;
 	hostname: string;
 	publicIp?: string;
-	private_ips: string[];
+	privateIps: AgentPrivateIPs;
 	containers: Record<string, unknown>[];
 	activeIp?: string;
 	token: string;
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface AgentPrivateIPs {
+	privateIps: string[];
+}
+
+export interface UpdateAgentIPParams {
+	id: string;
+	activeIp: string;
 }
 
 export interface Settings {

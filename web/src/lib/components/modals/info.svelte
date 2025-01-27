@@ -221,7 +221,7 @@
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="text-sm">
-						{#if displayCode}
+						{#if displayCode && displayCode !== 'null'}
 							<Highlight language={isYaml ? yaml : json} code={displayCode} let:highlighted>
 								<LineNumbers {highlighted} />
 							</Highlight>

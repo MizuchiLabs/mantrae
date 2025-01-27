@@ -28,15 +28,22 @@ FROM
 WHERE
   profile_id = ?;
 
--- name: UpdateAgent :exec
+-- name: UpdateAgent :one
 UPDATE agents
 SET
-  hostname = ?,
-  public_ip = ?,
-  private_ips = ?,
-  containers = ?,
-  active_ip = ?,
+  hostname = COALESCE(?, hostname),
+  public_ip = COALESCE(?, public_ip),
+  private_ips = COALESCE(?, private_ips),
+  containers = COALESCE(?, containers),
+  active_ip = COALESCE(?, active_ip),
   updated_at = CURRENT_TIMESTAMP
+WHERE
+  id = ? RETURNING *;
+
+-- name: UpdateAgentIP :exec
+UPDATE agents
+SET
+  active_ip = ?
 WHERE
   id = ?;
 

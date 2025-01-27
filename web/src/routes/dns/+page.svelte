@@ -80,6 +80,7 @@
 		},
 		{
 			id: 'actions',
+			enableHiding: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [

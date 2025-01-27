@@ -41,13 +41,6 @@ const (
 	AgentServiceHealthCheckProcedure = "/agent.v1.AgentService/HealthCheck"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	agentServiceServiceDescriptor            = v1.File_agent_v1_agent_proto.Services().ByName("AgentService")
-	agentServiceGetContainerMethodDescriptor = agentServiceServiceDescriptor.Methods().ByName("GetContainer")
-	agentServiceHealthCheckMethodDescriptor  = agentServiceServiceDescriptor.Methods().ByName("HealthCheck")
-)
-
 // AgentServiceClient is a client for the agent.v1.AgentService service.
 type AgentServiceClient interface {
 	GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error)
@@ -63,17 +56,18 @@ type AgentServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AgentServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	agentServiceMethods := v1.File_agent_v1_agent_proto.Services().ByName("AgentService").Methods()
 	return &agentServiceClient{
 		getContainer: connect.NewClient[v1.GetContainerRequest, v1.GetContainerResponse](
 			httpClient,
 			baseURL+AgentServiceGetContainerProcedure,
-			connect.WithSchema(agentServiceGetContainerMethodDescriptor),
+			connect.WithSchema(agentServiceMethods.ByName("GetContainer")),
 			connect.WithClientOptions(opts...),
 		),
 		healthCheck: connect.NewClient[v1.HealthCheckRequest, v1.HealthCheckResponse](
 			httpClient,
 			baseURL+AgentServiceHealthCheckProcedure,
-			connect.WithSchema(agentServiceHealthCheckMethodDescriptor),
+			connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -107,16 +101,17 @@ type AgentServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	agentServiceMethods := v1.File_agent_v1_agent_proto.Services().ByName("AgentService").Methods()
 	agentServiceGetContainerHandler := connect.NewUnaryHandler(
 		AgentServiceGetContainerProcedure,
 		svc.GetContainer,
-		connect.WithSchema(agentServiceGetContainerMethodDescriptor),
+		connect.WithSchema(agentServiceMethods.ByName("GetContainer")),
 		connect.WithHandlerOptions(opts...),
 	)
 	agentServiceHealthCheckHandler := connect.NewUnaryHandler(
 		AgentServiceHealthCheckProcedure,
 		svc.HealthCheck,
-		connect.WithSchema(agentServiceHealthCheckMethodDescriptor),
+		connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/agent.v1.AgentService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

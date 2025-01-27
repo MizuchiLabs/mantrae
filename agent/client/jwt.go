@@ -7,8 +7,9 @@ import (
 )
 
 type Claims struct {
-	ServerURL string `json:"serverUrl,omitempty"`
+	AgentID   string `json:"agentId,omitempty"`
 	ProfileID int64  `json:"profileId,omitempty"`
+	ServerURL string `json:"serverUrl,omitempty"`
 	jwt.RegisteredClaims
 }
 

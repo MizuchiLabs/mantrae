@@ -11,8 +11,6 @@
 	import { api, profile, middlewares, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { SOURCE_TAB_SK } from '$lib/store';
-	import { onMount } from 'svelte';
 	import type { SupportedMiddleware } from '$lib/components/forms/mw_registry';
 
 	interface ModalState {
@@ -101,6 +99,7 @@
 		},
 		{
 			id: 'actions',
+			enableHiding: false,
 			cell: ({ row }) => {
 				if ($source === TraefikSource.LOCAL) {
 					return renderComponent(TableActions, {
@@ -151,13 +150,6 @@
 			api.getTraefikConfig(value.id, $source);
 		}
 	});
-
-	onMount(async () => {
-		let savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
-		if (savedSource) {
-			source.set(savedSource);
-		}
-	});
 </script>
 
 <svelte:head>
@@ -189,15 +181,17 @@
 				<h1 class="text-2xl font-bold">Middleware Management</h1>
 			</div>
 
-			<DataTable
-				{columns}
-				data={$middlewares || []}
-				showSourceTabs={true}
-				createButton={{
-					label: 'Add Middleware',
-					onClick: openCreateModal
-				}}
-			/>
+			<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
+		</div>
+	</Tabs.Content>
+	<Tabs.Content value={TraefikSource.AGENT}>
+		<div class="flex flex-col gap-4">
+			<div class="flex items-center justify-start gap-2">
+				<Layers />
+				<h1 class="text-2xl font-bold">Middleware Management</h1>
+			</div>
+
+			<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
 		</div>
 	</Tabs.Content>
 </Tabs.Root>

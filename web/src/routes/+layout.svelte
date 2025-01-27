@@ -6,56 +6,40 @@
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { onMount } from 'svelte';
-	import { PROFILE_SK } from '$lib/store';
-	import { api, profiles, profile, user } from '$lib/api';
+	import { api, BASE_URL, user } from '$lib/api';
 	import autoAnimate from '@formkit/auto-animate';
+	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 
 	let { children }: Props = $props();
-	// import type { User } from '$lib/types';
-	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	// Realtime updates
-	// const eventSource = new EventSource(`${API_URL}/events`);
-	// eventSource.onmessage = (event) => {
-	// 	if (!$loggedIn) return;
-	// 	let data = JSON.parse(event.data);
-	// 	switch (data.type) {
-	// 		case 'profile_updated':
-	// 			getProfiles();
-	// 			break;
-	// 		case 'router_updated':
-	// 			getRouters();
-	// 			break;
-	// 		case 'user_updated':
-	// 			getUsers();
-	// 			break;
-	// 		case 'provider_updated':
-	// 			getProviders();
-	// 			break;
-	// 		case 'agent_updated':
-	// 			getAgents(data.message.profileId);
-	// 			break;
-	// 		case 'config_error':
-	// 			configError.set(data.message);
-	// 			break;
-	// 		case 'config_ok':
-	// 			configError.set('');
-	// 			break;
-	// 	}
-	// };
+	const eventSource = new EventSource(`${BASE_URL}/events`);
+	eventSource.onmessage = (event) => {
+		if (!$user) return;
+		let data = JSON.parse(event.data);
+		switch (data.type) {
+			case 'profile_updated':
+				api.listProfiles();
+				break;
+			case 'user_updated':
+				api.listUsers();
+				break;
+			case 'provider_updated':
+				api.listDNSProviders();
+				break;
+			case 'agent_updated':
+				api.listAgentsByProfile();
+				break;
+		}
+	};
 
 	onMount(async () => {
 		if (!$user) return;
-		await api.listProfiles();
-		if (!$profiles) return;
-
-		const savedProfileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
-		const switchProfile = $profiles.find((p) => p.id === savedProfileID) ?? $profiles[0];
-		profile.set(switchProfile);
+		await api.load();
 	});
 </script>
 

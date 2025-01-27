@@ -94,7 +94,7 @@ func (s *Server) routes() {
 	register("GET", "/agent/list/{id}", jwtChain, handler.ListAgentsByProfile(DB))
 	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(DB))
 	register("POST", "/agent/{id}", jwtChain, handler.CreateAgent(s.app))
-	register("PUT", "/agent", jwtChain, handler.UpdateAgent(DB))
+	register("PUT", "/agent", jwtChain, handler.UpdateAgentIP(DB))
 	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(DB))
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 

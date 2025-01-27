@@ -120,6 +120,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
 	}
+	if q.updateAgentIPStmt, err = db.PrepareContext(ctx, updateAgentIP); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateAgentIP: %w", err)
+	}
 	if q.updateAgentTokenStmt, err = db.PrepareContext(ctx, updateAgentToken); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgentToken: %w", err)
 	}
@@ -309,6 +312,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateAgentStmt: %w", cerr)
 		}
 	}
+	if q.updateAgentIPStmt != nil {
+		if cerr := q.updateAgentIPStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateAgentIPStmt: %w", cerr)
+		}
+	}
 	if q.updateAgentTokenStmt != nil {
 		if cerr := q.updateAgentTokenStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateAgentTokenStmt: %w", cerr)
@@ -420,6 +428,7 @@ type Queries struct {
 	listTraefikIDsStmt                    *sql.Stmt
 	listUsersStmt                         *sql.Stmt
 	updateAgentStmt                       *sql.Stmt
+	updateAgentIPStmt                     *sql.Stmt
 	updateAgentTokenStmt                  *sql.Stmt
 	updateDNSProviderStmt                 *sql.Stmt
 	updateProfileStmt                     *sql.Stmt
@@ -466,6 +475,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listTraefikIDsStmt:                    q.listTraefikIDsStmt,
 		listUsersStmt:                         q.listUsersStmt,
 		updateAgentStmt:                       q.updateAgentStmt,
+		updateAgentIPStmt:                     q.updateAgentIPStmt,
 		updateAgentTokenStmt:                  q.updateAgentTokenStmt,
 		updateDNSProviderStmt:                 q.updateDNSProviderStmt,
 		updateProfileStmt:                     q.updateProfileStmt,

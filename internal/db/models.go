@@ -11,16 +11,16 @@ import (
 )
 
 type Agent struct {
-	ID         string      `json:"id"`
-	ProfileID  int64       `json:"profileId"`
-	Hostname   *string     `json:"hostname"`
-	PublicIp   *string     `json:"publicIp"`
-	PrivateIps interface{} `json:"privateIps"`
-	Containers interface{} `json:"containers"`
-	ActiveIp   *string     `json:"activeIp"`
-	Token      string      `json:"token"`
-	CreatedAt  *time.Time  `json:"createdAt"`
-	UpdatedAt  *time.Time  `json:"updatedAt"`
+	ID         string           `json:"id"`
+	ProfileID  int64            `json:"profileId"`
+	Hostname   *string          `json:"hostname"`
+	PublicIp   *string          `json:"publicIp"`
+	PrivateIps *AgentPrivateIPs `json:"privateIps"`
+	Containers *AgentContainers `json:"containers"`
+	ActiveIp   *string          `json:"activeIp"`
+	Token      string           `json:"token"`
+	CreatedAt  *time.Time       `json:"createdAt"`
+	UpdatedAt  *time.Time       `json:"updatedAt"`
 }
 
 type DnsProvider struct {

@@ -12,15 +12,15 @@ import (
 )
 
 func main() {
-	app, err := config.Setup()
+	// Graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	app, err := config.Setup(ctx)
 	if err != nil {
 		slog.Error("Setup failed", "error", err)
 		return
 	}
-
-	// Graceful shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	go func() {
 		sigCh := make(chan os.Signal, 1)

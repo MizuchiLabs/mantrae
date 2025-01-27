@@ -33,3 +33,12 @@ sql:
             go_type:
               type: "DNSProviderConfig"
               pointer: true
+          - column: "agents.private_ips"
+            go_type:
+              type: "AgentPrivateIPs"
+              pointer: true
+          - column: "agents.containers"
+            go_type:
+              type: "AgentContainers"
+              pointer: true
+

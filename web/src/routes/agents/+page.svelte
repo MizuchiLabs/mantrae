@@ -86,7 +86,7 @@
 			}
 		},
 		{
-			header: 'Created At',
+			header: 'Created',
 			accessorKey: 'createdAt',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -96,6 +96,7 @@
 		},
 		{
 			id: 'actions',
+			enableHiding: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -119,9 +120,7 @@
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => {
-								deleteAgent(row.original);
-							}
+							onClick: () => deleteAgent(row.original)
 						}
 					]
 				});
@@ -131,7 +130,7 @@
 
 	profile.subscribe((value) => {
 		if (value.id) {
-			api.listAgents();
+			api.listAgentsByProfile();
 		}
 	});
 </script>
@@ -150,7 +149,7 @@
 		data={$agents || []}
 		createButton={{
 			label: 'Add Agent',
-			onClick: () => api.createAgent($profile.id)
+			onClick: () => api.createAgent()
 		}}
 	/>
 </div>

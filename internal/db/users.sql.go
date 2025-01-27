@@ -11,9 +11,9 @@ import (
 
 const createUser = `-- name: CreateUser :exec
 INSERT INTO
-    users (username, password, email, is_admin)
+  users (username, password, email, is_admin)
 VALUES
-    (?, ?, ?, ?)
+  (?, ?, ?, ?)
 `
 
 type CreateUserParams struct {
@@ -36,7 +36,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users
 WHERE
-    id = ?
+  id = ?
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
@@ -46,11 +46,11 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 
 const getUser = `-- name: GetUser :one
 SELECT
-    id, username, password, email, is_admin, last_login, created_at, updated_at
+  id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
-    users
+  users
 WHERE
-    id = ?
+  id = ?
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
@@ -71,11 +71,11 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-    id, username, password, email, is_admin, last_login, created_at, updated_at
+  id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
-    users
+  users
 WHERE
-    username = ?
+  username = ?
 `
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
@@ -96,11 +96,11 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-    id, username, password, email, is_admin, last_login, created_at, updated_at
+  id, username, password, email, is_admin, last_login, created_at, updated_at
 FROM
-    users
+  users
 ORDER BY
-    username
+  username
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -138,13 +138,13 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
-    username = ?,
-    password = ?,
-    email = ?,
-    is_admin = ?,
-    updated_at = CURRENT_TIMESTAMP
+  username = ?,
+  password = ?,
+  email = ?,
+  is_admin = ?,
+  updated_at = CURRENT_TIMESTAMP
 WHERE
-    id = ?
+  id = ?
 `
 
 type UpdateUserParams struct {
@@ -169,9 +169,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
 UPDATE users
 SET
-    last_login = CURRENT_TIMESTAMP
+  last_login = CURRENT_TIMESTAMP
 WHERE
-    id = ?
+  id = ?
 `
 
 func (q *Queries) UpdateUserLastLogin(ctx context.Context, id int64) error {

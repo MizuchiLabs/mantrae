@@ -62,7 +62,7 @@
 			let serviceName = router.service; // api@internal
 
 			// Most of time the service name doesn't include the provider
-			if (!router.service.includes('@')) {
+			if (!router.service?.includes('@')) {
 				serviceName = router.service + '@' + routerProvider;
 			}
 			const service = $services.find((service) => service.name === serviceName);
@@ -101,10 +101,23 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('provider') as string;
-				return renderComponent(ColumnBadge, {
-					label: name.split('@')[1].toLowerCase(),
-					variant: 'secondary'
-				});
+				const provider = name.split('@')[1];
+				if (!provider && $source === TraefikSource.AGENT) {
+					return renderComponent(ColumnBadge, {
+						label: 'agent',
+						variant: 'secondary'
+					});
+				} else if (!provider) {
+					return renderComponent(ColumnBadge, {
+						label: 'local',
+						variant: 'secondary'
+					});
+				} else {
+					return renderComponent(ColumnBadge, {
+						label: provider.toLowerCase(),
+						variant: 'secondary'
+					});
+				}
 			}
 		},
 		{
@@ -175,6 +188,7 @@
 		},
 		{
 			id: 'actions',
+			enableHiding: false,
 			cell: ({ row }) => {
 				if ($source === TraefikSource.LOCAL) {
 					return renderComponent(TableActions, {
@@ -252,15 +266,16 @@
 				<Route />
 				<h1 class="text-2xl font-bold">Router Management</h1>
 			</div>
-			<DataTable
-				{columns}
-				data={mergedData || []}
-				showSourceTabs={true}
-				createButton={{
-					label: 'Add Router',
-					onClick: openCreateModal
-				}}
-			/>
+			<DataTable {columns} data={mergedData || []} showSourceTabs={true} />
+		</div>
+	</Tabs.Content>
+	<Tabs.Content value={TraefikSource.AGENT}>
+		<div class="flex flex-col gap-4">
+			<div class="flex items-center justify-start gap-2">
+				<Route />
+				<h1 class="text-2xl font-bold">Router Management</h1>
+			</div>
+			<DataTable {columns} data={mergedData || []} showSourceTabs={true} />
 		</div>
 	</Tabs.Content>
 </Tabs.Root>

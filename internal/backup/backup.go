@@ -71,7 +71,8 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 
 	for {
 		select {
-		case <-m.stopChan:
+		case <-ctx.Done():
+			m.Stop()
 			return
 		case <-ticker.C:
 			if err := m.Create(ctx); err != nil {
