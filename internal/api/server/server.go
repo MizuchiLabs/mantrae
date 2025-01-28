@@ -126,11 +126,11 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
-	// // Serve OpenAPI specs file
+	// Serve OpenAPI specs file
 	// fsHandler := http.FileServer(http.Dir("proto/gen/openapi"))
 	// s.mux.Handle("/openapi/", http.StripPrefix("/openapi/", fsHandler))
 
-	// // Serve Swagger UI
+	// Serve Swagger UI
 	// s.mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
 	// 	httpSwagger.Handler(
 	// 		httpSwagger.URL("/openapi/api.swagger.yaml"),

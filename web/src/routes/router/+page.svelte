@@ -16,17 +16,41 @@
 	interface ModalState {
 		isOpen: boolean;
 		mode: 'create' | 'edit';
-		router?: Router;
-		service?: Service;
+		router: Router;
+		service: Service;
 	}
 
-	const initialModalState: ModalState = { isOpen: false, mode: 'create' };
+	const defaultRouter: Router = {
+		name: '',
+		protocol: 'http',
+		tls: {},
+		entryPoints: [],
+		middlewares: [],
+		rule: '',
+		service: ''
+	};
+	const defaultService: Service = {
+		name: '',
+		protocol: 'http',
+		loadBalancer: {
+			servers: [],
+			passHostHeader: true
+		}
+	};
+	const initialModalState: ModalState = {
+		isOpen: false,
+		mode: 'create',
+		router: defaultRouter,
+		service: defaultService
+	};
 	let modalState = $state(initialModalState);
 
 	function openCreateModal() {
 		modalState = {
 			isOpen: true,
-			mode: 'create'
+			mode: 'create',
+			router: defaultRouter,
+			service: defaultService
 		};
 	}
 
@@ -283,6 +307,6 @@
 <RouterModal
 	bind:open={modalState.isOpen}
 	mode={modalState.mode}
-	router={modalState.router}
-	service={modalState.service}
+	bind:router={modalState.router}
+	bind:service={modalState.service}
 />

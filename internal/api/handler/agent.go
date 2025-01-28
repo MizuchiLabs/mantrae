@@ -118,6 +118,10 @@ func DeleteAgent(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if err := q.DeleteTraefikConfigByAgent(r.Context(), &agent.ID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		if err := q.DeleteAgent(r.Context(), agent.ID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

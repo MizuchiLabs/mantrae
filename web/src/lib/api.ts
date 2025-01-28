@@ -35,9 +35,9 @@ import type { Overview } from './types/overview';
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
 export const BASE_URL = import.meta.env.PROD ? '/api' : `http://127.0.0.1:${BACKEND_PORT}/api`;
 
-// Stores
+// DB Stores
 export const profiles: Writable<Profile[]> = writable();
-export const traefik: Writable<TraefikConfig> = writable();
+export const traefik: Writable<TraefikConfig[]> = writable();
 export const entrypoints: Writable<EntryPoints[]> = writable([]);
 export const overview: Writable<Overview> = writable({} as Overview);
 export const version: Writable<string> = writable('');
@@ -308,6 +308,7 @@ export const api = {
 	},
 
 	async deleteDNSProvider(id: number) {
+		if (!id) return;
 		await send(`/dns/${id}`, {
 			method: 'DELETE'
 		});
@@ -315,6 +316,7 @@ export const api = {
 	},
 
 	async getRouterDNSProvider(traefikId: number, routerName: string) {
+		if (!traefikId || !routerName) return;
 		return await send(`/dns/router`, {
 			method: 'GET',
 			body: { traefikId, routerName }
@@ -322,6 +324,7 @@ export const api = {
 	},
 
 	async listRouterDNSProviders(traefikId: number) {
+		if (!traefikId) return;
 		const data = await send(`/dns/router/${traefikId}`, {
 			method: 'GET'
 		});
@@ -525,9 +528,10 @@ async function fetchTraefikMetadata(id: number) {
 	}
 
 	// Set metadata stores
-	overview.set(res.overview);
-	entrypoints.set(res.entrypoints);
-	version.set(res.version);
+	const meta = res[0];
+	overview.set(meta.overview);
+	entrypoints.set(meta.entrypoints);
+	version.set(meta.version);
 
 	// Set middleware names (used for chain)
 	const middlewares = flattenMiddlewareData(res.config);
@@ -535,23 +539,23 @@ async function fetchTraefikMetadata(id: number) {
 	return true;
 }
 
-async function fetchTraefikConfig(id: number, source: TraefikSource) {
+async function fetchTraefikConfig(profileID: number, source: TraefikSource) {
 	// Reset stores
-	traefik.set({} as TraefikConfig);
+	traefik.set([]);
 	routers.set([]);
 	services.set([]);
 	middlewares.set([]);
 
-	const res = await send(`/traefik/${id}/${source}`);
+	const res = await send(`/traefik/${profileID}/${source}`);
 	if (!res) {
 		return;
 	}
 
 	// Set stores
 	traefik.set(res);
-	routers.set(flattenRouterData(res.config));
-	services.set(flattenServiceData(res.config));
-	middlewares.set(flattenMiddlewareData(res.config));
+	routers.set(flattenRouterData(res));
+	services.set(flattenServiceData(res));
+	middlewares.set(flattenMiddlewareData(res));
 
 	// Fetch the router dns relations
 	await api.listRouterDNSProviders(res.id);

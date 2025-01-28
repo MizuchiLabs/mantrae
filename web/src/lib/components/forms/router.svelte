@@ -19,14 +19,14 @@
 		mode: 'create' | 'edit';
 	}
 
-	let { router = $bindable({} as Router), mode }: Props = $props();
+	let { router = $bindable(), mode }: Props = $props();
 
 	// Computed properties
 	let routerDNS: RouterDNSProvider = $derived(
 		$rdps?.filter((item) => item.routerName === router.name)[0]
 	);
 	let rdpName = $derived(routerDNS ? routerDNS.providerName : '');
-	let routerProvider = $derived(router.name ? router.name.split('@')[1] : 'http');
+	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
 	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
 	let isHttpType = $derived(router.protocol === 'http');
 	let disabled = $derived(routerProvider !== 'http' && mode === 'edit');
@@ -36,20 +36,15 @@
 		)
 	]);
 
-	function handleTypeChange(protocol: 'http' | 'tcp' | 'udp') {
-		if (disabled) return;
-		router.protocol = protocol;
-	}
-
 	// let routerDNSProvider = $derived(router.dnsProvider);
 	async function handleDNSProviderChange(providerId: string) {
 		try {
 			if (providerId === '') {
-				await api.deleteRouterDNSProvider($traefik.id, router.name);
+				await api.deleteRouterDNSProvider($traefik[0].id, router.name);
 				toast.success('DNS Provider deleted successfully');
 			} else {
 				if (providerId === undefined) return;
-				await api.setRouterDNSProvider($traefik.id, parseInt(providerId), router.name);
+				await api.setRouterDNSProvider($traefik[0].id, parseInt(providerId), router.name);
 				toast.success('DNS Provider updated successfully');
 			}
 		} catch (err: unknown) {
@@ -79,7 +74,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.protocol === 'http'}
-					onPressedChange={() => handleTypeChange('http')}
+					onPressedChange={() => (router.protocol = 'http')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-green-300 dark:data-[state=on]:text-black"
 				>
@@ -88,7 +83,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.protocol === 'tcp'}
-					onPressedChange={() => handleTypeChange('tcp')}
+					onPressedChange={() => (router.protocol = 'tcp')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
@@ -97,7 +92,7 @@
 				<Toggle
 					size="sm"
 					pressed={router.protocol === 'udp'}
-					onPressedChange={() => handleTypeChange('udp')}
+					onPressedChange={() => (router.protocol = 'udp')}
 					{disabled}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
@@ -114,7 +109,7 @@
 					id="name"
 					bind:value={router.name}
 					placeholder="Router name"
-					oninput={() => (router.name = router.name.split('@')[0])}
+					oninput={() => (router.name = router.name?.split('@')[0])}
 					class="col-span-3"
 					required
 					disabled={disabled || mode === 'edit'}

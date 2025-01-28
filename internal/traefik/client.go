@@ -87,7 +87,7 @@ func GetTraefikConfig(DB *sql.DB) {
 			continue
 		}
 
-		if err := q.UpdateTraefikConfig(context.Background(), db.UpdateTraefikConfigParams{
+		if err := q.UpsertTraefikConfig(context.Background(), db.UpsertTraefikConfigParams{
 			ProfileID:   profile.ID,
 			Entrypoints: &entrypoints,
 			Overview:    &overview,

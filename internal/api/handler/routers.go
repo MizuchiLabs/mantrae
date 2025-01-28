@@ -47,13 +47,7 @@ func UpsertRouter(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(
-			r.Context(),
-			db.GetTraefikConfigBySourceParams{
-				ProfileID: profileID,
-				Source:    source.Local,
-			},
-		)
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -107,8 +101,8 @@ func UpsertRouter(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ProfileID: profileID,
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: existingConfig.ID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})
@@ -148,13 +142,7 @@ func DeleteRouter(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(
-			r.Context(),
-			db.GetTraefikConfigBySourceParams{
-				ProfileID: profileID,
-				Source:    source.Local,
-			},
-		)
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -180,8 +168,8 @@ func DeleteRouter(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ProfileID: profileID,
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: existingConfig.ProfileID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})

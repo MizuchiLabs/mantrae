@@ -108,7 +108,6 @@
 								label: 'Edit Middleware',
 								icon: Pencil,
 								onClick: () => {
-									console.log(row.original);
 									modalState = {
 										isOpen: true,
 										middleware: row.original

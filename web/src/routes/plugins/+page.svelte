@@ -62,7 +62,6 @@
 				}
 			}
 		};
-		console.log(middleware);
 		await api.upsertMiddleware($profile.id, middleware);
 
 		selectedPlugin = plugin;

@@ -9,34 +9,15 @@
 	import ServiceForm from '../forms/service.svelte';
 
 	interface Props {
-		router?: Router;
-		service?: Service;
+		router: Router;
+		service: Service;
 		open?: boolean;
 		mode: 'create' | 'edit';
 	}
 
-	const defaultRouter: Router = {
-		name: '',
-		protocol: 'http',
-		tls: {},
-		entryPoints: [],
-		middlewares: [],
-		rule: '',
-		service: ''
-	};
-
-	const defaultService: Service = {
-		name: '',
-		protocol: 'http',
-		loadBalancer: {
-			servers: [],
-			passHostHeader: true
-		}
-	};
-
 	let {
-		router = $bindable(defaultRouter),
-		service = $bindable(defaultService),
+		router = $bindable(),
+		service = $bindable(),
 		open = $bindable(false),
 		mode = 'create'
 	}: Props = $props();
@@ -47,9 +28,14 @@
 			if (!router.name.includes('@')) {
 				router.name = `${router.name}@http`;
 			}
+			if (service.loadBalancer?.servers?.length === 0) {
+				toast.error('At least one server is required');
+				return;
+			}
 
 			// Sync service name with router
 			service.name = router.name;
+			service.protocol = router.protocol;
 			router.service = router.name;
 
 			let params: UpsertRouterParams = {
@@ -94,7 +80,7 @@
 				<RouterForm bind:router {mode} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service {router} />
+				<ServiceForm bind:service {router} {mode} />
 			</Tabs.Content>
 		</Tabs.Root>
 		<Button class="w-full" onclick={() => update()}>Save</Button>

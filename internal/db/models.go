@@ -60,6 +60,7 @@ type Setting struct {
 type Traefik struct {
 	ID          int64                 `json:"id"`
 	ProfileID   int64                 `json:"profileId"`
+	AgentID     *string               `json:"agentId"`
 	Source      source.Source         `json:"source"`
 	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
 	Overview    *TraefikOverview      `json:"overview"`

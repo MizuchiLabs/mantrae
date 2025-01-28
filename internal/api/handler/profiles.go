@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 func ListProfiles(DB *sql.DB) http.HandlerFunc {
@@ -49,25 +48,10 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		profileID, err := q.CreateProfile(r.Context(), profile)
+		_, err := q.CreateProfile(r.Context(), profile)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
-		}
-
-		// Create configs for all source types
-		sources := []source.Source{source.Local, source.API, source.Agent}
-		for _, src := range sources {
-			if err := q.CreateTraefikConfig(r.Context(), db.CreateTraefikConfigParams{
-				ProfileID:   profileID,
-				Source:      src,
-				Entrypoints: nil,
-				Overview:    nil,
-				Config:      nil,
-			}); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
 		}
 
 		w.WriteHeader(http.StatusNoContent)

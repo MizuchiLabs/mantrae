@@ -2,7 +2,7 @@ import type {
 	SupportedMiddlewareHTTP,
 	SupportedMiddlewareTCP
 } from '$lib/components/forms/mw_registry';
-import type { BaseTraefikConfig } from '$lib/types';
+import type { TraefikConfig } from '$lib/types';
 import { z } from 'zod';
 
 export type Middleware = HTTPMiddleware | TCPMiddleware;
@@ -53,43 +53,47 @@ export interface UpsertMiddlewareParams {
 	tcpMiddleware?: TCPMiddleware;
 }
 
-export function flattenMiddlewareData(config: BaseTraefikConfig): Middleware[] {
+export function flattenMiddlewareData(configs: TraefikConfig[]): Middleware[] {
 	const flatMiddleware: Middleware[] = [];
-	if (!config) return flatMiddleware;
+	if (!configs) return flatMiddleware;
 
-	Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
-		if (middleware) {
-			const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
-			flatMiddleware.push({
-				name,
-				protocol: 'http',
-				type,
-				...details
-			});
-		} else {
-			flatMiddleware.push({
-				name,
-				protocol: 'http'
-			});
-		}
-	});
+	for (const base of configs) {
+		const config = base.config;
+		if (!config) continue;
+		Object.entries(config.middlewares || {}).forEach(([name, middleware]) => {
+			if (middleware) {
+				const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
+				flatMiddleware.push({
+					name,
+					protocol: 'http',
+					type,
+					...details
+				});
+			} else {
+				flatMiddleware.push({
+					name,
+					protocol: 'http'
+				});
+			}
+		});
 
-	Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
-		if (middleware) {
-			const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
-			flatMiddleware.push({
-				name,
-				protocol: 'tcp',
-				type,
-				...details
-			});
-		} else {
-			flatMiddleware.push({
-				name,
-				protocol: 'tcp'
-			});
-		}
-	});
+		Object.entries(config.tcpMiddlewares || {}).forEach(([name, middleware]) => {
+			if (middleware) {
+				const [type, details] = Object.entries(middleware)[0] || [undefined, {}];
+				flatMiddleware.push({
+					name,
+					protocol: 'tcp',
+					type,
+					...details
+				});
+			} else {
+				flatMiddleware.push({
+					name,
+					protocol: 'tcp'
+				});
+			}
+		});
+	}
 
 	return flatMiddleware;
 }

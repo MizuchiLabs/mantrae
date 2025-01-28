@@ -48,9 +48,16 @@
 		};
 		showSourceTabs?: boolean;
 		onRowSelection?: (selectedRows: TData[]) => void;
+		getRowClassName?: (row: TData) => string;
 	};
 
-	let { data, columns, createButton, showSourceTabs }: DataTableProps<TData, TValue> = $props();
+	let {
+		data,
+		columns,
+		createButton,
+		showSourceTabs,
+		getRowClassName
+	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
 	const pageSizeOptions = [10, 20, 30, 40, 50];
@@ -280,7 +287,10 @@
 			</Table.Header>
 			<Table.Body>
 				{#each table.getRowModel().rows as row (row.id)}
-					<Table.Row data-state={row.getIsSelected() && 'selected'}>
+					<Table.Row
+						data-state={row.getIsSelected() && 'selected'}
+						class={getRowClassName ? getRowClassName(row.original) : ''}
+					>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell>
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />

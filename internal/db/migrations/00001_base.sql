@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS traefik (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   source TEXT NOT NULL,
   entrypoints JSON,
   overview JSON,
@@ -21,8 +22,20 @@ CREATE TABLE IF NOT EXISTS traefik (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
-  UNIQUE (profile_id, source)
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  CONSTRAINT valid_source CHECK (source IN ('local', 'api', 'agent'))
 );
+
+-- Create unique index for local and api configs (single)
+CREATE UNIQUE INDEX idx_traefik_profile_source ON traefik (profile_id, source)
+WHERE
+  source IN ('local', 'api');
+
+-- Create unique index for agent configs (multiple)
+CREATE UNIQUE INDEX idx_traefik_agent ON traefik (profile_id, agent_id)
+WHERE
+  agent_id IS NOT NULL
+  AND source = 'agent';
 
 CREATE TABLE IF NOT EXISTS dns_providers (
   id INTEGER PRIMARY KEY,

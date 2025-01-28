@@ -74,7 +74,7 @@ func UpdateDNS(DB *sql.DB) (err error) {
 				slog.Error("Failed to get provider", "error", err)
 				continue
 			}
-			config, err := q.GetTraefikConfig(context.Background(), rdp.TraefikID)
+			config, err := q.GetTraefikConfigByID(context.Background(), rdp.TraefikID)
 			if err != nil {
 				slog.Error("Failed to get traefik config", "error", err)
 				continue
@@ -114,7 +114,7 @@ func DeleteDNS(DB *sql.DB, traefikID int64, routerName string) error {
 	}
 
 	// Get traefik config to extract domains
-	config, err := q.GetTraefikConfig(context.Background(), traefikID)
+	config, err := q.GetTraefikConfigByID(context.Background(), traefikID)
 	if err != nil {
 		return fmt.Errorf("failed to get traefik config: %w", err)
 	}

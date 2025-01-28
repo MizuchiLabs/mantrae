@@ -10,27 +10,6 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
-func CreateTraefikConfig(DB *sql.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
-		var config db.CreateTraefikConfigParams
-		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if !config.Source.Valid() {
-			http.Error(w, "invalid source", http.StatusBadRequest)
-			return
-		}
-
-		if err := q.CreateTraefikConfig(r.Context(), config); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
-	}
-}
-
 func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
@@ -39,13 +18,14 @@ func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if !source.Source(r.PathValue("source")).Valid() {
+		src := source.Source(r.PathValue("source"))
+		if !src.Valid() {
 			http.Error(w, "invalid source", http.StatusBadRequest)
 			return
 		}
 		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
 			ProfileID: profile_id,
-			Source:    source.Source(r.PathValue("source")),
+			Source:    src,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -56,10 +36,10 @@ func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateTraefikConfig(DB *sql.DB) http.HandlerFunc {
+func UpsertTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
-		var config db.UpdateTraefikConfigParams
+		var config db.UpsertTraefikConfigParams
 		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -69,7 +49,7 @@ func UpdateTraefikConfig(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err := q.UpdateTraefikConfig(r.Context(), config)
+		err := q.UpsertTraefikConfig(r.Context(), config)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -103,10 +83,7 @@ func PublishTraefikConfig(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profile.ID,
-			Source:    source.Local,
-		})
+		config, err := q.GetLocalTraefikConfig(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

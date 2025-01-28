@@ -11,41 +11,6 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
-const createTraefikConfig = `-- name: CreateTraefikConfig :exec
-INSERT INTO
-  traefik (
-    profile_id,
-    source,
-    entrypoints,
-    overview,
-    version,
-    config
-  )
-VALUES
-  (?, ?, ?, ?, ?, ?)
-`
-
-type CreateTraefikConfigParams struct {
-	ProfileID   int64                 `json:"profileId"`
-	Source      source.Source         `json:"source"`
-	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
-	Overview    *TraefikOverview      `json:"overview"`
-	Version     *string               `json:"version"`
-	Config      *TraefikConfiguration `json:"config"`
-}
-
-func (q *Queries) CreateTraefikConfig(ctx context.Context, arg CreateTraefikConfigParams) error {
-	_, err := q.exec(ctx, q.createTraefikConfigStmt, createTraefikConfig,
-		arg.ProfileID,
-		arg.Source,
-		arg.Entrypoints,
-		arg.Overview,
-		arg.Version,
-		arg.Config,
-	)
-	return err
-}
-
 const deleteTraefikConfig = `-- name: DeleteTraefikConfig :exec
 DELETE FROM traefik
 WHERE
@@ -57,21 +22,34 @@ func (q *Queries) DeleteTraefikConfig(ctx context.Context, id int64) error {
 	return err
 }
 
-const getTraefikConfig = `-- name: GetTraefikConfig :one
+const deleteTraefikConfigByAgent = `-- name: DeleteTraefikConfigByAgent :exec
+DELETE FROM traefik
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) DeleteTraefikConfigByAgent(ctx context.Context, agentID *string) error {
+	_, err := q.exec(ctx, q.deleteTraefikConfigByAgentStmt, deleteTraefikConfigByAgent, agentID)
+	return err
+}
+
+const getAPITraefikConfig = `-- name: GetAPITraefikConfig :one
 SELECT
-  id, profile_id, source, entrypoints, overview, config, version, created_at, updated_at
+  id, profile_id, agent_id, source, entrypoints, overview, config, version, created_at, updated_at
 FROM
   traefik
 WHERE
-  id = ?
+  profile_id = ?
+  AND source = 'api'
 `
 
-func (q *Queries) GetTraefikConfig(ctx context.Context, id int64) (Traefik, error) {
-	row := q.queryRow(ctx, q.getTraefikConfigStmt, getTraefikConfig, id)
+func (q *Queries) GetAPITraefikConfig(ctx context.Context, profileID int64) (Traefik, error) {
+	row := q.queryRow(ctx, q.getAPITraefikConfigStmt, getAPITraefikConfig, profileID)
 	var i Traefik
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.AgentID,
 		&i.Source,
 		&i.Entrypoints,
 		&i.Overview,
@@ -83,9 +61,108 @@ func (q *Queries) GetTraefikConfig(ctx context.Context, id int64) (Traefik, erro
 	return i, err
 }
 
-const getTraefikConfigBySource = `-- name: GetTraefikConfigBySource :one
+const getAgentTraefikConfigs = `-- name: GetAgentTraefikConfigs :many
 SELECT
-  id, profile_id, source, entrypoints, overview, config, version, created_at, updated_at
+  id, profile_id, agent_id, source, entrypoints, overview, config, version, created_at, updated_at
+FROM
+  traefik
+WHERE
+  profile_id = ?
+  AND source = 'agent'
+`
+
+func (q *Queries) GetAgentTraefikConfigs(ctx context.Context, profileID int64) ([]Traefik, error) {
+	rows, err := q.query(ctx, q.getAgentTraefikConfigsStmt, getAgentTraefikConfigs, profileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Traefik
+	for rows.Next() {
+		var i Traefik
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Source,
+			&i.Entrypoints,
+			&i.Overview,
+			&i.Config,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLocalTraefikConfig = `-- name: GetLocalTraefikConfig :one
+SELECT
+  id, profile_id, agent_id, source, entrypoints, overview, config, version, created_at, updated_at
+FROM
+  traefik
+WHERE
+  profile_id = ?
+  AND source = 'local'
+`
+
+func (q *Queries) GetLocalTraefikConfig(ctx context.Context, profileID int64) (Traefik, error) {
+	row := q.queryRow(ctx, q.getLocalTraefikConfigStmt, getLocalTraefikConfig, profileID)
+	var i Traefik
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.AgentID,
+		&i.Source,
+		&i.Entrypoints,
+		&i.Overview,
+		&i.Config,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTraefikConfigByID = `-- name: GetTraefikConfigByID :one
+SELECT
+  id, profile_id, agent_id, source, entrypoints, overview, config, version, created_at, updated_at
+FROM
+  traefik
+WHERE
+  id = ?
+`
+
+func (q *Queries) GetTraefikConfigByID(ctx context.Context, id int64) (Traefik, error) {
+	row := q.queryRow(ctx, q.getTraefikConfigByIDStmt, getTraefikConfigByID, id)
+	var i Traefik
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.AgentID,
+		&i.Source,
+		&i.Entrypoints,
+		&i.Overview,
+		&i.Config,
+		&i.Version,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTraefikConfigBySource = `-- name: GetTraefikConfigBySource :many
+SELECT
+  id, profile_id, agent_id, source, entrypoints, overview, config, version, created_at, updated_at
 FROM
   traefik
 WHERE
@@ -98,21 +175,38 @@ type GetTraefikConfigBySourceParams struct {
 	Source    source.Source `json:"source"`
 }
 
-func (q *Queries) GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) (Traefik, error) {
-	row := q.queryRow(ctx, q.getTraefikConfigBySourceStmt, getTraefikConfigBySource, arg.ProfileID, arg.Source)
-	var i Traefik
-	err := row.Scan(
-		&i.ID,
-		&i.ProfileID,
-		&i.Source,
-		&i.Entrypoints,
-		&i.Overview,
-		&i.Config,
-		&i.Version,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) ([]Traefik, error) {
+	rows, err := q.query(ctx, q.getTraefikConfigBySourceStmt, getTraefikConfigBySource, arg.ProfileID, arg.Source)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Traefik
+	for rows.Next() {
+		var i Traefik
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Source,
+			&i.Entrypoints,
+			&i.Overview,
+			&i.Config,
+			&i.Version,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listTraefikIDs = `-- name: ListTraefikIDs :many
@@ -145,36 +239,71 @@ func (q *Queries) ListTraefikIDs(ctx context.Context) ([]int64, error) {
 	return items, nil
 }
 
-const updateTraefikConfig = `-- name: UpdateTraefikConfig :exec
-UPDATE traefik
-SET
-  entrypoints = ?,
-  overview = ?,
-  config = ?,
-  version = ?,
-  updated_at = CURRENT_TIMESTAMP
+const upsertTraefikAgentConfig = `-- name: UpsertTraefikAgentConfig :exec
+INSERT INTO
+  traefik (profile_id, agent_id, source, config)
+VALUES
+  (?, ?, 'agent', ?) ON CONFLICT (profile_id, agent_id)
 WHERE
-  profile_id = ?
-  AND source = ?
+  agent_id IS NOT NULL
+  AND source = 'agent' DO
+UPDATE
+SET
+  config = excluded.config,
+  updated_at = CURRENT_TIMESTAMP
 `
 
-type UpdateTraefikConfigParams struct {
+type UpsertTraefikAgentConfigParams struct {
+	ProfileID int64                 `json:"profileId"`
+	AgentID   *string               `json:"agentId"`
+	Config    *TraefikConfiguration `json:"config"`
+}
+
+func (q *Queries) UpsertTraefikAgentConfig(ctx context.Context, arg UpsertTraefikAgentConfigParams) error {
+	_, err := q.exec(ctx, q.upsertTraefikAgentConfigStmt, upsertTraefikAgentConfig, arg.ProfileID, arg.AgentID, arg.Config)
+	return err
+}
+
+const upsertTraefikConfig = `-- name: UpsertTraefikConfig :exec
+INSERT INTO
+  traefik (
+    profile_id,
+    source,
+    entrypoints,
+    overview,
+    config,
+    version
+  )
+VALUES
+  (?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, source)
+WHERE
+  source IN ('local', 'api') DO
+UPDATE
+SET
+  entrypoints = excluded.entrypoints,
+  overview = excluded.overview,
+  config = excluded.config,
+  version = excluded.version,
+  updated_at = CURRENT_TIMESTAMP
+`
+
+type UpsertTraefikConfigParams struct {
+	ProfileID   int64                 `json:"profileId"`
+	Source      source.Source         `json:"source"`
 	Entrypoints *TraefikEntryPoints   `json:"entrypoints"`
 	Overview    *TraefikOverview      `json:"overview"`
 	Config      *TraefikConfiguration `json:"config"`
 	Version     *string               `json:"version"`
-	ProfileID   int64                 `json:"profileId"`
-	Source      source.Source         `json:"source"`
 }
 
-func (q *Queries) UpdateTraefikConfig(ctx context.Context, arg UpdateTraefikConfigParams) error {
-	_, err := q.exec(ctx, q.updateTraefikConfigStmt, updateTraefikConfig,
+func (q *Queries) UpsertTraefikConfig(ctx context.Context, arg UpsertTraefikConfigParams) error {
+	_, err := q.exec(ctx, q.upsertTraefikConfigStmt, upsertTraefikConfig,
+		arg.ProfileID,
+		arg.Source,
 		arg.Entrypoints,
 		arg.Overview,
 		arg.Config,
 		arg.Version,
-		arg.ProfileID,
-		arg.Source,
 	)
 	return err
 }

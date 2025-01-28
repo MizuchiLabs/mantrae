@@ -119,7 +119,7 @@ func SetRouterDNSProvider(DB *sql.DB) http.HandlerFunc {
 		}
 
 		// Check if router exists
-		config, err := q.GetTraefikConfig(r.Context(), dns_provider.TraefikID)
+		config, err := q.GetTraefikConfigByID(r.Context(), dns_provider.TraefikID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

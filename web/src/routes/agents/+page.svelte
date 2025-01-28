@@ -47,9 +47,8 @@
 				const name = row.getValue('hostname') as string;
 				if (!name) {
 					return 'Connect your agent!';
-				} else {
-					return name;
 				}
+				return name;
 			}
 		},
 		{
@@ -57,25 +56,6 @@
 			accessorKey: 'activeIp',
 			enableSorting: true
 		},
-		// {
-		// 	header: 'Containers',
-		// 	accessorKey: 'containers',
-		// 	enableSorting: true,
-		// 	cell: ({ row }) => {
-		// 		const admin = row.getValue('isAdmin') as boolean;
-		// 		if (admin) {
-		// 			return renderComponent(ColumnBadge, {
-		// 				label: 'Yes',
-		// 				variant: 'default'
-		// 			});
-		// 		} else {
-		// 			return renderComponent(ColumnBadge, {
-		// 				label: 'No',
-		// 				variant: 'secondary'
-		// 			});
-		// 		}
-		// 	}
-		// },
 		{
 			header: 'Last Seen',
 			accessorKey: 'updatedAt',
@@ -128,6 +108,16 @@
 		}
 	];
 
+	function agentOffline(agent: Agent): boolean {
+		const lastSeen = new Date(agent.updatedAt);
+		const now = new Date();
+		const diffInMinutes = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
+		return diffInMinutes <= 2;
+	}
+	function getAgentRowClassName(agent: Agent): string {
+		return agentOffline(agent) ? 'bg-green-500/10' : 'bg-red-500/10';
+	}
+
 	profile.subscribe((value) => {
 		if (value.id) {
 			api.listAgentsByProfile();
@@ -147,6 +137,7 @@
 	<DataTable
 		{columns}
 		data={$agents || []}
+		getRowClassName={getAgentRowClassName}
 		createButton={{
 			label: 'Add Agent',
 			onClick: () => api.createAgent()

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -69,9 +70,7 @@ type TraefikVersion struct {
 }
 
 type ServiceInfo struct {
-	*runtime.ServiceInfo
-	*runtime.TCPServiceInfo
-	*runtime.UDPServiceInfo
+	*dynamic.Service
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 }
 

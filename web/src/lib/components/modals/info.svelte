@@ -41,7 +41,7 @@
 	};
 
 	profile.subscribe(async (value) => {
-		if (value.id) {
+		if (value.name) {
 			const config = await api.getDynamicConfig(value.name);
 			code = JSON.stringify(config, null, 2);
 			displayCode = code;

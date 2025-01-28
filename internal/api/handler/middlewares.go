@@ -64,13 +64,7 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(
-			r.Context(),
-			db.GetTraefikConfigBySourceParams{
-				ProfileID: profileID,
-				Source:    source.Local,
-			},
-		)
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -99,7 +93,6 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
-			fmt.Printf("params.Middleware: %+v\n", params)
 			existingConfig.Config.Middlewares[params.Name] = params.Middleware
 		case "tcp":
 			existingConfig.Config.TCPMiddlewares[params.Name] = params.TCPMiddleware
@@ -108,7 +101,7 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
 			ProfileID: profileID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
@@ -148,13 +141,7 @@ func DeleteMiddleware(DB *sql.DB) http.HandlerFunc {
 			mwName = fmt.Sprintf("%s@http", strings.Split(mwName, "@")[0])
 		}
 
-		existingConfig, err := q.GetTraefikConfigBySource(
-			r.Context(),
-			db.GetTraefikConfigBySourceParams{
-				ProfileID: profileID,
-				Source:    source.Local,
-			},
-		)
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -175,8 +162,8 @@ func DeleteMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err = q.UpdateTraefikConfig(r.Context(), db.UpdateTraefikConfigParams{
-			ProfileID: profileID,
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: existingConfig.ID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})
