@@ -35,7 +35,7 @@ func Login(DB *sql.DB, secret string) http.HandlerFunc {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
-		if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+		if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
 			http.Error(w, "Invalid username or password "+err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -61,8 +61,8 @@ func Login(DB *sql.DB, secret string) http.HandlerFunc {
 	}
 }
 
-// VerifyToken checks the validity of a JWT token provided in cookies or Authorization header.
-func VerifyToken(DB *sql.DB, secret string) http.HandlerFunc {
+// VerifyJWT checks the validity of a JWT token provided in cookies or Authorization header.
+func VerifyJWT(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
 		var token string
@@ -97,14 +97,13 @@ func VerifyToken(DB *sql.DB, secret string) http.HandlerFunc {
 	}
 }
 
-// ResetPassword allows users to reset their password using a valid JWT token.
-func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
+// VerifyOTP allows users to login using an OTP token, to reset their password
+func VerifyOTP(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
 		var data struct {
 			Username string `json:"username"`
 			Token    string `json:"token"`
-			Password string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			http.Error(w, "Failed to decode credentials", http.StatusBadRequest)
@@ -123,7 +122,7 @@ func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 			return
 		}
 
-		if user.Otp != &data.Token {
+		if *user.Otp != data.Token {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
@@ -133,21 +132,20 @@ func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 			return
 		}
 
-		hash, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+		expirationTime := time.Now().Add(1 * time.Hour)
+		token, err := util.EncodeUserJWT(user.Username, secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err = q.UpdateUserPassword(r.Context(), db.UpdateUserPasswordParams{
-			ID:       user.ID,
-			Password: string(hash),
-		}); err != nil {
+		if err := q.UpdateUserLastLogin(r.Context(), user.ID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"token": token})
 	}
 }
 

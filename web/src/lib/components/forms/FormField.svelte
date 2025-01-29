@@ -7,6 +7,7 @@
 	import { Plus, Trash } from 'lucide-svelte';
 	import { mwNames } from '$lib/api';
 	import type { FieldMetadata } from '$lib/types/middlewares';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		key: string;
@@ -19,7 +20,13 @@
 
 	let { key, path, type, data = $bindable(), metadata = {}, disabled }: Props = $props();
 
-	type FormValue = string | number | boolean | string[] | Record<string, unknown>;
+	type FormValue =
+		| string
+		| number
+		| boolean
+		| string[]
+		| Record<string, unknown>
+		| Record<string, unknown>[];
 
 	function getNestedValue(obj: Record<string, unknown>, path: string): FormValue {
 		return path.split('.').reduce<unknown>((acc, part) => {
@@ -58,13 +65,6 @@
 		setNestedValue(data, path, array);
 	}
 
-	function handleObjectChange(e: Event, key: string) {
-		const target = e.target as HTMLInputElement;
-		const currentValue = getNestedValue(data, path) as Record<string, unknown>;
-		const newValue = { ...currentValue, [key]: target.value };
-		setNestedValue(data, path, newValue);
-	}
-
 	function addArrayItem() {
 		const array = (getNestedValue(data, path) as string[]) || [];
 		array.push('');
@@ -90,6 +90,45 @@
 	const isChainMiddleware = $derived(path === 'middlewares');
 	function handleMiddlewareChange(values: string[]) {
 		setNestedValue(data, path, values);
+	}
+
+	function handleObjectArrayChange(index: number, field: string, value: string) {
+		const array = (getNestedValue(data, path) as Record<string, unknown>[]) || [];
+		if (!isObjectArray(array)) return;
+		if (!array[index]) {
+			array[index] = {};
+		}
+		array[index] = { ...array[index], [field]: value };
+		setNestedValue(data, path, array);
+	}
+
+	function removeObjectArrayItem(index: number) {
+		if (index < 1) return;
+		const array = (getNestedValue(data, path) as string[]) || [];
+		array.splice(index, 1);
+		setNestedValue(data, path, array);
+	}
+
+	function addObjectArrayItem() {
+		const array = (getNestedValue(data, path) as Record<string, unknown>[]) || [];
+		// Use the first item as a template, creating an object with the same keys but empty values
+		const template = array[0] || {};
+		const newItem = Object.keys(template).reduce(
+			(obj, key) => {
+				obj[key] = '';
+				return obj;
+			},
+			{} as Record<string, unknown>
+		);
+		array.push(newItem);
+		setNestedValue(data, path, array);
+	}
+
+	// Helper to detect if array contains objects
+	function isObjectArray(value: unknown[]): value is Record<string, unknown>[] {
+		return (
+			Array.isArray(value) && value.length > 0 && typeof value[0] === 'object' && value[0] !== null
+		);
 	}
 </script>
 
@@ -137,20 +176,6 @@
 				</Select.Root>
 			{/if}
 		</div>
-	{:else if type === 'object'}
-		<div class="grid gap-2">
-			{#each Object.entries(fieldValue || {}) as [key, value]}
-				<div class="flex flex-col gap-1">
-					<Label>{formatLabel(key)}</Label>
-					<Input
-						type="text"
-						value={value as string}
-						onchange={(e) => handleObjectChange(e, key)}
-						{disabled}
-					/>
-				</div>
-			{/each}
-		</div>
 	{:else if type === 'boolean'}
 		<Switch
 			id={path}
@@ -160,30 +185,73 @@
 		/>
 	{:else if type === 'array'}
 		<div class="flex flex-col gap-2">
-			{#each (fieldValue as string[]) || [] as value, i}
-				<div class="flex gap-2">
-					<Input
-						type="text"
-						{value}
-						onchange={(e) => handleArrayChange(i, (e.target as HTMLInputElement).value)}
-						placeholder={metadata.placeholder}
-						{disabled}
-					/>
-					{#if !disabled}
-						<Button
-							variant="ghost"
-							size="icon"
-							type="button"
-							class="text-red-500"
-							onclick={() => removeArrayItem(i)}
-						>
-							<Trash />
-						</Button>
-					{/if}
+			{#if Array.isArray(fieldValue) && isObjectArray(fieldValue)}
+				<div class="ml-4 flex flex-col gap-2 rounded border-l p-4">
+					{#each fieldValue as item, i}
+						<div class="flex flex-col gap-2 rounded">
+							{#each Object.entries(item) as [field, value]}
+								<div class="grid grid-cols-4 items-center gap-2">
+									<Label class="col-span-1">{formatLabel(field)}</Label>
+									<Input
+										type="text"
+										value={value as string}
+										class="col-span-3"
+										onchange={(e) =>
+											handleObjectArrayChange(i, field, (e.target as HTMLInputElement).value)}
+										placeholder={metadata.placeholder}
+										{disabled}
+									/>
+								</div>
+							{/each}
+							<Separator class="my-2" />
+							{#if !disabled}
+								<Button
+									variant="secondary"
+									size="icon"
+									type="button"
+									class="w-full text-red-500"
+									onclick={() => removeObjectArrayItem(i)}
+								>
+									<Trash />
+								</Button>
+							{/if}
+						</div>
+					{/each}
 				</div>
-			{/each}
+			{:else}
+				{#each (fieldValue as string[]) || [] as value, i}
+					<div class="flex gap-2">
+						<Input
+							type="text"
+							{value}
+							onchange={(e) => handleArrayChange(i, (e.target as HTMLInputElement).value)}
+							placeholder={metadata.placeholder}
+							{disabled}
+						/>
+						{#if !disabled}
+							<Button
+								variant="ghost"
+								size="icon"
+								type="button"
+								class="text-red-500"
+								onclick={() => removeArrayItem(i)}
+							>
+								<Trash />
+							</Button>
+						{/if}
+					</div>
+				{/each}
+			{/if}
+
 			{#if !disabled}
-				<Button type="button" variant="outline" onclick={addArrayItem} class="w-full">
+				<Button
+					type="button"
+					variant="outline"
+					onclick={Array.isArray(fieldValue) && isObjectArray(fieldValue)
+						? addObjectArrayItem
+						: addArrayItem}
+					class="w-full"
+				>
 					<Plus />
 					Add {key.charAt(0).toUpperCase() + key.slice(1)}
 				</Button>

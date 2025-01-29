@@ -40,8 +40,8 @@ func (s *Server) routes() {
 
 	// Auth
 	register("POST", "/login", logChain, handler.Login(DB, s.app.Config.Secret))
-	register("POST", "/verify", logChain, handler.VerifyToken(DB, s.app.Config.Secret))
-	register("POST", "/reset", logChain, handler.ResetPassword(DB, s.app.Config.Secret))
+	register("POST", "/verify", logChain, handler.VerifyJWT(DB, s.app.Config.Secret))
+	register("POST", "/verify/otp", logChain, handler.VerifyOTP(DB, s.app.Config.Secret))
 	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(DB, s.app.Config.Secret))
 
 	// Events

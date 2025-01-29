@@ -13,9 +13,9 @@
 	let username = $state('');
 	let password = $state('');
 	let remember = $state(false);
-	const handleReset = async () => {
+	const handleReset = () => {
 		if (username.length > 0) {
-			await api.sendResetEmail(username);
+			api.sendResetEmail(username);
 			goto(`/login/reset?username=${username}`);
 		} else {
 			toast.error('Please enter a username!');

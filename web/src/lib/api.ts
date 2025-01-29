@@ -131,7 +131,6 @@ export const api = {
 		}
 
 		await api.load();
-		return data;
 	},
 
 	async verify(fetch: typeof window.fetch = window.fetch) {
@@ -158,11 +157,17 @@ export const api = {
 		await send(`/reset/${username}`, { method: 'POST' });
 	},
 
-	async resetPassword(username: string, token: string, password: string) {
-		await send('/reset', {
+	async verifyOTP(username: string, token: string) {
+		const data = await send('/verify/otp', {
 			method: 'POST',
-			body: { username, token, password }
+			body: { username, token }
 		});
+
+		if (data.token) {
+			localStorage.setItem(TOKEN_SK, data.token);
+			goto('/');
+		}
+		await api.load();
 	},
 
 	async load() {
@@ -201,10 +206,10 @@ export const api = {
 		const agents = await api.listAgents();
 
 		stats.set({
-			profiles: get(profiles)?.length,
-			agents: agents?.length,
-			users: get(users)?.length,
-			dnsProviders: get(dnsProviders)?.length,
+			profiles: get(profiles)?.length ?? 0,
+			agents: agents?.length ?? 0,
+			users: get(users)?.length ?? 0,
+			dnsProviders: get(dnsProviders)?.length ?? 0,
 			activeDNS: get(dnsProviders)?.find((item) => item.isActive)?.name ?? 'None'
 		});
 	},
