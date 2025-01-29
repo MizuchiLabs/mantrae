@@ -20,7 +20,7 @@
 		"@types/eslint": "^9.6.1",
 		"@types/node": "^22.10.10",
 		"autoprefixer": "^10.4.20",
-		"bits-ui": "1.0.0-next.78",
+		"bits-ui": "1.0.0-next.79",
 		"clsx": "^2.1.1",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^9.1.0",

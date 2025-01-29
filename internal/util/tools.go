@@ -68,6 +68,26 @@ func HashBasicAuth(userString string) (string, error) {
 	return user + ":" + string(hash), nil
 }
 
+// GenerateOTP creates a secure 6-digit token
+func GenerateOTP() (string, error) {
+	const otpChars = "0123456789"
+	buffer := make([]byte, 6)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otp := []rune("0123456789")
+	otpLength := len(otpChars)
+	token := make([]rune, 6)
+
+	for i := range buffer {
+		token[i] = otp[int(buffer[i])%otpLength]
+	}
+
+	return string(token), nil
+}
+
 // IsValidURL checks if a URL is valid url string
 func IsValidURL(u string) bool {
 	// If no scheme is provided, prepend "http://"

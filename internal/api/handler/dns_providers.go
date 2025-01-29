@@ -9,6 +9,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/dns"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 func ListDNSProviders(DB *sql.DB) http.HandlerFunc {
@@ -54,6 +55,11 @@ func CreateDNSProvider(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeCreate,
+			Message: "dns",
+		}
 		w.WriteHeader(http.StatusCreated)
 	}
 }
@@ -69,6 +75,10 @@ func UpdateDNSProvider(DB *sql.DB) http.HandlerFunc {
 		if err := q.UpdateDNSProvider(r.Context(), dns_provider); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeUpdate,
+			Message: "dns",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -86,6 +96,10 @@ func DeleteDNSProvider(DB *sql.DB) http.HandlerFunc {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeDelete,
+			Message: "dns",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

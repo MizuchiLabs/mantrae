@@ -146,3 +146,11 @@ export interface BackupFile {
 	size: number;
 	timestamp: string;
 }
+
+export interface Stats {
+	profiles: number;
+	users: number;
+	agents: number;
+	dnsProviders: number;
+	activeDNS: string;
+}

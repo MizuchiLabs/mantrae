@@ -7,7 +7,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { api, entrypoints, overview, profile, version } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
-	import { Copy, CopyCheck, Zap } from 'lucide-svelte';
+	import { Copy, CopyCheck } from 'lucide-svelte';
 	import { json, yaml } from 'svelte-highlight/languages';
 	import YAML from 'yaml';
 
@@ -17,7 +17,7 @@
 	let isYaml = $state(false);
 	let copyText = $state('Copy');
 
-	let { ...restProps } = $props();
+	let { open = $bindable(false) } = $props();
 
 	const copy = () => {
 		navigator.clipboard.writeText(displayCode);
@@ -49,11 +49,7 @@
 	});
 </script>
 
-<Dialog.Root>
-	<Dialog.Trigger {...restProps}>
-		<Zap />
-		<span>Traefik Status</span>
-	</Dialog.Trigger>
+<Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<Tabs.Root value="overview" class="mt-4 max-w-2xl">
 			<Tabs.List class="grid w-full grid-cols-2">

@@ -6,8 +6,9 @@
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { onMount } from 'svelte';
-	import { api, BASE_URL, user } from '$lib/api';
+	import { api, BASE_URL, user, profile } from '$lib/api';
 	import autoAnimate from '@formkit/auto-animate';
+	import { TraefikSource } from '$lib/types';
 	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	interface Props {
@@ -21,18 +22,23 @@
 	eventSource.onmessage = (event) => {
 		if (!$user) return;
 		let data = JSON.parse(event.data);
-		switch (data.type) {
-			case 'profile_updated':
+		switch (data.message) {
+			case 'profile':
 				api.listProfiles();
 				break;
-			case 'user_updated':
+			case 'traefik':
+				api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
+				break;
+			case 'user':
 				api.listUsers();
 				break;
-			case 'provider_updated':
+			case 'dns':
 				api.listDNSProviders();
 				break;
-			case 'agent_updated':
+			case 'agent':
 				api.listAgentsByProfile();
+				break;
+			default:
 				break;
 		}
 	};

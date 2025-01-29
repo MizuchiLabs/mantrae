@@ -3,20 +3,10 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Globe, Shield, Bot, LayoutDashboard, Origami, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import { api, profiles, profile, users, dnsProviders } from '$lib/api';
-	import { TraefikSource, type Agent, type DNSProvider } from '$lib/types';
+	import { api, profiles, profile, stats } from '$lib/api';
+	import { TraefikSource, type Agent } from '$lib/types';
 	import { type Router, type Service } from '$lib/types/router';
 	import type { Middleware } from '$lib/types/middlewares';
-
-	// You'll need to fetch these from your API
-	let stats = $state({
-		totalProfiles: 0,
-		totalAgents: 0,
-		totalUsers: 0,
-		activeDNSProvider: '',
-		dnsProviders: [] as DNSProvider[],
-		recentActivity: []
-	});
 
 	let profileStats = $state({
 		routers: [] as Router[],
@@ -24,28 +14,20 @@
 		middlewares: [] as Middleware[],
 		agents: [] as Agent[]
 	});
-	const getTraefikStats = async (id: number) => {
-		const t = await api.getTraefikConfigLocal(id);
+
+	onMount(async () => {
+		await api.loadStats();
+
+		if (!$profiles) return;
+		await api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
+
+		// Get profile stats
+		const t = await api.getTraefikConfigLocal($profile.id);
+		const a = await api.listAgentsByProfile();
 		profileStats.routers = t?.routers || [];
 		profileStats.services = t?.services || [];
 		profileStats.middlewares = t?.middlewares || [];
-
-		const a = await api.listAgentsByProfile();
 		profileStats.agents = a || [];
-	};
-	onMount(async () => {
-		await api.listDNSProviders();
-		await api.listUsers();
-		await api.listProfiles();
-		const agents = await api.listAgents();
-		stats.totalProfiles = $profiles?.length;
-		stats.totalAgents = agents?.length;
-		stats.totalUsers = $users?.length;
-		stats.dnsProviders = $dnsProviders;
-		stats.activeDNSProvider = $dnsProviders?.find((d) => d.isActive === true)?.name ?? '';
-		if (!$profiles) return;
-		await getTraefikStats($profile.id);
-		await api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
 	});
 </script>
 
@@ -65,7 +47,7 @@
 				<Origami class="h-4 w-4 text-muted-foreground" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{stats.totalProfiles}</div>
+				<div class="text-2xl font-bold">{$stats.profiles}</div>
 			</Card.Content>
 		</Card.Root>
 
@@ -75,7 +57,7 @@
 				<Bot class="h-4 w-4 text-muted-foreground" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{stats.totalAgents}</div>
+				<div class="text-2xl font-bold">{$stats.agents}</div>
 				<p class="text-xs text-muted-foreground">Across all profiles</p>
 			</Card.Content>
 		</Card.Root>
@@ -87,10 +69,10 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="text-2xl font-bold">
-					{stats.activeDNSProvider || 'None'}
+					{$stats.activeDNS || 'None'}
 				</div>
 				<p class="text-xs text-muted-foreground">
-					{stats.dnsProviders?.length} providers configured
+					{$stats.dnsProviders} providers configured
 				</p>
 			</Card.Content>
 		</Card.Root>
@@ -101,7 +83,7 @@
 				<Users class="h-4 w-4 text-muted-foreground" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{stats.totalUsers}</div>
+				<div class="text-2xl font-bold">{$stats.users}</div>
 				<p class="text-xs text-muted-foreground"></p>
 			</Card.Content>
 		</Card.Root>

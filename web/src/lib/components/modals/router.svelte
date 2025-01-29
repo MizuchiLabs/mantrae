@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api, profile } from '$lib/api';
+	import { api, profile, loading } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
@@ -7,6 +7,7 @@
 	import { toast } from 'svelte-sonner';
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		router: Router;
@@ -83,6 +84,9 @@
 				<ServiceForm bind:service {router} {mode} />
 			</Tabs.Content>
 		</Tabs.Root>
-		<Button class="w-full" onclick={() => update()}>Save</Button>
+
+		<Separator />
+
+		<Button type="submit" onclick={update} disabled={$loading}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

@@ -50,6 +50,8 @@ type Querier interface {
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	UpdateUserLastLogin(ctx context.Context, id int64) error
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	UpdateUserResetToken(ctx context.Context, arg UpdateUserResetTokenParams) error
 	UpsertRouterDNSProvider(ctx context.Context, arg UpsertRouterDNSProviderParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
 	UpsertTraefikAgentConfig(ctx context.Context, arg UpsertTraefikAgentConfigParams) error

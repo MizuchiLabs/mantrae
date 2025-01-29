@@ -83,8 +83,8 @@ func (s *AgentServer) GetContainer(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	util.Broadcast <- util.EventMessage{
-		Type:    "agent_updated",
-		Message: req.Msg.GetHostname(),
+		Type:    util.EventTypeUpdate,
+		Message: "agent",
 	}
 	s.mu.Unlock()
 

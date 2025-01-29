@@ -10,6 +10,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -111,6 +112,11 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeUpdate,
+			Message: "middleware",
+		}
+
 		// Return the updated configuration
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -172,6 +178,10 @@ func DeleteMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeDelete,
+			Message: "middleware",
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

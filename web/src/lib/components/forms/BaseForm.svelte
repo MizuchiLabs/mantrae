@@ -111,10 +111,21 @@
 	}
 
 	function getBaseType(fieldSchema: z.ZodTypeAny | unknown) {
-		if (fieldSchema instanceof z.ZodOptional || fieldSchema instanceof z.ZodDefault) {
+		if (
+			fieldSchema instanceof z.ZodOptional ||
+			fieldSchema instanceof z.ZodNullable ||
+			fieldSchema instanceof z.ZodDefault
+		) {
 			return fieldSchema._def.innerType;
 		}
 		return fieldSchema;
+	}
+
+	function getInputType(fieldSchema: z.ZodTypeAny) {
+		if (fieldSchema instanceof z.ZodString) return 'text';
+		if (fieldSchema instanceof z.ZodNumber || fieldSchema instanceof z.ZodBigInt) return 'number';
+		if (fieldSchema instanceof z.ZodDate) return 'date';
+		return 'text';
 	}
 
 	$effect(() => {
@@ -123,27 +134,36 @@
 </script>
 
 <form method="POST" use:enhance class="flex flex-col gap-2">
+	{#if schema instanceof z.ZodRecord}
+		<Form.Field {form} name={$formData.name.split('@')[0]}>
+			<Form.Control>
+				{#snippet children({ props })}
+					<div class="flex flex-col items-start gap-2">
+						<Form.Label>Plugin</Form.Label>
+						<Textarea
+							{...props}
+							value={JSON.stringify($formData[$formData.name.split('@')[0]], null, 2)}
+							rows={JSON.stringify($formData, null, 2).split('\n').length + 1}
+							disabled={$submitting}
+						/>
+					</div>
+				{/snippet}
+			</Form.Control>
+			<Form.FieldErrors />
+		</Form.Field>
+	{/if}
+
 	{#if schema instanceof z.ZodObject}
 		{#each Object.entries(schema.shape) as [fieldName, fieldSchema]}
 			{@const baseType = getBaseType(fieldSchema)}
-			{#if baseType instanceof z.ZodString}
-				<Form.Field {form} name={fieldName}>
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}</Form.Label>
-							<Input {...props} bind:value={$formData[fieldName]} disabled={$submitting} />
-						{/snippet}
-					</Form.Control>
-					<Form.FieldErrors />
-				</Form.Field>
-			{:else if baseType instanceof z.ZodNumber || baseType instanceof z.ZodBigInt}
+			{#if baseType instanceof z.ZodString || baseType instanceof z.ZodNumber || baseType instanceof z.ZodBigInt}
 				<Form.Field {form} name={fieldName}>
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}</Form.Label>
 							<Input
 								{...props}
-								type="number"
+								type={getInputType(baseType)}
 								bind:value={$formData[fieldName]}
 								disabled={$submitting}
 							/>
@@ -248,7 +268,7 @@
 				</Form.Field>
 			{/if}
 
-			<!-- Objects/Records (recursive) -->
+			<!-- Objects nested -->
 			{#if baseType instanceof z.ZodObject}
 				<Form.Fieldset {form} name={fieldName} class="py-4">
 					<Form.Legend>{fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}</Form.Legend>
@@ -258,34 +278,16 @@
 								{@const subFieldPath = getFieldPath(fieldName, subFieldName)}
 								{@const subBaseType = getBaseType(subFieldSchema)}
 
-								{#if subBaseType instanceof z.ZodString}
+								{#if subBaseType instanceof z.ZodString || subBaseType instanceof z.ZodNumber || subBaseType instanceof z.ZodBigInt}
 									<Form.Field {form} name={subFieldPath}>
 										<Form.Control>
 											{#snippet children({ props })}
-												<Form.Label
-													>{subFieldName.charAt(0).toUpperCase() +
-														subFieldName.slice(1)}</Form.Label
-												>
+												<Form.Label>
+													{subFieldName.charAt(0).toUpperCase() + subFieldName.slice(1)}
+												</Form.Label>
 												<Input
 													{...props}
-													bind:value={$formData[fieldName][subFieldName]}
-													disabled={$submitting}
-												/>
-											{/snippet}
-										</Form.Control>
-										<Form.FieldErrors />
-									</Form.Field>
-								{:else if subBaseType instanceof z.ZodNumber}
-									<Form.Field {form} name={subFieldPath}>
-										<Form.Control>
-											{#snippet children({ props })}
-												<Form.Label
-													>{subFieldName.charAt(0).toUpperCase() +
-														subFieldName.slice(1)}</Form.Label
-												>
-												<Input
-													{...props}
-													type="number"
+													type={getInputType(subBaseType)}
 													bind:value={$formData[fieldName][subFieldName]}
 													disabled={$submitting}
 												/>
@@ -298,32 +300,12 @@
 										<Form.Control>
 											{#snippet children({ props })}
 												<div class="flex items-center gap-2">
-													<Form.Label
-														>{subFieldName.charAt(0).toUpperCase() +
-															subFieldName.slice(1)}</Form.Label
-													>
+													<Form.Label>
+														{subFieldName.charAt(0).toUpperCase() + subFieldName.slice(1)}
+													</Form.Label>
 													<Checkbox
 														{...props}
 														checked={$formData[fieldName][subFieldName]}
-														disabled={$submitting}
-													/>
-												</div>
-											{/snippet}
-										</Form.Control>
-										<Form.FieldErrors />
-									</Form.Field>
-								{:else if subBaseType instanceof z.ZodRecord}
-									<Form.Field {form} name={subFieldPath}>
-										<Form.Control>
-											{#snippet children({ props })}
-												<div class="flex items-center gap-2">
-													<Form.Label
-														>{subFieldName.charAt(0).toUpperCase() +
-															subFieldName.slice(1)}</Form.Label
-													>
-													<Textarea
-														{...props}
-														bind:value={$formData[fieldName][subFieldName]}
 														disabled={$submitting}
 													/>
 												</div>
@@ -338,25 +320,6 @@
 				</Form.Fieldset>
 			{/if}
 		{/each}
-	{/if}
-
-	{#if schema instanceof z.ZodRecord}
-		<Form.Field {form} name={$formData.name.split('@')[0]}>
-			<Form.Control>
-				{#snippet children({ props })}
-					<div class="flex flex-col items-start gap-2">
-						<Form.Label>Plugin</Form.Label>
-						<Textarea
-							{...props}
-							value={JSON.stringify($formData[$formData.name.split('@')[0]], null, 2)}
-							rows={JSON.stringify($formData, null, 2).split('\n').length + 1}
-							disabled={$submitting}
-						/>
-					</div>
-				{/snippet}
-			</Form.Control>
-			<Form.FieldErrors />
-		</Form.Field>
 	{/if}
 
 	<Form.Button type="submit" disabled={$submitting}>Save</Form.Button>

@@ -8,14 +8,13 @@ export const ssr = false;
 export const prerender = true;
 export const trailingSlash = 'always';
 
-const PUBLIC_ROUTES = ['/login/', '/reset/'];
+const isPublicRoute = (path: string) => path.startsWith('/login/');
 
 export const load: LayoutLoad = async ({ url, fetch }) => {
-	const isPublicRoute = PUBLIC_ROUTES.includes(url.pathname);
 	const token = localStorage.getItem(TOKEN_SK);
 
 	// Case 1: No token and accessing protected route
-	if (!token && !isPublicRoute) {
+	if (!token && !isPublicRoute(url.pathname)) {
 		await goto('/login/');
 		user.set(null);
 		return;
@@ -32,7 +31,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 			}
 
 			// Trying to access public route
-			if (isPublicRoute) {
+			if (isPublicRoute(url.pathname)) {
 				await goto('/');
 			}
 			return;
@@ -40,7 +39,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 			const error = err instanceof Error ? err : new Error(String(err));
 			// Token verification failed
 			api.logout();
-			if (!isPublicRoute) {
+			if (!isPublicRoute(url.pathname)) {
 				await goto('/login');
 			}
 			user.set(null);

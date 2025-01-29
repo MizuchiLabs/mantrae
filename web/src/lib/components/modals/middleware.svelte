@@ -3,10 +3,12 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import {
 		type Middleware,
+		type SupportedMiddleware,
 		type SupportedMiddlewareHTTP,
 		type SupportedMiddlewareTCP,
 		type UpsertMiddlewareParams,
 		getDefaultValuesForType,
+		getMetadataForMiddleware,
 		getTCPDefaultValuesForType,
 		HTTPMiddlewareKeys,
 		TCPMiddlewareKeys
@@ -61,7 +63,7 @@
 	});
 
 	const handleTypeChange = (value: string) => {
-		middleware.type = value as SupportedMiddlewareHTTP | SupportedMiddlewareTCP;
+		middleware.type = value as SupportedMiddleware;
 	};
 	const handleProtocolChange = () => {
 		middleware.protocol = middleware.protocol === 'http' ? 'tcp' : 'http';
@@ -165,7 +167,12 @@
 		<Separator />
 
 		{#if middleware.type}
-			<DynamicForm data={currentFormData} {onSubmit} {disabled} />
+			<DynamicForm
+				data={currentFormData}
+				metadata={getMetadataForMiddleware(middleware.type)}
+				{onSubmit}
+				{disabled}
+			/>
 		{/if}
 	</Dialog.Content>
 </Dialog.Root>

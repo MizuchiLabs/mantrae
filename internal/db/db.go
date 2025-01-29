@@ -147,6 +147,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserLastLoginStmt, err = db.PrepareContext(ctx, updateUserLastLogin); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserLastLogin: %w", err)
 	}
+	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
+	}
+	if q.updateUserResetTokenStmt, err = db.PrepareContext(ctx, updateUserResetToken); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserResetToken: %w", err)
+	}
 	if q.upsertRouterDNSProviderStmt, err = db.PrepareContext(ctx, upsertRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertRouterDNSProvider: %w", err)
 	}
@@ -369,6 +375,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserLastLoginStmt: %w", cerr)
 		}
 	}
+	if q.updateUserPasswordStmt != nil {
+		if cerr := q.updateUserPasswordStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserPasswordStmt: %w", cerr)
+		}
+	}
+	if q.updateUserResetTokenStmt != nil {
+		if cerr := q.updateUserResetTokenStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserResetTokenStmt: %w", cerr)
+		}
+	}
 	if q.upsertRouterDNSProviderStmt != nil {
 		if cerr := q.upsertRouterDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertRouterDNSProviderStmt: %w", cerr)
@@ -469,6 +485,8 @@ type Queries struct {
 	updateProfileStmt                     *sql.Stmt
 	updateUserStmt                        *sql.Stmt
 	updateUserLastLoginStmt               *sql.Stmt
+	updateUserPasswordStmt                *sql.Stmt
+	updateUserResetTokenStmt              *sql.Stmt
 	upsertRouterDNSProviderStmt           *sql.Stmt
 	upsertSettingStmt                     *sql.Stmt
 	upsertTraefikAgentConfigStmt          *sql.Stmt
@@ -520,6 +538,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateProfileStmt:                     q.updateProfileStmt,
 		updateUserStmt:                        q.updateUserStmt,
 		updateUserLastLoginStmt:               q.updateUserLastLoginStmt,
+		updateUserPasswordStmt:                q.updateUserPasswordStmt,
+		updateUserResetTokenStmt:              q.updateUserResetTokenStmt,
 		upsertRouterDNSProviderStmt:           q.upsertRouterDNSProviderStmt,
 		upsertSettingStmt:                     q.upsertSettingStmt,
 		upsertTraefikAgentConfigStmt:          q.upsertTraefikAgentConfigStmt,

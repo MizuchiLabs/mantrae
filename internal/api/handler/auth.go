@@ -102,6 +102,8 @@ func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
 		var data struct {
+			Username string `json:"username"`
+			Token    string `json:"token"`
 			Password string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
@@ -109,26 +111,25 @@ func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 			return
 		}
 
-		tokenString := r.Header.Get("Authorization")
-		if len(tokenString) < 7 {
-			http.Error(w, "Token cannot be empty", http.StatusBadRequest)
+		user, err := q.GetUserByUsername(r.Context(), data.Username)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
 
-		user, err := util.DecodeUserJWT(tokenString[7:], secret)
-		if err != nil {
+		// Verify token
+		if user.Otp == nil || user.OtpExpiry == nil {
+			http.Error(w, "No reset token found", http.StatusUnauthorized)
+			return
+		}
+
+		if user.Otp != &data.Token {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		if user.Username == "" || data.Password == "" {
-			http.Error(w, "Username or password cannot be empty", http.StatusBadRequest)
-			return
-		}
-
-		dbUser, err := q.GetUserByUsername(r.Context(), user.Username)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusNotFound)
+		if time.Now().After(*user.OtpExpiry) {
+			http.Error(w, "Token expired", http.StatusUnauthorized)
 			return
 		}
 
@@ -138,12 +139,9 @@ func ResetPassword(DB *sql.DB, secret string) http.HandlerFunc {
 			return
 		}
 
-		if err = q.UpdateUser(r.Context(), db.UpdateUserParams{
-			ID:       dbUser.ID,
-			Username: dbUser.Username,
-			Email:    dbUser.Email,
+		if err = q.UpdateUserPassword(r.Context(), db.UpdateUserPasswordParams{
+			ID:       user.ID,
 			Password: string(hash),
-			IsAdmin:  dbUser.IsAdmin,
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -172,9 +170,11 @@ func SendResetEmail(DB *sql.DB, secret string) http.HandlerFunc {
 			return
 		}
 
-		token, err := util.EncodeUserJWT(user.Username, secret, time.Now().Add(10*time.Minute))
+		// Generate OTP
+		expiresAt := time.Now().Add(10 * time.Minute)
+		token, err := util.GenerateOTP()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 			return
 		}
 
@@ -183,28 +183,33 @@ func SendResetEmail(DB *sql.DB, secret string) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if err = q.UpdateUserResetToken(r.Context(), db.UpdateUserResetTokenParams{
+			ID:        user.ID,
+			Otp:       &token,
+			OtpExpiry: &expiresAt,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		var config app.EmailConfig
-		var resetLink string
 		for _, setting := range settings {
 			switch setting.Key {
-			case "email-host":
+			case "email_host":
 				config.Host = setting.Value
-			case "email-port":
+			case "email_port":
 				config.Port = setting.Value
-			case "email-username":
+			case "email_username":
 				config.Username = setting.Value
-			case "email-password":
+			case "email_password":
 				config.Password = setting.Value
-			case "email-from":
+			case "email_from":
 				config.From = setting.Value
-			case "server-url":
-				resetLink = fmt.Sprintf("%s/login/reset?token=%s", setting.Value, token)
 			}
 		}
 		data := map[string]interface{}{
-			"ResetLink": resetLink,
-			"Minutes":   10,
+			"Token": token,
+			"Date":  expiresAt.Format(time.RFC3339),
 		}
 		if err := mail.Send(*user.Email, "reset-password", config, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

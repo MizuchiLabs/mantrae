@@ -76,6 +76,8 @@ type User struct {
 	Password  string     `json:"password"`
 	Email     *string    `json:"email"`
 	IsAdmin   bool       `json:"isAdmin"`
+	Otp       *string    `json:"otp"`
+	OtpExpiry *time.Time `json:"otpExpiry"`
 	LastLogin *time.Time `json:"lastLogin"`
 	CreatedAt *time.Time `json:"createdAt"`
 	UpdatedAt *time.Time `json:"updatedAt"`

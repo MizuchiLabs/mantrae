@@ -2,14 +2,18 @@
 	import { Button } from '$lib/components/ui/button/index';
 	import { safeClone } from '$lib/utils';
 	import FormField from './FormField.svelte';
+	import type { FieldMetadata } from '$lib/types/middlewares';
+	import Separator from '../ui/separator/separator.svelte';
+	import { loading } from '$lib/api';
 
 	interface Props {
 		data: Record<string, unknown>;
+		metadata?: Record<string, FieldMetadata>;
 		onSubmit: (data: Record<string, unknown>) => void;
 		disabled?: boolean;
 	}
 
-	let { data = $bindable(), onSubmit, disabled }: Props = $props();
+	let { data = $bindable(), metadata = {}, onSubmit, disabled }: Props = $props();
 
 	// Form state
 	let formData = $state(safeClone(data));
@@ -30,6 +34,7 @@
 		key: string;
 		path: string;
 		value: unknown;
+		metadata: FieldMetadata;
 		type: string;
 	};
 
@@ -37,6 +42,7 @@
 	function processFields(obj: Record<string, unknown>, parentKey = ''): FormFieldType[] {
 		return Object.entries(obj).flatMap(([key, value]) => {
 			const currentPath = parentKey ? `${parentKey}.${key}` : key;
+			const fieldMetadata = metadata[currentPath] || {};
 
 			if (value && typeof value === 'object' && !Array.isArray(value)) {
 				return processFields(value as Record<string, unknown>, currentPath);
@@ -47,6 +53,7 @@
 					key,
 					path: currentPath,
 					value,
+					metadata: fieldMetadata,
 					type: Array.isArray(value) ? 'array' : typeof value
 				}
 			];
@@ -63,5 +70,6 @@
 		{/each}
 	</div>
 
-	<Button type="submit" class="mt-4 w-full">Save</Button>
+	<Separator class="my-4" />
+	<Button type="submit" class="w-full" disabled={$loading}>Save</Button>
 </form>

@@ -5,9 +5,13 @@ export type SupportedMiddleware = SupportedMiddlewareHTTP | SupportedMiddlewareT
 export type SupportedMiddlewareHTTP = keyof Omit<HTTPMiddleware, 'name' | 'protocol' | 'type'>;
 export type SupportedMiddlewareTCP = keyof Omit<TCPMiddleware, 'name' | 'protocol' | 'type'>;
 
-// HTTP Middlewares ----------------------------------------------------------
-export interface HTTPMiddleware {
+interface BaseMiddleware {
 	name: string;
+	type?: string;
+}
+
+// HTTP Middlewares ----------------------------------------------------------
+export interface HTTPMiddleware extends BaseMiddleware {
 	protocol: 'http';
 	type?: SupportedMiddlewareHTTP;
 	addPrefix?: AddPrefix;
@@ -35,8 +39,7 @@ export interface HTTPMiddleware {
 }
 
 // TCP Middlewares -----------------------------------------------------------
-export interface TCPMiddleware {
-	name: string;
+export interface TCPMiddleware extends BaseMiddleware {
 	protocol: 'tcp';
 	type?: SupportedMiddlewareTCP;
 	ipAllowList?: TCPIPAllowList;
@@ -334,8 +337,15 @@ export interface TCPInFlightConn {
 }
 
 // Helper to get default values for HTTP middleware types
-export function getDefaultValuesForType(type: keyof HTTPMiddleware): Record<string, any> {
-	const defaults: Record<string, any> = {
+type HTTPMiddlewareDefaults = {
+	[K in SupportedMiddlewareHTTP]: K extends keyof HTTPMiddleware
+		? Exclude<HTTPMiddleware[K], undefined>
+		: never;
+};
+export function getDefaultValuesForType<T extends SupportedMiddlewareHTTP>(
+	type: T
+): HTTPMiddlewareDefaults[T] {
+	const defaults: HTTPMiddlewareDefaults = {
 		addPrefix: {
 			prefix: ''
 		},
@@ -515,12 +525,19 @@ export function getDefaultValuesForType(type: keyof HTTPMiddleware): Record<stri
 		plugin: {}
 	};
 
-	return defaults[type] || {};
+	return defaults[type];
 }
 
 // Helper to get default values for TCP middleware types
-export function getTCPDefaultValuesForType(type: keyof TCPMiddleware): Record<string, any> {
-	const defaults: Record<string, any> = {
+type TCPMiddlewareDefaults = {
+	[K in SupportedMiddlewareTCP]: K extends keyof TCPMiddleware
+		? Exclude<TCPMiddleware[K], undefined>
+		: never;
+};
+export function getTCPDefaultValuesForType<T extends SupportedMiddlewareTCP>(
+	type: T
+): TCPMiddlewareDefaults[T] {
+	const defaults: TCPMiddlewareDefaults = {
 		ipAllowList: {
 			sourceRange: []
 		},
@@ -529,5 +546,469 @@ export function getTCPDefaultValuesForType(type: keyof TCPMiddleware): Record<st
 		}
 	};
 
-	return defaults[type] || {};
+	return defaults[type];
+}
+
+// Metadata per field
+export type FieldMetadata = {
+	placeholder?: string;
+	description?: string;
+	examples?: string[];
+	validation?: {
+		min?: number;
+		max?: number;
+		pattern?: string;
+	};
+};
+
+type HTTPMiddlewareFieldMetadata = {
+	[K in SupportedMiddlewareHTTP]: {
+		[Field in keyof Required<Exclude<HTTPMiddleware[K], undefined>>]: FieldMetadata;
+	};
+};
+
+type TCPMiddlewareFieldMetadata = {
+	[K in SupportedMiddlewareTCP]: {
+		[Field in keyof Required<Exclude<TCPMiddleware[K], undefined>>]: FieldMetadata;
+	};
+};
+
+export type MiddlewareFieldMetadata = HTTPMiddlewareFieldMetadata & TCPMiddlewareFieldMetadata;
+export const middlewareFieldMetadata: MiddlewareFieldMetadata = {
+	// Basic HTTP Middlewares
+	addPrefix: {
+		prefix: {
+			placeholder: '/api',
+			description: 'Adds a path prefix to the existing request path',
+			examples: ['/api', '/v1', '/prefix']
+		}
+	},
+
+	basicAuth: {
+		users: {
+			placeholder: 'test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/',
+			description: 'List of authorized users in Basic Authentication format',
+			examples: ['user:hashed-password']
+		},
+		usersFile: {
+			placeholder: '/path/to/users',
+			description: 'Path to the file containing authorized users'
+		},
+		realm: {
+			placeholder: 'Traefik',
+			description: 'Authentication realm to display in the browser'
+		},
+		removeHeader: {
+			description: 'If true, removes the authorization header before forwarding the request'
+		},
+		headerField: {
+			placeholder: 'X-WebAuth-User',
+			description: 'Sets the header field for the authenticated user'
+		}
+	},
+
+	digestAuth: {
+		users: {
+			placeholder: 'test:traefik:a2688e031edb4be6a3797f3882655c05',
+			description: 'List of authorized users in Digest Authentication format',
+			examples: ['user:realm:hashed-password']
+		},
+		usersFile: {
+			placeholder: '/path/to/users',
+			description: 'Path to the file containing authorized users'
+		},
+		removeHeader: {
+			description: 'If true, removes the authorization header before forwarding the request'
+		},
+		realm: {
+			placeholder: 'traefik',
+			description: 'Authentication realm to display in the browser'
+		},
+		headerField: {
+			placeholder: 'X-WebAuth-User',
+			description: 'Sets the header field for the authenticated user'
+		}
+	},
+
+	buffering: {
+		maxRequestBodyBytes: {
+			placeholder: '2097152',
+			description: 'Maximum size of the request body in bytes (2MB default)',
+			validation: { min: 0 }
+		},
+		memRequestBodyBytes: {
+			placeholder: '1048576',
+			description: 'Maximum size of the request body in memory (1MB default)',
+			validation: { min: 0 }
+		},
+		maxResponseBodyBytes: {
+			placeholder: '2097152',
+			description: 'Maximum size of the response body in bytes (2MB default)',
+			validation: { min: 0 }
+		},
+		memResponseBodyBytes: {
+			placeholder: '1048576',
+			description: 'Maximum size of the response body in memory (1MB default)',
+			validation: { min: 0 }
+		},
+		retryExpression: {
+			placeholder: 'IsNetworkError() && Attempts() <= 2',
+			description: 'Retry request if expression matches'
+		}
+	},
+
+	chain: {
+		middlewares: {
+			placeholder: 'auth-middleware, rate-limit',
+			description: 'List of middleware names to be chained together',
+			examples: ['auth-middleware', 'rate-limit', 'compress']
+		}
+	},
+
+	circuitBreaker: {
+		expression: {
+			placeholder: 'NetworkErrorRatio() > 0.5',
+			description: 'Expression that triggers the circuit breaker',
+			examples: ['NetworkErrorRatio() > 0.5', 'ResponseCodeRatio(500, 600, 0, 600) > 0.5']
+		},
+		checkPeriod: {
+			placeholder: '10s',
+			description: 'Interval between successive checks',
+			examples: ['10s', '1m', '1h']
+		},
+		fallbackDuration: {
+			placeholder: '10s',
+			description: 'Duration for which the circuit breaker stays open',
+			examples: ['10s', '1m', '1h']
+		},
+		recoveryDuration: {
+			placeholder: '10s',
+			description: 'Duration for which the circuit breaker stays in recovery state',
+			examples: ['10s', '1m', '1h']
+		},
+		responseCode: {
+			placeholder: '503',
+			description: 'Response code when circuit breaker is open',
+			validation: { min: 100, max: 599 }
+		}
+	},
+
+	compress: {
+		excludedContentTypes: {
+			placeholder: 'image/jpeg, image/png',
+			description: 'List of content types to exclude from compression',
+			examples: ['image/jpeg', 'image/png', 'application/pdf']
+		},
+		includeContentTypes: {
+			placeholder: 'text/html, text/plain',
+			description: 'List of content types to include for compression',
+			examples: ['text/html', 'text/plain', 'application/json']
+		},
+		minResponseBodyBytes: {
+			placeholder: '1024',
+			description: 'Minimum response body size for compression',
+			validation: { min: 0 }
+		},
+		defaultEncoding: {
+			placeholder: 'gzip',
+			description: 'Default compression encoding',
+			examples: ['gzip', 'deflate']
+		}
+	},
+
+	errorPage: {
+		status: {
+			placeholder: '500-599',
+			description: 'HTTP status codes to match',
+			examples: ['404', '500-599']
+		},
+		service: {
+			placeholder: 'error-handler',
+			description: 'Service to call when an error occurs'
+		},
+		query: {
+			placeholder: '/error?code={status}&url={url}',
+			description: 'Query string to use when calling error service'
+		}
+	},
+
+	forwardAuth: {
+		address: {
+			placeholder: 'http://auth.example.com',
+			description: 'Authentication server address'
+		},
+		tls: {
+			ca: {
+				placeholder: '/path/to/ca.crt',
+				description: 'Certificate Authority certificate path'
+			},
+			cert: {
+				placeholder: '/path/to/server.crt',
+				description: 'Client certificate path'
+			},
+			key: {
+				placeholder: '/path/to/server.key',
+				description: 'Client certificate key path'
+			},
+			insecureSkipVerify: {
+				description: 'Skip TLS certificate verification (not recommended)'
+			}
+		},
+		trustForwardHeader: {
+			description: 'Trust X-Forwarded-* headers from previous proxy'
+		},
+		authResponseHeaders: {
+			placeholder: 'X-Auth-User, X-Auth-Role',
+			description: 'Headers to forward from auth response'
+		},
+		authRequestHeaders: {
+			placeholder: 'X-Auth-User, X-Auth-Role',
+			description: 'Headers to forward to authentication server'
+		}
+	},
+
+	rateLimit: {
+		average: {
+			placeholder: '100',
+			description: 'Average requests per period',
+			validation: { min: 1 }
+		},
+		period: {
+			placeholder: '1m',
+			description: 'Sampling period',
+			examples: ['10s', '1m', '1h']
+		},
+		burst: {
+			placeholder: '200',
+			description: 'Maximum requests allowed to exceed the average',
+			validation: { min: 1 }
+		},
+		sourceCriterion: {
+			placeholder: 'request.host',
+			description: 'Source criterion'
+		}
+	},
+
+	headers: {
+		customRequestHeaders: {
+			placeholder: '{"X-Custom-Header": "value"}',
+			description: 'Custom headers to add to request'
+		},
+		customResponseHeaders: {
+			placeholder: '{"X-Response-Header": "value"}',
+			description: 'Custom headers to add to response'
+		},
+		accessControlAllowOriginList: {
+			placeholder: 'https://example.com',
+			description: 'Allowed CORS origins',
+			examples: ['https://example.com', '*']
+		}
+	},
+
+	retry: {
+		attempts: {
+			placeholder: '3',
+			description: 'Number of retry attempts',
+			validation: { min: 1 }
+		},
+		initialInterval: {
+			placeholder: '100ms',
+			description: 'Initial retry interval',
+			examples: ['100ms', '1s', '2s']
+		}
+	},
+
+	inFlightReq: {
+		amount: {
+			placeholder: '100',
+			description: 'Maximum number of allowed simultaneous requests',
+			validation: { min: 1 }
+		},
+		sourceCriterion: {
+			ipStrategy: {
+				depth: {
+					placeholder: '1',
+					description: 'Number of IPs to take from X-Forwarded-For header',
+					validation: { min: 0 }
+				},
+				excludedIPs: {
+					placeholder: '127.0.0.1',
+					description: 'IPs to exclude from X-Forwarded-For header',
+					examples: ['127.0.0.1', '192.168.0.0/16']
+				}
+			},
+			requestHeaderName: {
+				placeholder: 'X-Real-IP',
+				description: 'Header to use as source',
+				examples: ['X-Real-IP', 'X-Forwarded-For']
+			},
+			requestHost: {
+				description: 'Use request host as source'
+			}
+		}
+	},
+
+	passTLSClientCert: {
+		pem: {
+			description: 'Pass the PEM-formatted client certificate in a header'
+		},
+		info: {
+			notAfter: {
+				description: 'Add NotAfter info in a header'
+			},
+			notBefore: {
+				description: 'Add NotBefore info in a header'
+			},
+			sans: {
+				description: 'Add Subject Alternative Names info in a header'
+			},
+			serialNumber: {
+				description: 'Add serial number info in a header'
+			},
+			subject: {
+				country: {
+					description: 'Add subject country info in a header'
+				},
+				province: {
+					description: 'Add subject province info in a header'
+				},
+				locality: {
+					description: 'Add subject locality info in a header'
+				},
+				organization: {
+					description: 'Add subject organization info in a header'
+				},
+				organizationalUnit: {
+					description: 'Add subject organizational unit info in a header'
+				},
+				commonName: {
+					description: 'Add subject common name info in a header'
+				},
+				serialNumber: {
+					description: 'Add subject serial number info in a header'
+				},
+				domainComponent: {
+					description: 'Add subject domain component info in a header'
+				}
+			},
+			issuer: {
+				country: {
+					description: 'Add issuer country info in a header'
+				},
+				province: {
+					description: 'Add issuer province info in a header'
+				},
+				locality: {
+					description: 'Add issuer locality info in a header'
+				},
+				organization: {
+					description: 'Add issuer organization info in a header'
+				},
+				commonName: {
+					description: 'Add issuer common name info in a header'
+				},
+				serialNumber: {
+					description: 'Add issuer serial number info in a header'
+				},
+				domainComponent: {
+					description: 'Add issuer domain component info in a header'
+				}
+			}
+		}
+	},
+
+	redirectRegex: {
+		regex: {
+			placeholder: '^/redirect/(.*)$',
+			description: 'Regular expression to match path for redirection',
+			examples: ['^/redirect/(.*)$', '^/old-api/(.*)$']
+		},
+		replacement: {
+			placeholder: '/new/$1',
+			description: 'Replacement path for the redirection',
+			examples: ['/new/$1', 'https://example.org/$1']
+		},
+		permanent: {
+			description: 'Use permanent redirection (301 instead of 302)'
+		}
+	},
+
+	redirectScheme: {
+		scheme: {
+			placeholder: 'https',
+			description: 'Scheme to redirect to',
+			examples: ['https', 'http']
+		},
+		port: {
+			placeholder: '443',
+			description: 'Port to redirect to',
+			examples: ['443', '8443']
+		},
+		permanent: {
+			description: 'Use permanent redirection (301 instead of 302)'
+		}
+	},
+
+	replacePath: {
+		path: {
+			placeholder: '/new-path',
+			description: 'Path to replace the matched URL',
+			examples: ['/new-path', '/api/v2']
+		}
+	},
+
+	replacePathRegex: {
+		regex: {
+			placeholder: '^/old-path/(.*)$',
+			description: 'Regular expression to match path for replacement',
+			examples: ['^/old-path/(.*)$', '^/api/v1/(.*)$']
+		},
+		replacement: {
+			placeholder: '/new-path/$1',
+			description: 'Replacement pattern for the path',
+			examples: ['/new-path/$1', '/api/v2/$1']
+		}
+	},
+
+	stripPrefix: {
+		prefixes: {
+			placeholder: '/api',
+			description: 'List of path prefixes to strip from URL',
+			examples: ['/api', '/api/v1', '/legacy']
+		},
+		forceSlash: {
+			description: 'Force adding a trailing slash to the path'
+		}
+	},
+
+	stripPrefixRegex: {
+		regex: {
+			placeholder: '^/api/.*',
+			description: 'Regular expressions to match prefixes to strip from URL',
+			examples: ['^/api/.*', '^/old/.*/api']
+		}
+	},
+
+	// TCP Middlewares
+	ipAllowList: {
+		sourceRange: {
+			placeholder: '192.168.1.0/24',
+			description: 'IP ranges to allow',
+			examples: ['192.168.1.0/24', '10.0.0.0/8']
+		},
+		ipStrategy: {
+			description: 'IP strategy to use'
+		}
+	},
+	inFlightConn: {
+		amount: {
+			placeholder: '100',
+			description: 'Maximum amount of allowed simultaneous connections',
+			validation: { min: 1 }
+		}
+	}
+};
+
+export function getMetadataForMiddleware(type: SupportedMiddleware) {
+	return middlewareFieldMetadata[type] || {};
 }

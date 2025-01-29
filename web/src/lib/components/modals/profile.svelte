@@ -8,6 +8,7 @@
 	import type { Profile } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		profile?: Profile;
@@ -88,14 +89,16 @@
 				<Label for="tls">Enable TLS</Label>
 			</div>
 
-			<Dialog.Footer>
+			<Separator />
+
+			<div class="flex justify-end space-x-2">
 				{#if profile.id}
 					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}>
 						Delete
 					</Button>
 				{/if}
-				<Button type="submit" disabled={$loading}>{profile.id ? 'Update' : 'Save'}</Button>
-			</Dialog.Footer>
+				<Button type="submit" disabled={$loading}>{profile.id ? 'Update' : 'Create'}</Button>
+			</div>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

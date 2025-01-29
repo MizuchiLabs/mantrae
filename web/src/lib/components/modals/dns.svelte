@@ -52,27 +52,12 @@
 			});
 		}
 	};
-
-	const handleDelete = async () => {
-		if (!dns.id) return;
-
-		try {
-			await api.deleteProfile(dns.id);
-			toast.success('DNS Provider deleted successfully');
-			open = false;
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error('Failed to delete dnsProvider', {
-				description: e.message
-			});
-		}
-	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-screen overflow-y-auto sm:max-w-[550px]">
 		<Dialog.Header>
-			<Dialog.Title>{dns.id ? 'Edit' : 'Add'} Provider</Dialog.Title>
+			<Dialog.Title>{dns.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
 			<Dialog.Description>Setup dns provider for automated dns records</Dialog.Description>
 		</Dialog.Header>
 
@@ -171,14 +156,9 @@
 				</div>
 			{/if}
 
-			<Dialog.Footer>
-				{#if dns.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}>
-						Delete
-					</Button>
-				{/if}
-				<Button type="submit" disabled={$loading}>{dns.id ? 'Update' : 'Save'}</Button>
-			</Dialog.Footer>
+			<Separator />
+
+			<Button type="submit" class="w-full" disabled={$loading}>{dns.id ? 'Update' : 'Save'}</Button>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

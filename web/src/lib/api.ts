@@ -7,6 +7,7 @@ import {
 	type Profile,
 	type RouterDNSProvider,
 	type Settings,
+	type Stats,
 	type TraefikConfig,
 	type UpdateAgentIPParams,
 	type UpsertSettingsParams,
@@ -51,6 +52,7 @@ export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
 export const backups: Writable<BackupFile[]> = writable([]);
+export const stats: Writable<Stats> = writable({} as Stats);
 
 // App state
 export const profile: Writable<Profile> = writable({} as Profile);
@@ -152,12 +154,15 @@ export const api = {
 		}
 	},
 
-	async resetPassword(token: string, password: string) {
-		const data = await send('/reset', {
+	async sendResetEmail(username: string) {
+		await send(`/reset/${username}`, { method: 'POST' });
+	},
+
+	async resetPassword(username: string, token: string, password: string) {
+		await send('/reset', {
 			method: 'POST',
-			body: { token, password }
+			body: { username, token, password }
 		});
-		return data;
 	},
 
 	async load() {
@@ -187,6 +192,21 @@ export const api = {
 	logout() {
 		localStorage.removeItem(TOKEN_SK);
 		goto('/login');
+	},
+
+	async loadStats() {
+		await api.listDNSProviders();
+		await api.listUsers();
+		await api.listProfiles();
+		const agents = await api.listAgents();
+
+		stats.set({
+			profiles: get(profiles)?.length,
+			agents: agents?.length,
+			users: get(users)?.length,
+			dnsProviders: get(dnsProviders)?.length,
+			activeDNS: get(dnsProviders)?.find((item) => item.isActive)?.name ?? 'None'
+		});
 	},
 
 	// Profiles ------------------------------------------------------------------
@@ -239,9 +259,9 @@ export const api = {
 			return;
 		}
 		const traefik = res as TraefikConfig;
-		const routers = flattenRouterData(res.config);
-		const services = flattenServiceData(res.config);
-		const middlewares = flattenMiddlewareData(res.config);
+		const routers = flattenRouterData(res);
+		const services = flattenServiceData(res);
+		const middlewares = flattenMiddlewareData(res);
 		return { traefik, routers, services, middlewares };
 	},
 

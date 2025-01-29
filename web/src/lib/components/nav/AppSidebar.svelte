@@ -24,10 +24,12 @@
 		Origami,
 		CircleUserRound,
 		Sun,
-		Moon
+		Moon,
+		Zap
 	} from 'lucide-svelte';
 	import InfoModal from '../modals/info.svelte';
 	import ProfileModal from '../modals/profile.svelte';
+	import UserModal from '../modals/user.svelte';
 	import { profile, profiles, user, api } from '$lib/api';
 	import { slide } from 'svelte/transition';
 	import type { Profile } from '$lib/types';
@@ -86,7 +88,15 @@
 
 	const initialModalState: ModalState = { isOpen: false };
 	let modalState = $state(initialModalState);
+	let infoModalOpen = $state(false);
+	let userModalOpen = $state(false);
 </script>
+
+<ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} />
+<InfoModal bind:open={infoModalOpen} />
+{#if $user}
+	<UserModal bind:open={userModalOpen} user={$user} />
+{/if}
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<!-- Profile Selection -->
@@ -156,7 +166,7 @@
 	<!-- Content -->
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>Platform</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel>Dashboard</Sidebar.GroupLabel>
 			<Sidebar.Menu>
 				{#each routes as route (route.title)}
 					{#if route.subItems}
@@ -218,12 +228,16 @@
 
 		<Sidebar.Group class="mt-auto">
 			<Sidebar.GroupContent>
+				<Sidebar.GroupLabel>Status</Sidebar.GroupLabel>
 				<Sidebar.Menu>
 					{#if $profiles}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton size="lg">
+							<Sidebar.MenuButton>
 								{#snippet child({ props })}
-									<InfoModal {...props} />
+									<button {...props} onclick={() => (infoModalOpen = true)}>
+										<Zap />
+										<span>Traefik Status</span>
+									</button>
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
@@ -246,10 +260,10 @@
 								{...props}
 							>
 								<Avatar.Root class="h-8 w-8 rounded-lg">
-									<!-- <Avatar.Image src={user.avatar} alt={$user.username} /> -->
-									<Avatar.Fallback class="rounded-lg"
-										>{$user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback
-									>
+									<!-- <Avatar.Image src={user.avatar} alt={'@' + $user?.username} /> -->
+									<Avatar.Fallback class="rounded-lg">
+										{$user?.username.slice(0, 2).toUpperCase()}
+									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{$user?.username}</span>
@@ -268,10 +282,10 @@
 						<DropdownMenu.Label class="p-0 font-normal">
 							<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar.Root class="h-8 w-8 rounded-lg">
-									<!-- <Avatar.Image src={user?.avatar} alt={$user?.username} /> -->
-									<Avatar.Fallback class="rounded-lg"
-										>{$user?.username.slice(0, 2).toUpperCase()}</Avatar.Fallback
-									>
+									<!-- <Avatar.Image src={user?.avatar} alt={'@' + $user?.username} /> -->
+									<Avatar.Fallback class="rounded-lg">
+										{$user?.username.slice(0, 2).toUpperCase()}
+									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{$user?.username}</span>
@@ -281,7 +295,7 @@
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
-							<DropdownMenu.Item>
+							<DropdownMenu.Item onSelect={() => (userModalOpen = true)}>
 								<CircleUserRound />
 								Account
 							</DropdownMenu.Item>
@@ -307,5 +321,3 @@
 	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>
-
-<ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} />

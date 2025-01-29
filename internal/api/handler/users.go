@@ -55,7 +55,7 @@ func CreateUser(DB *sql.DB) http.HandlerFunc {
 		}
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeCreate,
-			Message: string(user.Username),
+			Message: "user",
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -92,7 +92,7 @@ func UpdateUser(DB *sql.DB) http.HandlerFunc {
 
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeUpdate,
-			Message: user.Username,
+			Message: "user",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -113,7 +113,7 @@ func DeleteUser(DB *sql.DB) http.HandlerFunc {
 
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeDelete,
-			Message: r.PathValue("id"),
+			Message: "user",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

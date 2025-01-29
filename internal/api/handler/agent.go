@@ -9,6 +9,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/api/agent"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/google/uuid"
 )
 
@@ -90,6 +91,11 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeCreate,
+			Message: "agent",
+		}
 		w.WriteHeader(http.StatusCreated)
 	}
 }
@@ -105,6 +111,11 @@ func UpdateAgentIP(DB *sql.DB) http.HandlerFunc {
 		if err := q.UpdateAgentIP(r.Context(), agent); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeUpdate,
+			Message: "agent",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -125,6 +136,11 @@ func DeleteAgent(DB *sql.DB) http.HandlerFunc {
 		if err := q.DeleteAgent(r.Context(), agent.ID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeDelete,
+			Message: "agent",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -163,6 +179,11 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeUpdate,
+			Message: "agent",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

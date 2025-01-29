@@ -5,13 +5,12 @@
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import type { Middleware } from '$lib/types/middlewares';
+	import type { Middleware, SupportedMiddleware } from '$lib/types/middlewares';
 	import { Eye, Layers, Pencil, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, profile, middlewares, source } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import type { SupportedMiddleware } from '$lib/components/forms/mw_registry';
 
 	interface ModalState {
 		isOpen: boolean;

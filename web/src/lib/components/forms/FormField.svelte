@@ -6,20 +6,18 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { Plus, Trash } from 'lucide-svelte';
 	import { mwNames } from '$lib/api';
+	import type { FieldMetadata } from '$lib/types/middlewares';
 
 	interface Props {
 		key: string;
 		path: string;
 		type: string;
 		data: Record<string, unknown>;
+		metadata?: FieldMetadata;
 		disabled?: boolean;
 	}
 
-	let { key, path, type, data = $bindable(), disabled }: Props = $props();
-
-	$effect(() => {
-		console.log(key, path, type, data);
-	});
+	let { key, path, type, data = $bindable(), metadata = {}, disabled }: Props = $props();
 
 	type FormValue = string | number | boolean | string[] | Record<string, unknown>;
 
@@ -96,7 +94,14 @@
 </script>
 
 <div class="grid gap-2">
-	<Label for={path}>{formatLabel(key)}</Label>
+	<Label for={path} class="flex flex-row items-center justify-between">
+		{formatLabel(key)}
+		{#if metadata.description}
+			<span class="ml-1 text-sm text-muted-foreground">
+				{metadata.description}
+			</span>
+		{/if}
+	</Label>
 
 	{#if isChainMiddleware}
 		<div class="flex flex-col gap-2">
@@ -120,7 +125,9 @@
 					{disabled}
 				>
 					<Select.Trigger>
-						{fieldValue?.length > 0 ? fieldValue?.join(', ') : 'Select Middlewares'}
+						{Array.isArray(fieldValue) && fieldValue.length > 0
+							? fieldValue.join(', ')
+							: 'Select Middlewares'}
 					</Select.Trigger>
 					<Select.Content>
 						{#each $mwNames as name}
@@ -159,6 +166,7 @@
 						type="text"
 						{value}
 						onchange={(e) => handleArrayChange(i, (e.target as HTMLInputElement).value)}
+						placeholder={metadata.placeholder}
 						{disabled}
 					/>
 					{#if !disabled}
@@ -185,11 +193,29 @@
 		<Input
 			type="number"
 			id={path}
-			value={fieldValue as number}
+			value={(fieldValue as number) || metadata.placeholder}
+			onchange={handleChange}
+			placeholder={metadata.placeholder}
+			{disabled}
+		/>
+		{#if metadata.examples?.length}
+			<div class="text-sm text-muted-foreground">
+				Examples: {metadata.examples.join(', ')}
+			</div>
+		{/if}
+	{:else}
+		<Input
+			type="text"
+			id={path}
+			value={fieldValue as string}
+			placeholder={metadata.placeholder}
 			onchange={handleChange}
 			{disabled}
 		/>
-	{:else}
-		<Input type="text" id={path} value={fieldValue as string} onchange={handleChange} {disabled} />
+		{#if metadata.examples?.length}
+			<div class="text-sm text-muted-foreground">
+				Examples: {metadata.examples.join(', ')}
+			</div>
+		{/if}
 	{/if}
 </div>

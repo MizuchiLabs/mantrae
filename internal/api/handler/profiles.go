@@ -8,6 +8,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 func ListProfiles(DB *sql.DB) http.HandlerFunc {
@@ -64,6 +65,10 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeCreate,
+			Message: "profile",
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -80,6 +85,10 @@ func UpdateProfile(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeUpdate,
+			Message: "profile",
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -95,6 +104,10 @@ func DeleteProfile(DB *sql.DB) http.HandlerFunc {
 		if err := q.DeleteProfile(r.Context(), profile_id); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+		util.Broadcast <- util.EventMessage{
+			Type:    util.EventTypeDelete,
+			Message: "profile",
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
