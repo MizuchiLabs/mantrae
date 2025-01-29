@@ -15,11 +15,12 @@
 
 	interface ModalState {
 		isOpen: boolean;
+		disabled: boolean;
 		middleware: Middleware;
 	}
-
 	const initialModalState: ModalState = {
 		isOpen: false,
+		disabled: false,
 		middleware: {
 			name: '',
 			protocol: 'http',
@@ -32,6 +33,7 @@
 	function openCreateModal() {
 		modalState = {
 			isOpen: true,
+			disabled: false,
 			middleware: initialModalState.middleware
 		};
 	}
@@ -110,6 +112,7 @@
 								onClick: () => {
 									modalState = {
 										isOpen: true,
+										disabled: false,
 										middleware: row.original
 									};
 								}
@@ -133,6 +136,7 @@
 								onClick: () => {
 									modalState = {
 										isOpen: true,
+										disabled: true,
 										middleware: row.original
 									};
 								}
@@ -195,4 +199,8 @@
 	</Tabs.Content>
 </Tabs.Root>
 
-<MiddlewareModal bind:open={modalState.isOpen} bind:middleware={modalState.middleware} />
+<MiddlewareModal
+	bind:open={modalState.isOpen}
+	bind:middleware={modalState.middleware}
+	disabled={modalState.disabled}
+/>

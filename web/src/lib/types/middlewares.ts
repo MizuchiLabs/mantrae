@@ -1,11 +1,9 @@
-import type {
-	SupportedMiddlewareHTTP,
-	SupportedMiddlewareTCP
-} from '$lib/components/forms/mw_registry';
 import type { TraefikConfig } from '$lib/types';
-import { z } from 'zod';
 
 export type Middleware = HTTPMiddleware | TCPMiddleware;
+export type SupportedMiddleware = SupportedMiddlewareHTTP | SupportedMiddlewareTCP;
+export type SupportedMiddlewareHTTP = keyof Omit<HTTPMiddleware, 'name' | 'protocol' | 'type'>;
+export type SupportedMiddlewareTCP = keyof Omit<TCPMiddleware, 'name' | 'protocol' | 'type'>;
 
 // HTTP Middlewares ----------------------------------------------------------
 export interface HTTPMiddleware {
@@ -33,7 +31,7 @@ export interface HTTPMiddleware {
 	retry?: Retry;
 	stripPrefix?: StripPrefix;
 	stripPrefixRegex?: StripPrefixRegex;
-	plugin?: Plugin;
+	plugin?: Record<string, Record<string, unknown>>;
 }
 
 // TCP Middlewares -----------------------------------------------------------
@@ -48,7 +46,7 @@ export interface TCPMiddleware {
 export interface UpsertMiddlewareParams {
 	name: string;
 	protocol: 'http' | 'tcp';
-	type?: string;
+	type?: SupportedMiddleware;
 	middleware?: HTTPMiddleware;
 	tcpMiddleware?: TCPMiddleware;
 }
@@ -98,252 +96,438 @@ export function flattenMiddlewareData(configs: TraefikConfig[]): Middleware[] {
 	return flatMiddleware;
 }
 
-export const AddPrefixSchema = z.object({
-	prefix: z.string().trim()
-});
-type AddPrefix = z.infer<typeof AddPrefixSchema>;
+// Middleware keys (excluding name, protocol, and type)
+export const HTTPMiddlewareKeys = [
+	{ value: 'addPrefix', label: 'Add Prefix' },
+	{ value: 'basicAuth', label: 'Basic Auth' },
+	{ value: 'digestAuth', label: 'Digest Auth' },
+	{ value: 'buffering', label: 'Buffering' },
+	{ value: 'chain', label: 'Chain' },
+	{ value: 'circuitBreaker', label: 'Circuit Breaker' },
+	{ value: 'compress', label: 'Compress' },
+	{ value: 'errorPage', label: 'Error Page' },
+	{ value: 'forwardAuth', label: 'Forward Auth' },
+	{ value: 'headers', label: 'Headers' },
+	{ value: 'ipAllowList', label: 'IP Allow List' },
+	{ value: 'inFlightReq', label: 'In-Flight Request' },
+	{ value: 'passTLSClientCert', label: 'Pass TLS Client Cert' },
+	{ value: 'rateLimit', label: 'Rate Limit' },
+	{ value: 'redirectRegex', label: 'Redirect Regex' },
+	{ value: 'redirectScheme', label: 'Redirect Scheme' },
+	{ value: 'replacePath', label: 'Replace Path' },
+	{ value: 'replacePathRegex', label: 'Replace Path Regex' },
+	{ value: 'retry', label: 'Retry' },
+	{ value: 'stripPrefix', label: 'Strip Prefix' },
+	{ value: 'stripPrefixRegex', label: 'Strip Prefix Regex' },
+	{ value: 'plugin', label: 'Plugin' }
+];
 
-export const BasicAuthSchema = z.object({
-	users: z.array(z.string().trim()),
-	usersFile: z.string().trim().optional(),
-	realm: z.string().trim().optional(),
-	headerField: z.string().trim().optional(),
-	removeHeader: z.boolean().optional()
-});
-type BasicAuth = z.infer<typeof BasicAuthSchema>;
+export const TCPMiddlewareKeys = [
+	{ value: 'ipAllowList', label: 'IP Allow List' },
+	{ value: 'inFlightConn', label: 'In-Flight Connection' }
+];
 
-export const DigestAuthSchema = z.object({
-	users: z.array(z.string().trim()),
-	usersFile: z.string().trim().optional(),
-	realm: z.string().trim().optional(),
-	headerField: z.string().trim().optional(),
-	removeHeader: z.boolean().optional()
-});
-type DigestAuth = z.infer<typeof DigestAuthSchema>;
+export interface AddPrefix {
+	prefix?: string;
+}
 
-export const BufferingSchema = z.object({
-	maxRequestBodyBytes: z.number().optional(),
-	memRequestBodyBytes: z.number().optional(),
-	maxResponseBodyBytes: z.number().optional(),
-	memResponseBodyBytes: z.number().optional(),
-	retryExpression: z.string().trim().optional()
-});
-type Buffering = z.infer<typeof BufferingSchema>;
+export interface BasicAuth {
+	users?: string[];
+	usersFile?: string;
+	realm?: string;
+	removeHeader?: boolean;
+	headerField?: string;
+}
 
-export const ChainSchema = z.object({
-	middlewares: z.array(z.string().trim())
-});
-type Chain = z.infer<typeof ChainSchema>;
+export interface DigestAuth {
+	users?: string[];
+	usersFile?: string;
+	removeHeader?: boolean;
+	realm?: string;
+	headerField?: string;
+}
 
-export const CircuitBreakerSchema = z.object({
-	expression: z.string().trim().optional(),
-	checkPeriod: z.string().trim().optional(),
-	fallbackDuration: z.string().trim().optional(),
-	recoveryDuration: z.string().trim().optional(),
-	responseCode: z.number().optional()
-});
-type CircuitBreaker = z.infer<typeof CircuitBreakerSchema>;
+export interface Buffering {
+	maxRequestBodyBytes?: number;
+	memRequestBodyBytes?: number;
+	maxResponseBodyBytes?: number;
+	memResponseBodyBytes?: number;
+	retryExpression?: string;
+}
 
-export const CompressSchema = z.object({
-	excludedContentTypes: z.array(z.string().trim()).optional(),
-	includeContentTypes: z.array(z.string().trim()).optional(),
-	minResponseBodyBytes: z.number().optional(),
-	defaultEncoding: z.string().trim().optional()
-});
-type Compress = z.infer<typeof CompressSchema>;
+export interface Chain {
+	middlewares?: string[];
+}
 
-export const ErrorPageSchema = z.object({
-	status: z.array(z.string().trim()).optional(),
-	service: z.string().trim(),
-	query: z.string().trim()
-});
-type ErrorPage = z.infer<typeof ErrorPageSchema>;
+export interface CircuitBreaker {
+	expression?: string;
+	checkPeriod?: string;
+	fallbackDuration?: string;
+	recoveryDuration?: string;
+	responseCode?: number;
+}
 
-export const ForwardAuthSchema = z.object({
-	address: z.string().trim().url(),
-	authResponseHeaders: z.array(z.string()).optional(),
-	authResponseHeadersRegex: z.string().trim().optional(),
-	authRequestHeaders: z.array(z.string()).optional(),
-	addAuthCookiesToResponse: z.array(z.string()).optional(),
-	trustForwardHeader: z.boolean().optional(),
-	tls: z
-		.object({
-			ca: z.string().trim().optional(),
-			caOptional: z.boolean().optional(),
-			cert: z.string().trim().optional(),
-			key: z.string().trim().optional(),
-			insecureSkipVerify: z.boolean().optional()
-		})
-		.optional()
-});
-type ForwardAuth = z.infer<typeof ForwardAuthSchema>;
+export interface Compress {
+	excludedContentTypes?: string[];
+	includeContentTypes?: string[];
+	minResponseBodyBytes?: number;
+	defaultEncoding?: string;
+}
 
-export const HeadersSchema = z.object({
-	customRequestHeaders: z.record(z.string()).optional(),
-	customResponseHeaders: z.record(z.string()).optional(),
-	accessControlAllowCredentials: z.boolean().optional(),
-	accessControlAllowHeaders: z.array(z.string()).optional(),
-	accessControlAllowMethods: z.array(z.string()).optional(),
-	accessControlAllowOriginList: z.array(z.string()).optional(),
-	accessControlAllowOriginListRegex: z.array(z.string()).optional(),
-	accessControlExposeHeaders: z.array(z.string()).optional(),
-	accessControlMaxAge: z.number().optional(),
-	addVaryHeader: z.boolean().optional(),
-	allowedHosts: z.array(z.string()).optional(),
-	hostsProxyHeaders: z.array(z.string()).optional(),
-	sslProxyHeaders: z.record(z.string()).optional(),
-	stsSeconds: z.number().optional(),
-	stsIncludeSubdomains: z.boolean().optional(),
-	stsPreload: z.boolean().optional(),
-	forceSTSHeader: z.boolean().optional(),
-	frameDeny: z.boolean().optional(),
-	customFrameOptionsValue: z.string().trim().optional(),
-	contentTypeNosniff: z.boolean().optional(),
-	browserXssFilter: z.boolean().optional(),
-	customBrowserXSSValue: z.string().trim().optional(),
-	contentSecurityPolicy: z.string().trim().optional(),
-	publicKey: z.string().trim().optional(),
-	referrerPolicy: z.string().trim().optional(),
-	permissionsPolicy: z.string().trim().optional(),
-	isDevelopment: z.boolean().optional()
-});
-type Headers = z.infer<typeof HeadersSchema>;
+export interface ErrorPage {
+	status?: string[];
+	service?: string;
+	query?: string;
+}
 
-export const IPAllowListSchema = z.object({
-	sourceRange: z.array(z.union([z.string().ip(), z.string().cidr()])),
-	ipStrategy: z
-		.object({
-			depth: z.number().optional(),
-			excludedIPs: z.array(z.string()).optional()
-		})
-		.optional()
-});
-type IPAllowList = z.infer<typeof IPAllowListSchema>;
+export interface ForwardAuth {
+	address?: string;
+	tls?: {
+		ca?: string;
+		caOptional?: boolean;
+		cert?: string;
+		key?: string;
+		insecureSkipVerify?: boolean;
+	};
+	trustForwardHeader?: boolean;
+	authResponseHeaders?: string[];
+	authResponseHeadersRegex?: string;
+	authRequestHeaders?: string[];
+	addAuthCookiesToResponse?: string[];
+}
 
-export const InFlightReqSchema = z.object({
-	amount: z.number(),
-	sourceCriterion: z
-		.object({
-			ipStrategy: z
-				.object({
-					depth: z.number().optional(),
-					excludedIPs: z.array(z.string()).optional()
-				})
-				.optional(),
-			requestHeaderName: z.string().trim().optional(),
-			requestHost: z.boolean().optional()
-		})
-		.optional()
-});
-type InFlightReq = z.infer<typeof InFlightReqSchema>;
+export interface Headers {
+	customRequestHeaders?: Record<string, string>;
+	customResponseHeaders?: Record<string, string>;
+	accessControlAllowCredentials?: boolean;
+	accessControlAllowHeaders?: string[];
+	accessControlAllowMethods?: string[];
+	accessControlAllowOriginList?: string[];
+	accessControlAllowOriginListRegex?: string[];
+	accessControlExposeHeaders?: string[];
+	accessControlMaxAge?: number;
+	addVaryHeader?: boolean;
+	allowedHosts?: string[];
+	hostsProxyHeaders?: string[];
+	sslProxyHeaders?: Record<string, string>;
+	stsSeconds?: number;
+	stsIncludeSubdomains?: boolean;
+	stsPreload?: boolean;
+	forceSTSHeader?: boolean;
+	frameDeny?: boolean;
+	customFrameOptionsValue?: string;
+	contentTypeNosniff?: boolean;
+	browserXssFilter?: boolean;
+	customBrowserXSSValue?: string;
+	contentSecurityPolicy?: string;
+	publicKey?: string;
+	referrerPolicy?: string;
+	permissionsPolicy?: string;
+	isDevelopment?: boolean;
+}
 
-export const PassTLSClientCertSchema = z.object({
-	pem: z.boolean().optional(),
-	info: z
-		.object({
-			notAfter: z.boolean().optional(),
-			notBefore: z.boolean().optional(),
-			sans: z.boolean().optional(),
-			serialNumber: z.boolean().optional(),
-			subject: z
-				.object({
-					country: z.boolean().optional(),
-					province: z.boolean().optional(),
-					locality: z.boolean().optional(),
-					organization: z.boolean().optional(),
-					organizationalUnit: z.boolean().optional(),
-					commonName: z.boolean().optional(),
-					serialNumber: z.boolean().optional(),
-					domainComponent: z.boolean().optional()
-				})
-				.optional(),
-			issuer: z
-				.object({
-					country: z.boolean().optional(),
-					province: z.boolean().optional(),
-					locality: z.boolean().optional(),
-					organization: z.boolean().optional(),
-					commonName: z.boolean().optional(),
-					serialNumber: z.boolean().optional(),
-					domainComponent: z.boolean().optional()
-				})
-				.optional()
-		})
-		.optional()
-});
-type PassTLSClientCert = z.infer<typeof PassTLSClientCertSchema>;
+export interface IPAllowList {
+	sourceRange?: string[];
+	ipStrategy?: IPStrategy;
+}
 
-export const RateLimitSchema = z.object({
-	average: z.number().optional(),
-	period: z.string().trim().optional(),
-	burst: z.number().optional(),
-	sourceCriterion: z
-		.object({
-			ipStrategy: z
-				.object({
-					depth: z.number().optional(),
-					excludedIPs: z.array(z.string()).optional()
-				})
-				.optional(),
-			requestHeaderName: z.string().trim().optional(),
-			requestHost: z.boolean().optional()
-		})
-		.optional()
-});
-type RateLimit = z.infer<typeof RateLimitSchema>;
+export interface IPStrategy {
+	depth?: number;
+	excludedIPs?: string[];
+}
 
-export const RedirectRegexSchema = z.object({
-	regex: z.string().trim(),
-	replacement: z.string().trim().optional(),
-	permanent: z.boolean().optional()
-});
-type RedirectRegex = z.infer<typeof RedirectRegexSchema>;
+export interface InFlightReq {
+	amount?: number;
+	sourceCriterion?: SourceCriterion;
+}
 
-export const RedirectSchemeSchema = z.object({
-	scheme: z.string().trim(),
-	port: z.string().trim().optional(),
-	permanent: z.boolean().optional()
-});
-type RedirectScheme = z.infer<typeof RedirectSchemeSchema>;
+export interface PassTLSClientCert {
+	pem?: boolean;
+	info?: TLSClientCertificateInfo;
+}
 
-export const ReplacePathSchema = z.object({
-	path: z.string().trim()
-});
-type ReplacePath = z.infer<typeof ReplacePathSchema>;
+export interface RateLimit {
+	average?: number;
+	period?: string;
+	burst?: number;
+	sourceCriterion?: SourceCriterion;
+}
 
-export const ReplacePathRegexSchema = z.object({
-	regex: z.string().trim(),
-	replacement: z.string().trim().optional()
-});
-type ReplacePathRegex = z.infer<typeof ReplacePathRegexSchema>;
+export interface RedirectRegex {
+	regex?: string;
+	replacement?: string;
+	permanent?: boolean;
+}
 
-export const RetrySchema = z.object({
-	attempts: z.number(),
-	initialInterval: z.string().trim().optional()
-});
-type Retry = z.infer<typeof RetrySchema>;
+export interface RedirectScheme {
+	scheme?: string;
+	port?: string;
+	permanent?: boolean;
+}
 
-export const StripPrefixSchema = z.object({
-	prefixes: z.array(z.string().trim()),
-	forceSlash: z.boolean().optional()
-});
-type StripPrefix = z.infer<typeof StripPrefixSchema>;
+export interface ReplacePath {
+	path?: string;
+}
 
-export const StripPrefixRegexSchema = z.object({
-	regex: z.array(z.string().trim())
-});
-type StripPrefixRegex = z.infer<typeof StripPrefixRegexSchema>;
+export interface ReplacePathRegex {
+	regex?: string;
+	replacement?: string;
+}
+
+export interface Retry {
+	attempts?: number;
+	initialInterval?: string;
+}
+
+export interface SourceCriterion {
+	ipStrategy?: IPStrategy;
+	requestHeaderName?: string;
+	requestHost?: boolean;
+}
+
+export interface StripPrefix {
+	prefixes?: string[];
+	forceSlash?: boolean;
+}
+
+export interface StripPrefixRegex {
+	regex?: string[];
+}
+
+export interface TLSClientCertificateInfo {
+	notAfter?: boolean;
+	notBefore?: boolean;
+	sans?: boolean;
+	serialNumber?: boolean;
+	subject?: TLSClientCertificateSubjectDNInfo;
+	issuer?: TLSClientCertificateIssuerDNInfo;
+}
+
+export interface TLSClientCertificateIssuerDNInfo {
+	country?: boolean;
+	province?: boolean;
+	locality?: boolean;
+	organization?: boolean;
+	commonName?: boolean;
+	serialNumber?: boolean;
+	domainComponent?: boolean;
+}
+
+export interface TLSClientCertificateSubjectDNInfo {
+	country?: boolean;
+	province?: boolean;
+	locality?: boolean;
+	organization?: boolean;
+	organizationalUnit?: boolean;
+	commonName?: boolean;
+	serialNumber?: boolean;
+	domainComponent?: boolean;
+}
 
 // TCP Middlewares ------------------------------------------------------------
-export const TCPIPAllowListSchema = z.object({
-	sourceRange: z.array(z.union([z.string().ip(), z.string().cidr()]))
-});
-type TCPIPAllowList = z.infer<typeof TCPIPAllowListSchema>;
+export interface TCPIPAllowList {
+	sourceRange?: string[];
+}
 
-export const TCPInFlightConnSchema = z.object({
-	amount: z.number()
-});
-type TCPInFlightConn = z.infer<typeof TCPInFlightConnSchema>;
+export interface TCPInFlightConn {
+	amount?: number;
+}
 
-export const PluginSchema = z.record(z.string(), z.record(z.string(), z.any()));
-type Plugin = z.infer<typeof PluginSchema>;
+// Helper to get default values for HTTP middleware types
+export function getDefaultValuesForType(type: keyof HTTPMiddleware): Record<string, any> {
+	const defaults: Record<string, any> = {
+		addPrefix: {
+			prefix: ''
+		},
+		basicAuth: {
+			users: [],
+			usersFile: '',
+			realm: '',
+			removeHeader: false,
+			headerField: ''
+		},
+		digestAuth: {
+			users: [],
+			usersFile: '',
+			removeHeader: false,
+			realm: '',
+			headerField: ''
+		},
+		buffering: {
+			maxRequestBodyBytes: 0,
+			memRequestBodyBytes: 0,
+			maxResponseBodyBytes: 0,
+			memResponseBodyBytes: 0,
+			retryExpression: ''
+		},
+		chain: {
+			middlewares: []
+		},
+		circuitBreaker: {
+			expression: '',
+			checkPeriod: '',
+			fallbackDuration: '',
+			recoveryDuration: '',
+			responseCode: 0
+		},
+		compress: {
+			excludedContentTypes: [],
+			includeContentTypes: [],
+			minResponseBodyBytes: 0,
+			defaultEncoding: ''
+		},
+		errorPage: {
+			status: [],
+			service: '',
+			query: ''
+		},
+		forwardAuth: {
+			address: '',
+			tls: {
+				ca: '',
+				caOptional: false,
+				cert: '',
+				key: '',
+				insecureSkipVerify: false
+			},
+			trustForwardHeader: false,
+			authResponseHeaders: [],
+			authResponseHeadersRegex: '',
+			authRequestHeaders: [],
+			addAuthCookiesToResponse: []
+		},
+		headers: {
+			customRequestHeaders: {},
+			customResponseHeaders: {},
+			accessControlAllowCredentials: false,
+			accessControlAllowHeaders: [],
+			accessControlAllowMethods: [],
+			accessControlAllowOriginList: [],
+			accessControlAllowOriginListRegex: [],
+			accessControlExposeHeaders: [],
+			accessControlMaxAge: 0,
+			addVaryHeader: false,
+			allowedHosts: [],
+			hostsProxyHeaders: [],
+			sslProxyHeaders: {},
+			stsSeconds: 0,
+			stsIncludeSubdomains: false,
+			stsPreload: false,
+			forceSTSHeader: false,
+			frameDeny: false,
+			customFrameOptionsValue: '',
+			contentTypeNosniff: false,
+			browserXssFilter: false,
+			customBrowserXSSValue: '',
+			contentSecurityPolicy: '',
+			publicKey: '',
+			referrerPolicy: '',
+			permissionsPolicy: '',
+			isDevelopment: false
+		},
+		ipAllowList: {
+			sourceRange: [],
+			ipStrategy: {
+				depth: 0,
+				excludedIPs: []
+			}
+		},
+		inFlightReq: {
+			amount: 0,
+			sourceCriterion: {
+				ipStrategy: {
+					depth: 0,
+					excludedIPs: []
+				},
+				requestHeaderName: '',
+				requestHost: false
+			}
+		},
+		passTLSClientCert: {
+			pem: false,
+			info: {
+				notAfter: false,
+				notBefore: false,
+				sans: false,
+				serialNumber: false,
+				subject: {
+					country: false,
+					province: false,
+					locality: false,
+					organization: false,
+					organizationalUnit: false,
+					commonName: false,
+					serialNumber: false,
+					domainComponent: false
+				},
+				issuer: {
+					country: false,
+					province: false,
+					locality: false,
+					organization: false,
+					commonName: false,
+					serialNumber: false,
+					domainComponent: false
+				}
+			}
+		},
+		rateLimit: {
+			average: 0,
+			period: '',
+			burst: 0,
+			sourceCriterion: {
+				ipStrategy: {
+					depth: 0,
+					excludedIPs: []
+				},
+				requestHeaderName: '',
+				requestHost: false
+			}
+		},
+		redirectRegex: {
+			regex: '',
+			replacement: '',
+			permanent: false
+		},
+		redirectScheme: {
+			scheme: '',
+			port: '',
+			permanent: false
+		},
+		replacePath: {
+			path: ''
+		},
+		replacePathRegex: {
+			regex: '',
+			replacement: ''
+		},
+		retry: {
+			attempts: 0,
+			initialInterval: ''
+		},
+		stripPrefix: {
+			prefixes: [],
+			forceSlash: false
+		},
+		stripPrefixRegex: {
+			regex: []
+		},
+		plugin: {}
+	};
+
+	return defaults[type] || {};
+}
+
+// Helper to get default values for TCP middleware types
+export function getTCPDefaultValuesForType(type: keyof TCPMiddleware): Record<string, any> {
+	const defaults: Record<string, any> = {
+		ipAllowList: {
+			sourceRange: []
+		},
+		inFlightConn: {
+			amount: 0
+		}
+	};
+
+	return defaults[type] || {};
+}

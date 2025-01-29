@@ -534,7 +534,7 @@ async function fetchTraefikMetadata(id: number) {
 	version.set(meta.version);
 
 	// Set middleware names (used for chain)
-	const middlewares = flattenMiddlewareData(res.config);
+	const middlewares = flattenMiddlewareData(res);
 	mwNames.set(middlewares.map((mw) => mw.name));
 	return true;
 }

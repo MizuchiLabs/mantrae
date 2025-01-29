@@ -1,116 +1,97 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import BaseForm from '$lib/components/forms/BaseForm.svelte';
-	import type { Middleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
+	import {
+		type Middleware,
+		type SupportedMiddlewareHTTP,
+		type SupportedMiddlewareTCP,
+		type UpsertMiddlewareParams,
+		getDefaultValuesForType,
+		getTCPDefaultValuesForType,
+		HTTPMiddlewareKeys,
+		TCPMiddlewareKeys
+	} from '$lib/types/middlewares';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { api, profile, mwNames } from '$lib/api';
+	import { api, profile } from '$lib/api';
 	import { toast } from 'svelte-sonner';
-	import {
-		type SupportedMiddleware,
-		GetSchema,
-		type ZodObjectOrRecord,
-		HTTPMiddlewareTypes,
-		TCPMiddlewareTypes,
-		MiddlewareTypes
-	} from '$lib/components/forms/mw_registry';
 	import Separator from '../ui/separator/separator.svelte';
-	import { z } from 'zod';
+	import DynamicForm from '../forms/DynamicForm.svelte';
+	import { safeClone } from '$lib/utils';
 
 	interface Props {
 		middleware: Middleware;
 		open?: boolean;
+		disabled?: boolean;
+	}
+	let { middleware = $bindable(), open = $bindable(false), disabled }: Props = $props();
+
+	let currentFormData = $state<Record<string, unknown>>({});
+
+	// Helper to extract middleware config
+	function extractMiddlewareConfig(mw: Middleware): Record<string, unknown> {
+		if (!mw.type) return {};
+
+		// Filter out the base properties to get the config
+		const config: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(mw)) {
+			if (!['name', 'protocol', 'type'].includes(key)) {
+				config[key] = value;
+			}
+		}
+		return config;
 	}
 
-	let { middleware = $bindable(), open = $bindable(false) }: Props = $props();
+	// Initialize or update form data when middleware changes or modal opens
+	$effect(() => {
+		if (open && middleware.type) {
+			const existingConfig = extractMiddlewareConfig(middleware);
 
-	let mwProvider = $derived(middleware.name ? middleware.name.split('@')[1] : 'http');
-	let disabled = $derived(mwProvider !== 'http' && mwProvider !== undefined);
-	let schema: ZodObjectOrRecord = $derived(
-		middleware.type ? GetSchema(middleware.type) : z.object({})
-	);
+			if (Object.keys(existingConfig).length > 0) {
+				currentFormData = safeClone(existingConfig);
+			} else {
+				// Fall back to default values if no existing data
+				currentFormData =
+					middleware.protocol === 'http'
+						? getDefaultValuesForType(middleware.type as SupportedMiddlewareHTTP)
+						: getTCPDefaultValuesForType(middleware.type as SupportedMiddlewareTCP);
+			}
+		}
+	});
 
 	const handleTypeChange = (value: string) => {
-		middleware.type = value as SupportedMiddleware;
+		middleware.type = value as SupportedMiddlewareHTTP | SupportedMiddlewareTCP;
 	};
 	const handleProtocolChange = () => {
 		middleware.protocol = middleware.protocol === 'http' ? 'tcp' : 'http';
-		middleware.type = undefined; // Reset type when protocol changes
+		middleware.type = undefined;
 	};
 
-	function getBaseType(fieldSchema: z.ZodTypeAny | unknown) {
-		if (fieldSchema instanceof z.ZodOptional || fieldSchema instanceof z.ZodDefault) {
-			return fieldSchema._def.innerType;
-		}
-		return fieldSchema;
-	}
+	const onSubmit = async (formData: Record<string, unknown>) => {
+		if (!middleware.type) return;
 
-	const onSubmit = async (data: FormData) => {
-		let formData: Record<string, unknown> = {};
+		const data = {
+			...middleware,
+			[middleware.type]: structuredClone(formData)
+		};
 
-		// Special handling for arrays from FormData
-		const entries = Array.from(data.entries());
-		entries.forEach(([key, value]) => {
-			// Check if the key is for an array (ends with [])
-			if (key.endsWith('[]')) {
-				const cleanKey = key.replace('[]', '');
-				if (!formData[cleanKey]) {
-					formData[cleanKey] = [];
-				}
-				(formData[cleanKey] as unknown[]).push(value);
-			} else {
-				formData[key] = value;
-			}
-		});
-
-		// Coerce number fields based on schema
-		if (schema instanceof z.ZodObject) {
-			Object.entries(schema.shape).forEach(([key, field]) => {
-				const baseType = getBaseType(field);
-				if (baseType instanceof z.ZodNumber && typeof formData[key] === 'string') {
-					formData[key] = Number(formData[key]);
-				}
-				// Handle array fields specifically for chain middleware
-				if (baseType instanceof z.ZodArray && Array.isArray(formData[key])) {
-					// Ensure the array is preserved
-					formData[key] = [...formData[key]];
-				}
-			});
-		}
-
-		// TODO: Handle plugin name change
-		if (middleware.type === 'plugin') {
-			const pluginName = middleware.name.split('@')[0];
-			middleware = {
-				name: pluginName,
-				protocol: 'http',
-				type: 'plugin',
-				plugin: {
-					[pluginName]: JSON.parse((formData[pluginName] as string) ?? '{}')
-				}
-			};
-		} else {
-			middleware = {
-				...middleware,
-				[middleware.type as string]: formData
-			};
-		}
 		try {
 			// Ensure proper name formatting and synchronization
-			if (!middleware.name) return;
-			if (!middleware.name.includes('@')) {
+			if (!data.name) {
+				toast.error('Middleware name is required');
+				return;
+			}
+			if (!data.name.includes('@')) {
 				middleware.name = `${middleware.name}@http`;
 			}
 
-			let params: UpsertMiddlewareParams = {
-				name: middleware.name,
-				protocol: middleware.protocol,
-				type: middleware.type,
-				...(middleware.protocol === 'http' ? { middleware } : { tcpMiddleware: middleware })
+			const params: UpsertMiddlewareParams = {
+				name: data.name,
+				protocol: data.protocol,
+				type: data.type,
+				...(data.protocol === 'http' ? { middleware: data } : { tcpMiddleware: data })
 			};
-
 			await api.upsertMiddleware($profile.id, params);
 			toast.success(`Middleware updated successfully`);
 			resetForm();
@@ -136,7 +117,7 @@
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>{middleware.name ? 'Update' : 'Add'} Middleware</Dialog.Title>
-			<Dialog.Description>Configure your Traefik instance connection details.</Dialog.Description>
+			<Dialog.Description>Configure your Traefik middleware</Dialog.Description>
 		</Dialog.Header>
 
 		<div class="flex flex-col gap-4 py-2">
@@ -150,17 +131,15 @@
 						{disabled}
 					>
 						<Select.Trigger>
-							{middleware.type
-								? MiddlewareTypes.find((t) => t.value === middleware.type)?.label
-								: 'Select a middleware type'}
+							{middleware.type ? middleware.type : 'Select type'}
 						</Select.Trigger>
 						<Select.Content>
 							{#if middleware.protocol === 'http'}
-								{#each HTTPMiddlewareTypes as type}
+								{#each HTTPMiddlewareKeys as type}
 									<Select.Item value={type.value}>{type.label}</Select.Item>
 								{/each}
 							{:else if middleware.protocol === 'tcp'}
-								{#each TCPMiddlewareTypes as type}
+								{#each TCPMiddlewareKeys as type}
 									<Select.Item value={type.value}>{type.label}</Select.Item>
 								{/each}
 							{/if}
@@ -185,12 +164,8 @@
 
 		<Separator />
 
-		{#if schema}
-			{#if middleware.protocol === 'http' && middleware.type === 'chain'}
-				<BaseForm {schema} data={middleware} subData={$mwNames} subMultiple={true} {onSubmit} />
-			{:else}
-				<BaseForm {schema} data={middleware} {onSubmit} />
-			{/if}
+		{#if middleware.type}
+			<DynamicForm data={currentFormData} {onSubmit} {disabled} />
 		{/if}
 	</Dialog.Content>
 </Dialog.Root>

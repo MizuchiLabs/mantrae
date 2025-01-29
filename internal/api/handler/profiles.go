@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
 )
 
 func ListProfiles(DB *sql.DB) http.HandlerFunc {
@@ -48,8 +49,17 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		_, err := q.CreateProfile(r.Context(), profile)
+		profileID, err := q.CreateProfile(r.Context(), profile)
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Create default local config
+		if err := q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

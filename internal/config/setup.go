@@ -11,6 +11,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/backup"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/lmittmann/tint"
 	"golang.org/x/crypto/bcrypt"
@@ -162,7 +163,7 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 	q := db.New(a.DB)
 	_, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
 	if err != nil {
-		_, err := q.CreateProfile(ctx, db.CreateProfileParams{
+		profileID, err := q.CreateProfile(ctx, db.CreateProfileParams{
 			Name:     a.Config.Traefik.Profile,
 			Url:      a.Config.Traefik.URL,
 			Username: &a.Config.Traefik.Username,
@@ -170,6 +171,14 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 			Tls:      a.Config.Traefik.TLS,
 		})
 		if err != nil {
+			return fmt.Errorf("failed to create default profile: %w", err)
+		}
+
+		// Create default local config
+		if err := q.UpsertTraefikConfig(ctx, db.UpsertTraefikConfigParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+		}); err != nil {
 			return fmt.Errorf("failed to create default profile: %w", err)
 		}
 
