@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api, profile, loading } from '$lib/api';
+	import { api, loading } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
@@ -58,7 +58,7 @@
 					break;
 			}
 
-			await api.upsertRouter($profile.id, params);
+			await api.upsertRouter(params);
 			open = false;
 			toast.success(`Router ${mode === 'create' ? 'created' : 'updated'} successfully`);
 		} catch (err: unknown) {
@@ -81,7 +81,7 @@
 				<RouterForm bind:router {mode} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service {router} {mode} />
+				<ServiceForm bind:service bind:router {mode} />
 			</Tabs.Content>
 		</Tabs.Root>
 

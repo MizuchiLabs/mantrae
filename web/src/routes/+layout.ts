@@ -1,8 +1,9 @@
 import type { LayoutLoad } from './$types';
-import { TOKEN_SK } from '$lib/store';
-import { api, user } from '$lib/api';
+import { api } from '$lib/api';
 import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
+import { user } from '$lib/stores/user';
+import { token } from '$lib/stores/common';
 
 export const ssr = false;
 export const prerender = true;
@@ -11,24 +12,17 @@ export const trailingSlash = 'always';
 const isPublicRoute = (path: string) => path.startsWith('/login/');
 
 export const load: LayoutLoad = async ({ url, fetch }) => {
-	const token = localStorage.getItem(TOKEN_SK);
-
 	// Case 1: No token and accessing protected route
-	if (!token && !isPublicRoute(url.pathname)) {
+	if (!token.value && !isPublicRoute(url.pathname)) {
 		await goto('/login/');
-		user.set(null);
+		user.clear();
 		return;
 	}
 
 	// Case 2: Has token, verify it
-	if (token) {
+	if (token.value) {
 		try {
-			const verified = await api.verify(fetch);
-
-			// Token is valid
-			if (verified) {
-				user.set(verified);
-			}
+			await api.verify(fetch);
 
 			// Trying to access public route
 			if (isPublicRoute(url.pathname)) {
@@ -42,13 +36,13 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 			if (!isPublicRoute(url.pathname)) {
 				await goto('/login');
 			}
-			user.set(null);
+			user.clear();
 			toast.error('Session expired', { description: error.message });
 			return;
 		}
 	}
 
 	// Case 3: No token and accessing public route
-	user.set(null);
+	user.clear();
 	return;
 };

@@ -5,10 +5,11 @@
 	import { Bot, KeyRound, Pencil, Trash } from 'lucide-svelte';
 	import { type Agent } from '$lib/types';
 	import AgentModal from '$lib/components/modals/agent.svelte';
-	import { api, agents, profile } from '$lib/api';
+	import { api, agents } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { DateFormat } from '$lib/store';
+	import { DateFormat } from '$lib/stores/common';
+	import { onMount } from 'svelte';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -118,10 +119,8 @@
 		return agentOffline(agent) ? 'bg-green-500/10' : 'bg-red-500/10';
 	}
 
-	profile.subscribe((value) => {
-		if (value.id) {
-			api.listAgentsByProfile();
-		}
+	onMount(async () => {
+		await api.listAgentsByProfile();
 	});
 </script>
 

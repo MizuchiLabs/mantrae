@@ -8,10 +8,11 @@
 	import type { Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, profile, routers, services, source } from '$lib/api';
+	import { api, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { SOURCE_TAB_SK } from '$lib/store';
+	import { source } from '$lib/stores/source';
+	import { onMount } from 'svelte';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -30,8 +31,8 @@
 		service: ''
 	};
 	const defaultService: Service = {
-		name: '',
-		protocol: 'http',
+		name: defaultRouter.name,
+		protocol: defaultRouter.protocol,
 		loadBalancer: {
 			servers: [],
 			passHostHeader: true
@@ -71,31 +72,13 @@
 				return;
 			}
 
-			await api.deleteRouter($profile.id, router);
+			await api.deleteRouter(router);
 			toast.success('Router deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
 			toast.error(e.message);
 		}
 	};
-
-	type RouterWithService = { router: Router; service: Service };
-	let mergedData: RouterWithService[] = $derived(
-		$routers.map((router) => {
-			const routerProvider = router.name.split('@')[1];
-			let serviceName = router.service; // api@internal
-
-			// Most of time the service name doesn't include the provider
-			if (!router.service?.includes('@')) {
-				serviceName = router.service + '@' + routerProvider;
-			}
-			const service = $services.find((service) => service.name === serviceName);
-			return {
-				router,
-				service: service || ({} as Service)
-			};
-		})
-	);
 
 	const columns: ColumnDef<RouterWithService>[] = [
 		{
@@ -126,7 +109,7 @@
 			cell: ({ row }) => {
 				const name = row.getValue('provider') as string;
 				const provider = name.split('@')[1];
-				if (!provider && $source === TraefikSource.AGENT) {
+				if (!provider && source.value === TraefikSource.AGENT) {
 					return renderComponent(ColumnBadge, {
 						label: 'agent',
 						variant: 'secondary'
@@ -214,7 +197,7 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
-				if ($source === TraefikSource.LOCAL) {
+				if (source.value === TraefikSource.LOCAL) {
 					return renderComponent(TableActions, {
 						actions: [
 							{
@@ -251,14 +234,8 @@
 		}
 	];
 
-	profile.subscribe((value) => {
-		if (value.id) {
-			let savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
-			if (savedSource) {
-				source.set(savedSource);
-				api.getTraefikConfig(value.id, savedSource);
-			}
-		}
+	onMount(() => {
+		api.getTraefikConfig(source.value);
 	});
 </script>
 
@@ -266,7 +243,7 @@
 	<title>Routers</title>
 </svelte:head>
 
-<Tabs.Root value={$source}>
+<Tabs.Root value={source.value}>
 	<Tabs.Content value={TraefikSource.LOCAL}>
 		<div class="flex flex-col gap-4">
 			<div class="flex items-center justify-start gap-2">
@@ -275,7 +252,7 @@
 			</div>
 			<DataTable
 				{columns}
-				data={mergedData || []}
+				data={$routerServiceMerge || []}
 				showSourceTabs={true}
 				createButton={{
 					label: 'Add Router',
@@ -290,7 +267,7 @@
 				<Route />
 				<h1 class="text-2xl font-bold">Router Management</h1>
 			</div>
-			<DataTable {columns} data={mergedData || []} showSourceTabs={true} />
+			<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
 		</div>
 	</Tabs.Content>
 	<Tabs.Content value={TraefikSource.AGENT}>
@@ -299,7 +276,7 @@
 				<Route />
 				<h1 class="text-2xl font-bold">Router Management</h1>
 			</div>
-			<DataTable {columns} data={mergedData || []} showSourceTabs={true} />
+			<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
 		</div>
 	</Tabs.Content>
 </Tabs.Root>

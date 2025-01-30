@@ -6,9 +6,10 @@
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { onMount } from 'svelte';
-	import { api, BASE_URL, user, profile } from '$lib/api';
+	import { api, BASE_URL } from '$lib/api';
 	import autoAnimate from '@formkit/auto-animate';
-	import { TraefikSource } from '$lib/types';
+	import { source } from '$lib/stores/source';
+	import { user } from '$lib/stores/user';
 	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	interface Props {
@@ -18,16 +19,22 @@
 	let { children }: Props = $props();
 
 	// Realtime updates
+	interface Event {
+		type: string;
+		message: string;
+	}
+
 	const eventSource = new EventSource(`${BASE_URL}/events`);
-	eventSource.onmessage = (event) => {
-		if (!$user) return;
-		let data = JSON.parse(event.data);
+	eventSource.onmessage = async (event) => {
+		if (!user.isLoggedIn()) return;
+		let data: Event = JSON.parse(event.data);
 		switch (data.message) {
 			case 'profile':
 				api.listProfiles();
 				break;
 			case 'traefik':
-				api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
+				if (!source.isValid(source.value)) return;
+				await api.getTraefikConfig(source.value);
 				break;
 			case 'user':
 				api.listUsers();
@@ -44,7 +51,6 @@
 	};
 
 	onMount(async () => {
-		if (!$user) return;
 		await api.load();
 	});
 </script>
@@ -53,7 +59,7 @@
 <!-- <CommandCenter /> -->
 
 <Sidebar.Provider>
-	{#if $user}
+	{#if user.isLoggedIn()}
 		<div class="flex h-screen w-full bg-background">
 			<AppSidebar />
 			<div class="flex w-full flex-1 flex-col">

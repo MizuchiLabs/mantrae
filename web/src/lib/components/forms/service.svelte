@@ -13,19 +13,31 @@
 		mode: 'create' | 'edit';
 	}
 
-	let { service = $bindable(), router, mode }: Props = $props();
+	let { service = $bindable(), router = $bindable(), mode }: Props = $props();
 
 	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
 	let disabled = $derived(routerProvider !== 'http' && mode === 'edit');
 
-	let passHostHeader = $state(true);
-	let servers = $state(['']);
+	let servers = $state(getServers());
+	let passHostHeader = $state(service.loadBalancer?.passHostHeader ?? true);
+
+	function getServers() {
+		if (!service.loadBalancer) {
+			service.loadBalancer = { servers: [] };
+		}
+		let servers = service.loadBalancer.servers?.map((s) =>
+			router.protocol === 'http' ? s.url : s.address
+		);
+		if (servers?.length === 0) {
+			return [''];
+		}
+		return servers ?? [''];
+	}
 
 	function update() {
 		if (!service.loadBalancer) {
 			service.loadBalancer = { servers: [] };
 		}
-
 		service.loadBalancer.servers = servers.map((s) =>
 			router.protocol === 'http' ? { url: s } : { address: s }
 		);
@@ -40,15 +52,9 @@
 		servers = servers.filter((_, i) => i !== index);
 		update();
 	}
-
 	$effect(() => {
-		if (service.loadBalancer?.servers) {
-			servers = service.loadBalancer.servers
-				.map((s) => (router.protocol === 'http' ? s.url : s.address))
-				.filter((s): s is string => s !== undefined);
-		}
-		if (service.loadBalancer?.passHostHeader !== undefined) {
-			passHostHeader = service.loadBalancer.passHostHeader;
+		if (router.protocol) {
+			service.protocol = router.protocol;
 		}
 	});
 </script>
@@ -81,24 +87,35 @@
 			<div class="flex w-full flex-col gap-2">
 				<Label for="servers">Server Endpoints</Label>
 				<!-- eslint-disable-next-line -->
-				{#each servers || [] as _, i}
+				{#each servers as _, i}
 					<div class="flex gap-2">
 						<Input
 							type="text"
 							bind:value={servers[i]}
 							placeholder={router.protocol === 'http' ? 'http://127.0.0.1:8080' : '127.0.0.1:8080'}
 							oninput={update}
+							{disabled}
 						/>
-						<Button variant="ghost" type="button" size="icon" onclick={() => removeItem(i)}>
-							<Trash />
-						</Button>
+						{#if !disabled}
+							<Button
+								variant="ghost"
+								size="icon"
+								type="button"
+								class="text-red-500"
+								onclick={() => removeItem(i)}
+							>
+								<Trash />
+							</Button>
+						{/if}
 					</div>
 				{/each}
 			</div>
-			<Button type="button" variant="outline" onclick={addItem}>
-				<Plus />
-				Add Server
-			</Button>
+			{#if !disabled}
+				<Button type="button" variant="outline" onclick={addItem} class="w-full">
+					<Plus />
+					Add Server
+				</Button>
+			{/if}
 		</form>
 	</Card.Content>
 </Card.Root>

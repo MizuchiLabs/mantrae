@@ -14,7 +14,6 @@ import {
 	type User
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
-import { PROFILE_SK, SOURCE_TAB_SK, TOKEN_SK } from './store';
 import {
 	flattenMiddlewareData,
 	type Middleware,
@@ -31,6 +30,12 @@ import { get, writable, type Writable } from 'svelte/store';
 import { toast } from 'svelte-sonner';
 import { goto } from '$app/navigation';
 import type { Overview } from './types/overview';
+import { profile } from './stores/profile';
+import { user } from './stores/user';
+import { source } from './stores/source';
+import { token } from './stores/common';
+
+export type RouterWithService = { router: Router; service: Service };
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -44,6 +49,7 @@ export const overview: Writable<Overview> = writable({} as Overview);
 export const version: Writable<string> = writable('');
 export const routers: Writable<Router[]> = writable([]);
 export const services: Writable<Service[]> = writable([]);
+export const routerServiceMerge: Writable<RouterWithService[]> = writable([]);
 export const middlewares: Writable<Middleware[]> = writable([]);
 export const users: Writable<User[]> = writable([]);
 export const rdps: Writable<RouterDNSProvider[]> = writable([]);
@@ -55,9 +61,6 @@ export const backups: Writable<BackupFile[]> = writable([]);
 export const stats: Writable<Stats> = writable({} as Stats);
 
 // App state
-export const profile: Writable<Profile> = writable({} as Profile);
-export const user: Writable<User | null> = writable({} as User);
-export const source: Writable<TraefikSource> = writable({} as TraefikSource);
 export const mwNames: Writable<string[]> = writable([]);
 
 // Loading and error states
@@ -72,13 +75,11 @@ interface APIOptions {
 }
 
 async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof window.fetch) {
-	const token = localStorage.getItem(TOKEN_SK);
-
 	// Custom fetch function that adds the Authorization header
 	const customFetch: typeof window.fetch = async (url, options) => {
 		const headers = new Headers(options?.headers); // Get existing headers
-		if (token) {
-			headers.set('Authorization', 'Bearer ' + token); // Add the Authorization header
+		if (token.value) {
+			headers.set('Authorization', 'Bearer ' + token.value); // Add the Authorization header
 		}
 		// Don't set Content-Type for FormData
 		const isFormData = options?.body instanceof FormData;
@@ -126,7 +127,7 @@ export const api = {
 			body: { username, password }
 		});
 		if (data.token) {
-			localStorage.setItem(TOKEN_SK, data.token);
+			token.value = data.token;
 			goto('/');
 		}
 
@@ -134,17 +135,19 @@ export const api = {
 	},
 
 	async verify(fetch: typeof window.fetch = window.fetch) {
-		const token = localStorage.getItem(TOKEN_SK);
 		try {
 			const data = await send(
 				'/verify',
 				{
 					method: 'POST',
-					body: token
+					body: token.value
 				},
 				fetch
 			);
-			return data;
+
+			if (data) {
+				user.value = data;
+			}
 		} catch (err: unknown) {
 			const error = err instanceof Error ? err.message : String(err);
 			toast.error('Session expired', { description: error });
@@ -157,45 +160,37 @@ export const api = {
 		await send(`/reset/${username}`, { method: 'POST' });
 	},
 
-	async verifyOTP(username: string, token: string) {
+	async verifyOTP(username: string, otp: string) {
 		const data = await send('/verify/otp', {
 			method: 'POST',
-			body: { username, token }
+			body: { username, token: otp }
 		});
 
 		if (data.token) {
-			localStorage.setItem(TOKEN_SK, data.token);
+			token.value = data.token;
 			goto('/');
 		}
 		await api.load();
 	},
 
 	async load() {
+		if (!user.isLoggedIn()) return;
+
 		// Load profiles
 		await api.listProfiles();
-		const savedProfileID = parseInt(localStorage.getItem(PROFILE_SK) ?? '');
-		if (get(profiles)) {
-			const switchProfile =
-				get(profiles).find((item) => item.id === savedProfileID) ?? get(profiles)[0];
-			profile.set(switchProfile);
-			localStorage.setItem(PROFILE_SK, switchProfile.id.toString());
+		if (get(profiles) && !profile.value) {
+			profile.value = get(profiles)[0];
 		}
-
-		// Load source
-		const savedSource = localStorage.getItem(SOURCE_TAB_SK) as TraefikSource;
-		if (Object.values(TraefikSource).includes(savedSource)) {
-			source.set(savedSource);
-		} else {
-			source.set(TraefikSource.LOCAL);
-		}
-		localStorage.setItem(SOURCE_TAB_SK, get(source));
 
 		// Load Traefik Config
-		await api.getTraefikConfig(get(profile).id, get(source));
+		if (profile.value && source.value) {
+			await api.getTraefikConfig(source.value);
+		}
 	},
 
 	logout() {
-		localStorage.removeItem(TOKEN_SK);
+		token.value = null;
+		user.clear();
 		goto('/login');
 	},
 
@@ -242,24 +237,25 @@ export const api = {
 
 	async deleteProfile(id: number) {
 		await send(`/profile/${id}`, { method: 'DELETE' });
-		if (id === get(profile).id) {
-			localStorage.removeItem(PROFILE_SK);
-			profile.set({} as Profile);
+		if (id === profile.value?.id) {
+			profile.value = {} as Profile;
 		}
 		await api.listProfiles(); // Refresh the list
 	},
 
 	// Traefik -------------------------------------------------------------------
-	async getTraefikConfig(id: number, source: TraefikSource) {
-		if (!id || !Object.values(TraefikSource).includes(source)) return;
-		await fetchTraefikMetadata(id);
-		await fetchTraefikConfig(id, source);
+	async getTraefikConfig(source: TraefikSource) {
+		await fetchTraefikMetadata();
+		await fetchTraefikConfig(source);
 	},
 
-	async getTraefikConfigLocal(id: number) {
-		if (!id) return;
+	async getTraefikConfigLocal() {
+		if (!profile.isValid()) {
+			toast.error('No valid profile selected');
+			return;
+		}
 		// Get the local config without mutating the stores
-		const res = await send(`/traefik/${id}/${TraefikSource.LOCAL}`);
+		const res = await send(`/traefik/${profile.id}/${TraefikSource.LOCAL}`);
 		if (!res) {
 			return;
 		}
@@ -270,40 +266,62 @@ export const api = {
 		return { traefik, routers, services, middlewares };
 	},
 
-	async getDynamicConfig(profileName: string) {
-		return await send(`/${profileName}`);
+	async getDynamicConfig() {
+		if (!profile.hasValidName()) {
+			toast.error('Profile name is required');
+			return;
+		}
+		return await send(`/${profile.name}`);
 	},
 
 	// Routers -------------------------------------------------------------------
-	async upsertRouter(id: number, data: UpsertRouterParams) {
-		await send(`/router/${id}`, {
+	async upsertRouter(data: UpsertRouterParams) {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+
+		await send(`/router/${profile.id}`, {
 			method: 'POST',
 			body: data
 		});
-		await api.getTraefikConfig(id, TraefikSource.LOCAL);
+		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
-	async deleteRouter(id: number, data: Router) {
-		await send(`/router/${id}/${data.name}/${data.protocol}`, {
+	async deleteRouter(data: Router) {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+
+		await send(`/router/${profile.id}/${data.name}/${data.protocol}`, {
 			method: 'DELETE'
 		});
-		await api.getTraefikConfig(id, TraefikSource.LOCAL);
+		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
 	// Middlewares ---------------------------------------------------------------
-	async upsertMiddleware(id: number, data: UpsertMiddlewareParams) {
-		await send(`/middleware/${id}`, {
+	async upsertMiddleware(data: UpsertMiddlewareParams) {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		await send(`/middleware/${profile.id}`, {
 			method: 'POST',
 			body: data
 		});
-		await api.getTraefikConfig(id, TraefikSource.LOCAL);
+		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
-	async deleteMiddleware(id: number, data: Middleware) {
-		await send(`/middleware/${id}/${data.name}/${data.protocol}`, {
+	async deleteMiddleware(data: Middleware) {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		await send(`/middleware/${profile.id}/${data.name}/${data.protocol}`, {
 			method: 'DELETE'
 		});
-		await api.getTraefikConfig(id, TraefikSource.LOCAL);
+		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
 	// DNS Providers -------------------------------------------------------------
@@ -413,8 +431,11 @@ export const api = {
 	},
 
 	async listAgentsByProfile(): Promise<Agent[]> {
-		if (!get(profile).id) return [];
-		const data = await send(`/agent/list/${get(profile).id}`);
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return [];
+		}
+		const data = await send(`/agent/list/${profile.id}`);
 		agents.set(data);
 		return data;
 	},
@@ -424,8 +445,13 @@ export const api = {
 	},
 
 	async createAgent() {
-		if (!get(profile).id) return;
-		await send(`/agent/${get(profile).id}`, { method: 'POST' });
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		await send(`/agent/${profile.id}`, {
+			method: 'POST'
+		});
 		await api.listAgentsByProfile();
 	},
 
@@ -542,8 +568,12 @@ export const api = {
 };
 
 // Helper
-async function fetchTraefikMetadata(id: number) {
-	const res = await send(`/traefik/${id}/${TraefikSource.API}`);
+async function fetchTraefikMetadata() {
+	if (!profile.isValid()) {
+		toast.error('No valid profile selected');
+		return;
+	}
+	const res = await send(`/traefik/${profile.id}/${TraefikSource.API}`);
 	if (!res) {
 		// Reset metadata stores
 		overview.set({} as Overview);
@@ -564,79 +594,69 @@ async function fetchTraefikMetadata(id: number) {
 	return true;
 }
 
-async function fetchTraefikConfig(profileID: number, source: TraefikSource) {
-	// Reset stores
-	traefik.set([]);
-	routers.set([]);
-	services.set([]);
-	middlewares.set([]);
+async function fetchTraefikConfig(src: TraefikSource) {
+	if (!profile.isValid() || !source.isValid(src)) {
+		toast.error('No valid profile selected');
+		return;
+	}
+	source.value = src;
 
-	const res = await send(`/traefik/${profileID}/${source}`);
+	const res = await send(`/traefik/${profile.id}/${source.value}`);
 	if (!res) {
+		// Reset stores
+		traefik.set([]);
+		routers.set([]);
+		services.set([]);
+		middlewares.set([]);
+		routerServiceMerge.set([]);
 		return;
 	}
 
-	// Set stores
-	traefik.set(res);
-	routers.set(flattenRouterData(res));
-	services.set(flattenServiceData(res));
-	middlewares.set(flattenMiddlewareData(res));
+	// Update stores with proper diffing
+	traefik.update((current) => {
+		return JSON.stringify(current) === JSON.stringify(res) ? current : res;
+	});
+
+	const newRouters = flattenRouterData(res);
+	const newServices = flattenServiceData(res);
+	const newMiddlewares = flattenMiddlewareData(res);
+	const newMerge = newRouters.map((router) => {
+		const routerProvider = router.name.split('@')[1];
+		let serviceName = router.service; // api@internal
+
+		// Most of time the service name doesn't include the provider
+		if (!router.service?.includes('@')) {
+			serviceName = router.service + '@' + routerProvider;
+		}
+		const service = newServices.find((service) => service.name === serviceName);
+
+		return { router, service: service || ({} as Service) };
+	});
+
+	routers.update((current) => {
+		if (!current || current.length === 0) return newRouters;
+		if (JSON.stringify(current) === JSON.stringify(newRouters)) return current;
+		return newRouters;
+	});
+
+	services.update((current) => {
+		if (!current || current.length === 0) return newServices;
+		if (JSON.stringify(current) === JSON.stringify(newServices)) return current;
+		return newServices;
+	});
+
+	middlewares.update((current) => {
+		if (!current || current.length === 0) return newMiddlewares;
+		if (JSON.stringify(current) === JSON.stringify(newMiddlewares)) return current;
+		return newMiddlewares;
+	});
+
+	routerServiceMerge.update((current) => {
+		if (!current || current.length === 0) return newMerge;
+		if (JSON.stringify(current) === JSON.stringify(newMerge)) return current;
+		return newMerge;
+	});
 
 	// Fetch the router dns relations
 	await api.listRouterDNSProviders(res.id);
 }
-
-// Login ----------------------------------------------------------------------
-// export async function login(username: string, password: string, remember: boolean) {
-// 	const loginURL = remember ? `${BASE_URL}/login?remember=true` : `${BASE_URL}/login`;
-// 	const response = await fetch(loginURL, {
-// 		method: 'POST',
-// 		body: JSON.stringify({ username, password })
-// 	});
-// 	if (response.ok) {
-// 		const { token } = await response.json();
-// 		localStorage.setItem(TOKEN_SK, token);
-// 		loggedIn.set(true);
-// 		goto('/');
-// 		toast.success('Login successful');
-// 		await getProfiles();
-// 		await getProviders();
-// 	} else {
-// 		toast.error('Login failed', {
-// 			description: await response.text(),
-// 			duration: 3000
-// 		});
-// 		return;
-// 	}
-// }
-
-// export async function sendResetEmail(username: string) {
-// 	const response = await fetch(`${BASE_URL}/reset/${username}`, {
-// 		method: 'POST'
-// 	});
-// 	if (response.ok) {
-// 		toast.success('Password reset email sent!');
-// 	} else {
-// 		toast.error('Request failed', {
-// 			description: await response.text(),
-// 			duration: 3000
-// 		});
-// 	}
-// }
-
-// export async function resetPassword(token: string, password: string) {
-// 	const response = await fetch(`${BASE_URL}/reset`, {
-// 		method: 'POST',
-// 		body: JSON.stringify({ password }),
-// 		headers: { Authorization: `Bearer ${token}` }
-// 	});
-// 	if (response.ok) {
-// 		toast.success('Password reset successful!');
-// 		goto('/login');
-// 	} else {
-// 		toast.error('Request failed', {
-// 			description: await response.text(),
-// 			duration: 3000
-// 		});
-// 	}
-// }

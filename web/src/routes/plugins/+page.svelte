@@ -8,12 +8,12 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Delete } from 'lucide-svelte';
 	import type { Plugin } from '$lib/types';
-	import { profile, api, plugins } from '$lib/api';
+	import { api, plugins } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { toast } from 'svelte-sonner';
 	import YAML from 'yaml';
-	import type { HTTPMiddleware, UpsertMiddlewareParams } from '$lib/types/middlewares';
+	import type { UpsertMiddlewareParams } from '$lib/types/middlewares';
 
 	// State
 	let open = $state(false);
@@ -44,8 +44,6 @@
 	});
 
 	async function installPlugin(plugin: Plugin) {
-		if (!$profile.id) return;
-
 		const data = YAML.parse(plugin.snippet.yaml);
 		const pluginContent = extractPluginContent(data);
 		const name = Object.keys(pluginContent)[0];
@@ -62,7 +60,7 @@
 				}
 			}
 		};
-		await api.upsertMiddleware($profile.id, middleware);
+		await api.upsertMiddleware(middleware);
 
 		selectedPlugin = plugin;
 		yamlSnippet = generateYamlSnippet(plugin);

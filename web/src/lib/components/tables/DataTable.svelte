@@ -25,8 +25,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { TraefikSource } from '$lib/types';
-	import { SOURCE_TAB_SK } from '$lib/store';
-	import { api, profile, source } from '$lib/api';
+	import { source } from '$lib/stores/source';
+	import { api } from '$lib/api';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -38,6 +38,7 @@
 		Plus,
 		Search
 	} from 'lucide-svelte';
+	import { limit } from '$lib/stores/common';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -61,7 +62,10 @@
 
 	// Pagination
 	const pageSizeOptions = [10, 20, 30, 40, 50];
-	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+	let pagination = $state<PaginationState>({
+		pageIndex: 0,
+		pageSize: parseInt(limit.value ?? pageSizeOptions[0].toString())
+	});
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
@@ -175,11 +179,16 @@
 	});
 
 	// Update localStorage and fetch config when tab changes
-	async function handleTabChange(value: TraefikSource) {
-		localStorage.setItem(SOURCE_TAB_SK, value);
-		source.set(value);
-		if (!$profile?.id) return;
-		await api.getTraefikConfig($profile.id, $source);
+	async function handleTabChange(value: string) {
+		if (!source.isValid(value)) return;
+		source.value = value;
+		await api.getTraefikConfig(source.value);
+	}
+	function handleLimitChange(value: string) {
+		if (!value) return;
+		table.setPageSize(Number(value));
+		pagination.pageSize = Number(value);
+		limit.value = value;
 	}
 </script>
 
@@ -202,7 +211,7 @@
 
 		<!-- Tabs -->
 		{#if showSourceTabs}
-			<Tabs.Root value={$source} onValueChange={(value) => handleTabChange(value as TraefikSource)}>
+			<Tabs.Root bind:value={source.value} onValueChange={handleTabChange}>
 				<Tabs.List class="grid w-[400px] grid-cols-3">
 					<Tabs.Trigger value={TraefikSource.LOCAL}>Local</Tabs.Trigger>
 					<Tabs.Trigger value={TraefikSource.API}>API</Tabs.Trigger>
@@ -320,10 +329,8 @@
 			<Select.Root
 				type="single"
 				allowDeselect={false}
-				value={pagination.pageSize.toString()}
-				onValueChange={(value) => (
-					table.setPageSize(Number(value)), (pagination.pageSize = Number(value))
-				)}
+				bind:value={limit.value}
+				onValueChange={handleLimitChange}
 			>
 				<Select.Trigger class="w-[180px]">
 					{pagination.pageSize}

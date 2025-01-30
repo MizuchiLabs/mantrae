@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ValidateRule } from './ruleString';
 	import { onMount } from 'svelte';
-	import { RULE_EDITOR_TAB_SK } from '$lib/store';
 	import { CircleCheck, CircleX } from 'lucide-svelte';
+	import { ruleTab } from '$lib/stores/common';
 
 	interface Props {
 		rule: string | undefined;
@@ -73,6 +71,7 @@
 		placeholderPositions = [];
 		const regex = /`([^`]*)`/g;
 		let match;
+		if (rule === undefined) return;
 		while ((match = regex.exec(rule)) !== null) {
 			placeholderPositions.push({
 				start: match.index + 1,
@@ -215,28 +214,28 @@
 	};
 
 	onMount(() => {
-		// Load tab state from localStorage
-		const savedTab = localStorage.getItem(RULE_EDITOR_TAB_SK) as 'simple' | 'advanced' | null;
-		if (savedTab && !simpleDisabled) {
-			currentTab = savedTab;
+		if (ruleTab.value && !simpleDisabled) {
+			currentTab = ruleTab.value;
 		} else {
 			currentTab = simpleDisabled ? 'advanced' : 'simple';
 		}
 		checkConditions();
 	});
 
-	run(() => {
-		type, handleSimpleInput();
-	});
-	run(() => {
-		rule, checkConditions();
+	onMount(() => {
+		if (type) {
+			handleSimpleInput();
+		}
+		if (rule) {
+			checkConditions();
+		}
 	});
 </script>
 
 <!-- Simple and advanced mode-->
 <Tabs.Root
-	value={currentTab}
-	onValueChange={(value) => value && localStorage.setItem(RULE_EDITOR_TAB_SK, value)}
+	bind:value={ruleTab.value}
+	onValueChange={(value) => (ruleTab.value = value)}
 	class="flex flex-col gap-2"
 >
 	<div class="flex justify-end">

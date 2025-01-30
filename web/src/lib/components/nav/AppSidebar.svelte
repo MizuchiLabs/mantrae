@@ -30,10 +30,12 @@
 	import InfoModal from '../modals/info.svelte';
 	import ProfileModal from '../modals/profile.svelte';
 	import UserModal from '../modals/user.svelte';
-	import { profile, profiles, user, api } from '$lib/api';
+	import { profiles, api } from '$lib/api';
 	import { slide } from 'svelte/transition';
 	import type { Profile } from '$lib/types';
-	import { theme } from '$lib/store';
+	import { theme } from '$lib/stores/theme';
+	import { profile } from '$lib/stores/profile';
+	import { user } from '$lib/stores/user';
 
 	let {
 		ref = $bindable(null),
@@ -94,8 +96,8 @@
 
 <ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} />
 <InfoModal bind:open={infoModalOpen} />
-{#if $user}
-	<UserModal bind:open={userModalOpen} user={$user} />
+{#if user.isLoggedIn() && user.value}
+	<UserModal bind:open={userModalOpen} user={user.value} />
 {/if}
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -118,9 +120,9 @@
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">
-										{$profile.name}
+										{profile.name ? profile.name : 'Select Profile'}
 									</span>
-									<span class="truncate text-xs">{$profile.url}</span>
+									<span class="truncate text-xs">{profile.value?.url ?? ''}</span>
 								</div>
 								<ChevronsUpDown class="ml-auto" />
 							</Sidebar.MenuButton>
@@ -134,7 +136,10 @@
 					>
 						<DropdownMenu.Label class="text-xs text-muted-foreground">Profiles</DropdownMenu.Label>
 						{#each $profiles as p (p.name)}
-							<DropdownMenu.Item onSelect={() => ($profile = p)} class="flex justify-between gap-2">
+							<DropdownMenu.Item
+								onSelect={() => (profile.value = p)}
+								class="flex justify-between gap-2"
+							>
 								<div class="flex items-center gap-2">
 									<div class="flex size-6 items-center justify-center rounded-sm border">
 										<Tag class="size-4 shrink-0" />
@@ -262,12 +267,12 @@
 								<Avatar.Root class="h-8 w-8 rounded-lg">
 									<!-- <Avatar.Image src={user.avatar} alt={'@' + $user?.username} /> -->
 									<Avatar.Fallback class="rounded-lg">
-										{$user?.username.slice(0, 2).toUpperCase()}
+										{user.username?.slice(0, 2).toUpperCase()}
 									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">{$user?.username}</span>
-									<span class="truncate text-xs">{$user?.email}</span>
+									<span class="truncate font-semibold">{user?.username}</span>
+									<span class="truncate text-xs">{user?.email}</span>
 								</div>
 								<ChevronsUpDown class="ml-auto size-4" />
 							</Sidebar.MenuButton>
@@ -284,12 +289,12 @@
 								<Avatar.Root class="h-8 w-8 rounded-lg">
 									<!-- <Avatar.Image src={user?.avatar} alt={'@' + $user?.username} /> -->
 									<Avatar.Fallback class="rounded-lg">
-										{$user?.username.slice(0, 2).toUpperCase()}
+										{user.username?.slice(0, 2).toUpperCase()}
 									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">{$user?.username}</span>
-									<span class="truncate text-xs">{$user?.email}</span>
+									<span class="truncate font-semibold">{user?.username}</span>
+									<span class="truncate text-xs">{user?.email}</span>
 								</div>
 							</div>
 						</DropdownMenu.Label>

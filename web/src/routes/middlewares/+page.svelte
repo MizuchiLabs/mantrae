@@ -8,9 +8,11 @@
 	import type { Middleware, SupportedMiddleware } from '$lib/types/middlewares';
 	import { Eye, Layers, Pencil, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, profile, middlewares, source } from '$lib/api';
+	import { api, middlewares } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
+	import { source } from '$lib/stores/source';
+	import { onMount } from 'svelte';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -45,7 +47,7 @@
 				return;
 			}
 
-			await api.deleteMiddleware($profile.id, middleware);
+			await api.deleteMiddleware(middleware);
 			toast.success('Middleware deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -102,7 +104,7 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
-				if ($source === TraefikSource.LOCAL) {
+				if (source.value === TraefikSource.LOCAL) {
 					return renderComponent(TableActions, {
 						actions: [
 							{
@@ -147,10 +149,8 @@
 		}
 	];
 
-	profile.subscribe((value) => {
-		if (value.id) {
-			api.getTraefikConfig(value.id, $source);
-		}
+	onMount(() => {
+		api.getTraefikConfig(source.value);
 	});
 </script>
 
@@ -158,7 +158,7 @@
 	<title>Middlewares</title>
 </svelte:head>
 
-<Tabs.Root value={$source}>
+<Tabs.Root value={source.value}>
 	<Tabs.Content value={TraefikSource.LOCAL}>
 		<div class="flex flex-col gap-4">
 			<div class="flex items-center justify-start gap-2">

@@ -16,7 +16,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { api, profile } from '$lib/api';
+	import { api } from '$lib/api';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import DynamicForm from '../forms/DynamicForm.svelte';
@@ -94,7 +94,7 @@
 				type: data.type,
 				...(data.protocol === 'http' ? { middleware: data } : { tcpMiddleware: data })
 			};
-			await api.upsertMiddleware($profile.id, params);
+			await api.upsertMiddleware(params);
 			toast.success(`Middleware updated successfully`);
 			resetForm();
 		} catch (err: unknown) {

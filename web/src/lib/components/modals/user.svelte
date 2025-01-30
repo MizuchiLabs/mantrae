@@ -5,7 +5,8 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { api, loading, user as currentUser } from '$lib/api';
+	import { api, loading } from '$lib/api';
+	import { user as currentUser } from '$lib/stores/user';
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
@@ -18,7 +19,7 @@
 	let { user = $bindable({} as User), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
-	let isSelf = $derived(user.id === $currentUser?.id);
+	let isSelf = $derived(user.id === currentUser?.id);
 
 	const handleSubmit = async () => {
 		if (!user.username) return;

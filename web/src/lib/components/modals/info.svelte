@@ -5,11 +5,12 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { api, entrypoints, overview, profile, version } from '$lib/api';
+	import { api, entrypoints, overview,  version } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
 	import { Copy, CopyCheck } from 'lucide-svelte';
 	import { json, yaml } from 'svelte-highlight/languages';
 	import YAML from 'yaml';
+	import { onMount } from 'svelte';
 
 	let code = $state('');
 	let displayCode = $state('');
@@ -40,12 +41,10 @@
 		}
 	};
 
-	profile.subscribe(async (value) => {
-		if (value.name) {
-			const config = await api.getDynamicConfig(value.name);
-			code = JSON.stringify(config, null, 2);
-			displayCode = code;
-		}
+	onMount(async () => {
+		const config = await api.getDynamicConfig();
+		code = JSON.stringify(config, null, 2);
+		displayCode = code;
 	});
 </script>
 

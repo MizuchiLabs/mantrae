@@ -11,7 +11,7 @@
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-	import { DateFormat } from '$lib/store';
+	import { DateFormat } from '$lib/stores/common';
 
 	let hasChanges = $state(false);
 	let changedValues = $state<Record<string, Setting['value']>>({});

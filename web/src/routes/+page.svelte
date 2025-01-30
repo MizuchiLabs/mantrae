@@ -3,7 +3,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Globe, Shield, Bot, LayoutDashboard, Origami, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import { api, profiles, profile, stats } from '$lib/api';
+	import { api, profiles, stats } from '$lib/api';
 	import { TraefikSource, type Agent } from '$lib/types';
 	import { type Router, type Service } from '$lib/types/router';
 	import type { Middleware } from '$lib/types/middlewares';
@@ -19,10 +19,10 @@
 		await api.loadStats();
 
 		if (!$profiles) return;
-		await api.getTraefikConfig($profile.id, TraefikSource.LOCAL);
+		await api.getTraefikConfig(TraefikSource.LOCAL);
 
 		// Get profile stats
-		const t = await api.getTraefikConfigLocal($profile.id);
+		const t = await api.getTraefikConfigLocal();
 		const a = await api.listAgentsByProfile();
 		profileStats.routers = t?.routers || [];
 		profileStats.services = t?.services || [];
