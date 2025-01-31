@@ -74,6 +74,21 @@ steps:
       platforms: linux/amd64, linux/arm64
       username: ${CI_REPO_OWNER}
       dockerfile: agent/Dockerfile
+      tag: latest
+      auto_labels: true
+      password:
+        from_secret: gh_token
+    when:
+      branch: main
+
+  - name: agent-container-build
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: ghcr.io/${CI_REPO_OWNER,,}/mantrae-agent
+      registry: ghcr.io
+      platforms: linux/amd64, linux/arm64
+      username: ${CI_REPO_OWNER}
+      dockerfile: agent/Dockerfile
       tag: nightly
       auto_labels: true
       password:
