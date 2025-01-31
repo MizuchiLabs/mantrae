@@ -24,11 +24,13 @@ steps:
       - go mod verify
       - go test ./...
       - |
-        CGO_ENABLED=0 GOOS=linux go build \
-        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
-                        -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
-                        -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
-        -o mantrae main.go; \
+        for arch in amd64 arm64; do \
+          CGO_ENABLED=0 GOOS=linux GOARCH=${arch} go build \
+          -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
+                          -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
+                          -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
+          -o mantrae-linux-${arch} main.go; \
+        done
 
   - name: agent-build
     image: golang:latest
@@ -39,13 +41,15 @@ steps:
       - go mod verify
       - go test ./...
       - |
-        CGO_ENABLED=0 GOOS=linux go build \
-        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
-                        -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
-                        -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
-        -o agent agent/cmd/main.go; \
+        for arch in amd64 arm64; do \
+          CGO_ENABLED=0 GOOS=linux GOARCH=${arch} go build \
+          -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
+                          -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
+                          -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
+          -o mae-linux-${arch} agent/cmd/main.go; \
+        done
 
-  - name: container-build
+  - name: server-container-build
     image: woodpeckerci/plugin-docker-buildx
     settings:
       repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
@@ -60,13 +64,28 @@ steps:
       event: tag
       branch: main
 
-  - name: container-build
+  - name: server-container-build
     image: woodpeckerci/plugin-docker-buildx
     settings:
       repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
       registry: ghcr.io
       platforms: linux/amd64, linux/arm64
       username: ${CI_REPO_OWNER}
+      tag: nightly
+      auto_labels: true
+      password:
+        from_secret: gh_token
+    when:
+      branch: nightly
+
+  - name: agent-container-build
+    image: woodpeckerci/plugin-docker-buildx
+    settings:
+      repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
+      registry: ghcr.io
+      platforms: linux/amd64, linux/arm64
+      username: ${CI_REPO_OWNER}
+      dockerfile: agent/Dockerfile
       tag: nightly
       auto_labels: true
       password:

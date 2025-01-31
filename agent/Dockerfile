@@ -1,5 +1,7 @@
 FROM alpine
 
+ARG TARGETOS
+ARG TARGETARCH
 ARG VERSION
 ARG COMMIT
 ARG DATE
@@ -15,10 +17,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
 
-COPY mantrae_agent /usr/local/bin/mantrae_agent
+COPY mae-${TARGETOS}-${TARGETARCH} /usr/local/bin/mae
 
-EXPOSE 3000
-EXPOSE 8090
-
-ENTRYPOINT ["/usr/local/bin/mantrae_agent"]
+ENTRYPOINT ["/usr/local/bin/mae"]
 
