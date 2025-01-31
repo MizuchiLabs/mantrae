@@ -23,7 +23,8 @@ steps:
       - go mod tidy
       - go mod verify
       - go test ./...
-      - for arch in amd64 arm64; do CGO_ENABLED=0 GOOS=linux GOARCH=${arch} go build -o mantrae-linux-${arch} main.go; done
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mantrae-linux-amd64 main.go
+      - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mantrae-linux-arm64 main.go
 
   - name: agent-build
     image: golang:latest
@@ -33,7 +34,8 @@ steps:
       - go mod tidy
       - go mod verify
       - go test ./...
-      - for arch in amd64 arm64; do CGO_ENABLED=0 GOOS=linux GOARCH=${arch} go build -o mae-linux-${arch} agent/cmd/main.go; done
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mae-linux-amd64 agent/cmd/main.go
+      - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mae-linux-arm64 agent/cmd/main.go
 
   - name: server-container-build
     image: woodpeckerci/plugin-docker-buildx
