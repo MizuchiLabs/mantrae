@@ -47,25 +47,15 @@ func HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-// HashBasicAuth hashes a password using bcrypt (htpasswd)
-func HashBasicAuth(userString string) (string, error) {
-	if userString == "" {
-		return "", nil
-	}
+// IsHtpasswdFormat checks if a string is already in htpasswd format
+func IsHtpasswdFormat(s string) bool {
+	// HTPasswd formats we support:
+	// - bcrypt: $2y$ or $2a$ or $2b$ followed by cost and 22 chars
+	// - MD5: $apr1$ followed by salt and hash
+	bcryptRegex := regexp.MustCompile(`^\$2[ayb]\$.{56}$`)
+	md5Regex := regexp.MustCompile(`^\$apr1\$.{30,}$`)
 
-	user := strings.Split(userString, ":")[0]
-	password := strings.Split(userString, ":")[1]
-
-	// If the password is already hashed, return it
-	if strings.HasPrefix(password, "$2") && len(password) >= 60 {
-		return user + ":" + password, nil
-	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return user + ":" + string(hash), nil
+	return bcryptRegex.MatchString(s) || md5Regex.MatchString(s)
 }
 
 // GenerateOTP creates a secure 6-digit token

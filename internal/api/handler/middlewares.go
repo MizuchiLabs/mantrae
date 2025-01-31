@@ -53,11 +53,6 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// if err := validateRouterParams(&params); err != nil {
-		// 	http.Error(w, err.Error(), http.StatusBadRequest)
-		// 	return
-		// }
-
 		// Get existing config
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
@@ -94,6 +89,10 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
+			if err = db.VerifyMiddleware(params.Middleware.Middleware); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 			existingConfig.Config.Middlewares[params.Name] = params.Middleware
 		case "tcp":
 			existingConfig.Config.TCPMiddlewares[params.Name] = params.TCPMiddleware

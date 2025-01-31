@@ -5,15 +5,11 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { api, entrypoints, overview,  version } from '$lib/api';
+	import { entrypoints, overview, version, dynamicJSON, dynamicYAML, api } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
 	import { Copy, CopyCheck } from 'lucide-svelte';
 	import { json, yaml } from 'svelte-highlight/languages';
-	import YAML from 'yaml';
 	import { onMount } from 'svelte';
-
-	let code = $state('');
-	let displayCode = $state('');
 
 	let isYaml = $state(false);
 	let copyText = $state('Copy');
@@ -21,36 +17,21 @@
 	let { open = $bindable(false) } = $props();
 
 	const copy = () => {
-		navigator.clipboard.writeText(displayCode);
+		navigator.clipboard.writeText(isYaml ? $dynamicYAML : $dynamicJSON);
 		copyText = 'Copied!';
 		setTimeout(() => {
 			copyText = 'Copy';
 		}, 2000);
 	};
 
-	const toggleFormat = () => {
-		try {
-			if (isYaml) {
-				displayCode = code;
-			} else {
-				displayCode = YAML.stringify(JSON.parse(code));
-			}
-			isYaml = !isYaml;
-		} catch (error) {
-			console.error('Failed to convert:', error);
-		}
-	};
-
 	onMount(async () => {
-		const config = await api.getDynamicConfig();
-		code = JSON.stringify(config, null, 2);
-		displayCode = code;
+		await api.getDynamicConfig();
 	});
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
-		<Tabs.Root value="overview" class="mt-4 max-w-2xl">
+	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-[850px] overflow-y-auto">
+		<Tabs.Root value="overview" class="mt-4">
 			<Tabs.List class="grid w-full grid-cols-2">
 				<Tabs.Trigger value="overview">Overview</Tabs.Trigger>
 				<Tabs.Trigger value="config">Config</Tabs.Trigger>
@@ -193,10 +174,10 @@
 						<Card.Title class="flex items-center justify-between gap-2">
 							Dynamic Config
 							<div class="flex items-center gap-2">
-								<Button variant="outline" size="sm" onclick={toggleFormat}>
+								<Button variant="outline" size="sm" onclick={() => (isYaml = !isYaml)}>
 									{isYaml ? 'Show JSON' : 'Show YAML'}
 								</Button>
-								{#if displayCode}
+								{#if $dynamicJSON && $dynamicJSON !== 'null'}
 									<button
 										onclick={copy}
 										class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
@@ -216,8 +197,12 @@
 						</Card.Description>
 					</Card.Header>
 					<Card.Content class="text-sm">
-						{#if displayCode && displayCode !== 'null'}
-							<Highlight language={isYaml ? yaml : json} code={displayCode} let:highlighted>
+						{#if $dynamicJSON && $dynamicJSON !== 'null'}
+							<Highlight
+								language={isYaml ? yaml : json}
+								code={isYaml ? $dynamicYAML : $dynamicJSON}
+								let:highlighted
+							>
 								<LineNumbers {highlighted} />
 							</Highlight>
 						{:else}

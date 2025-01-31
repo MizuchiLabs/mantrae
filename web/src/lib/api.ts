@@ -26,6 +26,7 @@ import {
 	type Service,
 	type UpsertRouterParams
 } from './types/router';
+import YAML from 'yaml';
 import { get, writable, type Writable } from 'svelte/store';
 import { toast } from 'svelte-sonner';
 import { goto } from '$app/navigation';
@@ -58,10 +59,12 @@ export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
 export const backups: Writable<BackupFile[]> = writable([]);
-export const stats: Writable<Stats> = writable({} as Stats);
 
 // App state
+export const stats: Writable<Stats> = writable({} as Stats);
 export const mwNames: Writable<string[]> = writable([]);
+export const dynamicJSON: Writable<string> = writable('');
+export const dynamicYAML: Writable<string> = writable('');
 
 // Loading and error states
 export const loading = writable<boolean>(false);
@@ -271,7 +274,12 @@ export const api = {
 			toast.error('Profile name is required');
 			return;
 		}
-		return await send(`/${profile.name}`);
+		const data = await send(`/${profile.name}`);
+		if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+			return;
+		}
+		dynamicJSON.set(JSON.stringify(data, null, 2));
+		dynamicYAML.set(YAML.stringify(data));
 	},
 
 	// Routers -------------------------------------------------------------------
@@ -659,4 +667,7 @@ async function fetchTraefikConfig(src: TraefikSource) {
 
 	// Fetch the router dns relations
 	await api.listRouterDNSProviders(res.id);
+
+	// Fetch dynamic config
+	await api.getDynamicConfig();
 }

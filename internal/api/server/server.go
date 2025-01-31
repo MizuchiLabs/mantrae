@@ -138,5 +138,5 @@ func (s *Server) registerServices() {
 	// })
 
 	// Service implementations
-	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app.DB), opts...))
+	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app), opts...))
 }

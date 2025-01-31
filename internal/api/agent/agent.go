@@ -2,28 +2,26 @@ package agent
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
-	"sync"
 
 	"connectrpc.com/connect"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 type AgentServer struct {
-	db *sql.DB
-	mu sync.Mutex
+	app *config.App
 }
 
-func NewAgentServer(db *sql.DB) *AgentServer {
+func NewAgentServer(app *config.App) *AgentServer {
 	return &AgentServer{
-		db: db,
+		app: app,
 	}
 }
 
@@ -48,7 +46,6 @@ func (s *AgentServer) GetContainer(
 	}
 
 	// Upsert agent
-	s.mu.Lock()
 	params := db.UpdateAgentParams{
 		ID:       req.Msg.GetAgentId(),
 		Hostname: &req.Msg.Hostname,
@@ -76,19 +73,17 @@ func (s *AgentServer) GetContainer(
 	}
 	params.Containers = &containers
 
-	q := db.New(s.db)
+	q := db.New(s.app.DB)
 	updatedAgent, err := q.UpdateAgent(context.Background(), params)
 	if err != nil {
-		s.mu.Unlock()
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	util.Broadcast <- util.EventMessage{
 		Type:    util.EventTypeUpdate,
 		Message: "agent",
 	}
-	s.mu.Unlock()
 
-	if err = traefik.DecodeAgentConfig(s.db, updatedAgent); err != nil {
+	if err = traefik.DecodeAgentConfig(s.app.DB, updatedAgent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
@@ -110,7 +105,7 @@ func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error)
 	}
 
 	// Check if agent exists
-	q := db.New(s.db)
+	q := db.New(s.app.DB)
 	dbAgent, err := q.GetAgent(context.Background(), id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
@@ -124,12 +119,12 @@ func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error)
 		)
 	}
 
-	// if _, err := agent.DecodeJWT(dbAgent.Token); err != nil {
-	// 	return nil, connect.NewError(
-	// 		connect.CodeUnauthenticated,
-	// 		errors.New("failed to decode token"),
-	// 	)
-	// }
+	if _, err := DecodeJWT(dbAgent.Token, s.app.Config.Secret); err != nil {
+		return nil, connect.NewError(
+			connect.CodeUnauthenticated,
+			errors.New("failed to decode token"),
+		)
+	}
 
 	return &dbAgent, nil
 }
