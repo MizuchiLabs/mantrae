@@ -1,5 +1,5 @@
 when:
-  - branch: ${CI_REPO_DEFAULT_BRANCH}
+  - branch: [main, nightly]
     event: [push, tag, deployment, manual]
     path:
       exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
@@ -57,7 +57,7 @@ steps:
       registry: ghcr.io
       platforms: linux/amd64, linux/arm64
       username: ${CI_REPO_OWNER}
-      auto_tag: true
+      tags: "${CI_COMMIT_BRANCH == 'main' ? (CI_COMMIT_TAG ? 'latest,' + CI_COMMIT_TAG : 'latest') : 'nightly'}"
       auto_labels: true
       password:
         from_secret: gh_token
@@ -71,3 +71,4 @@ steps:
         from_secret: gh_token
     when:
       event: tag
+      branch: main
