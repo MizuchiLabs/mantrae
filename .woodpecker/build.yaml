@@ -25,9 +25,9 @@ steps:
       - go test ./...
       - |
         CGO_ENABLED=0 GOOS=linux go build \
-        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version=${CI_COMMIT_TAG} \
-                        -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate=${CI_PIPELINE_CREATED} \
-                        -X github.com/MizuchiLabs/mantrae/pkg/util.Commit=${CI_COMMIT_SHA}" \
+        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
+                        -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
+                        -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
         -o mantrae main.go; \
 
   - name: agent-build
@@ -39,11 +39,11 @@ steps:
       - go mod verify
       - go test ./...
       - |
-        CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build \
-        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version=${CI_COMMIT_TAG} \
-                        -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate=${CI_PIPELINE_CREATED} \
-                        -X github.com/MizuchiLabs/mantrae/pkg/util.Commit=${CI_COMMIT_SHA}" \
-        -o mantrae main.go; \
+        CGO_ENABLED=0 GOOS=linux go build \
+        -ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${CI_COMMIT_TAG} \
+                        -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${CI_PIPELINE_CREATED} \
+                        -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${CI_COMMIT_SHA}" \
+        -o agent agent/cmd/main.go; \
 
   - name: container-build
     image: woodpeckerci/plugin-docker-buildx

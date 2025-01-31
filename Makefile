@@ -6,7 +6,7 @@ DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/util.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/pkg/util.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/pkg/util.Commit=${COMMIT}"
+LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${COMMIT}"
 
 all: clean build
 
