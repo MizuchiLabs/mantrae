@@ -57,7 +57,7 @@ steps:
       registry: ghcr.io
       platforms: linux/amd64, linux/arm64
       username: ${CI_REPO_OWNER}
-      tags: "${CI_COMMIT_BRANCH == 'main' ? (CI_COMMIT_TAG ? 'latest,' + CI_COMMIT_TAG : 'latest') : 'nightly'}"
+      auto_tags: true
       auto_labels: true
       password:
         from_secret: gh_token
