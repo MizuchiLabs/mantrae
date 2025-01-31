@@ -161,7 +161,7 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 	}
 
 	q := db.New(a.DB)
-	_, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
+	profile, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
 	if err != nil {
 		profileID, err := q.CreateProfile(ctx, db.CreateProfileParams{
 			Name:     a.Config.Traefik.Profile,
@@ -195,6 +195,7 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 	}
 
 	if err := q.UpdateProfile(ctx, db.UpdateProfileParams{
+		ID:       profile.ID,
 		Name:     a.Config.Traefik.Profile,
 		Url:      a.Config.Traefik.URL,
 		Username: &a.Config.Traefik.Username,

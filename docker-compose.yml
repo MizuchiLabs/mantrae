@@ -5,11 +5,9 @@ services:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
     environment:
+      - TRAEFIK_URL=https://traefik.mizuchi.dev # either use the traefik url or the traefik container name if insecure
+      - ADMIN_PASSWORD=<super secret password>
       - SECRET=<secret> # generate a secret with openssl rand -hex 32
-    command:
-      - --url=http://traefik:8080 # if traefik is running on the same host
-      - --username=admin # use this if you enabled basicauth on traefik
-      - --password=admin
     volumes:
       - ./mantrae:/app
     ports:
@@ -19,27 +17,14 @@ services:
       - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
     networks:
       - proxy
-    restart: always
+    restart: unless-stopped
 
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae
     environment:
-      - SECRET=<secret> # generate a secret with openssl rand -hex 32
-    command:
-      - --url=http://traefik:8080 # if traefik is running on the same host
-      - --username=admin # use this if you enabled basicauth on traefik
-      - --password=admin
-    volumes:
-      - ./mantrae:/app
-    ports:
-      - 3000:3000 # remove this if you want to use traefik 
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
-    networks:
-      - proxy
-    restart: always
+      - TOKEN=<token> # token from mantrae
+    restart: unless-stopped
 
   traefik:
     image: docker.io/traefik:latest
@@ -58,7 +43,7 @@ services:
     command:
       - --log.level=INFO
       - --api.dashboard=true
-      - --api.insecure=true # Needs to be enabled (you can secure it via basicauth)
+      - --api.insecure=true # remove this if you have a domain
       - --entrypoints.web.address=:80
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
