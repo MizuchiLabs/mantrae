@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
@@ -158,45 +157,25 @@
 	<title>Middlewares</title>
 </svelte:head>
 
-<Tabs.Root value={source.value}>
-	<Tabs.Content value={TraefikSource.LOCAL}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Layers />
-				<h1 class="text-2xl font-bold">Middleware Management</h1>
-			</div>
-			<DataTable
-				{columns}
-				data={$middlewares || []}
-				showSourceTabs={true}
-				createButton={{
-					label: 'Add Middleware',
-					onClick: openCreateModal
-				}}
-			/>
-		</div>
-	</Tabs.Content>
-	<Tabs.Content value={TraefikSource.API}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Layers />
-				<h1 class="text-2xl font-bold">Middleware Management</h1>
-			</div>
-
-			<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
-		</div>
-	</Tabs.Content>
-	<Tabs.Content value={TraefikSource.AGENT}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Layers />
-				<h1 class="text-2xl font-bold">Middleware Management</h1>
-			</div>
-
-			<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
-		</div>
-	</Tabs.Content>
-</Tabs.Root>
+<div class="flex flex-col gap-4">
+	<div class="flex items-center justify-start gap-2">
+		<Layers />
+		<h1 class="text-2xl font-bold">Middleware Management</h1>
+	</div>
+	{#if source.value === TraefikSource.LOCAL}
+		<DataTable
+			{columns}
+			data={$middlewares || []}
+			showSourceTabs={true}
+			createButton={{
+				label: 'Add Middleware',
+				onClick: openCreateModal
+			}}
+		/>
+	{:else}
+		<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
+	{/if}
+</div>
 
 <MiddlewareModal
 	bind:open={modalState.isOpen}

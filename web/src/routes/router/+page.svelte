@@ -1,5 +1,4 @@
 <script lang="ts">
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import RouterModal from '$lib/components/modals/router.svelte';
@@ -83,32 +82,33 @@
 	const columns: ColumnDef<RouterWithService>[] = [
 		{
 			header: 'Name',
-			accessorFn: (row) => row.router.name,
+			accessorKey: 'router.name',
 			id: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('name') as string;
-				return name.split('@')[0];
+				return name?.split('@')[0];
 			}
 		},
 		{
 			header: 'Protocol',
-			accessorFn: (row) => row.router.protocol,
+			accessorKey: 'router.protocol',
 			id: 'protocol',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const protocol = row.getValue('protocol') as string;
-				return renderComponent(ColumnBadge, { label: protocol });
+				return renderComponent(ColumnBadge, {
+					label: row.getValue('protocol') as string
+				});
 			}
 		},
 		{
 			header: 'Provider',
-			accessorFn: (row) => row.router.name,
+			accessorKey: 'router.name',
 			id: 'provider',
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('provider') as string;
-				const provider = name.split('@')[1];
+				const provider = name?.split('@')[1];
 				if (!provider && source.value === TraefikSource.AGENT) {
 					return renderComponent(ColumnBadge, {
 						label: 'agent',
@@ -129,38 +129,36 @@
 		},
 		{
 			header: 'Entrypoints',
-			accessorFn: (row) => row.router.entryPoints,
+			accessorKey: 'router.entryPoints',
 			id: 'entryPoints',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const ep = row.getValue('entryPoints') as string[];
 				return renderComponent(ColumnBadge, {
-					label: ep,
+					label: row.getValue('entryPoints') as string[],
 					variant: 'secondary'
 				});
 			}
 		},
 		{
 			header: 'Middlewares',
-			accessorFn: (row) => row.router.middlewares,
+			accessorKey: 'router.middlewares',
 			id: 'middlewares',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const middlewares = row.getValue('middlewares') as string[];
 				return renderComponent(ColumnBadge, {
-					label: middlewares,
+					label: row.getValue('middlewares') as string[],
 					variant: 'secondary'
 				});
 			}
 		},
 		{
 			header: 'Cert Resolver',
-			accessorFn: (row) => row.router.tls,
-			id: 'resolver',
+			accessorKey: 'router.tls',
+			id: 'tls',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const resolver = row.getValue('resolver') as TLS;
-				if (!resolver?.certResolver) {
+				const tls = row.getValue('tls') as TLS;
+				if (!tls?.certResolver) {
 					return renderComponent(ColumnBadge, {
 						label: 'None',
 						variant: 'secondary',
@@ -168,7 +166,7 @@
 					});
 				}
 				return renderComponent(ColumnBadge, {
-					label: resolver.certResolver as string,
+					label: tls.certResolver as string,
 					variant: 'secondary',
 					class: 'bg-slate-300 dark:bg-slate-700'
 				});
@@ -181,7 +179,12 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const status = row.getValue('serverStatus') as Record<string, string>;
-				if (!status) return renderComponent(ColumnBadge, { label: 'N/A', variant: 'secondary' });
+				if (status === undefined) {
+					return renderComponent(ColumnBadge, {
+						label: 'N/A',
+						variant: 'secondary'
+					});
+				}
 				const upCount = Object.values(status).filter((status) => status === 'UP').length;
 				const totalCount = Object.values(status).length;
 				const greenBadge = 'bg-green-300 dark:bg-green-600';
@@ -243,43 +246,25 @@
 	<title>Routers</title>
 </svelte:head>
 
-<Tabs.Root value={source.value}>
-	<Tabs.Content value={TraefikSource.LOCAL}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Route />
-				<h1 class="text-2xl font-bold">Router Management</h1>
-			</div>
-			<DataTable
-				{columns}
-				data={$routerServiceMerge || []}
-				showSourceTabs={true}
-				createButton={{
-					label: 'Add Router',
-					onClick: openCreateModal
-				}}
-			/>
-		</div>
-	</Tabs.Content>
-	<Tabs.Content value={TraefikSource.API}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Route />
-				<h1 class="text-2xl font-bold">Router Management</h1>
-			</div>
-			<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
-		</div>
-	</Tabs.Content>
-	<Tabs.Content value={TraefikSource.AGENT}>
-		<div class="flex flex-col gap-4">
-			<div class="flex items-center justify-start gap-2">
-				<Route />
-				<h1 class="text-2xl font-bold">Router Management</h1>
-			</div>
-			<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
-		</div>
-	</Tabs.Content>
-</Tabs.Root>
+<div class="flex flex-col gap-4">
+	<div class="flex items-center justify-start gap-2">
+		<Route />
+		<h1 class="text-2xl font-bold">Router Management</h1>
+	</div>
+	{#if source.value === TraefikSource.LOCAL}
+		<DataTable
+			{columns}
+			data={$routerServiceMerge || []}
+			showSourceTabs={true}
+			createButton={{
+				label: 'Add Router',
+				onClick: openCreateModal
+			}}
+		/>
+	{:else}
+		<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
+	{/if}
+</div>
 
 <RouterModal
 	bind:open={modalState.isOpen}

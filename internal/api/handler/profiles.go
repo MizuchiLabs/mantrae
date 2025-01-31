@@ -8,6 +8,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
@@ -45,19 +46,19 @@ func GetProfile(DB *sql.DB) http.HandlerFunc {
 func CreateProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
-		var profile db.CreateProfileParams
-		if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+		var params db.CreateProfileParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		profileID, err := q.CreateProfile(r.Context(), profile)
+		profileID, err := q.CreateProfile(r.Context(), params)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Create default local config
-		if err := q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+		if err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
 			ProfileID: profileID,
 			Source:    source.Local,
 		}); err != nil {
@@ -65,6 +66,12 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		profile, err := q.GetProfile(r.Context(), profileID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		go traefik.UpdateTraefikAPI(DB, profile)
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeCreate,
 			Message: "profile",
@@ -76,15 +83,22 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 func UpdateProfile(DB *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := db.New(DB)
-		var profile db.UpdateProfileParams
-		if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+		var params db.UpdateProfileParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := q.UpdateProfile(r.Context(), profile); err != nil {
+		if err := q.UpdateProfile(r.Context(), params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		profile, err := q.GetProfile(r.Context(), params.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		go traefik.UpdateTraefikAPI(DB, profile)
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeUpdate,
 			Message: "profile",

@@ -214,8 +214,11 @@ export const api = {
 
 	// Profiles ------------------------------------------------------------------
 	async listProfiles() {
-		const data = await send('/profile');
+		const data: Profile[] = await send('/profile');
 		profiles.set(data);
+		if (profile.isValid()) {
+			profile.value = data.find((item) => item.id === profile.value?.id) ?? data[0];
+		}
 	},
 
 	async getProfile(id: number) {
@@ -230,12 +233,15 @@ export const api = {
 		await api.listProfiles(); // Refresh the list
 	},
 
-	async updateProfile(profile: Profile) {
+	async updateProfile(p: Profile) {
 		await send('/profile', {
 			method: 'PUT',
-			body: profile
+			body: p
 		});
 		await api.listProfiles(); // Refresh the list
+		if (p.id === profile.id) {
+			await api.getTraefikConfig(TraefikSource.API);
+		}
 	},
 
 	async deleteProfile(id: number) {
@@ -607,9 +613,8 @@ async function fetchTraefikConfig(src: TraefikSource) {
 		toast.error('No valid profile selected');
 		return;
 	}
-	source.value = src;
 
-	const res = await send(`/traefik/${profile.id}/${source.value}`);
+	const res = await send(`/traefik/${profile.id}/${src}`);
 	if (!res) {
 		// Reset stores
 		traefik.set([]);

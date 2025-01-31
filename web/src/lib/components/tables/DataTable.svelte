@@ -98,6 +98,7 @@
 			},
 			...columns
 		],
+		autoResetAll: true,
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);
@@ -182,6 +183,12 @@
 	async function handleTabChange(value: string) {
 		if (!source.isValid(value)) return;
 		source.value = value;
+		// Reset table state
+		table.resetRowSelection();
+		table.resetColumnFilters();
+		table.resetGlobalFilter();
+		table.resetColumnOrder();
+		table.resetPagination();
 		await api.getTraefikConfig(source.value);
 	}
 	function handleLimitChange(value: string) {
@@ -248,8 +255,75 @@
 		{/if}
 	</div>
 
+	<!-- Table -->
+	<div class="rounded-md border">
+		{#key source.value + JSON.stringify(data)}
+			<Table.Root>
+				<Table.Header>
+					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+						<Table.Row>
+							{#each headerGroup.headers as header (header.id)}
+								<Table.Head>
+									{#if !header.isPlaceholder}
+										<div class="flex items-center">
+											<Button
+												variant="ghost"
+												size="sm"
+												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+												data-sortable={header.column.getCanSort()}
+												onclick={() => header.column.toggleSorting()}
+											>
+												<FlexRender
+													content={header.column.columnDef.header}
+													context={header.getContext()}
+												/>
+												{#if header.column.getCanSort()}
+													{#if header.column.getIsSorted() === 'asc'}
+														<ArrowDown />
+													{:else if header.column.getIsSorted() === 'desc'}
+														<ArrowUp />
+													{/if}
+												{/if}
+											</Button>
+										</div>
+									{/if}
+								</Table.Head>
+							{/each}
+						</Table.Row>
+					{/each}
+				</Table.Header>
+				<Table.Body>
+					{#each table.getRowModel().rows as row (row.id)}
+						<Table.Row
+							data-state={row.getIsSelected() && 'selected'}
+							class={getRowClassName ? getRowClassName(row.original) : ''}
+						>
+							{#each row.getVisibleCells() as cell (cell.id)}
+								<Table.Cell>
+									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+								</Table.Cell>
+							{/each}
+						</Table.Row>
+					{:else}
+						<Table.Row>
+							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+				<Table.Footer>
+					<Table.Row class="border-t">
+						<Table.Cell colspan={columns.length}>Total</Table.Cell>
+						<Table.Cell class="mr-4 text-right"
+							>{table.getPrePaginationRowModel().rows.length}</Table.Cell
+						>
+					</Table.Row>
+				</Table.Footer>
+			</Table.Root>
+		{/key}
+	</div>
+
 	{#if table.getSelectedRowModel().rows.length > 0}
-		<div class="my-2 flex items-center gap-2 rounded-md bg-muted/50 p-2">
+		<div class="my-2 flex items-center gap-2 rounded-lg border bg-muted/50 p-2">
 			<span class="text-sm text-muted-foreground">
 				{table.getFilteredSelectedRowModel().rows.length} of{' '}
 				{table.getFilteredRowModel().rows.length} item(s) selected.
@@ -258,78 +332,13 @@
 		</div>
 	{/if}
 
-	<!-- Table -->
-	<div class="rounded-md border">
-		<Table.Root>
-			<Table.Header>
-				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-					<Table.Row>
-						{#each headerGroup.headers as header (header.id)}
-							<Table.Head>
-								{#if !header.isPlaceholder}
-									<div class="flex items-center">
-										<Button
-											variant="ghost"
-											size="sm"
-											class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-											data-sortable={header.column.getCanSort()}
-											onclick={() => header.column.toggleSorting()}
-										>
-											<FlexRender
-												content={header.column.columnDef.header}
-												context={header.getContext()}
-											/>
-											{#if header.column.getCanSort()}
-												{#if header.column.getIsSorted() === 'asc'}
-													<ArrowDown />
-												{:else if header.column.getIsSorted() === 'desc'}
-													<ArrowUp />
-												{/if}
-											{/if}
-										</Button>
-									</div>
-								{/if}
-							</Table.Head>
-						{/each}
-					</Table.Row>
-				{/each}
-			</Table.Header>
-			<Table.Body>
-				{#each table.getRowModel().rows as row (row.id)}
-					<Table.Row
-						data-state={row.getIsSelected() && 'selected'}
-						class={getRowClassName ? getRowClassName(row.original) : ''}
-					>
-						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell>
-								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-							</Table.Cell>
-						{/each}
-					</Table.Row>
-				{:else}
-					<Table.Row>
-						<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-					</Table.Row>
-				{/each}
-			</Table.Body>
-			<Table.Footer>
-				<Table.Row class="border-t">
-					<Table.Cell colspan={columns.length}>Total</Table.Cell>
-					<Table.Cell class="mr-4 text-right"
-						>{table.getPrePaginationRowModel().rows.length}</Table.Cell
-					>
-				</Table.Row>
-			</Table.Footer>
-		</Table.Root>
-	</div>
-
 	<!-- Pagination -->
 	<div class="flex items-center justify-between py-4">
 		<div>
 			<Select.Root
 				type="single"
 				allowDeselect={false}
-				bind:value={limit.value}
+				value={limit.value ?? pagination.pageSize.toString()}
 				onValueChange={handleLimitChange}
 			>
 				<Select.Trigger class="w-[180px]">

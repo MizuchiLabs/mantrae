@@ -93,13 +93,13 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Features</span>
 							<div class="col-span-3 space-x-2">
-								{#if $overview?.features.tracing}
+								{#if $overview?.features?.tracing}
 									<Badge variant="secondary">Tracing</Badge>
 								{/if}
-								{#if $overview?.features.metrics}
+								{#if $overview?.features?.metrics}
 									<Badge variant="secondary">Metrics</Badge>
 								{/if}
-								{#if $overview?.features.accessLog}
+								{#if $overview?.features?.accessLog}
 									<Badge variant="secondary">Access Log</Badge>
 								{/if}
 							</div>
@@ -126,13 +126,13 @@
 							<span class="col-span-1 font-mono">HTTP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$overview?.http.routers.total ?? 0}
+									Routers: {$overview?.http?.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$overview?.http.services.total ?? 0}
+									Services: {$overview?.http?.services.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Middlewares: {$overview?.http.middlewares.total ?? 0}
+									Middlewares: {$overview?.http?.middlewares.total ?? 0}
 								</Badge>
 							</div>
 						</div>
@@ -142,13 +142,13 @@
 							<span class="col-span-1 font-mono">TCP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$overview?.tcp.routers.total ?? 0}
+									Routers: {$overview?.tcp?.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$overview?.tcp.services.total ?? 0}
+									Services: {$overview?.tcp?.services.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Middlewares: {$overview?.tcp.middlewares.total ?? 0}
+									Middlewares: {$overview?.tcp?.middlewares.total ?? 0}
 								</Badge>
 							</div>
 						</div>
@@ -158,10 +158,10 @@
 							<span class="col-span-1 font-mono">UDP</span>
 							<div class="col-span-3 space-x-2">
 								<Badge variant="secondary">
-									Routers: {$overview?.udp.routers.total ?? 0}
+									Routers: {$overview?.udp?.routers.total ?? 0}
 								</Badge>
 								<Badge variant="secondary">
-									Services: {$overview?.udp.services.total ?? 0}
+									Services: {$overview?.udp?.services.total ?? 0}
 								</Badge>
 							</div>
 						</div>
