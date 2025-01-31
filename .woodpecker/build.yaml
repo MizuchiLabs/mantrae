@@ -51,7 +51,6 @@ steps:
 
   - name: container-build
     image: woodpeckerci/plugin-docker-buildx
-    privileged: false
     settings:
       repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
       registry: ghcr.io
