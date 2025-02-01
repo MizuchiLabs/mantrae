@@ -1,24 +1,21 @@
 package middlewares
 
 import (
-	"database/sql"
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
+	"github.com/MizuchiLabs/mantrae/internal/config"
 )
 
 type Middleware func(http.Handler) http.Handler
 
 type MiddlewareHandler struct {
-	db     *sql.DB
-	config app.Config
+	app *config.App
 }
 
 // NewMiddleware creates a new middleware set with configuration
-func NewMiddlewareHandler(db *sql.DB, config app.Config) *MiddlewareHandler {
+func NewMiddlewareHandler(app *config.App) *MiddlewareHandler {
 	return &MiddlewareHandler{
-		db:     db,
-		config: config,
+		app: app,
 	}
 }
 

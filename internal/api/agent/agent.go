@@ -73,7 +73,7 @@ func (s *AgentServer) GetContainer(
 	}
 	params.Containers = &containers
 
-	q := db.New(s.app.DB)
+	q := s.app.Conn.GetQuery()
 	updatedAgent, err := q.UpdateAgent(context.Background(), params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -83,7 +83,7 @@ func (s *AgentServer) GetContainer(
 		Message: "agent",
 	}
 
-	if err = traefik.DecodeAgentConfig(s.app.DB, updatedAgent); err != nil {
+	if err = traefik.DecodeAgentConfig(s.app.Conn.Get(), updatedAgent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
@@ -105,7 +105,7 @@ func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error)
 	}
 
 	// Check if agent exists
-	q := db.New(s.app.DB)
+	q := s.app.Conn.GetQuery()
 	dbAgent, err := q.GetAgent(context.Background(), id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))

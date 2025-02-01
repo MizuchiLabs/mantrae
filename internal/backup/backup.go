@@ -2,7 +2,6 @@ package backup
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io"
 	"log/slog"
@@ -31,7 +30,7 @@ type BackupFile struct {
 }
 
 type BackupManager struct {
-	DB        *sql.DB // Holds the global reference to the database
+	Conn      *db.Connection
 	Config    *app.BackupConfig
 	Backend   StorageBackend
 	stopChan  chan struct{}
@@ -39,19 +38,17 @@ type BackupManager struct {
 	mu        sync.Mutex
 }
 
-func NewManager(config app.BackupConfig, backend StorageBackend) (*BackupManager, error) {
-	// Open the database
-	db, err := db.InitDB()
-	if err != nil {
-		return nil, fmt.Errorf("failed to reopen database: %w", err)
-	}
-
+func NewManager(
+	conn *db.Connection,
+	config app.BackupConfig,
+	backend StorageBackend,
+) *BackupManager {
 	return &BackupManager{
-		DB:       db,
+		Conn:     conn,
 		Config:   &config,
 		Backend:  backend,
 		stopChan: make(chan struct{}),
-	}, nil
+	}
 }
 
 func (m *BackupManager) Start(ctx context.Context) {
@@ -99,8 +96,9 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	defer tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
 
+	db := m.Conn.Get()
 	// Perform SQLite backup
-	if _, err := m.DB.Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
+	if _, err := db.Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
 		return fmt.Errorf("failed to create backup: %w", err)
 	}
 
@@ -112,6 +110,11 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	// Store the backup using the backend
 	if err := m.Backend.Store(ctx, backupName, tmpFile); err != nil {
 		return fmt.Errorf("failed to store backup: %w", err)
+	}
+
+	// Clean up older backups
+	if err := m.cleanup(ctx); err != nil {
+		return fmt.Errorf("failed to cleanup backups: %w", err)
 	}
 
 	return nil
@@ -148,9 +151,8 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	if err = tmpFile.Close(); err != nil {
 		return fmt.Errorf("failed to close temp file: %w", err)
 	}
-
 	// Close current database connections
-	if err = m.DB.Close(); err != nil {
+	if err = m.Conn.Close(); err != nil {
 		return fmt.Errorf("failed to close database: %w", err)
 	}
 
@@ -182,10 +184,9 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("failed to sync database file: %w", err)
 	}
 
-	// Reopen the database
-	m.DB, err = db.InitDB()
-	if err != nil {
-		return fmt.Errorf("failed to reopen database: %w", err)
+	// Reinitialize the database
+	if err = m.Conn.Replace(); err != nil {
+		return err
 	}
 
 	return nil

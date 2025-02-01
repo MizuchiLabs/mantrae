@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"os"
@@ -19,7 +18,7 @@ import (
 
 type App struct {
 	Config *app.Config
-	DB     *sql.DB
+	Conn   *db.Connection
 	BM     *backup.BackupManager
 	SM     *SettingsManager
 }
@@ -37,26 +36,29 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
+	conn, err := db.NewDBConnection()
+	if err != nil {
+		defer conn.Close()
+		return nil, err
+	}
+
 	// Setup backup manager
 	storage, err := backup.NewLocalStorage(config.Backup.BackupPath)
 	if err != nil {
 		return nil, err
 	}
-	bm, err := backup.NewManager(config.Backup, storage)
-	if err != nil {
-		return nil, err
-	}
+	bm := backup.NewManager(conn, config.Backup, storage)
 	bm.Start(ctx)
 
 	// Setup settings manager
-	sm := NewSettingsManager(bm.DB)
+	sm := NewSettingsManager(conn.Get())
 	if err := sm.Initialize(ctx); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
 
 	app := App{
 		Config: config,
-		DB:     bm.DB,
+		Conn:   conn,
 		BM:     bm,
 		SM:     sm,
 	}
@@ -108,7 +110,7 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	}
 
 	// Try to get existing admin user
-	q := db.New(a.DB)
+	q := a.Conn.GetQuery()
 	user, err := q.GetUserByUsername(ctx, a.Config.Admin.Username)
 	// If user doesn't exist, create new admin
 	if err != nil {
@@ -160,7 +162,7 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 		a.Config.Traefik.URL = "http://" + a.Config.Traefik.URL
 	}
 
-	q := db.New(a.DB)
+	q := a.Conn.GetQuery()
 	profile, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
 	if err != nil {
 		profileID, err := q.CreateProfile(ctx, db.CreateProfileParams{

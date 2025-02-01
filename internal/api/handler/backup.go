@@ -11,9 +11,18 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/backup"
 )
 
-// DownloadBackup fetches the latest backup of the database and returns it
+// DownloadBackup creates a new backup of the database and returns it
 func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Create a new backup
+		if err := bm.Create(r.Context()); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to create backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 		files, err := bm.Backend.List(r.Context())
 		if err != nil {
 			http.Error(
@@ -22,19 +31,6 @@ func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 				http.StatusInternalServerError,
 			)
 			return
-		}
-
-		if len(files) == 0 {
-			bm.Create(r.Context())
-			files, err = bm.Backend.List(r.Context())
-			if err != nil {
-				http.Error(
-					w,
-					fmt.Sprintf("Failed to list backups: %v", err),
-					http.StatusInternalServerError,
-				)
-				return
-			}
 		}
 
 		filename := files[0].Name
@@ -145,15 +141,15 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 
 		// Attempt to restore the backup
 		if err := bm.Restore(r.Context(), filename); err != nil {
-			// Clean up the uploaded file if restore fails
-			if err = bm.Backend.Delete(r.Context(), filename); err != nil {
-				http.Error(
-					w,
-					fmt.Sprintf("Failed to delete backup file: %v", err),
-					http.StatusInternalServerError,
-				)
-				return
-			}
+			// // Clean up the uploaded file if restore fails
+			// if err = bm.Backend.Delete(r.Context(), filename); err != nil {
+			// 	http.Error(
+			// 		w,
+			// 		fmt.Sprintf("Failed to delete backup file: %v", err),
+			// 		http.StatusInternalServerError,
+			// 	)
+			// 	return
+			// }
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to restore backup: %v", err),
@@ -165,7 +161,7 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 		time.Sleep(100 * time.Millisecond)
 
 		// Test the connection
-		if err := bm.DB.PingContext(r.Context()); err != nil {
+		if err := bm.Conn.Ping(); err != nil {
 			http.Error(
 				w,
 				"Database connection failed after restore",

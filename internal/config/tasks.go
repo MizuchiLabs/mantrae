@@ -23,13 +23,13 @@ func (a *App) traefikSync(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.Traefik))
 	defer ticker.Stop()
 
-	traefik.GetTraefikConfig(a.DB)
+	traefik.GetTraefikConfig(a.Conn.Get())
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			traefik.GetTraefikConfig(a.DB)
+			traefik.GetTraefikConfig(a.Conn.Get())
 		}
 	}
 }
@@ -39,7 +39,7 @@ func (a *App) syncDNS(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.DNS))
 	defer ticker.Stop()
 
-	if err := dns.UpdateDNS(a.DB); err != nil {
+	if err := dns.UpdateDNS(a.Conn.Get()); err != nil {
 		slog.Error("Failed to update DNS", "error", err)
 	}
 	for {
@@ -47,7 +47,7 @@ func (a *App) syncDNS(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			if err := dns.UpdateDNS(a.DB); err != nil {
+			if err := dns.UpdateDNS(a.Conn.Get()); err != nil {
 				slog.Error("Failed to update DNS", "error", err)
 			}
 		}

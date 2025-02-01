@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -27,9 +27,9 @@ type UpsertRouterParams struct {
 }
 
 // UpsertRouter handles both creation and updates of router/service pairs
-func UpsertRouter(DB *sql.DB) http.HandlerFunc {
+func UpsertRouter(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var params UpsertRouterParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -125,9 +125,9 @@ func UpsertRouter(DB *sql.DB) http.HandlerFunc {
 }
 
 // DeleteRouter handles the removal of router/service pairs
-func DeleteRouter(DB *sql.DB) http.HandlerFunc {
+func DeleteRouter(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid profile ID", http.StatusBadRequest)

@@ -1,19 +1,19 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
-func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
+func GetTraefikConfig(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -37,9 +37,9 @@ func GetTraefikConfig(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func PublishTraefikConfig(DB *sql.DB) http.HandlerFunc {
+func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profile, err := q.GetProfileByName(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

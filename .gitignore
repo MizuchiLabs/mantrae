@@ -30,3 +30,4 @@ go.work
 *.db-wal
 .envrc
 dist/
+backups/

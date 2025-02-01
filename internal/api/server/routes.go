@@ -8,9 +8,8 @@ import (
 )
 
 func (s *Server) routes() {
-	DB := s.app.DB
 	// Create middleware handler with database access
-	mw := middlewares.NewMiddlewareHandler(DB, *s.app.Config)
+	mw := middlewares.NewMiddlewareHandler(s.app)
 
 	// Middleware chains
 	logChain := middlewares.Chain(
@@ -39,50 +38,55 @@ func (s *Server) routes() {
 	}
 
 	// Auth
-	register("POST", "/login", logChain, handler.Login(DB, s.app.Config.Secret))
-	register("POST", "/verify", logChain, handler.VerifyJWT(DB, s.app.Config.Secret))
-	register("POST", "/verify/otp", logChain, handler.VerifyOTP(DB, s.app.Config.Secret))
-	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(DB, s.app.Config.Secret))
+	register("POST", "/login", logChain, handler.Login(s.app))
+	register("POST", "/verify", logChain, handler.VerifyJWT(s.app))
+	register("POST", "/verify/otp", logChain, handler.VerifyOTP(s.app))
+	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(s.app))
 
 	// Events
 	register("GET", "/events", logChain, handler.GetEvents)
 	register("GET", "/version", logChain, handler.GetVersion)
 
 	// Profiles
-	register("GET", "/profile", jwtChain, handler.ListProfiles(DB))
-	register("GET", "/profile/{id}", jwtChain, handler.GetProfile(DB))
-	register("POST", "/profile", jwtChain, handler.CreateProfile(DB))
-	register("PUT", "/profile", jwtChain, handler.UpdateProfile(DB))
-	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(DB))
+	register("GET", "/profile", jwtChain, handler.ListProfiles(s.app))
+	register("GET", "/profile/{id}", jwtChain, handler.GetProfile(s.app))
+	register("POST", "/profile", jwtChain, handler.CreateProfile(s.app))
+	register("PUT", "/profile", jwtChain, handler.UpdateProfile(s.app))
+	register("DELETE", "/profile/{id}", jwtChain, handler.DeleteProfile(s.app))
 
 	// Routers/Services
-	register("POST", "/router/{id}", jwtChain, handler.UpsertRouter(DB))
-	register("DELETE", "/router/{id}/{name}/{protocol}", jwtChain, handler.DeleteRouter(DB))
+	register("POST", "/router/{id}", jwtChain, handler.UpsertRouter(s.app))
+	register("DELETE", "/router/{id}/{name}/{protocol}", jwtChain, handler.DeleteRouter(s.app))
 
 	// Middlewares
-	register("POST", "/middleware/{id}", jwtChain, handler.UpsertMiddleware(DB))
-	register("DELETE", "/middleware/{id}/{name}/{protocol}", jwtChain, handler.DeleteMiddleware(DB))
+	register("POST", "/middleware/{id}", jwtChain, handler.UpsertMiddleware(s.app))
+	register(
+		"DELETE",
+		"/middleware/{id}/{name}/{protocol}",
+		jwtChain,
+		handler.DeleteMiddleware(s.app),
+	)
 	register("GET", "/middleware/plugins", jwtChain, handler.GetMiddlewarePlugins)
 
 	// Users
-	register("GET", "/user", jwtChain, handler.ListUsers(DB))
-	register("GET", "/user/{id}", jwtChain, handler.GetUser(DB))
-	register("POST", "/user", jwtChain, handler.CreateUser(DB))
-	register("PUT", "/user", jwtChain, handler.UpdateUser(DB))
-	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(DB))
+	register("GET", "/user", jwtChain, handler.ListUsers(s.app))
+	register("GET", "/user/{id}", jwtChain, handler.GetUser(s.app))
+	register("POST", "/user", jwtChain, handler.CreateUser(s.app))
+	register("PUT", "/user", jwtChain, handler.UpdateUser(s.app))
+	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(s.app))
 
 	// DNS Provider
-	register("GET", "/dns", jwtChain, handler.ListDNSProviders(DB))
-	register("GET", "/dns/{id}", jwtChain, handler.GetDNSProvider(DB))
-	register("POST", "/dns", jwtChain, handler.CreateDNSProvider(DB))
-	register("PUT", "/dns", jwtChain, handler.UpdateDNSProvider(DB))
-	register("DELETE", "/dns/{id}", jwtChain, handler.DeleteDNSProvider(DB))
+	register("GET", "/dns", jwtChain, handler.ListDNSProviders(s.app))
+	register("GET", "/dns/{id}", jwtChain, handler.GetDNSProvider(s.app))
+	register("POST", "/dns", jwtChain, handler.CreateDNSProvider(s.app))
+	register("PUT", "/dns", jwtChain, handler.UpdateDNSProvider(s.app))
+	register("DELETE", "/dns/{id}", jwtChain, handler.DeleteDNSProvider(s.app))
 
 	// DNS To Router
-	register("GET", "/dns/router", jwtChain, handler.GetRouterDNSProvider(DB))
-	register("GET", "/dns/router/{id}", jwtChain, handler.ListRouterDNSProviders(DB))
-	register("POST", "/dns/router", jwtChain, handler.SetRouterDNSProvider(DB))
-	register("DELETE", "/dns/router", jwtChain, handler.DeleteRouterDNSProvider(DB))
+	register("GET", "/dns/router", jwtChain, handler.GetRouterDNSProvider(s.app))
+	register("GET", "/dns/router/{id}", jwtChain, handler.ListRouterDNSProviders(s.app))
+	register("POST", "/dns/router", jwtChain, handler.SetRouterDNSProvider(s.app))
+	register("DELETE", "/dns/router", jwtChain, handler.DeleteRouterDNSProvider(s.app))
 
 	// Settings
 	register("GET", "/settings", jwtChain, handler.ListSettings(s.app.SM))
@@ -90,12 +94,12 @@ func (s *Server) routes() {
 	register("POST", "/settings", jwtChain, handler.UpsertSetting(s.app.SM))
 
 	// Agent
-	register("GET", "/agent", jwtChain, handler.ListAgents(DB))
-	register("GET", "/agent/list/{id}", jwtChain, handler.ListAgentsByProfile(DB))
-	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(DB))
+	register("GET", "/agent", jwtChain, handler.ListAgents(s.app))
+	register("GET", "/agent/list/{id}", jwtChain, handler.ListAgentsByProfile(s.app))
+	register("GET", "/agent/{id}", jwtChain, handler.GetAgent(s.app))
 	register("POST", "/agent/{id}", jwtChain, handler.CreateAgent(s.app))
-	register("PUT", "/agent", jwtChain, handler.UpdateAgentIP(DB))
-	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(DB))
+	register("PUT", "/agent", jwtChain, handler.UpdateAgentIP(s.app))
+	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(s.app))
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
 	// Backup
@@ -115,12 +119,12 @@ func (s *Server) routes() {
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)
 
 	// Traefik
-	register("GET", "/traefik/{id}/{source}", jwtChain, handler.GetTraefikConfig(DB))
+	register("GET", "/traefik/{id}/{source}", jwtChain, handler.GetTraefikConfig(s.app))
 
 	// Dynamic config
 	if s.app.Config.Server.BasicAuth {
-		register("GET", "/{name}", basicChain, handler.PublishTraefikConfig(DB))
+		register("GET", "/{name}", basicChain, handler.PublishTraefikConfig(s.app))
 	} else {
-		register("GET", "/{name}", logChain, handler.PublishTraefikConfig(DB))
+		register("GET", "/{name}", logChain, handler.PublishTraefikConfig(s.app))
 	}
 }

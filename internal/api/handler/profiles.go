@@ -1,20 +1,20 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
-func ListProfiles(DB *sql.DB) http.HandlerFunc {
+func ListProfiles(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profiles, err := q.ListProfiles(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -25,9 +25,9 @@ func ListProfiles(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func GetProfile(DB *sql.DB) http.HandlerFunc {
+func GetProfile(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,9 +43,9 @@ func GetProfile(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func CreateProfile(DB *sql.DB) http.HandlerFunc {
+func CreateProfile(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var params db.CreateProfileParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,7 +71,7 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		go traefik.UpdateTraefikAPI(DB, profile)
+		go traefik.UpdateTraefikAPI(a.Conn.Get(), profile)
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeCreate,
 			Message: "profile",
@@ -80,9 +80,9 @@ func CreateProfile(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateProfile(DB *sql.DB) http.HandlerFunc {
+func UpdateProfile(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var params db.UpdateProfileParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -98,7 +98,7 @@ func UpdateProfile(DB *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		go traefik.UpdateTraefikAPI(DB, profile)
+		go traefik.UpdateTraefikAPI(a.Conn.Get(), profile)
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeUpdate,
 			Message: "profile",
@@ -107,9 +107,9 @@ func UpdateProfile(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteProfile(DB *sql.DB) http.HandlerFunc {
+func DeleteProfile(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

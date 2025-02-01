@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/app"
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/mail"
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -16,9 +16,9 @@ import (
 )
 
 // Login verifies user credentials using a normal password and returns a JWT token if successful.
-func Login(DB *sql.DB, secret string) http.HandlerFunc {
+func Login(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var user db.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, "Failed to decode credentials", http.StatusBadRequest)
@@ -45,7 +45,7 @@ func Login(DB *sql.DB, secret string) http.HandlerFunc {
 			expirationTime = time.Now().Add(7 * 24 * time.Hour)
 		}
 
-		token, err := util.EncodeUserJWT(user.Username, secret, expirationTime)
+		token, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -62,9 +62,9 @@ func Login(DB *sql.DB, secret string) http.HandlerFunc {
 }
 
 // VerifyJWT checks the validity of a JWT token provided in cookies or Authorization header.
-func VerifyJWT(DB *sql.DB, secret string) http.HandlerFunc {
+func VerifyJWT(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var token string
 
 		// Check for token in cookies and Authorization header
@@ -80,7 +80,7 @@ func VerifyJWT(DB *sql.DB, secret string) http.HandlerFunc {
 			}
 		}
 
-		data, err := util.DecodeUserJWT(token, secret)
+		data, err := util.DecodeUserJWT(token, a.Config.Secret)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Invalid token: %s", err.Error()), http.StatusUnauthorized)
 			return
@@ -98,9 +98,9 @@ func VerifyJWT(DB *sql.DB, secret string) http.HandlerFunc {
 }
 
 // VerifyOTP allows users to login using an OTP token, to reset their password
-func VerifyOTP(DB *sql.DB, secret string) http.HandlerFunc {
+func VerifyOTP(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var data struct {
 			Username string `json:"username"`
 			Token    string `json:"token"`
@@ -133,7 +133,7 @@ func VerifyOTP(DB *sql.DB, secret string) http.HandlerFunc {
 		}
 
 		expirationTime := time.Now().Add(1 * time.Hour)
-		token, err := util.EncodeUserJWT(user.Username, secret, expirationTime)
+		token, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -150,9 +150,9 @@ func VerifyOTP(DB *sql.DB, secret string) http.HandlerFunc {
 }
 
 // SendResetEmail sends an email with a password reset link to the user's registered email address.
-func SendResetEmail(DB *sql.DB, secret string) http.HandlerFunc {
+func SendResetEmail(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		user, err := q.GetUserByUsername(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)

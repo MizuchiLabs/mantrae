@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
@@ -44,9 +44,9 @@ type PluginSnippet struct {
 }
 
 // UpsertMiddleware
-func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
+func UpsertMiddleware(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var params UpsertMiddlewareParams
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -124,9 +124,9 @@ func UpsertMiddleware(DB *sql.DB) http.HandlerFunc {
 }
 
 // DeleteMiddleware
-func DeleteMiddleware(DB *sql.DB) http.HandlerFunc {
+func DeleteMiddleware(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid profile ID", http.StatusBadRequest)

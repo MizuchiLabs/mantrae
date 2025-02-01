@@ -38,7 +38,7 @@ func (s *Server) Start(ctx context.Context) error {
 	util.StartEventProcessor(ctx)
 
 	s.registerServices()
-	defer s.app.DB.Close()
+	defer s.app.Conn.Close()
 	host := s.app.Config.Server.Host
 	port := s.app.Config.Server.Port
 

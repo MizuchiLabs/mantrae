@@ -46,39 +46,19 @@
 	const sidebar = Sidebar.useSidebar();
 
 	const routes = [
-		{
-			title: 'Overview',
-			url: '/',
-			icon: House
-		},
-		{
-			title: 'Router',
-			url: '/router/',
-			icon: Route
-		},
-		{
-			title: 'Middlewares',
-			url: '/middlewares/',
-			icon: Layers
-		},
-		{
-			title: 'Plugins',
-			url: '/plugins/',
-			icon: Blocks
-		},
-		{
-			title: 'Users',
-			url: '/users/',
-			icon: Users
-		},
+		{ title: 'Overview', url: '/', icon: House },
+		{ title: 'Router', url: '/router/', icon: Route },
+		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
+		{ title: 'Plugins', url: '/plugins/', icon: Blocks },
+		{ title: 'Agents', url: '/agents/', icon: Bot },
 		{
 			title: 'Settings',
 			url: '/settings/',
 			icon: Settings,
 			subItems: [
 				{ title: 'General', url: '/settings/', icon: Wrench },
-				{ title: 'DNS', url: '/dns/', icon: Globe },
-				{ title: 'Agents', url: '/agents/', icon: Bot }
+				{ title: 'Users', url: '/users/', icon: Users },
+				{ title: 'DNS', url: '/dns/', icon: Globe }
 			]
 		}
 	];

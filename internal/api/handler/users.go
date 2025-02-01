@@ -1,18 +1,18 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
-func ListUsers(DB *sql.DB) http.HandlerFunc {
+func ListUsers(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		users, err := q.ListUsers(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -23,9 +23,9 @@ func ListUsers(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func GetUser(DB *sql.DB) http.HandlerFunc {
+func GetUser(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		user_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -41,9 +41,9 @@ func GetUser(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func CreateUser(DB *sql.DB) http.HandlerFunc {
+func CreateUser(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var user db.CreateUserParams
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -61,9 +61,9 @@ func CreateUser(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func UpdateUser(DB *sql.DB) http.HandlerFunc {
+func UpdateUser(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		var user db.UpdateUserParams
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -98,9 +98,9 @@ func UpdateUser(DB *sql.DB) http.HandlerFunc {
 	}
 }
 
-func DeleteUser(DB *sql.DB) http.HandlerFunc {
+func DeleteUser(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := db.New(DB)
+		q := a.Conn.GetQuery()
 		user_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
