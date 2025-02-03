@@ -18,6 +18,7 @@ steps:
   - name: server-build
     image: golang:latest
     commands:
+      - apt-get update && apt-get install -y upx
       - go fmt ./...
       - go vet ./...
       - go mod tidy
@@ -25,10 +26,13 @@ steps:
       - go test ./...
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mantrae-linux-amd64 main.go
       - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mantrae-linux-arm64 main.go
+      - upx --best --lzma mantrae-linux-amd64
+      - upx --best --lzma mantrae-linux-arm64
 
   - name: agent-build
     image: golang:latest
     commands:
+      - apt-get update && apt-get install -y upx
       - go fmt ./...
       - go vet ./...
       - go mod tidy
@@ -36,6 +40,8 @@ steps:
       - go test ./...
       - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mae-linux-amd64 agent/cmd/main.go
       - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mae-linux-arm64 agent/cmd/main.go
+      - upx --best --lzma mae-linux-amd64
+      - upx --best --lzma mae-linux-arm64
 
   - name: server-container-build
     image: woodpeckerci/plugin-docker-buildx
