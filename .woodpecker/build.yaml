@@ -19,7 +19,7 @@ steps:
   - name: server-build
     image: golang:latest
     commands:
-      - apt-get update && apt-get install -y upx
+      - apt-get update && apt-get install -y upx-ucl
       - go fmt ./...
       - go vet ./...
       - go mod tidy
@@ -33,7 +33,7 @@ steps:
   - name: agent-build
     image: golang:latest
     commands:
-      - apt-get update && apt-get install -y upx
+      - apt-get update && apt-get install -y upx-ucl
       - go fmt ./...
       - go vet ./...
       - go mod tidy
