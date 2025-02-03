@@ -7,18 +7,21 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 type Flags struct {
 	Version bool
 	Update  bool
+	Squash  bool
 }
 
-func ParseFlags() (*Flags, error) {
+func ParseFlags() {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
+	flag.BoolVar(&f.Squash, "squash", false, "Squash the database")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -28,5 +31,9 @@ func ParseFlags() (*Flags, error) {
 		os.Exit(0)
 	}
 
-	return f, nil
+	if f.Squash {
+		db.Squash()
+		os.Exit(1)
+	}
+	util.UpdateSelf(f.Update)
 }

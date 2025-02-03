@@ -51,14 +51,21 @@ func InitDB() (*sql.DB, error) {
 		db.SetConnMaxLifetime(0) // Connections are reused forever
 	}
 
-	goose.SetBaseFS(migrations)
-	goose.SetLogger(goose.NopLogger())
-	if err := goose.SetDialect("sqlite3"); err != nil {
-		return nil, fmt.Errorf("failed to set dialect: %w", err)
-	}
-
-	if err := goose.Up(db, "migrations"); err != nil {
+	if err := Migrate(db); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 	return db, nil
+}
+
+func Migrate(db *sql.DB) error {
+	goose.SetBaseFS(migrations)
+	goose.SetLogger(goose.NopLogger())
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		return err
+	}
+
+	if err := goose.Up(db, "migrations"); err != nil {
+		return err
+	}
+	return nil
 }

@@ -24,14 +24,11 @@ type App struct {
 }
 
 func Setup(ctx context.Context) (*App, error) {
+	// Read flags
+	ParseFlags()
+
 	// Read environment variables
 	config, err := app.ReadConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	// Read flags
-	flags, err := ParseFlags()
 	if err != nil {
 		return nil, err
 	}
@@ -70,9 +67,6 @@ func Setup(ctx context.Context) (*App, error) {
 	if err := app.setDefaultProfile(ctx); err != nil {
 		return nil, err
 	}
-
-	// Update self
-	util.UpdateSelf(flags.Update)
 
 	// Start background jobs
 	app.setupBackgroundJobs(ctx)
