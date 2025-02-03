@@ -19,7 +19,9 @@ steps:
   - name: server-build
     image: golang:latest
     commands:
-      - apt-get update && apt-get install -y upx-ucl
+      - wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
+      - tar -xf upx-4.2.4-amd64_linux.tar.xz
+      - mv upx-4.2.4-amd64_linux/upx /usr/local/bin/
       - go fmt ./...
       - go vet ./...
       - go mod tidy
@@ -33,7 +35,9 @@ steps:
   - name: agent-build
     image: golang:latest
     commands:
-      - apt-get update && apt-get install -y upx-ucl
+      - wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
+      - tar -xf upx-4.2.4-amd64_linux.tar.xz
+      - mv upx-4.2.4-amd64_linux/upx /usr/local/bin/
       - go fmt ./...
       - go vet ./...
       - go mod tidy
