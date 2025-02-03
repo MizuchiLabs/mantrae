@@ -6,10 +6,11 @@ when:
 
 steps:
   - name: frontend-build
-    image: node:18
+    image: node:20
     commands:
+      - npm install -g corepack
       - corepack enable
-      - corepack prepare pnpm@latest-10 --activate
+      - corepack prepare pnpm@latest --activate
       - pnpm config set store-dir .pnpm-store
       - cd web
       - pnpm install
