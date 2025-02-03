@@ -81,10 +81,8 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 			existingConfig.Config.TCPMiddlewares = make(map[string]*runtime.TCPMiddlewareInfo)
 		}
 
-		// Ensure name has @http suffix
-		if !strings.HasSuffix(params.Name, "@http") {
-			params.Name = fmt.Sprintf("%s@http", strings.Split(params.Name, "@")[0])
-		}
+		// Ensure name has no @
+		params.Name = strings.Split(params.Name, "@")[0]
 
 		// Update configuration based on type
 		switch params.Protocol {
@@ -139,11 +137,6 @@ func DeleteMiddleware(a *config.App) http.HandlerFunc {
 		if mwName == "" || mwProto == "" {
 			http.Error(w, "Missing middleware name or protocol", http.StatusBadRequest)
 			return
-		}
-
-		// Ensure name has @http suffix for consistency
-		if !strings.HasSuffix(mwName, "@http") {
-			mwName = fmt.Sprintf("%s@http", strings.Split(mwName, "@")[0])
 		}
 
 		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)

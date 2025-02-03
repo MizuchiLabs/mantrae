@@ -6,17 +6,13 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { type Router, type Service } from '$lib/types/router';
 	import { Plus, Trash } from 'lucide-svelte';
+	import { source } from '$lib/stores/source';
 
 	interface Props {
 		service: Service;
 		router: Router;
-		mode: 'create' | 'edit';
 	}
-
-	let { service = $bindable(), router = $bindable(), mode }: Props = $props();
-
-	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
-	let disabled = $derived(routerProvider !== 'http' && mode === 'edit');
+	let { service = $bindable(), router = $bindable() }: Props = $props();
 
 	let servers = $state(getServers());
 	let passHostHeader = $state(service.loadBalancer?.passHostHeader ?? true);
@@ -79,7 +75,7 @@
 						class="col-span-3"
 						bind:checked={passHostHeader}
 						onCheckedChange={update}
-						{disabled}
+						disabled={!source.isLocal()}
 					/>
 				</div>
 			{/if}
@@ -94,9 +90,9 @@
 							bind:value={servers[i]}
 							placeholder={router.protocol === 'http' ? 'http://127.0.0.1:8080' : '127.0.0.1:8080'}
 							oninput={update}
-							{disabled}
+							disabled={!source.isLocal()}
 						/>
-						{#if !disabled}
+						{#if !source.isLocal()}
 							<Button
 								variant="ghost"
 								size="icon"
@@ -110,7 +106,7 @@
 					</div>
 				{/each}
 			</div>
-			{#if !disabled}
+			{#if !source.isLocal()}
 				<Button type="button" variant="outline" onclick={addItem} class="w-full">
 					<Plus />
 					Add Server

@@ -8,6 +8,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -57,81 +58,31 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			UDPServices:    make(map[string]*runtime.UDPServiceInfo),
 		}
 
-		localT, err := q.GetLocalTraefikConfig(r.Context(), profile.ID)
+		local, err := q.GetLocalTraefikConfig(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		agentT, err := q.GetAgentTraefikConfigs(r.Context(), profile.ID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		// Merge configurations from each agent
-		for _, a := range agentT {
-			if a.Config == nil {
-				continue
-			}
-			if a.Config.Routers != nil {
-				for k, v := range a.Config.Routers {
-					mergedConfig.Routers[k] = v
-				}
-			}
-			if a.Config.Services != nil {
-				for k, v := range a.Config.Services {
-					mergedConfig.Services[k] = v
-				}
-			}
-		}
-
-		if localT.Config == nil {
+		if local.Config == nil {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		// Overlay local config to ensure it takes precedence
-		if localT.Config.Routers != nil {
-			for k, v := range localT.Config.Routers {
-				mergedConfig.Routers[k] = v
-			}
+		agents, err := q.GetAgentTraefikConfigs(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		if localT.Config.Middlewares != nil {
-			for k, v := range localT.Config.Middlewares {
-				mergedConfig.Middlewares[k] = v
-			}
+		// Merge configurations (prefer local)
+		for _, agent := range agents {
+			mergedConfig = traefik.MergeConfigs(mergedConfig, agent.Config)
 		}
-		if localT.Config.Services != nil {
-			for k, v := range localT.Config.Services {
-				mergedConfig.Services[k] = v
-			}
-		}
-		if localT.Config.TCPRouters != nil {
-			for k, v := range localT.Config.TCPRouters {
-				mergedConfig.TCPRouters[k] = v
-			}
-		}
-		if localT.Config.TCPMiddlewares != nil {
-			for k, v := range localT.Config.TCPMiddlewares {
-				mergedConfig.TCPMiddlewares[k] = v
-			}
-		}
-		if localT.Config.TCPServices != nil {
-			for k, v := range localT.Config.TCPServices {
-				mergedConfig.TCPServices[k] = v
-			}
-		}
-		if localT.Config.UDPRouters != nil {
-			for k, v := range localT.Config.UDPRouters {
-				mergedConfig.UDPRouters[k] = v
-			}
-		}
-		if localT.Config.UDPServices != nil {
-			for k, v := range localT.Config.UDPServices {
-				mergedConfig.UDPServices[k] = v
-			}
-		}
+		mergedConfig = traefik.MergeConfigs(mergedConfig, local.Config)
+
+		// Convert to dynamic
+		dynamic := traefik.ConvertToDynamicConfig(mergedConfig)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(mergedConfig)
+		json.NewEncoder(w).Encode(dynamic)
 	}
 }

@@ -26,9 +26,6 @@
 	const update = async () => {
 		try {
 			// Ensure proper name formatting and synchronization
-			if (!router.name.includes('@')) {
-				router.name = `${router.name}@http`;
-			}
 			if (service.loadBalancer?.servers?.length === 0) {
 				toast.error('At least one server is required');
 				return;
@@ -81,7 +78,7 @@
 				<RouterForm bind:router {mode} />
 			</Tabs.Content>
 			<Tabs.Content value="service">
-				<ServiceForm bind:service bind:router {mode} />
+				<ServiceForm bind:service bind:router />
 			</Tabs.Content>
 		</Tabs.Root>
 

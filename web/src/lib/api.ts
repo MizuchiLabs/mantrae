@@ -634,15 +634,10 @@ async function fetchTraefikConfig(src: TraefikSource) {
 	const newServices = flattenServiceData(res);
 	const newMiddlewares = flattenMiddlewareData(res);
 	const newMerge = newRouters.map((router) => {
-		const routerProvider = router.name.split('@')[1];
-		let serviceName = router.service; // api@internal
-
-		// Most of time the service name doesn't include the provider
-		if (!router.service?.includes('@')) {
-			serviceName = router.service + '@' + routerProvider;
+		let service = newServices.find((service) => service.name === router.service);
+		if (!service) {
+			service = newServices.find((service) => service.name === router.name);
 		}
-		const service = newServices.find((service) => service.name === serviceName);
-
 		return { router, service: service || ({} as Service) };
 	});
 

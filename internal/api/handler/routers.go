@@ -81,20 +81,36 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 			existingConfig.Config.UDPServices = make(map[string]*runtime.UDPServiceInfo)
 		}
 
-		// Ensure name has @http suffix
-		if !strings.HasSuffix(params.Name, "@http") {
-			params.Name = fmt.Sprintf("%s@http", strings.Split(params.Name, "@")[0])
-		}
+		// Ensure name has no @
+		params.Name = strings.Split(params.Name, "@")[0]
 
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
+			if !strings.HasSuffix(params.Router.Service, "@http") {
+				params.Router.Service = fmt.Sprintf(
+					"%s@http",
+					strings.Split(params.Router.Service, "@")[0],
+				)
+			}
 			existingConfig.Config.Routers[params.Name] = params.Router
 			existingConfig.Config.Services[params.Name] = params.Service
 		case "tcp":
+			if !strings.HasSuffix(params.TCPRouter.Service, "@http") {
+				params.TCPRouter.Service = fmt.Sprintf(
+					"%s@http",
+					strings.Split(params.TCPRouter.Service, "@")[0],
+				)
+			}
 			existingConfig.Config.TCPRouters[params.Name] = params.TCPRouter
 			existingConfig.Config.TCPServices[params.Name] = params.TCPService
 		case "udp":
+			if !strings.HasSuffix(params.UDPRouter.Service, "@http") {
+				params.UDPRouter.Service = fmt.Sprintf(
+					"%s@http",
+					strings.Split(params.UDPRouter.Service, "@")[0],
+				)
+			}
 			existingConfig.Config.UDPRouters[params.Name] = params.UDPRouter
 			existingConfig.Config.UDPServices[params.Name] = params.UDPService
 		default:
@@ -139,12 +155,6 @@ func DeleteRouter(a *config.App) http.HandlerFunc {
 
 		if routerName == "" || routerProto == "" {
 			http.Error(w, "Missing router name or protocol", http.StatusBadRequest)
-			return
-		}
-
-		// Ensure name has @http suffix
-		if !strings.HasSuffix(routerName, "@http") {
-			http.Error(w, "Invalid router provider", http.StatusBadRequest)
 			return
 		}
 

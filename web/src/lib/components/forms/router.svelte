@@ -13,6 +13,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { toast } from 'svelte-sonner';
 	import type { RouterDNSProvider } from '$lib/types';
+	import { source } from '$lib/stores/source';
 
 	interface Props {
 		router: Router;
@@ -27,9 +28,7 @@
 	);
 	let rdpName = $derived(routerDNS ? routerDNS.providerName : '');
 	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
-	let isHttpProvider = $derived(routerProvider === 'http' || !routerProvider);
 	let isHttpType = $derived(router.protocol === 'http');
-	let disabled = $derived(routerProvider !== 'http' && mode === 'edit');
 	let certResolvers = $derived([
 		...new Set(
 			$routers.filter((item) => item.tls?.certResolver).map((item) => item.tls?.certResolver)
@@ -69,13 +68,12 @@
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
 		<!-- Provider Type Toggles -->
-		{#if isHttpProvider}
+		{#if source.isLocal()}
 			<div class="flex items-center justify-end gap-1 font-mono text-sm">
 				<Toggle
 					size="sm"
 					pressed={router.protocol === 'http'}
 					onPressedChange={() => (router.protocol = 'http')}
-					{disabled}
 					class="font-bold data-[state=on]:bg-green-300 dark:data-[state=on]:text-black"
 				>
 					HTTP
@@ -84,7 +82,6 @@
 					size="sm"
 					pressed={router.protocol === 'tcp'}
 					onPressedChange={() => (router.protocol = 'tcp')}
-					{disabled}
 					class="font-bold data-[state=on]:bg-blue-300 dark:data-[state=on]:text-black"
 				>
 					TCP
@@ -93,7 +90,6 @@
 					size="sm"
 					pressed={router.protocol === 'udp'}
 					onPressedChange={() => (router.protocol = 'udp')}
-					{disabled}
 					class="font-bold data-[state=on]:bg-red-300 dark:data-[state=on]:text-black"
 				>
 					UDP
@@ -112,68 +108,64 @@
 					oninput={() => (router.name = router.name?.split('@')[0])}
 					class="col-span-3"
 					required
-					disabled={disabled || mode === 'edit'}
+					disabled={!source.isLocal()}
 				/>
 				<!-- Icon based on provider -->
-				{#if routerProvider !== ''}
-					<span
-						class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
-					>
-						{#if isHttpProvider}
-							<img src={logo} alt="HTTP" width="20" />
-						{/if}
-						{#if routerProvider === 'internal' || routerProvider === 'file'}
-							<iconify-icon icon="devicon:traefikproxy" height="20"></iconify-icon>
-						{/if}
-						{#if routerProvider?.includes('docker')}
-							<iconify-icon icon="logos:docker-icon" height="20"></iconify-icon>
-						{/if}
-						{#if routerProvider?.includes('kubernetes')}
-							<iconify-icon icon="logos:kubernetes" height="20"></iconify-icon>
-						{/if}
-						{#if routerProvider === 'consul'}
-							<iconify-icon icon="logos:consul" height="20"></iconify-icon>
-						{/if}
-						{#if routerProvider === 'nomad'}
-							<iconify-icon icon="logos:nomad-icon" height="20"></iconify-icon>
-						{/if}
-						{#if routerProvider === 'kv'}
-							<iconify-icon icon="logos:redis" height="20"></iconify-icon>
-						{/if}
-					</span>
-				{/if}
+				<span
+					class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
+				>
+					{#if routerProvider === ''}
+						<img src={logo} alt="HTTP" width="20" />
+					{/if}
+					{#if routerProvider === 'internal' || routerProvider === 'file'}
+						<iconify-icon icon="devicon:traefikproxy" height="20"></iconify-icon>
+					{/if}
+					{#if routerProvider?.includes('docker')}
+						<iconify-icon icon="logos:docker-icon" height="20"></iconify-icon>
+					{/if}
+					{#if routerProvider?.includes('kubernetes')}
+						<iconify-icon icon="logos:kubernetes" height="20"></iconify-icon>
+					{/if}
+					{#if routerProvider === 'consul'}
+						<iconify-icon icon="logos:consul" height="20"></iconify-icon>
+					{/if}
+					{#if routerProvider === 'nomad'}
+						<iconify-icon icon="logos:nomad-icon" height="20"></iconify-icon>
+					{/if}
+					{#if routerProvider === 'kv'}
+						<iconify-icon icon="logos:redis" height="20"></iconify-icon>
+					{/if}
+				</span>
 			</div>
 		</div>
 
 		<!-- Entrypoints -->
-		{#if isHttpProvider}
-			<div class="grid grid-cols-4 items-center gap-1">
-				<Label class="mr-2 text-right">Entrypoints</Label>
-				<Select.Root type="multiple" bind:value={router.entryPoints} {disabled}>
-					<Select.Trigger class="col-span-3">
-						{router.entryPoints?.length ? router.entryPoints.join(', ') : 'Select entrypoints'}
-					</Select.Trigger>
-					<Select.Content>
-						{#each $entrypoints as ep}
-							<Select.Item value={ep.name}>
-								<div class="flex items-center gap-2">
-									{ep.name}
-									{#if ep.http?.tls}
-										<Lock size="1rem" class="text-green-400" />
-									{/if}
-								</div>
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-		{/if}
+		<div class="grid grid-cols-4 items-center gap-1">
+			<Label class="mr-2 text-right">Entrypoints</Label>
+			<Select.Root type="multiple" bind:value={router.entryPoints} disabled={!source.isLocal()}>
+				<Select.Trigger class="col-span-3">
+					{router.entryPoints?.length ? router.entryPoints.join(', ') : 'Select entrypoints'}
+				</Select.Trigger>
+				<Select.Content>
+					{#each $entrypoints as ep}
+						<Select.Item value={ep.name}>
+							<div class="flex items-center gap-2">
+								{ep.name}
+								{#if ep.http?.tls}
+									<Lock size="1rem" class="text-green-400" />
+								{/if}
+							</div>
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
 
 		<!-- Middlewares -->
 		{#if router.protocol !== 'udp'}
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label class="mr-2 text-right">Middlewares</Label>
-				<Select.Root type="multiple" bind:value={router.middlewares} {disabled}>
+				<Select.Root type="multiple" bind:value={router.middlewares} disabled={!source.isLocal()}>
 					<Select.Trigger class="col-span-3">
 						{router.middlewares?.length ? router.middlewares.join(', ') : 'Select middlewares'}
 					</Select.Trigger>
@@ -196,14 +188,15 @@
 					<Input
 						bind:value={router.tls.certResolver}
 						placeholder="Certificate resolver"
-						{disabled}
+						disabled={!source.isLocal()}
 					/>
 					<div class="flex flex-wrap gap-1">
 						{#each certResolvers as resolver}
 							{#if resolver !== router.tls.certResolver}
 								<Badge
-									onclick={() => !disabled && router.tls && (router.tls.certResolver = resolver)}
-									class={disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+									onclick={() =>
+										!source.isLocal() && router.tls && (router.tls.certResolver = resolver)}
+									class={!source.isLocal() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
 								>
 									{resolver}
 								</Badge>
@@ -239,7 +232,11 @@
 
 		<!-- Rule -->
 		{#if router.protocol === 'http' || router.protocol === 'tcp'}
-			<RuleEditor bind:rule={router.rule} bind:type={router.protocol} {disabled} />
+			<RuleEditor
+				bind:rule={router.rule}
+				bind:type={router.protocol}
+				disabled={!source.isLocal()}
+			/>
 		{/if}
 	</Card.Content>
 </Card.Root>

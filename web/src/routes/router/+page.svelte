@@ -64,13 +64,9 @@
 	}
 
 	const deleteRouter = async (router: Router) => {
-		try {
-			let routerProvider = router.name.split('@')[1];
-			if (routerProvider !== 'http') {
-				toast.error('Router not managed by Mantrae!');
-				return;
-			}
+		if (!source.isLocal()) return;
 
+		try {
 			await api.deleteRouter(router);
 			toast.success('Router deleted');
 		} catch (err: unknown) {
