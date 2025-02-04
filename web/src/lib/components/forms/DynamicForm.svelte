@@ -21,7 +21,6 @@
 	// Watch data changes and update formData
 	$effect(() => {
 		formData = safeClone(data);
-		// console.log(formData);
 	});
 
 	// Handle form submission
