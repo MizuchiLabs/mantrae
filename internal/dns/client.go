@@ -40,16 +40,27 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 	if err != nil {
 		return nil, err
 	}
+	if provider.Config.APIKey == "" {
+		return nil, fmt.Errorf("invalid provider config")
+	}
+
+	var dnsProvider DNSProvider
 	switch provider.Type {
 	case "cloudflare":
-		return NewCloudflareProvider(provider.Config), nil
+		dnsProvider = NewCloudflareProvider(provider.Config)
 	case "powerdns":
-		return NewPowerDNSProvider(provider.Config), nil
+		dnsProvider = NewPowerDNSProvider(provider.Config)
 	case "technitium":
-		return NewTechnitiumProvider(provider.Config), nil
+		dnsProvider = NewTechnitiumProvider(provider.Config)
 	default:
 		return nil, fmt.Errorf("invalid provider type")
 	}
+
+	if dnsProvider == nil {
+		return nil, fmt.Errorf("failed to initialize %s provider", provider.Type)
+	}
+
+	return dnsProvider, nil
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
@@ -69,9 +80,10 @@ func UpdateDNS(DB *sql.DB) (err error) {
 		for _, rdp := range rdps {
 			provider, err := getProvider(rdp.ProviderID, q)
 			if err != nil {
-				slog.Error("Failed to get provider", "error", err)
+				slog.Error("Failed to get provider", "error", err, "provider", rdp.ProviderName)
 				continue
 			}
+
 			config, err := q.GetTraefikConfigByID(context.Background(), rdp.TraefikID)
 			if err != nil {
 				slog.Error("Failed to get traefik config", "error", err)
@@ -132,6 +144,10 @@ func DeleteDNS(DB *sql.DB, traefikID int64, routerName string) error {
 	provider, err := getProvider(rdp.ProviderID, q)
 	if err != nil {
 		return fmt.Errorf("failed to get DNS provider: %w", err)
+	}
+
+	if provider == nil {
+		return nil
 	}
 
 	for _, domain := range domains {

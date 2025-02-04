@@ -127,12 +127,16 @@
 				/>
 			</div>
 
-			{#if dns.type === DNSProviderTypes.CLOUDFLARE}
-				<div class="flex items-center gap-2">
-					<Label for="proxied">Proxied?</Label>
-					<Switch bind:checked={dns.config.proxied} />
-				</div>
-			{/if}
+			<div class="space-y-1">
+				<Label for="key">API Key</Label>
+				<Input
+					name="key"
+					type="text"
+					bind:value={dns.config.apiKey}
+					placeholder="API Key for {dns.type}"
+					required
+				/>
+			</div>
 			{#if dns.type === DNSProviderTypes.POWERDNS || dns.type === DNSProviderTypes.TECHNITIUM}
 				<div class="space-y-1">
 					<Label for="url">Endpoint</Label>
@@ -144,15 +148,12 @@
 						required
 					/>
 				</div>
-				<div class="space-y-1">
-					<Label for="key">API Key</Label>
-					<Input
-						name="key"
-						type="text"
-						bind:value={dns.config.apiKey}
-						placeholder="API Key for {dns.type}"
-						required
-					/>
+			{/if}
+
+			{#if dns.type === DNSProviderTypes.CLOUDFLARE}
+				<div class="flex items-center gap-2">
+					<Label for="proxied">Proxied?</Label>
+					<Switch bind:checked={dns.config.proxied} />
 				</div>
 			{/if}
 

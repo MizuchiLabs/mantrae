@@ -17,6 +17,10 @@ type CloudflareProvider struct {
 }
 
 func NewCloudflareProvider(d *db.DNSProviderConfig) *CloudflareProvider {
+	if d == nil || d.APIKey == "" {
+		slog.Error("Invalid Cloudflare provider config")
+		return nil
+	}
 	client, err := cloudflare.NewWithAPIToken(d.APIKey)
 	if err != nil {
 		slog.Error("Failed to create Cloudflare client", "error", err)
@@ -31,6 +35,9 @@ func NewCloudflareProvider(d *db.DNSProviderConfig) *CloudflareProvider {
 }
 
 func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
+	if c.Client == nil {
+		return nil
+	}
 	recordType := "A"
 	if net.ParseIP(c.ExternalIP).To4() == nil {
 		recordType = "AAAA"
@@ -68,12 +75,15 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 }
 
 func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
+	if c.Client == nil {
+		return nil
+	}
 	domain, err := getBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	if err := c.checkRecord(subdomain); err != nil {
+	if err = c.checkRecord(subdomain); err != nil {
 		return err
 	}
 
@@ -107,6 +117,9 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 }
 
 func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
+	if c.Client == nil {
+		return nil
+	}
 	domain, err := getBaseDomain(subdomain)
 	if err != nil {
 		return err
@@ -149,6 +162,9 @@ func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
 }
 
 func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string) error {
+	if c.Client == nil {
+		return nil
+	}
 	domain, err := getBaseDomain(subdomain)
 	if err != nil {
 		return err
@@ -178,6 +194,9 @@ func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string
 }
 
 func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+	if c.Client == nil {
+		return nil, nil
+	}
 	domain, err := getBaseDomain(subdomain)
 	if err != nil {
 		return nil, err

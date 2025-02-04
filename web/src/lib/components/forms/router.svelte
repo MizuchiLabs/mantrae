@@ -55,7 +55,8 @@
 	}
 
 	onMount(async () => {
-		await api.listDNSProviders();
+		// TODO: Do this better
+		await api.listRouterDNSProviders($traefik[0].id);
 	});
 </script>
 
