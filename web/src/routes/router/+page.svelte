@@ -73,7 +73,7 @@
 		}
 	};
 
-	const columns: ColumnDef<RouterWithService>[] = [
+	const defaultColumns: ColumnDef<RouterWithService>[] = [
 		{
 			header: 'Name',
 			accessorKey: 'router.name',
@@ -230,6 +230,12 @@
 			}
 		}
 	];
+
+	let columns: ColumnDef<RouterWithService>[] = $derived(
+		source.value === TraefikSource.LOCAL
+			? defaultColumns.filter((c) => c.id !== 'provider' && c.id !== 'serverStatus')
+			: defaultColumns
+	);
 
 	onMount(() => {
 		api.getTraefikConfig(source.value);
