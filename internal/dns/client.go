@@ -40,15 +40,13 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var d db.DNSProviderConfig
 	switch provider.Type {
 	case "cloudflare":
-		return NewCloudflareProvider(&d), nil
+		return NewCloudflareProvider(provider.Config), nil
 	case "powerdns":
-		return NewPowerDNSProvider(&d), nil
+		return NewPowerDNSProvider(provider.Config), nil
 	case "technitium":
-		return NewTechnitiumProvider(&d), nil
+		return NewTechnitiumProvider(provider.Config), nil
 	default:
 		return nil, fmt.Errorf("invalid provider type")
 	}
