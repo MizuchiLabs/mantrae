@@ -50,8 +50,12 @@ export interface UpsertMiddlewareParams {
 	name: string;
 	protocol: 'http' | 'tcp';
 	type?: SupportedMiddleware;
-	middleware?: HTTPMiddleware;
-	tcpMiddleware?: TCPMiddleware;
+	middleware?: {
+		[K in SupportedMiddlewareHTTP]?: HTTPMiddleware[K];
+	};
+	tcpMiddleware?: {
+		[K in SupportedMiddlewareTCP]?: TCPMiddleware[K];
+	};
 }
 
 export function flattenMiddlewareData(configs: TraefikConfig[]): Middleware[] {

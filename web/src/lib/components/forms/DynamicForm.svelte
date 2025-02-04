@@ -21,6 +21,7 @@
 	// Watch data changes and update formData
 	$effect(() => {
 		formData = safeClone(data);
+		// console.log(formData);
 	});
 
 	// Handle form submission
@@ -39,6 +40,7 @@
 	};
 
 	// Process object fields
+	const fields = $derived(processFields(formData));
 	function processFields(obj: Record<string, unknown>, parentKey = ''): FormFieldType[] {
 		return Object.entries(obj).flatMap(([key, value]) => {
 			const currentPath = parentKey ? `${parentKey}.${key}` : key;
@@ -59,8 +61,6 @@
 			];
 		});
 	}
-
-	const fields = $derived(processFields(formData));
 </script>
 
 <form onsubmit={handleSubmit}>

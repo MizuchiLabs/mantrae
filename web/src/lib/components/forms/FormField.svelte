@@ -261,7 +261,7 @@
 		<Input
 			type="number"
 			id={path}
-			value={(fieldValue as number) || metadata.placeholder}
+			value={fieldValue !== undefined ? (fieldValue as number) : ''}
 			onchange={handleChange}
 			placeholder={metadata.placeholder}
 			{disabled}

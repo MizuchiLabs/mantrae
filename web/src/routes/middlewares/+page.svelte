@@ -15,12 +15,14 @@
 
 	interface ModalState {
 		isOpen: boolean;
-		disabled: boolean;
 		middleware: Middleware;
+		mode?: 'create' | 'edit';
+		disabled: boolean;
 	}
 	const initialModalState: ModalState = {
 		isOpen: false,
 		disabled: false,
+		mode: 'create',
 		middleware: {
 			name: '',
 			protocol: 'http',
@@ -34,18 +36,14 @@
 		modalState = {
 			isOpen: true,
 			disabled: false,
+			mode: 'create',
 			middleware: initialModalState.middleware
 		};
 	}
 
 	const deleteMiddleware = async (middleware: Middleware) => {
+		if (!source.isLocal()) return;
 		try {
-			let provider = middleware.name.split('@')[1];
-			if (provider !== 'http') {
-				toast.error('Middleware not managed by Mantrae!');
-				return;
-			}
-
 			await api.deleteMiddleware(middleware);
 			toast.success('Middleware deleted');
 		} catch (err: unknown) {
@@ -94,7 +92,7 @@
 				const name = row.getValue('provider') as string;
 				if (!name) return;
 				return renderComponent(ColumnBadge, {
-					label: name.split('@')[1].toLowerCase(),
+					label: name.split('@')[1]?.toLowerCase(),
 					variant: 'secondary'
 				});
 			}
@@ -113,6 +111,7 @@
 									modalState = {
 										isOpen: true,
 										disabled: false,
+										mode: 'edit',
 										middleware: row.original
 									};
 								}
@@ -137,6 +136,7 @@
 									modalState = {
 										isOpen: true,
 										disabled: true,
+										mode: 'edit',
 										middleware: row.original
 									};
 								}
@@ -180,5 +180,6 @@
 <MiddlewareModal
 	bind:open={modalState.isOpen}
 	bind:middleware={modalState.middleware}
+	mode={modalState.mode}
 	disabled={modalState.disabled}
 />

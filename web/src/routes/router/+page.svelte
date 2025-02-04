@@ -64,8 +64,6 @@
 	}
 
 	const deleteRouter = async (router: Router) => {
-		if (!source.isLocal()) return;
-
 		try {
 			await api.deleteRouter(router);
 			toast.success('Router deleted');
