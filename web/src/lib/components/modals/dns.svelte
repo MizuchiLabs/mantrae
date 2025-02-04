@@ -29,7 +29,7 @@
 		}
 	};
 
-	let { dns: dns = $bindable(defaultDNS), open = $bindable(false) }: Props = $props();
+	let { dns = $bindable(defaultDNS), open = $bindable(false) }: Props = $props();
 
 	const dnsProviders = Object.entries(DNSProviderTypes).map(([key, value]) => ({
 		label: value.charAt(0).toUpperCase() + value.slice(1),
@@ -64,7 +64,7 @@
 		<form onsubmit={handleSubmit} class="space-y-4">
 			<div class="mb-4 flex items-center justify-end gap-2">
 				<Label for="is_active" class="text-right">Default</Label>
-				<Switch name="is_active" checked={dns.isActive} />
+				<Switch name="is_active" bind:checked={dns.isActive} />
 			</div>
 
 			<div class="space-y-1 pb-2">

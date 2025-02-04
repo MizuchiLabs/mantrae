@@ -68,7 +68,7 @@
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
 		<!-- Provider Type Toggles -->
-		{#if source.isLocal()}
+		{#if source.isLocal() && mode === 'create'}
 			<div class="flex items-center justify-end gap-1 font-mono text-sm">
 				<Toggle
 					size="sm"
