@@ -8,6 +8,7 @@
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
 	import Separator from '../ui/separator/separator.svelte';
+	import { source } from '$lib/stores/source';
 
 	interface Props {
 		router: Router;
@@ -26,7 +27,7 @@
 	const update = async () => {
 		try {
 			// Ensure proper name formatting and synchronization
-			if (service.loadBalancer?.servers?.length === 0) {
+			if (service.loadBalancer?.servers?.length === 0 && source.isLocal()) {
 				toast.error('At least one server is required');
 				return;
 			}
@@ -84,6 +85,8 @@
 
 		<Separator />
 
-		<Button type="submit" onclick={update} disabled={$loading}>Save</Button>
+		{#if source.isLocal()}
+			<Button type="submit" onclick={update} disabled={$loading}>Save</Button>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

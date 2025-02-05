@@ -12,6 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import { source } from '$lib/stores/source';
 	import { onMount } from 'svelte';
+	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -139,9 +140,23 @@
 			id: 'middlewares',
 			enableSorting: true,
 			cell: ({ row }) => {
+				if (row.original.router.protocol === 'udp') return;
 				return renderComponent(ColumnBadge, {
 					label: row.getValue('middlewares') as string[],
 					variant: 'secondary'
+				});
+			}
+		},
+		{
+			header: 'Rule',
+			accessorKey: 'router.rule',
+			id: 'rule',
+			enableSorting: true,
+			cell: ({ row }) => {
+				if (row.original.router.protocol === 'udp') return;
+				return renderComponent(ColumnRule, {
+					rule: row.getValue('rule') as string,
+					protocol: row.original.router.protocol as 'http' | 'tcp'
 				});
 			}
 		},
@@ -267,8 +282,8 @@
 </div>
 
 <RouterModal
-	bind:open={modalState.isOpen}
 	mode={modalState.mode}
+	bind:open={modalState.isOpen}
 	bind:router={modalState.router}
 	bind:service={modalState.service}
 />

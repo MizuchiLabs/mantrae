@@ -2,18 +2,20 @@
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import logo from '$lib/images/logo.svg';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { CircleCheck, Lock } from 'lucide-svelte';
+	import { CircleCheck, Globe, Lock } from 'lucide-svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
 	import { api, dnsProviders, entrypoints, routers, middlewares, traefik, rdps } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { type Router } from '$lib/types/router';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select';
 	import { toast } from 'svelte-sonner';
 	import type { RouterDNSProvider } from '$lib/types';
 	import { source } from '$lib/stores/source';
+	import Button from '../ui/button/button.svelte';
 
 	interface Props {
 		router: Router;
@@ -54,6 +56,9 @@
 		}
 	}
 
+	let selectDNSOpen = $state(false);
+	let dnsAnchor = $state<HTMLElement>(null!);
+
 	onMount(async () => {
 		// TODO: Do this better
 		await api.listRouterDNSProviders($traefik[0].id);
@@ -61,11 +66,54 @@
 </script>
 
 <Card.Root>
-	<Card.Header>
-		<Card.Title>{mode === 'create' ? 'Add' : 'Update'} Router</Card.Title>
-		<Card.Description>
-			{mode === 'create' ? 'Create a new router' : 'Edit existing router'}
-		</Card.Description>
+	<Card.Header class="flex flex-row items-center justify-between">
+		<div>
+			<Card.Title>{mode === 'create' ? 'Add' : 'Update'} Router</Card.Title>
+			<Card.Description>
+				{mode === 'create' ? 'Create a new router' : 'Edit existing router'}
+			</Card.Description>
+		</div>
+		{#if $dnsProviders && mode === 'edit'}
+			<Tooltip.Provider>
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						<div bind:this={dnsAnchor}>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="flex items-center gap-2"
+								onclick={() => (selectDNSOpen = true)}
+							>
+								<Globe size={16} />
+								<Badge>{rdpName ? rdpName : 'None'}</Badge>
+							</Button>
+						</div>
+					</Tooltip.Trigger>
+					<Tooltip.Content side="left" align="center">
+						<p>Select DNS Provider</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
+
+			<Select.Root
+				type="single"
+				value={rdpName}
+				onValueChange={handleDNSProviderChange}
+				bind:open={selectDNSOpen}
+			>
+				<Select.Content customAnchor={dnsAnchor} align="end">
+					<Select.Item value="" label="">None</Select.Item>
+					{#each $dnsProviders as dns}
+						<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
+							{dns.name} ({dns.type})
+							{#if dns.isActive}
+								<CircleCheck size="1rem" class="text-green-400" />
+							{/if}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		{/if}
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-2">
 		<!-- Provider Type Toggles -->
@@ -205,29 +253,6 @@
 						{/each}
 					</div>
 				</div>
-			</div>
-		{/if}
-
-		<!-- DNS Provider -->
-		{#if $dnsProviders && mode === 'edit'}
-			<div class="grid grid-cols-4 items-center gap-1">
-				<Label for="provider" class="mr-2 text-right">DNS Provider</Label>
-				<Select.Root type="single" value={rdpName} onValueChange={handleDNSProviderChange}>
-					<Select.Trigger class="col-span-3">
-						{rdpName ? rdpName : 'Select DNS provider'}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="" label="">None</Select.Item>
-						{#each $dnsProviders as dns}
-							<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
-								{dns.name} ({dns.type})
-								{#if dns.isActive}
-									<CircleCheck size="1rem" class="text-green-400" />
-								{/if}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
 			</div>
 		{/if}
 

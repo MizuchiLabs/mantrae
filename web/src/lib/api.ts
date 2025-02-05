@@ -181,7 +181,7 @@ export const api = {
 
 		// Load profiles
 		await api.listProfiles();
-		if (get(profiles) && !profile.value) {
+		if (get(profiles) && !profile.id) {
 			profile.value = get(profiles)[0];
 		}
 

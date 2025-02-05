@@ -18,6 +18,7 @@ const rulePatterns = {
 };
 
 function validateSingleRule(rule: string): boolean {
+	if (!rule.trim() || rule.trim() === '&&' || rule.trim() === '||') return true;
 	for (const pattern of Object.values(rulePatterns)) {
 		if (pattern.test(rule.trim())) {
 			return true;
@@ -28,7 +29,39 @@ function validateSingleRule(rule: string): boolean {
 
 export function ValidateRule(rule: string | undefined): boolean {
 	if (rule === '' || rule === undefined) return true;
-	const ruleParts = rule.split(/&&|\|\|/);
+	// const ruleParts = rule.split(/&&|\|\|/);
+	// Check for rules without operators
+	const withoutOperators = rule.replace(/(\|\||&&)/g, '');
+	const ruleCount = withoutOperators
+		.split(/Host|Path|Method|Query|Header|ClientIP|ALPN/)
+		.filter(Boolean).length;
+
+	if (ruleCount > 1) {
+		const operatorCount = (rule.match(/(\|\||&&)/g) || []).length;
+		if (operatorCount < ruleCount - 1) return false;
+	}
+
+	// Split by operators and validate each part
+	const ruleParts = rule
+		.split(/(\|\||&&)/)
+		.map((part) => part.trim())
+		.filter(Boolean);
+
+	// Check for consecutive operators or rules
+	for (let i = 0; i < ruleParts.length - 1; i++) {
+		const current = ruleParts[i];
+		const next = ruleParts[i + 1];
+
+		const currentIsOperator = current === '&&' || current === '||';
+		const nextIsOperator = next === '&&' || next === '||';
+
+		if (currentIsOperator === nextIsOperator) return false;
+	}
+
+	// Make sure it doesn't end with an operator
+	if (ruleParts[ruleParts.length - 1] === '&&' || ruleParts[ruleParts.length - 1] === '||') {
+		return false;
+	}
 	return ruleParts.every(validateSingleRule);
 }
 
