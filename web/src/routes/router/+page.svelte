@@ -148,7 +148,7 @@
 			}
 		},
 		{
-			header: 'Rule',
+			header: 'Domains',
 			accessorKey: 'router.rule',
 			id: 'rule',
 			enableSorting: true,
