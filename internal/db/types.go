@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 
@@ -70,7 +69,7 @@ type TraefikVersion struct {
 }
 
 type ServiceInfo struct {
-	*dynamic.Service
+	*runtime.ServiceInfo
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 }
 
@@ -196,4 +195,35 @@ func (c *AgentContainers) Scan(value interface{}) error {
 
 func (c AgentContainers) Value() (driver.Value, error) {
 	return json.Marshal(c)
+}
+
+// Additional conversion helpers
+
+// Convert from runtime.ServiceInfo to your ServiceInfo
+func FromRuntimeServiceInfo(ri *runtime.ServiceInfo) *ServiceInfo {
+	if ri == nil {
+		return nil
+	}
+	return &ServiceInfo{
+		ServiceInfo: &runtime.ServiceInfo{
+			Service: ri.Service,
+			Err:     ri.Err,
+			Status:  ri.Status,
+			UsedBy:  ri.UsedBy,
+		},
+		ServerStatus: make(map[string]string),
+	}
+}
+
+// Convert from your ServiceInfo to runtime.ServiceInfo
+func (si *ServiceInfo) ToRuntimeServiceInfo() *runtime.ServiceInfo {
+	if si == nil {
+		return nil
+	}
+	return &runtime.ServiceInfo{
+		Service: si.Service,
+		Err:     si.Err,
+		Status:  si.Status,
+		UsedBy:  si.UsedBy,
+	}
 }

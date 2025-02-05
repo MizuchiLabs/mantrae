@@ -563,6 +563,18 @@ export const api = {
 		toast.success('Backup restored successfully');
 	},
 
+    	async restoreDynamicConfig(files: FileList | null) {
+		if (!files?.length) return;
+		const formData = new FormData();
+		formData.append('file', files[0]);
+
+		await send(`/dynamic/restore/${profile.id}`, {
+			method: 'POST',
+			body: formData
+		});
+		toast.success('Config restored successfully');
+	},
+
 	async deleteBackup(name: string) {
 		await send(`/backups/${name}`, {
 			method: 'DELETE'

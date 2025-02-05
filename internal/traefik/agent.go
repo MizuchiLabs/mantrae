@@ -59,38 +59,37 @@ func DecodeAgentConfig(DB *sql.DB, agent db.Agent) error {
 					Servers: []dynamic.Server{{URL: *agent.ActiveIp}},
 				},
 			}
-			params.Config.Services[k] = &db.ServiceInfo{Service: &service}
+			params.Config.Services[k] = &db.ServiceInfo{
+				ServiceInfo:  &runtime.ServiceInfo{Service: &service},
+				ServerStatus: map[string]string{},
+			}
 		}
 		for k, v := range runtimeConfig.Middlewares {
 			params.Config.Middlewares[k] = v
 		}
-		// for k, v := range runtimeConfig.TCPRouters {
-		// 	params.Config.TCPRouters[k] = v
-		//
-		// 	service := dynamic.TCPService{
-		// 		LoadBalancer: &dynamic.TCPServersLoadBalancer{
-		// 			Servers: []dynamic.TCPServer{{Address: *agent.ActiveIp}},
-		// 		},
-		// 	}
-		// 	params.Config.Services[k] = &db.ServiceInfo{
-		// 		Service:        &service,
-		// 	}
-		// }
+		for k, v := range runtimeConfig.TCPRouters {
+			params.Config.TCPRouters[k] = v
+
+			service := dynamic.TCPService{
+				LoadBalancer: &dynamic.TCPServersLoadBalancer{
+					Servers: []dynamic.TCPServer{{Address: *agent.ActiveIp}},
+				},
+			}
+			params.Config.TCPServices[k] = &runtime.TCPServiceInfo{TCPService: &service}
+		}
 		for k, v := range runtimeConfig.TCPMiddlewares {
 			params.Config.TCPMiddlewares[k] = v
 		}
-		// for k, v := range runtimeConfig.UDPRouters {
-		// 	params.Config.UDPRouters[k] = v
-		//
-		// 	service := dynamic.UDPService{
-		// 		LoadBalancer: &dynamic.UDPServersLoadBalancer{
-		// 			Servers: []dynamic.UDPServer{{Address: *agent.ActiveIp}},
-		// 		},
-		// 	}
-		// 	params.Config.Services[k] = &db.ServiceInfo{
-		// 		Service: &service,
-		// 	}
-		// }
+		for k, v := range runtimeConfig.UDPRouters {
+			params.Config.UDPRouters[k] = v
+
+			service := dynamic.UDPService{
+				LoadBalancer: &dynamic.UDPServersLoadBalancer{
+					Servers: []dynamic.UDPServer{{Address: *agent.ActiveIp}},
+				},
+			}
+			params.Config.UDPServices[k] = &runtime.UDPServiceInfo{UDPService: &service}
+		}
 	}
 
 	q := db.New(DB)

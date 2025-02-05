@@ -5,7 +5,7 @@ services:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
     environment:
-      - TRAEFIK_URL=https://traefik.mizuchi.dev # either use the traefik url or the traefik container name if insecure
+      - TRAEFIK_URL=https://traefik.example.com # either use the traefik url or the traefik container name if insecure
       - ADMIN_PASSWORD=<super secret password>
       - SECRET=<secret> # generate a secret with openssl rand -hex 32
     volumes:
@@ -23,7 +23,7 @@ services:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae
     environment:
-      - TOKEN=<token> # token from mantrae
+      - TOKEN=<token> # token from mantrae server
     restart: unless-stopped
 
   traefik:

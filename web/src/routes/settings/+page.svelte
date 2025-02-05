@@ -1,12 +1,13 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Download, List, SaveIcon, Settings, Trash, Upload } from 'lucide-svelte';
+	import { Download, FileCode, List, SaveIcon, Settings, Trash, Upload } from 'lucide-svelte';
 	import { settings, api, backups, loading } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
@@ -84,7 +85,8 @@
 	}
 
 	// Backup handling
-	let fileInput: HTMLInputElement;
+	let restoreDBFile: HTMLInputElement;
+	let restoreDynamicFile: HTMLInputElement;
 	let showBackupList = $state(false);
 
 	function humanFileSize(size: number) {
@@ -109,29 +111,59 @@
 			<Card.Description>Download or restore database backups</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<div class="flex items-center gap-4">
-				<Button onclick={() => api.downloadBackup()} variant="outline">
-					<Download class="mr-2 size-4" />
-					Download Backup
-				</Button>
-
-				<Button variant="outline" onclick={() => fileInput?.click()} disabled={$loading}>
-					<Upload class="mr-2 size-4" />
-					{$loading ? 'Uploading...' : 'Restore Backup'}
-				</Button>
-
+			<div class="flex items-center justify-between gap-4">
 				<input
 					type="file"
-					accept=".sql,.db"
+					accept=".db"
 					class="hidden"
-					bind:this={fileInput}
+					bind:this={restoreDBFile}
 					onchange={(e) => api.restoreBackup(e.currentTarget.files)}
 				/>
 
-				<Button variant="outline" onclick={() => (showBackupList = true)}>
-					<List class="mr-2 size-4" />
-					View Backups
-				</Button>
+				<input
+					type="file"
+					accept=".yaml,.yml"
+					class="hidden"
+					bind:this={restoreDynamicFile}
+					onchange={(e) => api.restoreDynamicConfig(e.currentTarget.files)}
+				/>
+
+				<div class="flex items-center gap-4">
+					<Button onclick={() => api.downloadBackup()} variant="outline">
+						<Download class="mr-2 size-4" />
+						Download Backup
+					</Button>
+
+					<Button variant="outline" onclick={() => restoreDBFile?.click()} disabled={$loading}>
+						<Upload class="mr-2 size-4" />
+						{$loading ? 'Uploading...' : 'Restore Backup'}
+					</Button>
+
+					<Button variant="outline" onclick={() => (showBackupList = true)}>
+						<List class="mr-2 size-4" />
+						View Backups
+					</Button>
+				</div>
+				<Tooltip.Provider>
+					<Tooltip.Root delayDuration={100}>
+						<Tooltip.Trigger>
+							<Button
+								variant="outline"
+								onclick={() => restoreDynamicFile?.click()}
+								disabled={$loading}
+							>
+								<FileCode class="mr-2 size-4" />
+								{$loading ? 'Uploading...' : 'Restore Dynamic Config'}
+							</Button>
+						</Tooltip.Trigger>
+						<Tooltip.Content side="bottom" align="end" class="w-80">
+							<p>
+								Restore using the dynamic Traefik config in yaml or json format. It will merge
+								current routers/middlewares with the provided dynamic config.
+							</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+				</Tooltip.Provider>
 			</div>
 		</Card.Content>
 	</Card.Root>

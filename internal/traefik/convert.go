@@ -1,9 +1,15 @@
 package traefik
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"mime/multipart"
+
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"sigs.k8s.io/yaml"
 )
 
 func ConvertToDynamicConfig(rc *db.TraefikConfiguration) *dynamic.Configuration {
@@ -65,96 +71,125 @@ func ConvertToDynamicConfig(rc *db.TraefikConfiguration) *dynamic.Configuration 
 	return dc
 }
 
+func ConvertFileToDynamicConfig(
+	file multipart.File,
+	extension string,
+) (*dynamic.Configuration, error) {
+	// Read the file content
+	content, err := io.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	// Create a new configuration
+	configuration := &dynamic.Configuration{
+		HTTP: &dynamic.HTTPConfiguration{
+			Routers:           make(map[string]*dynamic.Router),
+			Middlewares:       make(map[string]*dynamic.Middleware),
+			Services:          make(map[string]*dynamic.Service),
+			ServersTransports: make(map[string]*dynamic.ServersTransport),
+		},
+		TCP: &dynamic.TCPConfiguration{
+			Routers:           make(map[string]*dynamic.TCPRouter),
+			Services:          make(map[string]*dynamic.TCPService),
+			Middlewares:       make(map[string]*dynamic.TCPMiddleware),
+			ServersTransports: make(map[string]*dynamic.TCPServersTransport),
+		},
+		UDP: &dynamic.UDPConfiguration{
+			Routers:  make(map[string]*dynamic.UDPRouter),
+			Services: make(map[string]*dynamic.UDPService),
+		},
+	}
+
+	// Unmarshal yaml or json
+	if extension == ".json" {
+		if err := json.Unmarshal(content, configuration); err != nil {
+			return nil, fmt.Errorf("failed to parse JSON: %w", err)
+		}
+	}
+	if extension == ".yaml" || extension == ".yml" {
+		if err := yaml.Unmarshal(content, configuration); err != nil {
+			return nil, fmt.Errorf("failed to parse YAML: %w", err)
+		}
+	}
+	return configuration, nil
+}
+
+func ConvertDynamicToRuntime(dc *dynamic.Configuration) *db.TraefikConfiguration {
+	rc := runtime.NewConfig(*dc)
+	config := &db.TraefikConfiguration{
+		Routers:        rc.Routers,
+		Middlewares:    rc.Middlewares,
+		TCPRouters:     rc.TCPRouters,
+		TCPMiddlewares: rc.TCPMiddlewares,
+		TCPServices:    rc.TCPServices,
+		UDPRouters:     rc.UDPRouters,
+		UDPServices:    rc.UDPServices,
+	}
+	config.Services = make(map[string]*db.ServiceInfo)
+	for k, v := range rc.Services {
+		config.Services[k] = db.FromRuntimeServiceInfo(v)
+	}
+	return config
+}
+
 func MergeConfigs(base, overlay *db.TraefikConfiguration) *db.TraefikConfiguration {
+	if base == nil {
+		return overlay
+	}
 	if overlay == nil {
 		return base
 	}
 
-	// Merge HTTP components
-	mergeRouters(base.Routers, overlay.Routers)
-	mergeMiddlewares(base.Middlewares, overlay.Middlewares)
-	mergeServices(base.Services, overlay.Services)
+	initializeMaps(base)
 
-	// Merge TCP components
-	mergeTCPRouters(base.TCPRouters, overlay.TCPRouters)
-	mergeTCPMiddlewares(base.TCPMiddlewares, overlay.TCPMiddlewares)
-	mergeTCPServices(base.TCPServices, overlay.TCPServices)
-
-	// Merge UDP components
-	mergeUDPRouters(base.UDPRouters, overlay.UDPRouters)
-	mergeUDPServices(base.UDPServices, overlay.UDPServices)
+	// Merge components
+	mergeMaps(base.Routers, overlay.Routers)
+	mergeMaps(base.Middlewares, overlay.Middlewares)
+	mergeMaps(base.Services, overlay.Services)
+	mergeMaps(base.TCPRouters, overlay.TCPRouters)
+	mergeMaps(base.TCPMiddlewares, overlay.TCPMiddlewares)
+	mergeMaps(base.TCPServices, overlay.TCPServices)
+	mergeMaps(base.UDPRouters, overlay.UDPRouters)
+	mergeMaps(base.UDPServices, overlay.UDPServices)
 
 	return base
 }
 
-// Merge helper functions for each type
-func mergeRouters(base, overlay map[string]*runtime.RouterInfo) {
-	if overlay == nil {
-		return
+// Initialize nil maps in the configuration
+func initializeMaps(config *db.TraefikConfiguration) {
+	if config.Routers == nil {
+		config.Routers = make(map[string]*runtime.RouterInfo)
 	}
-	for k, v := range overlay {
-		base[k] = v
+	if config.Middlewares == nil {
+		config.Middlewares = make(map[string]*runtime.MiddlewareInfo)
 	}
-}
-
-func mergeMiddlewares(base, overlay map[string]*runtime.MiddlewareInfo) {
-	if overlay == nil {
-		return
+	if config.Services == nil {
+		config.Services = make(map[string]*db.ServiceInfo)
 	}
-	for k, v := range overlay {
-		base[k] = v
+	if config.TCPRouters == nil {
+		config.TCPRouters = make(map[string]*runtime.TCPRouterInfo)
 	}
-}
-
-func mergeServices(base, overlay map[string]*db.ServiceInfo) {
-	if overlay == nil {
-		return
+	if config.TCPMiddlewares == nil {
+		config.TCPMiddlewares = make(map[string]*runtime.TCPMiddlewareInfo)
 	}
-	for k, v := range overlay {
-		base[k] = v
+	if config.TCPServices == nil {
+		config.TCPServices = make(map[string]*runtime.TCPServiceInfo)
 	}
-}
-
-func mergeTCPRouters(base, overlay map[string]*runtime.TCPRouterInfo) {
-	if overlay == nil {
-		return
+	if config.UDPRouters == nil {
+		config.UDPRouters = make(map[string]*runtime.UDPRouterInfo)
 	}
-	for k, v := range overlay {
-		base[k] = v
+	if config.UDPServices == nil {
+		config.UDPServices = make(map[string]*runtime.UDPServiceInfo)
 	}
 }
 
-func mergeTCPMiddlewares(base, overlay map[string]*runtime.TCPMiddlewareInfo) {
-	if overlay == nil {
+// Generic merge function for maps
+func mergeMaps[K comparable, V any](base, overlay map[K]V) {
+	if base == nil || overlay == nil {
 		return
 	}
-	for k, v := range overlay {
-		base[k] = v
-	}
-}
 
-func mergeTCPServices(base, overlay map[string]*runtime.TCPServiceInfo) {
-	if overlay == nil {
-		return
-	}
-	for k, v := range overlay {
-		base[k] = v
-	}
-}
-
-func mergeUDPRouters(base, overlay map[string]*runtime.UDPRouterInfo) {
-	if overlay == nil {
-		return
-	}
-	for k, v := range overlay {
-		base[k] = v
-	}
-}
-
-func mergeUDPServices(base, overlay map[string]*runtime.UDPServiceInfo) {
-	if overlay == nil {
-		return
-	}
 	for k, v := range overlay {
 		base[k] = v
 	}

@@ -102,7 +102,7 @@ func (s *Server) routes() {
 	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(s.app))
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
-	// Backup
+	// Backup & Restore
 	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))
 	register("GET", "/backups/download", jwtChain, handler.DownloadBackup(s.app.BM))
 	register(
@@ -114,6 +114,7 @@ func (s *Server) routes() {
 	register("POST", "/backups", jwtChain, handler.CreateBackup(s.app.BM))
 	register("POST", "/backups/restore", jwtChain, handler.RestoreBackup(s.app.BM))
 	register("DELETE", "/backups/{filename}", jwtChain, handler.DeleteBackup(s.app.BM))
+	register("POST", "/dynamic/restore/{id}", jwtChain, handler.RestoreDynamicConfig(s.app.BM))
 
 	// IP
 	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)

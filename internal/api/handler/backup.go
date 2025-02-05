@@ -6,9 +6,13 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/backup"
+	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 )
 
 // DownloadBackup creates a new backup of the database and returns it
@@ -124,6 +128,12 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 		}
 		defer file.Close()
 
+		extension := filepath.Ext(header.Filename)
+		if extension != ".db" {
+			http.Error(w, "Invalid file type", http.StatusBadRequest)
+			return
+		}
+
 		// Generate unique filename
 		filename := fmt.Sprintf("backup_%s%s",
 			time.Now().UTC().Format("20060102_150405"),
@@ -141,15 +151,15 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 
 		// Attempt to restore the backup
 		if err := bm.Restore(r.Context(), filename); err != nil {
-			// // Clean up the uploaded file if restore fails
-			// if err = bm.Backend.Delete(r.Context(), filename); err != nil {
-			// 	http.Error(
-			// 		w,
-			// 		fmt.Sprintf("Failed to delete backup file: %v", err),
-			// 		http.StatusInternalServerError,
-			// 	)
-			// 	return
-			// }
+			// Clean up the uploaded file if restore fails
+			if err = bm.Backend.Delete(r.Context(), filename); err != nil {
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to delete backup file: %v", err),
+					http.StatusInternalServerError,
+				)
+				return
+			}
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to restore backup: %v", err),
@@ -176,6 +186,67 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// RestoreBackup restores a backup from a provided file.
+func RestoreDynamicConfig(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Limit request size to prevent memory issues
+		r.Body = http.MaxBytesReader(w, r.Body, 100<<20) // 100MB limit
+
+		if err := r.ParseMultipartForm(100 << 20); err != nil {
+			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
+			return
+		}
+
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
+			return
+		}
+		defer file.Close()
+
+		// Check if yaml
+		extension := filepath.Ext(header.Filename)
+		if extension != ".yaml" && extension != ".yml" && extension != ".json" {
+			http.Error(w, "Invalid file type", http.StatusBadRequest)
+			return
+		}
+
+		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		dc, err := traefik.ConvertFileToDynamicConfig(file, extension)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		uploadedConfig := traefik.ConvertDynamicToRuntime(dc)
+
+		// Attempt to restore the backup
+		q := bm.Conn.GetQuery()
+		currentConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		mergedConfig := traefik.MergeConfigs(currentConfig.Config, uploadedConfig)
+		if err := q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: profileID,
+			Source:    source.Local,
+			Config:    mergedConfig,
+		}); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
