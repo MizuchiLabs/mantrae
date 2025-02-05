@@ -252,8 +252,9 @@
 			: defaultColumns
 	);
 
-	onMount(() => {
-		api.getTraefikConfig(source.value);
+	onMount(async () => {
+		await api.getTraefikConfig(source.value);
+		await api.listDNSProviders();
 	});
 </script>
 
