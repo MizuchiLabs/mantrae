@@ -27,14 +27,15 @@ In the settings, specify the **server address** for your Mantrae server. This ad
 ### Step 2: Generate and Copy the Agent Token
 
 1. In the Mantrae UI, navigate to the **Agents** tab.
-2. Locate the generated token for the agent which authorizes the agent to communicate with the Mantrae server.
+2. Add a new agent by clicking the **Add Agent** button.
+3. Copy the generated agent token by using the **Copy Token** button.
 
 ### Step 3: Run the Mantrae Agent
 
-1. Download the agent binary for your platform.
+1. Download the agent binary for your platform. (Or start the agent in a container.)
 2. Run the agent with the token using the following command:
    ```bash
-   ./mantrae-agent -token <your_agent_token>
+   TOKEN=YOUR_TOKEN ./mantrae-agent
    ```
 3. Ensure that the machine running the agent has Docker installed, as it will gather container details from the Docker daemon.
 
