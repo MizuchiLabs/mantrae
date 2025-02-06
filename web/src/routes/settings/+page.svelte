@@ -196,7 +196,12 @@
 								onCheckedChange={(checked) => saveSetting(key, checked)}
 							/>
 						{:else if key.includes('password')}
-							<PasswordInput password={setting.value} class="sm:w-auto md:w-[380px]" />
+							<PasswordInput
+								class="sm:w-auto md:w-[380px]"
+								password={setting.value}
+								onchange={(e) => handleChange(key, e.currentTarget.value)}
+								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+							/>
 						{:else if key.includes('interval')}
 							<Input
 								type="text"
