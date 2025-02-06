@@ -7,7 +7,7 @@
 	import type { Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, routerServiceMerge, type RouterWithService } from '$lib/api';
+	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { source } from '$lib/stores/source';
@@ -128,8 +128,15 @@
 			id: 'entryPoints',
 			enableSorting: true,
 			cell: ({ row }) => {
+				const entryPoints = row.getValue('entryPoints') as string[];
+				if (entryPoints.length === 0) {
+					return renderComponent(ColumnBadge, {
+						label: 'None',
+						variant: 'secondary'
+					});
+				}
 				return renderComponent(ColumnBadge, {
-					label: row.getValue('entryPoints') as string[],
+					label: entryPoints,
 					variant: 'secondary'
 				});
 			}
@@ -140,15 +147,21 @@
 			id: 'middlewares',
 			enableSorting: true,
 			cell: ({ row }) => {
-				if (row.original.router.protocol === 'udp') return;
+				const middlewares = row.getValue('middlewares') as string[];
+				if (row.original.router.protocol === 'udp' || middlewares.length === 0) {
+					return renderComponent(ColumnBadge, {
+						label: 'None',
+						variant: 'secondary'
+					});
+				}
 				return renderComponent(ColumnBadge, {
-					label: row.getValue('middlewares') as string[],
+					label: middlewares,
 					variant: 'secondary'
 				});
 			}
 		},
 		{
-			header: 'Domains',
+			header: 'Rules',
 			accessorKey: 'router.rule',
 			id: 'rule',
 			enableSorting: true,
@@ -161,8 +174,30 @@
 			}
 		},
 		{
+			header: 'DNS',
+			accessorKey: 'router.name',
+			id: 'dns',
+			enableSorting: true,
+			cell: ({ row }) => {
+				const name = row.getValue('dns') as string;
+				// Return early if no rdps data
+				if (!$rdps) {
+					return renderComponent(ColumnBadge, {
+						label: ['None'],
+						variant: 'secondary'
+					});
+				}
+				const dns = $rdps.find((item) => item.routerName === name);
+				return renderComponent(ColumnBadge, {
+					label: dns ? [dns.providerName] : ['None'],
+					variant: 'secondary',
+					class: dns ? 'bg-blue-300 dark:bg-blue-700' : undefined
+				});
+			}
+		},
+		{
 			header: 'Cert Resolver',
-			accessorKey: 'router.tls',
+			accessorFn: (row) => row.router.tls,
 			id: 'tls',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -170,8 +205,7 @@
 				if (!tls?.certResolver) {
 					return renderComponent(ColumnBadge, {
 						label: 'None',
-						variant: 'secondary',
-						class: 'bg-slate-300 dark:bg-slate-700'
+						variant: 'secondary'
 					});
 				}
 				return renderComponent(ColumnBadge, {

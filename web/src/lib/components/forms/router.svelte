@@ -7,7 +7,6 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
 	import { api, dnsProviders, entrypoints, routers, middlewares, traefik, rdps } from '$lib/api';
-	import { onMount } from 'svelte';
 	import { type Router } from '$lib/types/router';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -58,11 +57,6 @@
 
 	let selectDNSOpen = $state(false);
 	let dnsAnchor = $state<HTMLElement>(null!);
-
-	onMount(async () => {
-		// TODO: Do this better
-		await api.listRouterDNSProviders($traefik[0].id);
-	});
 </script>
 
 <Card.Root>
@@ -232,26 +226,28 @@
 		<!-- TLS Configuration -->
 		{#if isHttpType && router.protocol !== 'udp' && router.tls}
 			<div class="grid grid-cols-4 items-center gap-1">
-				<Label class="mr-2 text-right">Cert Resolver</Label>
+				<Label class="mr-2 text-right">Resolver</Label>
 				<div class="col-span-3">
 					<Input
 						bind:value={router.tls.certResolver}
 						placeholder="Certificate resolver"
 						disabled={!source.isLocal()}
+						class="mb-1"
 					/>
-					<div class="flex flex-wrap gap-1">
-						{#each certResolvers as resolver}
-							{#if resolver !== router.tls.certResolver}
-								<Badge
-									onclick={() =>
-										!source.isLocal() && router.tls && (router.tls.certResolver = resolver)}
-									class={!source.isLocal() ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-								>
-									{resolver}
-								</Badge>
-							{/if}
-						{/each}
-					</div>
+					{#if source.isLocal()}
+						<div class="flex flex-wrap gap-1">
+							{#each certResolvers as resolver}
+								{#if resolver !== router.tls.certResolver}
+									<Badge
+										onclick={() => router.tls && (router.tls.certResolver = resolver)}
+										class="cursor-pointer"
+									>
+										{resolver}
+									</Badge>
+								{/if}
+							{/each}
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/if}

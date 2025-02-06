@@ -108,7 +108,7 @@
 		<HoverCard.Trigger>
 			<button class="inline-flex items-center gap-1.5 text-sm">
 				<ListTree class="h-4 w-4" />
-				<span>Multiple</span>
+				<span>Display</span>
 			</button>
 		</HoverCard.Trigger>
 		<HoverCard.Content class="w-auto">
@@ -127,6 +127,9 @@
 									{value}
 									<Link class="h-3 w-3" />
 								</a>
+							{:else}
+								<div class="h-4 w-0.5 bg-muted-foreground/20"></div>
+								<span class="text-sm">{value}</span>
 							{/if}
 						</div>
 					</div>

@@ -26,7 +26,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { TraefikSource } from '$lib/types';
 	import { source } from '$lib/stores/source';
-	import { api } from '$lib/api';
+	import { api, rdps } from '$lib/api';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -189,7 +189,7 @@
 		table.resetGlobalFilter();
 		table.resetColumnOrder();
 		table.resetPagination();
-		await api.getTraefikConfig(source.value);
+		await Promise.all([api.getTraefikConfig(source.value), api.listDNSProviders()]);
 	}
 	function handleLimitChange(value: string) {
 		if (!value) return;
@@ -257,7 +257,7 @@
 
 	<!-- Table -->
 	<div class="rounded-md border">
-		{#key source.value + JSON.stringify(data)}
+		{#key source.value + $rdps + JSON.stringify(data)}
 			<Table.Root>
 				<Table.Header>
 					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}

@@ -52,7 +52,7 @@
 		}
 	};
 
-	const columns: ColumnDef<Middleware>[] = [
+	const defaultColumns: ColumnDef<Middleware>[] = [
 		{
 			header: 'Name',
 			accessorKey: 'name',
@@ -147,6 +147,11 @@
 			}
 		}
 	];
+	let columns: ColumnDef<Middleware>[] = $derived(
+		source.value === TraefikSource.LOCAL
+			? defaultColumns.filter((c) => c.id !== 'provider')
+			: defaultColumns
+	);
 
 	onMount(() => {
 		api.getTraefikConfig(source.value);

@@ -380,12 +380,29 @@ export const api = {
 		});
 	},
 
-	async listRouterDNSProviders(traefikId: number) {
-		if (!traefikId) return;
-		const data = await send(`/dns/router/${traefikId}`, {
-			method: 'GET'
-		});
-		rdps.set(data);
+	async listRouterDNSProviders() {
+		const configs = get(traefik);
+		if (!configs?.length) return;
+
+		// Get unique traefik IDs
+		const uniqueIds = [...new Set(configs.map((t) => t.id))];
+
+		try {
+			// Fetch data for all unique IDs in parallel
+			const results = await Promise.all(
+				uniqueIds.map((id) =>
+					send(`/dns/router/${id}`, { method: 'GET' })
+						.then((data) => ({ id, data }))
+						.catch(() => ({ id, data: [] }))
+				)
+			);
+
+			// Combine and update store
+			rdps.set(results.filter((result) => result.data).flatMap((result) => result.data));
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err : new Error(String(err));
+			toast.error('Failed to fetch router DNS providers', { description: error.message });
+		}
 	},
 
 	async setRouterDNSProvider(traefikId: number, providerId: number, routerName: string) {
@@ -393,7 +410,7 @@ export const api = {
 			method: 'POST',
 			body: { traefikId, providerId, routerName }
 		});
-		await api.listRouterDNSProviders(traefikId);
+		await api.listRouterDNSProviders();
 	},
 
 	async deleteRouterDNSProvider(traefikId: number, routerName: string) {
@@ -401,7 +418,7 @@ export const api = {
 			method: 'DELETE',
 			body: { traefikId, routerName }
 		});
-		await api.listRouterDNSProviders(traefikId);
+		await api.listRouterDNSProviders();
 	},
 
 	// Users ---------------------------------------------------------------------
@@ -563,7 +580,7 @@ export const api = {
 		toast.success('Backup restored successfully');
 	},
 
-    	async restoreDynamicConfig(files: FileList | null) {
+	async restoreDynamicConfig(files: FileList | null) {
 		if (!files?.length) return;
 		const formData = new FormData();
 		formData.append('file', files[0]);
@@ -678,7 +695,7 @@ async function fetchTraefikConfig(src: TraefikSource) {
 	});
 
 	// Fetch the router dns relations
-	await api.listRouterDNSProviders(res.id);
+	await api.listRouterDNSProviders();
 
 	// Fetch dynamic config
 	await api.getDynamicConfig();
