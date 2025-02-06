@@ -7,16 +7,31 @@
 	interface Props {
 		password: string | undefined;
 		required?: boolean;
+		[props: string]: any;
 	}
 
-	let { password = $bindable(), required }: Props = $props();
+	let { password = $bindable(), required, ...restProps }: Props = $props();
 </script>
 
 <div class="flex flex-row items-center justify-end gap-1">
 	{#if showPassword}
-		<Input id="password" type="text" bind:value={password} placeholder="••••••••" {required} />
+		<Input
+			id="password"
+			type="text"
+			bind:value={password}
+			placeholder="••••••••"
+			{required}
+			{...restProps}
+		/>
 	{:else}
-		<Input id="password" type="password" bind:value={password} placeholder="••••••••" {required} />
+		<Input
+			id="password"
+			type="password"
+			bind:value={password}
+			placeholder="••••••••"
+			{required}
+			{...restProps}
+		/>
 	{/if}
 	<Button
 		variant="ghost"

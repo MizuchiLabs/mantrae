@@ -13,7 +13,7 @@
 </script>
 
 <footer
-	class="fixed bottom-0 right-0 flex flex-row items-center justify-end bg-background px-2 py-1"
+	class="sticky bottom-0 right-0 flex flex-row items-center justify-end bg-transparent px-2 py-1"
 >
 	<div class="flex items-center text-muted-foreground">
 		<Button

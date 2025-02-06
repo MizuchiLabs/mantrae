@@ -13,6 +13,7 @@
 	import type { Setting } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import { DateFormat } from '$lib/stores/common';
+	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 
 	let hasChanges = $state(false);
 	let changedValues = $state<Record<string, Setting['value']>>({});
@@ -194,6 +195,8 @@
 								checked={setting.value}
 								onCheckedChange={(checked) => saveSetting(key, checked)}
 							/>
+						{:else if key.includes('password')}
+							<PasswordInput password={setting.value} class="sm:w-auto md:w-[380px]" />
 						{:else if key.includes('interval')}
 							<Input
 								type="text"
