@@ -2,7 +2,7 @@
 sidebar_position: 4
 ---
 
-# Environment
+# Environment Variables
 
 Mantrae provides several command-line flags and environment variables to configure the application. This guide details each option and its purpose.
 

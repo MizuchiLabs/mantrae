@@ -8,11 +8,10 @@ Agents extend the functionality of your Traefik setup by allowing you to collect
 
 ## How Agents Work
 
-An agent is a standalone binary that runs on any machine where you want to collect container information. Each agent:
+An agent is a standalone binary that runs on any machine where you want to manage remote containers. Each agent:
 
-- Collects Docker container metadata, including Traefik labels.
+- Collects Docker container metadata and Traefik labels.
 - Communicates with the Mantrae server, sending back container info for unified management.
-- Regularly renews its access token to ensure a secure, persistent connection.
 
 ## Setting Up an Agent
 
@@ -20,9 +19,7 @@ An agent is a standalone binary that runs on any machine where you want to colle
 
 In the settings, specify the **server address** for your Mantrae server. This address must be accessible by the agent to ensure successful communication.
 
-- **Example**: If Mantrae is hosted on a public IP or domain (e.g., `https://mantrae.example.com`), configure this as the server address so agents can connect reliably.
-
-> **Note**: The agent will automatically renew its token at regular intervals, so you don’t need to worry about re-authenticating it manually.
+> **Note**: If Mantrae is hosted on a public IP or domain (e.g., `https://mantrae.example.com`), configure this as the server address so agents can connect reliably.
 
 ### Step 2: Generate and Copy the Agent Token
 

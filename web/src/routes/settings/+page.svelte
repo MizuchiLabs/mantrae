@@ -154,7 +154,7 @@
 								disabled={$loading}
 							>
 								<FileCode class="mr-2 size-4" />
-								{$loading ? 'Uploading...' : 'Restore Dynamic Config'}
+								{$loading ? 'Uploading...' : 'Import Configuration'}
 							</Button>
 						</Tooltip.Trigger>
 						<Tooltip.Content side="bottom" align="end" class="w-80">

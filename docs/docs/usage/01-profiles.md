@@ -29,14 +29,19 @@ Each profile in Mantrae has its own API endpoint, allowing Traefik to fetch the 
 Configure Traefik to use this endpoint to pull configuration details specific to this profile. E.g. by using the static config:
 
 ```yaml
+# Using the static config:
 providers:
   http:
-    endpoint: "http://mantrae:3000/api/default"
+    endpoint: "http://mantrae:3000/api/<profile-name>"
     # Optional if you enabled basic auth on mantrae itself
     headers:
       Authorization: Basic <base64 encoded username:password>
+
+# Or as command in docker compose:
+traefik:
+  image: docker.io/traefik:latest
+  container_name: traefik
+  command:
+    - --providers.http.endpoint=http://mantrae:3000/api/<profile-name>
+    - ... other commands
 ```
-
----
-
-Profiles make it easy to work with multiple Traefik setups, ensuring configurations remain organized and accessible.

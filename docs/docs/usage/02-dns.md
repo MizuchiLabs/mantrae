@@ -32,8 +32,3 @@ Once a DNS provider is configured, you can assign it to specific routers. When y
 - **Default**: Setting a provider as "Default" will automatically use it on newly created routers, so if no DNS provider is assigned to the router, Mantrae will use the default DNS provider.
 
 > **Note**: This DNS automation only applies if no entry for the domain exists. Ensure your domain records are unique to prevent conflicts.
-
-### Public IP Address Configuration
-
-Mantrae includes a feature to try to detect the public IP of the Traefik instance, but this is only an estimate. You’ll need to review and set the correct IP address where the DNS entries should point.
-mplifies domain management and provides customizable integration options to enhance your Traefik setup.
