@@ -3,6 +3,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import logo from '$lib/images/logo-white.svg';
 	import type { ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
@@ -21,7 +22,6 @@
 		Tag,
 		Pencil,
 		Wrench,
-		Origami,
 		CircleUserRound,
 		Sun,
 		Moon,
@@ -96,7 +96,7 @@
 								<div
 									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
-									<Origami class="size-4" />
+									<img src={logo} alt="Mantrae Logo" width="18" />
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">

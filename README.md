@@ -27,11 +27,9 @@ This project is still early in development and is not ready for production use. 
 
 Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
 
-### Screenshots
+### Screenshot
 
 ![Routers](./.github/screenshots/routers.png "Routers")
-![Middleware](./.github/screenshots/middlewares.png "Middleware")
-![CommandCenter](./.github/screenshots/command_center.png "CommandCenter")
 
 ## Roadmap
 

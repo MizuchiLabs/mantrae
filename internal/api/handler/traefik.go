@@ -64,7 +64,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			return
 		}
 		if local.Config == nil {
-			w.WriteHeader(http.StatusNoContent)
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 
