@@ -1,5 +1,5 @@
-import { TraefikSource } from '$lib/types';
 import { createLocalStorage } from '$lib/storage.svelte';
+import { TraefikSource } from '$lib/types';
 
 class TraefikSourceStore {
 	private store = createLocalStorage<TraefikSource>('traefik_source', TraefikSource.API);

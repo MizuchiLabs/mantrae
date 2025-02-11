@@ -1,5 +1,5 @@
-import type { User } from '$lib/types';
 import { createLocalStorage } from '$lib/storage.svelte';
+import type { User } from '$lib/types';
 
 class UserStore {
 	private store = createLocalStorage<User | null>('current_user', null);

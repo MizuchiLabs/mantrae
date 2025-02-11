@@ -7,14 +7,37 @@ export class LocalStorage<T> {
 
 		if (typeof localStorage !== 'undefined') {
 			const stored = localStorage.getItem(key);
-			this.#value = stored ? JSON.parse(stored) : initial;
+			this.#value = stored ? this.#parseWithBigInt(stored) : initial;
 
 			if (stored === null && initial !== undefined) {
-				localStorage.setItem(key, JSON.stringify(initial));
+				localStorage.setItem(key, this.#stringifyWithBigInt(initial));
 			}
 		} else {
 			this.#value = initial;
 		}
+	}
+
+	#parseWithBigInt(text: string): T {
+		try {
+			return JSON.parse(text, (_, value) => {
+				if (typeof value === 'string' && value.match(/^\d+n$/)) {
+					return BigInt(value.slice(0, -1));
+				}
+				return value;
+			});
+		} catch {
+			return text as unknown as T;
+		}
+	}
+
+	#stringifyWithBigInt(value: T): string {
+		return JSON.stringify(value, (_, value) => {
+			// Convert BigInt to string representation with 'n' suffix
+			if (typeof value === 'bigint') {
+				return value.toString() + 'n';
+			}
+			return value;
+		});
 	}
 
 	get value(): T | undefined {
@@ -24,7 +47,7 @@ export class LocalStorage<T> {
 	set value(newValue: T | undefined) {
 		this.#value = newValue;
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(this.#key, JSON.stringify(newValue));
+			localStorage.setItem(this.#key, this.#stringifyWithBigInt(newValue!));
 		}
 	}
 }

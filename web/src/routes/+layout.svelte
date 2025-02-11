@@ -1,15 +1,16 @@
 <script lang="ts">
-	import '../app.css';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
-	import AppHeader from '$lib/components/nav/AppHeader.svelte';
-	import AppFooter from '$lib/components/nav/AppFooter.svelte';
-	import { Toaster } from '$lib/components/ui/sonner';
-	import { onMount } from 'svelte';
 	import { api, BASE_URL } from '$lib/api';
-	import autoAnimate from '@formkit/auto-animate';
+	import AppFooter from '$lib/components/nav/AppFooter.svelte';
+	import AppHeader from '$lib/components/nav/AppHeader.svelte';
+	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import { source } from '$lib/stores/source';
 	import { user } from '$lib/stores/user';
+	import autoAnimate from '@formkit/auto-animate';
+	import { onMount } from 'svelte';
+	import '../app.css';
+	import AppCenter from '$lib/components/nav/AppCenter.svelte';
 	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	interface Props {
@@ -56,7 +57,7 @@
 </script>
 
 <Toaster />
-<!-- <CommandCenter /> -->
+<AppCenter />
 
 <Sidebar.Provider>
 	{#if user.isLoggedIn()}

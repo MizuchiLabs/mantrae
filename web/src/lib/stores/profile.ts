@@ -1,5 +1,5 @@
-import type { Profile } from '$lib/types';
 import { createLocalStorage } from '$lib/storage.svelte';
+import type { Profile } from '$lib/types';
 
 class ProfileStore {
 	private store = createLocalStorage<Profile | null>('selected_profile', null);

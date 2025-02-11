@@ -284,8 +284,8 @@
 								<CircleUserRound />
 								Account
 							</DropdownMenu.Item>
-							<DropdownMenu.Item onSelect={() => ($theme = $theme === 'dark' ? 'light' : 'dark')}>
-								{#if $theme === 'dark'}
+							<DropdownMenu.Item onSelect={() => theme.toggle()}>
+								{#if theme.value === 'dark'}
 									<Sun class="size-4" />
 									<span>Light Mode</span>
 								{:else}

@@ -38,6 +38,7 @@
 			passHostHeader: true
 		}
 	};
+
 	const initialModalState: ModalState = {
 		isOpen: false,
 		mode: 'create',
