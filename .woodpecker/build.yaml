@@ -4,13 +4,6 @@ when:
     path:
       exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
 
-clone:
-  git:
-    image: woodpeckerci/plugin-git
-    settings:
-      depth: 0
-      tags: true
-
 steps:
   - name: frontend-build
     image: node:20
@@ -24,7 +17,7 @@ steps:
       - pnpm build
 
   - name: docker-build
-    image: chainguard/ko:latest-dev
+    image: ghcr.io/ko-build/ko:latest
     commands:
       - |
         if [ -n "$CI_COMMIT_TAG" ]; then
