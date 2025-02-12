@@ -35,7 +35,9 @@ func Setup(ctx context.Context) (*App, error) {
 
 	conn, err := db.NewDBConnection()
 	if err != nil {
-		defer conn.Close()
+		if conn != nil {
+			defer conn.Close()
+		}
 		return nil, err
 	}
 

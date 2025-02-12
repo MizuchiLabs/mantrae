@@ -16,98 +16,19 @@ steps:
       - pnpm install
       - pnpm build
 
-  - name: server-build
-    image: golang:latest
+  - name: docker-build
+    image: chainguard/ko:latest
     commands:
-      - apt-get update && apt-get install -y xz-utils
-      - wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
-      - tar -xf upx-4.2.4-amd64_linux.tar.xz
-      - mv upx-4.2.4-amd64_linux/upx /usr/local/bin/
-      - go fmt ./...
-      - go vet ./...
-      - go mod tidy
-      - go mod verify
-      - go test ./...
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mantrae-linux-amd64 main.go
-      - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mantrae-linux-arm64 main.go
-      - upx --best --lzma mantrae-linux-amd64
-      - upx --best --lzma mantrae-linux-arm64
-
-  - name: agent-build
-    image: golang:latest
-    commands:
-      - apt-get update && apt-get install -y xz-utils
-      - wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-amd64_linux.tar.xz
-      - tar -xf upx-4.2.4-amd64_linux.tar.xz
-      - mv upx-4.2.4-amd64_linux/upx /usr/local/bin/
-      - go fmt ./...
-      - go vet ./...
-      - go mod tidy
-      - go mod verify
-      - go test ./...
-      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mae-linux-amd64 agent/cmd/main.go
-      - CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o mae-linux-arm64 agent/cmd/main.go
-      - upx --best --lzma mae-linux-amd64
-      - upx --best --lzma mae-linux-arm64
-
-  - name: server-container-build
-    image: woodpeckerci/plugin-docker-buildx
-    settings:
-      repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
-      registry: ghcr.io
-      platforms: linux/amd64, linux/arm64
-      username: ${CI_REPO_OWNER}
-      auto_tags: true
-      auto_labels: true
-      password:
-        from_secret: gh_token
-    when:
-      event: tag
-      branch: main
-
-  - name: server-container-build
-    image: woodpeckerci/plugin-docker-buildx
-    settings:
-      repo: ghcr.io/${CI_REPO_OWNER,,}/${CI_REPO_NAME}
-      registry: ghcr.io
-      platforms: linux/amd64, linux/arm64
-      username: ${CI_REPO_OWNER}
-      tag: nightly
-      auto_labels: true
-      password:
-        from_secret: gh_token
-    when:
-      branch: nightly
-
-  - name: agent-container-build
-    image: woodpeckerci/plugin-docker-buildx
-    settings:
-      repo: ghcr.io/${CI_REPO_OWNER,,}/mantrae-agent
-      registry: ghcr.io
-      platforms: linux/amd64, linux/arm64
-      username: ${CI_REPO_OWNER}
-      dockerfile: agent/Dockerfile
-      tag: latest
-      auto_labels: true
-      password:
-        from_secret: gh_token
-    when:
-      branch: main
-
-  - name: agent-container-build
-    image: woodpeckerci/plugin-docker-buildx
-    settings:
-      repo: ghcr.io/${CI_REPO_OWNER,,}/mantrae-agent
-      registry: ghcr.io
-      platforms: linux/amd64, linux/arm64
-      username: ${CI_REPO_OWNER}
-      dockerfile: agent/Dockerfile
-      tag: nightly
-      auto_labels: true
-      password:
-        from_secret: gh_token
-    when:
-      branch: nightly
+      - |
+        if [ -n "$CI_COMMIT_TAG" ]; then
+          TAGS="-t latest -t $CI_COMMIT_TAG"
+        elif [ "$CI_COMMIT_BRANCH" = "main" ]; then
+          TAGS="-t latest"
+        else
+          TAGS="-t nightly"
+        fi
+      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae ko build . --bare $TAGS
+      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd --bare $TAGS
 
   - name: release
     image: goreleaser/goreleaser

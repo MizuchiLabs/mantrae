@@ -136,7 +136,10 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 		// Return the updated configuration
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(existingConfig.Config)
+		if err := json.NewEncoder(w).Encode(existingConfig.Config); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

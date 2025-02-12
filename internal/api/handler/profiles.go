@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,10 @@ func ListProfiles(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(profiles)
+		if err := json.NewEncoder(w).Encode(profiles); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -39,7 +43,10 @@ func GetProfile(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(profile)
+		if err := json.NewEncoder(w).Encode(profile); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -71,7 +78,11 @@ func CreateProfile(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		go traefik.UpdateTraefikAPI(a.Conn.Get(), profile)
+		go func() {
+			if err := traefik.UpdateTraefikAPI(a.Conn.Get(), profile); err != nil {
+				slog.Error("Failed to update api data", "error", err)
+			}
+		}()
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeCreate,
 			Message: "profile",
@@ -98,7 +109,11 @@ func UpdateProfile(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		go traefik.UpdateTraefikAPI(a.Conn.Get(), profile)
+		go func() {
+			if err := traefik.UpdateTraefikAPI(a.Conn.Get(), profile); err != nil {
+				slog.Error("Failed to update api data", "error", err)
+			}
+		}()
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeUpdate,
 			Message: "profile",

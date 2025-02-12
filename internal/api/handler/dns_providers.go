@@ -21,7 +21,10 @@ func ListDNSProviders(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(dns_providers)
+		if err := json.NewEncoder(w).Encode(dns_providers); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -39,7 +42,10 @@ func GetDNSProvider(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(dns_provider)
+		if err := json.NewEncoder(w).Encode(dns_provider); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -119,7 +125,10 @@ func ListRouterDNSProviders(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(providers)
+		if err := json.NewEncoder(w).Encode(providers); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -174,7 +183,10 @@ func GetRouterDNSProvider(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(providers)
+		if err := json.NewEncoder(w).Encode(providers); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

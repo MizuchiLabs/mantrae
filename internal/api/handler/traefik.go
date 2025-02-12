@@ -34,7 +34,10 @@ func GetTraefikConfig(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(config)
+		if err := json.NewEncoder(w).Encode(config); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -83,6 +86,9 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		dynamic := traefik.ConvertToDynamicConfig(mergedConfig)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(dynamic)
+		if err := json.NewEncoder(w).Encode(dynamic); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

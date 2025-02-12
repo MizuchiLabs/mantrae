@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/MizuchiLabs/mantrae/agent/client"
+	"github.com/MizuchiLabs/mantrae/pkg/build"
 	"github.com/lmittmann/tint"
 )
 
@@ -37,7 +38,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println(client.Version)
+		fmt.Println(build.Version)
 		return
 	}
 

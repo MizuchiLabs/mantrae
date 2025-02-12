@@ -220,10 +220,3 @@ func ValidSSLCert(domain string) error {
 
 	return nil
 }
-
-func IsRunningInDocker() bool {
-	if _, err := os.Stat("/.dockerenv"); err == nil {
-		return true
-	}
-	return false
-}

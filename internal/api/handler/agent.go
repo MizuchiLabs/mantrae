@@ -21,7 +21,10 @@ func ListAgents(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(agents)
+		if err := json.NewEncoder(w).Encode(agents); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -40,7 +43,10 @@ func ListAgentsByProfile(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(agents)
+		if err := json.NewEncoder(w).Encode(agents); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -53,7 +59,10 @@ func GetAgent(a *config.App) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(agent)
+		if err := json.NewEncoder(w).Encode(agent); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

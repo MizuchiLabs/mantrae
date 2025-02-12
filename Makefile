@@ -1,12 +1,12 @@
 BIN_SERVER=mantrae
-BIN_AGENT=mantrae_agent
+BIN_AGENT=mae
 
 VERSION=$(shell git describe --tags --abbrev=0)
 DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/internal/util.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/internal/util.BuildDate=${DATE} -X github.com/MizuchiLabs/mantrae/internal/util.Commit=${COMMIT}"
+LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/build.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/pkg/build.Date=${DATE} -X github.com/MizuchiLabs/mantrae/pkg/build.Commit=${COMMIT}"
 
 all: clean build
 
@@ -40,26 +40,15 @@ build-server: build-web
 build-agent:
 	 go build $(LDFLAGS) -o $(BIN_AGENT) agent/cmd/main.go
 
-docker-server: snapshot
-	docker buildx build \
-		--platform linux/amd64,linux/arm64 \
-		--build-arg VERSION=${VERSION} \
-		--build-arg COMMIT=${COMMIT} \
-		--build-arg DATE=${DATE} \
-		-t ghcr.io/mizuchilabs/mantrae:latest \
-		.
+docker-local:
+	go generate ./...
+	KO_DOCKER_REPO=ko.local/mantrae ko build . --bare
+	KO_DOCKER_REPO=ko.local/mantrae-agent ko build ./agent/cmd --bare
 
-docker-agent: snapshot
-	docker buildx build \
-		--platform linux/amd64,linux/arm64 \
-		--build-arg VERSION=${VERSION} \
-		--build-arg COMMIT=${COMMIT} \
-		--build-arg DATE=${DATE} \
-		-t ghcr.io/mizuchilabs/mantrae-agent:latest \
-		.
-
-docker-push:
-	docker push ghcr.io/mizuchilabs/mantrae:latest
+docker-release:
+	go generate ./...
+	KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae ko build . --bare
+	KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd --bare
 
 .PHONY: release
 release:

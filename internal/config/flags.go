@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/MizuchiLabs/mantrae/pkg/build"
 )
 
 type Flags struct {
@@ -27,7 +27,7 @@ func ParseFlags() {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	if f.Version {
-		fmt.Println(util.Version)
+		fmt.Println(build.Version)
 		os.Exit(0)
 	}
 
@@ -35,5 +35,5 @@ func ParseFlags() {
 		db.Squash()
 		os.Exit(1)
 	}
-	util.UpdateSelf(f.Update)
+	build.Update(f.Update)
 }

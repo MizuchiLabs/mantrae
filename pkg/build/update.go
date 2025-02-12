@@ -1,4 +1,4 @@
-package util
+package build
 
 import (
 	"context"
@@ -36,8 +36,8 @@ type release struct {
 	ID        int             `json:"id"`
 }
 
-func UpdateSelf(update bool) {
-	if IsRunningInDocker() {
+func Update(update bool) {
+	if runningInDocker() {
 		slog.Info("Running in docker, skipping update")
 		return
 	}
@@ -82,6 +82,13 @@ func UpdateSelf(update bool) {
 	}
 
 	slog.Info("Update success!")
+}
+
+func runningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
 }
 
 func fetchLatestRelease() (*release, error) {

@@ -9,6 +9,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type ctxKey string
+
+const (
+	AuthUserKey ctxKey = "user"
+)
+
 // BasicAuth middleware for simple authentication
 func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +39,7 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := context.WithValue(r.Context(), AuthUserKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -68,7 +74,7 @@ func (h *MiddlewareHandler) JWT(next http.Handler) http.Handler {
 		}
 
 		// Add user to context
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := context.WithValue(r.Context(), AuthUserKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -93,7 +99,7 @@ func (h *MiddlewareHandler) AdminOnly(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", user)
+		ctx := context.WithValue(r.Context(), AuthUserKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

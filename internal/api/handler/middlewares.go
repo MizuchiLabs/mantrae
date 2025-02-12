@@ -117,7 +117,10 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 		// Return the updated configuration
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(existingConfig.Config)
+		if err := json.NewEncoder(w).Encode(existingConfig.Config); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -207,5 +210,8 @@ func GetMiddlewarePlugins(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(middlewarePlugins)
+	if err := json.NewEncoder(w).Encode(middlewarePlugins); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

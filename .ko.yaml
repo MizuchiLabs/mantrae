@@ -1,0 +1,26 @@
+defaultBaseImage: alpine
+defaultPlatforms:
+  - linux/arm64
+  - linux/amd64
+defaultLdflags:
+  - -s -w
+  - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Git.Tag}}
+  - -X github.com/MizuchiLabs/mantrae/pkg/build.Commit={{.Git.FullCommit}}
+  - -X github.com/MizuchiLabs/mantrae/pkg/build.Date={{.Date}}
+
+defaultLabels:
+  org.opencontainers.image.title: "{{.Target}}"
+  org.opencontainers.image.version: "{{.Env.VERSION}}"
+  org.opencontainers.image.created: "{{.Env.DATE}}"
+  org.opencontainers.image.source: "https://github.com/MizuchiLabs/mantrae"
+
+builds:
+  - id: server
+    env:
+      - CGO_ENABLED=0
+
+  - id: agent
+    main: ./agent/cmd
+    env:
+      - CGO_ENABLED=0
+

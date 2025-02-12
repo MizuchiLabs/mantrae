@@ -16,7 +16,10 @@ func ListSettings(sm *config.SettingsManager) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(settings)
+		if err := json.NewEncoder(w).Encode(settings); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -28,7 +31,10 @@ func GetSetting(sm *config.SettingsManager) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(setting)
+		if err := json.NewEncoder(w).Encode(setting); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
