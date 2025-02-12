@@ -4,6 +4,13 @@ when:
     path:
       exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
 
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      depth: 0
+      tags: true
+
 steps:
   - name: frontend-build
     image: node:20

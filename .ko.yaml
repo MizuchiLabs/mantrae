@@ -3,13 +3,12 @@ defaultPlatforms:
   - linux/arm64
   - linux/amd64
 defaultFlags:
-  - -buildvcs=false
+  - -buildvcs=auto
 defaultLdflags:
   - -s -w
   - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Git.Tag}}
   - -X github.com/MizuchiLabs/mantrae/pkg/build.Commit={{.Git.FullCommit}}
   - -X github.com/MizuchiLabs/mantrae/pkg/build.Date={{.Date}}
-
 defaultLabels:
   org.opencontainers.image.title: "{{.Target}}"
   org.opencontainers.image.version: "{{.Env.VERSION}}"
