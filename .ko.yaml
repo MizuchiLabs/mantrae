@@ -2,8 +2,6 @@ defaultBaseImage: alpine
 defaultPlatforms:
   - linux/arm64
   - linux/amd64
-defaultFlags:
-  - -buildvcs=auto
 defaultLdflags:
   - -s -w
   - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Git.Tag}}

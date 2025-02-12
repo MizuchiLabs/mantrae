@@ -24,7 +24,7 @@ steps:
       - pnpm build
 
   - name: docker-build
-    image: chainguard/ko:latest
+    image: chainguard/ko:latest-dev
     commands:
       - |
         if [ -n "$CI_COMMIT_TAG" ]; then
