@@ -1,4 +1,4 @@
-package backup
+package storage
 
 import (
 	"context"
@@ -40,8 +40,8 @@ func (ls *LocalStorage) Retrieve(ctx context.Context, name string) (io.ReadClose
 	return os.Open(path)
 }
 
-func (ls *LocalStorage) List(ctx context.Context) ([]BackupFile, error) {
-	var files []BackupFile
+func (ls *LocalStorage) List(ctx context.Context) ([]StoredFile, error) {
+	var files []StoredFile
 	entries, err := os.ReadDir(ls.basePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read storage directory: %w", err)
@@ -52,7 +52,7 @@ func (ls *LocalStorage) List(ctx context.Context) ([]BackupFile, error) {
 		if err != nil {
 			continue
 		}
-		files = append(files, BackupFile{
+		files = append(files, StoredFile{
 			Name:      entry.Name(),
 			Timestamp: info.ModTime(),
 			Size:      info.Size(),

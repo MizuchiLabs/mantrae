@@ -1,8 +1,8 @@
 -- name: CreateAgent :exec
 INSERT INTO
-  agents (id, profile_id, token)
+  agents (id, profile_id, token, created_at)
 VALUES
-  (?, ?, ?);
+  (?, ?, ?, CURRENT_TIMESTAMP);
 
 -- name: GetAgent :one
 SELECT

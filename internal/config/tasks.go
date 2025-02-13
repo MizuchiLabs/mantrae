@@ -7,15 +7,14 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/dns"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 func (a *App) setupBackgroundJobs(ctx context.Context) {
 	slog.Info("Starting background tasks...")
 	go a.traefikSync(ctx)
 	go a.syncDNS(ctx)
-	// go sslCheck(ctx)
-	// go cleanupAgents(ctx)
-	// go cleanupRouters(ctx)
+	go a.cleanupAgents(ctx)
 }
 
 // traefikSync periodically syncs the Traefik configuration
@@ -54,151 +53,80 @@ func (a *App) syncDNS(ctx context.Context) {
 	}
 }
 
-// func sslCheck(ctx context.Context) {
-// 	ticker := time.NewTicker(time.Second * time.Duration(util.App.SSLInterval))
-// 	defer ticker.Stop()
+func (a *App) cleanupAgents(ctx context.Context) {
+	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.Agent))
+	defer ticker.Stop()
 
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			return
-// 		case <-ticker.C:
-// 			// Fetch new router list
-// 			routers, err := db.Query.ListRouters(context.Background())
-// 			if err != nil {
-// 				slog.Error("Failed to get routers", "error", err)
-// 			}
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			q := a.Conn.GetQuery()
+			enabled, err := q.GetSetting(ctx, "agent_cleanup_enabled")
+			if err != nil {
+				slog.Error("failed to get agent_cleanup_enabled", "error", err)
+				return
+			}
 
-// 			for _, router := range routers {
-// 				router.SSLCheck()
-// 			}
-// 		}
-// 	}
-// }
+			if enabled.Value != "true" {
+				return
+			}
 
-// func cleanupAgents(ctx context.Context) {
-// 	enabled, err := db.Query.GetSetting(context.Background(), "agent-cleanup-enabled")
-// 	if err != nil {
-// 		slog.Error("failed to get agent cleanup timeout", "error", err)
-// 		return
-// 	}
+			// Timeout to delete old agents
+			timeout, err := q.GetSetting(ctx, "agent_cleanup_interval")
+			if err != nil {
+				slog.Error("failed to get agent_cleanup_interval", "error", err)
+				return
+			}
 
-// 	if enabled.Value != "true" {
-// 		return
-// 	}
+			timeoutDuration, err := time.ParseDuration(timeout.Value)
+			if err != nil {
+				slog.Error("failed to parse agent_cleanup_interval", "error", err)
+				return
+			}
 
-// 	// Timeout to delete old agents
-// 	timeout, err := db.Query.GetSetting(context.Background(), "agent-cleanup-timeout")
-// 	if err != nil {
-// 		slog.Error("failed to get agent cleanup timeout", "error", err)
-// 		return
-// 	}
+			now := time.Now()
+			agents, err := q.ListAgents(ctx)
+			if err != nil {
+				slog.Error("failed to list agents", "error", err)
+				return
+			}
 
-// 	timeoutDuration, err := time.ParseDuration(timeout.Value)
-// 	if err != nil {
-// 		slog.Error("failed to parse timeout cleanup duration", "error", err)
-// 	}
+			for _, agent := range agents {
+				if agent.UpdatedAt == nil || agent.Hostname == nil {
+					continue
+				}
 
-// 	ticker := time.NewTicker(timeoutDuration)
-// 	defer ticker.Stop()
-
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			return
-// 		case <-ticker.C:
-// 			now := time.Now()
-// 			agents, err := db.Query.ListAgents(context.Background())
-// 			if err != nil {
-// 				slog.Error("failed to query disconnected agents", "error", err)
-// 				continue
-// 			}
-
-// 			for _, agent := range agents {
-// 				if agent.LastSeen == nil {
-// 					continue
-// 				}
-
-// 				if now.Sub(*agent.LastSeen) > timeoutDuration {
-// 					if err := db.Query.DeleteAgent(context.Background(), agent.ID); err != nil {
-// 						slog.Error(
-// 							"failed to delete disconnected agent",
-// 							"id",
-// 							agent.ID,
-// 							"error",
-// 							err,
-// 						)
-// 					} else {
-// 						slog.Info("Deleted disconnected agent", "id", agent.ID)
-// 						util.Broadcast <- util.EventMessage{
-// 							Type:    "agent_updated",
-// 							Message: "Deleted disconnected agent",
-// 						}
-// 					}
-
-// 					// Delete all connected routers
-// 					routers, err := db.Query.ListRoutersByAgentID(context.Background(), &agent.ID)
-// 					if err != nil {
-// 						slog.Error("Failed to get routers", "error", err)
-// 						continue
-// 					}
-// 					for _, router := range routers {
-// 						if err := db.Query.DeleteRouter(context.Background(), router.ID); err != nil {
-// 							slog.Error("Failed to delete router", "id", router.ID, "error", err)
-// 							return
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// cleanupRouters periodically deletes routers from offline/deleted agents
-// func (a *App) cleanupRouters(ctx context.Context) {
-// 	q := db.New(a.DB)
-// 	// Timeout to delete old agents
-// 	timeout, err := q.GetSetting(context.Background(), "agent-cleanup-timeout")
-// 	if err != nil {
-// 		slog.Error("failed to get agent cleanup timeout", "error", err)
-// 		return
-// 	}
-//
-// 	timeoutDuration, err := time.ParseDuration(timeout.Value)
-// 	if err != nil {
-// 		slog.Error("failed to parse timeout cleanup duration", "error", err)
-// 	}
-//
-// 	ticker := time.NewTicker(timeoutDuration)
-// 	defer ticker.Stop()
-//
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			return
-// 		case <-ticker.C:
-// 			q := db.New(a.DB)
-//
-// 			profiles, err := q.ListProfiles(ctx)
-// 			if err != nil {
-// 				slog.Error("failed to query disconnected agents", "error", err)
-// 				continue
-// 			}
-//
-// 			for _, profile := range profiles {
-// 				config, err := q.GetTraefikConfigBySource(ctx, db.GetTraefikConfigBySourceParams{
-// 					ProfileID: profile.ID,
-// 					Source:    source.Agent,
-// 				})
-// 				if err != nil {
-// 					slog.Error("failed to get agent config", "error", err)
-// 					continue
-// 				}
-// 				if config.Config == nil {
-// 					continue
-// 				}
-// 				// TODO
-// 			}
-// 		}
-// 	}
-// }
+				if now.Sub(*agent.UpdatedAt) > timeoutDuration {
+					if err := q.DeleteTraefikConfigByAgent(ctx, &agent.ID); err != nil {
+						slog.Error(
+							"failed to delete agent config",
+							"id",
+							agent.ID,
+							"error",
+							err,
+						)
+						continue
+					}
+					if err := q.DeleteAgent(ctx, agent.ID); err != nil {
+						slog.Error(
+							"failed to delete disconnected agent",
+							"id",
+							agent.ID,
+							"error",
+							err,
+						)
+						continue
+					} else {
+						slog.Info("Deleted disconnected agent", "id", agent.ID)
+						util.Broadcast <- util.EventMessage{
+							Type:    util.EventTypeDelete,
+							Message: "agent",
+						}
+					}
+				}
+			}
+		}
+	}
+}

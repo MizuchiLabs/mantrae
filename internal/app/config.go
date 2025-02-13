@@ -69,6 +69,7 @@ type BackupConfig struct {
 type BackgroundJobs struct {
 	Traefik int64 `env:"BACKGROUND_JOBS_TRAEFIK" envDefault:"20"`
 	DNS     int64 `env:"BACKGROUND_JOBS_DNS"     envDefault:"300"`
+	Agent   int64 `env:"BACKGROUND_JOBS_AGENT"   envDefault:"180"`
 }
 
 func ReadConfig() (*Config, error) {

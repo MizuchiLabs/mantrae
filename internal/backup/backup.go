@@ -13,26 +13,13 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/storage"
 )
-
-// StorageBackend defines interface for different storage solutions
-type StorageBackend interface {
-	Store(ctx context.Context, name string, data io.Reader) error
-	Retrieve(ctx context.Context, name string) (io.ReadCloser, error)
-	List(ctx context.Context) ([]BackupFile, error)
-	Delete(ctx context.Context, name string) error
-}
-
-type BackupFile struct {
-	Name      string    `json:"name,omitempty"`
-	Timestamp time.Time `json:"timestamp,omitempty"`
-	Size      int64     `json:"size,omitempty"`
-}
 
 type BackupManager struct {
 	Conn      *db.Connection
 	Config    *app.BackupConfig
-	Backend   StorageBackend
+	Backend   storage.Backend
 	stopChan  chan struct{}
 	waitGroup sync.WaitGroup
 	mu        sync.Mutex
@@ -41,7 +28,7 @@ type BackupManager struct {
 func NewManager(
 	conn *db.Connection,
 	config app.BackupConfig,
-	backend StorageBackend,
+	backend storage.Backend,
 ) *BackupManager {
 	return &BackupManager{
 		Conn:     conn,

@@ -11,6 +11,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/backup"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/source"
+	"github.com/MizuchiLabs/mantrae/internal/storage"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/lmittmann/tint"
 	"golang.org/x/crypto/bcrypt"
@@ -41,8 +42,7 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	// Setup backup manager
-	storage, err := backup.NewLocalStorage(config.Backup.BackupPath)
+	storage, err := storage.NewLocalStorage(config.Backup.BackupPath)
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +189,13 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 			"password",
 			a.Config.Traefik.Password,
 		)
+		return nil
+	}
+
+	if profile.Url == a.Config.Traefik.URL &&
+		profile.Username == &a.Config.Traefik.Username &&
+		profile.Password == &a.Config.Traefik.Password &&
+		profile.Tls == a.Config.Traefik.TLS {
 		return nil
 	}
 

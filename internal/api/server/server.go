@@ -56,10 +56,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start server in a goroutine
 	go func() {
-		slog.Info("Server starting",
-			"host", host,
-			"port", port,
-		)
+		slog.Info("Server starting", "host", host, "port", port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
 		}
