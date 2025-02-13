@@ -75,6 +75,19 @@
 		}
 	};
 
+	async function handleBulkDelete(selectedRows: RouterWithService[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			if (!confirmed) return;
+
+			await Promise.all(selectedRows.map((row) => api.deleteRouter(row.router)));
+			toast.success(`Successfully deleted ${selectedRows.length} routers`);
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(`Failed to delete routers: ${e.message}`);
+		}
+	}
+
 	const defaultColumns: ColumnDef<RouterWithService>[] = [
 		{
 			header: 'Name',
@@ -311,6 +324,7 @@
 				label: 'Add Router',
 				onClick: openCreateModal
 			}}
+			onBulkDelete={handleBulkDelete}
 		/>
 	{:else}
 		<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />

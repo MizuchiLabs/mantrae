@@ -22,7 +22,7 @@ steps:
       - |
         if [ -n "$CI_COMMIT_TAG" ]; then
           TAGS="-t latest -t $CI_COMMIT_TAG"
-        elif [ "$CI_COMMIT_BRANCH" = "main" ]; then
+        elif [ "$CI_COMMIT_BRANCH" = "$CI_REPO_DEFAULT_BRANCH" ]; then
           TAGS="-t latest"
         else
           TAGS="-t nightly"

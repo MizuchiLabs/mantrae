@@ -50,6 +50,7 @@
 		showSourceTabs?: boolean;
 		onRowSelection?: (selectedRows: TData[]) => void;
 		getRowClassName?: (row: TData) => string;
+		onBulkDelete?: (selectedRows: TData[]) => Promise<void>;
 	};
 
 	let {
@@ -57,7 +58,8 @@
 		columns,
 		createButton,
 		showSourceTabs,
-		getRowClassName
+		getRowClassName,
+		onBulkDelete
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
@@ -328,7 +330,20 @@
 				{table.getFilteredSelectedRowModel().rows.length} of{' '}
 				{table.getFilteredRowModel().rows.length} item(s) selected.
 			</span>
-			<Button variant="destructive" size="sm">Delete Selected</Button>
+			{#if onBulkDelete}
+				<Button
+					variant="destructive"
+					size="sm"
+					onclick={() => {
+						const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
+						onBulkDelete(selectedRows).then(() => {
+							table.resetRowSelection();
+						});
+					}}
+				>
+					Delete Selected
+				</Button>
+			{/if}
 		</div>
 	{/if}
 

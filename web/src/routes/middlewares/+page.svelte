@@ -52,6 +52,21 @@
 		}
 	};
 
+	async function handleBulkDelete(selectedRows: Middleware[]) {
+		try {
+			const confirmed = confirm(
+				`Are you sure you want to delete ${selectedRows.length} middlewares?`
+			);
+			if (!confirmed) return;
+
+			await Promise.all(selectedRows.map((row) => api.deleteMiddleware(row)));
+			toast.success(`Successfully deleted ${selectedRows.length} middlewares`);
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(`Failed to delete middlewares: ${e.message}`);
+		}
+	}
+
 	const defaultColumns: ColumnDef<Middleware>[] = [
 		{
 			header: 'Name',
@@ -176,6 +191,7 @@
 				label: 'Add Middleware',
 				onClick: openCreateModal
 			}}
+			onBulkDelete={handleBulkDelete}
 		/>
 	{:else}
 		<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />
