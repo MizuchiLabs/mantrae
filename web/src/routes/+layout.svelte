@@ -3,6 +3,7 @@
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import AppHeader from '$lib/components/nav/AppHeader.svelte';
 	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
+	import AppCenter from '$lib/components/nav/AppCenter.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { source } from '$lib/stores/source';
@@ -10,13 +11,10 @@
 	import autoAnimate from '@formkit/auto-animate';
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import AppCenter from '$lib/components/nav/AppCenter.svelte';
-	// import CommandCenter from '$lib/components/utils/commandCenter.svelte';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
-
 	let { children }: Props = $props();
 
 	// Realtime updates

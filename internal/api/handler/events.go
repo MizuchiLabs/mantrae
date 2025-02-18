@@ -17,6 +17,7 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 	util.Clients[w] = true
 	util.ClientsMutex.Unlock()
 
+	clientDone := make(chan struct{})
 	defer func() {
 		// Unregister the client when the connection is closed
 		util.ClientsMutex.Lock()
@@ -24,5 +25,12 @@ func GetEvents(w http.ResponseWriter, r *http.Request) {
 		util.ClientsMutex.Unlock()
 	}()
 
-	<-r.Context().Done()
+	select {
+	case <-r.Context().Done():
+		return
+	case <-util.SSEDone:
+		return
+	case <-clientDone:
+		return
+	}
 }

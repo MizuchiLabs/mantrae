@@ -70,7 +70,6 @@ func (s *Server) Start(ctx context.Context) error {
 		defer cancel()
 
 		if err := server.Shutdown(shutdownCtx); err != nil {
-			slog.Error("Server shutdown error", "error", err)
 			return fmt.Errorf("server shutdown error: %w", err)
 		}
 		return nil
@@ -122,17 +121,6 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpchealth.NewHandler(checker))
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
-
-	// Serve OpenAPI specs file
-	// fsHandler := http.FileServer(http.Dir("proto/gen/openapi"))
-	// s.mux.Handle("/openapi/", http.StripPrefix("/openapi/", fsHandler))
-
-	// Serve Swagger UI
-	// s.mux.HandleFunc("/swagger/", func(w http.ResponseWriter, r *http.Request) {
-	// 	httpSwagger.Handler(
-	// 		httpSwagger.URL("/openapi/api.swagger.yaml"),
-	// 	).ServeHTTP(w, r)
-	// })
 
 	// Service implementations
 	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app), opts...))

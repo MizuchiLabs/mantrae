@@ -24,13 +24,15 @@ const (
 
 var (
 	Broadcast    = make(chan EventMessage, 100)
-	done         = make(chan struct{})
+	SSEDone      = make(chan struct{})
 	Clients      = make(map[http.ResponseWriter]bool)
 	ClientsMutex = &sync.Mutex{}
 )
 
 func StartEventProcessor(ctx context.Context) {
 	go func() {
+		defer close(SSEDone)
+
 		for {
 			select {
 			case msg := <-Broadcast:
@@ -38,9 +40,9 @@ func StartEventProcessor(ctx context.Context) {
 				for client := range Clients {
 					// Non-blocking send to each client
 					go func(w http.ResponseWriter, message EventMessage) {
-						if err := sendEventToClient(w, message); err != nil {
+						if err := SendEventToClient(w, message); err != nil {
 							slog.Error("Failed to send event", "error", err)
-							// Optionally remove failed clients
+							// Remove failed clients
 							ClientsMutex.Lock()
 							delete(Clients, w)
 							ClientsMutex.Unlock()
@@ -56,14 +58,13 @@ func StartEventProcessor(ctx context.Context) {
 						"message", msg.Message)
 				}
 			case <-ctx.Done():
-				close(done)
 				return
 			}
 		}
 	}()
 }
 
-func sendEventToClient(w http.ResponseWriter, msg EventMessage) error {
+func SendEventToClient(w http.ResponseWriter, msg EventMessage) error {
 	// Implementation of sending event to a single client
 	data, err := json.Marshal(msg)
 	if err != nil {
