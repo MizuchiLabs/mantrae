@@ -2,7 +2,14 @@ when:
   - branch: [main, nightly]
     event: [push, tag, deployment, manual]
     path:
-      exclude: ['*.md', 'docs/**', '.woodpecker/docs.yaml']
+      include:
+        - 'web/**'
+        - 'agent/**'
+        - 'internal/**'
+        - 'pkg/**'
+        - '*.go'
+        - 'go.mod'
+        - 'go.sum'
 
 steps:
   - name: frontend-build
