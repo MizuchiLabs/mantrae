@@ -6,7 +6,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
-	import { api, dnsProviders, entrypoints, routers, middlewares, traefik, rdps } from '$lib/api';
+	import { api, dnsProviders, entrypoints, routers, middlewares, rdps } from '$lib/api';
 	import { type Router } from '$lib/types/router';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -24,10 +24,11 @@
 	let { router = $bindable(), mode }: Props = $props();
 
 	// Computed properties
-	let routerDNS: RouterDNSProvider = $derived(
-		$rdps?.filter((item) => item.routerName === router.name)[0]
+	let routerDNS: RouterDNSProvider[] = $derived(
+		$rdps?.filter((item) => item.routerName === router.name)
 	);
-	let rdpName = $derived(routerDNS ? routerDNS.providerName : '');
+	let rdpNames = $derived(routerDNS ? routerDNS.map((item) => item.providerName) : []);
+	let rdpIDs = $derived(routerDNS ? routerDNS.map((item) => item.providerId) : []);
 	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
 	let isHttpType = $derived(router.protocol === 'http');
 	let certResolvers = $derived([
@@ -36,17 +37,10 @@
 		)
 	]);
 
-	// let routerDNSProvider = $derived(router.dnsProvider);
-	async function handleDNSProviderChange(providerId: string) {
+	async function handleDNSProviderChange(providerIDs: string[]) {
 		try {
-			if (providerId === '') {
-				await api.deleteRouterDNSProvider($traefik[0].id, router.name);
-				toast.success('DNS Provider deleted successfully');
-			} else {
-				if (providerId === undefined) return;
-				await api.setRouterDNSProvider($traefik[0].id, parseInt(providerId), router.name);
-				toast.success('DNS Provider updated successfully');
-			}
+			await api.setRouterDNSProvider(providerIDs, router.name);
+			toast.success('DNS Provider updated successfully');
 		} catch (err: unknown) {
 			const e = err as Error;
 			toast.error('Failed to save dnsProvider', {
@@ -79,7 +73,7 @@
 								onclick={() => (selectDNSOpen = true)}
 							>
 								<Globe size={16} />
-								<Badge>{rdpName ? rdpName : 'None'}</Badge>
+								<Badge>{rdpNames.length ? rdpNames.join(', ') : 'None'}</Badge>
 							</Button>
 						</div>
 					</Tooltip.Trigger>
@@ -90,13 +84,12 @@
 			</Tooltip.Provider>
 
 			<Select.Root
-				type="single"
-				value={rdpName}
+				type="multiple"
+				value={rdpIDs.map((item) => item.toString())}
 				onValueChange={handleDNSProviderChange}
 				bind:open={selectDNSOpen}
 			>
 				<Select.Content customAnchor={dnsAnchor} align="end">
-					<Select.Item value="" label="">None</Select.Item>
 					{#each $dnsProviders as dns}
 						<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
 							{dns.name} ({dns.type})

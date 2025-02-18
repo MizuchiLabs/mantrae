@@ -9,24 +9,85 @@ import (
 	"context"
 )
 
+const addRouterDNSProvider = `-- name: AddRouterDNSProvider :exec
+INSERT INTO
+  router_dns_provider (traefik_id, provider_id, router_name)
+VALUES
+  (?, ?, ?)
+`
+
+type AddRouterDNSProviderParams struct {
+	TraefikID  int64  `json:"traefikId"`
+	ProviderID int64  `json:"providerId"`
+	RouterName string `json:"routerName"`
+}
+
+func (q *Queries) AddRouterDNSProvider(ctx context.Context, arg AddRouterDNSProviderParams) error {
+	_, err := q.exec(ctx, q.addRouterDNSProviderStmt, addRouterDNSProvider, arg.TraefikID, arg.ProviderID, arg.RouterName)
+	return err
+}
+
 const deleteRouterDNSProvider = `-- name: DeleteRouterDNSProvider :exec
 DELETE FROM router_dns_provider
 WHERE
   traefik_id = ?
   AND router_name = ?
+  AND provider_id = ?
 `
 
 type DeleteRouterDNSProviderParams struct {
 	TraefikID  int64  `json:"traefikId"`
 	RouterName string `json:"routerName"`
+	ProviderID int64  `json:"providerId"`
 }
 
 func (q *Queries) DeleteRouterDNSProvider(ctx context.Context, arg DeleteRouterDNSProviderParams) error {
-	_, err := q.exec(ctx, q.deleteRouterDNSProviderStmt, deleteRouterDNSProvider, arg.TraefikID, arg.RouterName)
+	_, err := q.exec(ctx, q.deleteRouterDNSProviderStmt, deleteRouterDNSProvider, arg.TraefikID, arg.RouterName, arg.ProviderID)
 	return err
 }
 
-const getRouterDNSProvider = `-- name: GetRouterDNSProvider :one
+const getRouterDNSProviderByID = `-- name: GetRouterDNSProviderByID :one
+SELECT
+  rdp.traefik_id, rdp.provider_id, rdp.router_name,
+  dp.name as provider_name,
+  dp.type as provider_type
+FROM
+  router_dns_provider rdp
+  JOIN dns_providers dp ON dp.id = rdp.provider_id
+WHERE
+  rdp.traefik_id = ?
+  AND rdp.router_name = ?
+  AND rdp.provider_id = ?
+`
+
+type GetRouterDNSProviderByIDParams struct {
+	TraefikID  int64  `json:"traefikId"`
+	RouterName string `json:"routerName"`
+	ProviderID int64  `json:"providerId"`
+}
+
+type GetRouterDNSProviderByIDRow struct {
+	TraefikID    int64  `json:"traefikId"`
+	ProviderID   int64  `json:"providerId"`
+	RouterName   string `json:"routerName"`
+	ProviderName string `json:"providerName"`
+	ProviderType string `json:"providerType"`
+}
+
+func (q *Queries) GetRouterDNSProviderByID(ctx context.Context, arg GetRouterDNSProviderByIDParams) (GetRouterDNSProviderByIDRow, error) {
+	row := q.queryRow(ctx, q.getRouterDNSProviderByIDStmt, getRouterDNSProviderByID, arg.TraefikID, arg.RouterName, arg.ProviderID)
+	var i GetRouterDNSProviderByIDRow
+	err := row.Scan(
+		&i.TraefikID,
+		&i.ProviderID,
+		&i.RouterName,
+		&i.ProviderName,
+		&i.ProviderType,
+	)
+	return i, err
+}
+
+const getRouterDNSProviders = `-- name: GetRouterDNSProviders :many
 SELECT
   rdp.traefik_id, rdp.provider_id, rdp.router_name,
   dp.name as provider_name,
@@ -39,12 +100,12 @@ WHERE
   AND rdp.router_name = ?
 `
 
-type GetRouterDNSProviderParams struct {
+type GetRouterDNSProvidersParams struct {
 	TraefikID  int64  `json:"traefikId"`
 	RouterName string `json:"routerName"`
 }
 
-type GetRouterDNSProviderRow struct {
+type GetRouterDNSProvidersRow struct {
 	TraefikID    int64  `json:"traefikId"`
 	ProviderID   int64  `json:"providerId"`
 	RouterName   string `json:"routerName"`
@@ -52,17 +113,33 @@ type GetRouterDNSProviderRow struct {
 	ProviderType string `json:"providerType"`
 }
 
-func (q *Queries) GetRouterDNSProvider(ctx context.Context, arg GetRouterDNSProviderParams) (GetRouterDNSProviderRow, error) {
-	row := q.queryRow(ctx, q.getRouterDNSProviderStmt, getRouterDNSProvider, arg.TraefikID, arg.RouterName)
-	var i GetRouterDNSProviderRow
-	err := row.Scan(
-		&i.TraefikID,
-		&i.ProviderID,
-		&i.RouterName,
-		&i.ProviderName,
-		&i.ProviderType,
-	)
-	return i, err
+func (q *Queries) GetRouterDNSProviders(ctx context.Context, arg GetRouterDNSProvidersParams) ([]GetRouterDNSProvidersRow, error) {
+	rows, err := q.query(ctx, q.getRouterDNSProvidersStmt, getRouterDNSProviders, arg.TraefikID, arg.RouterName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRouterDNSProvidersRow
+	for rows.Next() {
+		var i GetRouterDNSProvidersRow
+		if err := rows.Scan(
+			&i.TraefikID,
+			&i.ProviderID,
+			&i.RouterName,
+			&i.ProviderName,
+			&i.ProviderType,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listRouterDNSProvidersByTraefikID = `-- name: ListRouterDNSProvidersByTraefikID :many
@@ -112,25 +189,4 @@ func (q *Queries) ListRouterDNSProvidersByTraefikID(ctx context.Context, traefik
 		return nil, err
 	}
 	return items, nil
-}
-
-const upsertRouterDNSProvider = `-- name: UpsertRouterDNSProvider :exec
-INSERT INTO
-  router_dns_provider (traefik_id, provider_id, router_name)
-VALUES
-  (?, ?, ?) ON CONFLICT (traefik_id, router_name) DO
-UPDATE
-SET
-  provider_id = EXCLUDED.provider_id
-`
-
-type UpsertRouterDNSProviderParams struct {
-	TraefikID  int64  `json:"traefikId"`
-	ProviderID int64  `json:"providerId"`
-	RouterName string `json:"routerName"`
-}
-
-func (q *Queries) UpsertRouterDNSProvider(ctx context.Context, arg UpsertRouterDNSProviderParams) error {
-	_, err := q.exec(ctx, q.upsertRouterDNSProviderStmt, upsertRouterDNSProvider, arg.TraefikID, arg.ProviderID, arg.RouterName)
-	return err
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 )
 
 func Squash() {
@@ -97,28 +96,8 @@ func Squash() {
 		baseFile += fmt.Sprintf("DROP TABLE IF EXISTS %s;\n", name)
 	}
 
-	// Archive old migrations
-	archiveDir := "internal/db/migrations/archived"
-	if err = os.MkdirAll(archiveDir, 0755); err != nil {
-		panic(err)
-	}
-
-	files, err := filepath.Glob("internal/db/migrations/*.sql")
-	if err != nil {
-		panic(err)
-	}
-
-	for _, file := range files {
-		// Move to archive
-		newPath := filepath.Join(archiveDir, filepath.Base(file))
-		if err = os.Rename(file, newPath); err != nil {
-			panic(err)
-		}
-	}
-
-	// Write new base migration
-	baseFilename := fmt.Sprintf("%05d_base.sql", currentVersion)
-	err = os.WriteFile("internal/db/migrations/"+baseFilename, []byte(baseFile), 0644)
+	// Write new reference
+	err = os.WriteFile("internal/db/00000_base.sql", []byte(baseFile), 0644)
 	if err != nil {
 		panic(err)
 	}

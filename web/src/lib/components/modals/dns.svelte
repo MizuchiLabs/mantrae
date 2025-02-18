@@ -51,6 +51,7 @@
 				description: e.message
 			});
 		}
+		dns = defaultDNS;
 	};
 </script>
 

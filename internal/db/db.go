@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.addRouterDNSProviderStmt, err = db.PrepareContext(ctx, addRouterDNSProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query AddRouterDNSProvider: %w", err)
+	}
 	if q.createAgentStmt, err = db.PrepareContext(ctx, createAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateAgent: %w", err)
 	}
@@ -84,8 +87,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getProfileByNameStmt, err = db.PrepareContext(ctx, getProfileByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfileByName: %w", err)
 	}
-	if q.getRouterDNSProviderStmt, err = db.PrepareContext(ctx, getRouterDNSProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query GetRouterDNSProvider: %w", err)
+	if q.getRouterDNSProviderByIDStmt, err = db.PrepareContext(ctx, getRouterDNSProviderByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterDNSProviderByID: %w", err)
+	}
+	if q.getRouterDNSProvidersStmt, err = db.PrepareContext(ctx, getRouterDNSProviders); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRouterDNSProviders: %w", err)
 	}
 	if q.getSettingStmt, err = db.PrepareContext(ctx, getSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query GetSetting: %w", err)
@@ -153,9 +159,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserResetTokenStmt, err = db.PrepareContext(ctx, updateUserResetToken); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserResetToken: %w", err)
 	}
-	if q.upsertRouterDNSProviderStmt, err = db.PrepareContext(ctx, upsertRouterDNSProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertRouterDNSProvider: %w", err)
-	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
 	}
@@ -170,6 +173,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.addRouterDNSProviderStmt != nil {
+		if cerr := q.addRouterDNSProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing addRouterDNSProviderStmt: %w", cerr)
+		}
+	}
 	if q.createAgentStmt != nil {
 		if cerr := q.createAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createAgentStmt: %w", cerr)
@@ -270,9 +278,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getProfileByNameStmt: %w", cerr)
 		}
 	}
-	if q.getRouterDNSProviderStmt != nil {
-		if cerr := q.getRouterDNSProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getRouterDNSProviderStmt: %w", cerr)
+	if q.getRouterDNSProviderByIDStmt != nil {
+		if cerr := q.getRouterDNSProviderByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterDNSProviderByIDStmt: %w", cerr)
+		}
+	}
+	if q.getRouterDNSProvidersStmt != nil {
+		if cerr := q.getRouterDNSProvidersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRouterDNSProvidersStmt: %w", cerr)
 		}
 	}
 	if q.getSettingStmt != nil {
@@ -385,11 +398,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserResetTokenStmt: %w", cerr)
 		}
 	}
-	if q.upsertRouterDNSProviderStmt != nil {
-		if cerr := q.upsertRouterDNSProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertRouterDNSProviderStmt: %w", cerr)
-		}
-	}
 	if q.upsertSettingStmt != nil {
 		if cerr := q.upsertSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertSettingStmt: %w", cerr)
@@ -444,6 +452,7 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                                    DBTX
 	tx                                    *sql.Tx
+	addRouterDNSProviderStmt              *sql.Stmt
 	createAgentStmt                       *sql.Stmt
 	createDNSProviderStmt                 *sql.Stmt
 	createProfileStmt                     *sql.Stmt
@@ -464,7 +473,8 @@ type Queries struct {
 	getLocalTraefikConfigStmt             *sql.Stmt
 	getProfileStmt                        *sql.Stmt
 	getProfileByNameStmt                  *sql.Stmt
-	getRouterDNSProviderStmt              *sql.Stmt
+	getRouterDNSProviderByIDStmt          *sql.Stmt
+	getRouterDNSProvidersStmt             *sql.Stmt
 	getSettingStmt                        *sql.Stmt
 	getTraefikConfigByIDStmt              *sql.Stmt
 	getTraefikConfigBySourceStmt          *sql.Stmt
@@ -487,7 +497,6 @@ type Queries struct {
 	updateUserLastLoginStmt               *sql.Stmt
 	updateUserPasswordStmt                *sql.Stmt
 	updateUserResetTokenStmt              *sql.Stmt
-	upsertRouterDNSProviderStmt           *sql.Stmt
 	upsertSettingStmt                     *sql.Stmt
 	upsertTraefikAgentConfigStmt          *sql.Stmt
 	upsertTraefikConfigStmt               *sql.Stmt
@@ -497,6 +506,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                                    tx,
 		tx:                                    tx,
+		addRouterDNSProviderStmt:              q.addRouterDNSProviderStmt,
 		createAgentStmt:                       q.createAgentStmt,
 		createDNSProviderStmt:                 q.createDNSProviderStmt,
 		createProfileStmt:                     q.createProfileStmt,
@@ -517,7 +527,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getLocalTraefikConfigStmt:             q.getLocalTraefikConfigStmt,
 		getProfileStmt:                        q.getProfileStmt,
 		getProfileByNameStmt:                  q.getProfileByNameStmt,
-		getRouterDNSProviderStmt:              q.getRouterDNSProviderStmt,
+		getRouterDNSProviderByIDStmt:          q.getRouterDNSProviderByIDStmt,
+		getRouterDNSProvidersStmt:             q.getRouterDNSProvidersStmt,
 		getSettingStmt:                        q.getSettingStmt,
 		getTraefikConfigByIDStmt:              q.getTraefikConfigByIDStmt,
 		getTraefikConfigBySourceStmt:          q.getTraefikConfigBySourceStmt,
@@ -540,7 +551,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateUserLastLoginStmt:               q.updateUserLastLoginStmt,
 		updateUserPasswordStmt:                q.updateUserPasswordStmt,
 		updateUserResetTokenStmt:              q.updateUserResetTokenStmt,
-		upsertRouterDNSProviderStmt:           q.upsertRouterDNSProviderStmt,
 		upsertSettingStmt:                     q.upsertSettingStmt,
 		upsertTraefikAgentConfigStmt:          q.upsertTraefikAgentConfigStmt,
 		upsertTraefikConfigStmt:               q.upsertTraefikConfigStmt,

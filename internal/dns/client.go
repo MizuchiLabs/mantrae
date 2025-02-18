@@ -109,29 +109,18 @@ func UpdateDNS(DB *sql.DB) (err error) {
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(DB *sql.DB, traefikID int64, routerName string) error {
+func DeleteDNS(DB *sql.DB, params db.DeleteRouterDNSProviderParams) error {
 	q := db.New(DB)
 
-	// Get DNS provider mapping before deletion
-	params := db.GetRouterDNSProviderParams{
-		TraefikID:  traefikID,
-		RouterName: routerName,
-	}
-
-	rdp, err := q.GetRouterDNSProvider(context.Background(), params)
-	if err != nil {
-		return fmt.Errorf("failed to get router DNS provider: %w", err)
-	}
-
 	// Get traefik config to extract domains
-	config, err := q.GetTraefikConfigByID(context.Background(), traefikID)
+	config, err := q.GetTraefikConfigByID(context.Background(), params.TraefikID)
 	if err != nil {
 		return fmt.Errorf("failed to get traefik config: %w", err)
 	}
 
-	router := config.Config.Routers[routerName]
+	router := config.Config.Routers[params.RouterName]
 	if router == nil {
-		return fmt.Errorf("router not found: %s", routerName)
+		return fmt.Errorf("router not found: %s", params.RouterName)
 	}
 
 	// Get domains from router rule
@@ -141,15 +130,21 @@ func DeleteDNS(DB *sql.DB, traefikID int64, routerName string) error {
 	}
 
 	// Get DNS provider and delete records
+	rdp, err := q.GetRouterDNSProviderByID(
+		context.Background(),
+		db.GetRouterDNSProviderByIDParams(params),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to get router DNS providers: %w", err)
+	}
+
 	provider, err := getProvider(rdp.ProviderID, q)
 	if err != nil {
 		return fmt.Errorf("failed to get DNS provider: %w", err)
 	}
-
 	if provider == nil {
 		return nil
 	}
-
 	for _, domain := range domains {
 		if err := provider.DeleteRecord(domain); err != nil {
 			slog.Error("Failed to delete DNS record",

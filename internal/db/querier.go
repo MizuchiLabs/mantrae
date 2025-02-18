@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	AddRouterDNSProvider(ctx context.Context, arg AddRouterDNSProviderParams) error
 	CreateAgent(ctx context.Context, arg CreateAgentParams) error
 	CreateDNSProvider(ctx context.Context, arg CreateDNSProviderParams) error
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (int64, error)
@@ -29,7 +30,8 @@ type Querier interface {
 	GetLocalTraefikConfig(ctx context.Context, profileID int64) (Traefik, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
-	GetRouterDNSProvider(ctx context.Context, arg GetRouterDNSProviderParams) (GetRouterDNSProviderRow, error)
+	GetRouterDNSProviderByID(ctx context.Context, arg GetRouterDNSProviderByIDParams) (GetRouterDNSProviderByIDRow, error)
+	GetRouterDNSProviders(ctx context.Context, arg GetRouterDNSProvidersParams) ([]GetRouterDNSProvidersRow, error)
 	GetSetting(ctx context.Context, key string) (Setting, error)
 	GetTraefikConfigByID(ctx context.Context, id int64) (Traefik, error)
 	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) ([]Traefik, error)
@@ -52,7 +54,6 @@ type Querier interface {
 	UpdateUserLastLogin(ctx context.Context, id int64) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserResetToken(ctx context.Context, arg UpdateUserResetTokenParams) error
-	UpsertRouterDNSProvider(ctx context.Context, arg UpsertRouterDNSProviderParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
 	UpsertTraefikAgentConfig(ctx context.Context, arg UpsertTraefikAgentConfigParams) error
 	UpsertTraefikConfig(ctx context.Context, arg UpsertTraefikConfigParams) error

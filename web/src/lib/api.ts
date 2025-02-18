@@ -405,18 +405,21 @@ export const api = {
 		}
 	},
 
-	async setRouterDNSProvider(traefikId: number, providerId: number, routerName: string) {
-		await send(`/dns/router`, {
+	async setRouterDNSProvider(providerIds: string[], routerName: string) {
+		const configs = get(traefik);
+		if (!configs?.length) return;
+
+		await send(`/dns/router/${configs[0].id}/${routerName}`, {
 			method: 'POST',
-			body: { traefikId, providerId, routerName }
+			body: { providerIds }
 		});
 		await api.listRouterDNSProviders();
 	},
 
-	async deleteRouterDNSProvider(traefikId: number, routerName: string) {
+	async deleteRouterDNSProvider(traefikId: number, providerId: number, routerName: string) {
 		await send(`/dns/router`, {
 			method: 'DELETE',
-			body: { traefikId, routerName }
+			body: { traefikId, providerId, routerName }
 		});
 		await api.listRouterDNSProviders();
 	},

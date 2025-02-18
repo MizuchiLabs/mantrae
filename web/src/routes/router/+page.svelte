@@ -201,11 +201,13 @@
 						variant: 'secondary'
 					});
 				}
-				const dns = $rdps.find((item) => item.routerName === name);
+				const dns = $rdps?.filter((item) => item.routerName === name);
+				let rdpNames = dns ? dns.map((item) => item.providerName) : [];
+
 				return renderComponent(ColumnBadge, {
-					label: dns ? [dns.providerName] : ['None'],
+					label: rdpNames.length ? [...new Set(rdpNames)] : ['None'],
 					variant: 'secondary',
-					class: dns ? 'bg-blue-300 dark:bg-blue-700' : undefined
+					class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined
 				});
 			}
 		},

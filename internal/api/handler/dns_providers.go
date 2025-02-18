@@ -52,12 +52,12 @@ func GetDNSProvider(a *config.App) http.HandlerFunc {
 func CreateDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var dns_provider db.CreateDNSProviderParams
-		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
+		var params db.CreateDNSProviderParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := q.CreateDNSProvider(r.Context(), dns_provider); err != nil {
+		if err := q.CreateDNSProvider(r.Context(), params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -73,12 +73,12 @@ func CreateDNSProvider(a *config.App) http.HandlerFunc {
 func UpdateDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var dns_provider db.UpdateDNSProviderParams
-		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
+		var params db.UpdateDNSProviderParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if err := q.UpdateDNSProvider(r.Context(), dns_provider); err != nil {
+		if err := q.UpdateDNSProvider(r.Context(), params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -135,36 +135,92 @@ func ListRouterDNSProviders(a *config.App) http.HandlerFunc {
 func SetRouterDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var dns_provider db.UpsertRouterDNSProviderParams
-		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		var params struct {
+			ProviderIDs []string `json:"providerIds"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		// Check if router exists
-		config, err := q.GetTraefikConfigByID(r.Context(), dns_provider.TraefikID)
+		traefikID, err := strconv.ParseInt(r.PathValue("traefik"), 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		router := config.Config.Routers[dns_provider.RouterName]
-		if router == nil {
-			http.Error(w, "Router not found", http.StatusBadRequest)
-			return
-		}
+		routerName := r.PathValue("router")
 
-		if err := q.UpsertRouterDNSProvider(r.Context(), dns_provider); err != nil {
+		// Fetch current providers for this router
+		currentProviders, err := q.GetRouterDNSProviders(
+			r.Context(),
+			db.GetRouterDNSProvidersParams{
+				TraefikID:  traefikID,
+				RouterName: routerName,
+			},
+		)
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Update DNS
-		go func() {
-			err := dns.UpdateDNS(a.Conn.Get())
+		currentProviderSet := make(map[int64]bool)
+		for _, p := range currentProviders {
+			currentProviderSet[p.ProviderID] = true
+		}
+
+		// Create sets for incoming and existing providers
+		newProviderSet := make(map[int64]bool)
+		for _, id := range params.ProviderIDs {
+			id, err := strconv.ParseInt(id, 10, 64)
 			if err != nil {
-				slog.Error("Failed to delete DNS record", "error", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			newProviderSet[id] = true
+		}
+
+		// Insert missing providers
+		for _, id := range params.ProviderIDs {
+			id, err := strconv.ParseInt(id, 10, 64)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if !currentProviderSet[id] {
+				if err := q.AddRouterDNSProvider(r.Context(), db.AddRouterDNSProviderParams{
+					TraefikID:  traefikID,
+					RouterName: routerName,
+					ProviderID: id,
+				}); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		// Delete providers that were removed
+		for _, current := range currentProviders {
+			if !newProviderSet[current.ProviderID] {
+				err := q.DeleteRouterDNSProvider(r.Context(), db.DeleteRouterDNSProviderParams{
+					TraefikID:  traefikID,
+					RouterName: routerName,
+					ProviderID: current.ProviderID,
+				})
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		// Update DNS asynchronously
+		go func() {
+			if err := dns.UpdateDNS(a.Conn.Get()); err != nil {
+				slog.Error("Failed to update DNS", "error", err)
 			}
 		}()
+
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -172,12 +228,12 @@ func SetRouterDNSProvider(a *config.App) http.HandlerFunc {
 func GetRouterDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var dns_provider db.GetRouterDNSProviderParams
-		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
+		var params db.GetRouterDNSProvidersParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		providers, err := q.GetRouterDNSProvider(r.Context(), dns_provider)
+		providers, err := q.GetRouterDNSProviders(r.Context(), params)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -193,18 +249,18 @@ func GetRouterDNSProvider(a *config.App) http.HandlerFunc {
 func DeleteRouterDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var dns_provider db.DeleteRouterDNSProviderParams
-		if err := json.NewDecoder(r.Body).Decode(&dns_provider); err != nil {
+		var params db.DeleteRouterDNSProviderParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		go func() {
-			err := dns.DeleteDNS(a.Conn.Get(), dns_provider.TraefikID, dns_provider.RouterName)
+			err := dns.DeleteDNS(a.Conn.Get(), params)
 			if err != nil {
 				slog.Error("Failed to delete DNS record", "error", err)
 			}
 		}()
-		if err := q.DeleteRouterDNSProvider(r.Context(), dns_provider); err != nil {
+		if err := q.DeleteRouterDNSProvider(r.Context(), params); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
