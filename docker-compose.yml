@@ -22,8 +22,11 @@ services:
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
     environment:
       - TOKEN=<token> # token from mantrae server
+    # adjust network which you want to monitor
     restart: unless-stopped
 
   traefik:
