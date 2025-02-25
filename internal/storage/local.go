@@ -21,7 +21,7 @@ func NewLocalStorage(path string) (*LocalStorage, error) {
 	if err := os.MkdirAll(resolvedPath, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage directory: %w", err)
 	}
-	return &LocalStorage{basePath: path}, nil
+	return &LocalStorage{basePath: resolvedPath}, nil
 }
 
 func (ls *LocalStorage) Store(ctx context.Context, name string, data io.Reader) error {
