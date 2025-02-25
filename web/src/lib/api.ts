@@ -5,6 +5,7 @@ import {
 	type DNSProvider,
 	type Plugin,
 	type Profile,
+	type PublicIP,
 	type RouterDNSProvider,
 	type Settings,
 	type Stats,
@@ -131,10 +132,10 @@ export const api = {
 		});
 		if (data.token) {
 			token.value = data.token;
+			user.value = data.user;
+			await api.load();
 			goto('/');
 		}
-
-		await api.load();
 	},
 
 	async verify(fetch: typeof window.fetch = window.fetch) {
@@ -147,9 +148,8 @@ export const api = {
 				},
 				fetch
 			);
-
-			if (data) {
-				user.value = data;
+			if (data.user) {
+				user.value = data.user;
 			}
 		} catch (err: unknown) {
 			const error = err instanceof Error ? err.message : String(err);
@@ -171,9 +171,10 @@ export const api = {
 
 		if (data.token) {
 			token.value = data.token;
+			user.value = data.user;
+			await api.load();
 			goto('/');
 		}
-		await api.load();
 	},
 
 	async load() {
@@ -259,10 +260,7 @@ export const api = {
 	},
 
 	async getTraefikConfigLocal() {
-		if (!profile.isValid()) {
-			toast.error('No valid profile selected');
-			return;
-		}
+		if (!profile.isValid()) return;
 		// Get the local config without mutating the stores
 		const res = await send(`/traefik/${profile.id}/${TraefikSource.LOCAL}`);
 		if (!res) {
@@ -606,6 +604,10 @@ export const api = {
 	async getMiddlewarePlugins() {
 		const data = await send('/middleware/plugins');
 		plugins.set(data);
+	},
+
+	async getIP(): Promise<PublicIP> {
+		return await send('/ip');
 	},
 
 	async getVersion() {

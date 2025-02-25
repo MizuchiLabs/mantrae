@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/joeig/go-powerdns/v3"
 )
 
@@ -25,9 +25,13 @@ func NewPowerDNSProvider(d *db.DNSProviderConfig) *PowerDNSProvider {
 }
 
 func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
-	recordType, err := pdnsRecordType(p.ExternalIP)
-	if err != nil {
-		return err
+	var recordType powerdns.RRType
+	if util.IsValidIPv4(p.ExternalIP) {
+		recordType = powerdns.RRTypeA
+	} else if util.IsValidIPv6(p.ExternalIP) {
+		recordType = powerdns.RRTypeAAAA
+	} else {
+		return fmt.Errorf("invalid IP address: %s", p.ExternalIP)
 	}
 
 	// Check if the record is managed by us
@@ -127,7 +131,7 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 		return err
 	}
 
-	if err := p.checkRecord(subdomain); err != nil {
+	if err = p.checkRecord(subdomain); err != nil {
 		return err
 	}
 
@@ -234,15 +238,4 @@ func (p *PowerDNSProvider) checkRecord(subdomain string) error {
 	}
 
 	return fmt.Errorf("record not managed by Mantrae")
-}
-
-func pdnsRecordType(ip string) (powerdns.RRType, error) {
-	if net.ParseIP(ip) == nil {
-		return "", fmt.Errorf("invalid IP address")
-	}
-
-	if net.ParseIP(ip).To4() != nil {
-		return powerdns.RRTypeA, nil
-	}
-	return powerdns.RRTypeAAAA, nil
 }

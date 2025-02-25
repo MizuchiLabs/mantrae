@@ -43,6 +43,17 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 	if provider.Config.APIKey == "" {
 		return nil, fmt.Errorf("invalid provider config")
 	}
+	if provider.Config.AutoUpdate {
+		machineIPs, err := util.GetPublicIPsCached()
+		if err != nil {
+			return nil, err
+		}
+		if machineIPs.IPv4 != "" {
+			provider.Config.TraefikIP = machineIPs.IPv4
+		} else if machineIPs.IPv6 != "" {
+			provider.Config.TraefikIP = machineIPs.IPv6
+		}
+	}
 
 	var dnsProvider DNSProvider
 	switch provider.Type {

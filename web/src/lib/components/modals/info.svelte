@@ -25,6 +25,7 @@
 	};
 
 	onMount(async () => {
+		await api.load();
 		await api.getDynamicConfig();
 	});
 </script>

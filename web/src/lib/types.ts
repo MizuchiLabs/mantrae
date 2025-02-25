@@ -48,6 +48,7 @@ export interface DNSProviderConfig {
 	apiUrl: string;
 	traefikIp: string;
 	proxied: boolean;
+	autoUpdate: boolean;
 	zoneType: string;
 }
 
@@ -153,4 +154,9 @@ export interface Stats {
 	agents: number;
 	dnsProviders: number;
 	activeDNS: string;
+}
+
+export interface PublicIP {
+	ipv4: string;
+	ipv6: string;
 }

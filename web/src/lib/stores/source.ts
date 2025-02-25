@@ -2,7 +2,7 @@ import { createLocalStorage } from '$lib/storage.svelte';
 import { TraefikSource } from '$lib/types';
 
 class TraefikSourceStore {
-	private store = createLocalStorage<TraefikSource>('traefik_source', TraefikSource.API);
+	private store = createLocalStorage<TraefikSource>('selected_source', TraefikSource.API);
 
 	get value(): TraefikSource {
 		return this.store.value ?? TraefikSource.API;

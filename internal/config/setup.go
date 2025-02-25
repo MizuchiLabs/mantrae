@@ -107,10 +107,10 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 
 	// Try to get existing admin user
 	q := a.Conn.GetQuery()
-	user, err := q.GetUserByUsername(ctx, a.Config.Admin.Username)
+	user, err := q.GetUser(ctx, 1)
 	// If user doesn't exist, create new admin
 	if err != nil {
-		if err := q.CreateUser(ctx, db.CreateUserParams{
+		if err = q.CreateUser(ctx, db.CreateUserParams{
 			Username: a.Config.Admin.Username,
 			Email:    &a.Config.Admin.Email,
 			Password: hash,
@@ -124,27 +124,38 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 		return nil
 	}
 
-	// Skip if password is correct
-	passwordErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if passwordErr == nil {
-		return nil
-	}
-
-	// Update existing admin if credentials changed or password provided
-	if user.Username != a.Config.Admin.Username ||
-		a.Config.Admin.Password != "" {
-
-		if err := q.UpdateUser(ctx, db.UpdateUserParams{
+	// Update admin info on change
+	if user.Username != a.Config.Admin.Username || *user.Email != a.Config.Admin.Email {
+		if err = q.UpdateUser(ctx, db.UpdateUserParams{
 			ID:       user.ID,
 			Username: a.Config.Admin.Username,
 			Email:    &a.Config.Admin.Email,
-			Password: hash,
 			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to update default admin user: %w", err)
 		}
 		slog.Info("Updated admin user", "username", a.Config.Admin.Username)
 	}
+
+	userPassword, err := q.GetUserPassword(ctx, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to get user password: %w", err)
+	}
+	// Skip if password is correct
+	passwordErr := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(password))
+	if passwordErr == nil {
+		return nil
+	} else {
+		// Update password on change
+		if err = q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+			ID:       user.ID,
+			Password: hash,
+		}); err != nil {
+			return fmt.Errorf("failed to update default admin user password: %w", err)
+		}
+		slog.Info("Updated password of", "user", user.Username)
+	}
+
 	return nil
 }
 
@@ -193,8 +204,8 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 	}
 
 	if profile.Url == a.Config.Traefik.URL &&
-		profile.Username == &a.Config.Traefik.Username &&
-		profile.Password == &a.Config.Traefik.Password &&
+		*profile.Username == a.Config.Traefik.Username &&
+		*profile.Password == a.Config.Traefik.Password &&
 		profile.Tls == a.Config.Traefik.TLS {
 		return nil
 	}

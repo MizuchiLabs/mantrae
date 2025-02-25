@@ -1,111 +1,152 @@
 package util
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"io"
-	"log/slog"
 	"net"
 	"net/http"
 	"strings"
 	"time"
-
-	"golang.org/x/exp/slices"
 )
 
-// Public IP APIs
-var ipAPIs = []string{
-	"https://api.ipify.org?format=text",
-	"https://ifconfig.co/ip",
-	"https://checkip.amazonaws.com",
-	"https://ipinfo.io/ip",
+// IPAddresses holds both IPv4 and IPv6 addresses
+type IPAddresses struct {
+	IPv4 string `json:"ipv4,omitempty"`
+	IPv6 string `json:"ipv6,omitempty"`
 }
 
-func getIP(url string) (string, error) {
-	client := &http.Client{
-		Timeout: 3 * time.Second,
+var (
+	cachedIPs     IPAddresses
+	cacheExpiry   time.Time
+	cacheDuration = 5 * time.Minute
+)
+
+func GetPublicIPsCached() (IPAddresses, error) {
+	if time.Now().Before(cacheExpiry) {
+		return cachedIPs, nil
 	}
 
-	resp, err := client.Get(url)
+	ips, err := GetPublicIPs()
 	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return "", errors.New("non-200 response from API")
+		return IPAddresses{}, err
 	}
 
-	ip, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+	// Update cache
+	cachedIPs = ips
+	cacheExpiry = time.Now().Add(cacheDuration)
 
-	return string(ip), nil
+	return ips, nil
 }
 
-func isValidPublicIP(ip string) bool {
-	if ip == "" {
-		return false
+func GetPublicIPs() (IPAddresses, error) {
+	ipv4Services := []string{
+		"https://api.ipify.org",
+		"https://api.ip.sb/ip",
+		"https://ipinfo.io/ip",
+		"https://ifconfig.me/ip",
+		"https://ifconfig.co/ip",
+		"https://ipecho.net/plain",
+		"https://checkip.amazonaws.com",
 	}
 
+	ipv6Services := []string{
+		"https://api6.ipify.org",
+		"https://v6.ident.me",
+		"https://api-ipv6.ip.sb/ip",
+	}
+
+	// Create channels for concurrent IP fetching
+	ipv4Ch := make(chan string, 1)
+	ipv6Ch := make(chan string, 1)
+	errorCh := make(chan error, 2)
+
+	// Fetch IPv4 and IPv6 addresses concurrently
+	go func() {
+		ip, err := getIP(ipv4Services, IsValidIPv4)
+		if err != nil {
+			errorCh <- fmt.Errorf("IPv4: %v", err)
+			ipv4Ch <- ""
+			return
+		}
+		ipv4Ch <- ip
+	}()
+
+	go func() {
+		ip, err := getIP(ipv6Services, IsValidIPv6)
+		if err != nil {
+			errorCh <- fmt.Errorf("IPv6: %v", err)
+			ipv6Ch <- ""
+			return
+		}
+		ipv6Ch <- ip
+	}()
+
+	// Wait for results
+	ipv4 := <-ipv4Ch
+	ipv6 := <-ipv6Ch
+
+	// Check if we got at least one address
+	if ipv4 == "" && ipv6 == "" {
+		return IPAddresses{}, fmt.Errorf("failed to get any IP address")
+	}
+
+	return IPAddresses{
+		IPv4: ipv4,
+		IPv6: ipv6,
+	}, nil
+}
+
+func getIP(services []string, validationFunc func(string) bool) (string, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	for _, service := range services {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", service, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set(
+			"User-Agent",
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+		)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			continue
+		}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			continue
+		}
+		ip := strings.TrimSpace(string(body))
+		if validationFunc(ip) {
+			return ip, nil
+		}
+	}
+
+	return "", fmt.Errorf("failed to get IP from any service")
+}
+
+func IsValidIPv4(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
 		return false
 	}
+	return parsedIP.To4() != nil
+}
 
-	// Check if it's a private or loopback IP
-	if parsedIP.IsLoopback() || parsedIP.IsPrivate() {
+func IsValidIPv6(ip string) bool {
+	parsedIP := net.ParseIP(ip)
+	if parsedIP == nil {
 		return false
 	}
-
-	return true
-}
-
-func GetPublicIP() (string, error) {
-	for _, api := range ipAPIs {
-		ip, err := getIP(api)
-		if err == nil && isValidPublicIP(ip) {
-			return ip, nil
-		}
-		slog.Warn("Failed to query API", "API", api, "Error", err)
-	}
-	return "", fmt.Errorf("failed to get public IP")
-}
-
-func GetPrivateIP() ([]string, error) {
-	var ips []string
-
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-
-	excluded := []string{"lo", "docker", "br-", "veth", "kube", "cni"}
-	for _, iface := range interfaces {
-		if slices.ContainsFunc(excluded, func(s string) bool {
-			return strings.Contains(iface.Name, s)
-		}) || iface.Flags&net.FlagUp == 0 {
-			continue
-		} else {
-			addrs, err := iface.Addrs()
-			if err != nil {
-				return nil, err
-			}
-
-			for _, addr := range addrs {
-				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-					if ipnet.IP.To4() != nil {
-						ips = append(ips, ipnet.IP.String())
-					}
-				}
-			}
-		}
-	}
-
-	if len(ips) == 0 {
-		return nil, errors.New("no private IP addresses found")
-	}
-
-	return ips, nil
+	return parsedIP.To4() == nil && parsedIP.To16() != nil
 }

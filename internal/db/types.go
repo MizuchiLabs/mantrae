@@ -85,11 +85,12 @@ type TraefikConfiguration struct {
 }
 
 type DNSProviderConfig struct {
-	APIKey    string `json:"apiKey"`
-	APIUrl    string `json:"apiUrl"`
-	TraefikIP string `json:"traefikIp"`
-	Proxied   bool   `json:"proxied"`
-	ZoneType  string `json:"zoneType"`
+	APIKey     string `json:"apiKey"`
+	APIUrl     string `json:"apiUrl"`
+	TraefikIP  string `json:"traefikIp"`
+	Proxied    bool   `json:"proxied"`
+	AutoUpdate bool   `json:"autoUpdate"`
+	ZoneType   string `json:"zoneType"`
 }
 
 type AgentPrivateIPs struct {
@@ -109,7 +110,7 @@ type AgentContainer struct {
 type AgentContainers []AgentContainer
 
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
-func (e *TraefikEntryPoints) Scan(value interface{}) error {
+func (e *TraefikEntryPoints) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected bytes, got %T", value)
@@ -122,7 +123,7 @@ func (e TraefikEntryPoints) Value() (driver.Value, error) {
 }
 
 // Handles the JSON marshalling and unmarshalling of the TraefikOverview type
-func (o *TraefikOverview) Scan(value interface{}) error {
+func (o *TraefikOverview) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected bytes, got %T", value)
@@ -135,7 +136,7 @@ func (o TraefikOverview) Value() (driver.Value, error) {
 }
 
 // Handles the JSON marshalling and unmarshalling of the ConfigurationWrapper type
-func (c *TraefikConfiguration) Scan(value interface{}) error {
+func (c *TraefikConfiguration) Scan(value any) error {
 	if value == nil {
 		c = nil
 		return nil
@@ -161,7 +162,7 @@ func (c TraefikConfiguration) Value() (driver.Value, error) {
 	return json.Marshal(c)
 }
 
-func (c *DNSProviderConfig) Scan(value interface{}) error {
+func (c *DNSProviderConfig) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected bytes, got %T", value)
@@ -173,7 +174,7 @@ func (c DNSProviderConfig) Value() (driver.Value, error) {
 	return json.Marshal(c)
 }
 
-func (c *AgentPrivateIPs) Scan(value interface{}) error {
+func (c *AgentPrivateIPs) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected bytes, got %T", value)
@@ -185,7 +186,7 @@ func (c AgentPrivateIPs) Value() (driver.Value, error) {
 	return json.Marshal(c)
 }
 
-func (c *AgentContainers) Scan(value interface{}) error {
+func (c *AgentContainers) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("expected bytes, got %T", value)

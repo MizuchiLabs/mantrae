@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"net/url"
 	"slices"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 type TechnitiumProvider struct {
@@ -38,7 +38,7 @@ func NewTechnitiumProvider(d *db.DNSProviderConfig) *TechnitiumProvider {
 func (t *TechnitiumProvider) doRequest(
 	ctx context.Context,
 	method, endpoint string,
-	body interface{},
+	body any,
 ) (*http.Response, error) {
 	url := t.BaseURL + endpoint
 
@@ -64,9 +64,13 @@ func (t *TechnitiumProvider) doRequest(
 }
 
 func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
-	recordType := "A"
-	if net.ParseIP(t.ExternalIP).To4() == nil {
+	var recordType string
+	if util.IsValidIPv4(t.ExternalIP) {
+		recordType = "A"
+	} else if util.IsValidIPv6(t.ExternalIP) {
 		recordType = "AAAA"
+	} else {
+		return fmt.Errorf("invalid IP address: %s", t.ExternalIP)
 	}
 
 	// Check if the record exists
@@ -105,7 +109,7 @@ func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
 		return err
 	}
 
-	if err := t.checkRecord(subdomain); err != nil {
+	if err = t.checkRecord(subdomain); err != nil {
 		return err
 	}
 

@@ -19,23 +19,28 @@ import (
 func Login(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
-		var user db.User
-		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		var request db.User
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			http.Error(w, "Failed to decode credentials", http.StatusBadRequest)
 			return
 		}
 
-		if user.Username == "" || user.Password == "" {
+		if request.Username == "" || request.Password == "" {
 			http.Error(w, "Username or password cannot be empty", http.StatusBadRequest)
 			return
 		}
 
-		dbUser, err := q.GetUserByUsername(r.Context(), user.Username)
+		user, err := q.GetUserByUsername(r.Context(), request.Username)
 		if err != nil {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
-		if err = bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+		userPassword, err := q.GetUserPassword(r.Context(), user.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err = bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(request.Password)); err != nil {
 			http.Error(w, "Invalid username or password "+err.Error(), http.StatusUnauthorized)
 			return
 		}
@@ -45,19 +50,23 @@ func Login(a *config.App) http.HandlerFunc {
 			expirationTime = time.Now().Add(7 * 24 * time.Hour)
 		}
 
-		token, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
+		token, err := util.EncodeUserJWT(request.Username, a.Config.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if err := q.UpdateUserLastLogin(r.Context(), dbUser.ID); err != nil {
+		if err := q.UpdateUserLastLogin(r.Context(), user.ID); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		response := map[string]any{
+			"token": token,
+			"user":  user,
+		}
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(map[string]string{"token": token}); err != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -95,8 +104,9 @@ func VerifyJWT(a *config.App) http.HandlerFunc {
 			return
 		}
 
+		response := map[string]any{"user": user}
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(user); err != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -150,8 +160,12 @@ func VerifyOTP(a *config.App) http.HandlerFunc {
 			return
 		}
 
+		response := map[string]any{
+			"token": token,
+			"user":  user,
+		}
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(map[string]string{"token": token}); err != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -214,7 +228,7 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 				config.From = setting.Value
 			}
 		}
-		data := map[string]interface{}{
+		data := map[string]any{
 			"Token": token,
 			"Date":  expiresAt.Format(time.RFC3339),
 		}

@@ -12,17 +12,17 @@
 	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
-		user: User | undefined;
+		user: User;
 		open?: boolean;
 	}
 
-	let { user = $bindable({} as User), open = $bindable(false) }: Props = $props();
+	let { user = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
 	let isSelf = $derived(user.id === currentUser?.id);
 
 	const handleSubmit = async () => {
-		if (!user.username) return;
+		if (!user?.username) return;
 		if (user.password) user.password = password;
 		if (user.id) {
 			await api.updateUser(user);
@@ -41,7 +41,7 @@
 			{#if isSelf}
 				<Dialog.Title>Update Profile</Dialog.Title>
 			{:else}
-				<Dialog.Title>{user.id ? 'Update' : 'Add'} User</Dialog.Title>
+				<Dialog.Title>{user?.id ? 'Update' : 'Add'} User</Dialog.Title>
 			{/if}
 		</Dialog.Header>
 

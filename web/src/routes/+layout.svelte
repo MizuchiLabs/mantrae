@@ -29,20 +29,20 @@
 		let data: Event = JSON.parse(event.data);
 		switch (data.message) {
 			case 'profile':
-				api.listProfiles();
+				await api.listProfiles();
 				break;
 			case 'traefik':
 				if (!source.isValid(source.value)) return;
 				await api.getTraefikConfig(source.value);
 				break;
 			case 'user':
-				api.listUsers();
+				await api.listUsers();
 				break;
 			case 'dns':
-				api.listDNSProviders();
+				await api.listDNSProviders();
 				break;
 			case 'agent':
-				api.listAgentsByProfile();
+				await api.listAgentsByProfile();
 				break;
 			default:
 				break;

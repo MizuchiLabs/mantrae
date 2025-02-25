@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"net"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/cloudflare/cloudflare-go"
 )
 
@@ -38,9 +38,13 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 	if c.Client == nil {
 		return nil
 	}
-	recordType := "A"
-	if net.ParseIP(c.ExternalIP).To4() == nil {
+	var recordType string
+	if util.IsValidIPv4(c.ExternalIP) {
+		recordType = "A"
+	} else if util.IsValidIPv6(c.ExternalIP) {
 		recordType = "AAAA"
+	} else {
+		return fmt.Errorf("invalid IP address: %s", c.ExternalIP)
 	}
 
 	// Check if the record exists

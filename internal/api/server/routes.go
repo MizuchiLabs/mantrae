@@ -121,8 +121,8 @@ func (s *Server) routes() {
 	register("DELETE", "/backups/{filename}", jwtChain, handler.DeleteBackup(s.app.BM))
 	register("POST", "/dynamic/restore/{id}", jwtChain, handler.RestoreDynamicConfig(s.app.BM))
 
-	// IP
-	// register("GET", "/ip/{id}", jwtChain, GetPublicIP)
+	// Current IP
+	register("GET", "/ip", jwtChain, handler.GetPublicIP)
 
 	// Traefik
 	register("GET", "/traefik/{id}/{source}", jwtChain, handler.GetTraefikConfig(s.app))
