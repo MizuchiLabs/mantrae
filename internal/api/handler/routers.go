@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -97,14 +98,13 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 				)
 			}
 			// Check if router is new and add dns provider
-			if _, ok := existingConfig.Config.Routers[params.Name]; !ok {
+			if _, ok := existingConfig.Config.Routers[params.Name]; !ok && dnsProvider.ID != 0 {
 				if err = q.AddRouterDNSProvider(r.Context(), db.AddRouterDNSProviderParams{
 					TraefikID:  existingConfig.ID,
 					RouterName: params.Name,
 					ProviderID: dnsProvider.ID,
 				}); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
+					slog.Error("Failed to add router dns provider", "error", err)
 				}
 			}
 			existingConfig.Config.Routers[params.Name] = params.Router
