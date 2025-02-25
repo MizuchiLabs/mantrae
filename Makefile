@@ -36,9 +36,9 @@ build-agent:
 	go build $(LDFLAGS) -o $(BIN_AGENT) agent/cmd/main.go
 
 docker-local:
-	# go generate ./...
+	go generate ./...
 	KO_DOCKER_REPO=ko.local/mantrae ko build . --bare
-	# KO_DOCKER_REPO=ko.local/mantrae-agent ko build ./agent/cmd --bare
+	KO_DOCKER_REPO=ko.local/mantrae-agent ko build ./agent/cmd --bare
 
 docker-release:
 	go generate ./...
