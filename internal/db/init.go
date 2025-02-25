@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/pressly/goose/v3"
 	"modernc.org/sqlite"
@@ -42,7 +43,8 @@ func InitDB() (*sql.DB, error) {
 			return err
 		})
 
-		db, err = sql.Open("sqlite", "file:mantrae.db")
+		dbPath := app.ResolvePath("mantrae.db")
+		db, err = sql.Open("sqlite", fmt.Sprintf("file:%s", dbPath))
 		if err != nil {
 			return nil, fmt.Errorf("failed to open database: %w", err)
 		}

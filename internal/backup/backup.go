@@ -111,7 +111,7 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	dbPath := m.Config.DatabaseName + ".db"
+	dbPath := app.ResolvePath("mantrae.db")
 	walPath := dbPath + "-wal"
 	shmPath := dbPath + "-shm"
 

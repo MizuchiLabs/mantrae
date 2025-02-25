@@ -14,7 +14,6 @@ import (
 type Config struct {
 	Admin      AdminUser
 	Server     ServerConfig
-	Database   DatabaseConfig
 	Email      EmailConfig
 	Traefik    TraefikConfig
 	Backup     BackupConfig
@@ -37,11 +36,6 @@ type ServerConfig struct {
 	LogLevel    string `env:"SERVER_LOG_LEVEL"    envDefault:"info"`
 }
 
-type DatabaseConfig struct {
-	Type string `env:"DB_TYPE" envDefault:"sqlite"`
-	Name string `env:"DB_NAME" envDefault:"mantrae"`
-}
-
 type EmailConfig struct {
 	Host     string `env:"EMAIL_HOST"     envDefault:"localhost"`
 	Port     string `env:"EMAIL_PORT"     envDefault:"587"`
@@ -59,11 +53,10 @@ type TraefikConfig struct {
 }
 
 type BackupConfig struct {
-	Enabled      bool          `env:"BACKUP_ENABLED"  envDefault:"true"`
-	BackupPath   string        `env:"BACKUP_PATH"     envDefault:"backups"`
-	DatabaseName string        `env:"DATABASE_NAME"   envDefault:"mantrae"`
-	Interval     time.Duration `env:"BACKUP_INTERVAL" envDefault:"24h"`
-	Keep         int           `env:"BACKUP_KEEP"     envDefault:"3"`
+	Enabled    bool          `env:"BACKUP_ENABLED"  envDefault:"true"`
+	BackupPath string        `env:"BACKUP_PATH"     envDefault:"backups"`
+	Interval   time.Duration `env:"BACKUP_INTERVAL" envDefault:"24h"`
+	Keep       int           `env:"BACKUP_KEEP"     envDefault:"3"`
 }
 
 type BackgroundJobs struct {
@@ -85,14 +78,23 @@ func ReadConfig() (*Config, error) {
 	return &config, nil
 }
 
-func Path(rel string) string {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if filepath.IsAbs(rel) {
-		return rel
+func ResolvePath(path string) string {
+	var basePath string
+	if dbPath := os.Getenv("DB_PATH"); dbPath != "" {
+		basePath = dbPath
+	} else {
+		basePath = "data"
 	}
 
-	return filepath.Join(cwd, rel)
+	// If the provided path is absolute, return it as-is
+	if filepath.IsAbs(path) {
+		return path
+	}
+
+	// Create the base directory if it doesn't exist
+	if err := os.MkdirAll(basePath, 0755); err != nil {
+		log.Printf("Warning: failed to create base directory: %v", err)
+	}
+
+	return filepath.Join(basePath, path)
 }

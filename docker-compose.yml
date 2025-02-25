@@ -9,7 +9,7 @@ services:
       - ADMIN_PASSWORD=<super secret password>
       - SECRET=<secret> # generate a secret with openssl rand -hex 32
     volumes:
-      - ./mantrae:/app
+      - ./mantrae:/data # base directory used
     ports:
       - 3000:3000 # remove this if you want to use traefik 
     labels:
