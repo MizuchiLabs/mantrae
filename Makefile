@@ -60,7 +60,7 @@ upgrade:
 
 .PHONY: db-up
 db-up:
-	goose sqlite3 mantrae.db -dir internal/db/migrations up
+	goose sqlite3 mantrae.db -dir internal/db/migrations up-by-one
 
 .PHONY: db-down
 db-down:

@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS profiles (
+CREATE TABLE profiles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(255) NOT NULL UNIQUE,
   url TEXT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   tls BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS entrypoints (
+CREATE TABLE entrypoints (
   profile_id INTEGER NOT NULL,
   name VARCHAR(255) NOT NULL,
   address VARCHAR(255) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS entrypoints (
   UNIQUE (profile_id, name)
 );
 
-CREATE TABLE IF NOT EXISTS routers (
+CREATE TABLE routers (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS routers (
   UNIQUE (name, profile_id)
 );
 
-CREATE TABLE IF NOT EXISTS services (
+CREATE TABLE services (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS services (
   UNIQUE (name, profile_id)
 );
 
-CREATE TABLE IF NOT EXISTS middlewares (
+CREATE TABLE middlewares (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS middlewares (
   UNIQUE (name, profile_id)
 );
 
-CREATE TABLE IF NOT EXISTS providers (
+CREATE TABLE providers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(255) NOT NULL UNIQUE,
   type VARCHAR(255) NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS providers (
   is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username VARCHAR(255) NOT NULL UNIQUE,
   password TEXT NOT NULL,
@@ -94,13 +94,13 @@ CREATE TABLE IF NOT EXISTS users (
   type VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   key VARCHAR(255) NOT NULL UNIQUE,
   value TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS agents (
+CREATE TABLE agents (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   hostname TEXT NOT NULL,

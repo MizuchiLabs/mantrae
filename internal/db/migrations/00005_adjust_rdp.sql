@@ -35,14 +35,14 @@ CREATE TABLE router_dns_provider_old (
   UNIQUE (traefik_id, router_name)
 );
 
-INSERT INTO
-  router_dns_provider_old (traefik_id, provider_id, router_name)
+INSERT
+OR IGNORE INTO router_dns_provider_old (traefik_id, provider_id, router_name)
 SELECT
   traefik_id,
   provider_id,
   router_name
 FROM
-  router_dns_provider ON CONFLICT DO NOTHING;
+  router_dns_provider;
 
 DROP TABLE router_dns_provider;
 
