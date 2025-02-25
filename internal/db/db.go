@@ -108,6 +108,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
 	}
+	if q.getUserPasswordStmt, err = db.PrepareContext(ctx, getUserPassword); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserPassword: %w", err)
+	}
 	if q.listAgentsStmt, err = db.PrepareContext(ctx, listAgents); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgents: %w", err)
 	}
@@ -313,6 +316,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
 		}
 	}
+	if q.getUserPasswordStmt != nil {
+		if cerr := q.getUserPasswordStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserPasswordStmt: %w", cerr)
+		}
+	}
 	if q.listAgentsStmt != nil {
 		if cerr := q.listAgentsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listAgentsStmt: %w", cerr)
@@ -480,6 +488,7 @@ type Queries struct {
 	getTraefikConfigBySourceStmt          *sql.Stmt
 	getUserStmt                           *sql.Stmt
 	getUserByUsernameStmt                 *sql.Stmt
+	getUserPasswordStmt                   *sql.Stmt
 	listAgentsStmt                        *sql.Stmt
 	listAgentsByProfileStmt               *sql.Stmt
 	listDNSProvidersStmt                  *sql.Stmt
@@ -534,6 +543,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTraefikConfigBySourceStmt:          q.getTraefikConfigBySourceStmt,
 		getUserStmt:                           q.getUserStmt,
 		getUserByUsernameStmt:                 q.getUserByUsernameStmt,
+		getUserPasswordStmt:                   q.getUserPasswordStmt,
 		listAgentsStmt:                        q.listAgentsStmt,
 		listAgentsByProfileStmt:               q.listAgentsByProfileStmt,
 		listDNSProvidersStmt:                  q.listDNSProvidersStmt,

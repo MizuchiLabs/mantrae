@@ -47,20 +47,39 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 
 const getUser = `-- name: GetUser :one
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 WHERE
   id = ?
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+type GetUserRow struct {
+	ID        int64      `json:"id"`
+	Username  string     `json:"username"`
+	Email     *string    `json:"email"`
+	IsAdmin   bool       `json:"isAdmin"`
+	Otp       *string    `json:"otp"`
+	OtpExpiry *time.Time `json:"otpExpiry"`
+	LastLogin *time.Time `json:"lastLogin"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
+}
+
+func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 	row := q.queryRow(ctx, q.getUserStmt, getUser, id)
-	var i User
+	var i GetUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
 		&i.Email,
 		&i.IsAdmin,
 		&i.Otp,
@@ -74,20 +93,39 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 WHERE
   username = ?
 `
 
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+type GetUserByUsernameRow struct {
+	ID        int64      `json:"id"`
+	Username  string     `json:"username"`
+	Email     *string    `json:"email"`
+	IsAdmin   bool       `json:"isAdmin"`
+	Otp       *string    `json:"otp"`
+	OtpExpiry *time.Time `json:"otpExpiry"`
+	LastLogin *time.Time `json:"lastLogin"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
+}
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
 	row := q.queryRow(ctx, q.getUserByUsernameStmt, getUserByUsername, username)
-	var i User
+	var i GetUserByUsernameRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
 		&i.Email,
 		&i.IsAdmin,
 		&i.Otp,
@@ -99,28 +137,63 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	return i, err
 }
 
+const getUserPassword = `-- name: GetUserPassword :one
+SELECT
+  password
+FROM
+  users
+WHERE
+  id = ?
+`
+
+func (q *Queries) GetUserPassword(ctx context.Context, id int64) (string, error) {
+	row := q.queryRow(ctx, q.getUserPasswordStmt, getUserPassword, id)
+	var password string
+	err := row.Scan(&password)
+	return password, err
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 ORDER BY
   username
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+type ListUsersRow struct {
+	ID        int64      `json:"id"`
+	Username  string     `json:"username"`
+	Email     *string    `json:"email"`
+	IsAdmin   bool       `json:"isAdmin"`
+	Otp       *string    `json:"otp"`
+	OtpExpiry *time.Time `json:"otpExpiry"`
+	LastLogin *time.Time `json:"lastLogin"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []ListUsersRow
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
-			&i.Password,
 			&i.Email,
 			&i.IsAdmin,
 			&i.Otp,
@@ -146,7 +219,6 @@ const updateUser = `-- name: UpdateUser :exec
 UPDATE users
 SET
   username = ?,
-  password = ?,
   email = ?,
   is_admin = ?,
   updated_at = CURRENT_TIMESTAMP
@@ -156,7 +228,6 @@ WHERE
 
 type UpdateUserParams struct {
 	Username string  `json:"username"`
-	Password string  `json:"password"`
 	Email    *string `json:"email"`
 	IsAdmin  bool    `json:"isAdmin"`
 	ID       int64   `json:"id"`
@@ -165,7 +236,6 @@ type UpdateUserParams struct {
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.exec(ctx, q.updateUserStmt, updateUser,
 		arg.Username,
-		arg.Password,
 		arg.Email,
 		arg.IsAdmin,
 		arg.ID,

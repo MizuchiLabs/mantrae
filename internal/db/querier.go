@@ -35,8 +35,9 @@ type Querier interface {
 	GetSetting(ctx context.Context, key string) (Setting, error)
 	GetTraefikConfigByID(ctx context.Context, id int64) (Traefik, error)
 	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) ([]Traefik, error)
-	GetUser(ctx context.Context, id int64) (User, error)
-	GetUserByUsername(ctx context.Context, username string) (User, error)
+	GetUser(ctx context.Context, id int64) (GetUserRow, error)
+	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
+	GetUserPassword(ctx context.Context, id int64) (string, error)
 	ListAgents(ctx context.Context) ([]Agent, error)
 	ListAgentsByProfile(ctx context.Context, profileID int64) ([]Agent, error)
 	ListDNSProviders(ctx context.Context) ([]DnsProvider, error)
@@ -44,7 +45,7 @@ type Querier interface {
 	ListRouterDNSProvidersByTraefikID(ctx context.Context, traefikID int64) ([]ListRouterDNSProvidersByTraefikIDRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListTraefikIDs(ctx context.Context) ([]int64, error)
-	ListUsers(ctx context.Context) ([]User, error)
+	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error
 	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error

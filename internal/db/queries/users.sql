@@ -6,7 +6,15 @@ VALUES
 
 -- name: GetUser :one
 SELECT
-  *
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 WHERE
@@ -14,15 +22,39 @@ WHERE
 
 -- name: GetUserByUsername :one
 SELECT
-  *
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 WHERE
   username = ?;
 
+-- name: GetUserPassword :one
+SELECT
+  password
+FROM
+  users
+WHERE
+  id = ?;
+
 -- name: ListUsers :many
 SELECT
-  *
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
 FROM
   users
 ORDER BY
@@ -32,7 +64,6 @@ ORDER BY
 UPDATE users
 SET
   username = ?,
-  password = ?,
   email = ?,
   is_admin = ?,
   updated_at = CURRENT_TIMESTAMP

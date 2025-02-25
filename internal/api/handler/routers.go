@@ -84,6 +84,9 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 		// Ensure name has no @
 		params.Name = strings.Split(params.Name, "@")[0]
 
+		// Get default dns provider
+		dnsProvider, _ := q.GetActiveDNSProvider(r.Context())
+
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
@@ -92,6 +95,17 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 					"%s@http",
 					strings.Split(params.Router.Service, "@")[0],
 				)
+			}
+			// Check if router is new and add dns provider
+			if _, ok := existingConfig.Config.Routers[params.Name]; !ok {
+				if err = q.AddRouterDNSProvider(r.Context(), db.AddRouterDNSProviderParams{
+					TraefikID:  existingConfig.ID,
+					RouterName: params.Name,
+					ProviderID: dnsProvider.ID,
+				}); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 			}
 			existingConfig.Config.Routers[params.Name] = params.Router
 			existingConfig.Config.Services[params.Name] = params.Service
