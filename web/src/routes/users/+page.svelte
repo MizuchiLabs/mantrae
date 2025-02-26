@@ -82,6 +82,22 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
+				if (row.original.id === 1) {
+					return renderComponent(TableActions, {
+						actions: [
+							{
+								label: 'Edit User',
+								icon: Pencil,
+								onClick: () => {
+									modalState = {
+										isOpen: true,
+										user: row.original
+									};
+								}
+							}
+						]
+					});
+				}
 				return renderComponent(TableActions, {
 					actions: [
 						{

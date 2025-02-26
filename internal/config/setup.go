@@ -95,7 +95,7 @@ func (a *App) setupLogger() {
 
 func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	// Generate password if not provided
-	password := a.Config.Admin.Password
+	password := os.Getenv("ADMIN_PASSWORD")
 	if password == "" {
 		password = util.GenPassword(32)
 	}
@@ -108,33 +108,19 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	// Try to get existing admin user
 	q := a.Conn.GetQuery()
 	user, err := q.GetUser(ctx, 1)
-	// If user doesn't exist, create new admin
+	// If admin doesn't exist, create new admin
 	if err != nil {
+		adminMail := "admin@mantrae"
 		if err = q.CreateUser(ctx, db.CreateUserParams{
-			Username: a.Config.Admin.Username,
-			Email:    &a.Config.Admin.Email,
+			Username: "admin",
+			Email:    &adminMail,
 			Password: hash,
 			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to create default admin user: %w", err)
 		}
-		slog.Info("Generated default admin user",
-			"username", a.Config.Admin.Username,
-			"password", password)
+		slog.Info("Generated default 'admin' user", "password", password)
 		return nil
-	}
-
-	// Update admin info on change
-	if user.Username != a.Config.Admin.Username || *user.Email != a.Config.Admin.Email {
-		if err = q.UpdateUser(ctx, db.UpdateUserParams{
-			ID:       user.ID,
-			Username: a.Config.Admin.Username,
-			Email:    &a.Config.Admin.Email,
-			IsAdmin:  true,
-		}); err != nil {
-			return fmt.Errorf("failed to update default admin user: %w", err)
-		}
-		slog.Info("Updated admin user", "username", a.Config.Admin.Username)
 	}
 
 	userPassword, err := q.GetUserPassword(ctx, user.ID)

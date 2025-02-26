@@ -10,13 +10,14 @@ import (
 	"github.com/domodwyer/mailyak/v3"
 )
 
-func Send(to, templateName string, email app.EmailConfig, data map[string]interface{}) error {
+func Send(to, templateName string, email app.EmailConfig, data map[string]any) error {
 	client := mailyak.New(
 		email.Host+":"+email.Port,
 		smtp.PlainAuth("", email.Username, email.Password, email.Host),
 	)
 	client.To(to)
 	client.From(email.From)
+	client.FromName("Mantrae")
 
 	var subject string
 	switch templateName {
@@ -40,7 +41,6 @@ func Send(to, templateName string, email app.EmailConfig, data map[string]interf
 	if err := tmpl.ExecuteTemplate(client.HTML(), templateName+".html", data); err != nil {
 		return fmt.Errorf("failed to execute template: %w", err)
 	}
-
 	if err := client.Send(); err != nil {
 		return fmt.Errorf("failed to send email: %w, check your SMTP settings", err)
 	}

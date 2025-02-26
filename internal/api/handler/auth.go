@@ -192,7 +192,7 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 		}
 
 		// Generate OTP
-		expiresAt := time.Now().Add(10 * time.Minute)
+		expiresAt := time.Now().Add(15 * time.Minute)
 		token, err := util.GenerateOTP()
 		if err != nil {
 			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
@@ -220,7 +220,7 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 				config.Host = setting.Value
 			case "email_port":
 				config.Port = setting.Value
-			case "email_username":
+			case "email_user":
 				config.Username = setting.Value
 			case "email_password":
 				config.Password = setting.Value
@@ -230,7 +230,7 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 		}
 		data := map[string]any{
 			"Token": token,
-			"Date":  expiresAt.Format(time.RFC3339),
+			"Date":  expiresAt.Format("Jan 2, 2006 at 15:04"),
 		}
 		if err := mail.Send(*user.Email, "reset-password", config, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

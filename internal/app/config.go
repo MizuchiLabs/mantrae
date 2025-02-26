@@ -12,19 +12,12 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Admin      AdminUser
 	Server     ServerConfig
 	Email      EmailConfig
 	Traefik    TraefikConfig
 	Backup     BackupConfig
 	Background BackgroundJobs
 	Secret     string `env:"SECRET" envDefault:""`
-}
-
-type AdminUser struct {
-	Username string `env:"ADMIN_USERNAME" envDefault:"admin"`
-	Email    string `env:"ADMIN_EMAIL"    envDefault:"admin@mantrae"`
-	Password string `env:"ADMIN_PASSWORD" envDefault:""`
 }
 
 type ServerConfig struct {
