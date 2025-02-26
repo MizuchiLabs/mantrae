@@ -7,7 +7,7 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Download, FileCode, List, SaveIcon, Settings, Trash, Upload } from 'lucide-svelte';
+	import { Download, FileCode, List, SaveIcon, Settings, Trash2, Upload } from 'lucide-svelte';
 	import { settings, api, backups, loading } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
@@ -198,7 +198,8 @@
 						{:else if key.includes('password')}
 							<PasswordInput
 								class="sm:w-auto md:w-[380px]"
-								password={setting.value}
+								bind:value={setting.value}
+								autocomplete="new-password"
 								onchange={(e) => handleChange(key, e.currentTarget.value)}
 								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
 							/>
@@ -224,6 +225,7 @@
 							<Input
 								type="text"
 								value={setting.value}
+								autocomplete="off"
 								onchange={(e) => handleChange(key, e.currentTarget.value)}
 								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
 							/>
@@ -254,25 +256,23 @@
 		</Dialog.Header>
 		<div class="flex flex-col gap-2">
 			{#each $backups || [] as backup}
-				<Button
-					variant="link"
-					class="flex items-center justify-between p-3"
-					onclick={() => api.downloadBackupByName(backup.name)}
-				>
-					<span class="font-mono text-sm">
+				<div class="flex items-center justify-between font-mono text-sm">
+					<Button variant="link" onclick={() => api.downloadBackupByName(backup.name)}>
 						Backup:
 						{DateFormat.format(new Date(backup.timestamp))}
-					</span>
-					<span class="flex items-center font-mono text-sm">
+					</Button>
+					<span class="flex items-center">
 						{humanFileSize(backup.size)}
-						<button
-							class="ml-2 rounded-full p-2 hover:bg-red-300"
+						<Button
+							variant="ghost"
+							size="icon"
+							class="rounded-full hover:bg-red-300"
 							onclick={() => api.deleteBackup(backup.name)}
 						>
-							<Trash />
-						</button>
+							<Trash2 />
+						</Button>
 					</span>
-				</Button>
+				</div>
 			{/each}
 			{#if !$backups || $backups.length === 0}
 				<p class="text-center text-sm text-muted-foreground">No backups available</p>

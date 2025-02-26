@@ -40,7 +40,7 @@
 
 			<div class="flex flex-col gap-2">
 				<Label for="password">Password</Label>
-				<PasswordInput bind:password />
+				<PasswordInput bind:value={password} />
 				<div class="mt-1 flex flex-row items-center justify-between">
 					<div class="items-top flex items-center justify-end gap-2">
 						<Checkbox id="remember" bind:checked={remember} />

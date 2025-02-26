@@ -12,14 +12,14 @@
 	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
-		user: User;
+		user: User | undefined;
 		open?: boolean;
 	}
 
-	let { user = $bindable(), open = $bindable(false) }: Props = $props();
+	let { user = $bindable({} as User), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
-	let isSelf = $derived(user.id === currentUser?.id);
+	let isSelf = $derived(user?.id === currentUser?.id);
 
 	const handleSubmit = async () => {
 		if (!user?.username) return;
@@ -62,10 +62,10 @@
 			<div class="space-y-1">
 				{#if user.id}
 					<Label for="Password">Password (leave empty to keep current)</Label>
-					<PasswordInput bind:password />
+					<PasswordInput bind:value={password} />
 				{:else}
 					<Label for="Password">Password</Label>
-					<PasswordInput bind:password required />
+					<PasswordInput bind:value={user.password} required />
 				{/if}
 			</div>
 

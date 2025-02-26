@@ -76,12 +76,12 @@
 
 			<div class="space-y-1">
 				<Label for="username">Username (optional)</Label>
-				<Input id="username" bind:value={profile.username} placeholder="admin" />
+				<Input id="username" bind:value={profile.username} placeholder="admin" autocomplete="off" />
 			</div>
 
 			<div class="space-y-1">
 				<Label for="password">Password (optional)</Label>
-				<PasswordInput bind:password={profile.password} />
+				<PasswordInput bind:value={profile.password} autocomplete="new-password" />
 			</div>
 
 			<div class="flex items-center space-x-2">

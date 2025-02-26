@@ -3,6 +3,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
@@ -14,6 +15,8 @@
 	import { toast } from 'svelte-sonner';
 	import YAML from 'yaml';
 	import type { UpsertMiddlewareParams } from '$lib/types/middlewares';
+	import { slide } from 'svelte/transition';
+	import CopyButton from '$lib/components/ui/copy-button/copy-button.svelte';
 
 	// State
 	let open = $state(false);
@@ -22,6 +25,7 @@
 	let perPage = $state(10);
 	let selectedPlugin = $state<Plugin | undefined>(undefined);
 	let yamlSnippet = $state('');
+	let cliSnippet = $state('');
 
 	// Derived values
 	let filteredPlugins = $derived(
@@ -48,13 +52,15 @@
 		const pluginContent = extractPluginContent(data);
 		const name = Object.keys(pluginContent)[0];
 
+		toast.success('Installed plugin!', {
+			description: `The plugin ${name} has been added to the middlewares.`
+		});
+
 		const middleware: UpsertMiddlewareParams = {
 			name: `${name}@http`,
 			protocol: 'http',
 			type: 'plugin',
 			middleware: {
-				name: name,
-				protocol: 'http',
 				plugin: {
 					[name]: pluginContent[name]
 				}
@@ -64,10 +70,12 @@
 
 		selectedPlugin = plugin;
 		yamlSnippet = generateYamlSnippet(plugin);
+		cliSnippet = generateCmdSnippet(plugin);
 		open = true;
 	}
 
-	function extractPluginContent(data: Record<string, any>) {
+	function extractPluginContent(data: Record<string, unknown>) {
+		console.log(data);
 		const middlewares = data.http?.middlewares;
 		if (!middlewares) return null;
 
@@ -83,9 +91,9 @@
       version: ${plugin.latestVersion}`;
 	}
 
-	function copyToClipboard() {
-		navigator.clipboard.writeText(yamlSnippet);
-		toast.success('Copied!');
+	function generateCmdSnippet(plugin: Plugin) {
+		return `--experimental.plugins.${plugin.name.split('/').slice(-1)[0]}.moduleName=${plugin.name}
+--experimental.plugins.${plugin.name.split('/').slice(-1)[0]}.version=${plugin.latestVersion}`;
 	}
 
 	onMount(async () => {
@@ -182,14 +190,21 @@
 				<span class="text-xs text-slate-500">(Click to copy)</span>
 			</Dialog.Description>
 		</Dialog.Header>
-		<div class="flex flex-col gap-4">
-			<Textarea
-				bind:value={yamlSnippet}
-				rows={yamlSnippet?.split('\n').length || 5}
-				onclick={copyToClipboard}
-				class="p-2"
-				readonly
-			/>
-		</div>
+		<Tabs.Root class="flex flex-col gap-2">
+			<div class="flex justify-end" transition:slide={{ duration: 200 }}>
+				<Tabs.List class="h-8">
+					<Tabs.Trigger value="yaml" class="px-2 py-0.5 font-bold">YAML</Tabs.Trigger>
+					<Tabs.Trigger value="cli" class="px-2 py-0.5 font-bold">CLI</Tabs.Trigger>
+				</Tabs.List>
+			</div>
+			<Tabs.Content value="yaml" class="relative">
+				<Textarea bind:value={yamlSnippet} rows={yamlSnippet?.split('\n').length || 5} readonly />
+				<CopyButton text={yamlSnippet} class="absolute right-1 top-1" />
+			</Tabs.Content>
+			<Tabs.Content value="cli" class="relative">
+				<Textarea bind:value={cliSnippet} rows={cliSnippet?.split('\n').length || 2} readonly />
+				<CopyButton text={cliSnippet} class="absolute right-1 top-1 bg-background" />
+			</Tabs.Content>
+		</Tabs.Root>
 	</Dialog.Content>
 </Dialog.Root>

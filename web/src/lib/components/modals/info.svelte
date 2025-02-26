@@ -7,22 +7,12 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { entrypoints, overview, version, dynamicJSON, dynamicYAML, api } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
-	import { Copy, CopyCheck } from 'lucide-svelte';
 	import { json, yaml } from 'svelte-highlight/languages';
 	import { onMount } from 'svelte';
+	import CopyButton from '../ui/copy-button/copy-button.svelte';
 
 	let isYaml = $state(false);
-	let copyText = $state('Copy');
-
 	let { open = $bindable(false) } = $props();
-
-	const copy = () => {
-		navigator.clipboard.writeText(isYaml ? $dynamicYAML : $dynamicJSON);
-		copyText = 'Copied!';
-		setTimeout(() => {
-			copyText = 'Copy';
-		}, 2000);
-	};
 
 	onMount(async () => {
 		await api.load();
@@ -178,19 +168,7 @@
 								<Button variant="outline" size="sm" onclick={() => (isYaml = !isYaml)}>
 									{isYaml ? 'Show JSON' : 'Show YAML'}
 								</Button>
-								{#if $dynamicJSON && $dynamicJSON !== 'null'}
-									<button
-										onclick={copy}
-										class="flex flex-row items-center gap-2 rounded p-2 text-sm font-medium hover:bg-gray-100"
-									>
-										{copyText}
-										{#if copyText === 'Copied!'}
-											<CopyCheck size="1rem" />
-										{:else}
-											<Copy size="1rem" />
-										{/if}
-									</button>
-								{/if}
+								<CopyButton text={isYaml ? $dynamicYAML : $dynamicJSON} />
 							</div>
 						</Card.Title>
 						<Card.Description>
