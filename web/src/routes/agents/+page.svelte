@@ -29,16 +29,6 @@
 		}
 	};
 
-	const copyToken = async (agent: Agent) => {
-		try {
-			await navigator.clipboard.writeText(agent.token);
-			toast.success('Token copied to clipboard');
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(e.message);
-		}
-	};
-
 	const columns: ColumnDef<Agent>[] = [
 		{
 			header: 'Hostname',
@@ -79,23 +69,19 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
+				let editText = row.original.hostname ? 'Edit Agent' : 'Connect Agent';
+				let editIcon = row.original.hostname ? Pencil : KeyRound;
 				return renderComponent(TableActions, {
 					actions: [
 						{
-							label: 'Edit Agent',
-							icon: Pencil,
+							label: editText,
+							icon: editIcon,
 							onClick: () => {
 								modalState = {
 									isOpen: true,
 									agent: row.original
 								};
 							}
-						},
-						{
-							label: 'Copy Token',
-							icon: KeyRound,
-							classProps: 'text-green-500',
-							onClick: () => copyToken(row.original)
 						},
 						{
 							label: 'Delete Agent',
