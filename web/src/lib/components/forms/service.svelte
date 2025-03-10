@@ -51,6 +51,7 @@
 	$effect(() => {
 		if (router.protocol) {
 			service.protocol = router.protocol;
+			console.log(source.isLocal());
 		}
 	});
 </script>
@@ -92,7 +93,7 @@
 							oninput={update}
 							disabled={!source.isLocal()}
 						/>
-						{#if !source.isLocal()}
+						{#if source.isLocal()}
 							<Button
 								variant="ghost"
 								size="icon"
@@ -106,7 +107,7 @@
 					</div>
 				{/each}
 			</div>
-			{#if !source.isLocal()}
+			{#if source.isLocal()}
 				<Button type="button" variant="outline" onclick={addItem} class="w-full">
 					<Plus />
 					Add Server
