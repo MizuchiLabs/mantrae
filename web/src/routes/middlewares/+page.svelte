@@ -17,11 +17,9 @@
 		isOpen: boolean;
 		middleware: Middleware;
 		mode?: 'create' | 'edit';
-		disabled: boolean;
 	}
 	const initialModalState: ModalState = {
 		isOpen: false,
-		disabled: false,
 		mode: 'create',
 		middleware: {
 			name: '',
@@ -35,7 +33,6 @@
 	function openCreateModal() {
 		modalState = {
 			isOpen: true,
-			disabled: false,
 			mode: 'create',
 			middleware: initialModalState.middleware
 		};
@@ -125,7 +122,6 @@
 								onClick: () => {
 									modalState = {
 										isOpen: true,
-										disabled: false,
 										mode: 'edit',
 										middleware: row.original
 									};
@@ -150,7 +146,6 @@
 								onClick: () => {
 									modalState = {
 										isOpen: true,
-										disabled: true,
 										mode: 'edit',
 										middleware: row.original
 									};
@@ -168,8 +163,8 @@
 			: defaultColumns
 	);
 
-	onMount(() => {
-		api.getTraefikConfig(source.value);
+	onMount(async () => {
+		await api.getTraefikConfig(source.value);
 	});
 </script>
 
@@ -202,5 +197,4 @@
 	bind:open={modalState.isOpen}
 	bind:middleware={modalState.middleware}
 	mode={modalState.mode}
-	disabled={modalState.disabled}
 />

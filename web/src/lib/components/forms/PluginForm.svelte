@@ -19,6 +19,10 @@
 	let errorMessage = $state<string | null>(null);
 	let isValid = $state(true);
 
+	$effect(() => {
+		formData = YAML.stringify(data, { indent: 2 });
+	});
+
 	// Validate YAML and return boolean
 	function validateYAML(input: string): boolean {
 		try {
@@ -109,7 +113,7 @@
 <form onsubmit={handleSubmit}>
 	<div class="grid gap-4">
 		<Textarea
-			bind:value={formData}
+			value={formData}
 			rows={formData.split('\n').length}
 			class={!isValid ? 'border-red-500 font-mono' : 'font-mono'}
 			oninput={handleInput}

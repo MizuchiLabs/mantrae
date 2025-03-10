@@ -21,19 +21,14 @@
 	import Separator from '../ui/separator/separator.svelte';
 	import DynamicForm from '../forms/DynamicForm.svelte';
 	import PluginForm from '../forms/PluginForm.svelte';
+	import { source } from '$lib/stores/source';
 
 	interface Props {
 		middleware: Middleware;
 		open?: boolean;
 		mode?: 'create' | 'edit';
-		disabled?: boolean;
 	}
-	let {
-		middleware = $bindable(),
-		open = $bindable(false),
-		mode = 'create',
-		disabled
-	}: Props = $props();
+	let { middleware = $bindable(), open = $bindable(false), mode = 'create' }: Props = $props();
 
 	type FormData = Record<string, unknown>;
 	let currentFormData = $state<FormData>({});
@@ -173,7 +168,7 @@
 							type="single"
 							bind:value={middleware.type}
 							onValueChange={handleTypeChange}
-							{disabled}
+							disabled={!source.isLocal()}
 						>
 							<Select.Trigger>
 								{middleware.type ? middleware.type : 'Select type'}
@@ -198,7 +193,7 @@
 								name="protocol"
 								checked={middleware.protocol === 'http'}
 								onCheckedChange={handleProtocolChange}
-								{disabled}
+								disabled={!source.isLocal()}
 							/>
 						</div>
 					</div>
@@ -206,7 +201,13 @@
 			{/if}
 			<div class="flex flex-col gap-2">
 				<Label for="name">Name</Label>
-				<Input type="text" name="name" bind:value={middleware.name} required {disabled} />
+				<Input
+					type="text"
+					name="name"
+					bind:value={middleware.name}
+					disabled={!source.isLocal()}
+					required
+				/>
 			</div>
 		</div>
 
@@ -214,13 +215,13 @@
 
 		{#if middleware.type}
 			{#if middleware.type === 'plugin'}
-				<PluginForm bind:data={currentFormData} {onSubmit} {disabled} />
+				<PluginForm bind:data={currentFormData} disabled={!source.isLocal()} {onSubmit} />
 			{:else}
 				<DynamicForm
 					data={currentFormData}
 					metadata={getMetadataForMiddleware(middleware.type)}
+					disabled={!source.isLocal()}
 					{onSubmit}
-					{disabled}
 				/>
 			{/if}
 		{/if}
