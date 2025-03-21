@@ -13,7 +13,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.115.0
 	github.com/docker/docker v27.4.1+incompatible
 	github.com/domodwyer/mailyak/v3 v3.6.2
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/joeig/go-powerdns/v3 v3.15.0
 	github.com/lmittmann/tint v1.0.7
