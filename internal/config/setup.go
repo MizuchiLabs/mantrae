@@ -98,6 +98,11 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	password := os.Getenv("ADMIN_PASSWORD")
 	if password == "" {
 		password = util.GenPassword(32)
+		slog.Info(
+			"Generated new admin password (Please use ADMIN_PASSWORD env var to set it)",
+			"password",
+			password,
+		)
 	}
 
 	hash, err := util.HashPassword(password)
@@ -119,7 +124,7 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 		}); err != nil {
 			return fmt.Errorf("failed to create default admin user: %w", err)
 		}
-		slog.Info("Generated default 'admin' user", "password", password)
+		slog.Info("Generated default 'admin' user")
 		return nil
 	}
 
@@ -139,7 +144,6 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 		}); err != nil {
 			return fmt.Errorf("failed to update default admin user password: %w", err)
 		}
-		slog.Info("Updated password of", "user", user.Username)
 	}
 
 	return nil
