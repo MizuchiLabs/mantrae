@@ -13,6 +13,7 @@
 	import { source } from '$lib/stores/source';
 	import { onMount } from 'svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
+	import { profile } from '$lib/stores/profile';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -302,8 +303,13 @@
 			: defaultColumns
 	);
 
+	$effect(() => {
+		if (profile.isValid() && source.value) {
+			api.getTraefikConfig(source.value);
+		}
+	});
+
 	onMount(async () => {
-		await api.getTraefikConfig(source.value);
 		await api.listDNSProviders();
 	});
 </script>

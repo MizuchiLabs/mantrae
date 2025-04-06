@@ -11,7 +11,7 @@
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { source } from '$lib/stores/source';
-	import { onMount } from 'svelte';
+	import { profile } from '$lib/stores/profile';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -163,8 +163,10 @@
 			: defaultColumns
 	);
 
-	onMount(async () => {
-		await api.getTraefikConfig(source.value);
+	$effect(() => {
+		if (profile.isValid() && source.value) {
+			api.getTraefikConfig(source.value);
+		}
 	});
 </script>
 

@@ -4,16 +4,18 @@
 	import { Globe, Shield, Bot, LayoutDashboard, Origami, Users } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { api, profiles, stats } from '$lib/api';
-	import { TraefikSource, type Agent } from '$lib/types';
-	import { type Router, type Service } from '$lib/types/router';
-	import type { Middleware } from '$lib/types/middlewares';
+	import { TraefikSource } from '$lib/types';
 
-	let profileStats = $state({
-		routers: [] as Router[],
-		services: [] as Service[],
-		middlewares: [] as Middleware[],
-		agents: [] as Agent[]
-	});
+	interface ProfileStats {
+		id: number;
+		name: string;
+		url: string;
+		routers: number;
+		services: number;
+		middlewares: number;
+		agents: number;
+	}
+	let profileStats: ProfileStats[] = $state([]);
 
 	onMount(async () => {
 		await api.loadStats();
@@ -22,12 +24,17 @@
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 
 		// Get profile stats
-		const t = await api.getTraefikConfigLocal();
-		const a = await api.listAgentsByProfile();
-		profileStats.routers = t?.routers || [];
-		profileStats.services = t?.services || [];
-		profileStats.middlewares = t?.middlewares || [];
-		profileStats.agents = a || [];
+		const t = await api.getTraefikStats();
+		profileStats =
+			t?.map((cfg) => ({
+				id: cfg.id,
+				name: cfg.name,
+				url: cfg.url,
+				routers: cfg.routers,
+				services: cfg.services,
+				middlewares: cfg.middlewares,
+				agents: cfg.agents
+			})) || [];
 	});
 </script>
 
@@ -118,13 +125,13 @@
 		<!-- </Card.Root> -->
 
 		<!-- Profile Status -->
-		<Card.Root class="col-span-1">
+		<Card.Root class="col-span-2">
 			<Card.Header>
 				<Card.Title>Profile Status</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-4">
-					{#each $profiles as profile}
+					{#each profileStats as profile}
 						<div class="flex items-center justify-between">
 							<div class="flex items-center space-x-4">
 								<Shield class="h-4 w-4" />
@@ -138,17 +145,17 @@
 								</div>
 							</div>
 							<div class="flex items-center gap-2">
-								<Badge variant={profileStats.agents?.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.agents?.length}
-									{profileStats.agents?.length === 1 ? 'Agent' : 'Agents'}
+								<Badge variant={profile.agents > 0 ? 'default' : 'secondary'}>
+									{profile.agents}
+									{profile.agents === 1 ? 'Agent' : 'Agents'}
 								</Badge>
-								<Badge variant={profileStats.routers?.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.routers?.length}
-									{profileStats.routers?.length === 1 ? 'Router' : 'Routers'}
+								<Badge variant={profile.routers > 0 ? 'default' : 'secondary'}>
+									{profile.routers}
+									{profile.routers === 1 ? 'Router' : 'Routers'}
 								</Badge>
-								<Badge variant={profileStats.middlewares?.length > 0 ? 'default' : 'secondary'}>
-									{profileStats.middlewares?.length}
-									{profileStats.middlewares?.length === 1 ? 'Middleware' : 'Middlewares'}
+								<Badge variant={profile.middlewares > 0 ? 'default' : 'secondary'}>
+									{profile.middlewares}
+									{profile.middlewares === 1 ? 'Middleware' : 'Middlewares'}
 								</Badge>
 							</div>
 						</div>
