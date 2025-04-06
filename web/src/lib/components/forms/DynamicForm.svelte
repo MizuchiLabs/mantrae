@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index';
-	import { safeClone } from '$lib/utils';
+	import { cleanupFormData, safeClone } from '$lib/utils';
 	import FormField from './FormField.svelte';
 	import type { FieldMetadata } from '$lib/types/middlewares';
 	import Separator from '../ui/separator/separator.svelte';
@@ -26,8 +26,9 @@
 	// Handle form submission
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		const submissionData = safeClone(formData);
-		onSubmit(submissionData);
+		const clonedData = safeClone(formData);
+		const cleanedData = (cleanupFormData(clonedData) as Record<string, unknown>) || {};
+		onSubmit(cleanedData);
 	}
 
 	type FormFieldType = {

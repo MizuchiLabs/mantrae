@@ -76,6 +76,7 @@
 
 <ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} />
 <InfoModal bind:open={infoModalOpen} />
+
 {#if user.isLoggedIn() && user.value}
 	<UserModal bind:open={userModalOpen} user={user.value} />
 {/if}

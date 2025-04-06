@@ -123,11 +123,11 @@
 
 			if (middleware.protocol === 'http' && middleware.type) {
 				params.middleware = {
-					[middleware.type]: structuredClone(formData)
+					[middleware.type]: formData
 				};
 			} else if (middleware.protocol === 'tcp' && middleware.type) {
 				params.tcpMiddleware = {
-					[middleware.type]: structuredClone(formData)
+					[middleware.type]: formData
 				};
 			}
 

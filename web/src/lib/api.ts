@@ -213,6 +213,35 @@ export const api = {
 		});
 	},
 
+	async getTraefikStats() {
+		const allProfiles = get(profiles);
+		const results = [];
+
+		for (const profile of allProfiles) {
+			if (!profile.id) continue;
+
+			const res = await send(`/traefik/${profile.id}/${TraefikSource.LOCAL}`);
+			const agents = await send(`/agent/list/${profile.id}`);
+
+			// const traefik = res as TraefikConfig;
+			const routers = flattenRouterData(res);
+			const services = flattenServiceData(res);
+			const middlewares = flattenMiddlewareData(res);
+
+			results.push({
+				id: profile?.id,
+				name: profile?.name,
+				url: profile?.url,
+				routers: routers?.length || 0,
+				services: services?.length || 0,
+				middlewares: middlewares?.length || 0,
+				agents: agents?.length || 0
+			});
+		}
+
+		return results;
+	},
+
 	// Profiles ------------------------------------------------------------------
 	async listProfiles() {
 		const data: Profile[] = await send('/profile');
@@ -257,20 +286,6 @@ export const api = {
 	async getTraefikConfig(source: TraefikSource) {
 		await fetchTraefikMetadata();
 		await fetchTraefikConfig(source);
-	},
-
-	async getTraefikConfigLocal() {
-		if (!profile.isValid()) return;
-		// Get the local config without mutating the stores
-		const res = await send(`/traefik/${profile.id}/${TraefikSource.LOCAL}`);
-		if (!res) {
-			return;
-		}
-		const traefik = res as TraefikConfig;
-		const routers = flattenRouterData(res);
-		const services = flattenServiceData(res);
-		const middlewares = flattenMiddlewareData(res);
-		return { traefik, routers, services, middlewares };
 	},
 
 	async getDynamicConfig() {
