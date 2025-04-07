@@ -160,3 +160,11 @@ export interface PublicIP {
 	ipv4: string;
 	ipv6: string;
 }
+
+export interface SystemError {
+	id: number;
+	profileId: number;
+	category: string;
+	message: string;
+	details: string;
+}

@@ -45,6 +45,9 @@
 			case 'agent':
 				await api.listAgentsByProfile();
 				break;
+			case 'error':
+				await api.listErrors();
+				break;
 			default:
 				break;
 		}

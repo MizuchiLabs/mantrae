@@ -75,7 +75,6 @@
 	}
 
 	function extractPluginContent(data: Record<string, unknown>) {
-		console.log(data);
 		const middlewares = data.http?.middlewares;
 		if (!middlewares) return null;
 
@@ -199,11 +198,11 @@
 			</div>
 			<Tabs.Content value="yaml" class="relative">
 				<Textarea bind:value={yamlSnippet} rows={yamlSnippet?.split('\n').length || 5} readonly />
-				<CopyButton text={yamlSnippet} class="absolute right-1 top-1" />
+				<CopyButton text={yamlSnippet} class="absolute top-1 right-1" />
 			</Tabs.Content>
 			<Tabs.Content value="cli" class="relative">
 				<Textarea bind:value={cliSnippet} rows={cliSnippet?.split('\n').length || 2} readonly />
-				<CopyButton text={cliSnippet} class="absolute right-1 top-1 bg-background" />
+				<CopyButton text={cliSnippet} class="bg-background absolute top-1 right-1" />
 			</Tabs.Content>
 		</Tabs.Root>
 	</Dialog.Content>

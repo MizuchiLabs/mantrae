@@ -121,6 +121,12 @@ func (s *Server) routes() {
 	register("DELETE", "/backups/{filename}", jwtChain, handler.DeleteBackup(s.app.BM))
 	register("POST", "/dynamic/restore/{id}", jwtChain, handler.RestoreDynamicConfig(s.app.BM))
 
+	// Errors
+	register("GET", "/errors", jwtChain, handler.ListErrors(s.app))
+	register("GET", "/errors/{id}", jwtChain, handler.GetErrorsByProfile(s.app))
+	register("DELETE", "/errors/{id}", jwtChain, handler.DeleteErrorByID(s.app))
+	register("DELETE", "/errors/profile/{id}", jwtChain, handler.DeleteErrorsByProfile(s.app))
+
 	// Current IP
 	register("GET", "/ip", jwtChain, handler.GetPublicIP)
 

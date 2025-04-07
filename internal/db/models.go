@@ -13,11 +13,11 @@ import (
 type Agent struct {
 	ID         string           `json:"id"`
 	ProfileID  int64            `json:"profileId"`
+	Hostname   *string          `json:"hostname"`
 	PublicIp   *string          `json:"publicIp"`
 	PrivateIps *AgentPrivateIPs `json:"privateIps"`
 	Containers *AgentContainers `json:"containers"`
 	ActiveIp   *string          `json:"activeIp"`
-	Hostname   *string          `json:"hostname"`
 	Token      string           `json:"token"`
 	CreatedAt  *time.Time       `json:"createdAt"`
 	UpdatedAt  *time.Time       `json:"updatedAt"`
@@ -31,6 +31,15 @@ type DnsProvider struct {
 	IsActive  bool               `json:"isActive"`
 	CreatedAt *time.Time         `json:"createdAt"`
 	UpdatedAt *time.Time         `json:"updatedAt"`
+}
+
+type Error struct {
+	ID        int64      `json:"id"`
+	ProfileID int64      `json:"profileId"`
+	Category  string     `json:"category"`
+	Message   string     `json:"message"`
+	Details   *string    `json:"details"`
+	CreatedAt *time.Time `json:"createdAt"`
 }
 
 type Profile struct {

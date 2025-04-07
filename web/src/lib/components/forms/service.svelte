@@ -51,7 +51,6 @@
 	$effect(() => {
 		if (router.protocol) {
 			service.protocol = router.protocol;
-			console.log(source.isLocal());
 		}
 	});
 </script>

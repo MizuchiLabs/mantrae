@@ -3,6 +3,7 @@ import {
 	type Agent,
 	type BackupFile,
 	type DNSProvider,
+	type SystemError,
 	type Plugin,
 	type Profile,
 	type PublicIP,
@@ -60,6 +61,7 @@ export const agents: Writable<Agent[]> = writable([]);
 export const settings: Writable<Settings> = writable({} as Settings);
 export const plugins: Writable<Plugin[]> = writable([]);
 export const backups: Writable<BackupFile[]> = writable([]);
+export const errors: Writable<SystemError[]> = writable([]);
 
 // App state
 export const stats: Writable<Stats> = writable({} as Stats);
@@ -613,6 +615,38 @@ export const api = {
 			method: 'DELETE'
 		});
 		await api.listBackups();
+	},
+
+	// Errors
+	async listErrors() {
+		const data = await send('/errors');
+		errors.set(data);
+	},
+
+	async getError() {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		return await send(`/errors/${profile.id}`);
+	},
+
+	async deleteError(id: string) {
+		await send(`/errors/${id}`, {
+			method: 'DELETE'
+		});
+		await api.listErrors();
+	},
+
+	async deleteErrorsByProfile() {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		await send(`/errors/profile/${profile.id}`, {
+			method: 'DELETE'
+		});
+		await api.listErrors();
 	},
 
 	// Plugins

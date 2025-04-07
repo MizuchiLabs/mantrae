@@ -45,6 +45,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteDNSProviderStmt, err = db.PrepareContext(ctx, deleteDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteDNSProvider: %w", err)
 	}
+	if q.deleteErrorByIdStmt, err = db.PrepareContext(ctx, deleteErrorById); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteErrorById: %w", err)
+	}
+	if q.deleteErrorsByProfileStmt, err = db.PrepareContext(ctx, deleteErrorsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteErrorsByProfile: %w", err)
+	}
+	if q.deleteErrorsByProfileCategoryStmt, err = db.PrepareContext(ctx, deleteErrorsByProfileCategory); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteErrorsByProfileCategory: %w", err)
+	}
 	if q.deleteProfileStmt, err = db.PrepareContext(ctx, deleteProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfile: %w", err)
 	}
@@ -77,6 +86,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getDNSProviderStmt, err = db.PrepareContext(ctx, getDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDNSProvider: %w", err)
+	}
+	if q.getErrorsByProfileStmt, err = db.PrepareContext(ctx, getErrorsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query GetErrorsByProfile: %w", err)
 	}
 	if q.getLocalTraefikConfigStmt, err = db.PrepareContext(ctx, getLocalTraefikConfig); err != nil {
 		return nil, fmt.Errorf("error preparing query GetLocalTraefikConfig: %w", err)
@@ -120,6 +132,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listDNSProvidersStmt, err = db.PrepareContext(ctx, listDNSProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDNSProviders: %w", err)
 	}
+	if q.listErrorsStmt, err = db.PrepareContext(ctx, listErrors); err != nil {
+		return nil, fmt.Errorf("error preparing query ListErrors: %w", err)
+	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
@@ -134,6 +149,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
+	if q.logErrorStmt, err = db.PrepareContext(ctx, logError); err != nil {
+		return nil, fmt.Errorf("error preparing query LogError: %w", err)
 	}
 	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
@@ -211,6 +229,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteDNSProviderStmt: %w", cerr)
 		}
 	}
+	if q.deleteErrorByIdStmt != nil {
+		if cerr := q.deleteErrorByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteErrorByIdStmt: %w", cerr)
+		}
+	}
+	if q.deleteErrorsByProfileStmt != nil {
+		if cerr := q.deleteErrorsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteErrorsByProfileStmt: %w", cerr)
+		}
+	}
+	if q.deleteErrorsByProfileCategoryStmt != nil {
+		if cerr := q.deleteErrorsByProfileCategoryStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteErrorsByProfileCategoryStmt: %w", cerr)
+		}
+	}
 	if q.deleteProfileStmt != nil {
 		if cerr := q.deleteProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteProfileStmt: %w", cerr)
@@ -264,6 +297,11 @@ func (q *Queries) Close() error {
 	if q.getDNSProviderStmt != nil {
 		if cerr := q.getDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDNSProviderStmt: %w", cerr)
+		}
+	}
+	if q.getErrorsByProfileStmt != nil {
+		if cerr := q.getErrorsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getErrorsByProfileStmt: %w", cerr)
 		}
 	}
 	if q.getLocalTraefikConfigStmt != nil {
@@ -336,6 +374,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listDNSProvidersStmt: %w", cerr)
 		}
 	}
+	if q.listErrorsStmt != nil {
+		if cerr := q.listErrorsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listErrorsStmt: %w", cerr)
+		}
+	}
 	if q.listProfilesStmt != nil {
 		if cerr := q.listProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
@@ -359,6 +402,11 @@ func (q *Queries) Close() error {
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
+		}
+	}
+	if q.logErrorStmt != nil {
+		if cerr := q.logErrorStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing logErrorStmt: %w", cerr)
 		}
 	}
 	if q.updateAgentStmt != nil {
@@ -467,6 +515,9 @@ type Queries struct {
 	createUserStmt                        *sql.Stmt
 	deleteAgentStmt                       *sql.Stmt
 	deleteDNSProviderStmt                 *sql.Stmt
+	deleteErrorByIdStmt                   *sql.Stmt
+	deleteErrorsByProfileStmt             *sql.Stmt
+	deleteErrorsByProfileCategoryStmt     *sql.Stmt
 	deleteProfileStmt                     *sql.Stmt
 	deleteRouterDNSProviderStmt           *sql.Stmt
 	deleteSettingStmt                     *sql.Stmt
@@ -478,6 +529,7 @@ type Queries struct {
 	getAgentStmt                          *sql.Stmt
 	getAgentTraefikConfigsStmt            *sql.Stmt
 	getDNSProviderStmt                    *sql.Stmt
+	getErrorsByProfileStmt                *sql.Stmt
 	getLocalTraefikConfigStmt             *sql.Stmt
 	getProfileStmt                        *sql.Stmt
 	getProfileByNameStmt                  *sql.Stmt
@@ -492,11 +544,13 @@ type Queries struct {
 	listAgentsStmt                        *sql.Stmt
 	listAgentsByProfileStmt               *sql.Stmt
 	listDNSProvidersStmt                  *sql.Stmt
+	listErrorsStmt                        *sql.Stmt
 	listProfilesStmt                      *sql.Stmt
 	listRouterDNSProvidersByTraefikIDStmt *sql.Stmt
 	listSettingsStmt                      *sql.Stmt
 	listTraefikIDsStmt                    *sql.Stmt
 	listUsersStmt                         *sql.Stmt
+	logErrorStmt                          *sql.Stmt
 	updateAgentStmt                       *sql.Stmt
 	updateAgentIPStmt                     *sql.Stmt
 	updateAgentTokenStmt                  *sql.Stmt
@@ -522,6 +576,9 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUserStmt:                        q.createUserStmt,
 		deleteAgentStmt:                       q.deleteAgentStmt,
 		deleteDNSProviderStmt:                 q.deleteDNSProviderStmt,
+		deleteErrorByIdStmt:                   q.deleteErrorByIdStmt,
+		deleteErrorsByProfileStmt:             q.deleteErrorsByProfileStmt,
+		deleteErrorsByProfileCategoryStmt:     q.deleteErrorsByProfileCategoryStmt,
 		deleteProfileStmt:                     q.deleteProfileStmt,
 		deleteRouterDNSProviderStmt:           q.deleteRouterDNSProviderStmt,
 		deleteSettingStmt:                     q.deleteSettingStmt,
@@ -533,6 +590,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getAgentStmt:                          q.getAgentStmt,
 		getAgentTraefikConfigsStmt:            q.getAgentTraefikConfigsStmt,
 		getDNSProviderStmt:                    q.getDNSProviderStmt,
+		getErrorsByProfileStmt:                q.getErrorsByProfileStmt,
 		getLocalTraefikConfigStmt:             q.getLocalTraefikConfigStmt,
 		getProfileStmt:                        q.getProfileStmt,
 		getProfileByNameStmt:                  q.getProfileByNameStmt,
@@ -547,11 +605,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listAgentsStmt:                        q.listAgentsStmt,
 		listAgentsByProfileStmt:               q.listAgentsByProfileStmt,
 		listDNSProvidersStmt:                  q.listDNSProvidersStmt,
+		listErrorsStmt:                        q.listErrorsStmt,
 		listProfilesStmt:                      q.listProfilesStmt,
 		listRouterDNSProvidersByTraefikIDStmt: q.listRouterDNSProvidersByTraefikIDStmt,
 		listSettingsStmt:                      q.listSettingsStmt,
 		listTraefikIDsStmt:                    q.listTraefikIDsStmt,
 		listUsersStmt:                         q.listUsersStmt,
+		logErrorStmt:                          q.logErrorStmt,
 		updateAgentStmt:                       q.updateAgentStmt,
 		updateAgentIPStmt:                     q.updateAgentIPStmt,
 		updateAgentTokenStmt:                  q.updateAgentTokenStmt,

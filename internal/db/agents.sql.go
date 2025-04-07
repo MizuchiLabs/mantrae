@@ -40,7 +40,7 @@ func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
 
 const getAgent = `-- name: GetAgent :one
 SELECT
-  id, profile_id, public_ip, private_ips, containers, active_ip, hostname, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
   agents
 WHERE
@@ -53,11 +53,11 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.Hostname,
 		&i.PublicIp,
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
-		&i.Hostname,
 		&i.Token,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -67,7 +67,7 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, profile_id, public_ip, private_ips, containers, active_ip, hostname, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
   agents
 ORDER BY
@@ -86,11 +86,11 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProfileID,
+			&i.Hostname,
 			&i.PublicIp,
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
-			&i.Hostname,
 			&i.Token,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -110,7 +110,7 @@ func (q *Queries) ListAgents(ctx context.Context) ([]Agent, error) {
 
 const listAgentsByProfile = `-- name: ListAgentsByProfile :many
 SELECT
-  id, profile_id, public_ip, private_ips, containers, active_ip, hostname, token, created_at, updated_at
+  id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 FROM
   agents
 WHERE
@@ -129,11 +129,11 @@ func (q *Queries) ListAgentsByProfile(ctx context.Context, profileID int64) ([]A
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProfileID,
+			&i.Hostname,
 			&i.PublicIp,
 			&i.PrivateIps,
 			&i.Containers,
 			&i.ActiveIp,
-			&i.Hostname,
 			&i.Token,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -161,7 +161,7 @@ SET
   active_ip = COALESCE(?, active_ip),
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, profile_id, public_ip, private_ips, containers, active_ip, hostname, token, created_at, updated_at
+  id = ? RETURNING id, profile_id, hostname, public_ip, private_ips, containers, active_ip, token, created_at, updated_at
 `
 
 type UpdateAgentParams struct {
@@ -186,11 +186,11 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.Hostname,
 		&i.PublicIp,
 		&i.PrivateIps,
 		&i.Containers,
 		&i.ActiveIp,
-		&i.Hostname,
 		&i.Token,
 		&i.CreatedAt,
 		&i.UpdatedAt,

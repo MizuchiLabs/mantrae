@@ -16,6 +16,9 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) error
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDNSProvider(ctx context.Context, id int64) error
+	DeleteErrorById(ctx context.Context, id int64) error
+	DeleteErrorsByProfile(ctx context.Context, profileID int64) error
+	DeleteErrorsByProfileCategory(ctx context.Context, arg DeleteErrorsByProfileCategoryParams) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteRouterDNSProvider(ctx context.Context, arg DeleteRouterDNSProviderParams) error
 	DeleteSetting(ctx context.Context, key string) error
@@ -27,6 +30,7 @@ type Querier interface {
 	GetAgent(ctx context.Context, id string) (Agent, error)
 	GetAgentTraefikConfigs(ctx context.Context, profileID int64) ([]Traefik, error)
 	GetDNSProvider(ctx context.Context, id int64) (DnsProvider, error)
+	GetErrorsByProfile(ctx context.Context, profileID int64) ([]Error, error)
 	GetLocalTraefikConfig(ctx context.Context, profileID int64) (Traefik, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
@@ -41,11 +45,13 @@ type Querier interface {
 	ListAgents(ctx context.Context) ([]Agent, error)
 	ListAgentsByProfile(ctx context.Context, profileID int64) ([]Agent, error)
 	ListDNSProviders(ctx context.Context) ([]DnsProvider, error)
+	ListErrors(ctx context.Context) ([]Error, error)
 	ListProfiles(ctx context.Context) ([]Profile, error)
 	ListRouterDNSProvidersByTraefikID(ctx context.Context, traefikID int64) ([]ListRouterDNSProvidersByTraefikIDRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListTraefikIDs(ctx context.Context) ([]int64, error)
 	ListUsers(ctx context.Context) ([]ListUsersRow, error)
+	LogError(ctx context.Context, arg LogErrorParams) error
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error
 	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error

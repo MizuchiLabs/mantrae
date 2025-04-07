@@ -109,8 +109,30 @@ func UpdateDNS(DB *sql.DB) (err error) {
 				slog.Error("Failed to extract domain from rule", "error", err)
 				continue
 			}
+
+			// Clear previous error logs
+			if err := q.DeleteErrorsByProfileCategory(context.Background(), db.DeleteErrorsByProfileCategoryParams{
+				ProfileID: config.ProfileID,
+				Category:  "dns",
+			}); err != nil {
+				slog.Error("Failed to clear error logs", "error", err)
+			}
+
 			for _, domain := range domains {
 				if err := provider.UpsertRecord(domain); err != nil {
+					details := fmt.Sprintf("Router: %s", rdp.RouterName)
+					if errL := q.LogError(context.Background(), db.LogErrorParams{
+						ProfileID: config.ProfileID,
+						Category:  "dns",
+						Message:   err.Error(),
+						Details:   &details,
+					}); errL != nil {
+						slog.Error("Failed to log error", "error", errL)
+					}
+					util.Broadcast <- util.EventMessage{
+						Type:    "error",
+						Message: "error",
+					}
 					slog.Error("Failed to upsert record", "error", err)
 				}
 			}
