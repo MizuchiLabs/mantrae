@@ -15,7 +15,7 @@
 	<Search class="mr-2 size-4 shrink-0 opacity-50" />
 	<CommandPrimitive.Input
 		class={cn(
-			'flex h-11 w-full rounded-md bg-transparent py-3 text-base outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+			'flex h-11 w-full rounded-md bg-transparent py-3 text-base outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
 			className
 		)}
 		bind:ref

@@ -12,6 +12,6 @@
 
 <FormPrimitive.Legend
 	bind:ref
-	class={cn('text-sm font-medium leading-none data-[fs-error]:text-destructive', className)}
+	class={cn('text-sm font-medium leading-none data-fs-error:text-destructive', className)}
 	{...restProps}
 />

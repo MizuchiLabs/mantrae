@@ -131,7 +131,7 @@
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
 		{#each paginatedPlugins() as plugin (plugin.name)}
 			<Card.Root class="flex h-[300px] w-full flex-col">
-				<Card.Header class="flex-grow">
+				<Card.Header class="grow">
 					<Card.Title class="mb-2 flex flex-row items-center gap-4">
 						<Avatar.Root class="h-12 w-12">
 							<Avatar.Image src={plugin.iconUrl} alt={plugin.displayName} />

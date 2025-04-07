@@ -125,7 +125,7 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 export const api = {
 	// Auth ----------------------------------------------------------------------
 	async login(username: string, password: string, remember: boolean = false) {
-		const endpoint = remember ? `login?remember=true` : `/login`;
+		const endpoint = remember ? `/login?remember=true` : `/login`;
 		const data = await send(endpoint, {
 			method: 'POST',
 			body: { username, password }

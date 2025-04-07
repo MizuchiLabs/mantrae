@@ -8,9 +8,10 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { source } from '$lib/stores/source';
 	import { user } from '$lib/stores/user';
-	import autoAnimate from '@formkit/auto-animate';
+	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import '../app.css';
+	import { page } from '$app/state';
 
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -59,20 +60,24 @@
 
 <Sidebar.Provider>
 	{#if user.isLoggedIn()}
-		<div class="flex h-screen w-full bg-background">
+		<div class="bg-background flex h-screen w-full">
 			<AppSidebar />
 			<div class="flex w-full flex-1 flex-col">
 				<AppHeader />
 
-				<main class="flex-1 overflow-auto p-8 px-8" use:autoAnimate={{ duration: 100 }}>
-					{@render children?.()}
+				<main class="flex-1 overflow-auto p-8 px-8">
+					{#key page.url.pathname}
+						<div in:fade={{ duration: 200 }}>
+							{@render children?.()}
+						</div>
+					{/key}
 				</main>
 
 				<AppFooter />
 			</div>
 		</div>
 	{:else}
-		<main class="flex h-screen w-full items-center justify-center">
+		<main class="flex h-screen w-full items-center justify-center" in:fade={{ duration: 200 }}>
 			{@render children?.()}
 		</main>
 	{/if}
