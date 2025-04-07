@@ -44,7 +44,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@formkit/auto-animate": "^0.8.2",
 		"@tanstack/match-sorter-utils": "^8.19.4",
 		"@tanstack/table-core": "^8.21.2"
 	},
