@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 	import Badge from '../ui/badge/badge.svelte';
 	import { CircleHelp } from 'lucide-svelte';
+	import PasswordInput from '../ui/password-input/password-input.svelte';
 
 	interface Props {
 		dns: DNSProvider | undefined;
@@ -184,13 +185,7 @@
 
 			<div class="space-y-1">
 				<Label for="key">API Key</Label>
-				<Input
-					name="key"
-					type="text"
-					bind:value={dns.config.apiKey}
-					placeholder="API Key for {dns.type}"
-					required
-				/>
+				<PasswordInput bind:value={dns.config.apiKey} />
 			</div>
 			{#if dns.type === DNSProviderTypes.POWERDNS || dns.type === DNSProviderTypes.TECHNITIUM}
 				<div class="space-y-1">

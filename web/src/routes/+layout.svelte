@@ -9,9 +9,9 @@
 	import { source } from '$lib/stores/source';
 	import { user } from '$lib/stores/user';
 	import { fade } from 'svelte/transition';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { page } from '$app/state';
 
 	interface Props {
 		children?: import('svelte').Snippet;
