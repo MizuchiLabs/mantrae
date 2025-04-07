@@ -370,7 +370,7 @@
 			<Button
 				variant="outline"
 				size="icon"
-				onclick={() => (pagination.pageIndex = 0)}
+				onclick={() => table.firstPage()}
 				disabled={!table.getCanPreviousPage()}
 			>
 				<ChevronsLeft />
@@ -397,7 +397,7 @@
 			<Button
 				variant="outline"
 				size="icon"
-				onclick={() => (pagination.pageIndex = table.getPageCount() - 1)}
+				onclick={() => table.lastPage()}
 				disabled={!table.getCanNextPage()}
 			>
 				<ChevronsRight />
