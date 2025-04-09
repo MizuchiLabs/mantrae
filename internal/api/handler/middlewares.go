@@ -124,7 +124,7 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 	}
 }
 
-// DeleteMiddleware
+// DeleteMiddleware deletes a middleware
 func DeleteMiddleware(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q := a.Conn.GetQuery()
@@ -152,7 +152,6 @@ func DeleteMiddleware(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		// Remove router and service based on type
 		switch mwProto {
 		case "http":
 			delete(existingConfig.Config.Middlewares, mwName)
@@ -164,7 +163,7 @@ func DeleteMiddleware(a *config.App) http.HandlerFunc {
 		}
 
 		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
-			ProfileID: existingConfig.ID,
+			ProfileID: existingConfig.ProfileID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})
