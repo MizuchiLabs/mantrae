@@ -13,6 +13,6 @@
 	let { class: className = undefined, children, ...rest }: Props = $props();
 </script>
 
-<SelectPrimitive.Label class={cn('py-1.5 pl-8 pr-2 text-sm font-semibold', className)} {...rest}>
+<SelectPrimitive.Label class={cn('py-1.5 pr-2 pl-8 text-sm font-semibold', className)} {...rest}>
 	{@render children?.()}
 </SelectPrimitive.Label>

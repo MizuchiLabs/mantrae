@@ -77,7 +77,7 @@
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="privateip">Private IPs</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each agent.privateIps?.privateIps ?? [] as ip}
+						{#each agent.privateIps?.privateIps ?? [] as ip (ip)}
 							{#if agent.activeIp === ip}
 								<Badge variant="default">{ip ?? 'None'}</Badge>
 							{:else}
@@ -94,7 +94,7 @@
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="containers">Containers</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each agent.containers ?? [] as container}
+						{#each agent.containers ?? [] as container (container.id)}
 							{#if container.name}
 								<Badge variant="secondary">{container.name.slice(1)}</Badge>
 							{/if}

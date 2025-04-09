@@ -48,7 +48,7 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Entrypoints</span>
 							<div class="col-span-3 space-x-2">
-								{#each $entrypoints ?? [] as entrypoint}
+								{#each $entrypoints ?? [] as entrypoint (entrypoint.name)}
 									{#if entrypoint.asDefault}
 										<Tooltip.Provider>
 											<Tooltip.Root delayDuration={100}>
@@ -100,7 +100,7 @@
 						<div class="grid grid-cols-4 items-center gap-2 text-sm">
 							<span class="col-span-1">Providers</span>
 							<div class="col-span-3 space-x-2">
-								{#each $overview?.providers ?? [] as provider}
+								{#each $overview?.providers ?? [] as provider (provider)}
 									{#if provider === 'http'}
 										<Badge variant="secondary" class="bg-yellow-300">{provider}</Badge>
 									{:else}

@@ -136,7 +136,7 @@
 	<Label for={path} class="flex flex-row items-center justify-between">
 		{formatLabel(key)}
 		{#if metadata.description}
-			<span class="ml-1 text-sm text-muted-foreground">
+			<span class="text-muted-foreground ml-1 text-sm">
 				{metadata.description}
 			</span>
 		{/if}
@@ -267,7 +267,7 @@
 			{disabled}
 		/>
 		{#if metadata.examples?.length}
-			<div class="text-sm text-muted-foreground">
+			<div class="text-muted-foreground text-sm">
 				Examples: {metadata.examples.join(', ')}
 			</div>
 		{/if}
@@ -281,7 +281,7 @@
 			{disabled}
 		/>
 		{#if metadata.examples?.length}
-			<div class="text-sm text-muted-foreground">
+			<div class="text-muted-foreground text-sm">
 				Examples: {metadata.examples.join(', ')}
 			</div>
 		{/if}

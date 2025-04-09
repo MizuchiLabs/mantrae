@@ -27,6 +27,7 @@
 	import { TraefikSource } from '$lib/types';
 	import { source } from '$lib/stores/source';
 	import { api, rdps } from '$lib/api';
+	import type { SvelteComponent } from 'svelte';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -36,9 +37,27 @@
 		ChevronsRight,
 		Delete,
 		Plus,
-		Search
+		Search,
+		type IconProps
 	} from 'lucide-svelte';
 	import { limit } from '$lib/stores/common';
+	import { toast } from 'svelte-sonner';
+
+	export type BulkAction<TData> = {
+		label: string;
+		icon?: typeof SvelteComponent<IconProps>;
+		class?: string | undefined;
+		variant?:
+			| 'default'
+			| 'destructive'
+			| 'outline'
+			| 'secondary'
+			| 'ghost'
+			| 'link'
+			| null
+			| undefined;
+		onClick: (selectedRows: TData[]) => Promise<void> | void;
+	};
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -50,7 +69,7 @@
 		showSourceTabs?: boolean;
 		onRowSelection?: (selectedRows: TData[]) => void;
 		getRowClassName?: (row: TData) => string;
-		onBulkDelete?: (selectedRows: TData[]) => Promise<void>;
+		bulkActions?: BulkAction<TData>[] | undefined;
 	};
 
 	let {
@@ -59,7 +78,7 @@
 		createButton,
 		showSourceTabs,
 		getRowClassName,
-		onBulkDelete
+		bulkActions
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
@@ -199,12 +218,24 @@
 		pagination.pageSize = Number(value);
 		limit.value = value;
 	}
+	async function executeBulkAction(action: BulkAction<TData>) {
+		const selectedRowsData = table.getSelectedRowModel().rows.map((row) => row.original);
+		if (selectedRowsData.length === 0) return;
+
+		try {
+			await action.onClick(selectedRowsData);
+			table.resetRowSelection(true);
+		} catch (err: unknown) {
+			const e = err as Error;
+			toast.error(`Action "${action.label}" failed.`, { description: e.message });
+		}
+	}
 </script>
 
 <div>
 	<div class="flex items-center justify-between gap-4 py-4">
 		<div class="relative flex items-center">
-			<Search class="absolute left-3 text-muted-foreground" size={16} />
+			<Search class="text-muted-foreground absolute left-3" size={16} />
 			<Input
 				placeholder="Search..."
 				bind:value={globalFilter}
@@ -212,7 +243,7 @@
 				class="w-[200px] pl-9 lg:w-[350px]"
 			/>
 			<Delete
-				class="absolute right-4 text-muted-foreground"
+				class="text-muted-foreground absolute right-4"
 				size={16}
 				onclick={() => table.setGlobalFilter('')}
 			/>
@@ -324,26 +355,30 @@
 		{/key}
 	</div>
 
-	{#if table.getSelectedRowModel().rows.length > 0}
-		<div class="my-2 flex items-center gap-2 rounded-lg border bg-muted/50 p-2">
-			<span class="text-sm text-muted-foreground">
-				{table.getFilteredSelectedRowModel().rows.length} of{' '}
+	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
+		<div
+			class="bg-muted/50 my-2 flex items-center justify-between gap-2 rounded-lg border p-2 pr-6"
+		>
+			<div class="flex items-center gap-2">
+				{#each bulkActions as action (action.label)}
+					<Button
+						variant={action.variant ?? 'secondary'}
+						size="sm"
+						class={action.class}
+						onclick={() => executeBulkAction(action)}
+					>
+						{#if action.icon}
+							{@const Icon = action.icon}
+							<Icon size={16} class="mr-1 h-4 w-4" />
+						{/if}
+						{action.label}
+					</Button>
+				{/each}
+			</div>
+			<span class="text-muted-foreground text-sm">
+				{table.getFilteredSelectedRowModel().rows.length} of
 				{table.getFilteredRowModel().rows.length} item(s) selected.
 			</span>
-			{#if onBulkDelete}
-				<Button
-					variant="destructive"
-					size="sm"
-					onclick={() => {
-						const selectedRows = table.getSelectedRowModel().rows.map((row) => row.original);
-						onBulkDelete(selectedRows).then(() => {
-							table.resetRowSelection();
-						});
-					}}
-				>
-					Delete Selected
-				</Button>
-			{/if}
 		</div>
 	{/if}
 
@@ -360,7 +395,7 @@
 					{pagination.pageSize}
 				</Select.Trigger>
 				<Select.Content>
-					{#each pageSizeOptions as size}
+					{#each pageSizeOptions as size (size)}
 						<Select.Item value={size.toString()}>{size}</Select.Item>
 					{/each}
 				</Select.Content>
@@ -383,7 +418,7 @@
 			>
 				<ChevronLeft />
 			</Button>
-			<span class="text-sm text-muted-foreground">
+			<span class="text-muted-foreground text-sm">
 				Page {pagination.pageIndex + 1} / {table.getPageCount()}
 			</span>
 			<Button

@@ -11,13 +11,13 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
+	}
 }
 
 @layer base {
@@ -93,21 +93,21 @@
 }
 
 @layer utilities {
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
+	::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
 
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(100, 100, 100, 0.4);
-    border-radius: 25px;
-  }
+	::-webkit-scrollbar-thumb {
+		background-color: rgba(100, 100, 100, 0.4);
+		border-radius: 25px;
+	}
 
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
 
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(100, 100, 100, 0.6);
-  }
+	::-webkit-scrollbar-thumb:hover {
+		background-color: rgba(100, 100, 100, 0.6);
+	}
 }

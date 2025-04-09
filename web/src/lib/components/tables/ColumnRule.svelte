@@ -117,7 +117,7 @@
 					<div class="flex flex-col">
 						<div class="flex items-center gap-2">
 							{#if isClickable}
-								<div class="h-4 w-0.5 bg-muted-foreground/20"></div>
+								<div class="bg-muted-foreground/20 h-4 w-0.5"></div>
 								<a
 									href={getUrl(value)}
 									target="_blank"
@@ -128,7 +128,7 @@
 									<Link class="h-3 w-3" />
 								</a>
 							{:else}
-								<div class="h-4 w-0.5 bg-muted-foreground/20"></div>
+								<div class="bg-muted-foreground/20 h-4 w-0.5"></div>
 								<span class="text-sm">{value}</span>
 							{/if}
 						</div>

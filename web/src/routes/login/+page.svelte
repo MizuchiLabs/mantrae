@@ -76,7 +76,7 @@
 								<Label for="terms1" class="text-sm">Remember me</Label>
 							</div>
 						</div>
-						<button class="text-xs text-muted-foreground" type="button" onclick={handleReset}>
+						<button class="text-muted-foreground text-xs" type="button" onclick={handleReset}>
 							Forgot password?
 						</button>
 					</div>

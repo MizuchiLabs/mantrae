@@ -184,7 +184,7 @@
 					<Label>
 						{formatSettingName(key)}
 						{#if setting.description}
-							<p class="text-sm text-muted-foreground">{setting.description}</p>
+							<p class="text-muted-foreground text-sm">{setting.description}</p>
 						{/if}
 					</Label>
 
@@ -275,7 +275,7 @@
 				</div>
 			{/each}
 			{#if !$backups || $backups.length === 0}
-				<p class="text-center text-sm text-muted-foreground">No backups available</p>
+				<p class="text-muted-foreground text-center text-sm">No backups available</p>
 			{/if}
 		</div>
 	</Dialog.Content>

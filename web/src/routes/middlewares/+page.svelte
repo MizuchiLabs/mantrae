@@ -1,11 +1,11 @@
 <script lang="ts">
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
-	import DataTable from '$lib/components/tables/DataTable.svelte';
+	import DataTable, { type BulkAction } from '$lib/components/tables/DataTable.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Middleware, SupportedMiddleware } from '$lib/types/middlewares';
-	import { Eye, Layers, Pencil, Trash } from 'lucide-svelte';
+	import { Layers, Pencil, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, middlewares } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
@@ -113,50 +113,46 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
-				if (source.value === TraefikSource.LOCAL) {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit Middleware',
-								icon: Pencil,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										mode: 'edit',
-										middleware: row.original
-									};
-								}
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: 'Edit Middleware',
+							icon: Pencil,
+							onClick: () => {
+								modalState = {
+									isOpen: true,
+									mode: 'edit',
+									middleware: row.original
+								};
+							}
+						},
+						{
+							type: 'button',
+							label: 'Delete Middleware',
+							icon: Trash,
+							classProps: 'text-destructive',
+							onClick: () => {
+								deleteMiddleware(row.original);
 							},
-							{
-								label: 'Delete Middleware',
-								icon: Trash,
-								classProps: 'text-destructive',
-								onClick: () => {
-									deleteMiddleware(row.original);
-								}
-							}
-						]
-					});
-				} else {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'View Middleware',
-								icon: Eye,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										mode: 'edit',
-										middleware: row.original
-									};
-								}
-							}
-						]
-					});
-				}
+							disabled: source.value !== TraefikSource.LOCAL
+						}
+					],
+					shareObject: source.value === TraefikSource.LOCAL ? row.original : undefined
+				});
 			}
 		}
 	];
+
+	const mwBulkActions: BulkAction<Middleware>[] = [
+		{
+			label: 'Delete',
+			icon: Trash,
+			variant: 'destructive',
+			onClick: handleBulkDelete
+		}
+	];
+
 	let columns: ColumnDef<Middleware>[] = $derived(
 		source.value === TraefikSource.LOCAL
 			? defaultColumns.filter((c) => c.id !== 'provider')
@@ -188,7 +184,7 @@
 				label: 'Add Middleware',
 				onClick: openCreateModal
 			}}
-			onBulkDelete={handleBulkDelete}
+			bulkActions={mwBulkActions}
 		/>
 	{:else}
 		<DataTable {columns} data={$middlewares || []} showSourceTabs={true} />

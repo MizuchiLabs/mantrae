@@ -7,6 +7,7 @@
 	import type { Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
+	import type { BulkAction } from '$lib/components/tables/DataTable.svelte';
 	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
@@ -80,7 +81,6 @@
 		try {
 			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
 			if (!confirmed) return;
-
 			await Promise.all(selectedRows.map((row) => api.deleteRouter(row.router)));
 			toast.success(`Successfully deleted ${selectedRows.length} routers`);
 		} catch (err: unknown) {
@@ -260,40 +260,39 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
-				if (source.value === TraefikSource.LOCAL) {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit Router',
-								icon: Pencil,
-								onClick: () => {
-									openEditModal(row.original.router, row.original.service);
-								}
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: 'Edit Router',
+							icon: Pencil,
+							onClick: () => {
+								openEditModal(row.original.router, row.original.service);
+							}
+						},
+						{
+							type: 'button',
+							label: 'Delete Router',
+							icon: Trash,
+							classProps: 'text-destructive',
+							onClick: () => {
+								deleteRouter(row.original.router);
 							},
-							{
-								label: 'Delete Router',
-								icon: Trash,
-								classProps: 'text-destructive',
-								onClick: () => {
-									deleteRouter(row.original.router);
-								}
-							}
-						]
-					});
-				} else {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit Router',
-								icon: Pencil,
-								onClick: () => {
-									openEditModal(row.original.router, row.original.service);
-								}
-							}
-						]
-					});
-				}
+							disabled: source.value !== TraefikSource.LOCAL
+						}
+					],
+					shareObject: source.value === TraefikSource.LOCAL ? row.original : undefined
+				});
 			}
+		}
+	];
+
+	const routerBulkActions: BulkAction<RouterWithService>[] = [
+		{
+			label: 'Delete',
+			icon: Trash,
+			variant: 'destructive',
+			onClick: handleBulkDelete
 		}
 	];
 
@@ -332,7 +331,7 @@
 				label: 'Add Router',
 				onClick: openCreateModal
 			}}
-			onBulkDelete={handleBulkDelete}
+			bulkActions={routerBulkActions}
 		/>
 	{:else}
 		<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />

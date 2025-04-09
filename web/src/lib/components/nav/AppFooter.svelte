@@ -13,9 +13,9 @@
 </script>
 
 <footer
-	class="sticky bottom-0 right-0 flex flex-row items-center justify-end bg-transparent px-2 py-1"
+	class="sticky right-0 bottom-0 flex flex-row items-center justify-end bg-transparent px-2 py-1"
 >
-	<div class="flex items-center text-muted-foreground">
+	<div class="text-muted-foreground flex items-center">
 		<Button
 			variant="ghost"
 			href="https://mizuchi.dev/mantrae/"

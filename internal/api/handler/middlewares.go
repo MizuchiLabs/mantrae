@@ -84,6 +84,11 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 		// Ensure name has no @
 		params.Name = strings.Split(params.Name, "@")[0]
 
+		if params.Middleware == nil {
+			http.Error(w, "Missing middleware configuration", http.StatusBadRequest)
+			return
+		}
+
 		// Update configuration based on type
 		switch params.Protocol {
 		case "http":
@@ -100,7 +105,7 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 		}
 
 		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
-			ProfileID: profileID,
+			ProfileID: existingConfig.ProfileID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})

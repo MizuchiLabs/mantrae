@@ -130,7 +130,7 @@
 <Command.Dialog bind:open>
 	<Command.Root loop>
 		<Command.Input placeholder="Search..." bind:value={searchQuery} />
-		<Command.List class="max-h-[800px] overflow-y-auto overflow-x-hidden">
+		<Command.List class="max-h-[800px] overflow-x-hidden overflow-y-auto">
 			{#if searchQuery !== ''}
 				<Command.Group heading="Routers">
 					<Command.Empty>No results found.</Command.Empty>

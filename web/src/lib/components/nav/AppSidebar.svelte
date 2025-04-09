@@ -95,7 +95,7 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<div
-									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+									class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
 								>
 									<img src={logo} alt="Mantrae Logo" width="18" />
 								</div>
@@ -115,7 +115,7 @@
 						side={sidebar.isMobile ? 'bottom' : 'right'}
 						sideOffset={4}
 					>
-						<DropdownMenu.Label class="text-xs text-muted-foreground">Profiles</DropdownMenu.Label>
+						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
 						{#each $profiles as p (p.name)}
 							<DropdownMenu.Item
 								onSelect={() => (profile.value = p)}
@@ -138,10 +138,10 @@
 						{/each}
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="gap-2 p-2" onSelect={() => (modalState = { isOpen: true })}>
-							<div class="flex size-6 items-center justify-center rounded-md border bg-background">
+							<div class="bg-background flex size-6 items-center justify-center rounded-md border">
 								<Plus class="size-4" />
 							</div>
-							<div class="font-medium text-muted-foreground">Add Profile</div>
+							<div class="text-muted-foreground font-medium">Add Profile</div>
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>

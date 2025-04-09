@@ -162,7 +162,7 @@
 		<div class="flex flex-col gap-4 py-2">
 			{#if mode === 'create'}
 				<div class="flex flex-col gap-2">
-					<span class="text-sm text-primary">Middleware Type & Protocol</span>
+					<span class="text-primary text-sm">Middleware Type & Protocol</span>
 					<div class="flex items-center gap-4">
 						<Select.Root
 							type="single"
@@ -175,13 +175,13 @@
 							</Select.Trigger>
 							<Select.Content>
 								{#if middleware.protocol === 'http'}
-									{#each HTTPMiddlewareKeys as type}
+									{#each HTTPMiddlewareKeys as type (type.value)}
 										{#if type.value !== 'plugin'}
 											<Select.Item value={type.value}>{type.label}</Select.Item>
 										{/if}
 									{/each}
 								{:else if middleware.protocol === 'tcp'}
-									{#each TCPMiddlewareKeys as type}
+									{#each TCPMiddlewareKeys as type (type.value)}
 										<Select.Item value={type.value}>{type.label}</Select.Item>
 									{/each}
 								{/if}

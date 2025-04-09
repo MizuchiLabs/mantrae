@@ -329,6 +329,14 @@ export const api = {
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
+	async shareRouter(data: UpsertRouterParams, profileId: number) {
+		await send(`/router/${profileId}`, {
+			method: 'POST',
+			body: data
+		});
+		await api.getTraefikConfig(TraefikSource.LOCAL);
+	},
+
 	// Middlewares ---------------------------------------------------------------
 	async upsertMiddleware(data: UpsertMiddlewareParams) {
 		if (!profile.hasValidId()) {
@@ -349,6 +357,14 @@ export const api = {
 		}
 		await send(`/middleware/${profile.id}/${data.name}/${data.protocol}`, {
 			method: 'DELETE'
+		});
+		await api.getTraefikConfig(TraefikSource.LOCAL);
+	},
+
+	async shareMiddleware(data: UpsertMiddlewareParams, profileId: number) {
+		await send(`/middleware/${profileId}`, {
+			method: 'POST',
+			body: data
 		});
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},

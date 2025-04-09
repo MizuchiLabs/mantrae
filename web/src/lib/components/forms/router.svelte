@@ -90,7 +90,7 @@
 				bind:open={selectDNSOpen}
 			>
 				<Select.Content customAnchor={dnsAnchor} align="end">
-					{#each $dnsProviders as dns}
+					{#each $dnsProviders as dns (dns.id)}
 						<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
 							{dns.name} ({dns.type})
 							{#if dns.isActive}
@@ -183,7 +183,7 @@
 					{router.entryPoints?.length ? router.entryPoints.join(', ') : 'Select entrypoints'}
 				</Select.Trigger>
 				<Select.Content>
-					{#each $entrypoints as ep}
+					{#each $entrypoints as ep (ep.name)}
 						<Select.Item value={ep.name}>
 							<div class="flex items-center gap-2">
 								{ep.name}
@@ -206,7 +206,7 @@
 						{router.middlewares?.length ? router.middlewares.join(', ') : 'Select middlewares'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each $middlewares.filter((m) => m.protocol === router.protocol) as middleware}
+						{#each $middlewares.filter((m) => m.protocol === router.protocol) as middleware (middleware.name)}
 							<Select.Item value={middleware.name}>
 								{middleware.name}
 							</Select.Item>
@@ -229,7 +229,7 @@
 					/>
 					{#if source.isLocal()}
 						<div class="flex flex-wrap gap-1">
-							{#each certResolvers as resolver}
+							{#each certResolvers as resolver (resolver)}
 								{#if resolver !== router.tls.certResolver}
 									<Badge
 										onclick={() => router.tls && (router.tls.certResolver = resolver)}
