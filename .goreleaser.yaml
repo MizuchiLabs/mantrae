@@ -92,10 +92,16 @@ changelog:
       regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
       order: 1
     - title: "🐛 Bug fixes"
-      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 2
     - title: "📚 Documentation"
       regexp: '^.*?doc(\([[:word:]]+\))??!?:.+$'
       order: 3
+    - title: "🚧 Work in progress"
+      regexp: '^.*?wip(\([[:word:]]+\))??!?:.+$'
+      order: 4
+    - title: "🏷️ Other changes"
+      regexp: '^.*?chore(\([[:word:]]+\))??!?:.+$'
+      order: 5
     - title: Misc
       order: 999
