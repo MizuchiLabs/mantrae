@@ -86,7 +86,7 @@
 
 	function showDropdown() {
 		const hasActions = actions?.some((action) => action.type === 'dropdown') ?? false;
-		return hasActions || !!shareObject;
+		return hasActions || (!!shareObject && $profiles?.length > 1);
 	}
 </script>
 
@@ -150,7 +150,7 @@
 						{/if}
 					{/each}
 
-					{#if shareObject}
+					{#if shareObject && $profiles?.length > 1}
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>
 								<Tags class="mr-2 size-4" />
