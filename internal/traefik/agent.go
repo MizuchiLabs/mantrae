@@ -3,11 +3,13 @@ package traefik
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/traefik/paerser/parser"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"golang.org/x/exp/maps"
 )
 
 func DecodeAgentConfig(DB *sql.DB, agent db.Agent) error {
@@ -50,46 +52,44 @@ func DecodeAgentConfig(DB *sql.DB, agent db.Agent) error {
 
 		runtimeConfig := runtime.NewConfig(*dynConfig)
 
-		// Merge configurations
-		for k, v := range runtimeConfig.Routers {
-			params.Config.Routers[k] = v
+		// Merge routers
+		maps.Copy(params.Config.Routers, runtimeConfig.Routers)
+		maps.Copy(params.Config.TCPRouters, runtimeConfig.TCPRouters)
+		maps.Copy(params.Config.UDPRouters, runtimeConfig.UDPRouters)
 
-			service := dynamic.Service{
-				LoadBalancer: &dynamic.ServersLoadBalancer{
-					Servers: []dynamic.Server{{URL: *agent.ActiveIp}},
-				},
+		// Merge services
+		for k, v := range runtimeConfig.Services {
+			service := v.Service
+			for i, svc := range service.LoadBalancer.Servers {
+				url := fmt.Sprintf("%s://%s:%s", svc.Scheme, *agent.ActiveIp, svc.Port)
+				service.LoadBalancer.Servers[i].URL = url
 			}
 			params.Config.Services[k] = &db.ServiceInfo{
-				ServiceInfo:  &runtime.ServiceInfo{Service: &service},
-				ServerStatus: map[string]string{},
+				ServiceInfo: &runtime.ServiceInfo{Service: service},
 			}
 		}
-		for k, v := range runtimeConfig.Middlewares {
-			params.Config.Middlewares[k] = v
-		}
-		for k, v := range runtimeConfig.TCPRouters {
-			params.Config.TCPRouters[k] = v
 
-			service := dynamic.TCPService{
-				LoadBalancer: &dynamic.TCPServersLoadBalancer{
-					Servers: []dynamic.TCPServer{{Address: *agent.ActiveIp}},
-				},
+		for k, v := range runtimeConfig.TCPServices {
+			service := v.TCPService
+			for i, svc := range service.LoadBalancer.Servers {
+				address := fmt.Sprintf("%s:%s", *agent.ActiveIp, svc.Port)
+				service.LoadBalancer.Servers[i].Address = address
 			}
-			params.Config.TCPServices[k] = &runtime.TCPServiceInfo{TCPService: &service}
+			params.Config.TCPServices[k] = &runtime.TCPServiceInfo{TCPService: service}
 		}
-		for k, v := range runtimeConfig.TCPMiddlewares {
-			params.Config.TCPMiddlewares[k] = v
-		}
-		for k, v := range runtimeConfig.UDPRouters {
-			params.Config.UDPRouters[k] = v
 
-			service := dynamic.UDPService{
-				LoadBalancer: &dynamic.UDPServersLoadBalancer{
-					Servers: []dynamic.UDPServer{{Address: *agent.ActiveIp}},
-				},
+		for k, v := range runtimeConfig.UDPServices {
+			service := v.UDPService
+			for i, svc := range service.LoadBalancer.Servers {
+				address := fmt.Sprintf("%s:%s", *agent.ActiveIp, svc.Port)
+				service.LoadBalancer.Servers[i].Address = address
 			}
-			params.Config.UDPServices[k] = &runtime.UDPServiceInfo{UDPService: &service}
+			params.Config.UDPServices[k] = &runtime.UDPServiceInfo{UDPService: service}
 		}
+
+		// Merge middlewares
+		maps.Copy(params.Config.Middlewares, runtimeConfig.Middlewares)
+		maps.Copy(params.Config.TCPMiddlewares, runtimeConfig.TCPMiddlewares)
 	}
 
 	q := db.New(DB)
