@@ -85,6 +85,7 @@
 				return renderComponent(TableActions, {
 					actions: [
 						{
+							type: 'button',
 							label: 'Edit DNSProvider',
 							icon: Pencil,
 							onClick: () => {
@@ -95,6 +96,7 @@
 							}
 						},
 						{
+							type: 'button',
 							label: 'Delete DNSProvider',
 							icon: Trash,
 							classProps: 'text-destructive',

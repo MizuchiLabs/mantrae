@@ -74,6 +74,7 @@
 				return renderComponent(TableActions, {
 					actions: [
 						{
+							type: 'button',
 							label: editText,
 							icon: editIcon,
 							onClick: () => {
@@ -84,6 +85,7 @@
 							}
 						},
 						{
+							type: 'button',
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',

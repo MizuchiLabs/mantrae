@@ -82,25 +82,10 @@
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
-				if (row.original.id === 1) {
-					return renderComponent(TableActions, {
-						actions: [
-							{
-								label: 'Edit User',
-								icon: Pencil,
-								onClick: () => {
-									modalState = {
-										isOpen: true,
-										user: row.original
-									};
-								}
-							}
-						]
-					});
-				}
 				return renderComponent(TableActions, {
 					actions: [
 						{
+							type: 'button',
 							label: 'Edit User',
 							icon: Pencil,
 							onClick: () => {
@@ -111,12 +96,14 @@
 							}
 						},
 						{
+							type: 'button',
 							label: 'Delete User',
 							icon: Trash,
 							classProps: 'text-destructive',
 							onClick: () => {
 								deleteUser(row.original);
-							}
+							},
+							disabled: row.original.id === 1
 						}
 					]
 				});
