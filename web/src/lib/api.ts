@@ -330,6 +330,7 @@ export const api = {
 	},
 
 	async shareRouter(data: UpsertRouterParams, profileId: number) {
+		console.log(data);
 		await send(`/router/${profileId}`, {
 			method: 'POST',
 			body: data

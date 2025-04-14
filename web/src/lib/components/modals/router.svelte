@@ -32,33 +32,26 @@
 				return;
 			}
 
-			// Sync service name with router
-			service.name = router.name;
-			service.protocol = router.protocol;
+			const protocol = (router.protocol = service.protocol = router.protocol);
 			router.service = router.name;
+			service.name = router.name;
 
-			let params: UpsertRouterParams = {
+			const params: UpsertRouterParams = {
 				name: router.name,
-				protocol: router.protocol
+				protocol,
+				...(protocol === 'http'
+					? {
+							router,
+							service
+						}
+					: {
+							[`${protocol}Router`]: router,
+							[`${protocol}Service`]: service
+						})
 			};
-			switch (router.protocol) {
-				case 'http':
-					params.router = router;
-					params.service = service;
-					break;
-				case 'tcp':
-					params.tcpRouter = router;
-					params.tcpService = service;
-					break;
-				case 'udp':
-					params.udpRouter = router;
-					params.udpService = service;
-					break;
-			}
-
 			await api.upsertRouter(params);
-			open = false;
 			toast.success(`Router ${mode === 'create' ? 'created' : 'updated'} successfully`);
+			open = false;
 		} catch (err: unknown) {
 			const e = err as Error;
 			toast.error(`Failed to ${mode} router`, {

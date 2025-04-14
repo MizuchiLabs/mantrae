@@ -7,7 +7,6 @@
 	import type { Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from 'lucide-svelte';
 	import { TraefikSource } from '$lib/types';
-	import type { BulkAction } from '$lib/components/tables/DataTable.svelte';
 	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
@@ -15,6 +14,7 @@
 	import { onMount } from 'svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 	import { profile } from '$lib/stores/profile';
+	import type { BulkAction } from '$lib/components/tables/types';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -289,6 +289,7 @@
 
 	const routerBulkActions: BulkAction<RouterWithService>[] = [
 		{
+			type: 'button',
 			label: 'Delete',
 			icon: Trash,
 			variant: 'destructive',

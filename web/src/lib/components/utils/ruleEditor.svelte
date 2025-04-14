@@ -260,7 +260,7 @@
 
 			{#if showDropdown}
 				<ul class="bg-card absolute mt-1 max-h-48 w-80 overflow-y-auto rounded-lg border p-2">
-					{#each filteredRules as template, i}
+					{#each filteredRules as template, i (template)}
 						<button
 							role="option"
 							aria-selected={i === selectedRuleIndex}
@@ -293,7 +293,7 @@
 			<div class="text-muted-foreground text-xs">
 				<span class="font-bold">Examples:</span>
 				<ul class="list-inside list-disc">
-					{#each ruleTemplates[type] as template}
+					{#each ruleTemplates[type] as template (template)}
 						<li>{template}</li>
 					{/each}
 				</ul>

@@ -179,7 +179,7 @@
 			<Separator />
 		</Card.Header>
 		<Card.Content class="flex  flex-col gap-6">
-			{#each Object.entries($settings) as [key, setting]}
+			{#each Object.entries($settings) as [key, setting] (key)}
 				<div class="flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
 					<Label>
 						{formatSettingName(key)}
@@ -255,7 +255,7 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<div class="flex flex-col gap-2">
-			{#each $backups || [] as backup}
+			{#each $backups || [] as backup (backup.name)}
 				<div class="flex items-center justify-between font-mono text-sm">
 					<Button variant="link" onclick={() => api.downloadBackupByName(backup.name)}>
 						Backup:

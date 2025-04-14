@@ -134,7 +134,7 @@
 			{#if searchQuery !== ''}
 				<Command.Group heading="Routers">
 					<Command.Empty>No results found.</Command.Empty>
-					{#each $routerServiceMerge || [] as m}
+					{#each $routerServiceMerge || [] as m (m.router.name)}
 						<Command.Item onSelect={() => updateRouter(m.router, m.service)} value={m.router.name}>
 							<Route class="mr-2 h-4 w-4" />
 							<span>{m.router.name}</span>
@@ -144,7 +144,7 @@
 				<Command.Separator />
 				<Command.Group heading="Middlewares">
 					<Command.Empty>No results found.</Command.Empty>
-					{#each $middlewares || [] as m}
+					{#each $middlewares || [] as m (m.name)}
 						<Command.Item onSelect={() => updateMiddleware(m)} value={m.name}>
 							<Layers class="mr-2 h-4 w-4" />
 							<span>{m.name}</span>

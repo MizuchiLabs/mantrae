@@ -87,7 +87,7 @@
 						{dns.type ? dns.type : 'Select type'}
 					</Select.Trigger>
 					<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-						{#each dnsProviders as type}
+						{#each dnsProviders as type (type.value)}
 							<Select.Item value={type.value} label={type.label}>
 								{type.label}
 							</Select.Item>

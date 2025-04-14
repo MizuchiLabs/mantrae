@@ -16,7 +16,7 @@
 </script>
 
 <div class="flex flex-col items-start gap-1">
-	{#each visibleItems as item}
+	{#each visibleItems as item (item)}
 		<Badge {variant} {...restProps}>{item}</Badge>
 	{/each}
 	{#if remaining > 0}

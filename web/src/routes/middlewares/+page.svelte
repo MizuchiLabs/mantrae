@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
-	import DataTable, { type BulkAction } from '$lib/components/tables/DataTable.svelte';
+	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
@@ -12,6 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import { source } from '$lib/stores/source';
 	import { profile } from '$lib/stores/profile';
+	import type { BulkAction } from '$lib/components/tables/types';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -146,6 +147,7 @@
 
 	const mwBulkActions: BulkAction<Middleware>[] = [
 		{
+			type: 'button',
 			label: 'Delete',
 			icon: Trash,
 			variant: 'destructive',

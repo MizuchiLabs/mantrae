@@ -193,9 +193,10 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 		return nil
 	}
 
+	// Skip if profile is correct
 	if profile.Url == a.Config.Traefik.URL &&
-		*profile.Username == a.Config.Traefik.Username &&
-		*profile.Password == a.Config.Traefik.Password &&
+		util.SafeDeref(profile.Username) == a.Config.Traefik.Username &&
+		util.SafeDeref(profile.Password) == a.Config.Traefik.Password &&
 		profile.Tls == a.Config.Traefik.TLS {
 		return nil
 	}

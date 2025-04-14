@@ -9,6 +9,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"golang.org/x/exp/maps"
 	"sigs.k8s.io/yaml"
 )
 
@@ -190,7 +191,5 @@ func mergeMaps[K comparable, V any](base, overlay map[K]V) {
 		return
 	}
 
-	for k, v := range overlay {
-		base[k] = v
-	}
+	maps.Copy(base, overlay)
 }

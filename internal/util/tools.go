@@ -23,6 +23,13 @@ func IsTest() bool {
 	return strings.HasSuffix(os.Args[0], ".test")
 }
 
+func SafeDeref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
 // GenPassword generates a random password of the specified length
 func GenPassword(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"

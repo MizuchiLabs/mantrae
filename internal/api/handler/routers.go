@@ -97,7 +97,7 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 					strings.Split(params.Router.Service, "@")[0],
 				)
 			}
-			// Check if router is new and add dns provider
+			// Check if router is new and add default dns provider (if there is one)
 			if _, ok := existingConfig.Config.Routers[params.Name]; !ok && dnsProvider.ID != 0 {
 				if err = q.AddRouterDNSProvider(r.Context(), db.AddRouterDNSProviderParams{
 					TraefikID:  existingConfig.ID,
@@ -133,7 +133,7 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 		}
 
 		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
-			ProfileID: existingConfig.ID,
+			ProfileID: existingConfig.ProfileID,
 			Source:    source.Local,
 			Config:    existingConfig.Config,
 		})
@@ -241,10 +241,10 @@ func validateRouterParams(params *UpsertRouterParams) error {
 		}
 		// Validate HTTP specific fields
 		if params.Router.Rule == "" {
-			return errors.New("http router requires a rule")
+			return errors.New("HTTP router requires a rule")
 		}
 		if len(params.Router.EntryPoints) == 0 {
-			return errors.New("http router requires at least one entrypoint")
+			return errors.New("HTTP router requires at least one entrypoint")
 		}
 	case "tcp":
 		if params.TCPRouter == nil {
@@ -255,7 +255,10 @@ func validateRouterParams(params *UpsertRouterParams) error {
 		}
 		// Validate TCP specific fields
 		if params.TCPRouter.Rule == "" {
-			return errors.New("tcp router requires a rule")
+			return errors.New("TCP router requires a rule")
+		}
+		if params.TCPRouter.EntryPoints == nil {
+			return errors.New("TCP router requires at least one entrypoint")
 		}
 	case "udp":
 		if params.UDPRouter == nil {
@@ -266,7 +269,7 @@ func validateRouterParams(params *UpsertRouterParams) error {
 		}
 		// Validate UDP specific fields
 		if len(params.UDPRouter.EntryPoints) == 0 {
-			return errors.New("udp router requires at least one entrypoint")
+			return errors.New("UDP router requires at least one entrypoint")
 		}
 	default:
 		return ErrInvalidRouterType

@@ -65,7 +65,7 @@
 
 <form onsubmit={handleSubmit}>
 	<div class="grid gap-4">
-		{#each fields as field}
+		{#each fields as field (field.key)}
 			<FormField {...field} {disabled} bind:data={formData} />
 		{/each}
 	</div>

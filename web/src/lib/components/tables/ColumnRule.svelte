@@ -113,7 +113,7 @@
 		</HoverCard.Trigger>
 		<HoverCard.Content class="w-auto">
 			<div class="flex flex-col gap-2">
-				{#each parsedRules as { value, isClickable }}
+				{#each parsedRules as { value, isClickable } (value)}
 					<div class="flex flex-col">
 						<div class="flex items-center gap-2">
 							{#if isClickable}

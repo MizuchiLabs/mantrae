@@ -27,7 +27,6 @@
 	import { TraefikSource } from '$lib/types';
 	import { source } from '$lib/stores/source';
 	import { api, rdps } from '$lib/api';
-	import type { SvelteComponent } from 'svelte';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -37,27 +36,11 @@
 		ChevronsRight,
 		Delete,
 		Plus,
-		Search,
-		type IconProps
+		Search
 	} from 'lucide-svelte';
 	import { limit } from '$lib/stores/common';
-	import { toast } from 'svelte-sonner';
-
-	export type BulkAction<TData> = {
-		label: string;
-		icon?: typeof SvelteComponent<IconProps>;
-		class?: string | undefined;
-		variant?:
-			| 'default'
-			| 'destructive'
-			| 'outline'
-			| 'secondary'
-			| 'ghost'
-			| 'link'
-			| null
-			| undefined;
-		onClick: (selectedRows: TData[]) => Promise<void> | void;
-	};
+	import BulkActions from './BulkActions.svelte';
+	import type { BulkAction } from './types';
 
 	type DataTableProps<TData, TValue> = {
 		columns: ColumnDef<TData, TValue>[];
@@ -218,18 +201,6 @@
 		pagination.pageSize = Number(value);
 		limit.value = value;
 	}
-	async function executeBulkAction(action: BulkAction<TData>) {
-		const selectedRowsData = table.getSelectedRowModel().rows.map((row) => row.original);
-		if (selectedRowsData.length === 0) return;
-
-		try {
-			await action.onClick(selectedRowsData);
-			table.resetRowSelection(true);
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(`Action "${action.label}" failed.`, { description: e.message });
-		}
-	}
 </script>
 
 <div>
@@ -354,32 +325,13 @@
 			</Table.Root>
 		{/key}
 	</div>
-
 	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
-		<div
-			class="bg-muted/50 my-2 flex items-center justify-between gap-2 rounded-lg border p-2 pr-6"
-		>
-			<div class="flex items-center gap-2">
-				{#each bulkActions as action (action.label)}
-					<Button
-						variant={action.variant ?? 'secondary'}
-						size="sm"
-						class={action.class}
-						onclick={() => executeBulkAction(action)}
-					>
-						{#if action.icon}
-							{@const Icon = action.icon}
-							<Icon size={16} class="mr-1 h-4 w-4" />
-						{/if}
-						{action.label}
-					</Button>
-				{/each}
-			</div>
-			<span class="text-muted-foreground text-sm">
-				{table.getFilteredSelectedRowModel().rows.length} of
-				{table.getFilteredRowModel().rows.length} item(s) selected.
-			</span>
-		</div>
+		<BulkActions
+			selectedCount={table.getFilteredSelectedRowModel().rows.length}
+			totalCount={table.getFilteredRowModel().rows.length}
+			actions={bulkActions}
+			selectedItems={table.getSelectedRowModel().rows.map((row) => row.original)}
+		/>
 	{/if}
 
 	<!-- Pagination -->

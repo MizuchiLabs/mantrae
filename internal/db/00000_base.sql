@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE profiles (
+CREATE TABLE "profiles" (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name VARCHAR(255) NOT NULL UNIQUE,
   url TEXT NOT NULL,
@@ -8,33 +8,6 @@ CREATE TABLE profiles (
   tls BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  username VARCHAR(255) NOT NULL UNIQUE,
-  password TEXT NOT NULL,
-  email VARCHAR(255),
-  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-  otp VARCHAR(6),
-  otp_expiry TIMESTAMP,
-  last_login TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE agents (
-  id TEXT PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
-  public_ip TEXT,
-  private_ips JSONB,
-  containers JSONB,
-  active_ip TEXT,
-  hostname TEXT,
-  token TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 CREATE TABLE dns_providers (
@@ -63,11 +36,38 @@ CREATE TABLE traefik (
   CONSTRAINT valid_source CHECK (source IN ('local', 'api', 'agent'))
 );
 
+CREATE TABLE "users" (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  email VARCHAR(255),
+  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  otp VARCHAR(6),
+  otp_expiry TIMESTAMP,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE "settings" (
   key VARCHAR(255) PRIMARY KEY,
   value TEXT NOT NULL,
   description TEXT,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE "agents" (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  hostname TEXT,
+  public_ip TEXT,
+  private_ips JSONB,
+  containers JSONB,
+  active_ip TEXT,
+  token TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 CREATE TABLE "router_dns_provider" (
@@ -77,6 +77,16 @@ CREATE TABLE "router_dns_provider" (
   FOREIGN KEY (traefik_id) REFERENCES traefik (id) ON DELETE CASCADE,
   FOREIGN KEY (provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE,
   UNIQUE (traefik_id, router_name, provider_id)
+);
+
+CREATE TABLE errors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  profile_id INTEGER NOT NULL,
+  category TEXT NOT NULL,
+  message TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX idx_traefik_profile_source ON traefik (profile_id, source)
@@ -97,8 +107,8 @@ WHERE
   is_active = 1;
 
 END;
-
 -- +goose StatementEnd
+
 -- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_update BEFORE
 UPDATE ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
@@ -109,19 +119,16 @@ WHERE
   is_active = 1;
 
 END;
-
 -- +goose StatementEnd
+
+CREATE UNIQUE INDEX unique_dns_error ON errors (profile_id, category, details);
+
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
-
-DROP TABLE IF EXISTS users;
-
-DROP TABLE IF EXISTS agents;
-
 DROP TABLE IF EXISTS dns_providers;
-
 DROP TABLE IF EXISTS traefik;
-
+DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS settings;
-
+DROP TABLE IF EXISTS agents;
 DROP TABLE IF EXISTS router_dns_provider;
+DROP TABLE IF EXISTS errors;

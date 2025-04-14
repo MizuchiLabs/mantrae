@@ -9,7 +9,7 @@
 	let token = $state('');
 
 	// Clean and trim the value
-	const onPaste = (value: string) => value.replace(/[^0-9]/g, '').trim();
+	const pasteTransformer = (value: string) => value.replace(/[^0-9]/g, '').trim();
 	const onComplete = async () => {
 		const username = page.url.searchParams.get('username');
 		if (!username || !token) return;
@@ -31,7 +31,7 @@
 			e.preventDefault();
 			try {
 				const text = await navigator.clipboard.readText();
-				const cleaned = onPaste(text);
+				const cleaned = pasteTransformer(text);
 				token = cleaned.slice(0, 6); // Limit to max length
 			} catch (err) {
 				console.error('Failed to read clipboard:', err);
@@ -51,18 +51,18 @@
 			pattern={REGEXP_ONLY_DIGITS}
 			bind:value={token}
 			{onComplete}
-			{onPaste}
+			{pasteTransformer}
 			onkeydown={handleKeyDown}
 		>
 			{#snippet children({ cells })}
 				<InputOTP.Group>
-					{#each cells.slice(0, 3) as cell}
+					{#each cells.slice(0, 3) as cell (cell)}
 						<InputOTP.Slot {cell} />
 					{/each}
 				</InputOTP.Group>
 				<InputOTP.Separator />
 				<InputOTP.Group>
-					{#each cells.slice(3, 6) as cell}
+					{#each cells.slice(3, 6) as cell (cell)}
 						<InputOTP.Slot {cell} />
 					{/each}
 				</InputOTP.Group>

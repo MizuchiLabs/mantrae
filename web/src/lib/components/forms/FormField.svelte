@@ -145,7 +145,7 @@
 	{#if isChainMiddleware}
 		<div class="flex flex-col gap-2">
 			{#if Array.isArray(fieldValue) && fieldValue.length > 0 && disabled}
-				{#each fieldValue as middleware}
+				{#each fieldValue as middleware (middleware)}
 					<div class="flex items-center gap-2">
 						<Input type="text" value={middleware} readonly {disabled} />
 						{#if !disabled}
@@ -169,7 +169,7 @@
 							: 'Select Middlewares'}
 					</Select.Trigger>
 					<Select.Content>
-						{#each $mwNames as name}
+						{#each $mwNames as name (name)}
 							<Select.Item value={name}>{name}</Select.Item>
 						{/each}
 					</Select.Content>
@@ -187,9 +187,9 @@
 		<div class="flex flex-col gap-2">
 			{#if Array.isArray(fieldValue) && isObjectArray(fieldValue)}
 				<div class="ml-4 flex flex-col gap-2 rounded border-l p-4">
-					{#each fieldValue as item, i}
+					{#each fieldValue as item, i (i)}
 						<div class="flex flex-col gap-2 rounded">
-							{#each Object.entries(item) as [field, value]}
+							{#each Object.entries(item) as [field, value] (field)}
 								<div class="grid grid-cols-4 items-center gap-2">
 									<Label class="col-span-1">{formatLabel(field)}</Label>
 									<Input
@@ -219,7 +219,7 @@
 					{/each}
 				</div>
 			{:else}
-				{#each (fieldValue as string[]) || [] as value, i}
+				{#each (fieldValue as string[]) || [] as value, i (i)}
 					<div class="flex gap-2">
 						<Input
 							type="text"

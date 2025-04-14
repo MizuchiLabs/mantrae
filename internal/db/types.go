@@ -111,91 +111,69 @@ type AgentContainers []AgentContainer
 
 // Handles the JSON marshalling and unmarshalling of the TraefikEntryPoints type
 func (e *TraefikEntryPoints) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, (*[]EntryPointAPI)(e))
+	return scanJSON(value, e)
 }
 
 func (e TraefikEntryPoints) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
-// Handles the JSON marshalling and unmarshalling of the TraefikOverview type
 func (o *TraefikOverview) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, (*TraefikOverview)(o))
+	return scanJSON(value, o)
 }
 
 func (o TraefikOverview) Value() (driver.Value, error) {
 	return json.Marshal(o)
 }
 
-// Handles the JSON marshalling and unmarshalling of the ConfigurationWrapper type
-func (c *TraefikConfiguration) Scan(value any) error {
+func (t *TraefikConfiguration) Scan(value any) error {
+	return scanJSON(value, t)
+}
+
+func (t TraefikConfiguration) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
+func (d *DNSProviderConfig) Scan(value any) error {
+	return scanJSON(value, d)
+}
+
+func (d DNSProviderConfig) Value() (driver.Value, error) {
+	return json.Marshal(d)
+}
+
+func (a *AgentPrivateIPs) Scan(value any) error {
+	return scanJSON(value, a)
+}
+
+func (a AgentPrivateIPs) Value() (driver.Value, error) {
+	return json.Marshal(a)
+}
+
+func (a *AgentContainers) Scan(value any) error {
+	return scanJSON(value, a)
+}
+
+func (a AgentContainers) Value() (driver.Value, error) {
+	return json.Marshal(a)
+}
+
+// scanJSON is a helper function to unmarshal a JSON value into a struct
+func scanJSON[T any](value any, out *T) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic during Scan: %v", r)
+		}
+	}()
+
 	if value == nil {
-		c = nil
 		return nil
 	}
-
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Configuration: expected []byte, got %T", value)
+		return fmt.Errorf("expected []byte, got %T", value)
 	}
-
-	return json.Unmarshal(bytes, &c)
-}
-
-// Value implements driver.Valuer
-func (c TraefikConfiguration) Value() (driver.Value, error) {
-	if c.Routers == nil && c.Middlewares == nil && c.Services == nil && c.TCPRouters == nil &&
-		c.TCPMiddlewares == nil &&
-		c.TCPServices == nil &&
-		c.UDPRouters == nil &&
-		c.UDPServices == nil {
-		return nil, nil
-	}
-	return json.Marshal(c)
-}
-
-func (c *DNSProviderConfig) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, c)
-}
-
-func (c DNSProviderConfig) Value() (driver.Value, error) {
-	return json.Marshal(c)
-}
-
-func (c *AgentPrivateIPs) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, c)
-}
-
-func (c AgentPrivateIPs) Value() (driver.Value, error) {
-	return json.Marshal(c)
-}
-
-func (c *AgentContainers) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("expected bytes, got %T", value)
-	}
-	return json.Unmarshal(bytes, c)
-}
-
-func (c AgentContainers) Value() (driver.Value, error) {
-	return json.Marshal(c)
+	return json.Unmarshal(bytes, out)
 }
 
 // Additional conversion helpers
