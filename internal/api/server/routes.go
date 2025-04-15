@@ -26,11 +26,11 @@ func (s *Server) routes() {
 		mw.BasicAuth,
 	)
 
-	// adminChain := middlewares.Chain(
-	// 	mw.Logger,
-	// 	mw.JWT,
-	// 	mw.AdminOnly,
-	// )
+	adminChain := middlewares.Chain(
+		mw.Logger,
+		mw.JWT,
+		mw.AdminOnly,
+	)
 
 	// Helper for middleware registration
 	register := func(method, path string, chain middlewares.Middleware, handler http.HandlerFunc) {
@@ -71,17 +71,17 @@ func (s *Server) routes() {
 	// Users
 	register("GET", "/user", jwtChain, handler.ListUsers(s.app))
 	register("GET", "/user/{id}", jwtChain, handler.GetUser(s.app))
-	register("POST", "/user", jwtChain, handler.CreateUser(s.app))
+	register("POST", "/user", adminChain, handler.CreateUser(s.app))
 	register("PUT", "/user", jwtChain, handler.UpdateUser(s.app))
-	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(s.app))
-	register("POST", "/user/password", jwtChain, handler.UpdateUserPassword(s.app))
+	register("DELETE", "/user/{id}", adminChain, handler.DeleteUser(s.app))
+	register("POST", "/user/password", adminChain, handler.UpdateUserPassword(s.app))
 
 	// DNS Provider
 	register("GET", "/dns", jwtChain, handler.ListDNSProviders(s.app))
 	register("GET", "/dns/{id}", jwtChain, handler.GetDNSProvider(s.app))
-	register("POST", "/dns", jwtChain, handler.CreateDNSProvider(s.app))
-	register("PUT", "/dns", jwtChain, handler.UpdateDNSProvider(s.app))
-	register("DELETE", "/dns/{id}", jwtChain, handler.DeleteDNSProvider(s.app))
+	register("POST", "/dns", adminChain, handler.CreateDNSProvider(s.app))
+	register("PUT", "/dns", adminChain, handler.UpdateDNSProvider(s.app))
+	register("DELETE", "/dns/{id}", adminChain, handler.DeleteDNSProvider(s.app))
 
 	// DNS To Router
 	register("GET", "/dns/router", jwtChain, handler.GetRouterDNSProvider(s.app))
@@ -94,10 +94,10 @@ func (s *Server) routes() {
 	)
 	register("DELETE", "/dns/router", jwtChain, handler.DeleteRouterDNSProvider(s.app))
 
-	// Settings
-	register("GET", "/settings", jwtChain, handler.ListSettings(s.app.SM))
-	register("GET", "/settings/{key}", jwtChain, handler.GetSetting(s.app.SM))
-	register("POST", "/settings", jwtChain, handler.UpsertSetting(s.app.SM))
+	// Settings (admin only)
+	register("GET", "/settings", adminChain, handler.ListSettings(s.app.SM))
+	register("GET", "/settings/{key}", adminChain, handler.GetSetting(s.app.SM))
+	register("POST", "/settings", adminChain, handler.UpsertSetting(s.app.SM))
 
 	// Agent
 	register("GET", "/agent", jwtChain, handler.ListAgents(s.app))
@@ -108,19 +108,19 @@ func (s *Server) routes() {
 	register("DELETE", "/agent/{id}", jwtChain, handler.DeleteAgent(s.app))
 	register("POST", "/agent/token/{id}", jwtChain, handler.RotateAgentToken(s.app))
 
-	// Backup & Restore
-	register("GET", "/backups", jwtChain, handler.ListBackups(s.app.BM))
-	register("GET", "/backups/download", jwtChain, handler.DownloadBackup(s.app.BM))
+	// Backup & Restore (admin only)
+	register("GET", "/backups", adminChain, handler.ListBackups(s.app.BM))
+	register("GET", "/backups/download", adminChain, handler.DownloadBackup(s.app.BM))
 	register(
 		"GET",
 		"/backups/download/{filename}",
-		jwtChain,
+		adminChain,
 		handler.DownloadBackupByName(s.app.BM),
 	)
-	register("POST", "/backups", jwtChain, handler.CreateBackup(s.app.BM))
-	register("POST", "/backups/restore", jwtChain, handler.RestoreBackup(s.app.BM))
-	register("DELETE", "/backups/{filename}", jwtChain, handler.DeleteBackup(s.app.BM))
-	register("POST", "/dynamic/restore/{id}", jwtChain, handler.RestoreDynamicConfig(s.app.BM))
+	register("POST", "/backups", adminChain, handler.CreateBackup(s.app.BM))
+	register("POST", "/backups/restore", adminChain, handler.RestoreBackup(s.app.BM))
+	register("DELETE", "/backups/{filename}", adminChain, handler.DeleteBackup(s.app.BM))
+	register("POST", "/dynamic/restore/{id}", adminChain, handler.RestoreDynamicConfig(s.app.BM))
 
 	// Errors
 	register("GET", "/errors", jwtChain, handler.ListErrors(s.app))

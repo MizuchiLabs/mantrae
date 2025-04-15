@@ -4,7 +4,7 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import logo from '$lib/images/logo-white.svg';
-	import type { ComponentProps } from 'svelte';
+	import type { ComponentProps, SvelteComponent } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Blocks,
@@ -25,7 +25,8 @@
 		CircleUserRound,
 		Sun,
 		Moon,
-		Zap
+		Zap,
+		type IconProps
 	} from 'lucide-svelte';
 	import InfoModal from '../modals/info.svelte';
 	import ProfileModal from '../modals/profile.svelte';
@@ -45,7 +46,14 @@
 
 	const sidebar = Sidebar.useSidebar();
 
-	const routes = [
+	type Route = {
+		title: string;
+		url: string;
+		icon: typeof SvelteComponent<IconProps>;
+		adminOnly?: boolean;
+		subItems?: Route[];
+	};
+	const routes: Route[] = [
 		{ title: 'Overview', url: '/', icon: House },
 		{ title: 'Router', url: '/router/', icon: Route },
 		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
@@ -56,12 +64,29 @@
 			url: '/settings/',
 			icon: Settings,
 			subItems: [
-				{ title: 'General', url: '/settings/', icon: Wrench },
-				{ title: 'Users', url: '/users/', icon: Users },
-				{ title: 'DNS', url: '/dns/', icon: Globe }
+				{ title: 'General', url: '/settings/', icon: Wrench, adminOnly: true },
+				{ title: 'Users', url: '/users/', icon: Users, adminOnly: true },
+				{ title: 'DNS', url: '/dns/', icon: Globe, adminOnly: true }
 			]
 		}
 	];
+
+	// Filter out any routes that the user doesn't have access to
+	const usableRoutes = $derived(
+		routes
+			.filter((route) => !user || !route.adminOnly || user.isAdmin)
+			.map((route) => {
+				if (route.subItems) {
+					const filteredSubs = route.subItems.filter(
+						(sub) => !user || !sub.adminOnly || user.isAdmin
+					);
+					if (filteredSubs.length === 0) return null; // skip this route if no visible subs
+					return { ...route, subItems: filteredSubs };
+				}
+				return route;
+			})
+			.filter((r): r is Route => r !== null)
+	);
 
 	interface ModalState {
 		isOpen: boolean;
@@ -149,12 +174,12 @@
 		</Sidebar.Menu>
 	</Sidebar.Header>
 
-	<!-- Content -->
+	<!-- Navigation -->
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.GroupLabel>Dashboard</Sidebar.GroupLabel>
 			<Sidebar.Menu>
-				{#each routes as route (route.title)}
+				{#each usableRoutes as route (route.title)}
 					{#if route.subItems}
 						<Collapsible.Root class="group/collapsible">
 							<Sidebar.MenuItem>
@@ -178,7 +203,7 @@
 									{#snippet child({ props, open })}
 										{#if open}
 											<div {...props} transition:slide={{ duration: 200 }}>
-												{#each route.subItems as subItem (subItem.title)}
+												{#each route.subItems || [] as subItem (subItem.title)}
 													<Sidebar.MenuSub>
 														<Sidebar.MenuSubButton>
 															{#snippet child({ props })}
@@ -212,6 +237,7 @@
 			</Sidebar.Menu>
 		</Sidebar.Group>
 
+		<!-- Extra buttons (Traefik, etc.) -->
 		<Sidebar.Group class="mt-auto">
 			<Sidebar.GroupContent>
 				<Sidebar.GroupLabel>Status</Sidebar.GroupLabel>

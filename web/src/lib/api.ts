@@ -37,6 +37,7 @@ import { profile } from './stores/profile';
 import { user } from './stores/user';
 import { source } from './stores/source';
 import { token } from './stores/common';
+import { tryLoad } from './utils';
 
 export type RouterWithService = { router: Router; service: Service };
 
@@ -201,17 +202,19 @@ export const api = {
 	},
 
 	async loadStats() {
-		await api.listDNSProviders();
-		await api.listUsers();
-		await api.listProfiles();
-		const agents = await api.listAgents();
+		const [dns, usersList, profilesList, agents] = await Promise.all([
+			tryLoad(() => api.listDNSProviders(), [] as DNSProvider[]),
+			tryLoad(() => api.listUsers(), [] as User[]),
+			tryLoad(() => api.listProfiles(), [] as Profile[]),
+			tryLoad(() => api.listAgents(), [] as Agent[])
+		]);
 
 		stats.set({
-			profiles: get(profiles)?.length ?? 0,
+			profiles: profilesList?.length ?? 0,
 			agents: agents?.length ?? 0,
-			users: get(users)?.length ?? 0,
-			dnsProviders: get(dnsProviders)?.length ?? 0,
-			activeDNS: get(dnsProviders)?.find((item) => item.isActive)?.name ?? 'None'
+			users: usersList?.length ?? 0,
+			dnsProviders: dns?.length ?? 0,
+			activeDNS: dns?.find((item) => item.isActive)?.name ?? 'None'
 		});
 	},
 
@@ -225,7 +228,6 @@ export const api = {
 			const res = await send(`/traefik/${profile.id}/${TraefikSource.LOCAL}`);
 			const agents = await send(`/agent/list/${profile.id}`);
 
-			// const traefik = res as TraefikConfig;
 			const routers = flattenRouterData(res);
 			const services = flattenServiceData(res);
 			const middlewares = flattenMiddlewareData(res);
@@ -245,12 +247,13 @@ export const api = {
 	},
 
 	// Profiles ------------------------------------------------------------------
-	async listProfiles() {
+	async listProfiles(): Promise<Profile[]> {
 		const data: Profile[] = await send('/profile');
 		profiles.set(data);
 		if (profile.isValid()) {
 			profile.value = data.find((item) => item.id === profile.value?.id) ?? data[0];
 		}
+		return data;
 	},
 
 	async getProfile(id: number) {
@@ -370,9 +373,10 @@ export const api = {
 	},
 
 	// DNS Providers -------------------------------------------------------------
-	async listDNSProviders() {
+	async listDNSProviders(): Promise<DNSProvider[]> {
 		const data = await send('/dns');
 		dnsProviders.set(data);
+		return data;
 	},
 
 	async getDNSProvider(id: number) {
@@ -456,9 +460,10 @@ export const api = {
 	},
 
 	// Users ---------------------------------------------------------------------
-	async listUsers() {
+	async listUsers(): Promise<User[]> {
 		const data = await send('/user');
 		users.set(data);
+		return data;
 	},
 
 	async getUser(id: number) {

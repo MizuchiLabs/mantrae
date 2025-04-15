@@ -14,9 +14,7 @@ type MiddlewareHandler struct {
 
 // NewMiddleware creates a new middleware set with configuration
 func NewMiddlewareHandler(app *config.App) *MiddlewareHandler {
-	return &MiddlewareHandler{
-		app: app,
-	}
+	return &MiddlewareHandler{app: app}
 }
 
 // Chain combines multiple middlewares into a single middleware

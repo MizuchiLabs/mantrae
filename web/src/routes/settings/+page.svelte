@@ -14,6 +14,7 @@
 	import { toast } from 'svelte-sonner';
 	import { DateFormat } from '$lib/stores/common';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
+	import { user } from '$lib/stores/user';
 
 	let hasChanges = $state(false);
 	let changedValues = $state<Record<string, Setting['value']>>({});
@@ -96,8 +97,10 @@
 	}
 
 	onMount(async () => {
-		await api.listSettings();
-		await api.listBackups();
+		if (user.isAdmin) {
+			await api.listSettings();
+			await api.listBackups();
+		}
 	});
 </script>
 
@@ -105,178 +108,180 @@
 	<title>Settings</title>
 </svelte:head>
 
-<div class="container flex flex-col gap-6">
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>Backup Management</Card.Title>
-			<Card.Description>Download or restore database backups</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<div class="flex items-center justify-between gap-4">
-				<input
-					type="file"
-					accept=".db"
-					class="hidden"
-					bind:this={restoreDBFile}
-					onchange={(e) => api.restoreBackup(e.currentTarget.files)}
-				/>
+{#if user.isAdmin}
+	<div class="container flex flex-col gap-6">
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>Backup Management</Card.Title>
+				<Card.Description>Download or restore database backups</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				<div class="flex items-center justify-between gap-4">
+					<input
+						type="file"
+						accept=".db"
+						class="hidden"
+						bind:this={restoreDBFile}
+						onchange={(e) => api.restoreBackup(e.currentTarget.files)}
+					/>
 
-				<input
-					type="file"
-					accept=".yaml,.yml"
-					class="hidden"
-					bind:this={restoreDynamicFile}
-					onchange={(e) => api.restoreDynamicConfig(e.currentTarget.files)}
-				/>
+					<input
+						type="file"
+						accept=".yaml,.yml"
+						class="hidden"
+						bind:this={restoreDynamicFile}
+						onchange={(e) => api.restoreDynamicConfig(e.currentTarget.files)}
+					/>
 
-				<div class="flex items-center gap-4">
-					<Button onclick={() => api.downloadBackup()} variant="outline">
-						<Download class="mr-2 size-4" />
-						Download Backup
-					</Button>
-
-					<Button variant="outline" onclick={() => restoreDBFile?.click()} disabled={$loading}>
-						<Upload class="mr-2 size-4" />
-						{$loading ? 'Uploading...' : 'Restore Backup'}
-					</Button>
-
-					<Button variant="outline" onclick={() => (showBackupList = true)}>
-						<List class="mr-2 size-4" />
-						View Backups
-					</Button>
-				</div>
-				<Tooltip.Provider>
-					<Tooltip.Root delayDuration={100}>
-						<Tooltip.Trigger>
-							<Button
-								variant="outline"
-								onclick={() => restoreDynamicFile?.click()}
-								disabled={$loading}
-							>
-								<FileCode class="mr-2 size-4" />
-								{$loading ? 'Uploading...' : 'Import Configuration'}
-							</Button>
-						</Tooltip.Trigger>
-						<Tooltip.Content side="bottom" align="end" class="w-80">
-							<p>
-								Restore using the dynamic Traefik config in yaml or json format. It will merge
-								current routers/middlewares with the provided dynamic config.
-							</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
-				</Tooltip.Provider>
-			</div>
-		</Card.Content>
-	</Card.Root>
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="mb-3">
-				<div class="flex items-center gap-2">
-					<Settings class="size-8" />
-					<h1 class="text-3xl font-bold">Settings</h1>
-				</div>
-			</Card.Title>
-			<Separator />
-		</Card.Header>
-		<Card.Content class="flex  flex-col gap-6">
-			{#each Object.entries($settings) as [key, setting] (key)}
-				<div class="flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
-					<Label>
-						{formatSettingName(key)}
-						{#if setting.description}
-							<p class="text-muted-foreground text-sm">{setting.description}</p>
-						{/if}
-					</Label>
-
-					<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
-						{#if getInputType(setting.value) === 'boolean'}
-							<Switch
-								id={key}
-								checked={setting.value}
-								onCheckedChange={(checked) => saveSetting(key, checked)}
-							/>
-						{:else if key.includes('password')}
-							<PasswordInput
-								class="sm:w-auto md:w-[380px]"
-								bind:value={setting.value}
-								autocomplete="new-password"
-								onchange={(e) => handleChange(key, e.currentTarget.value)}
-								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
-							/>
-						{:else if key.includes('interval')}
-							<Input
-								type="text"
-								id={key}
-								value={setting.value}
-								onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
-								onkeydown={(e) => handleKeydown(e, key, parseDuration(e.currentTarget.value))}
-							/>
-						{:else if key.includes('port')}
-							<Input
-								type="number"
-								id={key}
-								value={setting.value}
-								min="1"
-								max="65535"
-								onchange={(e) => handleChange(key, parseInt(e.currentTarget.value))}
-								onkeydown={(e) => handleKeydown(e, key, parseInt(e.currentTarget.value))}
-							/>
-						{:else}
-							<Input
-								type="text"
-								value={setting.value}
-								autocomplete="off"
-								onchange={(e) => handleChange(key, e.currentTarget.value)}
-								onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
-							/>
-						{/if}
-					</div>
-				</div>
-
-				<Separator />
-			{/each}
-
-			<div class="flex justify-end">
-				<Button variant={hasChanges ? 'default' : 'outline'} onclick={saveAllChanges} size="icon">
-					<SaveIcon />
-				</Button>
-			</div>
-		</Card.Content>
-	</Card.Root>
-</div>
-
-<Dialog.Root bind:open={showBackupList}>
-	<Dialog.Content class="max-w-[600px]">
-		<Dialog.Header class="mb-4">
-			<Dialog.Title>Available Backups</Dialog.Title>
-			<Dialog.Description class="flex items-start justify-between gap-2">
-				Click on a backup to download it or click the trash icon to delete it
-				<Button variant="default" onclick={() => api.createBackup()}>Create Backup</Button>
-			</Dialog.Description>
-		</Dialog.Header>
-		<div class="flex flex-col gap-2">
-			{#each $backups || [] as backup (backup.name)}
-				<div class="flex items-center justify-between font-mono text-sm">
-					<Button variant="link" onclick={() => api.downloadBackupByName(backup.name)}>
-						Backup:
-						{DateFormat.format(new Date(backup.timestamp))}
-					</Button>
-					<span class="flex items-center">
-						{humanFileSize(backup.size)}
-						<Button
-							variant="ghost"
-							size="icon"
-							class="rounded-full hover:bg-red-300"
-							onclick={() => api.deleteBackup(backup.name)}
-						>
-							<Trash2 />
+					<div class="flex items-center gap-4">
+						<Button onclick={() => api.downloadBackup()} variant="outline">
+							<Download class="mr-2 size-4" />
+							Download Backup
 						</Button>
-					</span>
+
+						<Button variant="outline" onclick={() => restoreDBFile?.click()} disabled={$loading}>
+							<Upload class="mr-2 size-4" />
+							{$loading ? 'Uploading...' : 'Restore Backup'}
+						</Button>
+
+						<Button variant="outline" onclick={() => (showBackupList = true)}>
+							<List class="mr-2 size-4" />
+							View Backups
+						</Button>
+					</div>
+					<Tooltip.Provider>
+						<Tooltip.Root delayDuration={100}>
+							<Tooltip.Trigger>
+								<Button
+									variant="outline"
+									onclick={() => restoreDynamicFile?.click()}
+									disabled={$loading}
+								>
+									<FileCode class="mr-2 size-4" />
+									{$loading ? 'Uploading...' : 'Import Configuration'}
+								</Button>
+							</Tooltip.Trigger>
+							<Tooltip.Content side="bottom" align="end" class="w-80">
+								<p>
+									Restore using the dynamic Traefik config in yaml or json format. It will merge
+									current routers/middlewares with the provided dynamic config.
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</Tooltip.Provider>
 				</div>
-			{/each}
-			{#if !$backups || $backups.length === 0}
-				<p class="text-muted-foreground text-center text-sm">No backups available</p>
-			{/if}
-		</div>
-	</Dialog.Content>
-</Dialog.Root>
+			</Card.Content>
+		</Card.Root>
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="mb-3">
+					<div class="flex items-center gap-2">
+						<Settings class="size-8" />
+						<h1 class="text-3xl font-bold">Settings</h1>
+					</div>
+				</Card.Title>
+				<Separator />
+			</Card.Header>
+			<Card.Content class="flex  flex-col gap-6">
+				{#each Object.entries($settings) as [key, setting] (key)}
+					<div class="flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
+						<Label>
+							{formatSettingName(key)}
+							{#if setting.description}
+								<p class="text-muted-foreground text-sm">{setting.description}</p>
+							{/if}
+						</Label>
+
+						<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
+							{#if getInputType(setting.value) === 'boolean'}
+								<Switch
+									id={key}
+									checked={setting.value}
+									onCheckedChange={(checked) => saveSetting(key, checked)}
+								/>
+							{:else if key.includes('password')}
+								<PasswordInput
+									class="sm:w-auto md:w-[380px]"
+									bind:value={setting.value}
+									autocomplete="new-password"
+									onchange={(e) => handleChange(key, e.currentTarget.value)}
+									onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+								/>
+							{:else if key.includes('interval')}
+								<Input
+									type="text"
+									id={key}
+									value={setting.value}
+									onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
+									onkeydown={(e) => handleKeydown(e, key, parseDuration(e.currentTarget.value))}
+								/>
+							{:else if key.includes('port')}
+								<Input
+									type="number"
+									id={key}
+									value={setting.value}
+									min="1"
+									max="65535"
+									onchange={(e) => handleChange(key, parseInt(e.currentTarget.value))}
+									onkeydown={(e) => handleKeydown(e, key, parseInt(e.currentTarget.value))}
+								/>
+							{:else}
+								<Input
+									type="text"
+									value={setting.value}
+									autocomplete="off"
+									onchange={(e) => handleChange(key, e.currentTarget.value)}
+									onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+								/>
+							{/if}
+						</div>
+					</div>
+
+					<Separator />
+				{/each}
+
+				<div class="flex justify-end">
+					<Button variant={hasChanges ? 'default' : 'outline'} onclick={saveAllChanges} size="icon">
+						<SaveIcon />
+					</Button>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</div>
+
+	<Dialog.Root bind:open={showBackupList}>
+		<Dialog.Content class="max-w-[600px]">
+			<Dialog.Header class="mb-4">
+				<Dialog.Title>Available Backups</Dialog.Title>
+				<Dialog.Description class="flex items-start justify-between gap-2">
+					Click on a backup to download it or click the trash icon to delete it
+					<Button variant="default" onclick={() => api.createBackup()}>Create Backup</Button>
+				</Dialog.Description>
+			</Dialog.Header>
+			<div class="flex flex-col gap-2">
+				{#each $backups || [] as backup (backup.name)}
+					<div class="flex items-center justify-between font-mono text-sm">
+						<Button variant="link" onclick={() => api.downloadBackupByName(backup.name)}>
+							Backup:
+							{DateFormat.format(new Date(backup.timestamp))}
+						</Button>
+						<span class="flex items-center">
+							{humanFileSize(backup.size)}
+							<Button
+								variant="ghost"
+								size="icon"
+								class="rounded-full hover:bg-red-300"
+								onclick={() => api.deleteBackup(backup.name)}
+							>
+								<Trash2 />
+							</Button>
+						</span>
+					</div>
+				{/each}
+				{#if !$backups || $backups.length === 0}
+					<p class="text-muted-foreground text-center text-sm">No backups available</p>
+				{/if}
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+{/if}

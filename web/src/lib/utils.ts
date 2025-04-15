@@ -14,6 +14,16 @@ export function safeClone<T>(obj: T): T {
 	}
 }
 
+export async function tryLoad<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+	try {
+		return await fn();
+	} catch (err: unknown) {
+		const error = err instanceof Error ? err.message : String(err);
+		console.warn('Failed to load:', error);
+		return fallback;
+	}
+}
+
 export function cleanupFormData(data: unknown): unknown {
 	// Base cases for non-objects
 	if (data === null || data === undefined || data === '') {

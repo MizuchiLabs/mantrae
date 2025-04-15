@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -89,24 +90,17 @@ func (h *MiddlewareHandler) JWT(next http.Handler) http.Handler {
 func (h *MiddlewareHandler) AdminOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get the username from the request context
-		username, ok := r.Context().Value("username").(string)
-		if !ok || username == "" {
+		user, ok := r.Context().Value(AuthUserKey).(db.GetUserByUsernameRow)
+		if !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		q := h.app.Conn.GetQuery()
-		user, err := q.GetUserByUsername(context.Background(), username)
-		if err != nil {
-			http.Error(w, "Admin privileges required", http.StatusForbidden)
-			return
-		}
 		if !user.IsAdmin {
 			http.Error(w, "Admin privileges required", http.StatusForbidden)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), AuthUserKey, user)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	})
 }
