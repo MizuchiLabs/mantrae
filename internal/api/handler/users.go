@@ -55,6 +55,12 @@ func CreateUser(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		hash, err := util.HashPassword(user.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user.Password = hash
 		if err := q.CreateUser(r.Context(), user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -105,6 +111,29 @@ func DeleteUser(a *config.App) http.HandlerFunc {
 		util.Broadcast <- util.EventMessage{
 			Type:    util.EventTypeDelete,
 			Message: "user",
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func UpdateUserPassword(a *config.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := a.Conn.GetQuery()
+		var user db.UpdateUserPasswordParams
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// Hash
+		hash, err := util.HashPassword(user.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		user.Password = hash
+		if err := q.UpdateUserPassword(r.Context(), user); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

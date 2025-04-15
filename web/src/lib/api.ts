@@ -330,7 +330,6 @@ export const api = {
 	},
 
 	async shareRouter(data: UpsertRouterParams, profileId: number) {
-		console.log(data);
 		await send(`/router/${profileId}`, {
 			method: 'POST',
 			body: data
@@ -488,6 +487,13 @@ export const api = {
 			method: 'DELETE'
 		});
 		await api.listUsers();
+	},
+
+	async updateUserPassword(user: Omit<User, 'created_at' | 'updated_at'>) {
+		await send(`/user/password`, {
+			method: 'POST',
+			body: user
+		});
 	},
 
 	// Agents

@@ -23,14 +23,22 @@
 
 	const handleSubmit = async () => {
 		if (!user?.username) return;
-		if (user.password) user.password = password;
+		let toastDsc = '';
+		if (password) {
+			user.password = password;
+			await api.updateUserPassword(user);
+			toastDsc = 'Password changed!';
+		}
 		if (user.id) {
 			await api.updateUser(user);
-			toast.success(`User ${user.username} updated successfully`);
+			toast.success(`User ${user.username} updated successfully.`, {
+				description: toastDsc
+			});
 		} else {
 			await api.createUser(user);
-			toast.success(`User ${user.username} created successfully`);
+			toast.success(`User ${user.username} created successfully.`);
 		}
+		password = '';
 		open = false;
 	};
 </script>
@@ -65,7 +73,7 @@
 					<PasswordInput bind:value={password} />
 				{:else}
 					<Label for="Password">Password</Label>
-					<PasswordInput bind:value={user.password} required />
+					<PasswordInput bind:value={password} required />
 				{/if}
 			</div>
 
@@ -73,7 +81,12 @@
 			{#if !isSelf}
 				<div class="flex items-center gap-2 space-y-1">
 					<Label for="admin">Set Admin</Label>
-					<Switch id="admin" bind:checked={user.isAdmin} class="col-span-3" />
+					<Switch
+						id="admin"
+						checked={user.isAdmin || false}
+						onCheckedChange={(e) => (user.isAdmin = e)}
+						class="col-span-3"
+					/>
 				</div>
 			{/if}
 

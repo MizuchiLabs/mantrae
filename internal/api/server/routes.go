@@ -74,6 +74,7 @@ func (s *Server) routes() {
 	register("POST", "/user", jwtChain, handler.CreateUser(s.app))
 	register("PUT", "/user", jwtChain, handler.UpdateUser(s.app))
 	register("DELETE", "/user/{id}", jwtChain, handler.DeleteUser(s.app))
+	register("POST", "/user/password", jwtChain, handler.UpdateUserPassword(s.app))
 
 	// DNS Provider
 	register("GET", "/dns", jwtChain, handler.ListDNSProviders(s.app))
