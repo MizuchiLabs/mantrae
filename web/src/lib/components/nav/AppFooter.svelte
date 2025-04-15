@@ -38,7 +38,7 @@
 		>
 			Mantrae
 			{#if version && version !== 'unknown'}
-				v{version}
+				{version}
 			{:else}
 				<span class="italic">latest</span>
 			{/if}
