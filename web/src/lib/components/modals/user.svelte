@@ -73,7 +73,7 @@
 			{#if !isSelf}
 				<div class="flex items-center gap-2 space-y-1">
 					<Label for="admin">Set Admin</Label>
-					<Switch id="admin" checked={user.isAdmin || false} class="col-span-3" />
+					<Switch id="admin" bind:checked={user.isAdmin} class="col-span-3" />
 				</div>
 			{/if}
 
