@@ -8,15 +8,16 @@
 	import { entrypoints, overview, version, dynamicJSON, dynamicYAML, api } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
 	import { json, yaml } from 'svelte-highlight/languages';
-	import { onMount } from 'svelte';
 	import CopyButton from '../ui/copy-button/copy-button.svelte';
+	import { profile } from '$lib/stores/profile';
 
 	let isYaml = $state(false);
 	let { open = $bindable(false) } = $props();
 
-	onMount(async () => {
-		await api.load();
-		await api.getDynamicConfig();
+	$effect(() => {
+		if (profile.isValid()) {
+			api.getDynamicConfig();
+		}
 	});
 </script>
 
