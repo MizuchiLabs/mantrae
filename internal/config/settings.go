@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -12,8 +11,8 @@ import (
 )
 
 type SettingWithDescription struct {
-	Value       interface{} `json:"value"`
-	Description *string     `json:"description,omitempty"`
+	Value       any     `json:"value"`
+	Description *string `json:"description,omitempty"`
 }
 
 // Settings defines all application settings
@@ -32,13 +31,13 @@ type Settings struct {
 }
 
 type SettingsManager struct {
-	db       *sql.DB
+	conn     *db.Connection
 	defaults *Settings
 }
 
-func NewSettingsManager(db *sql.DB) *SettingsManager {
+func NewSettingsManager(conn *db.Connection) *SettingsManager {
 	return &SettingsManager{
-		db:       db,
+		conn:     conn,
 		defaults: getDefaults(),
 	}
 }
@@ -145,7 +144,7 @@ func getDefaults() *Settings {
 // Initialize ensures all settings exist with default values
 func (sm *SettingsManager) Initialize(ctx context.Context) error {
 	// First get existing settings
-	q := db.New(sm.db)
+	q := sm.conn.GetQuery()
 	existingSettings, err := q.ListSettings(ctx)
 	if err != nil {
 		return err
@@ -187,7 +186,7 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 
 // Modified GetAll to return settings with descriptions
 func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDescription, error) {
-	q := db.New(sm.db)
+	q := sm.conn.GetQuery()
 	settings := make(map[string]SettingWithDescription)
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
@@ -238,7 +237,7 @@ func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDe
 		}
 
 		// Convert duration fields to formatted strings
-		var value interface{}
+		var value any
 		if field.Type == reflect.TypeOf(time.Duration(0)) {
 			value = fieldValue.Interface().(time.Duration).String()
 		} else {
@@ -256,7 +255,7 @@ func (sm *SettingsManager) GetAll(ctx context.Context) (map[string]SettingWithDe
 
 // Modified Get to return setting with description
 func (sm *SettingsManager) Get(ctx context.Context, key string) (*SettingWithDescription, error) {
-	q := db.New(sm.db)
+	q := sm.conn.GetQuery()
 	setting, err := q.GetSetting(ctx, key)
 	if err != nil {
 		return nil, err
@@ -273,7 +272,7 @@ func (sm *SettingsManager) Get(ctx context.Context, key string) (*SettingWithDes
 			}
 
 			// Convert duration fields to formatted strings
-			var value interface{}
+			var value any
 			if t.Field(i).Type == reflect.TypeOf(time.Duration(0)) {
 				value = fieldValue.Interface().(time.Duration).String()
 			} else {
@@ -296,7 +295,7 @@ func (sm *SettingsManager) Set(
 	key, strValue string,
 	description *string,
 ) error {
-	q := db.New(sm.db)
+	q := sm.conn.GetQuery()
 	// Find the corresponding field to validate and convert the type
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
