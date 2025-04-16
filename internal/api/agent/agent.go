@@ -20,9 +20,7 @@ type AgentServer struct {
 }
 
 func NewAgentServer(app *config.App) *AgentServer {
-	return &AgentServer{
-		app: app,
-	}
+	return &AgentServer{app: app}
 }
 
 func (s *AgentServer) HealthCheck(
@@ -32,7 +30,10 @@ func (s *AgentServer) HealthCheck(
 	if _, err := s.validate(req.Header(), req.Msg.GetAgentId()); err != nil {
 		return nil, err
 	}
-
+	util.Broadcast <- util.EventMessage{
+		Type:     util.EventTypeUpdate,
+		Category: util.EventCategoryAgent,
+	}
 	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
 }
 
@@ -78,13 +79,13 @@ func (s *AgentServer) GetContainer(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	util.Broadcast <- util.EventMessage{
-		Type:    util.EventTypeUpdate,
-		Message: "agent",
-	}
-
 	if err = traefik.DecodeAgentConfig(s.app.Conn.Get(), updatedAgent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	util.Broadcast <- util.EventMessage{
+		Type:     util.EventTypeUpdate,
+		Category: util.EventCategoryAgent,
 	}
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }

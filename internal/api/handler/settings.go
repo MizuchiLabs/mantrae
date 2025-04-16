@@ -6,6 +6,7 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 func ListSettings(sm *config.SettingsManager) http.HandlerFunc {
@@ -48,6 +49,10 @@ func UpsertSetting(sm *config.SettingsManager) http.HandlerFunc {
 		if err := sm.Set(r.Context(), setting.Key, setting.Value, setting.Description); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+		util.Broadcast <- util.EventMessage{
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategorySetting,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

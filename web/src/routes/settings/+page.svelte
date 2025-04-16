@@ -47,11 +47,14 @@
 	};
 
 	// Determine the input type based on the setting value
-	const getInputType = (value: Setting) => {
+	const getInputType = (key: string, value: Setting['value']) => {
 		if (typeof value === 'boolean') return 'boolean';
+		if (key.toLowerCase().includes('password')) return 'password';
+		if (key.toLowerCase().includes('interval')) return 'duration';
+		if (key.toLowerCase().includes('port')) return 'port';
 		if (typeof value === 'number') return 'number';
-		if (value?.toString().includes('://')) return 'url';
-		if (value?.toString().includes('@')) return 'email';
+		if (typeof value === 'string' && value.includes('://')) return 'url';
+		if (typeof value === 'string' && value.includes('@')) return 'email';
 		return 'text';
 	};
 
@@ -87,13 +90,16 @@
 	}
 
 	// Backup handling
-	let restoreDBFile: HTMLInputElement;
-	let restoreDynamicFile: HTMLInputElement;
+	let restoreDBFile: HTMLInputElement | null = $state(null);
+	let restoreDynamicFile: HTMLInputElement | null = $state(null);
 	let showBackupList = $state(false);
 
 	function humanFileSize(size: number) {
-		var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
-		return +(size / Math.pow(1024, i)).toFixed(2) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+		return Intl.NumberFormat('en-US', {
+			notation: 'compact',
+			style: 'unit',
+			unit: 'byte'
+		}).format(size);
 	}
 
 	onMount(async () => {
@@ -193,13 +199,13 @@
 						</Label>
 
 						<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
-							{#if getInputType(setting.value) === 'boolean'}
+							{#if getInputType(key, setting.value) === 'boolean'}
 								<Switch
 									id={key}
-									checked={setting.value}
+									checked={setting.value as boolean}
 									onCheckedChange={(checked) => saveSetting(key, checked)}
 								/>
-							{:else if key.includes('password')}
+							{:else if getInputType(key, setting.value) === 'password'}
 								<PasswordInput
 									class="sm:w-auto md:w-[380px]"
 									bind:value={setting.value}
@@ -207,7 +213,7 @@
 									onchange={(e) => handleChange(key, e.currentTarget.value)}
 									onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
 								/>
-							{:else if key.includes('interval')}
+							{:else if getInputType(key, setting.value) === 'duration'}
 								<Input
 									type="text"
 									id={key}
@@ -215,7 +221,7 @@
 									onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
 									onkeydown={(e) => handleKeydown(e, key, parseDuration(e.currentTarget.value))}
 								/>
-							{:else if key.includes('port')}
+							{:else if getInputType(key, setting.value) === 'port'}
 								<Input
 									type="number"
 									id={key}
@@ -241,7 +247,12 @@
 				{/each}
 
 				<div class="flex justify-end">
-					<Button variant={hasChanges ? 'default' : 'outline'} onclick={saveAllChanges} size="icon">
+					<Button
+						variant={hasChanges ? 'default' : 'outline'}
+						onclick={saveAllChanges}
+						disabled={!hasChanges}
+						size="icon"
+					>
 						<SaveIcon />
 					</Button>
 				</div>

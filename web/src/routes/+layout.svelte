@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { api, BASE_URL } from '$lib/api';
+	import { api } from '$lib/api';
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import AppHeader from '$lib/components/nav/AppHeader.svelte';
 	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
 	import AppCenter from '$lib/components/nav/AppCenter.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { source } from '$lib/stores/source';
+	import { closeSSE, initializeSSE } from '$lib/sse';
 	import { user } from '$lib/stores/user';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/state';
@@ -19,39 +19,13 @@
 	let { children }: Props = $props();
 
 	// Realtime updates
-	interface Event {
-		type: string;
-		message: string;
-	}
-
-	const eventSource = new EventSource(`${BASE_URL}/events`);
-	eventSource.onmessage = async (event) => {
-		if (!user.isLoggedIn()) return;
-		let data: Event = JSON.parse(event.data);
-		switch (data.message) {
-			case 'profile':
-				await api.listProfiles();
-				break;
-			case 'traefik':
-				if (!source.isValid(source.value)) return;
-				await api.getTraefikConfig(source.value);
-				break;
-			case 'user':
-				await api.listUsers();
-				break;
-			case 'dns':
-				await api.listDNSProviders();
-				break;
-			case 'agent':
-				await api.listAgentsByProfile();
-				break;
-			case 'error':
-				await api.listErrors();
-				break;
-			default:
-				break;
+	$effect(() => {
+		if (user.isLoggedIn()) {
+			initializeSSE();
+		} else {
+			closeSSE();
 		}
-	};
+	});
 
 	onMount(async () => {
 		await api.load();

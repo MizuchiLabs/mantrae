@@ -50,7 +50,7 @@ func Setup(ctx context.Context) (*App, error) {
 	bm.Start(ctx)
 
 	// Setup settings manager
-	sm := NewSettingsManager(conn.Get())
+	sm := NewSettingsManager(conn)
 	if err := sm.Initialize(ctx); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}

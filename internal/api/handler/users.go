@@ -66,8 +66,8 @@ func CreateUser(a *config.App) http.HandlerFunc {
 			return
 		}
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeCreate,
-			Message: "user",
+			Type:     util.EventTypeCreate,
+			Category: util.EventCategoryUser,
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -81,15 +81,13 @@ func UpdateUser(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		if err := q.UpdateUser(r.Context(), user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "user",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryUser,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -107,10 +105,9 @@ func DeleteUser(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "user",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryUser,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

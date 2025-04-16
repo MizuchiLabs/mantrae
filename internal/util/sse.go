@@ -10,16 +10,26 @@ import (
 )
 
 type EventMessage struct {
-	Type    string `json:"type"`
-	Message string `json:"message"`
+	Type     string `json:"type"`
+	Category string `json:"category"`
+	Message  string `json:"message"`
 }
 
 const (
+	// Types
 	EventTypeError  = "error"
 	EventTypeInfo   = "info"
 	EventTypeCreate = "create"
 	EventTypeUpdate = "update"
 	EventTypeDelete = "delete"
+
+	// Categories
+	EventCategoryProfile = "profile"
+	EventCategoryTraefik = "traefik"
+	EventCategoryDNS     = "dns"
+	EventCategoryUser    = "user"
+	EventCategoryAgent   = "agent"
+	EventCategorySetting = "setting"
 )
 
 var (

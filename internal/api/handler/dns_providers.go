@@ -63,8 +63,8 @@ func CreateDNSProvider(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeCreate,
-			Message: "dns",
+			Type:     util.EventTypeCreate,
+			Category: util.EventCategoryDNS,
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -83,8 +83,8 @@ func UpdateDNSProvider(a *config.App) http.HandlerFunc {
 			return
 		}
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "dns",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryDNS,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -104,8 +104,8 @@ func DeleteDNSProvider(a *config.App) http.HandlerFunc {
 			return
 		}
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "dns",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryDNS,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

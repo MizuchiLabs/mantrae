@@ -101,10 +101,7 @@ export interface UpdateAgentIPParams {
 	activeIp: string;
 }
 
-export interface Settings {
-	key: Record<string, Setting>;
-}
-
+export type Settings = Record<string, Setting>;
 export interface Setting {
 	value: string | number | boolean;
 	description: string;

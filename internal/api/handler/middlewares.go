@@ -115,8 +115,8 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "middleware",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryTraefik,
 		}
 
 		// Return the updated configuration
@@ -178,8 +178,8 @@ func DeleteMiddleware(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "middleware",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryTraefik,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

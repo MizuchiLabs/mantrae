@@ -143,8 +143,8 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "router",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryTraefik,
 		}
 
 		// Return the updated configuration
@@ -212,8 +212,8 @@ func DeleteRouter(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "router",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryTraefik,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

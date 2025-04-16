@@ -121,8 +121,8 @@ func (a *App) cleanupAgents(ctx context.Context) {
 					} else {
 						slog.Info("Deleted disconnected agent", "id", agent.ID)
 						util.Broadcast <- util.EventMessage{
-							Type:    util.EventTypeDelete,
-							Message: "agent",
+							Type:     util.EventTypeDelete,
+							Category: util.EventCategoryAgent,
 						}
 					}
 				}

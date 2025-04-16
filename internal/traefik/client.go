@@ -124,8 +124,8 @@ func GetTraefikConfig(DB *sql.DB) {
 
 	// Broadcast the update to all clients
 	util.Broadcast <- util.EventMessage{
-		Type:    util.EventTypeUpdate,
-		Message: "traefik",
+		Type:     util.EventTypeUpdate,
+		Category: util.EventCategoryTraefik,
 	}
 }
 

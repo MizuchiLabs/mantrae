@@ -10,6 +10,7 @@
 	import { toast } from 'svelte-sonner';
 	import { DateFormat } from '$lib/stores/common';
 	import { onMount } from 'svelte';
+	import { readable } from 'svelte/store';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -97,15 +98,17 @@
 		}
 	];
 
-	function agentOffline(agent: Agent): boolean {
+	const now = readable(new Date(), (set) => {
+		const interval = setInterval(() => {
+			set(new Date());
+		}, 1000);
+		return () => clearInterval(interval);
+	});
+	let agentStatus = $derived((agent: Agent) => {
 		const lastSeen = new Date(agent.updatedAt);
-		const now = new Date();
-		const diffInMinutes = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
-		return diffInMinutes <= 2;
-	}
-	function getAgentRowClassName(agent: Agent): string {
-		return agentOffline(agent) ? 'bg-green-500/10' : 'bg-red-500/10';
-	}
+		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
+		return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
+	});
 
 	onMount(async () => {
 		await api.listAgentsByProfile();
@@ -124,7 +127,7 @@
 	<DataTable
 		{columns}
 		data={$agents || []}
-		getRowClassName={getAgentRowClassName}
+		getRowClassName={agentStatus}
 		createButton={{
 			label: 'Add Agent',
 			onClick: () => api.createAgent()

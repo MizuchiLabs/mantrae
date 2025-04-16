@@ -101,8 +101,8 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeCreate,
-			Message: "agent",
+			Type:     util.EventTypeCreate,
+			Category: util.EventCategoryAgent,
 		}
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -122,8 +122,8 @@ func UpdateAgentIP(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "agent",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryAgent,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -147,8 +147,8 @@ func DeleteAgent(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "agent",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryAgent,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -190,8 +190,8 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 		}
 
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "agent",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryAgent,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

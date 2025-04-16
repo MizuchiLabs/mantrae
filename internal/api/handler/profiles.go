@@ -84,8 +84,8 @@ func CreateProfile(a *config.App) http.HandlerFunc {
 			}
 		}()
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeCreate,
-			Message: "profile",
+			Type:     util.EventTypeCreate,
+			Category: util.EventCategoryProfile,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -115,8 +115,8 @@ func UpdateProfile(a *config.App) http.HandlerFunc {
 			}
 		}()
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeUpdate,
-			Message: "profile",
+			Type:     util.EventTypeUpdate,
+			Category: util.EventCategoryProfile,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -135,8 +135,8 @@ func DeleteProfile(a *config.App) http.HandlerFunc {
 			return
 		}
 		util.Broadcast <- util.EventMessage{
-			Type:    util.EventTypeDelete,
-			Message: "profile",
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryProfile,
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}

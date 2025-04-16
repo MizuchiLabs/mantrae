@@ -130,8 +130,8 @@ func UpdateDNS(DB *sql.DB) (err error) {
 						slog.Error("Failed to log error", "error", errL)
 					}
 					util.Broadcast <- util.EventMessage{
-						Type:    "error",
-						Message: "error",
+						Type:     util.EventTypeError,
+						Category: util.EventCategoryDNS,
 					}
 					slog.Error("Failed to upsert record", "error", err)
 				}
