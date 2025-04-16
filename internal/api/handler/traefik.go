@@ -50,7 +50,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			return
 		}
 		// Initialize merged config
-		mergedConfig := &db.TraefikConfiguration{
+		merged := &db.TraefikConfiguration{
 			Routers:        make(map[string]*runtime.RouterInfo),
 			Middlewares:    make(map[string]*runtime.MiddlewareInfo),
 			Services:       make(map[string]*db.ServiceInfo),
@@ -61,29 +61,32 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			UDPServices:    make(map[string]*runtime.UDPServiceInfo),
 		}
 
+		// Get local config
 		local, err := q.GetLocalTraefikConfig(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if local.Config == nil {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
 		agents, err := q.GetAgentTraefikConfigs(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// Merge configurations (prefer local)
+
+		// Merge agent configurations (agent config)
 		for _, agent := range agents {
-			mergedConfig = traefik.MergeConfigs(mergedConfig, agent.Config)
+			merged = traefik.MergeConfigs(merged, agent.Config)
 		}
-		mergedConfig = traefik.MergeConfigs(mergedConfig, local.Config)
+		if local.Config == nil && merged == nil {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Merge with local config
+		merged = traefik.MergeConfigs(merged, local.Config)
 
 		// Convert to dynamic
-		dynamic := traefik.ConvertToDynamicConfig(mergedConfig)
+		dynamic := traefik.ConvertToDynamicConfig(merged)
 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(dynamic); err != nil {
