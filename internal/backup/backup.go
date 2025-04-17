@@ -84,6 +84,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	defer os.Remove(tmpFile.Name())
 
 	db := m.Conn.Get()
+
 	// Perform SQLite backup
 	if _, err := db.Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
 		return fmt.Errorf("failed to create backup: %w", err)

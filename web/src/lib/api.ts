@@ -626,6 +626,13 @@ export const api = {
 		toast.success('Backup restored successfully');
 	},
 
+	async restoreBackupByName(filename: string) {
+		await send(`/backups/restore/${filename}`, {
+			method: 'POST'
+		});
+		toast.success('Backup restored successfully');
+	},
+
 	async restoreDynamicConfig(files: FileList | null) {
 		if (!files?.length) return;
 		const formData = new FormData();

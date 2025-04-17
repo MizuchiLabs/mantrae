@@ -111,9 +111,7 @@ func (s *Server) registerServices() {
 	// Routes
 	s.routes()
 
-	serviceNames := []string{
-		agentv1connect.AgentServiceName,
-	}
+	serviceNames := []string{agentv1connect.AgentServiceName}
 
 	reflector := grpcreflect.NewStaticReflector(serviceNames...)
 	checker := grpchealth.NewStaticChecker(serviceNames...)

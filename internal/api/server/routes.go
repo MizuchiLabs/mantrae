@@ -111,15 +111,11 @@ func (s *Server) routes() {
 	// Backup & Restore (admin only)
 	register("GET", "/backups", adminChain, handler.ListBackups(s.app.BM))
 	register("GET", "/backups/download", adminChain, handler.DownloadBackup(s.app.BM))
-	register(
-		"GET",
-		"/backups/download/{filename}",
-		adminChain,
-		handler.DownloadBackupByName(s.app.BM),
-	)
+	register("GET", "/backups/download/{name}", adminChain, handler.DownloadBackupByName(s.app.BM))
 	register("POST", "/backups", adminChain, handler.CreateBackup(s.app.BM))
 	register("POST", "/backups/restore", adminChain, handler.RestoreBackup(s.app.BM))
-	register("DELETE", "/backups/{filename}", adminChain, handler.DeleteBackup(s.app.BM))
+	register("POST", "/backups/restore/{name}", adminChain, handler.RestoreBackupByName(s.app.BM))
+	register("DELETE", "/backups/{name}", adminChain, handler.DeleteBackup(s.app.BM))
 	register("POST", "/dynamic/restore/{id}", adminChain, handler.RestoreDynamicConfig(s.app.BM))
 
 	// Errors

@@ -7,8 +7,17 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Download, FileCode, List, SaveIcon, Settings, Trash2, Upload } from 'lucide-svelte';
-	import { settings, api, backups, loading } from '$lib/api';
+	import {
+		DatabaseBackup,
+		Download,
+		FileCode,
+		List,
+		SaveIcon,
+		Settings,
+		Trash2,
+		Upload
+	} from 'lucide-svelte';
+	import { settings, api, backups } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
 	import { toast } from 'svelte-sonner';
@@ -94,14 +103,6 @@
 	let restoreDynamicFile: HTMLInputElement | null = $state(null);
 	let showBackupList = $state(false);
 
-	function humanFileSize(size: number) {
-		return Intl.NumberFormat('en-US', {
-			notation: 'compact',
-			style: 'unit',
-			unit: 'byte'
-		}).format(size);
-	}
-
 	onMount(async () => {
 		if (user.isAdmin) {
 			await api.listSettings();
@@ -145,9 +146,9 @@
 							Download Backup
 						</Button>
 
-						<Button variant="outline" onclick={() => restoreDBFile?.click()} disabled={$loading}>
+						<Button variant="outline" onclick={() => restoreDBFile?.click()}>
 							<Upload class="mr-2 size-4" />
-							{$loading ? 'Uploading...' : 'Restore Backup'}
+							Upload Backup
 						</Button>
 
 						<Button variant="outline" onclick={() => (showBackupList = true)}>
@@ -158,13 +159,9 @@
 					<Tooltip.Provider>
 						<Tooltip.Root delayDuration={100}>
 							<Tooltip.Trigger>
-								<Button
-									variant="outline"
-									onclick={() => restoreDynamicFile?.click()}
-									disabled={$loading}
-								>
+								<Button variant="outline" onclick={() => restoreDynamicFile?.click()}>
 									<FileCode class="mr-2 size-4" />
-									{$loading ? 'Uploading...' : 'Import Configuration'}
+									Import Configuration
 								</Button>
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" align="end" class="w-80">
@@ -178,6 +175,67 @@
 				</div>
 			</Card.Content>
 		</Card.Root>
+
+		<Dialog.Root bind:open={showBackupList}>
+			<Dialog.Content class="max-w-[600px]">
+				<Dialog.Header>
+					<Dialog.Title>Latest Backups</Dialog.Title>
+					<Dialog.Description class="flex items-start justify-between gap-2">
+						Click on a backup to download it or use the buttons to either quickly restore a backup
+						or delete it.
+						<Button variant="default" onclick={() => api.createBackup()}>Create Backup</Button>
+					</Dialog.Description>
+				</Dialog.Header>
+				<Separator />
+				<div class="flex flex-col">
+					{#each $backups || [] as backup (backup.name)}
+						<div class="flex items-center justify-between font-mono text-sm">
+							<Button
+								variant="link"
+								onclick={() => api.downloadBackupByName(backup.name)}
+								class="flex items-center"
+							>
+								{DateFormat.format(new Date(backup.timestamp))}
+								<Download />
+							</Button>
+							<span class="flex items-center">
+								<span class="mr-2">
+									{Intl.NumberFormat('en-US', {
+										notation: 'compact',
+										style: 'unit',
+										unit: 'byte'
+									}).format(backup.size)}
+								</span>
+								<Button
+									variant="ghost"
+									size="icon"
+									class="rounded-full hover:bg-green-300"
+									onclick={() => {
+										api.restoreBackupByName(backup.name);
+										showBackupList = false;
+									}}
+								>
+									<DatabaseBackup />
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									class="rounded-full hover:bg-red-300"
+									onclick={() => api.deleteBackup(backup.name)}
+								>
+									<Trash2 />
+								</Button>
+							</span>
+						</div>
+					{/each}
+					{#if !$backups || $backups.length === 0}
+						<p class="text-muted-foreground text-center text-sm">No backups available</p>
+					{/if}
+				</div>
+			</Dialog.Content>
+		</Dialog.Root>
+
+		<!-- Settings -->
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="mb-3">
@@ -259,40 +317,4 @@
 			</Card.Content>
 		</Card.Root>
 	</div>
-
-	<Dialog.Root bind:open={showBackupList}>
-		<Dialog.Content class="max-w-[600px]">
-			<Dialog.Header class="mb-4">
-				<Dialog.Title>Available Backups</Dialog.Title>
-				<Dialog.Description class="flex items-start justify-between gap-2">
-					Click on a backup to download it or click the trash icon to delete it
-					<Button variant="default" onclick={() => api.createBackup()}>Create Backup</Button>
-				</Dialog.Description>
-			</Dialog.Header>
-			<div class="flex flex-col gap-2">
-				{#each $backups || [] as backup (backup.name)}
-					<div class="flex items-center justify-between font-mono text-sm">
-						<Button variant="link" onclick={() => api.downloadBackupByName(backup.name)}>
-							Backup:
-							{DateFormat.format(new Date(backup.timestamp))}
-						</Button>
-						<span class="flex items-center">
-							{humanFileSize(backup.size)}
-							<Button
-								variant="ghost"
-								size="icon"
-								class="rounded-full hover:bg-red-300"
-								onclick={() => api.deleteBackup(backup.name)}
-							>
-								<Trash2 />
-							</Button>
-						</span>
-					</div>
-				{/each}
-				{#if !$backups || $backups.length === 0}
-					<p class="text-muted-foreground text-center text-sm">No backups available</p>
-				{/if}
-			</div>
-		</Dialog.Content>
-	</Dialog.Root>
 {/if}

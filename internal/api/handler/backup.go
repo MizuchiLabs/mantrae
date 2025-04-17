@@ -15,6 +15,60 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 )
 
+func CreateBackup(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := bm.Create(r.Context())
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to create backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
+func ListBackups(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		backups, err := bm.Backend.List(r.Context())
+		if err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to list backups: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(backups); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to encode response: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+	}
+}
+
+func DeleteBackup(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		filename := r.PathValue("name")
+		if err := bm.Backend.Delete(r.Context(), filename); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to delete backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 // DownloadBackup creates a new backup of the database and returns it
 func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +118,7 @@ func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 
 func DownloadBackupByName(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		filename := r.PathValue("filename")
+		filename := r.PathValue("name")
 
 		if !bm.IsValidBackupFile(filename) {
 			http.Error(w, "Invalid backup filename", http.StatusBadRequest)
@@ -92,21 +146,6 @@ func DownloadBackupByName(bm *backup.BackupManager) http.HandlerFunc {
 			)
 			return
 		}
-	}
-}
-
-func CreateBackup(bm *backup.BackupManager) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := bm.Create(r.Context())
-		if err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to create backup: %v", err),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-		w.WriteHeader(http.StatusCreated)
 	}
 }
 
@@ -189,7 +228,47 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 	}
 }
 
-// RestoreBackup restores a backup from a provided file.
+func RestoreBackupByName(bm *backup.BackupManager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		filename := r.PathValue("name")
+
+		if !bm.IsValidBackupFile(filename) {
+			http.Error(w, "Invalid backup filename", http.StatusBadRequest)
+			return
+		}
+
+		// Attempt to restore the backup
+		if err := bm.Restore(r.Context(), filename); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to restore backup: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		time.Sleep(100 * time.Millisecond)
+
+		// Test the connection
+		if err := bm.Conn.Ping(); err != nil {
+			http.Error(
+				w,
+				"Database connection failed after restore",
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		response := map[string]string{"message": "Backup restored successfully"}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+// RestoreDynamicConfig restores a backup from a dynamic Traefik config
 func RestoreDynamicConfig(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Limit request size to prevent memory issues
@@ -246,45 +325,6 @@ func RestoreDynamicConfig(bm *backup.BackupManager) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusNoContent)
-	}
-}
-
-func ListBackups(bm *backup.BackupManager) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		backups, err := bm.Backend.List(r.Context())
-		if err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to list backups: %v", err),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(backups); err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to encode response: %v", err),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-	}
-}
-
-func DeleteBackup(bm *backup.BackupManager) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		filename := r.PathValue("filename")
-		if err := bm.Backend.Delete(r.Context(), filename); err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to delete backup: %v", err),
-				http.StatusInternalServerError,
-			)
-			return
-		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

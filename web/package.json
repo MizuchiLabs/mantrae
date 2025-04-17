@@ -41,9 +41,9 @@
 		"tailwindcss-animate": "^1.0.7",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.30.1",
-		"vite": "^6.2.6",
+		"vite": "^6.3.1",
 		"yaml": "^2.7.1",
-		"zod": "^3.24.2"
+		"zod": "^3.24.3"
 	},
 	"type": "module",
 	"dependencies": {
