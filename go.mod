@@ -19,7 +19,7 @@ require (
 	github.com/lmittmann/tint v1.0.7
 	github.com/pressly/goose/v3 v3.24.2
 	github.com/traefik/paerser v0.2.2
-	github.com/traefik/traefik/v3 v3.3.5
+	github.com/traefik/traefik/v3 v3.3.6
 	golang.org/x/crypto v0.37.0
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 	golang.org/x/net v0.39.0
