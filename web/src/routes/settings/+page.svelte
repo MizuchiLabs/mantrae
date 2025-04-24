@@ -2,6 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
@@ -27,6 +28,50 @@
 
 	let hasChanges = $state(false);
 	let changedValues = $state<Record<string, Setting['value']>>({});
+
+	// Define setting groups
+	const settingGroups = {
+		general: {
+			title: 'General Settings',
+			description: 'Basic application configuration',
+			keys: ['server_url']
+		},
+		backup: {
+			title: 'Backup Settings',
+			description: 'Database backup configuration',
+			keys: ['backup_enabled', 'backup_interval', 'backup_keep', 'backup_storage_select']
+		},
+		// TODO: Enable this later
+		// s3: {
+		// 	title: 'S3 Storage Settings',
+		// 	description: 'Amazon S3 or compatible storage configuration',
+		// 	keys: [
+		// 		's3_endpoint',
+		// 		's3_bucket',
+		// 		's3_region',
+		// 		's3_access_key',
+		// 		's3_secret_key',
+		// 		's3_use_path_style'
+		// 	]
+		// },
+		email: {
+			title: 'Email Settings',
+			description: 'SMTP server configuration for sending emails',
+			keys: ['email_host', 'email_port', 'email_user', 'email_password', 'email_from']
+		},
+		agents: {
+			title: 'Agent Settings',
+			description: 'Agent management configuration',
+			keys: ['agent_cleanup_enabled', 'agent_cleanup_interval']
+		}
+	};
+
+	// Storage types for the select dropdown
+	const storageTypes = [
+		{ value: 'local', label: 'Local Storage' }
+		// TODO: Enable this later
+		// { value: 's3', label: 'S3 Storage' }
+	];
 
 	function parseDuration(str: string): string {
 		// Just clean up and validate the duration string
@@ -58,6 +103,7 @@
 	// Determine the input type based on the setting value
 	const getInputType = (key: string, value: Setting['value']) => {
 		if (typeof value === 'boolean') return 'boolean';
+		if (key.toLowerCase().includes('select')) return 'select';
 		if (key.toLowerCase().includes('password')) return 'password';
 		if (key.toLowerCase().includes('interval')) return 'duration';
 		if (key.toLowerCase().includes('port')) return 'port';
@@ -247,61 +293,99 @@
 				<Separator />
 			</Card.Header>
 			<Card.Content class="flex  flex-col gap-6">
-				{#each Object.entries($settings) as [key, setting] (key)}
-					<div class="flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
-						<Label>
-							{formatSettingName(key)}
-							{#if setting.description}
-								<p class="text-muted-foreground text-sm">{setting.description}</p>
-							{/if}
-						</Label>
+				<!-- Loop through each settings group -->
+				{#each Object.entries(settingGroups) as [groupKey, group] (groupKey)}
+					<div class="mt-4 first:mt-0">
+						<h2 class="mb-0.5 text-xl font-semibold">{group.title}</h2>
+						<p class="text-muted-foreground mb-2 text-sm">{group.description}</p>
+						<Separator class="mb-4" />
 
-						<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
-							{#if getInputType(key, setting.value) === 'boolean'}
-								<Switch
-									id={key}
-									checked={setting.value as boolean}
-									onCheckedChange={(checked) => saveSetting(key, checked)}
-								/>
-							{:else if getInputType(key, setting.value) === 'password'}
-								<PasswordInput
-									class="sm:w-auto md:w-[380px]"
-									bind:value={setting.value}
-									autocomplete="new-password"
-									onchange={(e) => handleChange(key, e.currentTarget.value)}
-									onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
-								/>
-							{:else if getInputType(key, setting.value) === 'duration'}
-								<Input
-									type="text"
-									id={key}
-									value={setting.value}
-									onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
-									onkeydown={(e) => handleKeydown(e, key, parseDuration(e.currentTarget.value))}
-								/>
-							{:else if getInputType(key, setting.value) === 'port'}
-								<Input
-									type="number"
-									id={key}
-									value={setting.value}
-									min="1"
-									max="65535"
-									onchange={(e) => handleChange(key, parseInt(e.currentTarget.value))}
-									onkeydown={(e) => handleKeydown(e, key, parseInt(e.currentTarget.value))}
-								/>
-							{:else}
-								<Input
-									type="text"
-									value={setting.value}
-									autocomplete="off"
-									onchange={(e) => handleChange(key, e.currentTarget.value)}
-									onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
-								/>
+						<!-- Loop through settings in this group -->
+						{#each group.keys as key (key)}
+							{#if $settings[key]}
+								<div class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
+									<div class="border-muted-foreground border-l-2 pl-4">
+										<Label>
+											{formatSettingName(key)}
+											{#if $settings[key].description}
+												<p class="text-muted-foreground text-sm">{$settings[key].description}</p>
+											{/if}
+										</Label>
+									</div>
+
+									<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
+										{#if getInputType(key, $settings[key].value) === 'boolean'}
+											<Switch
+												id={key}
+												checked={$settings[key].value as boolean}
+												onCheckedChange={(checked) => saveSetting(key, checked)}
+											/>
+										{:else if getInputType(key, $settings[key].value) === 'select'}
+											<Select.Root
+												type="single"
+												value={(changedValues[key] as string) || ($settings[key].value as string)}
+												onValueChange={(value) => handleChange(key, value)}
+											>
+												<Select.Trigger>
+													{changedValues[key] || $settings[key].value || 'Select storage type'}
+												</Select.Trigger>
+												<Select.Content>
+													{#each storageTypes as option (option.value)}
+														<Select.Item value={option.value}>{option.label}</Select.Item>
+													{/each}
+												</Select.Content>
+											</Select.Root>
+										{:else if getInputType(key, $settings[key].value) === 'password'}
+											<PasswordInput
+												class="sm:w-auto md:w-[380px]"
+												value={changedValues[key] !== undefined
+													? changedValues[key]
+													: $settings[key].value}
+												autocomplete="new-password"
+												onchange={(e) => handleChange(key, e.currentTarget.value)}
+												onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+											/>
+										{:else if getInputType(key, $settings[key].value) === 'duration'}
+											<Input
+												type="text"
+												id={key}
+												value={changedValues[key] !== undefined
+													? changedValues[key]
+													: $settings[key].value}
+												onchange={(e) => handleChange(key, parseDuration(e.currentTarget.value))}
+												onkeydown={(e) =>
+													handleKeydown(e, key, parseDuration(e.currentTarget.value))}
+											/>
+										{:else if getInputType(key, $settings[key].value) === 'port'}
+											<Input
+												type="number"
+												id={key}
+												value={changedValues[key] !== undefined
+													? changedValues[key]
+													: $settings[key].value}
+												min="1"
+												max="65535"
+												onchange={(e) => handleChange(key, parseInt(e.currentTarget.value))}
+												onkeydown={(e) => handleKeydown(e, key, parseInt(e.currentTarget.value))}
+											/>
+										{:else}
+											<Input
+												type="text"
+												value={changedValues[key] !== undefined
+													? changedValues[key]
+													: $settings[key].value}
+												autocomplete="off"
+												onchange={(e) => handleChange(key, e.currentTarget.value)}
+												onkeydown={(e) => handleKeydown(e, key, e.currentTarget.value)}
+											/>
+										{/if}
+									</div>
+								</div>
+
+								<Separator class="mb-4" />
 							{/if}
-						</div>
+						{/each}
 					</div>
-
-					<Separator />
 				{/each}
 
 				<div class="flex justify-end">

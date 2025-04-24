@@ -1,4 +1,7 @@
 <script lang="ts">
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import logo from '$lib/images/logo.svg';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -6,11 +9,9 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { api, dnsProviders, entrypoints, routers, middlewares, rdps } from '$lib/api';
 	import { type Router } from '$lib/types/router';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select';
 	import { toast } from 'svelte-sonner';
 	import type { RouterDNSProvider } from '$lib/types';
 	import { source } from '$lib/stores/source';
@@ -30,7 +31,6 @@
 	let rdpNames = $derived(routerDNS ? routerDNS.map((item) => item.providerName) : []);
 	let rdpIDs = $derived(routerDNS ? routerDNS.map((item) => item.providerId) : []);
 	let routerProvider = $derived(router.name ? router.name?.split('@')[1] : 'http');
-	let isHttpType = $derived(router.protocol === 'http');
 	let certResolvers = $derived([
 		...new Set(
 			$routers.filter((item) => item.tls?.certResolver).map((item) => item.tls?.certResolver)
@@ -46,6 +46,14 @@
 			toast.error('Failed to save dnsProvider', {
 				description: e.message
 			});
+		}
+	}
+
+	function handleNameInput(e: Event) {
+		router.name = (e.target as HTMLInputElement).value;
+		if (router.name.includes('@')) {
+			toast.warning("Avoid '@' in name – it's reserved for provider context");
+			router.name = router.name.split('@')[0];
 		}
 	}
 
@@ -141,7 +149,7 @@
 					id="name"
 					bind:value={router.name}
 					placeholder="Router name"
-					oninput={() => (router.name = router.name?.split('@')[0])}
+					oninput={handleNameInput}
 					class="col-span-3"
 					required
 					disabled={!source.isLocal()}
@@ -150,7 +158,7 @@
 				<span
 					class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400"
 				>
-					{#if routerProvider === ''}
+					{#if routerProvider === '' || routerProvider === 'http'}
 						<img src={logo} alt="HTTP" width="20" />
 					{/if}
 					{#if routerProvider === 'internal' || routerProvider === 'file'}
@@ -197,8 +205,9 @@
 			</Select.Root>
 		</div>
 
-		<!-- Middlewares -->
+		<!-- Only HTTP and TCP -->
 		{#if router.protocol !== 'udp'}
+			<!-- Middlewares -->
 			<div class="grid grid-cols-4 items-center gap-1">
 				<Label class="mr-2 text-right">Middlewares</Label>
 				<Select.Root type="multiple" bind:value={router.middlewares} disabled={!source.isLocal()}>
@@ -214,39 +223,65 @@
 					</Select.Content>
 				</Select.Root>
 			</div>
-		{/if}
 
-		<!-- TLS Configuration -->
-		{#if isHttpType && router.protocol !== 'udp' && router.tls}
+			<!-- TLS -->
 			<div class="grid grid-cols-4 items-center gap-1">
-				<Label class="mr-2 text-right">Resolver</Label>
-				<div class="col-span-3">
-					<Input
-						bind:value={router.tls.certResolver}
-						placeholder="Certificate resolver"
-						disabled={!source.isLocal()}
-						class="mb-1"
-					/>
-					{#if source.isLocal()}
-						<div class="flex flex-wrap gap-1">
-							{#each certResolvers as resolver (resolver)}
-								{#if resolver !== router.tls.certResolver}
-									<Badge
-										onclick={() => router.tls && (router.tls.certResolver = resolver)}
-										class="cursor-pointer"
-									>
-										{resolver}
-									</Badge>
-								{/if}
-							{/each}
-						</div>
-					{/if}
-				</div>
+				<Label class="mr-2 text-right">TLS</Label>
+				<Switch
+					checked={!!router.tls}
+					onCheckedChange={(checked) => {
+						if (checked) {
+							router.tls = {};
+						} else {
+							delete router.tls;
+						}
+					}}
+					class="col-span-3"
+					disabled={!source.isLocal()}
+				/>
 			</div>
-		{/if}
 
-		<!-- Rule -->
-		{#if router.protocol === 'http' || router.protocol === 'tcp'}
+			{#if router.protocol === 'http' && !!router.tls}
+				<div class="grid grid-cols-4 items-center gap-1">
+					<Label class="mr-2 text-right">Resolver</Label>
+					<div class="col-span-3">
+						<Input
+							bind:value={router.tls.certResolver}
+							class="mb-1"
+							placeholder="Certificate resolver"
+							disabled={!source.isLocal()}
+						/>
+						{#if source.isLocal()}
+							<div class="flex flex-wrap gap-1">
+								{#each certResolvers as resolver (resolver)}
+									{#if resolver !== router.tls.certResolver}
+										<Badge
+											onclick={() => router.tls && (router.tls.certResolver = resolver)}
+											class="cursor-pointer"
+										>
+											{resolver}
+										</Badge>
+									{/if}
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
+
+			{#if router.protocol === 'tcp' && !!router.tls}
+				<div class="grid grid-cols-4 items-center gap-1">
+					<Label class="mr-2 text-right">Passthrough</Label>
+					<Switch
+						checked={!!router.tls.passthrough}
+						onCheckedChange={(checked) => (router.tls ? (router.tls.passthrough = checked) : null)}
+						class="col-span-3"
+						disabled={!source.isLocal()}
+					/>
+				</div>
+			{/if}
+
+			<!-- Rule -->
 			<RuleEditor
 				bind:rule={router.rule}
 				bind:type={router.protocol}

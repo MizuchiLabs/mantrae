@@ -166,7 +166,7 @@
 				if (row.original.router.protocol === 'udp' || middlewares.length === 0) {
 					return renderComponent(ColumnBadge, {
 						label: 'None',
-						variant: 'secondary'
+						variant: 'outline'
 					});
 				}
 				return renderComponent(ColumnBadge, {
@@ -198,37 +198,37 @@
 				// Return early if no rdps data
 				if (!$rdps) {
 					return renderComponent(ColumnBadge, {
-						label: ['None'],
-						variant: 'secondary'
+						label: ['Disabled'],
+						variant: 'outline'
 					});
 				}
 				const dns = $rdps?.filter((item) => item.routerName === name);
 				let rdpNames = dns ? dns.map((item) => item.providerName) : [];
 
 				return renderComponent(ColumnBadge, {
-					label: rdpNames.length ? [...new Set(rdpNames)] : ['None'],
-					variant: 'secondary',
+					label: rdpNames.length ? [...new Set(rdpNames)] : ['Disabled'],
+					variant: rdpNames.length ? 'secondary' : 'outline',
 					class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined
 				});
 			}
 		},
 		{
-			header: 'Cert Resolver',
+			header: 'TLS',
 			accessorFn: (row) => row.router.tls,
 			id: 'tls',
 			enableSorting: true,
 			cell: ({ row }) => {
 				const tls = row.getValue('tls') as TLS;
-				if (!tls?.certResolver) {
-					return renderComponent(ColumnBadge, {
-						label: 'None',
-						variant: 'secondary'
-					});
+
+				let label = 'Disabled';
+				if (tls) {
+					label = tls.certResolver ? tls.certResolver : 'Enabled';
 				}
 				return renderComponent(ColumnBadge, {
-					label: tls.certResolver as string,
-					variant: 'secondary',
-					class: 'bg-slate-300 dark:bg-slate-700'
+					label,
+					variant: tls ? 'secondary' : 'outline',
+					class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
+					tls
 				});
 			}
 		},
