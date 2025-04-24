@@ -10,8 +10,8 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/backup"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/MizuchiLabs/mantrae/internal/storage"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/lmittmann/tint"
 	"golang.org/x/crypto/bcrypt"
@@ -21,7 +21,7 @@ type App struct {
 	Config *app.Config
 	Conn   *db.Connection
 	BM     *backup.BackupManager
-	SM     *SettingsManager
+	SM     *settings.SettingsManager
 }
 
 func Setup(ctx context.Context) (*App, error) {
@@ -42,18 +42,14 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	storage, err := storage.NewLocalStorage(config.Backup.BackupPath)
-	if err != nil {
-		return nil, err
-	}
-	bm := backup.NewManager(conn, config.Backup, storage)
-	bm.Start(ctx)
-
 	// Setup settings manager
-	sm := NewSettingsManager(conn)
+	sm := settings.NewSettingsManager(conn)
 	if err := sm.Initialize(ctx); err != nil {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
+
+	bm := backup.NewManager(conn, config.Backup, sm)
+	bm.Start(ctx)
 
 	app := App{
 		Config: config,

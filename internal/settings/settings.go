@@ -1,8 +1,9 @@
-package config
+package settings
 
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"reflect"
 	"strconv"
 	"time"
@@ -21,6 +22,13 @@ type Settings struct {
 	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable automatic backups"`
 	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Interval between backups"`
 	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"Number of backups to retain"`
+	BackupStorage        string        `setting:"backup_storage_select"  default:"local"                 description:"Choose storage type for backups"`
+	S3Endpoint           string        `setting:"s3_endpoint"            default:""                      description:"S3 endpoint"`
+	S3Bucket             string        `setting:"s3_bucket"              default:""                      description:"S3 bucket name"`
+	S3Region             string        `setting:"s3_region"              default:"us-east-1"             description:"S3 region"`
+	S3AccessKey          string        `setting:"s3_access_key"          default:""                      description:"S3 access key"`
+	S3SecretKey          string        `setting:"s3_secret_key"          default:""                      description:"S3 secret key"`
+	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"                 description:"Use path style URLs for S3"`
 	EmailHost            string        `setting:"email_host"             default:"localhost"             description:"SMTP server hostname"`
 	EmailPort            int           `setting:"email_port"             default:"587"                   description:"SMTP server port"`
 	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP username"`
@@ -134,7 +142,6 @@ func getDefaults() *Settings {
 		}
 
 		if err := parseValue(v.Field(i), defaultVal); err != nil {
-			// Log error or handle it as appropriate for your application
 			continue
 		}
 	}
@@ -150,15 +157,36 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 		return err
 	}
 
-	// Create map of existing settings for quick lookup
-	existing := make(map[string]struct{})
-	for _, s := range existingSettings {
-		existing[s.Key] = struct{}{}
-	}
-
 	// Only initialize settings that don't exist
 	v := reflect.ValueOf(sm.defaults).Elem()
 	t := v.Type()
+
+	// Create map of valid setting keys
+	validKeys := make(map[string]struct{})
+	for i := 0; i < t.NumField(); i++ {
+		key := t.Field(i).Tag.Get("setting")
+		if key != "" {
+			validKeys[key] = struct{}{}
+		}
+	}
+
+	// Clean up any deprecated settings (aggressive approach)
+	for _, setting := range existingSettings {
+		if _, isValid := validKeys[setting.Key]; !isValid {
+			slog.Info("removing deprecated setting", "key", setting.Key)
+			if err := q.DeleteSetting(ctx, setting.Key); err != nil {
+				return fmt.Errorf("failed to delete deprecated setting %s: %w", setting.Key, err)
+			}
+		}
+	}
+
+	// Create map of existing settings for initialization
+	existing := make(map[string]struct{})
+	for _, s := range existingSettings {
+		if _, isValid := validKeys[s.Key]; isValid {
+			existing[s.Key] = struct{}{}
+		}
+	}
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)

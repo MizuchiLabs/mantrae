@@ -6,7 +6,15 @@ import (
 	"time"
 )
 
-// StorageBackend defines interface for different storage solutions
+type BackendType string
+
+const (
+	BackendTypeLocal BackendType = "local"
+	BackendTypeS3    BackendType = "s3"
+	BackendTypeGit   BackendType = "git" // For future implementation
+)
+
+// Backend defines interface for different storage solutions
 type Backend interface {
 	Store(ctx context.Context, name string, data io.Reader) error
 	Retrieve(ctx context.Context, name string) (io.ReadCloser, error)
@@ -16,6 +24,15 @@ type Backend interface {
 
 type StoredFile struct {
 	Name      string    `json:"name,omitempty"`
-	Timestamp time.Time `json:"timestamp,omitempty"`
 	Size      int64     `json:"size,omitempty"`
+	Timestamp time.Time `json:"timestamp,omitempty"`
+}
+
+func (t BackendType) Valid() bool {
+	switch t {
+	case BackendTypeLocal, BackendTypeS3, BackendTypeGit:
+		return true
+	default:
+		return false
+	}
 }

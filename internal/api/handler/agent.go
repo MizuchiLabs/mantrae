@@ -8,6 +8,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/api/agent"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/google/uuid"
 )
@@ -74,7 +75,7 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		serverUrl, err := a.SM.Get(r.Context(), "server_url")
+		serverUrl, err := a.SM.Get(r.Context(), settings.KeyServerURL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -163,7 +164,7 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		serverUrl, err := a.SM.Get(r.Context(), "server_url")
+		serverUrl, err := a.SM.Get(r.Context(), settings.KeyServerURL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

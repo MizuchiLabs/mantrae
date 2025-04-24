@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
-func ListSettings(sm *config.SettingsManager) http.HandlerFunc {
+func ListSettings(sm *settings.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		settings, err := sm.GetAll(r.Context())
 		if err != nil {
@@ -24,7 +24,7 @@ func ListSettings(sm *config.SettingsManager) http.HandlerFunc {
 	}
 }
 
-func GetSetting(sm *config.SettingsManager) http.HandlerFunc {
+func GetSetting(sm *settings.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setting, err := sm.Get(r.Context(), r.PathValue("key"))
 		if err != nil {
@@ -39,7 +39,7 @@ func GetSetting(sm *config.SettingsManager) http.HandlerFunc {
 	}
 }
 
-func UpsertSetting(sm *config.SettingsManager) http.HandlerFunc {
+func UpsertSetting(sm *settings.SettingsManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var setting db.UpsertSettingParams
 		if err := json.NewDecoder(r.Body).Decode(&setting); err != nil {

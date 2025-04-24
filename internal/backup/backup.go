@@ -13,12 +13,14 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/storage"
 )
 
 type BackupManager struct {
 	Conn      *db.Connection
 	Config    *app.BackupConfig
+	Settings  *settings.SettingsManager
 	Backend   storage.Backend
 	stopChan  chan struct{}
 	waitGroup sync.WaitGroup
@@ -28,17 +30,21 @@ type BackupManager struct {
 func NewManager(
 	conn *db.Connection,
 	config app.BackupConfig,
-	backend storage.Backend,
+	settings *settings.SettingsManager,
 ) *BackupManager {
 	return &BackupManager{
 		Conn:     conn,
 		Config:   &config,
-		Backend:  backend,
+		Settings: settings,
 		stopChan: make(chan struct{}),
 	}
 }
 
 func (m *BackupManager) Start(ctx context.Context) {
+	// Init storage
+	if err := m.SetStorage(ctx); err != nil {
+		slog.Error("backup failed", "error", err)
+	}
 	m.waitGroup.Add(1)
 	go m.backupLoop(ctx)
 }
@@ -46,6 +52,40 @@ func (m *BackupManager) Start(ctx context.Context) {
 func (m *BackupManager) Stop() {
 	close(m.stopChan)
 	m.waitGroup.Wait()
+}
+
+func (m *BackupManager) SetStorage(ctx context.Context) error {
+	backend, err := m.Settings.Get(ctx, settings.KeyBackupStorage)
+	if err != nil || backend.Value == nil {
+		return fmt.Errorf("failed to get storage backend: %w", err)
+	}
+	backendType := storage.BackendType(backend.Value.(string))
+	if !backendType.Valid() {
+		return fmt.Errorf("storage backend not configured")
+	}
+
+	switch backendType {
+	case storage.BackendTypeLocal:
+		m.Backend, err = storage.NewLocalStorage(m.Config.BackupPath)
+		if err != nil {
+			return fmt.Errorf("failed to create local storage: %w", err)
+		}
+		return nil
+
+	case storage.BackendTypeS3:
+		m.Backend, err = storage.NewS3Storage(ctx, m.Settings)
+		if err != nil {
+			return fmt.Errorf("failed to create local storage: %w", err)
+		}
+		return nil
+
+	// TODO: Git implementation would go here in the future
+	// case BackendTypeGit:
+	//     return nil
+
+	default:
+		return fmt.Errorf("unsupported backend type: %s", backendType)
+	}
 }
 
 func (m *BackupManager) backupLoop(ctx context.Context) {
@@ -59,6 +99,11 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 			m.Stop()
 			return
 		case <-ticker.C:
+			// Set storage before creating backup (live change)
+			if err := m.SetStorage(ctx); err != nil {
+				slog.Error("backup failed", "error", err)
+				continue
+			}
 			if err := m.Create(ctx); err != nil {
 				slog.Error("backup failed", "error", err)
 			}
