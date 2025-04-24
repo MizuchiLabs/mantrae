@@ -2,6 +2,7 @@
 version: 2
 project_name: mantrae
 report_sizes: true
+pro: false
 
 before:
   hooks:
@@ -55,18 +56,17 @@ release:
   replace_existing_artifacts: true
   mode: keep-existing
 
+
 archives:
   - id: server
-    formats: ["tar.gz"]
-    builds: ["server"]
+    ids: [server]
     files:
       - LICENSE
     name_template: >-
       {{ .Binary }}_{{ .Os }}_{{ .Arch }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
   - id: agent
-    formats: ["tar.gz"]
-    builds: ["agent"]
+    ids: [agent]
     files:
       - LICENSE
     name_template: >-
