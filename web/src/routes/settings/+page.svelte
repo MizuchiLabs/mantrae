@@ -41,19 +41,18 @@
 			description: 'Database backup configuration',
 			keys: ['backup_enabled', 'backup_interval', 'backup_keep', 'backup_storage_select']
 		},
-		// TODO: Enable this later
-		// s3: {
-		// 	title: 'S3 Storage Settings',
-		// 	description: 'Amazon S3 or compatible storage configuration',
-		// 	keys: [
-		// 		's3_endpoint',
-		// 		's3_bucket',
-		// 		's3_region',
-		// 		's3_access_key',
-		// 		's3_secret_key',
-		// 		's3_use_path_style'
-		// 	]
-		// },
+		s3: {
+			title: 'S3 Storage Settings',
+			description: 'Amazon S3 or compatible storage configuration',
+			keys: [
+				's3_endpoint',
+				's3_bucket',
+				's3_region',
+				's3_access_key',
+				's3_secret_key',
+				's3_use_path_style'
+			]
+		},
 		email: {
 			title: 'Email Settings',
 			description: 'SMTP server configuration for sending emails',
@@ -68,9 +67,8 @@
 
 	// Storage types for the select dropdown
 	const storageTypes = [
-		{ value: 'local', label: 'Local Storage' }
-		// TODO: Enable this later
-		// { value: 's3', label: 'S3 Storage' }
+		{ value: 'local', label: 'Local Storage' },
+		{ value: 's3', label: 'S3 Storage' }
 	];
 
 	function parseDuration(str: string): string {
@@ -105,6 +103,7 @@
 		if (typeof value === 'boolean') return 'boolean';
 		if (key.toLowerCase().includes('select')) return 'select';
 		if (key.toLowerCase().includes('password')) return 'password';
+		if (key.toLowerCase().includes('secret')) return 'password';
 		if (key.toLowerCase().includes('interval')) return 'duration';
 		if (key.toLowerCase().includes('port')) return 'port';
 		if (typeof value === 'number') return 'number';
@@ -148,6 +147,11 @@
 	let restoreDBFile: HTMLInputElement | null = $state(null);
 	let restoreDynamicFile: HTMLInputElement | null = $state(null);
 	let showBackupList = $state(false);
+
+	async function handleBackupList() {
+		await api.listBackups();
+		showBackupList = !showBackupList;
+	}
 
 	onMount(async () => {
 		if (user.isAdmin) {
@@ -197,7 +201,7 @@
 							Upload Backup
 						</Button>
 
-						<Button variant="outline" onclick={() => (showBackupList = true)}>
+						<Button variant="outline" onclick={handleBackupList}>
 							<List class="mr-2 size-4" />
 							View Backups
 						</Button>

@@ -21,7 +21,7 @@ type BackupManager struct {
 	Conn      *db.Connection
 	Config    *app.BackupConfig
 	Settings  *settings.SettingsManager
-	Backend   storage.Backend
+	Storage   storage.Backend
 	stopChan  chan struct{}
 	waitGroup sync.WaitGroup
 	mu        sync.Mutex
@@ -45,6 +45,7 @@ func (m *BackupManager) Start(ctx context.Context) {
 	if err := m.SetStorage(ctx); err != nil {
 		slog.Error("backup failed", "error", err)
 	}
+
 	m.waitGroup.Add(1)
 	go m.backupLoop(ctx)
 }
@@ -55,37 +56,37 @@ func (m *BackupManager) Stop() {
 }
 
 func (m *BackupManager) SetStorage(ctx context.Context) error {
-	backend, err := m.Settings.Get(ctx, settings.KeyBackupStorage)
-	if err != nil || backend.Value == nil {
+	storageName, err := m.Settings.Get(ctx, settings.KeyBackupStorage)
+	if err != nil || storageName.Value == nil {
 		return fmt.Errorf("failed to get storage backend: %w", err)
 	}
-	backendType := storage.BackendType(backend.Value.(string))
-	if !backendType.Valid() {
+	storageType := storage.BackendType(storageName.Value.(string))
+	if !storageType.Valid() {
 		return fmt.Errorf("storage backend not configured")
 	}
 
-	switch backendType {
+	var newStorage storage.Backend
+	switch storageType {
 	case storage.BackendTypeLocal:
-		m.Backend, err = storage.NewLocalStorage(m.Config.BackupPath)
+		newStorage, err = storage.NewLocalStorage(m.Config.BackupPath)
 		if err != nil {
 			return fmt.Errorf("failed to create local storage: %w", err)
 		}
-		return nil
+		slog.Debug("backup storage set to local", "path", m.Config.BackupPath)
 
 	case storage.BackendTypeS3:
-		m.Backend, err = storage.NewS3Storage(ctx, m.Settings)
+		newStorage, err = storage.NewS3Storage(ctx, m.Settings)
 		if err != nil {
-			return fmt.Errorf("failed to create local storage: %w", err)
+			return fmt.Errorf("failed to create s3 storage: %w", err)
 		}
-		return nil
-
-	// TODO: Git implementation would go here in the future
-	// case BackendTypeGit:
-	//     return nil
+		slog.Debug("backup storage set to S3")
 
 	default:
-		return fmt.Errorf("unsupported backend type: %s", backendType)
+		return fmt.Errorf("unsupported backend type: %s", storageType)
 	}
+
+	m.Storage = newStorage
+	return nil
 }
 
 func (m *BackupManager) backupLoop(ctx context.Context) {
@@ -118,6 +119,11 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	// Set storage
+	if err := m.SetStorage(ctx); err != nil {
+		return fmt.Errorf("failed to set storage: %w", err)
+	}
+
 	backupName := fmt.Sprintf("backup_%s.db", time.Now().UTC().Format("20060102_150405"))
 
 	// Create a temporary file for the backup
@@ -125,8 +131,8 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer tmpFile.Close()
 	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
 
 	db := m.Conn.Get()
 
@@ -141,7 +147,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	}
 
 	// Store the backup using the backend
-	if err := m.Backend.Store(ctx, backupName, tmpFile); err != nil {
+	if err := m.Storage.Store(ctx, backupName, tmpFile); err != nil {
 		return fmt.Errorf("failed to store backup: %w", err)
 	}
 
@@ -150,6 +156,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 		return fmt.Errorf("failed to cleanup backups: %w", err)
 	}
 
+	slog.Info("Backup created successfully", "name", backupName)
 	return nil
 }
 
@@ -157,12 +164,22 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	// Set storage
+	if err := m.SetStorage(ctx); err != nil {
+		return fmt.Errorf("failed to set storage: %w", err)
+	}
+
+	// Validate backup name for security
+	if !m.IsValidBackupFile(backupName) {
+		return fmt.Errorf("invalid backup file name")
+	}
+
 	dbPath := app.ResolvePath("mantrae.db")
 	walPath := dbPath + "-wal"
 	shmPath := dbPath + "-shm"
 
 	// Get the backup from storage
-	reader, err := m.Backend.Retrieve(ctx, backupName)
+	reader, err := m.Storage.Retrieve(ctx, backupName)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve backup: %w", err)
 	}
@@ -225,6 +242,42 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	return nil
 }
 
+func (m *BackupManager) List(ctx context.Context) ([]storage.StoredFile, error) {
+	// Set storage
+	if err := m.SetStorage(ctx); err != nil {
+		return nil, fmt.Errorf("failed to set storage: %w", err)
+	}
+
+	files, err := m.Storage.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list backups: %w", err)
+	}
+
+	// Filter out any non-backup files
+	var backups []storage.StoredFile
+	for _, file := range files {
+		if m.IsValidBackupFile(file.Name) {
+			backups = append(backups, file)
+		}
+	}
+
+	return backups, nil
+}
+
+func (m *BackupManager) Delete(ctx context.Context, id string) error {
+	// Set storage
+	if err := m.SetStorage(ctx); err != nil {
+		return fmt.Errorf("failed to set storage: %w", err)
+	}
+
+	// Delete backup file
+	if err := m.Storage.Delete(ctx, id); err != nil {
+		return fmt.Errorf("failed to delete backup %s: %w", id, err)
+	}
+
+	return nil
+}
+
 func (m *BackupManager) IsValidBackupFile(filename string) bool {
 	// Prevent directory traversal
 	if strings.Contains(filename, "..") {
@@ -239,7 +292,7 @@ func (m *BackupManager) IsValidBackupFile(filename string) bool {
 }
 
 func (m *BackupManager) cleanup(ctx context.Context) error {
-	files, err := m.Backend.List(ctx)
+	files, err := m.Storage.List(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to list backups: %w", err)
 	}
@@ -250,7 +303,7 @@ func (m *BackupManager) cleanup(ctx context.Context) error {
 
 	// Delete older backups
 	for _, file := range files[m.Config.Keep:] {
-		if err := m.Backend.Delete(ctx, file.Name); err != nil {
+		if err := m.Storage.Delete(ctx, file.Name); err != nil {
 			return fmt.Errorf("failed to delete old backup %s: %w", file.Name, err)
 		}
 	}

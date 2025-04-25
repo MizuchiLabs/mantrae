@@ -11,7 +11,7 @@ type BackendType string
 const (
 	BackendTypeLocal BackendType = "local"
 	BackendTypeS3    BackendType = "s3"
-	BackendTypeGit   BackendType = "git" // For future implementation
+	// BackendTypeGit   BackendType = "git" //TODO: For future implementation
 )
 
 // Backend defines interface for different storage solutions
@@ -30,7 +30,7 @@ type StoredFile struct {
 
 func (t BackendType) Valid() bool {
 	switch t {
-	case BackendTypeLocal, BackendTypeS3, BackendTypeGit:
+	case BackendTypeLocal, BackendTypeS3:
 		return true
 	default:
 		return false

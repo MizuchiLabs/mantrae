@@ -17,8 +17,7 @@ import (
 
 func CreateBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := bm.Create(r.Context())
-		if err != nil {
+		if err := bm.Create(r.Context()); err != nil {
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to create backup: %v", err),
@@ -32,7 +31,7 @@ func CreateBackup(bm *backup.BackupManager) http.HandlerFunc {
 
 func ListBackups(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		backups, err := bm.Backend.List(r.Context())
+		backups, err := bm.List(r.Context())
 		if err != nil {
 			http.Error(
 				w,
@@ -56,8 +55,7 @@ func ListBackups(bm *backup.BackupManager) http.HandlerFunc {
 
 func DeleteBackup(bm *backup.BackupManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		filename := r.PathValue("name")
-		if err := bm.Backend.Delete(r.Context(), filename); err != nil {
+		if err := bm.Delete(r.Context(), r.PathValue("name")); err != nil {
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to delete backup: %v", err),
@@ -81,7 +79,7 @@ func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 			)
 			return
 		}
-		files, err := bm.Backend.List(r.Context())
+		files, err := bm.Storage.List(r.Context())
 		if err != nil {
 			http.Error(
 				w,
@@ -92,7 +90,7 @@ func DownloadBackup(bm *backup.BackupManager) http.HandlerFunc {
 		}
 
 		filename := files[0].Name
-		reader, err := bm.Backend.Retrieve(r.Context(), filename)
+		reader, err := bm.Storage.Retrieve(r.Context(), filename)
 		if err != nil {
 			http.Error(
 				w,
@@ -125,7 +123,7 @@ func DownloadBackupByName(bm *backup.BackupManager) http.HandlerFunc {
 			return
 		}
 
-		reader, err := bm.Backend.Retrieve(r.Context(), filename)
+		reader, err := bm.Storage.Retrieve(r.Context(), filename)
 		if err != nil {
 			http.Error(
 				w,
@@ -179,7 +177,7 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 			filepath.Ext(header.Filename))
 
 		// Store the uploaded backup using the backend
-		if err = bm.Backend.Store(r.Context(), filename, file); err != nil {
+		if err = bm.Storage.Store(r.Context(), filename, file); err != nil {
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to store backup file: %v", err),
@@ -191,7 +189,7 @@ func RestoreBackup(bm *backup.BackupManager) http.HandlerFunc {
 		// Attempt to restore the backup
 		if err := bm.Restore(r.Context(), filename); err != nil {
 			// Clean up the uploaded file if restore fails
-			if err = bm.Backend.Delete(r.Context(), filename); err != nil {
+			if err = bm.Storage.Delete(r.Context(), filename); err != nil {
 				http.Error(
 					w,
 					fmt.Sprintf("Failed to delete backup file: %v", err),

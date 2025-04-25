@@ -567,12 +567,23 @@ export const api = {
 
 	// Backups -------------------------------------------------------------------
 	async listBackups() {
-		const data = await send('/backups');
-		backups.set(data);
+		try {
+			const data = await send('/backups');
+			backups.set(data);
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error(error, { duration: 5000 });
+		}
 	},
 
 	async createBackup() {
-		await send('/backups', { method: 'POST' });
+		try {
+			await send('/backups', { method: 'POST' });
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error(error, { duration: 5000 });
+		}
+
 		await api.listBackups();
 	},
 
@@ -591,8 +602,9 @@ export const api = {
 			a.click();
 			window.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
-		} catch (error) {
-			throw new Error(`Failed to download backup: ${error}`);
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to download backup', { description: error, duration: 5000 });
 		}
 	},
 
@@ -609,8 +621,9 @@ export const api = {
 			a.click();
 			window.URL.revokeObjectURL(url);
 			document.body.removeChild(a);
-		} catch (error) {
-			throw new Error(`Failed to download backup: ${error}`);
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to download backup', { description: error, duration: 5000 });
 		}
 	},
 
@@ -619,18 +632,28 @@ export const api = {
 		const formData = new FormData();
 		formData.append('file', files[0]);
 
-		await send(`/backups/restore`, {
-			method: 'POST',
-			body: formData
-		});
-		toast.success('Backup restored successfully');
+		try {
+			await send(`/backups/restore`, {
+				method: 'POST',
+				body: formData
+			});
+			toast.success('Backup restored successfully');
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to restore backup', { description: error, duration: 5000 });
+		}
 	},
 
 	async restoreBackupByName(filename: string) {
-		await send(`/backups/restore/${filename}`, {
-			method: 'POST'
-		});
-		toast.success('Backup restored successfully');
+		try {
+			await send(`/backups/restore/${filename}`, {
+				method: 'POST'
+			});
+			toast.success('Backup restored successfully');
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to restore backup', { description: error, duration: 5000 });
+		}
 	},
 
 	async restoreDynamicConfig(files: FileList | null) {
@@ -638,17 +661,27 @@ export const api = {
 		const formData = new FormData();
 		formData.append('file', files[0]);
 
-		await send(`/dynamic/restore/${profile.id}`, {
-			method: 'POST',
-			body: formData
-		});
-		toast.success('Config restored successfully');
+		try {
+			await send(`/dynamic/restore/${profile.id}`, {
+				method: 'POST',
+				body: formData
+			});
+			toast.success('Config restored successfully');
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to restore config', { description: error, duration: 5000 });
+		}
 	},
 
 	async deleteBackup(name: string) {
-		await send(`/backups/${name}`, {
-			method: 'DELETE'
-		});
+		if (!name) return;
+		try {
+			await send(`/backups/${name}`, { method: 'DELETE' });
+			toast.success('Backup deleted successfully');
+		} catch (err: unknown) {
+			const error = err instanceof Error ? err.message : String(err);
+			toast.error('Failed to delete backup', { description: error, duration: 5000 });
+		}
 		await api.listBackups();
 	},
 

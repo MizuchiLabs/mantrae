@@ -19,23 +19,23 @@ type SettingWithDescription struct {
 // Settings defines all application settings
 type Settings struct {
 	ServerURL            string        `setting:"server_url"             default:"http://localhost:3000" description:"Base URL for the server"`
-	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable automatic backups"`
-	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Interval between backups"`
-	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"Number of backups to retain"`
-	BackupStorage        string        `setting:"backup_storage_select"  default:"local"                 description:"Choose storage type for backups"`
-	S3Endpoint           string        `setting:"s3_endpoint"            default:""                      description:"S3 endpoint"`
-	S3Bucket             string        `setting:"s3_bucket"              default:""                      description:"S3 bucket name"`
-	S3Region             string        `setting:"s3_region"              default:"us-east-1"             description:"S3 region"`
-	S3AccessKey          string        `setting:"s3_access_key"          default:""                      description:"S3 access key"`
-	S3SecretKey          string        `setting:"s3_secret_key"          default:""                      description:"S3 secret key"`
-	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"                 description:"Use path style URLs for S3"`
-	EmailHost            string        `setting:"email_host"             default:"localhost"             description:"SMTP server hostname"`
-	EmailPort            int           `setting:"email_port"             default:"587"                   description:"SMTP server port"`
-	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP username"`
-	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP password"`
-	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"From email address"`
-	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic agent cleanup"`
-	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Interval for agent cleanup"`
+	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable scheduled backups"`
+	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Time between each backup"`
+	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"How many backups to keep"`
+	BackupStorage        string        `setting:"backup_storage_select"  default:"local"                 description:"Storage backend for backups"`
+	S3Endpoint           string        `setting:"s3_endpoint"            default:""                      description:"Custom S3-compatible endpoint"`
+	S3Bucket             string        `setting:"s3_bucket"              default:"mantrae"               description:"S3 bucket to store backups"`
+	S3Region             string        `setting:"s3_region"              default:"us-east-1"             description:"S3 region for the bucket"`
+	S3AccessKey          string        `setting:"s3_access_key"          default:""                      description:"S3 access key ID"`
+	S3SecretKey          string        `setting:"s3_secret_key"          default:""                      description:"S3 secret access key"`
+	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"                 description:"Use path-style URLs for S3 access"`
+	EmailHost            string        `setting:"email_host"             default:"localhost"             description:"SMTP server address"`
+	EmailPort            int           `setting:"email_port"             default:"587"                   description:"SMTP server port number"`
+	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP login username"`
+	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP login password"`
+	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"Default sender email address"`
+	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic cleanup of agents"`
+	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Time between agent cleanup cycles"`
 }
 
 type SettingsManager struct {
@@ -181,30 +181,40 @@ func (sm *SettingsManager) Initialize(ctx context.Context) error {
 	}
 
 	// Create map of existing settings for initialization
-	existing := make(map[string]struct{})
+	existing := make(map[string]db.Setting)
 	for _, s := range existingSettings {
 		if _, isValid := validKeys[s.Key]; isValid {
-			existing[s.Key] = struct{}{}
+			existing[s.Key] = s
 		}
 	}
 
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		key := field.Tag.Get("setting")
+		description := field.Tag.Get("description")
 		if key == "" {
 			continue
 		}
 
 		// Skip if setting already exists
-		if _, exists := existing[key]; exists {
+		if s, exists := existing[key]; exists {
+			// Update description
+			if err := q.UpsertSetting(ctx, db.UpsertSettingParams{
+				Key:         key,
+				Value:       s.Value,
+				Description: &description,
+			}); err != nil {
+				return fmt.Errorf("failed to update description for %s: %w", key, err)
+			}
 			continue
 		}
 
 		// Only set default value if setting doesn't exist
 		value := valueToString(v.Field(i))
 		if err := q.UpsertSetting(ctx, db.UpsertSettingParams{
-			Key:   key,
-			Value: value,
+			Key:         key,
+			Value:       value,
+			Description: &description,
 		}); err != nil {
 			return err
 		}
