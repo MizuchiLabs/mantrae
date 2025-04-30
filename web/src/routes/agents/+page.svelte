@@ -2,7 +2,7 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { Bot, KeyRound, Pencil, Trash } from 'lucide-svelte';
+	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
 	import { type Agent } from '$lib/types';
 	import AgentModal from '$lib/components/modals/agent.svelte';
 	import { api, agents } from '$lib/api';

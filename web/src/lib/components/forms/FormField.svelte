@@ -4,7 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
-	import { Plus, Trash } from 'lucide-svelte';
+	import { Plus, Trash } from '@lucide/svelte';
 	import { mwNames } from '$lib/api';
 	import type { FieldMetadata } from '$lib/types/middlewares';
 	import Separator from '../ui/separator/separator.svelte';

@@ -6,10 +6,11 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import type { Agent, UpdateAgentIPParams } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-	import { api, loading } from '$lib/api';
+	import { api } from '$lib/api';
 	import Separator from '../ui/separator/separator.svelte';
 	import CopyButton from '../ui/copy-button/copy-button.svelte';
 	import { DateFormat } from '$lib/stores/common';
+	import { RotateCcw } from '@lucide/svelte';
 
 	interface Props {
 		agent: Agent | undefined;
@@ -19,6 +20,7 @@
 	let { agent = $bindable({} as Agent), open = $bindable(false) }: Props = $props();
 
 	let newIP = $state('');
+
 	const handleSubmit = async (ip: string | undefined) => {
 		if (agent.id) {
 			if (!ip) return;
@@ -32,6 +34,11 @@
 			await api.createAgent();
 			toast.success(`Agent ${agent.hostname} created successfully`);
 		}
+		open = false;
+	};
+	const handleRotate = async () => {
+		agent.token = await api.rotateAgentToken(agent.id);
+		toast.success('Token rotated successfully');
 	};
 </script>
 
@@ -48,7 +55,7 @@
 
 		<Separator />
 
-		<form onsubmit={() => handleSubmit(newIP)} class="flex flex-col gap-4">
+		<div class="flex flex-col gap-4">
 			{#if agent.hostname}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="hostname">Hostname</Label>
@@ -96,7 +103,9 @@
 					<div class="col-span-3 flex flex-wrap gap-2">
 						{#each agent.containers ?? [] as container (container.id)}
 							{#if container.name}
-								<Badge variant="secondary">{container.name.slice(1)}</Badge>
+								<Badge variant="secondary">
+									{typeof container.name === 'string' ? container.name.slice(1) : ''}
+								</Badge>
 							{/if}
 						{/each}
 					</div>
@@ -126,18 +135,27 @@
 
 			<div class="space-y-1">
 				<Label for="token">Token</Label>
-				<div class="relative flex">
-					<Input id="token" name="token" type="text" value={agent.token} class="pr-10" readonly />
-					<CopyButton text={agent.token} class="absolute right-0" />
+				<div class="flex w-full items-center gap-1">
+					<div class="relative flex w-full">
+						<Input id="token" name="token" type="text" value={agent.token} class="pr-10" readonly />
+						<CopyButton text={agent.token} class="absolute right-0" />
+					</div>
+					<Button
+						variant="ghost"
+						class="h-10 w-10 cursor-pointer hover:bg-red-300"
+						onclick={handleRotate}
+					>
+						<RotateCcw />
+					</Button>
 				</div>
 			</div>
 
-			{#if agent.hostname}
+			{#if agent.hostname && newIP}
 				<Separator />
-				<Button type="submit" class="w-full" disabled={$loading}>
+				<Button type="submit" class="w-full cursor-pointer" onclick={() => handleSubmit(newIP)}>
 					{agent.id ? 'Update' : 'Save'}
 				</Button>
 			{/if}
-		</form>
+		</div>
 	</Dialog.Content>
 </Dialog.Root>

@@ -5,7 +5,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Middleware, SupportedMiddleware } from '$lib/types/middlewares';
-	import { Layers, Pencil, Trash } from 'lucide-svelte';
+	import { Layers, Pencil, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, middlewares } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';

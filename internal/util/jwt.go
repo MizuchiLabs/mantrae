@@ -38,7 +38,7 @@ func DecodeUserJWT(tokenString, secret string) (*UserClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		claims,
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		},
 	)

@@ -3,7 +3,7 @@
 	import type { WithElementRef } from 'bits-ui';
 	import { cn } from '$lib/utils.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Eye, EyeOff } from 'lucide-svelte';
+	import { Eye, EyeOff } from '@lucide/svelte';
 
 	type Props = WithElementRef<Omit<HTMLInputAttributes, 'type'>> & {
 		showPassword?: boolean;

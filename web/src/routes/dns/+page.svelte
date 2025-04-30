@@ -4,7 +4,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import DNSModal from '$lib/components/modals/dns.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { Globe, Pencil, Trash } from 'lucide-svelte';
+	import { Globe, Pencil, Trash } from '@lucide/svelte';
 	import { type DNSProvider } from '$lib/types';
 	import { api, dnsProviders } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';

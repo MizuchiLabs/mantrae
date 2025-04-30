@@ -48,7 +48,7 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("failed to initialize settings: %w", err)
 	}
 
-	bm := backup.NewManager(conn, config.Backup, sm)
+	bm := backup.NewManager(conn, sm)
 	bm.Start(ctx)
 
 	app := App{

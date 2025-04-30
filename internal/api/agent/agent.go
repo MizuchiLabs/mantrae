@@ -3,14 +3,17 @@ package agent
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"connectrpc.com/connect"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
@@ -30,11 +33,16 @@ func (s *AgentServer) HealthCheck(
 	if _, err := s.validate(req.Header(), req.Msg.GetAgentId()); err != nil {
 		return nil, err
 	}
+	// Rotate Token
+	token, err := s.updateToken(ctx, req.Msg.GetAgentId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	util.Broadcast <- util.EventMessage{
 		Type:     util.EventTypeUpdate,
 		Category: util.EventCategoryAgent,
 	}
-	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true}), nil
+	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true, Token: *token}), nil
 }
 
 func (s *AgentServer) GetContainer(
@@ -75,10 +83,12 @@ func (s *AgentServer) GetContainer(
 	params.Containers = &containers
 
 	q := s.app.Conn.GetQuery()
-	updatedAgent, err := q.UpdateAgent(context.Background(), params)
+	updatedAgent, err := q.UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	// Update agent config
 	if err = traefik.DecodeAgentConfig(s.app.Conn.Get(), updatedAgent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -88,6 +98,46 @@ func (s *AgentServer) GetContainer(
 		Category: util.EventCategoryAgent,
 	}
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
+}
+
+func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, error) {
+	q := s.app.Conn.GetQuery()
+	agent, err := q.GetAgent(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	claims, err := DecodeJWT(agent.Token, s.app.Config.Secret)
+	if err != nil {
+		return nil, err
+	}
+
+	// Only update the token if it's close to expiring (less than 25%)
+	lifetime := claims.ExpiresAt.Time.Sub(claims.IssuedAt.Time)
+	remaining := claims.ExpiresAt.Time.Sub(time.Now())
+	if remaining > lifetime/4 {
+		return &agent.Token, nil // Still valid
+	}
+
+	agentInterval, err := s.app.SM.Get(ctx, settings.KeyAgentCleanupInterval)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := claims.EncodeJWT(
+		s.app.Config.Secret,
+		time.Now().Add(agentInterval.Duration(time.Hour*72)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = q.UpdateAgentToken(ctx, db.UpdateAgentTokenParams{ID: agent.ID, Token: token})
+	if err != nil {
+		return nil, err
+	}
+	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
+
+	return &token, nil
 }
 
 func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error) {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as HoverCard from '$lib/components/ui/hover-card';
-	import { Link, ListTree } from 'lucide-svelte';
+	import { Link, ListTree } from '@lucide/svelte';
 
 	interface Props {
 		rule: string;

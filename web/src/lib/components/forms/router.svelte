@@ -5,7 +5,7 @@
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import logo from '$lib/images/logo.svg';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { CircleCheck, Globe, Lock } from 'lucide-svelte';
+	import { CircleCheck, Globe, Lock } from '@lucide/svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Toggle } from '$lib/components/ui/toggle';

@@ -17,7 +17,7 @@
 		Settings,
 		Trash2,
 		Upload
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { settings, api, backups } from '$lib/api';
 	import { onMount } from 'svelte';
 	import type { Setting } from '$lib/types';
@@ -39,7 +39,13 @@
 		backup: {
 			title: 'Backup Settings',
 			description: 'Database backup configuration',
-			keys: ['backup_enabled', 'backup_interval', 'backup_keep', 'backup_storage_select']
+			keys: [
+				'backup_enabled',
+				'backup_interval',
+				'backup_keep',
+				'backup_path',
+				'backup_storage_select'
+			]
 		},
 		s3: {
 			title: 'S3 Storage Settings',

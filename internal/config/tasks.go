@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/dns"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
@@ -62,31 +63,23 @@ func (a *App) cleanupAgents(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			q := a.Conn.GetQuery()
-			enabled, err := q.GetSetting(ctx, "agent_cleanup_enabled")
+			enabled, err := a.SM.Get(ctx, settings.KeyAgentCleanupEnabled)
 			if err != nil {
-				slog.Error("failed to get agent_cleanup_enabled", "error", err)
+				slog.Error("failed to get agent cleanup enabled setting", "error", err)
 				return
 			}
-
-			if enabled.Value != "true" {
+			if enabled.Bool(false) {
 				return
 			}
 
 			// Timeout to delete old agents
-			timeout, err := q.GetSetting(ctx, "agent_cleanup_interval")
+			timeout, err := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
 			if err != nil {
-				slog.Error("failed to get agent_cleanup_interval", "error", err)
+				slog.Error("failed to get agent cleanup interval setting", "error", err)
 				return
 			}
 
-			timeoutDuration, err := time.ParseDuration(timeout.Value)
-			if err != nil {
-				slog.Error("failed to parse agent_cleanup_interval", "error", err)
-				return
-			}
-
-			now := time.Now()
+			q := a.Conn.GetQuery()
 			agents, err := q.ListAgents(ctx)
 			if err != nil {
 				slog.Error("failed to list agents", "error", err)
@@ -98,7 +91,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 					continue
 				}
 
-				if now.Sub(*agent.UpdatedAt) > timeoutDuration {
+				if time.Now().Sub(*agent.UpdatedAt) > timeout.Duration(time.Hour*24) {
 					if err := q.DeleteTraefikConfigByAgent(ctx, &agent.ID); err != nil {
 						slog.Error(
 							"failed to delete agent config",

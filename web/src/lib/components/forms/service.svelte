@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { type Router, type Service } from '$lib/types/router';
-	import { Plus, Trash } from 'lucide-svelte';
+	import { Plus, Trash } from '@lucide/svelte';
 	import { source } from '$lib/stores/source';
 
 	interface Props {

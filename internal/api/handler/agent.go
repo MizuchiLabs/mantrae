@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/api/agent"
 	"github.com/MizuchiLabs/mantrae/internal/config"
@@ -84,9 +85,19 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 		claims := &agent.AgentClaims{
 			AgentID:   uuid.New().String(),
 			ProfileID: profileID,
-			ServerURL: serverUrl.Value.(string),
+			ServerURL: serverUrl.String("http://localhost:3000"),
 		}
-		token, err := claims.EncodeJWT(a.Config.Secret)
+
+		// Generate a JWT for the agent and let it expire based on the cleanup interval
+		agentInterval, err := a.SM.Get(r.Context(), settings.KeyAgentCleanupInterval)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		token, err := claims.EncodeJWT(
+			a.Config.Secret,
+			time.Now().Add(agentInterval.Duration(time.Hour*72)),
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -173,10 +184,18 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 		claims := &agent.AgentClaims{
 			AgentID:   dbAgent.ID,
 			ProfileID: dbAgent.ProfileID,
-			ServerURL: serverUrl.Value.(string),
+			ServerURL: serverUrl.String("http://localhost:3000"),
 		}
 
-		token, err := claims.EncodeJWT(a.Config.Secret)
+		agentInterval, err := a.SM.Get(r.Context(), settings.KeyAgentCleanupInterval)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		token, err := claims.EncodeJWT(
+			a.Config.Secret,
+			time.Now().Add(agentInterval.Duration(time.Hour*72)),
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -194,6 +213,10 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 			Type:     util.EventTypeUpdate,
 			Category: util.EventCategoryAgent,
 		}
-		w.WriteHeader(http.StatusNoContent)
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(token); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }

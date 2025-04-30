@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BookText } from 'lucide-svelte';
+	import { BookText } from '@lucide/svelte';
 	import { Button } from '../ui/button';
 	import { onMount } from 'svelte';
 	import { api } from '$lib/api';

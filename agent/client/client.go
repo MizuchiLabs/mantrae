@@ -19,96 +19,124 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func Client(quit chan os.Signal) {
-	token := os.Getenv("TOKEN")
+var tokenFilename = ".mantrae-token"
 
-	// Decode the JWT to get auth token and server URL
+func Client(quit chan os.Signal) {
+	// Bootstrap token: disk > env
+	var token string
+	tokenFile, err := os.ReadFile(tokenFilename)
+	if err != nil {
+		token = os.Getenv("TOKEN")
+		if token == "" {
+			log.Fatal("No token found in environment or .mantrae-token file")
+		}
+	} else {
+		token = string(tokenFile)
+	}
+
 	claims, err := DecodeJWT(token)
 	if err != nil {
 		log.Fatalf("Failed to decode JWT: %v", err)
 	}
 
-	// Create a new client instance
-	client := agentv1connect.NewAgentServiceClient(
-		http.DefaultClient,
-		claims.ServerURL,
-		connect.WithGRPC(),
-	)
+	// Initialize client
+	client := agentv1connect.NewAgentServiceClient(http.DefaultClient, claims.ServerURL)
 
-	// Test connection
-	healthCheckRequest := connect.NewRequest(
-		&agentv1.HealthCheckRequest{AgentId: claims.AgentID, ProfileId: claims.ProfileID},
-	)
-	healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
-	result, err := client.HealthCheck(context.Background(), healthCheckRequest)
-	if err != nil {
-		slog.Error("Failed to connect to server", "error", err)
-		os.Exit(1)
+	// Initial HealthCheck to confirm & maybe rotate
+	token, claims = doHealth(client, token, claims, quit)
+	if err = os.WriteFile("token.jwt", []byte(token), 0600); err != nil {
+		slog.Error("Failed to write token file", "error", err)
 	}
-	if !result.Msg.Ok {
-		slog.Warn("Agent was deleted, cleaning up...")
-		quit <- os.Interrupt
-	} else {
-		slog.Info("Connected to", "server", claims.ServerURL)
-	}
+	slog.Info("Connected to server", "server", claims.ServerURL)
 
-	tickerContainer := time.NewTicker(10 * time.Second)
-	defer tickerContainer.Stop()
-
-	// Start a goroutine for sending container data
-	go func() {
-		connected := true
-		for range tickerContainer.C {
-			// Send machine/container info
-			_, err := client.GetContainer(context.Background(), sendContainer(token, claims))
-
-			if connect.CodeOf(err) == connect.CodeNotFound {
-				slog.Warn("Agent was deleted, cleaning up...")
-				quit <- os.Interrupt
-			}
-
-			if connect.CodeOf(err) == connect.CodeInternal {
-				slog.Error("Server error", "error", err)
-				continue
-			}
-
-			if err != nil && connected {
-				slog.Warn("Lost connection to server, retrying...")
-				connected = false
-			} else if err == nil && !connected {
-				slog.Info("Reconnected!")
-				connected = true
-			}
-		}
-	}()
-
-	healthTicker := time.NewTicker(5 * time.Second)
+	// Prepare tickers
+	healthTicker := time.NewTicker(15 * time.Second)
 	defer healthTicker.Stop()
+	containerTicker := time.NewTicker(10 * time.Second)
+	defer containerTicker.Stop()
 
-	// Start a goroutine for sending health data
-	go func() {
-		for range healthTicker.C {
-			healthCheckRequest := connect.NewRequest(
-				&agentv1.HealthCheckRequest{AgentId: claims.AgentID, ProfileId: claims.ProfileID},
-			)
-			healthCheckRequest.Header().Set("Authorization", "Bearer "+token)
-			result, err := client.HealthCheck(context.Background(), healthCheckRequest)
-			if err != nil {
-				continue
-			}
-			if !result.Msg.Ok {
-				slog.Warn("Agent was deleted, cleaning up...")
-				quit <- os.Interrupt
-			}
+	for {
+		select {
+		case <-healthTicker.C:
+			token, claims = doHealth(client, token, claims, quit)
+		case <-containerTicker.C:
+			doContainer(client, token, claims, quit)
+		case <-quit:
+			slog.Info("Shutting down agent...")
+			return
 		}
-	}()
+	}
+}
 
-	// Wait for the main loop to finish
-	<-quit
+// doHealth invokes HealthCheck, handles token rotation & agent deletion
+func doHealth(
+	client agentv1connect.AgentServiceClient,
+	token string,
+	claims *Claims,
+	quit chan os.Signal,
+) (newToken string, newClaims *Claims) {
+	req := connect.NewRequest(&agentv1.HealthCheckRequest{
+		AgentId:   claims.AgentID,
+		ProfileId: claims.ProfileID,
+	})
+	req.Header().Set("Authorization", "Bearer "+token)
+
+	resp, err := client.HealthCheck(context.Background(), req)
+	if err != nil {
+		slog.Warn("HealthCheck error, skipping rotation", "error", err)
+		return token, claims
+	}
+	if !resp.Msg.Ok {
+		slog.Warn("Agent deleted by server, shutting down")
+		quit <- os.Interrupt
+		return token, claims
+	}
+	if rt := resp.Msg.GetToken(); rt != "" && rt != token {
+		slog.Info("Rotating token...")
+		if err = os.WriteFile(tokenFilename, []byte(rt), 0600); err != nil {
+			slog.Error("Failed to write token file", "error", err)
+		}
+		newClaims, err := DecodeJWT(rt)
+		if err != nil {
+			slog.Error("Invalid rotated token", "error", err)
+			return token, claims
+		}
+		return rt, newClaims
+	}
+	return token, claims
+}
+
+// doContainer invokes GetContainer using current token/claims
+func doContainer(
+	client agentv1connect.AgentServiceClient,
+	token string,
+	claims *Claims,
+	quit chan os.Signal,
+) {
+	// build payload
+	req := sendContainerRequest(token, claims)
+	_, err := client.GetContainer(context.Background(), req)
+
+	switch connect.CodeOf(err) {
+	case connect.CodeNotFound:
+		slog.Warn("Agent deleted by server, shutting down")
+		quit <- os.Interrupt
+	case connect.CodeInternal:
+		slog.Error("GetContainer server error", "error", err)
+	case connect.CodeUnauthenticated:
+		slog.Warn("Token invalid, will pick up on next health tick")
+	default:
+		if err != nil {
+			slog.Warn("GetContainer error", "error", err)
+		}
+	}
 }
 
 // sendContainer creates a GetContainerRequest with information about the local machine
-func sendContainer(token string, claims *Claims) *connect.Request[agentv1.GetContainerRequest] {
+func sendContainerRequest(
+	token string,
+	claims *Claims,
+) *connect.Request[agentv1.GetContainerRequest] {
 	var request agentv1.GetContainerRequest
 	request.AgentId = claims.AgentID
 	request.ProfileId = claims.ProfileID

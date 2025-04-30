@@ -3,7 +3,7 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import { Pencil, Trash, Users } from 'lucide-svelte';
+	import { Pencil, Trash, Users } from '@lucide/svelte';
 	import { type User } from '$lib/types';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { api, users } from '$lib/api';

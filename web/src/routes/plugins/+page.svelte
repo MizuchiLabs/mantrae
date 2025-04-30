@@ -7,7 +7,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
-	import { Delete } from 'lucide-svelte';
+	import { Delete } from '@lucide/svelte';
 	import type { Plugin } from '$lib/types';
 	import { api, plugins } from '$lib/api';
 	import { onMount } from 'svelte';

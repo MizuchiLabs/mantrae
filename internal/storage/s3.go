@@ -192,12 +192,12 @@ func getSettings(ctx context.Context, sm *settings.SettingsManager) (*S3Config, 
 	}
 
 	cfg := S3Config{
-		Region:       region.Value.(string),
-		Endpoint:     endpoint.Value.(string),
-		Bucket:       bucket.Value.(string),
-		AccessKey:    accessKey.Value.(string),
-		SecretKey:    secretKey.Value.(string),
-		UsePathStyle: usePathStyle.Value.(bool),
+		Region:       region.String("us-east-1"),
+		Endpoint:     endpoint.String(""),
+		Bucket:       bucket.String("mantrae"),
+		AccessKey:    accessKey.String(""),
+		SecretKey:    secretKey.String(""),
+		UsePathStyle: usePathStyle.Bool(false),
 	}
 
 	return &cfg, nil

@@ -23,6 +23,7 @@ type Settings struct {
 	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Time between each backup"`
 	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"How many backups to keep"`
 	BackupStorage        string        `setting:"backup_storage_select"  default:"local"                 description:"Storage backend for backups"`
+	BackupPath           string        `setting:"backup_path"            default:"backups"               description:"Default path for local backups"`
 	S3Endpoint           string        `setting:"s3_endpoint"            default:""                      description:"Custom S3-compatible endpoint"`
 	S3Bucket             string        `setting:"s3_bucket"              default:"mantrae"               description:"S3 bucket to store backups"`
 	S3Region             string        `setting:"s3_region"              default:"us-east-1"             description:"S3 region for the bucket"`
@@ -35,7 +36,7 @@ type Settings struct {
 	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP login password"`
 	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"Default sender email address"`
 	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic cleanup of agents"`
-	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Time between agent cleanup cycles"`
+	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Maximum duration an agent can remain offline before being removed. Also used as the expiration duration for agent tokens."`
 }
 
 type SettingsManager struct {
@@ -359,4 +360,53 @@ func (sm *SettingsManager) Set(
 	}
 
 	return fmt.Errorf("unknown setting key: %s", key)
+}
+
+// Helper
+func (s *SettingWithDescription) Int(defaultVal int) int {
+	if v, ok := s.Value.(int); ok {
+		return v
+	}
+	// Some DB drivers parse numeric values as float64
+	if f, ok := s.Value.(float64); ok {
+		return int(f)
+	}
+	return defaultVal
+}
+
+func (s *SettingWithDescription) String(defaultVal string) string {
+	if v, ok := s.Value.(string); ok {
+		return v
+	}
+	return defaultVal
+}
+
+func (s *SettingWithDescription) Bool(defaultVal bool) bool {
+	if v, ok := s.Value.(bool); ok {
+		return v
+	}
+	return defaultVal
+}
+
+func (s *SettingWithDescription) Float64(defaultVal float64) float64 {
+	if v, ok := s.Value.(float64); ok {
+		return v
+	}
+	if i, ok := s.Value.(int); ok {
+		return float64(i)
+	}
+	return defaultVal
+}
+
+func (s *SettingWithDescription) Duration(defaultVal time.Duration) time.Duration {
+	switch v := s.Value.(type) {
+	case string:
+		d, err := time.ParseDuration(v)
+		if err == nil {
+			return d
+		}
+	case time.Duration:
+		return v
+	}
+	return defaultVal
 }

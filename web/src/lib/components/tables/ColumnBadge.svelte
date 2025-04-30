@@ -3,7 +3,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
 	import type { TLS } from '$lib/types/router';
-	import { AlertTriangle, Eye, Globe, Key } from 'lucide-svelte';
+	import { AlertTriangle, Eye, Globe, Key } from '@lucide/svelte';
 
 	type Props = ComponentProps<typeof Badge> & {
 		label: string | string[];

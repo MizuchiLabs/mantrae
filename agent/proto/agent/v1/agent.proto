@@ -36,4 +36,5 @@ message HealthCheckRequest {
 }
 message HealthCheckResponse {
   bool ok = 1;
+  string token = 2;
 }

@@ -540,6 +540,14 @@ export const api = {
 		await api.listAgentsByProfile();
 	},
 
+	async rotateAgentToken(id: string) {
+		const token = await send(`/agent/token/${id}`, {
+			method: 'POST'
+		});
+		await api.listAgentsByProfile();
+		return token;
+	},
+
 	async deleteAgent(id: string) {
 		await send(`/agent/${id}`, {
 			method: 'DELETE'

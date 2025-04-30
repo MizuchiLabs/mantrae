@@ -4,7 +4,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { ValidateRule } from './ruleString';
-	import { CircleCheck, CircleX } from 'lucide-svelte';
+	import { CircleCheck, CircleX } from '@lucide/svelte';
 	import { ruleTab } from '$lib/stores/common';
 
 	interface Props {

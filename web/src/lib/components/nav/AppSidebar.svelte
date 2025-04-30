@@ -4,7 +4,7 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import logo from '$lib/images/logo-white.svg';
-	import type { ComponentProps, SvelteComponent } from 'svelte';
+	import type { Component, ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Blocks,
@@ -27,7 +27,7 @@
 		Moon,
 		Zap,
 		type IconProps
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import InfoModal from '../modals/info.svelte';
 	import ProfileModal from '../modals/profile.svelte';
 	import UserModal from '../modals/user.svelte';
@@ -46,10 +46,12 @@
 
 	const sidebar = Sidebar.useSidebar();
 
+	type IconComponent = Component<IconProps, Record<string, never>, ''>;
+
 	type Route = {
 		title: string;
 		url: string;
-		icon: typeof SvelteComponent<IconProps>;
+		icon: IconComponent;
 		adminOnly?: boolean;
 		subItems?: Route[];
 	};

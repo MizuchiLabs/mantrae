@@ -5,7 +5,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import type { Router, Service, TLS } from '$lib/types/router';
-	import { Pencil, Route, Trash } from 'lucide-svelte';
+	import { Pencil, Route, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';

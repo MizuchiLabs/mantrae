@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/mail"
+	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/util"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -199,7 +199,7 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		settings, err := q.ListSettings(r.Context())
+		sets, err := a.SM.GetAll(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -213,19 +213,19 @@ func SendResetEmail(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		var config app.EmailConfig
-		for _, setting := range settings {
-			switch setting.Key {
-			case "email_host":
-				config.Host = setting.Value
-			case "email_port":
-				config.Port = setting.Value
-			case "email_user":
-				config.Username = setting.Value
-			case "email_password":
-				config.Password = setting.Value
-			case "email_from":
-				config.From = setting.Value
+		var config mail.EmailConfig
+		for _, s := range sets {
+			switch s.Value {
+			case settings.KeyEmailHost:
+				config.Host = s.Value.(string)
+			case settings.KeyEmailPort:
+				config.Port = s.Value.(string)
+			case settings.KeyEmailUser:
+				config.Username = s.Value.(string)
+			case settings.KeyEmailPassword:
+				config.Password = s.Value.(string)
+			case settings.KeyEmailFrom:
+				config.From = s.Value.(string)
 			}
 		}
 		data := map[string]any{

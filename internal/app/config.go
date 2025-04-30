@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/caarlos0/env/v11"
 )
@@ -13,9 +12,7 @@ import (
 // Config holds all application configuration
 type Config struct {
 	Server     ServerConfig
-	Email      EmailConfig
 	Traefik    TraefikConfig
-	Backup     BackupConfig
 	Background BackgroundJobs
 	Secret     string `env:"SECRET" envDefault:""`
 }
@@ -29,27 +26,12 @@ type ServerConfig struct {
 	LogLevel    string `env:"SERVER_LOG_LEVEL"    envDefault:"info"`
 }
 
-type EmailConfig struct {
-	Host     string `env:"EMAIL_HOST"     envDefault:"localhost"`
-	Port     string `env:"EMAIL_PORT"     envDefault:"587"`
-	Username string `env:"EMAIL_USERNAME" envDefault:""`
-	Password string `env:"EMAIL_PASSWORD" envDefault:""`
-	From     string `env:"EMAIL_FROM"     envDefault:"mantrae@localhost"`
-}
-
 type TraefikConfig struct {
 	Profile  string `env:"TRAEFIK_PROFILE"  envDefault:"default"`
 	URL      string `env:"TRAEFIK_URL"      envDefault:""`
 	Username string `env:"TRAEFIK_USERNAME" envDefault:""`
 	Password string `env:"TRAEFIK_PASSWORD" envDefault:""`
 	TLS      bool   `env:"TRAEFIK_TLS"      envDefault:""`
-}
-
-type BackupConfig struct {
-	Enabled    bool          `env:"BACKUP_ENABLED"  envDefault:"true"`
-	BackupPath string        `env:"BACKUP_PATH"     envDefault:"backups"`
-	Interval   time.Duration `env:"BACKUP_INTERVAL" envDefault:"24h"`
-	Keep       int           `env:"BACKUP_KEEP"     envDefault:"3"`
 }
 
 type BackgroundJobs struct {

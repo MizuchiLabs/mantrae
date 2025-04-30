@@ -15,11 +15,10 @@ type AgentClaims struct {
 }
 
 // EncodeJWT generates a JWT for agents
-func (a *AgentClaims) EncodeJWT(secret string) (string, error) {
+func (a *AgentClaims) EncodeJWT(secret string, expirationTime time.Time) (string, error) {
 	if a.ServerURL == "" || a.ProfileID == 0 {
 		return "", errors.New("serverUrl and profileID cannot be empty")
 	}
-	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &AgentClaims{
 		AgentID:   a.AgentID,
 		ProfileID: a.ProfileID,
@@ -40,7 +39,7 @@ func DecodeJWT(tokenString, secret string) (*AgentClaims, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		claims,
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		},
 	)

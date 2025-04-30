@@ -2,8 +2,8 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button, type ButtonProps } from '$lib/components/ui/button/index.js';
-	import { type SvelteComponent } from 'svelte';
-	import { Ellipsis, Tag, Tags, type IconProps } from 'lucide-svelte';
+	import { type Component } from 'svelte';
+	import { Ellipsis, Tag, Tags, type IconProps } from '@lucide/svelte';
 	import { api, profiles, type RouterWithService } from '$lib/api';
 	import type { UpsertRouterParams } from '$lib/types/router';
 	import { toast } from 'svelte-sonner';
@@ -16,10 +16,12 @@
 		shareObject?: RouterWithService | Middleware;
 	}
 
+	type IconComponent = Component<IconProps, Record<string, never>, ''>;
+
 	type Action = {
 		type: 'dropdown' | 'button';
 		label: string;
-		icon?: typeof SvelteComponent<IconProps>;
+		icon?: IconComponent;
 		onClick: () => void;
 		variant?: ButtonProps['variant'];
 		classProps?: ButtonProps['class'];

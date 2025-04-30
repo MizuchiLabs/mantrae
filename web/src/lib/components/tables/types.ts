@@ -1,10 +1,12 @@
-import type { SvelteComponent } from 'svelte';
-import type { IconProps } from 'lucide-svelte';
+import type { Component } from 'svelte';
+import type { IconProps } from '@lucide/svelte';
+
+type IconComponent = Component<IconProps, Record<string, never>, ''>;
 
 export type BulkAction<T> = {
 	type: 'button' | 'select';
 	label: string;
-	icon?: typeof SvelteComponent<IconProps>;
+	icon?: IconComponent;
 	variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 	class?: string;
 	disabled?: boolean;

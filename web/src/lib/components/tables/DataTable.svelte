@@ -37,7 +37,7 @@
 		Delete,
 		Plus,
 		Search
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { limit } from '$lib/stores/common';
 	import BulkActions from './BulkActions.svelte';
 	import type { BulkAction } from './types';

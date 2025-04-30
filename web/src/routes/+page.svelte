@@ -10,7 +10,7 @@
 		Users,
 		TriangleAlert,
 		Trash2
-	} from 'lucide-svelte';
+	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { api, errors, profiles, stats } from '$lib/api';
 	import { TraefikSource } from '$lib/types';

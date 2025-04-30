@@ -2,7 +2,7 @@
 	import * as Command from '$lib/components/ui/command/index.js';
 	import RouterModal from '../modals/router.svelte';
 	import MiddlewareModal from '../modals/middleware.svelte';
-	import { Layers, Route } from 'lucide-svelte';
+	import { Layers, Route } from '@lucide/svelte';
 	import type { Router, Service } from '$lib/types/router';
 	import type { Middleware } from '$lib/types/middlewares';
 	import { middlewares, routerServiceMerge } from '$lib/api';

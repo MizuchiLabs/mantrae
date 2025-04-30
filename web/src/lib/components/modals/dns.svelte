@@ -15,7 +15,7 @@
 	import { slide } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import Badge from '../ui/badge/badge.svelte';
-	import { CircleHelp } from 'lucide-svelte';
+	import { CircleHelp } from '@lucide/svelte';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 
 	interface Props {
