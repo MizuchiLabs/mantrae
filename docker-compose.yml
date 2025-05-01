@@ -24,9 +24,9 @@ services:
     container_name: mantrae
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
+      - ./agent:/data # persistent data directory for the token
     environment:
-      - TOKEN=<token> # token from mantrae server
-    # adjust network which you want to monitor
+      - TOKEN=<token> # initial token from mantrae server
     restart: unless-stopped
 
   traefik:
