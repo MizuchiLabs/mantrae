@@ -44,7 +44,7 @@ func Client(quit chan os.Signal) {
 
 	// Initial HealthCheck to confirm & maybe rotate
 	token, claims = doHealth(client, token, claims, quit)
-	if err = os.WriteFile("token.jwt", []byte(token), 0600); err != nil {
+	if err = os.WriteFile(tokenFilename, []byte(token), 0600); err != nil {
 		slog.Error("Failed to write token file", "error", err)
 	}
 	slog.Info("Connected to server", "server", claims.ServerURL)
