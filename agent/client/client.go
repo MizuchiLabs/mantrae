@@ -45,15 +45,15 @@ func Client(quit chan os.Signal) {
 	if err != nil {
 		log.Fatalf("Failed to decode JWT: %v", err)
 	}
+	if err = os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
+		slog.Error("Failed to write token file", "error", err)
+	}
 
 	// Initialize client
 	client := agentv1connect.NewAgentServiceClient(http.DefaultClient, claims.ServerURL)
 
 	// Initial HealthCheck to confirm & maybe rotate
 	token, claims = doHealth(client, token, claims, quit)
-	if err = os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
-		slog.Error("Failed to write token file", "error", err)
-	}
 	slog.Info("Connected to server", "server", claims.ServerURL)
 
 	// Prepare tickers
