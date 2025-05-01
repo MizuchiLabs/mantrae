@@ -47,6 +47,7 @@ docker-release:
 
 .PHONY: release
 release:
+	go generate ./...
 	goreleaser release --clean --skip=validate
 
 .PHONY: snapshot
