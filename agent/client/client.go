@@ -19,12 +19,19 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var tokenFilename = ".mantrae-token"
+var (
+	tokenDir  = "data"
+	tokenPath = tokenDir + "/.mantrae-token"
+)
 
 func Client(quit chan os.Signal) {
+	if err := os.MkdirAll(tokenDir, 0755); err != nil {
+		log.Printf("Warning: failed to create base directory: %v", err)
+	}
+
 	// Bootstrap token: disk > env
 	var token string
-	tokenFile, err := os.ReadFile(tokenFilename)
+	tokenFile, err := os.ReadFile(tokenPath)
 	if err != nil {
 		token = os.Getenv("TOKEN")
 		if token == "" {
@@ -44,7 +51,7 @@ func Client(quit chan os.Signal) {
 
 	// Initial HealthCheck to confirm & maybe rotate
 	token, claims = doHealth(client, token, claims, quit)
-	if err = os.WriteFile(tokenFilename, []byte(token), 0600); err != nil {
+	if err = os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
 		slog.Error("Failed to write token file", "error", err)
 	}
 	slog.Info("Connected to server", "server", claims.ServerURL)
@@ -93,7 +100,7 @@ func doHealth(
 	}
 	if rt := resp.Msg.GetToken(); rt != "" && rt != token {
 		slog.Info("Rotating token...")
-		if err = os.WriteFile(tokenFilename, []byte(rt), 0600); err != nil {
+		if err = os.WriteFile(tokenPath, []byte(rt), 0600); err != nil {
 			slog.Error("Failed to write token file", "error", err)
 		}
 		newClaims, err := DecodeJWT(rt)
