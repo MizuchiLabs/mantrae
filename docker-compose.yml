@@ -21,7 +21,7 @@ services:
 
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
-    container_name: mantrae
+    container_name: mantrae-agent
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
       - ./agent:/data # persistent data directory for the token
