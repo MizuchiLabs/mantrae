@@ -58,6 +58,12 @@ export interface UpsertMiddlewareParams {
 	};
 }
 
+export interface DeleteMiddlewareParams {
+	profileId: number;
+	name: string;
+	protocol: 'http' | 'tcp';
+}
+
 export function flattenMiddlewareData(configs: TraefikConfig[]): Middleware[] {
 	const flatMiddleware: Middleware[] = [];
 	if (!configs) return flatMiddleware;

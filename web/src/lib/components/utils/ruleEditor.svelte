@@ -211,14 +211,16 @@
 	onValueChange={(value) => (ruleTab.value = value)}
 	class="flex flex-col gap-2"
 >
-	<div class="flex justify-end">
-		<Tabs.List class="h-8">
-			<Tabs.Trigger value="simple" class="px-2 py-0.5 font-bold" disabled={simpleDisabled}
-				>Simple</Tabs.Trigger
-			>
-			<Tabs.Trigger value="advanced" class="px-2 py-0.5 font-bold">Advanced</Tabs.Trigger>
-		</Tabs.List>
-	</div>
+	{#if !disabled}
+		<div class="flex justify-end">
+			<Tabs.List class="h-8">
+				<Tabs.Trigger value="simple" class="px-2 py-0.5 font-bold" disabled={simpleDisabled}>
+					Simple
+				</Tabs.Trigger>
+				<Tabs.Trigger value="advanced" class="px-2 py-0.5 font-bold">Advanced</Tabs.Trigger>
+			</Tabs.List>
+		</div>
+	{/if}
 
 	<Tabs.Content value="simple">
 		<div class="grid grid-cols-8 items-center gap-2">

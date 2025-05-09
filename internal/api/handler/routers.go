@@ -27,6 +27,20 @@ type UpsertRouterParams struct {
 	UDPService *runtime.UDPServiceInfo `json:"udpService"`
 }
 
+type DeleteRouterParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+	Protocol  string `json:"protocol"`
+}
+
+type BulkDeleteRouterParams struct {
+	ProfileID int64 `json:"profileId"`
+	Items     []struct {
+		Name     string `json:"name"`
+		Protocol string `json:"protocol"`
+	} `json:"items"`
+}
+
 // UpsertRouter handles both creation and updates of router/service pairs
 func UpsertRouter(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -160,22 +174,19 @@ func UpsertRouter(a *config.App) http.HandlerFunc {
 // DeleteRouter handles the removal of router/service pairs
 func DeleteRouter(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := a.Conn.GetQuery()
-		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		if err != nil {
-			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
+		var params DeleteRouterParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
-		routerName := r.PathValue("name")
-		routerProto := r.PathValue("protocol")
-
-		if routerName == "" || routerProto == "" {
+		if params.ProfileID == 0 || params.Name == "" || params.Protocol == "" {
 			http.Error(w, "Missing router name or protocol", http.StatusBadRequest)
 			return
 		}
 
-		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
+		q := a.Conn.GetQuery()
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), params.ProfileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -186,19 +197,87 @@ func DeleteRouter(a *config.App) http.HandlerFunc {
 		}
 
 		// Remove router and service based on type
-		switch routerProto {
+		switch params.Protocol {
 		case "http":
-			delete(existingConfig.Config.Routers, routerName)
-			delete(existingConfig.Config.Services, routerName)
+			delete(existingConfig.Config.Routers, params.Name)
+			delete(existingConfig.Config.Services, params.Name)
 		case "tcp":
-			delete(existingConfig.Config.TCPRouters, routerName)
-			delete(existingConfig.Config.TCPServices, routerName)
+			delete(existingConfig.Config.TCPRouters, params.Name)
+			delete(existingConfig.Config.TCPServices, params.Name)
 		case "udp":
-			delete(existingConfig.Config.UDPRouters, routerName)
-			delete(existingConfig.Config.UDPServices, routerName)
+			delete(existingConfig.Config.UDPRouters, params.Name)
+			delete(existingConfig.Config.UDPServices, params.Name)
 		default:
 			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return
+		}
+
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: existingConfig.ProfileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
+		})
+		if err != nil {
+			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryTraefik,
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func BulkDeleteRouter(a *config.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var params BulkDeleteRouterParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if params.ProfileID == 0 {
+			http.Error(w, "Missing router name or protocol", http.StatusBadRequest)
+			return
+		}
+
+		q := a.Conn.GetQuery()
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), params.ProfileID)
+		if err != nil {
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		// Remove router and service based on type
+		for _, item := range params.Items {
+			if item.Name == "" || item.Protocol == "" {
+				continue // Skip invalid entries
+			}
+
+			switch item.Protocol {
+			case "http":
+				delete(existingConfig.Config.Routers, item.Name)
+				delete(existingConfig.Config.Services, item.Name)
+			case "tcp":
+				delete(existingConfig.Config.TCPRouters, item.Name)
+				delete(existingConfig.Config.TCPServices, item.Name)
+			case "udp":
+				delete(existingConfig.Config.UDPRouters, item.Name)
+				delete(existingConfig.Config.UDPServices, item.Name)
+			default:
+				http.Error(
+					w,
+					"invalid router type: must be http, tcp, or udp",
+					http.StatusBadRequest,
+				)
+				return
+			}
 		}
 
 		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{

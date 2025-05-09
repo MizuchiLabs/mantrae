@@ -21,6 +21,20 @@ type UpsertMiddlewareParams struct {
 	TCPMiddleware *runtime.TCPMiddlewareInfo `json:"tcpMiddleware"`
 }
 
+type DeleteMiddlewareParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+	Protocol  string `json:"protocol"`
+}
+
+type BulkDeleteMiddlewareParams struct {
+	ProfileID int64 `json:"profileId"`
+	Items     []struct {
+		Name     string `json:"name"`
+		Protocol string `json:"protocol"`
+	} `json:"items"`
+}
+
 type Plugin struct {
 	ID            string        `json:"id"`
 	Name          string        `json:"name"`
@@ -132,22 +146,19 @@ func UpsertMiddleware(a *config.App) http.HandlerFunc {
 // DeleteMiddleware deletes a middleware
 func DeleteMiddleware(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := a.Conn.GetQuery()
-		profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		if err != nil {
-			http.Error(w, "Invalid profile ID", http.StatusBadRequest)
+		var params DeleteMiddlewareParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
-		mwName := r.PathValue("name")
-		mwProto := r.PathValue("protocol")
-
-		if mwName == "" || mwProto == "" {
+		if params.ProfileID == 0 || params.Name == "" || params.Protocol == "" {
 			http.Error(w, "Missing middleware name or protocol", http.StatusBadRequest)
 			return
 		}
 
-		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), profileID)
+		q := a.Conn.GetQuery()
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), params.ProfileID)
 		if err != nil {
 			http.Error(
 				w,
@@ -157,14 +168,71 @@ func DeleteMiddleware(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		switch mwProto {
+		switch params.Protocol {
 		case "http":
-			delete(existingConfig.Config.Middlewares, mwName)
+			delete(existingConfig.Config.Middlewares, params.Name)
 		case "tcp":
-			delete(existingConfig.Config.TCPMiddlewares, mwName)
+			delete(existingConfig.Config.TCPMiddlewares, params.Name)
 		default:
 			http.Error(w, "invalid router type: must be http, tcp, or udp", http.StatusBadRequest)
 			return
+		}
+
+		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{
+			ProfileID: existingConfig.ProfileID,
+			Source:    source.Local,
+			Config:    existingConfig.Config,
+		})
+		if err != nil {
+			http.Error(w, "Failed to update config: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		util.Broadcast <- util.EventMessage{
+			Type:     util.EventTypeDelete,
+			Category: util.EventCategoryTraefik,
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func BulkDeleteMiddleware(a *config.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var params BulkDeleteMiddlewareParams
+		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if params.ProfileID == 0 {
+			http.Error(w, "Missing profile ID", http.StatusBadRequest)
+			return
+		}
+
+		q := a.Conn.GetQuery()
+		existingConfig, err := q.GetLocalTraefikConfig(r.Context(), params.ProfileID)
+		if err != nil {
+			http.Error(
+				w,
+				"Failed to get existing config: "+err.Error(),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		for _, item := range params.Items {
+			if item.Name == "" || item.Protocol == "" {
+				continue // Skip invalid entries
+			}
+
+			switch item.Protocol {
+			case "http":
+				delete(existingConfig.Config.Middlewares, item.Name)
+			case "tcp":
+				delete(existingConfig.Config.TCPMiddlewares, item.Name)
+			default:
+				continue
+			}
 		}
 
 		err = q.UpsertTraefikConfig(r.Context(), db.UpsertTraefikConfigParams{

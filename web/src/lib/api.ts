@@ -18,12 +18,14 @@ import {
 import type { EntryPoints } from './types/entrypoints';
 import {
 	flattenMiddlewareData,
+	type DeleteMiddlewareParams,
 	type Middleware,
 	type UpsertMiddlewareParams
 } from './types/middlewares';
 import {
 	flattenRouterData,
 	flattenServiceData,
+	type DeleteRouterParams,
 	type Router,
 	type Service,
 	type UpsertRouterParams
@@ -320,14 +322,22 @@ export const api = {
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
-	async deleteRouter(data: Router) {
+	async deleteRouter(data: DeleteRouterParams) {
+		await send(`/router`, {
+			method: 'DELETE',
+			body: data
+		});
+		await api.getTraefikConfig(TraefikSource.LOCAL);
+	},
+
+	async bulkDeleteRouter(items: Omit<DeleteRouterParams, 'profileId'>[]) {
 		if (!profile.hasValidId()) {
 			toast.error('Invalid profile ID');
 			return;
 		}
-
-		await send(`/router/${profile.id}/${data.name}/${data.protocol}`, {
-			method: 'DELETE'
+		await send(`/router/bulk`, {
+			method: 'DELETE',
+			body: { profileId: profile.id, items }
 		});
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
@@ -353,13 +363,26 @@ export const api = {
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},
 
-	async deleteMiddleware(data: Middleware) {
+	async deleteMiddleware(data: DeleteMiddlewareParams) {
 		if (!profile.hasValidId()) {
 			toast.error('Invalid profile ID');
 			return;
 		}
-		await send(`/middleware/${profile.id}/${data.name}/${data.protocol}`, {
-			method: 'DELETE'
+		await send(`/middleware`, {
+			method: 'DELETE',
+			body: data
+		});
+		await api.getTraefikConfig(TraefikSource.LOCAL);
+	},
+
+	async bulkDeleteMiddleware(items: Omit<DeleteMiddlewareParams, 'profileId'>[]) {
+		if (!profile.hasValidId()) {
+			toast.error('Invalid profile ID');
+			return;
+		}
+		await send(`/middleware/bulk`, {
+			method: 'DELETE',
+			body: { profileId: profile.id, items }
 		});
 		await api.getTraefikConfig(TraefikSource.LOCAL);
 	},

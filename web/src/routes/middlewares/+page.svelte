@@ -4,7 +4,11 @@
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import type { Middleware, SupportedMiddleware } from '$lib/types/middlewares';
+	import type {
+		DeleteMiddlewareParams,
+		Middleware,
+		SupportedMiddleware
+	} from '$lib/types/middlewares';
 	import { Layers, Pencil, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, middlewares } from '$lib/api';
@@ -42,7 +46,16 @@
 	const deleteMiddleware = async (middleware: Middleware) => {
 		if (!source.isLocal()) return;
 		try {
-			await api.deleteMiddleware(middleware);
+			if (!profile.hasValidId() || !profile.id) {
+				toast.error('Invalid profile ID');
+				return;
+			}
+			const params: DeleteMiddlewareParams = {
+				profileId: profile?.id,
+				name: middleware.name,
+				protocol: middleware.protocol
+			};
+			await api.deleteMiddleware(params);
 			toast.success('Middleware deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -57,7 +70,11 @@
 			);
 			if (!confirmed) return;
 
-			await Promise.all(selectedRows.map((row) => api.deleteMiddleware(row)));
+			const items = selectedRows.map((row) => ({
+				name: row.name,
+				protocol: row.protocol
+			}));
+			await api.bulkDeleteMiddleware(items);
 			toast.success(`Successfully deleted ${selectedRows.length} middlewares`);
 		} catch (err: unknown) {
 			const e = err as Error;

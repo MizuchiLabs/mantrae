@@ -25,6 +25,12 @@ export interface UpsertRouterParams {
 	udpService?: Service;
 }
 
+export interface DeleteRouterParams {
+	profileId: number;
+	name: string;
+	protocol: 'http' | 'tcp' | 'udp';
+}
+
 // Transform function to flatten the router data
 export function flattenRouterData(configs: TraefikConfig[]): Router[] {
 	const flatRouters: Router[] = [];

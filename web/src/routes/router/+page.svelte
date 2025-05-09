@@ -4,7 +4,7 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import type { Router, Service, TLS } from '$lib/types/router';
+	import type { DeleteRouterParams, Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
@@ -69,7 +69,16 @@
 
 	const deleteRouter = async (router: Router) => {
 		try {
-			await api.deleteRouter(router);
+			if (!profile.hasValidId() || !profile.id) {
+				toast.error('Invalid profile ID');
+				return;
+			}
+			const params: DeleteRouterParams = {
+				profileId: profile?.id,
+				name: router.name,
+				protocol: router.protocol
+			};
+			await api.deleteRouter(params);
 			toast.success('Router deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -81,7 +90,12 @@
 		try {
 			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
 			if (!confirmed) return;
-			await Promise.all(selectedRows.map((row) => api.deleteRouter(row.router)));
+
+			const items = selectedRows.map((row) => ({
+				name: row.router.name,
+				protocol: row.router.protocol
+			}));
+			await api.bulkDeleteRouter(items);
 			toast.success(`Successfully deleted ${selectedRows.length} routers`);
 		} catch (err: unknown) {
 			const e = err as Error;

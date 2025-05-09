@@ -56,16 +56,13 @@ func (s *Server) routes() {
 
 	// Routers/Services
 	register("POST", "/router/{id}", jwtChain, handler.UpsertRouter(s.app))
-	register("DELETE", "/router/{id}/{name}/{protocol}", jwtChain, handler.DeleteRouter(s.app))
+	register("DELETE", "/router", jwtChain, handler.DeleteRouter(s.app))
+	register("DELETE", "/router/bulk", jwtChain, handler.BulkDeleteRouter(s.app))
 
 	// Middlewares
 	register("POST", "/middleware/{id}", jwtChain, handler.UpsertMiddleware(s.app))
-	register(
-		"DELETE",
-		"/middleware/{id}/{name}/{protocol}",
-		jwtChain,
-		handler.DeleteMiddleware(s.app),
-	)
+	register("DELETE", "/middleware", jwtChain, handler.DeleteMiddleware(s.app))
+	register("DELETE", "/middleware/bulk", jwtChain, handler.BulkDeleteMiddleware(s.app))
 	register("GET", "/middleware/plugins", jwtChain, handler.GetMiddlewarePlugins)
 
 	// Users
