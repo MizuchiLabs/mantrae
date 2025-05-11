@@ -81,9 +81,10 @@ changelog:
   filters:
     include:
       - '^feat:'
-      - '^bug:'
+      - '^fix:'
       - '^sec:'
       - '^doc:'
+      - '^wip:'
   groups:
     - title: "🚀 Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'

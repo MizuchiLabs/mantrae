@@ -83,10 +83,7 @@ func (s *Server) registerServices() {
 	// Common interceptors
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
-		// connect.WithInterceptors(
-		// 	middleware.Authentication(),
-		// 	middleware.Logging(),
-		// ),
+		connect.WithInterceptors(middlewares.Logging()),
 		connect.WithRecover(
 			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
 				// Log the panic with context
@@ -121,5 +118,6 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
 	// Service implementations
-	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app), opts...))
+	agentOpts := append(opts, connect.WithInterceptors(middlewares.AgentAuth(s.app)))
+	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app), agentOpts...))
 }

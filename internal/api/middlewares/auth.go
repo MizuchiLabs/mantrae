@@ -2,18 +2,23 @@ package middlewares
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
+	"connectrpc.com/connect"
+	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/MizuchiLabs/mantrae/pkg/meta"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type ctxKey string
 
 const (
-	AuthUserKey ctxKey = "user"
+	AuthUserKey  ctxKey = "user"
+	AuthAgentKey ctxKey = "agent"
 )
 
 // BasicAuth middleware for simple authentication
@@ -103,4 +108,53 @@ func (h *MiddlewareHandler) AdminOnly(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func GetAgentContext(ctx context.Context) *db.Agent {
+	agent, ok := ctx.Value(AuthAgentKey).(*db.Agent)
+	if !ok {
+		return nil
+	}
+	return agent
+}
+
+func AgentAuth(app *config.App) connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			auth := req.Header().Get("Authorization")
+			if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
+				return nil, connect.NewError(
+					connect.CodeUnauthenticated,
+					errors.New("invalid or missing authorization header"),
+				)
+			}
+
+			agentID := req.Header().Get(meta.HeaderAgentID)
+			if agentID == "" {
+				return nil, connect.NewError(
+					connect.CodeUnauthenticated,
+					errors.New("missing mantrae-agent-id header"),
+				)
+			}
+
+			q := app.Conn.GetQuery()
+			dbAgent, err := q.GetAgent(ctx, agentID)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
+			}
+
+			token := strings.TrimPrefix(auth, "Bearer ")
+			if dbAgent.Token != token {
+				return nil, connect.NewError(
+					connect.CodeUnauthenticated,
+					errors.New("token mismatch"),
+				)
+			}
+
+			// Store agent in context
+			ctx = context.WithValue(ctx, AuthAgentKey, &dbAgent)
+
+			return next(ctx, req)
+		}
+	}
 }

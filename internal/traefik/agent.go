@@ -61,6 +61,9 @@ func DecodeAgentConfig(DB *sql.DB, agent db.Agent) error {
 		for k, v := range runtimeConfig.Services {
 			service := v.Service
 			for i, svc := range service.LoadBalancer.Servers {
+				if svc.Scheme == "" {
+					svc.Scheme = "http"
+				}
 				url := fmt.Sprintf("%s://%s:%s", svc.Scheme, *agent.ActiveIp, svc.Port)
 				service.LoadBalancer.Servers[i].URL = url
 			}

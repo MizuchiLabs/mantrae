@@ -15,16 +15,21 @@ type AgentClaims struct {
 }
 
 // EncodeJWT generates a JWT for agents
-func (a *AgentClaims) EncodeJWT(secret string, expirationTime time.Time) (string, error) {
+func (a *AgentClaims) EncodeJWT(secret string, expirationTime time.Duration) (string, error) {
 	if a.ServerURL == "" || a.ProfileID == 0 {
 		return "", errors.New("serverUrl and profileID cannot be empty")
 	}
+
+	if expirationTime == 0 {
+		expirationTime = time.Hour * 24
+	}
+
 	claims := &AgentClaims{
 		AgentID:   a.AgentID,
 		ProfileID: a.ProfileID,
 		ServerURL: a.ServerURL,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expirationTime)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

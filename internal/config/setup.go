@@ -13,7 +13,7 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/source"
 	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/lmittmann/tint"
+	"github.com/MizuchiLabs/mantrae/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,6 +25,9 @@ type App struct {
 }
 
 func Setup(ctx context.Context) (*App, error) {
+	// Setup fancy logger
+	logger.Setup()
+
 	// Read flags
 	ParseFlags()
 
@@ -58,7 +61,6 @@ func Setup(ctx context.Context) (*App, error) {
 		SM:     sm,
 	}
 
-	app.setupLogger()
 	if err := app.setDefaultAdminUser(ctx); err != nil {
 		return nil, err
 	}
@@ -69,24 +71,6 @@ func Setup(ctx context.Context) (*App, error) {
 	// Start background jobs
 	app.setupBackgroundJobs(ctx)
 	return &app, nil
-}
-
-func (a *App) setupLogger() {
-	levelMap := map[string]slog.Level{
-		"debug": slog.LevelDebug,
-		"info":  slog.LevelInfo,
-		"warn":  slog.LevelWarn,
-		"error": slog.LevelError,
-	}
-
-	logLevel, exists := levelMap[strings.ToLower(a.Config.Server.LogLevel)]
-	if !exists {
-		logLevel = slog.LevelInfo
-	}
-
-	opts := &tint.Options{Level: logLevel}
-	logger := slog.New(tint.NewHandler(os.Stdout, opts))
-	slog.SetDefault(logger)
 }
 
 func (a *App) setDefaultAdminUser(ctx context.Context) error {

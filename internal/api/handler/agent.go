@@ -96,7 +96,7 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 		}
 		token, err := claims.EncodeJWT(
 			a.Config.Secret,
-			time.Now().Add(agentInterval.Duration(time.Hour*72)),
+			agentInterval.Duration(time.Hour*72),
 		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -194,7 +194,7 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 		}
 		token, err := claims.EncodeJWT(
 			a.Config.Secret,
-			time.Now().Add(agentInterval.Duration(time.Hour*72)),
+			agentInterval.Duration(time.Hour*72),
 		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

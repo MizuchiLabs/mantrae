@@ -133,7 +133,7 @@ func UpdateDNS(DB *sql.DB) (err error) {
 						Type:     util.EventTypeError,
 						Category: util.EventCategoryDNS,
 					}
-					slog.Error("Failed to upsert record", "error", err)
+					slog.Error("Failed to upsert record", "domain", domain, "error", err)
 				}
 			}
 		}

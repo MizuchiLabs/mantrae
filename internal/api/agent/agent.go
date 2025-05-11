@@ -4,18 +4,18 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
-	"strings"
 	"time"
 
 	"connectrpc.com/connect"
 
 	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
+	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/traefik"
 	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/MizuchiLabs/mantrae/pkg/meta"
 )
 
 type AgentServer struct {
@@ -30,11 +30,8 @@ func (s *AgentServer) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[agentv1.HealthCheckRequest],
 ) (*connect.Response[agentv1.HealthCheckResponse], error) {
-	if _, err := s.validate(req.Header(), req.Msg.GetAgentId()); err != nil {
-		return nil, err
-	}
 	// Rotate Token
-	token, err := s.updateToken(ctx, req.Msg.GetAgentId())
+	token, err := s.updateToken(ctx, req.Header().Get(meta.HeaderAgentID))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -49,14 +46,17 @@ func (s *AgentServer) GetContainer(
 	ctx context.Context,
 	req *connect.Request[agentv1.GetContainerRequest],
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
-	agent, err := s.validate(req.Header(), req.Msg.GetAgentId())
-	if err != nil {
-		return nil, err
+	agent := middlewares.GetAgentContext(ctx)
+	if agent == nil {
+		return nil, connect.NewError(
+			connect.CodeInternal,
+			errors.New("agent context missing"),
+		)
 	}
 
 	// Upsert agent
 	params := db.UpdateAgentParams{
-		ID:       req.Msg.GetAgentId(),
+		ID:       agent.ID,
 		Hostname: &req.Msg.Hostname,
 		PublicIp: &req.Msg.PublicIp,
 	}
@@ -106,6 +106,7 @@ func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, erro
 	if err != nil {
 		return nil, err
 	}
+
 	claims, err := DecodeJWT(agent.Token, s.app.Config.Secret)
 	if err != nil {
 		return nil, err
@@ -123,10 +124,7 @@ func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, erro
 		return nil, err
 	}
 
-	token, err := claims.EncodeJWT(
-		s.app.Config.Secret,
-		time.Now().Add(agentInterval.Duration(time.Hour*72)),
-	)
+	token, err := claims.EncodeJWT(s.app.Config.Secret, agentInterval.Duration(time.Hour*72))
 	if err != nil {
 		return nil, err
 	}
@@ -138,44 +136,4 @@ func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, erro
 	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
 
 	return &token, nil
-}
-
-func (s *AgentServer) validate(header http.Header, id string) (*db.Agent, error) {
-	auth := header.Get("authorization")
-	if len(auth) == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("missing authorization"),
-		)
-	}
-	if !strings.HasPrefix(auth, "Bearer ") {
-		return nil, connect.NewError(
-			connect.CodeUnauthenticated,
-			errors.New("missing bearer prefix"),
-		)
-	}
-
-	// Check if agent exists
-	q := s.app.Conn.GetQuery()
-	dbAgent, err := q.GetAgent(context.Background(), id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
-	}
-
-	// Check if token is valid
-	if dbAgent.Token != strings.TrimPrefix(auth, "Bearer ") {
-		return nil, connect.NewError(
-			connect.CodeUnauthenticated,
-			errors.New("failed to validate token"),
-		)
-	}
-
-	if _, err := DecodeJWT(dbAgent.Token, s.app.Config.Secret); err != nil {
-		return nil, connect.NewError(
-			connect.CodeUnauthenticated,
-			errors.New("failed to decode token"),
-		)
-	}
-
-	return &dbAgent, nil
 }

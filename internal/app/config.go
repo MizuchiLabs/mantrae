@@ -23,7 +23,6 @@ type ServerConfig struct {
 	ServerURL   string `env:"SERVER_URL"          envDefault:"http://127.0.0.1"`
 	BasicAuth   bool   `env:"SERVER_BASIC_AUTH"   envDefault:"false"`
 	EnableAgent bool   `env:"SERVER_ENABLE_AGENT" envDefault:"true"`
-	LogLevel    string `env:"SERVER_LOG_LEVEL"    envDefault:"info"`
 }
 
 type TraefikConfig struct {

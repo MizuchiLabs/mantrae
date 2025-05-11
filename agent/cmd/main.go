@@ -10,26 +10,8 @@ import (
 
 	"github.com/MizuchiLabs/mantrae/agent/client"
 	"github.com/MizuchiLabs/mantrae/pkg/build"
-	"github.com/lmittmann/tint"
+	"github.com/MizuchiLabs/mantrae/pkg/logger"
 )
-
-// Set up global logger with specified configuration
-func init() {
-	levelMap := map[string]slog.Level{
-		"debug": slog.LevelDebug,
-		"info":  slog.LevelInfo,
-		"warn":  slog.LevelWarn,
-		"error": slog.LevelError,
-	}
-
-	logLevel := slog.LevelInfo
-	if level, ok := os.LookupEnv("LOG_LEVEL"); ok {
-		if l, ok := levelMap[level]; ok {
-			logLevel = l
-		}
-	}
-	slog.SetDefault(slog.New(tint.NewHandler(os.Stdout, &tint.Options{Level: logLevel})))
-}
 
 func main() {
 	// update := flag.Bool("update", false, "Update to latest version")
@@ -45,6 +27,7 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
+	logger.Setup()
 	slog.Info("Starting agent...")
 	client.Client(quit)
 }

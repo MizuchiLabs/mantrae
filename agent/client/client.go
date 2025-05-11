@@ -3,9 +3,7 @@ package client
 import (
 	"context"
 	"errors"
-	"log"
 	"log/slog"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -25,36 +23,12 @@ var (
 )
 
 func Client(quit chan os.Signal) {
-	if err := os.MkdirAll(tokenDir, 0755); err != nil {
-		log.Printf("Warning: failed to create base directory: %v", err)
+	ts := NewTokenSource()
+	if err := ts.SetToken(context.Background()); err != nil {
+		slog.Error("Failed to connect to server", "error", err)
+		return
 	}
-
-	// Bootstrap token: disk > env
-	var token string
-	tokenFile, err := os.ReadFile(tokenPath)
-	if err != nil {
-		token = os.Getenv("TOKEN")
-		if token == "" {
-			log.Fatal("No token found in environment or .mantrae-token file")
-		}
-	} else {
-		token = string(tokenFile)
-	}
-
-	claims, err := DecodeJWT(token)
-	if err != nil {
-		log.Fatalf("Failed to decode JWT: %v", err)
-	}
-	if err = os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
-		slog.Error("Failed to write token file", "error", err)
-	}
-
-	// Initialize client
-	client := agentv1connect.NewAgentServiceClient(http.DefaultClient, claims.ServerURL)
-
-	// Initial HealthCheck to confirm & maybe rotate
-	token, claims = doHealth(client, token, claims, quit)
-	slog.Info("Connected to server", "server", claims.ServerURL)
+	ts.PrintConnection()
 
 	// Prepare tickers
 	healthTicker := time.NewTicker(15 * time.Second)
@@ -65,9 +39,12 @@ func Client(quit chan os.Signal) {
 	for {
 		select {
 		case <-healthTicker.C:
-			token, claims = doHealth(client, token, claims, quit)
+			if err := ts.Refresh(context.Background()); err != nil {
+				slog.Error("Failed to refresh token", "error", err)
+				return
+			}
 		case <-containerTicker.C:
-			doContainer(client, token, claims, quit)
+			doContainer(ts.client, quit)
 		case <-quit:
 			slog.Info("Shutting down agent...")
 			return
@@ -75,53 +52,16 @@ func Client(quit chan os.Signal) {
 	}
 }
 
-// doHealth invokes HealthCheck, handles token rotation & agent deletion
-func doHealth(
-	client agentv1connect.AgentServiceClient,
-	token string,
-	claims *Claims,
-	quit chan os.Signal,
-) (newToken string, newClaims *Claims) {
-	req := connect.NewRequest(&agentv1.HealthCheckRequest{
-		AgentId:   claims.AgentID,
-		ProfileId: claims.ProfileID,
-	})
-	req.Header().Set("Authorization", "Bearer "+token)
-
-	resp, err := client.HealthCheck(context.Background(), req)
-	if err != nil {
-		slog.Warn("HealthCheck error, skipping rotation", "error", err)
-		return token, claims
-	}
-	if !resp.Msg.Ok {
-		slog.Warn("Agent deleted by server, shutting down")
-		quit <- os.Interrupt
-		return token, claims
-	}
-	if rt := resp.Msg.GetToken(); rt != "" && rt != token {
-		slog.Info("Rotating token...")
-		if err = os.WriteFile(tokenPath, []byte(rt), 0600); err != nil {
-			slog.Error("Failed to write token file", "error", err)
-		}
-		newClaims, err := DecodeJWT(rt)
-		if err != nil {
-			slog.Error("Invalid rotated token", "error", err)
-			return token, claims
-		}
-		return rt, newClaims
-	}
-	return token, claims
-}
-
 // doContainer invokes GetContainer using current token/claims
 func doContainer(
 	client agentv1connect.AgentServiceClient,
-	token string,
-	claims *Claims,
 	quit chan os.Signal,
 ) {
 	// build payload
-	req := sendContainerRequest(token, claims)
+	req := sendContainerRequest()
+	if req == nil {
+		return
+	}
 	_, err := client.GetContainer(context.Background(), req)
 
 	switch connect.CodeOf(err) {
@@ -140,13 +80,8 @@ func doContainer(
 }
 
 // sendContainer creates a GetContainerRequest with information about the local machine
-func sendContainerRequest(
-	token string,
-	claims *Claims,
-) *connect.Request[agentv1.GetContainerRequest] {
+func sendContainerRequest() *connect.Request[agentv1.GetContainerRequest] {
 	var request agentv1.GetContainerRequest
-	request.AgentId = claims.AgentID
-	request.ProfileId = claims.ProfileID
 
 	// Get hostname
 	hostname, err := os.Hostname()
@@ -169,7 +104,6 @@ func sendContainerRequest(
 	request.Updated = timestamppb.New(time.Now())
 
 	req := connect.NewRequest(&request)
-	req.Header().Set("authorization", "Bearer "+token)
 	return req
 }
 

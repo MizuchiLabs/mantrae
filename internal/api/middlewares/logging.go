@@ -1,10 +1,13 @@
 package middlewares
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"connectrpc.com/connect"
 )
 
 // statusRecorder is a wrapper around http.ResponseWriter to capture the status code
@@ -43,37 +46,55 @@ func (h *MiddlewareHandler) Logger(next http.Handler) http.Handler {
 			return
 		}
 
+		// Log the request details
 		status := recorder.statusCode
 
-		// Log the request details
-		if status >= 500 {
-			slog.Error("Request",
-				"method", r.Method,
-				"url", r.URL.Path,
-				"protocol", r.Proto,
-				"status", recorder.statusCode,
-				"duration", duration,
-			)
+		msg := "HTTP request"
+		fields := []any{
+			"method", r.Method,
+			"url", r.URL.Path,
+			"status", status,
+			"protocol", r.Proto,
+			"duration_ms", duration.Milliseconds(),
 		}
-		if status >= 400 && status < 500 {
-			slog.Warn("Request",
-				"method", r.Method,
-				"url", r.URL.Path,
-				"protocol", r.Proto,
-				"status", recorder.statusCode,
-				"duration", duration,
-			)
-			return
-		}
-		if status >= 200 && status < 400 {
-			slog.Info("Request",
-				"method", r.Method,
-				"url", r.URL.Path,
-				"protocol", r.Proto,
-				"status", recorder.statusCode,
-				"duration", duration,
-			)
-			return
+
+		switch {
+		case status >= 500:
+			slog.Error(msg, fields...)
+		case status >= 400:
+			slog.Warn(msg, fields...)
+		default:
+			slog.Info(msg, fields...)
 		}
 	})
+}
+
+func Logging() connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			start := time.Now()
+			resp, err := next(ctx, req)
+			duration := time.Since(start)
+
+			if req.Spec().Procedure == "HealthCheck" {
+				return resp, err
+			}
+
+			msg := "RPC call"
+			fields := []any{
+				"method", req.Spec().Procedure,
+				"peer", req.Peer().Addr,
+				"protocol", req.Peer().Protocol,
+				"duration_ms", duration.Milliseconds(),
+			}
+
+			if err != nil {
+				slog.Error(msg, append(fields, "error", err)...)
+			} else {
+				slog.Debug(msg, fields...)
+			}
+
+			return resp, err
+		}
+	}
 }
