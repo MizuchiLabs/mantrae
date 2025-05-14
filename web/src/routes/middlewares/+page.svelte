@@ -4,11 +4,7 @@
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import type {
-		DeleteMiddlewareParams,
-		Middleware,
-		SupportedMiddleware
-	} from '$lib/types/middlewares';
+	import type { DeleteMiddlewareParams, Middleware } from '$lib/types/middlewares';
 	import { Layers, Pencil, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
 	import { api, middlewares } from '$lib/api';
@@ -89,28 +85,31 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('name') as string;
-				if (!name) return;
-				return name.split('@')[0];
+				return name?.split('@')[0];
 			}
 		},
 		{
 			header: 'Protocol',
 			accessorKey: 'protocol',
 			enableSorting: true,
-			cell: ({ row }) => {
-				const protocol = row.getValue('protocol') as string;
-				if (!protocol) return;
-				return renderComponent(ColumnBadge, { label: protocol });
+			cell: ({ row, column }) => {
+				return renderComponent(ColumnBadge<Middleware>, {
+					label: row.getValue('protocol') as string,
+					class: 'hover:cursor-pointer',
+					column: column
+				});
 			}
 		},
 		{
 			header: 'Type',
 			accessorKey: 'type',
 			enableSorting: true,
-			cell: ({ row }) => {
-				const type = row.getValue('type') as SupportedMiddleware;
-				if (!type) return;
-				return renderComponent(ColumnBadge, { label: type });
+			cell: ({ row, column }) => {
+				return renderComponent(ColumnBadge<Middleware>, {
+					label: row.getValue('type') as string,
+					class: 'hover:cursor-pointer',
+					column: column
+				});
 			}
 		},
 		{
@@ -118,12 +117,14 @@
 			accessorFn: (row) => row.name,
 			id: 'provider',
 			enableSorting: true,
-			cell: ({ row }) => {
+			cell: ({ row, column }) => {
 				const name = row.getValue('provider') as string;
-				if (!name) return;
-				return renderComponent(ColumnBadge, {
-					label: name.split('@')[1]?.toLowerCase(),
-					variant: 'secondary'
+				const provider = name?.split('@')[1];
+				return renderComponent(ColumnBadge<Middleware>, {
+					label: provider ? provider.toLowerCase() : 'http',
+					variant: 'secondary',
+					class: 'hover:cursor-pointer',
+					column: column
 				});
 			}
 		},

@@ -119,9 +119,11 @@
 			accessorKey: 'router.protocol',
 			id: 'protocol',
 			enableSorting: true,
-			cell: ({ row }) => {
-				return renderComponent(ColumnBadge, {
-					label: row.getValue('protocol') as string
+			cell: ({ row, column }) => {
+				return renderComponent(ColumnBadge<RouterWithService>, {
+					label: row.getValue('protocol') as string,
+					class: 'hover:cursor-pointer',
+					column: column
 				});
 			}
 		},
@@ -130,43 +132,30 @@
 			accessorKey: 'router.name',
 			id: 'provider',
 			enableSorting: true,
-			cell: ({ row }) => {
+			cell: ({ row, column }) => {
 				const name = row.getValue('provider') as string;
 				const provider = name?.split('@')[1];
-				if (!provider && source.value === TraefikSource.AGENT) {
-					return renderComponent(ColumnBadge, {
-						label: 'agent',
-						variant: 'secondary'
-					});
-				} else if (!provider) {
-					return renderComponent(ColumnBadge, {
-						label: 'local',
-						variant: 'secondary'
-					});
-				} else {
-					return renderComponent(ColumnBadge, {
-						label: provider.toLowerCase(),
-						variant: 'secondary'
-					});
-				}
+				return renderComponent(ColumnBadge<RouterWithService>, {
+					label: provider ? provider.toLowerCase() : 'http',
+					variant: 'secondary',
+					class: 'hover:cursor-pointer',
+					column: column
+				});
 			}
 		},
 		{
 			header: 'Entrypoints',
 			accessorKey: 'router.entryPoints',
-			id: 'entryPoints',
+			id: 'entrypoints',
 			enableSorting: true,
-			cell: ({ row }) => {
-				const entryPoints = row.getValue('entryPoints') as string[];
-				if (entryPoints.length === 0) {
-					return renderComponent(ColumnBadge, {
-						label: 'None',
-						variant: 'secondary'
-					});
-				}
-				return renderComponent(ColumnBadge, {
-					label: entryPoints,
-					variant: 'secondary'
+			filterFn: 'arrIncludes',
+			cell: ({ row, column }) => {
+				const entrypoints = row.getValue('entrypoints') as string[];
+				return renderComponent(ColumnBadge<RouterWithService>, {
+					label: entrypoints?.length ? entrypoints : 'None',
+					variant: entrypoints?.length ? 'secondary' : 'outline',
+					class: 'hover:cursor-pointer',
+					column: entrypoints?.length ? column : undefined
 				});
 			}
 		},
@@ -175,17 +164,14 @@
 			accessorKey: 'router.middlewares',
 			id: 'middlewares',
 			enableSorting: true,
-			cell: ({ row }) => {
+			filterFn: 'arrIncludes',
+			cell: ({ row, column }) => {
 				const middlewares = row.getValue('middlewares') as string[];
-				if (row.original.router.protocol === 'udp' || middlewares.length === 0) {
-					return renderComponent(ColumnBadge, {
-						label: 'None',
-						variant: 'outline'
-					});
-				}
-				return renderComponent(ColumnBadge, {
-					label: middlewares,
-					variant: 'secondary'
+				return renderComponent(ColumnBadge<RouterWithService>, {
+					label: middlewares?.length ? middlewares : 'None',
+					variant: middlewares?.length ? 'secondary' : 'outline',
+					class: 'hover:cursor-pointer',
+					column: middlewares?.length ? column : undefined
 				});
 			}
 		},
@@ -207,8 +193,14 @@
 			accessorKey: 'router.name',
 			id: 'dns',
 			enableSorting: true,
-			cell: ({ row }) => {
-				const name = row.getValue('dns') as string;
+			filterFn: (row, columnId, filterValue) => {
+				const routerName = row.getValue(columnId) as string;
+				const matches = $rdps?.some(
+					(rdp) => rdp.routerName === routerName && rdp.providerName === filterValue
+				);
+				return !!matches;
+			},
+			cell: ({ row, column }) => {
 				// Return early if no rdps data
 				if (!$rdps) {
 					return renderComponent(ColumnBadge, {
@@ -216,13 +208,15 @@
 						variant: 'outline'
 					});
 				}
+				const name = row.getValue('dns') as string;
 				const dns = $rdps?.filter((item) => item.routerName === name);
-				let rdpNames = dns ? dns.map((item) => item.providerName) : [];
+				const rdpNames = dns.length ? [...new Set(dns.map((item) => item.providerName))] : [];
 
-				return renderComponent(ColumnBadge, {
-					label: rdpNames.length ? [...new Set(rdpNames)] : ['Disabled'],
+				return renderComponent(ColumnBadge<RouterWithService>, {
+					label: rdpNames.length ? rdpNames : ['Disabled'],
 					variant: rdpNames.length ? 'secondary' : 'outline',
-					class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined
+					class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined,
+					column: rdpNames.length ? column : undefined
 				});
 			}
 		},
@@ -231,18 +225,23 @@
 			accessorFn: (row) => row.router.tls,
 			id: 'tls',
 			enableSorting: true,
-			cell: ({ row }) => {
+			filterFn: (row, columnId, filterValue) => {
+				const tls = row.getValue(columnId) as TLS;
+				return tls?.certResolver === filterValue;
+			},
+			cell: ({ row, column }) => {
 				const tls = row.getValue('tls') as TLS;
 
 				let label = 'Disabled';
 				if (tls) {
 					label = tls.certResolver ? tls.certResolver : 'Enabled';
 				}
-				return renderComponent(ColumnBadge, {
+				return renderComponent(ColumnBadge<RouterWithService>, {
 					label,
 					variant: tls ? 'secondary' : 'outline',
 					class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
-					tls
+					tls,
+					column: tls?.certResolver ? column : undefined
 				});
 			}
 		},

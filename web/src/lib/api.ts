@@ -1,44 +1,44 @@
+import { goto } from '$app/navigation';
+import { toast } from 'svelte-sonner';
+import { get, writable, type Writable } from 'svelte/store';
+import YAML from 'yaml';
+import { token } from './stores/common';
+import { profile } from './stores/profile';
+import { source } from './stores/source';
+import { user } from './stores/user';
 import {
-	TraefikSource,
-	type Agent,
-	type BackupFile,
-	type DNSProvider,
-	type SystemError,
-	type Plugin,
-	type Profile,
-	type PublicIP,
-	type RouterDNSProvider,
-	type Settings,
-	type Stats,
-	type TraefikConfig,
-	type UpdateAgentIPParams,
-	type UpsertSettingsParams,
-	type User
+    TraefikSource,
+    type Agent,
+    type BackupFile,
+    type DNSProvider,
+    type Plugin,
+    type Profile,
+    type PublicIP,
+    type RouterDNSProvider,
+    type Settings,
+    type Stats,
+    type SystemError,
+    type TraefikConfig,
+    type UpdateAgentIPParams,
+    type UpsertSettingsParams,
+    type User
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
 import {
-	flattenMiddlewareData,
-	type DeleteMiddlewareParams,
-	type Middleware,
-	type UpsertMiddlewareParams
+    flattenMiddlewareData,
+    type DeleteMiddlewareParams,
+    type Middleware,
+    type UpsertMiddlewareParams
 } from './types/middlewares';
-import {
-	flattenRouterData,
-	flattenServiceData,
-	type DeleteRouterParams,
-	type Router,
-	type Service,
-	type UpsertRouterParams
-} from './types/router';
-import YAML from 'yaml';
-import { get, writable, type Writable } from 'svelte/store';
-import { toast } from 'svelte-sonner';
-import { goto } from '$app/navigation';
 import type { Overview } from './types/overview';
-import { profile } from './stores/profile';
-import { user } from './stores/user';
-import { source } from './stores/source';
-import { token } from './stores/common';
+import {
+    flattenRouterData,
+    flattenServiceData,
+    type DeleteRouterParams,
+    type Router,
+    type Service,
+    type UpsertRouterParams
+} from './types/router';
 import { tryLoad } from './utils';
 
 export type RouterWithService = { router: Router; service: Service };
@@ -466,10 +466,15 @@ export const api = {
 	async setRouterDNSProvider(providerIds: string[], routerName: string) {
 		const configs = get(traefik);
 		if (!configs?.length) return;
+		const params = {
+			providerIds,
+			traefikId: configs[0].id,
+			routerName
+		};
 
-		await send(`/dns/router/${configs[0].id}/${routerName}`, {
+		await send(`/dns/router`, {
 			method: 'POST',
-			body: { providerIds }
+			body: params
 		});
 		await api.listRouterDNSProviders();
 	},

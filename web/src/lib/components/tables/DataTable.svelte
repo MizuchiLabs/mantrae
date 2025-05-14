@@ -23,6 +23,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { TraefikSource } from '$lib/types';
 	import { source } from '$lib/stores/source';
@@ -36,7 +37,8 @@
 		ChevronsRight,
 		Delete,
 		Plus,
-		Search
+		Search,
+		X
 	} from '@lucide/svelte';
 	import { limit } from '$lib/stores/common';
 	import BulkActions from './BulkActions.svelte';
@@ -71,7 +73,7 @@
 		pageSize: parseInt(limit.value ?? pageSizeOptions[0].toString())
 	});
 	let sorting = $state<SortingState>([]);
-	let columnFilters = $state<ColumnFiltersState>([]);
+	let columnFilters = $derived<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
 	let rowSelection = $state<RowSelectionState>({});
 	let globalFilter = $state<string>('');
@@ -201,10 +203,14 @@
 		pagination.pageSize = Number(value);
 		limit.value = value;
 	}
+	function clearFilter(columnId: string) {
+		const column = table.getColumn(columnId);
+		if (column) column.setFilterValue(undefined);
+	}
 </script>
 
 <div>
-	<div class="flex items-center justify-between gap-4 py-4">
+	<div class="flex items-center justify-between gap-2 py-4">
 		<div class="relative flex items-center">
 			<Search class="text-muted-foreground absolute left-3" size={16} />
 			<Input
@@ -229,6 +235,20 @@
 					<Tabs.Trigger value={TraefikSource.AGENT}>Agent</Tabs.Trigger>
 				</Tabs.List>
 			</Tabs.Root>
+		{/if}
+
+		{#if table.getState().columnFilters.length > 0}
+			<Button onclick={() => table.setColumnFilters([])}>Clear Filters</Button>
+			{#each table.getState().columnFilters as filter (filter.id)}
+				<Badge
+					variant="secondary"
+					class="hover:bg-muted-foreground/20 flex items-center gap-1 hover:cursor-pointer"
+					onclick={() => clearFilter(filter.id)}
+				>
+					<X size={12} />
+					{filter.id.toLowerCase()}: {String(filter.value)}
+				</Badge>
+			{/each}
 		{/if}
 
 		<!-- Column Visibility -->

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import logo from '$lib/images/logo.svg';
 	import { Badge } from '$lib/components/ui/badge/index.js';

@@ -134,29 +134,23 @@ func ListRouterDNSProviders(a *config.App) http.HandlerFunc {
 
 func SetRouterDNSProvider(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		q := a.Conn.GetQuery()
-
 		var params struct {
 			ProviderIDs []string `json:"providerIds"`
+			TraefikID   int64    `json:"traefikId"`
+			RouterName  string   `json:"routerName"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		traefikID, err := strconv.ParseInt(r.PathValue("traefik"), 10, 64)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		routerName := r.PathValue("router")
-
 		// Fetch current providers for this router
+		q := a.Conn.GetQuery()
 		currentProviders, err := q.GetRouterDNSProviders(
 			r.Context(),
 			db.GetRouterDNSProvidersParams{
-				TraefikID:  traefikID,
-				RouterName: routerName,
+				TraefikID:  params.TraefikID,
+				RouterName: params.RouterName,
 			},
 		)
 		if err != nil {
@@ -189,8 +183,8 @@ func SetRouterDNSProvider(a *config.App) http.HandlerFunc {
 			}
 			if !currentProviderSet[id] {
 				if err := q.AddRouterDNSProvider(r.Context(), db.AddRouterDNSProviderParams{
-					TraefikID:  traefikID,
-					RouterName: routerName,
+					TraefikID:  params.TraefikID,
+					RouterName: params.RouterName,
 					ProviderID: id,
 				}); err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -203,8 +197,8 @@ func SetRouterDNSProvider(a *config.App) http.HandlerFunc {
 		for _, current := range currentProviders {
 			if !newProviderSet[current.ProviderID] {
 				err := q.DeleteRouterDNSProvider(r.Context(), db.DeleteRouterDNSProviderParams{
-					TraefikID:  traefikID,
-					RouterName: routerName,
+					TraefikID:  params.TraefikID,
+					RouterName: params.RouterName,
 					ProviderID: current.ProviderID,
 				})
 				if err != nil {

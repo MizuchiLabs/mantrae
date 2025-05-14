@@ -1,17 +1,19 @@
-<script lang="ts">
+<script lang="ts" generics="TData">
 	import type { ComponentProps } from 'svelte';
-	import { Badge } from '$lib/components/ui/badge';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
 	import type { TLS } from '$lib/types/router';
 	import { AlertTriangle, Eye, Globe, Key } from '@lucide/svelte';
+	import type { Column } from '@tanstack/table-core';
 
 	type Props = ComponentProps<typeof Badge> & {
 		label: string | string[];
+		column?: Column<TData, unknown>;
 		limit?: number;
 		tls?: TLS;
 	};
 
-	let { variant = 'default', label, limit = 3, tls, ...restProps }: Props = $props();
+	let { variant = 'default', label, column, limit = 3, tls, ...restProps }: Props = $props();
 
 	const isArray = Array.isArray(label);
 	const items = isArray ? label : [label];
@@ -24,7 +26,9 @@
 		<HoverCard.Trigger>
 			<div class="flex flex-col items-start gap-1">
 				{#each visibleItems as item (item)}
-					<Badge {variant} {...restProps}>{item}</Badge>
+					<Badge {variant} onclick={() => column?.setFilterValue(item)} {...restProps}>
+						{item}
+					</Badge>
 				{/each}
 				{#if remaining > 0}
 					<Badge variant="outline" {...restProps}>+{remaining} more</Badge>
@@ -74,7 +78,9 @@
 {:else}
 	<div class="flex flex-col items-start gap-1">
 		{#each visibleItems as item (item)}
-			<Badge {variant} {...restProps}>{item}</Badge>
+			<Badge {variant} onclick={() => column?.setFilterValue(item)} {...restProps}>
+				{item}
+			</Badge>
 		{/each}
 		{#if remaining > 0}
 			<Badge variant="outline" {...restProps}>+{remaining} more</Badge>

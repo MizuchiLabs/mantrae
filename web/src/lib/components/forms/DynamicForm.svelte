@@ -16,12 +16,7 @@
 	let { data = $bindable(), metadata = {}, onSubmit, disabled }: Props = $props();
 
 	// Form state
-	let formData = $state(safeClone(data));
-
-	// Watch data changes and update formData
-	$effect(() => {
-		formData = safeClone(data);
-	});
+	let formData = $derived(safeClone(data));
 
 	// Handle form submission
 	function handleSubmit(e: Event) {

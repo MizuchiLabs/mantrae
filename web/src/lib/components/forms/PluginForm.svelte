@@ -15,13 +15,9 @@
 	let { data = $bindable(), onSubmit, disabled }: Props = $props();
 
 	// Form state
-	let formData = $state(YAML.stringify(data, { indent: 2 }));
+	let formData = $derived(YAML.stringify(data, { indent: 2 }));
 	let errorMessage = $state<string | null>(null);
 	let isValid = $state(true);
-
-	$effect(() => {
-		formData = YAML.stringify(data, { indent: 2 });
-	});
 
 	// Validate YAML and return boolean
 	function validateYAML(input: string): boolean {
