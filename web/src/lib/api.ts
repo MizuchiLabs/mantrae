@@ -7,37 +7,37 @@ import { profile } from './stores/profile';
 import { source } from './stores/source';
 import { user } from './stores/user';
 import {
-    TraefikSource,
-    type Agent,
-    type BackupFile,
-    type DNSProvider,
-    type Plugin,
-    type Profile,
-    type PublicIP,
-    type RouterDNSProvider,
-    type Settings,
-    type Stats,
-    type SystemError,
-    type TraefikConfig,
-    type UpdateAgentIPParams,
-    type UpsertSettingsParams,
-    type User
+	TraefikSource,
+	type Agent,
+	type BackupFile,
+	type DNSProvider,
+	type Plugin,
+	type Profile,
+	type PublicIP,
+	type RouterDNSProvider,
+	type Settings,
+	type Stats,
+	type SystemError,
+	type TraefikConfig,
+	type UpdateAgentIPParams,
+	type UpsertSettingsParams,
+	type User
 } from './types';
 import type { EntryPoints } from './types/entrypoints';
 import {
-    flattenMiddlewareData,
-    type DeleteMiddlewareParams,
-    type Middleware,
-    type UpsertMiddlewareParams
+	flattenMiddlewareData,
+	type DeleteMiddlewareParams,
+	type Middleware,
+	type UpsertMiddlewareParams
 } from './types/middlewares';
 import type { Overview } from './types/overview';
 import {
-    flattenRouterData,
-    flattenServiceData,
-    type DeleteRouterParams,
-    type Router,
-    type Service,
-    type UpsertRouterParams
+	flattenRouterData,
+	flattenServiceData,
+	type DeleteRouterParams,
+	type Router,
+	type Service,
+	type UpsertRouterParams
 } from './types/router';
 import { tryLoad } from './utils';
 
@@ -302,6 +302,8 @@ export const api = {
 		}
 		const data = await send(`/${profile.name}`);
 		if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+			dynamicJSON.set('');
+			dynamicYAML.set('');
 			return;
 		}
 		dynamicJSON.set(JSON.stringify(data, null, 2));
