@@ -85,7 +85,7 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 		claims := &agent.AgentClaims{
 			AgentID:   uuid.New().String(),
 			ProfileID: profileID,
-			ServerURL: serverUrl.String("http://localhost:3000"),
+			ServerURL: serverUrl.String("http://127.0.0.1:3000"),
 		}
 
 		// Generate a JWT for the agent and let it expire based on the cleanup interval
@@ -184,7 +184,7 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 		claims := &agent.AgentClaims{
 			AgentID:   dbAgent.ID,
 			ProfileID: dbAgent.ProfileID,
-			ServerURL: serverUrl.String("http://localhost:3000"),
+			ServerURL: serverUrl.String("http://127.0.0.1:3000"),
 		}
 
 		agentInterval, err := a.SM.Get(r.Context(), settings.KeyAgentCleanupInterval)

@@ -3,7 +3,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	define: {
-		'process.env': process.env
+	define: {},
+	server: {
+		host: '127.0.0.1'
 	}
 });

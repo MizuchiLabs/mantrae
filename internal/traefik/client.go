@@ -30,7 +30,7 @@ func UpdateTraefikAPI(DB *sql.DB, profile db.Profile) error {
 
 		// Clear api data
 		if err = ClearTraefikAPI(DB, profile.ID); err != nil {
-			slog.Error("Failed to update api data", "error", err)
+			slog.Error("Failed to clear API data", "error", err)
 		}
 		return err
 	}
@@ -98,7 +98,7 @@ func ClearTraefikAPI(DB *sql.DB, profileID int64) error {
 		Version:     nil,
 		Config:      nil,
 	}); err != nil {
-		return fmt.Errorf("failed to update api data: %w", err)
+		return fmt.Errorf("Failed to clear API data: %w", err)
 	}
 	return nil
 }

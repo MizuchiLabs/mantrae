@@ -96,7 +96,7 @@ func (a *App) setDefaultAdminUser(ctx context.Context) error {
 	// If admin doesn't exist, create new admin
 	if err != nil {
 		adminMail := "admin@mantrae"
-		if err = q.CreateUser(ctx, db.CreateUserParams{
+		if _, err = q.CreateUser(ctx, db.CreateUserParams{
 			Username: "admin",
 			Email:    &adminMail,
 			Password: hash,

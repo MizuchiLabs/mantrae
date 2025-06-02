@@ -1,6 +1,5 @@
 import { createLocalStorage } from '$lib/storage.svelte';
 
-export const token = createLocalStorage('auth_token', null);
 export const limit = createLocalStorage('limit', '10');
 export const routerColumns = createLocalStorage('router_columns', []);
 export const middlewareColumns = createLocalStorage('middleware_columns', []);

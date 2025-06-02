@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
+	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
 	"github.com/MizuchiLabs/mantrae/internal/config"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/mail"
@@ -45,71 +45,57 @@ func Login(a *config.App) http.HandlerFunc {
 			return
 		}
 
+		remember := r.URL.Query().Get("remember") == "true"
 		expirationTime := time.Now().Add(24 * time.Hour)
-		if r.URL.Query().Get("remember") == "true" {
-			expirationTime = time.Now().Add(7 * 24 * time.Hour)
+		if remember {
+			expirationTime = time.Now().Add(30 * 24 * time.Hour)
 		}
 
-		token, err := util.EncodeUserJWT(request.Username, a.Config.Secret, expirationTime)
+		jwt, err := util.EncodeUserJWT(request.Username, a.Config.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		if err := q.UpdateUserLastLogin(r.Context(), user.ID); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			fmt.Printf("Failed to update last login for user %s: %v\n", user.Username, err)
 		}
 
-		response := map[string]any{
-			"token": token,
-			"user":  user,
-		}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     util.CookieName,
+			Value:    jwt,
+			Path:     "/",
+			MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
+			HttpOnly: true,
+			Secure:   r.TLS != nil,
+			SameSite: http.SameSiteLaxMode,
+		})
+
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 }
 
-// VerifyJWT checks the validity of a JWT token provided in cookies or Authorization header.
-func VerifyJWT(a *config.App) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		q := a.Conn.GetQuery()
-		var token string
+func Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     util.CookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
 
-		// Check for token in cookies and Authorization header
-		if cookie, err := r.Cookie("token"); err == nil {
-			token = cookie.Value
-		} else {
-			authHeader := r.Header.Get("Authorization")
-			if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-				token = strings.TrimPrefix(authHeader, "Bearer ")
-			} else {
-				http.Error(w, "Token cannot be empty", http.StatusBadRequest)
-				return
-			}
-		}
+// Verify returns the currently logged in user
+func Verify(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(middlewares.AuthUserKey).(db.GetUserByUsernameRow)
 
-		data, err := util.DecodeUserJWT(token, a.Config.Secret)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Invalid token: %s", err.Error()), http.StatusUnauthorized)
-			return
-		}
-
-		user, err := q.GetUserByUsername(r.Context(), data.Username)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusNotFound)
-			return
-		}
-
-		response := map[string]any{"user": user}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	response := map[string]any{"user": user}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -149,7 +135,7 @@ func VerifyOTP(a *config.App) http.HandlerFunc {
 		}
 
 		expirationTime := time.Now().Add(1 * time.Hour)
-		token, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
+		jwt, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -160,10 +146,17 @@ func VerifyOTP(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		response := map[string]any{
-			"token": token,
-			"user":  user,
-		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     util.CookieName,
+			Value:    jwt,
+			Path:     "/",
+			MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
+			HttpOnly: true,
+			Secure:   r.TLS != nil,
+			SameSite: http.SameSiteLaxMode,
+		})
+
+		response := map[string]any{"user": user}
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

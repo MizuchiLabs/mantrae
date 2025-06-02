@@ -27,6 +27,15 @@ const (
 	KeyEmailPassword = "email_password"
 	KeyEmailFrom     = "email_from"
 
+	// OAuth settings
+	KeyOIDCEnabled      = "oidc_enabled"
+	KeyOIDCClientID     = "oidc_client_id"
+	KeyOIDCClientSecret = "oidc_client_secret"
+	KeyOIDCProviderName = "oidc_provider_name"
+	KeyOIDCIssuerURL    = "oidc_issuer_url"
+	KeyOIDCScopes       = "oidc_scopes"
+	KeyOIDCPKCE         = "oidc_pkce"
+
 	// Agent settings
 	KeyAgentCleanupEnabled  = "agent_cleanup_enabled"
 	KeyAgentCleanupInterval = "agent_cleanup_interval"

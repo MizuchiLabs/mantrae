@@ -139,6 +139,11 @@ export interface Plugin {
 	createdAt: string;
 }
 
+export interface OAuthStatus {
+	enabled: boolean;
+	provider: string;
+}
+
 export interface BackupFile {
 	name: string;
 	size: number;

@@ -1,8 +1,8 @@
--- name: CreateUser :exec
+-- name: CreateUser :one
 INSERT INTO
   users (username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?);
+  (?, ?, ?, ?) RETURNING id;
 
 -- name: GetUser :one
 SELECT
@@ -35,6 +35,22 @@ FROM
   users
 WHERE
   username = ?;
+
+-- name: GetUserByEmail :one
+SELECT
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
+FROM
+  users
+WHERE
+  email = ?;
 
 -- name: GetUserPassword :one
 SELECT

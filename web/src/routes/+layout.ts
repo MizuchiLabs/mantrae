@@ -1,48 +1,46 @@
 import type { LayoutLoad } from './$types';
 import { api } from '$lib/api';
 import { goto } from '$app/navigation';
-import { toast } from 'svelte-sonner';
 import { user } from '$lib/stores/user';
-import { token } from '$lib/stores/common';
 
 export const ssr = false;
 export const prerender = true;
 export const trailingSlash = 'always';
 
-const isPublicRoute = (path: string) => path.startsWith('/login/');
+const isPublicRoute = (path: string) => {
+	return path.startsWith('/login') || path === '/login';
+};
 
 export const load: LayoutLoad = async ({ url, fetch }) => {
-	// Case 1: No token and accessing protected route
-	if (!token.value && !isPublicRoute(url.pathname)) {
-		await goto('/login/');
+	const currentPath = url.pathname;
+	const isPublic = isPublicRoute(currentPath);
+
+	// Try to verify authentication via cookie
+	try {
+		const isVerified = await api.verify(fetch);
+
+		if (isVerified) {
+			// User is authenticated
+			if (isPublic) {
+				// Authenticated user trying to access login page - redirect to home
+				await goto('/');
+				return;
+			}
+			// Continue to protected route
+			return;
+		} else {
+			// Verification failed but no exception thrown
+			throw new Error('Authentication failed');
+		}
+	} catch (_) {
+		// Authentication failed
 		user.clear();
+
+		if (!isPublic) {
+			// User trying to access protected route without auth - redirect to login
+			await goto('/login');
+		}
+		// If already on public route, stay there
 		return;
 	}
-
-	// Case 2: Has token, verify it
-	if (token.value) {
-		try {
-			await api.verify(fetch);
-
-			// Trying to access public route
-			if (isPublicRoute(url.pathname)) {
-				await goto('/');
-			}
-			return;
-		} catch (err: unknown) {
-			const error = err instanceof Error ? err : new Error(String(err));
-			// Token verification failed
-			api.logout();
-			if (!isPublicRoute(url.pathname)) {
-				await goto('/login');
-			}
-			user.clear();
-			toast.error('Session expired', { description: error.message });
-			return;
-		}
-	}
-
-	// Case 3: No token and accessing public route
-	user.clear();
-	return;
 };

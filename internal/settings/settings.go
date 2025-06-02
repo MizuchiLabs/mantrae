@@ -18,7 +18,7 @@ type SettingWithDescription struct {
 
 // Settings defines all application settings
 type Settings struct {
-	ServerURL            string        `setting:"server_url"             default:"http://localhost:3000" description:"Base URL for the server"`
+	ServerURL            string        `setting:"server_url"             default:"http://127.0.0.1:3000" description:"Base URL for the server"`
 	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable scheduled backups"`
 	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Time between each backup"`
 	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"How many backups to keep"`
@@ -35,6 +35,13 @@ type Settings struct {
 	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP login username"`
 	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP login password"`
 	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"Default sender email address"`
+	OIDCEnabled          bool          `setting:"oidc_enabled"           default:"false"                 description:"Enable OAuth authentication"`
+	OIDCClientID         string        `setting:"oidc_client_id"         default:""                      description:"OIDC client ID"`
+	OIDCClientSecret     string        `setting:"oidc_client_secret"     default:""                      description:"OIDC client secret"`
+	OIDCIssuerURL        string        `setting:"oidc_issuer_url"        default:""                      description:"OIDC issuer URL"`
+	OIDCProviderName     string        `setting:"oidc_provider_name"     default:""                      description:"Display name of the OIDC provider shown on the login button (e.g., 'Google', 'Keycloak')"`
+	OIDCScopes           string        `setting:"oidc_scopes"            default:""                      description:"OIDC scopes (comma-separated)"`
+	OIDCPKCE             bool          `setting:"oidc_pkce"              default:"false"                 description:"Enable PKCE for OAuth"`
 	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic cleanup of agents"`
 	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Maximum duration an agent can remain offline before being removed. Also used as the expiration duration for agent tokens."`
 }

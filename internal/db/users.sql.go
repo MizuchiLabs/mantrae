@@ -10,11 +10,11 @@ import (
 	"time"
 )
 
-const createUser = `-- name: CreateUser :exec
+const createUser = `-- name: CreateUser :one
 INSERT INTO
   users (username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?)
+  (?, ?, ?, ?) RETURNING id
 `
 
 type CreateUserParams struct {
@@ -24,14 +24,16 @@ type CreateUserParams struct {
 	IsAdmin  bool    `json:"isAdmin"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.exec(ctx, q.createUserStmt, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int64, error) {
+	row := q.queryRow(ctx, q.createUserStmt, createUser,
 		arg.Username,
 		arg.Password,
 		arg.Email,
 		arg.IsAdmin,
 	)
-	return err
+	var id int64
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -77,6 +79,52 @@ type GetUserRow struct {
 func (q *Queries) GetUser(ctx context.Context, id int64) (GetUserRow, error) {
 	row := q.queryRow(ctx, q.getUserStmt, getUser, id)
 	var i GetUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.IsAdmin,
+		&i.Otp,
+		&i.OtpExpiry,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT
+  id,
+  username,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
+FROM
+  users
+WHERE
+  email = ?
+`
+
+type GetUserByEmailRow struct {
+	ID        int64      `json:"id"`
+	Username  string     `json:"username"`
+	Email     *string    `json:"email"`
+	IsAdmin   bool       `json:"isAdmin"`
+	Otp       *string    `json:"otp"`
+	OtpExpiry *time.Time `json:"otpExpiry"`
+	LastLogin *time.Time `json:"lastLogin"`
+	CreatedAt *time.Time `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (GetUserByEmailRow, error) {
+	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,

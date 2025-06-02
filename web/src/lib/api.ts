@@ -2,7 +2,6 @@ import { goto } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 import { get, writable, type Writable } from 'svelte/store';
 import YAML from 'yaml';
-import { token } from './stores/common';
 import { profile } from './stores/profile';
 import { source } from './stores/source';
 import { user } from './stores/user';
@@ -11,6 +10,7 @@ import {
 	type Agent,
 	type BackupFile,
 	type DNSProvider,
+	type OAuthStatus,
 	type Plugin,
 	type Profile,
 	type PublicIP,
@@ -87,9 +87,7 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 	// Custom fetch function that adds the Authorization header
 	const customFetch: typeof window.fetch = async (url, options) => {
 		const headers = new Headers(options?.headers); // Get existing headers
-		if (token.value) {
-			headers.set('Authorization', 'Bearer ' + token.value); // Add the Authorization header
-		}
+
 		// Don't set Content-Type for FormData
 		const isFormData = options?.body instanceof FormData;
 		if (!isFormData) {
@@ -98,6 +96,7 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 		const customOptions = {
 			...options,
 			headers,
+			credentials: 'include' as RequestCredentials, // Include cookies
 			body: isFormData ? options?.body : options?.body ? JSON.stringify(options.body) : undefined
 		};
 		return fetch ? fetch(url, customOptions) : window.fetch(url, customOptions); // Use custom fetch or default
@@ -108,7 +107,8 @@ async function send(endpoint: string, options: APIOptions = {}, fetch?: typeof w
 		const response = await customFetch(`${BASE_URL}${endpoint}`, {
 			method: options.method || 'GET',
 			body: options.body,
-			headers: options.headers
+			headers: options.headers,
+			credentials: 'include'
 		});
 
 		if (!response.ok) {
@@ -135,32 +135,21 @@ export const api = {
 			method: 'POST',
 			body: { username, password }
 		});
-		if (data.token) {
-			token.value = data.token;
+		if (data.user) {
 			user.value = data.user;
-			await api.load();
-			goto('/');
 		}
+		goto('/');
 	},
 
 	async verify(fetch: typeof window.fetch = window.fetch) {
 		try {
-			const data = await send(
-				'/verify',
-				{
-					method: 'POST',
-					body: token.value
-				},
-				fetch
-			);
+			const data = await send('/verify', {}, fetch);
 			if (data.user) {
 				user.value = data.user;
 			}
-		} catch (err: unknown) {
-			const error = err instanceof Error ? err.message : String(err);
-			toast.error('Session expired', { description: error });
-			api.logout();
-			return;
+			return true;
+		} catch (_) {
+			return false;
 		}
 	},
 
@@ -174,12 +163,18 @@ export const api = {
 			body: { username, token: otp }
 		});
 
-		if (data.token) {
-			token.value = data.token;
+		if (data.user) {
 			user.value = data.user;
-			await api.load();
-			goto('/');
 		}
+		goto('/');
+	},
+
+	async oauthStatus() {
+		const data: OAuthStatus = await send('/oidc/status');
+		if (!data) {
+			throw new Error('Failed to fetch OAuth status');
+		}
+		return data;
 	},
 
 	async load() {
@@ -197,8 +192,8 @@ export const api = {
 		}
 	},
 
-	logout() {
-		token.value = null;
+	async logout() {
+		await send('/logout', { method: 'POST' });
 		user.clear();
 		goto('/login');
 	},

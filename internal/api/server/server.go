@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -41,10 +42,11 @@ func (s *Server) Start(ctx context.Context) error {
 	defer s.app.Conn.Close()
 	host := s.app.Config.Server.Host
 	port := s.app.Config.Server.Port
+	allowedOrigins := s.getAllowedOrigins(ctx)
 
 	server := &http.Server{
 		Addr:              host + ":" + port,
-		Handler:           middlewares.CORS(s.mux),
+		Handler:           middlewares.CORS(allowedOrigins...)(s.mux),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
@@ -77,6 +79,34 @@ func (s *Server) Start(ctx context.Context) error {
 	case err := <-serverErr:
 		return fmt.Errorf("server error: %w", err)
 	}
+}
+
+func (s *Server) getAllowedOrigins(ctx context.Context) []string {
+	var origins []string
+
+	// Always allow development frontend
+	devOrigin := "http://127.0.0.1:5173"
+	origins = append(origins, devOrigin)
+
+	// Get server URL from settings for production
+	if serverURL, err := s.app.SM.Get(ctx, "server_url"); err == nil {
+		if url := serverURL.String(""); url != "" && url != devOrigin {
+			origins = append(origins, strings.TrimSuffix(url, "/"))
+		}
+	}
+
+	// Remove duplicates
+	seen := make(map[string]bool)
+	var uniqueOrigins []string
+	for _, origin := range origins {
+		if !seen[origin] {
+			uniqueOrigins = append(uniqueOrigins, origin)
+			seen[origin] = true
+		}
+	}
+
+	slog.Debug("CORS allowed origins", "origins", uniqueOrigins)
+	return uniqueOrigins
 }
 
 func (s *Server) registerServices() {

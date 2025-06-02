@@ -10,10 +10,13 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores/user';
+	import type { OAuthStatus } from '$lib/types';
+	import { onMount } from 'svelte';
 
 	let username = $state('');
 	let password = $state('');
 	let remember = $state(false);
+	let oauthStatus: OAuthStatus = $state({ enabled: false, provider: '' });
 	const handleReset = async () => {
 		if (username.length > 0) {
 			const resetPromise = api
@@ -51,6 +54,12 @@
 			error: (error) => (error as Error).message
 		});
 	};
+	const handleOIDCLogin = () => {
+		window.location.href = '/api/oidc/login';
+	};
+	onMount(async () => {
+		oauthStatus = await api.oauthStatus();
+	});
 </script>
 
 {#if !user.isLoggedIn()}
@@ -85,6 +94,12 @@
 				<Separator />
 
 				<Button type="submit" class="w-full" disabled={$loading}>Login</Button>
+
+				{#if oauthStatus.enabled}
+					<Button variant="outline" class="w-full" onclick={handleOIDCLogin}>
+						Login with {oauthStatus.provider || 'OIDC'}
+					</Button>
+				{/if}
 			</form>
 		</Card.Content>
 	</Card.Root>

@@ -7,6 +7,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+const CookieName = "auth_token"
+
 type UserClaims struct {
 	Username string `json:"username,omitempty"`
 	jwt.RegisteredClaims

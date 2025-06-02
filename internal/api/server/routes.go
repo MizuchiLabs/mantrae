@@ -39,9 +39,13 @@ func (s *Server) routes() {
 
 	// Auth
 	register("POST", "/login", logChain, handler.Login(s.app))
-	register("POST", "/verify", logChain, handler.VerifyJWT(s.app))
+	register("POST", "/logout", logChain, handler.Logout)
+	register("GET", "/verify", jwtChain, handler.Verify)
 	register("POST", "/verify/otp", logChain, handler.VerifyOTP(s.app))
 	register("POST", "/reset/{name}", logChain, handler.SendResetEmail(s.app))
+	register("GET", "/oidc/callback", logChain, handler.OIDCCallback(s.app))
+	register("GET", "/oidc/login", logChain, handler.OIDCLogin(s.app))
+	register("GET", "/oidc/status", logChain, handler.OIDCStatus(s.app))
 
 	// Events
 	register("GET", "/events", logChain, handler.GetEvents)

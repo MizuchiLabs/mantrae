@@ -34,40 +34,62 @@
 		general: {
 			title: 'General Settings',
 			description: 'Basic application configuration',
-			keys: ['server_url']
+			keys: [{ key: 'server_url', label: 'Server URL' }]
 		},
 		backup: {
 			title: 'Backup Settings',
 			description: 'Database backup configuration',
 			keys: [
-				'backup_enabled',
-				'backup_interval',
-				'backup_keep',
-				'backup_path',
-				'backup_storage_select'
+				{ key: 'backup_enabled', label: 'Enable Backups' },
+				{ key: 'backup_interval', label: 'Backup Interval' },
+				{ key: 'backup_keep', label: 'Number of Backups to Keep' },
+				{ key: 'backup_path', label: 'Backup Path' },
+				{ key: 'backup_storage_select', label: 'Backup Storage Type' }
 			]
 		},
 		s3: {
 			title: 'S3 Storage Settings',
 			description: 'Amazon S3 or compatible storage configuration',
 			keys: [
-				's3_endpoint',
-				's3_bucket',
-				's3_region',
-				's3_access_key',
-				's3_secret_key',
-				's3_use_path_style'
+				{ key: 's3_endpoint', label: 'Endpoint' },
+				{ key: 's3_bucket', label: 'Bucket Name' },
+				{ key: 's3_region', label: 'Region' },
+				{ key: 's3_access_key', label: 'Access Key' },
+				{ key: 's3_secret_key', label: 'Secret Key' },
+				{ key: 's3_use_path_style', label: 'Use Path Style' }
 			]
 		},
 		email: {
 			title: 'Email Settings',
 			description: 'SMTP server configuration for sending emails',
-			keys: ['email_host', 'email_port', 'email_user', 'email_password', 'email_from']
+			keys: [
+				{ key: 'email_host', label: 'Host' },
+				{ key: 'email_port', label: 'Port' },
+				{ key: 'email_user', label: 'Username' },
+				{ key: 'email_password', label: 'Password' },
+				{ key: 'email_from', label: 'From Email Address' }
+			]
+		},
+		oauth: {
+			title: 'OIDC Settings',
+			description: 'OIDC provider configuration',
+			keys: [
+				{ key: 'oidc_enabled', label: 'Enable OIDC' },
+				{ key: 'oidc_client_id', label: 'Client ID' },
+				{ key: 'oidc_client_secret', label: 'Client Secret' },
+				{ key: 'oidc_issuer_url', label: 'Issuer URL' },
+				{ key: 'oidc_provider_name', label: 'Provider Name' },
+				{ key: 'oidc_scopes', label: 'Scopes' },
+				{ key: 'oidc_pkce', label: 'Use PKCE' }
+			]
 		},
 		agents: {
 			title: 'Agent Settings',
 			description: 'Agent management configuration',
-			keys: ['agent_cleanup_enabled', 'agent_cleanup_interval']
+			keys: [
+				{ key: 'agent_cleanup_enabled', label: 'Enable Cleanup' },
+				{ key: 'agent_cleanup_interval', label: 'Cleanup Interval' }
+			]
 		}
 	};
 
@@ -95,14 +117,6 @@
 			return str;
 		}
 	}
-
-	// Helper to convert camelCase/snake_case to Title Case
-	const formatSettingName = (key: string) => {
-		return key
-			.split(/[_\s]/)
-			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(' ');
-	};
 
 	// Determine the input type based on the setting value
 	const getInputType = (key: string, value: Setting['value']) => {
@@ -311,12 +325,12 @@
 						<Separator class="mb-4" />
 
 						<!-- Loop through settings in this group -->
-						{#each group.keys as key (key)}
+						{#each group.keys as { key, label } (key)}
 							{#if $settings[key]}
 								<div class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
 									<div class="border-muted-foreground border-l-2 pl-4">
 										<Label>
-											{formatSettingName(key)}
+											{label}
 											{#if $settings[key].description}
 												<p class="text-muted-foreground text-sm">{$settings[key].description}</p>
 											{/if}
@@ -337,12 +351,14 @@
 												onValueChange={(value) => handleChange(key, value)}
 											>
 												<Select.Trigger>
-													{changedValues[key] || $settings[key].value || 'Select storage type'}
+													{changedValues[key] || $settings[key].value || 'Select...'}
 												</Select.Trigger>
 												<Select.Content>
-													{#each storageTypes as option (option.value)}
-														<Select.Item value={option.value}>{option.label}</Select.Item>
-													{/each}
+													{#if key === 'backup_storage_select'}
+														{#each storageTypes as option (option.value)}
+															<Select.Item value={option.value}>{option.label}</Select.Item>
+														{/each}
+													{/if}
 												</Select.Content>
 											</Select.Root>
 										{:else if getInputType(key, $settings[key].value) === 'password'}

@@ -61,7 +61,7 @@ func CreateUser(a *config.App) http.HandlerFunc {
 			return
 		}
 		user.Password = hash
-		if err := q.CreateUser(r.Context(), user); err != nil {
+		if _, err := q.CreateUser(r.Context(), user); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

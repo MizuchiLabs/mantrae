@@ -11,15 +11,16 @@ import (
 	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
+// setupBackgroundJobs initiates essential background operations for the application.
 func (a *App) setupBackgroundJobs(ctx context.Context) {
 	slog.Info("Starting background tasks...")
-	go a.traefikSync(ctx)
+	go a.syncTraefik(ctx)
 	go a.syncDNS(ctx)
 	go a.cleanupAgents(ctx)
 }
 
-// traefikSync periodically syncs the Traefik configuration
-func (a *App) traefikSync(ctx context.Context) {
+// syncTraefik periodically syncs the Traefik configuration
+func (a *App) syncTraefik(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.Traefik))
 	defer ticker.Stop()
 

@@ -60,21 +60,26 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 // JWT authentication middleware
 func (h *MiddlewareHandler) JWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Authorization header required", http.StatusUnauthorized)
+		cookie, err := r.Cookie(util.CookieName)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if tokenString == authHeader {
-			http.Error(w, "Invalid authorization format", http.StatusUnauthorized)
+		token := cookie.Value
+		if token == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		claims, err := util.DecodeUserJWT(tokenString, h.app.Config.Secret)
+		claims, err := util.DecodeUserJWT(token, h.app.Config.Secret)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if claims.Username == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 

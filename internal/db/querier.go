@@ -13,7 +13,7 @@ type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) error
 	CreateDNSProvider(ctx context.Context, arg CreateDNSProviderParams) error
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (int64, error)
-	CreateUser(ctx context.Context, arg CreateUserParams) error
+	CreateUser(ctx context.Context, arg CreateUserParams) (int64, error)
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDNSProvider(ctx context.Context, id int64) error
 	DeleteErrorById(ctx context.Context, id int64) error
@@ -40,6 +40,7 @@ type Querier interface {
 	GetTraefikConfigByID(ctx context.Context, id int64) (Traefik, error)
 	GetTraefikConfigBySource(ctx context.Context, arg GetTraefikConfigBySourceParams) ([]Traefik, error)
 	GetUser(ctx context.Context, id int64) (GetUserRow, error)
+	GetUserByEmail(ctx context.Context, email *string) (GetUserByEmailRow, error)
 	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
 	GetUserPassword(ctx context.Context, id int64) (string, error)
 	ListAgents(ctx context.Context) ([]Agent, error)
