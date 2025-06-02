@@ -21,7 +21,12 @@ func (a *App) setupBackgroundJobs(ctx context.Context) {
 
 // syncTraefik periodically syncs the Traefik configuration
 func (a *App) syncTraefik(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.Traefik))
+	duration, err := a.SM.Get(ctx, settings.KeyTraefikSyncInterval)
+	if err != nil {
+		slog.Error("Failed to get Traefik sync interval setting", "error", err)
+		return
+	}
+	ticker := time.NewTicker(duration.Duration(time.Hour))
 	defer ticker.Stop()
 
 	traefik.GetTraefikConfig(a.Conn.Get())
@@ -37,7 +42,12 @@ func (a *App) syncTraefik(ctx context.Context) {
 
 // syncDNS periodically syncs the DNS records
 func (a *App) syncDNS(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.DNS))
+	duration, err := a.SM.Get(ctx, settings.KeyDNSSyncInterval)
+	if err != nil {
+		slog.Error("Failed to get DNS sync interval setting", "error", err)
+		return
+	}
+	ticker := time.NewTicker(duration.Duration(time.Hour))
 	defer ticker.Stop()
 
 	if err := dns.UpdateDNS(a.Conn.Get()); err != nil {
@@ -56,7 +66,12 @@ func (a *App) syncDNS(ctx context.Context) {
 }
 
 func (a *App) cleanupAgents(ctx context.Context) {
-	ticker := time.NewTicker(time.Second * time.Duration(a.Config.Background.Agent))
+	duration, err := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
+	if err != nil {
+		slog.Error("failed to get agent cleanup interval setting", "error", err)
+		return
+	}
+	ticker := time.NewTicker(duration.Duration(time.Hour))
 	defer ticker.Stop()
 
 	for {

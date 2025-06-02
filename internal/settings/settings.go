@@ -44,6 +44,9 @@ type Settings struct {
 	OIDCPKCE             bool          `setting:"oidc_pkce"              default:"false"                 description:"Enable PKCE for OAuth"`
 	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic cleanup of agents"`
 	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Maximum duration an agent can remain offline before being removed. Also used as the expiration duration for agent tokens."`
+	TraefikSyncInterval  time.Duration `setting:"traefik_sync_interval"  default:"20s"                   description:"How often to sync with Traefik API"`
+	DNSSyncInterval      time.Duration `setting:"dns_sync_interval"      default:"3m"                    description:"How often to sync with DNS API"`
+	AgentCheckInterval   time.Duration `setting:"agent_check_interval"   default:"5m"                    description:"How often to run agent jobs"`
 }
 
 type SettingsManager struct {

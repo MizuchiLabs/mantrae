@@ -11,18 +11,16 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Server     ServerConfig
-	Traefik    TraefikConfig
-	Background BackgroundJobs
-	Secret     string `env:"SECRET" envDefault:""`
+	Server  ServerConfig
+	Traefik TraefikConfig
+	Secret  string `env:"SECRET" envDefault:""`
 }
 
 type ServerConfig struct {
-	Host        string `env:"SERVER_HOST"         envDefault:"0.0.0.0"`
-	Port        string `env:"SERVER_PORT"         envDefault:"3000"`
-	ServerURL   string `env:"SERVER_URL"          envDefault:"http://127.0.0.1"`
-	BasicAuth   bool   `env:"SERVER_BASIC_AUTH"   envDefault:"false"`
-	EnableAgent bool   `env:"SERVER_ENABLE_AGENT" envDefault:"true"`
+	Host      string `env:"SERVER_HOST"       envDefault:"0.0.0.0"`
+	Port      string `env:"SERVER_PORT"       envDefault:"3000"`
+	ServerURL string `env:"SERVER_URL"        envDefault:"http://127.0.0.1"`
+	BasicAuth bool   `env:"SERVER_BASIC_AUTH" envDefault:"false"`
 }
 
 type TraefikConfig struct {
@@ -31,12 +29,6 @@ type TraefikConfig struct {
 	Username string `env:"TRAEFIK_USERNAME" envDefault:""`
 	Password string `env:"TRAEFIK_PASSWORD" envDefault:""`
 	TLS      bool   `env:"TRAEFIK_TLS"      envDefault:""`
-}
-
-type BackgroundJobs struct {
-	Traefik int64 `env:"BACKGROUND_JOBS_TRAEFIK" envDefault:"20"`
-	DNS     int64 `env:"BACKGROUND_JOBS_DNS"     envDefault:"180"`
-	Agent   int64 `env:"BACKGROUND_JOBS_AGENT"   envDefault:"180"`
 }
 
 func ReadConfig() (*Config, error) {
