@@ -353,7 +353,6 @@ func findOrCreateOIDCUser(
 			}
 		}
 	}
-	fmt.Printf("user EMAIL: %v\n", user)
 
 	if user == nil && userInfo.PreferredUsername != "" {
 		// Try to find by username
@@ -366,8 +365,6 @@ func findOrCreateOIDCUser(
 			}
 		}
 	}
-
-	fmt.Printf("user USERNAME: %v\n", user)
 
 	if user == nil {
 		// Create new user
