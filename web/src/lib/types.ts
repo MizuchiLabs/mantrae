@@ -142,6 +142,7 @@ export interface Plugin {
 export interface OAuthStatus {
 	enabled: boolean;
 	provider: string;
+	loginDisabled: boolean;
 }
 
 export interface BackupFile {

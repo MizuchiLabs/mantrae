@@ -104,7 +104,7 @@ func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
 }
 
 func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
 }
 
 func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 }
 
 func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
 }
 
 func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}

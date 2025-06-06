@@ -75,6 +75,7 @@
 			description: 'OIDC provider configuration',
 			keys: [
 				{ key: 'oidc_enabled', label: 'Enable OIDC' },
+				{ key: 'password_login_disabled', label: 'Disable Password Login' },
 				{ key: 'oidc_client_id', label: 'Client ID' },
 				{ key: 'oidc_client_secret', label: 'Client Secret' },
 				{ key: 'oidc_issuer_url', label: 'Issuer URL' },
@@ -320,7 +321,7 @@
 				<!-- Loop through each settings group -->
 				{#each Object.entries(settingGroups) as [groupKey, group] (groupKey)}
 					<div class="mt-4 first:mt-0">
-						<h2 class="mb-0.5 text-xl font-semibold">{group.title}</h2>
+						<h2 class="mb-0.5 text-xl font-semibold" id={groupKey}>{group.title}</h2>
 						<p class="text-muted-foreground mb-2 text-sm">{group.description}</p>
 						<Separator class="mb-4" />
 

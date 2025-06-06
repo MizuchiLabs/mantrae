@@ -228,14 +228,17 @@ func OIDCStatus(a *config.App) http.HandlerFunc {
 		}
 
 		response := map[string]interface{}{
-			"enabled":  false,
-			"provider": "",
+			"enabled":       false,
+			"provider":      "",
+			"loginDisabled": false,
 		}
 
 		if err == nil && oidcConfig != nil {
 			providerName, _ := a.SM.Get(r.Context(), settings.KeyOIDCProviderName)
+			pwLogin, _ := a.SM.Get(r.Context(), settings.KeyPasswordLoginDisabled)
 			response["enabled"] = oidcConfig.Enabled
 			response["provider"] = providerName.String("")
+			response["loginDisabled"] = pwLogin.Bool(false)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -243,7 +246,7 @@ func OIDCStatus(a *config.App) http.HandlerFunc {
 	}
 }
 
-// Simplified helper function that handles both config and OIDC setup
+// Helper function that handles both config and OIDC setup
 func setupOIDCConfig(
 	ctx context.Context,
 	a *config.App,
@@ -350,6 +353,7 @@ func findOrCreateOIDCUser(
 			}
 		}
 	}
+	fmt.Printf("user EMAIL: %v\n", user)
 
 	if user == nil && userInfo.PreferredUsername != "" {
 		// Try to find by username
@@ -362,6 +366,8 @@ func findOrCreateOIDCUser(
 			}
 		}
 	}
+
+	fmt.Printf("user USERNAME: %v\n", user)
 
 	if user == nil {
 		// Create new user
@@ -403,8 +409,8 @@ func findOrCreateOIDCUser(
 			IsAdmin:  false,
 		}
 	} else {
-		// Update existing user's email if needed and not set
-		if user.Email == nil && userInfo.Email != "" {
+		// Update existing user's email if verified
+		if userInfo.Email != "" && userInfo.EmailVerified {
 			if err := q.UpdateUser(ctx, db.UpdateUserParams{
 				Username: user.Username,
 				Email:    &userInfo.Email,

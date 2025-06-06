@@ -70,30 +70,32 @@
 		</Card.Header>
 		<Card.Content>
 			<form onsubmit={handleSubmit} class="space-y-4">
-				<div class="flex flex-col gap-2">
-					<Label for="username">Username</Label>
-					<Input id="username" bind:value={username} />
-				</div>
-
-				<div class="flex flex-col gap-2">
-					<Label for="password">Password</Label>
-					<PasswordInput bind:value={password} />
-					<div class="mt-1 flex flex-row items-center justify-between">
-						<div class="items-top flex items-center justify-end gap-2">
-							<Checkbox id="remember" bind:checked={remember} />
-							<div class="grid gap-2 leading-none">
-								<Label for="terms1" class="text-sm">Remember me</Label>
-							</div>
-						</div>
-						<button class="text-muted-foreground text-xs" type="button" onclick={handleReset}>
-							Forgot password?
-						</button>
+				{#if !oauthStatus.loginDisabled}
+					<div class="flex flex-col gap-2">
+						<Label for="username">Username</Label>
+						<Input id="username" bind:value={username} />
 					</div>
-				</div>
 
-				<Separator />
+					<div class="flex flex-col gap-2">
+						<Label for="password">Password</Label>
+						<PasswordInput bind:value={password} />
+						<div class="mt-1 flex flex-row items-center justify-between">
+							<div class="items-top flex items-center justify-end gap-2">
+								<Checkbox id="remember" bind:checked={remember} />
+								<div class="grid gap-2 leading-none">
+									<Label for="terms1" class="text-sm">Remember me</Label>
+								</div>
+							</div>
+							<button class="text-muted-foreground text-xs" type="button" onclick={handleReset}>
+								Forgot password?
+							</button>
+						</div>
+					</div>
 
-				<Button type="submit" class="w-full" disabled={$loading}>Login</Button>
+					<Separator />
+
+					<Button type="submit" class="w-full" disabled={$loading}>Login</Button>
+				{/if}
 
 				{#if oauthStatus.enabled}
 					<Button variant="outline" class="w-full" onclick={handleOIDCLogin}>

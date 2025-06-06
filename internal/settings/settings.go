@@ -18,35 +18,36 @@ type SettingWithDescription struct {
 
 // Settings defines all application settings
 type Settings struct {
-	ServerURL            string        `setting:"server_url"             default:"http://127.0.0.1:3000" description:"Base URL for the server"`
-	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"                  description:"Enable scheduled backups"`
-	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"                   description:"Time between each backup"`
-	BackupKeep           int           `setting:"backup_keep"            default:"3"                     description:"How many backups to keep"`
-	BackupStorage        string        `setting:"backup_storage_select"  default:"local"                 description:"Storage backend for backups"`
-	BackupPath           string        `setting:"backup_path"            default:"backups"               description:"Default path for local backups"`
-	S3Endpoint           string        `setting:"s3_endpoint"            default:""                      description:"Custom S3-compatible endpoint"`
-	S3Bucket             string        `setting:"s3_bucket"              default:"mantrae"               description:"S3 bucket to store backups"`
-	S3Region             string        `setting:"s3_region"              default:"us-east-1"             description:"S3 region for the bucket"`
-	S3AccessKey          string        `setting:"s3_access_key"          default:""                      description:"S3 access key ID"`
-	S3SecretKey          string        `setting:"s3_secret_key"          default:""                      description:"S3 secret access key"`
-	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"                 description:"Use path-style URLs for S3 access"`
-	EmailHost            string        `setting:"email_host"             default:"localhost"             description:"SMTP server address"`
-	EmailPort            int           `setting:"email_port"             default:"587"                   description:"SMTP server port number"`
-	EmailUser            string        `setting:"email_user"             default:""                      description:"SMTP login username"`
-	EmailPassword        string        `setting:"email_password"         default:""                      description:"SMTP login password"`
-	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"     description:"Default sender email address"`
-	OIDCEnabled          bool          `setting:"oidc_enabled"           default:"false"                 description:"Enable OAuth authentication"`
-	OIDCClientID         string        `setting:"oidc_client_id"         default:""                      description:"OIDC client ID"`
-	OIDCClientSecret     string        `setting:"oidc_client_secret"     default:""                      description:"OIDC client secret"`
-	OIDCIssuerURL        string        `setting:"oidc_issuer_url"        default:""                      description:"OIDC issuer URL"`
-	OIDCProviderName     string        `setting:"oidc_provider_name"     default:""                      description:"Display name of the OIDC provider shown on the login button (e.g., 'Google', 'Keycloak')"`
-	OIDCScopes           string        `setting:"oidc_scopes"            default:""                      description:"OIDC scopes (comma-separated)"`
-	OIDCPKCE             bool          `setting:"oidc_pkce"              default:"false"                 description:"Enable PKCE for OAuth"`
-	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"                  description:"Enable automatic cleanup of agents"`
-	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"                   description:"Maximum duration an agent can remain offline before being removed. Also used as the expiration duration for agent tokens."`
-	TraefikSyncInterval  time.Duration `setting:"traefik_sync_interval"  default:"20s"                   description:"How often to sync with Traefik API"`
-	DNSSyncInterval      time.Duration `setting:"dns_sync_interval"      default:"3m"                    description:"How often to sync with DNS API"`
-	AgentCheckInterval   time.Duration `setting:"agent_check_interval"   default:"5m"                    description:"How often to run agent jobs"`
+	ServerURL             string        `setting:"server_url"              default:"http://127.0.0.1:3000" description:"Base URL for the server"`
+	BackupEnabled         bool          `setting:"backup_enabled"          default:"true"                  description:"Enable scheduled backups"`
+	BackupInterval        time.Duration `setting:"backup_interval"         default:"24h"                   description:"Time between each backup"`
+	BackupKeep            int           `setting:"backup_keep"             default:"3"                     description:"How many backups to keep"`
+	BackupStorage         string        `setting:"backup_storage_select"   default:"local"                 description:"Storage backend for backups"`
+	BackupPath            string        `setting:"backup_path"             default:"backups"               description:"Default path for local backups"`
+	S3Endpoint            string        `setting:"s3_endpoint"             default:""                      description:"Custom S3-compatible endpoint"`
+	S3Bucket              string        `setting:"s3_bucket"               default:"mantrae"               description:"S3 bucket to store backups"`
+	S3Region              string        `setting:"s3_region"               default:"us-east-1"             description:"S3 region for the bucket"`
+	S3AccessKey           string        `setting:"s3_access_key"           default:""                      description:"S3 access key ID"`
+	S3SecretKey           string        `setting:"s3_secret_key"           default:""                      description:"S3 secret access key"`
+	S3UsePathStyle        bool          `setting:"s3_use_path_style"       default:"false"                 description:"Use path-style URLs for S3 access"`
+	EmailHost             string        `setting:"email_host"              default:"localhost"             description:"SMTP server address"`
+	EmailPort             int           `setting:"email_port"              default:"587"                   description:"SMTP server port number"`
+	EmailUser             string        `setting:"email_user"              default:""                      description:"SMTP login username"`
+	EmailPassword         string        `setting:"email_password"          default:""                      description:"SMTP login password"`
+	EmailFrom             string        `setting:"email_from"              default:"mantrae@localhost"     description:"Default sender email address"`
+	PasswordLoginDisabled bool          `setting:"password_login_disabled" default:"false"                 description:"Disable login via username and password. Make sure OIDC authentication works!"`
+	OIDCEnabled           bool          `setting:"oidc_enabled"            default:"false"                 description:"Enable OAuth authentication"`
+	OIDCClientID          string        `setting:"oidc_client_id"          default:""                      description:"OIDC client ID"`
+	OIDCClientSecret      string        `setting:"oidc_client_secret"      default:""                      description:"OIDC client secret (Optional when using PKCE)"`
+	OIDCIssuerURL         string        `setting:"oidc_issuer_url"         default:""                      description:"OIDC issuer URL (e.g., https://accounts.google.com)"`
+	OIDCProviderName      string        `setting:"oidc_provider_name"      default:""                      description:"Display name of the OIDC provider shown on the login button (e.g., 'Google', 'Keycloak')"`
+	OIDCScopes            string        `setting:"oidc_scopes"             default:""                      description:"OIDC scopes (comma-separated)"`
+	OIDCPKCE              bool          `setting:"oidc_pkce"               default:"false"                 description:"Enable PKCE for OAuth"`
+	AgentCleanupEnabled   bool          `setting:"agent_cleanup_enabled"   default:"true"                  description:"Enable automatic cleanup of agents"`
+	AgentCleanupInterval  time.Duration `setting:"agent_cleanup_interval"  default:"24h"                   description:"Maximum duration an agent can remain offline before being removed. Also used as the expiration duration for agent tokens."`
+	TraefikSyncInterval   time.Duration `setting:"traefik_sync_interval"   default:"20s"                   description:"How often to sync with Traefik API"`
+	DNSSyncInterval       time.Duration `setting:"dns_sync_interval"       default:"3m"                    description:"How often to sync with DNS API"`
+	AgentCheckInterval    time.Duration `setting:"agent_check_interval"    default:"5m"                    description:"How often to run agent jobs"`
 }
 
 type SettingsManager struct {
@@ -358,12 +359,15 @@ func (sm *SettingsManager) Set(
 			if err := parseValue(fieldValue, strValue); err != nil {
 				return fmt.Errorf("invalid value for setting %s: %w", key, err)
 			}
-			params := db.UpsertSettingParams{
-				Key:   key,
-				Value: strValue,
-			}
+
+			params := db.UpsertSettingParams{Key: key, Value: strValue}
 			if description != nil {
 				params.Description = description
+			}
+
+			// Validate
+			if err := sm.validateSetting(ctx, &params); err != nil {
+				return fmt.Errorf("validation failed for setting %s: %w", key, err)
 			}
 			return q.UpsertSetting(ctx, params)
 		}

@@ -18,6 +18,17 @@ import (
 // Login verifies user credentials using a normal password and returns a JWT token if successful.
 func Login(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Check if password login is enabled
+		enabled, err := a.SM.Get(r.Context(), settings.KeyPasswordLoginDisabled)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if enabled.Bool(false) {
+			http.Error(w, "Password login is disabled", http.StatusUnauthorized)
+			return
+		}
+
 		q := a.Conn.GetQuery()
 		var request db.User
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {

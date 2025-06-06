@@ -82,7 +82,7 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 	if c.Client == nil {
 		return nil
 	}
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
 	if c.Client == nil {
 		return nil
 	}
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string
 	if c.Client == nil {
 		return nil
 	}
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	if c.Client == nil {
 		return nil, nil
 	}
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}

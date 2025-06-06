@@ -5,11 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/util"
-	"golang.org/x/net/publicsuffix"
 )
 
 type DNSProvider interface {
@@ -188,14 +186,6 @@ func DeleteDNS(DB *sql.DB, params db.DeleteRouterDNSProviderParams) error {
 	}
 
 	return nil
-}
-
-func getBaseDomain(domain string) (string, error) {
-	// Ensure the domain doesn't contain a scheme
-	domain = strings.TrimPrefix(domain, "http://")
-	domain = strings.TrimPrefix(domain, "https://")
-
-	return publicsuffix.EffectiveTLDPlusOne(domain)
 }
 
 func verifyRecords(records []DNSRecord, subdomain string, content string) bool {

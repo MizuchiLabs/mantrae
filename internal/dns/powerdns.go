@@ -66,7 +66,7 @@ func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
 }
 
 func (p *PowerDNSProvider) createRecord(subdomain string, recordType powerdns.RRType) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (p *PowerDNSProvider) updateRecord(
 	recordType powerdns.RRType,
 	subdomain string,
 ) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (p *PowerDNSProvider) updateRecord(
 }
 
 func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 }
 
 func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
 }
 
 func (p *PowerDNSProvider) checkRecord(subdomain string) error {
-	domain, err := getBaseDomain(subdomain)
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
