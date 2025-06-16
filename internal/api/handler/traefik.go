@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/MizuchiLabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/source"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 )
 

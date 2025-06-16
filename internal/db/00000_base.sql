@@ -1,11 +1,8 @@
 -- +goose Up
 CREATE TABLE "profiles" (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
-  url TEXT NOT NULL,
-  username VARCHAR(255),
-  password TEXT,
-  tls BOOLEAN NOT NULL DEFAULT FALSE,
+  description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -107,8 +104,8 @@ WHERE
   is_active = 1;
 
 END;
--- +goose StatementEnd
 
+-- +goose StatementEnd
 -- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_update BEFORE
 UPDATE ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
@@ -119,16 +116,23 @@ WHERE
   is_active = 1;
 
 END;
--- +goose StatementEnd
 
+-- +goose StatementEnd
 CREATE UNIQUE INDEX unique_dns_error ON errors (profile_id, category, details);
 
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
+
 DROP TABLE IF EXISTS dns_providers;
+
 DROP TABLE IF EXISTS traefik;
+
 DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS settings;
+
 DROP TABLE IF EXISTS agents;
+
 DROP TABLE IF EXISTS router_dns_provider;
+
 DROP TABLE IF EXISTS errors;

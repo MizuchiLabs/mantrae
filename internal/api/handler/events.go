@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 // GetEvents streams server-sent events (SSE) for real-time updates.

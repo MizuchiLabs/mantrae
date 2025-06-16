@@ -1,8 +1,8 @@
 -- name: CreateProfile :one
 INSERT INTO
-  profiles (name, url, username, password, tls)
+  profiles (id, name, description, created_at, updated_at)
 VALUES
-  (?, ?, ?, ?, ?) RETURNING id;
+  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetProfile :one
 SELECT
@@ -26,19 +26,26 @@ SELECT
 FROM
   profiles
 ORDER BY
-  name;
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
 
--- name: UpdateProfile :exec
+-- name: CountProfiles :one
+SELECT
+  COUNT(*)
+FROM
+  profiles;
+
+-- name: UpdateProfile :one
 UPDATE profiles
 SET
   name = ?,
-  url = ?,
-  username = ?,
-  password = ?,
-  tls = ?,
+  description = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ?;
+  id = ? RETURNING *;
 
 -- name: DeleteProfile :exec
 DELETE FROM profiles

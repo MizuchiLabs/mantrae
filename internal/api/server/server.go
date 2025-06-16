@@ -14,12 +14,12 @@ import (
 	"connectrpc.com/connect"
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
-	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
-	"github.com/MizuchiLabs/mantrae/internal/api/agent"
-	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/MizuchiLabs/mantrae/web"
+	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
+	"github.com/mizuchilabs/mantrae/internal/api/service"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
+	"github.com/mizuchilabs/mantrae/web"
 )
 
 type Server struct {
@@ -140,8 +140,8 @@ func (s *Server) registerServices() {
 
 	serviceNames := []string{agentv1connect.AgentServiceName}
 
-	reflector := grpcreflect.NewStaticReflector(serviceNames...)
 	checker := grpchealth.NewStaticChecker(serviceNames...)
+	reflector := grpcreflect.NewStaticReflector(serviceNames...)
 
 	s.mux.Handle(grpchealth.NewHandler(checker))
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
@@ -149,5 +149,7 @@ func (s *Server) registerServices() {
 
 	// Service implementations
 	agentOpts := append(opts, connect.WithInterceptors(middlewares.AgentAuth(s.app)))
-	s.mux.Handle(agentv1connect.NewAgentServiceHandler(agent.NewAgentServer(s.app), agentOpts...))
+	s.mux.Handle(
+		agentv1connect.NewAgentServiceHandler(service.NewAgentService(s.app), agentOpts...),
+	)
 }

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/db"
 )
 
 type SettingWithDescription struct {

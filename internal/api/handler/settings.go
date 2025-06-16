@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 func ListSettings(sm *settings.SettingsManager) http.HandlerFunc {

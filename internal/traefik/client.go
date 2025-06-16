@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/source"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 const (

@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )

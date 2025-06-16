@@ -1,12 +1,9 @@
 when:
-  - branch: [main, nightly]
+  - branch: [main]
     event: [push, tag, deployment, manual]
     path:
       include:
         - 'web/**'
-        - 'agent/**'
-        - 'internal/**'
-        - 'pkg/**'
         - '*.go'
         - 'go.mod'
         - 'go.sum'

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 func Setup() {

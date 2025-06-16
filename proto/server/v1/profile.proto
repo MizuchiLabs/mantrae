@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package server.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service ProfileService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc DeleteProfile(DeleteProfileRequest) returns (DeleteProfileResponse);
+  rpc ListProfiles(ListProfilesRequest) returns (ListProfilesResponse);
+}
+
+message Profile {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message GetProfileRequest {
+  string id = 1;
+}
+message GetProfileResponse {
+  Profile profile = 1;
+}
+
+message CreateProfileRequest {
+  string name = 1;
+  optional string description = 2;
+}
+message CreateProfileResponse {
+  Profile profile = 1;
+}
+
+message UpdateProfileRequest {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+}
+message UpdateProfileResponse {
+  Profile profile = 1;
+}
+
+message DeleteProfileRequest {
+  string id = 1;
+}
+message DeleteProfileResponse {}
+
+message ListProfilesRequest {
+  optional int64 limit = 1;
+  optional int64 offset = 2;
+}
+message ListProfilesResponse {
+  repeated Profile profiles = 1;
+  int64 total_count = 2;
+}

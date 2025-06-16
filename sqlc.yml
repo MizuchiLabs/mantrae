@@ -1,7 +1,8 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    schema: "internal/db/migrations"
+    # schema: "internal/db/migrations"
+    schema: "internal/db/00000_base.sql"
     queries: "internal/db/queries"
     gen:
       go:

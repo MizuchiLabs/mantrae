@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/mail"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/mail"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"golang.org/x/crypto/bcrypt"
 )
 

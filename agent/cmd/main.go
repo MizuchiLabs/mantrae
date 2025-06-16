@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/MizuchiLabs/mantrae/agent/client"
-	"github.com/MizuchiLabs/mantrae/pkg/build"
-	"github.com/MizuchiLabs/mantrae/pkg/logger"
+	"github.com/mizuchilabs/mantrae/agent/client"
+	"github.com/mizuchilabs/mantrae/pkg/build"
+	"github.com/mizuchilabs/mantrae/pkg/logger"
 )
 
 func main() {

@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/storage"
+	"github.com/mizuchilabs/mantrae/internal/app"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/storage"
 )
 
 type BackupManager struct {

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
-	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
+	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
+	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"google.golang.org/protobuf/types/known/timestamppb"

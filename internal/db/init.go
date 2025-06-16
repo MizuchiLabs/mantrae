@@ -6,8 +6,8 @@ import (
 	"embed"
 	"fmt"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/app"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/pressly/goose/v3"
 	"modernc.org/sqlite"
 )

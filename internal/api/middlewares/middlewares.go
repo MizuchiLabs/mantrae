@@ -3,7 +3,7 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/config"
 )
 
 type Middleware func(http.Handler) http.Handler

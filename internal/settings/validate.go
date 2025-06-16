@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/db"
 )
 
 func (sm *SettingsManager) validateSetting(

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
+	"github.com/mizuchilabs/mantrae/internal/app"
 )
 
 // LocalStorage implements StorageBackend for local filesystem

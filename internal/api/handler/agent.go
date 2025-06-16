@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/api/agent"
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/util"
 	"github.com/google/uuid"
+	"github.com/mizuchilabs/mantrae/internal/api/service"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 func ListAgents(a *config.App) http.HandlerFunc {
@@ -82,7 +82,7 @@ func CreateAgent(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		claims := &agent.AgentClaims{
+		claims := &service.AgentClaims{
 			AgentID:   uuid.New().String(),
 			ProfileID: profileID,
 			ServerURL: serverUrl.String("http://127.0.0.1:3000"),
@@ -181,7 +181,7 @@ func RotateAgentToken(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		claims := &agent.AgentClaims{
+		claims := &service.AgentClaims{
 			AgentID:   dbAgent.ID,
 			ProfileID: dbAgent.ProfileID,
 			ServerURL: serverUrl.String("http://127.0.0.1:3000"),

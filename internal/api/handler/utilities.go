@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/MizuchiLabs/mantrae/pkg/build"
+	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/build"
 )
 
 // GetVersion returns the current version of Mantrae as a plain text response

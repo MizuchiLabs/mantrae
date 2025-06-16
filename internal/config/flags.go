@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/pkg/build"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/pkg/build"
 )
 
 type Flags struct {

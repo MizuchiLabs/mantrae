@@ -10,9 +10,9 @@ import (
 	"sync"
 
 	"connectrpc.com/connect"
-	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
-	"github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1/agentv1connect"
-	"github.com/MizuchiLabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
+	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
+	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
 )
 
 const tokenFile = "data/.mantrae-token"
@@ -48,7 +48,7 @@ func (ts *TokenSource) SetToken(ctx context.Context) error {
 	}
 	if ts.token == "" {
 		ts.mu.Unlock()
-		return errors.New("No token found in environment or file")
+		return errors.New("no token found in environment or file")
 	}
 
 	// Write it back

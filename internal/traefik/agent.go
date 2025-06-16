@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/db"
 	"github.com/traefik/paerser/parser"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"

@@ -5,10 +5,10 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/dns"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/traefik"
-	"github.com/MizuchiLabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/dns"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 // setupBackgroundJobs initiates essential background operations for the application.

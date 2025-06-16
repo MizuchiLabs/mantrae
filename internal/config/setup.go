@@ -7,13 +7,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
-	"github.com/MizuchiLabs/mantrae/internal/backup"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/source"
-	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/MizuchiLabs/mantrae/pkg/logger"
+	"github.com/mizuchilabs/mantrae/internal/app"
+	"github.com/mizuchilabs/mantrae/internal/backup"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/source"
+	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 

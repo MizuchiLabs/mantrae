@@ -1,4 +1,4 @@
-package agent
+package service
 
 import (
 	"context"
@@ -8,25 +8,26 @@ import (
 
 	"connectrpc.com/connect"
 
-	agentv1 "github.com/MizuchiLabs/mantrae/agent/proto/gen/agent/v1"
-	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/settings"
-	"github.com/MizuchiLabs/mantrae/internal/traefik"
-	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/MizuchiLabs/mantrae/pkg/meta"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
+	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
 )
 
-type AgentServer struct {
+type AgentService struct {
 	app *config.App
 }
 
-func NewAgentServer(app *config.App) *AgentServer {
-	return &AgentServer{app: app}
+func NewAgentService(app *config.App) *AgentService {
+	return &AgentService{app: app}
 }
 
-func (s *AgentServer) HealthCheck(
+func (s *AgentService) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[agentv1.HealthCheckRequest],
 ) (*connect.Response[agentv1.HealthCheckResponse], error) {
@@ -42,7 +43,7 @@ func (s *AgentServer) HealthCheck(
 	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true, Token: *token}), nil
 }
 
-func (s *AgentServer) GetContainer(
+func (s *AgentService) GetContainer(
 	ctx context.Context,
 	req *connect.Request[agentv1.GetContainerRequest],
 ) (*connect.Response[agentv1.GetContainerResponse], error) {
@@ -100,7 +101,7 @@ func (s *AgentServer) GetContainer(
 	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
 }
 
-func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, error) {
+func (s *AgentService) updateToken(ctx context.Context, id string) (*string, error) {
 	q := s.app.Conn.GetQuery()
 	agent, err := q.GetAgent(ctx, id)
 	if err != nil {
@@ -113,8 +114,8 @@ func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, erro
 	}
 
 	// Only update the token if it's close to expiring (less than 25%)
-	lifetime := claims.ExpiresAt.Time.Sub(claims.IssuedAt.Time)
-	remaining := claims.ExpiresAt.Time.Sub(time.Now())
+	lifetime := claims.ExpiresAt.Sub(claims.IssuedAt.Time)
+	remaining := time.Until(claims.ExpiresAt.Time)
 	if remaining > lifetime/4 {
 		return &agent.Token, nil // Still valid
 	}
@@ -136,4 +137,53 @@ func (s *AgentServer) updateToken(ctx context.Context, id string) (*string, erro
 	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
 
 	return &token, nil
+}
+
+// Helpers --------------------------------------------------------------------
+type AgentClaims struct {
+	AgentID   string `json:"agentId,omitempty"`
+	ProfileID int64  `json:"profileId,omitempty"`
+	ServerURL string `json:"serverUrl,omitempty"`
+	jwt.RegisteredClaims
+}
+
+// EncodeJWT generates a JWT for agents
+func (a *AgentClaims) EncodeJWT(secret string, expirationTime time.Duration) (string, error) {
+	if a.ServerURL == "" || a.ProfileID == 0 {
+		return "", errors.New("serverUrl and profileID cannot be empty")
+	}
+
+	if expirationTime == 0 {
+		expirationTime = time.Hour * 24
+	}
+
+	claims := &AgentClaims{
+		AgentID:   a.AgentID,
+		ProfileID: a.ProfileID,
+		ServerURL: a.ServerURL,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expirationTime)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
+
+// DecodeJWT decodes the agent token and returns claims if valid
+func DecodeJWT(tokenString, secret string) (*AgentClaims, error) {
+	claims := &AgentClaims{}
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (any, error) {
+			return []byte(secret), nil
+		},
+	)
+
+	if err != nil || !token.Valid {
+		return nil, err
+	}
+	return claims, nil
 }

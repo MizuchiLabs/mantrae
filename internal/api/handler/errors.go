@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/config"
 )
 
 func ListErrors(a *config.App) http.HandlerFunc {

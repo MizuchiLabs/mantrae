@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	RepoURL = "https://api.github.com/repos/MizuchiLabs/mantrae"
+	RepoURL = "https://api.github.com/repos/mizuchilabs/mantrae"
 )
 
 type releaseAsset struct {

@@ -3,8 +3,8 @@ package server
 import (
 	"net/http"
 
-	"github.com/MizuchiLabs/mantrae/internal/api/handler"
-	"github.com/MizuchiLabs/mantrae/internal/api/middlewares"
+	"github.com/mizuchilabs/mantrae/internal/api/handler"
+	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 )
 
 func (s *Server) routes() {

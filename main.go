@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/MizuchiLabs/mantrae/internal/api/server"
-	"github.com/MizuchiLabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/api/server"
+	"github.com/mizuchilabs/mantrae/internal/config"
 )
 
 func main() {

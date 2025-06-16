@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
-	"github.com/MizuchiLabs/mantrae/internal/config"
-	"github.com/MizuchiLabs/mantrae/internal/db"
-	"github.com/MizuchiLabs/mantrae/internal/util"
-	"github.com/MizuchiLabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"golang.org/x/crypto/bcrypt"
 )
 

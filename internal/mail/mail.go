@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"net/smtp"
 
-	"github.com/MizuchiLabs/mantrae/internal/mail/templates"
+	"github.com/mizuchilabs/mantrae/internal/mail/templates"
 	"github.com/domodwyer/mailyak/v3"
 )
 
