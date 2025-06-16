@@ -14,6 +14,46 @@ sql:
         emit_pointers_for_null_types: true
         json_tags_case_style: "camel"
         overrides:
+          - column: "http_routers.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "Router"
+              pointer: true
+          - column: "tcp_routers.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "TCPRouter"
+              pointer: true
+          - column: "udp_routers.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "UDPRouter"
+              pointer: true
+          - column: "http_services.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "Service"
+              pointer: true
+          - column: "tcp_services.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "TCPService"
+              pointer: true
+          - column: "udp_services.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "UDPService"
+              pointer: true
+          - column: "http_middlewares.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "Middleware"
+              pointer: true
+          - column: "tcp_middlewares.config"
+            go_type:
+              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              type: "TCPMiddleware"
+              pointer: true
           - column: "traefik.config"
             go_type:
               type: "TraefikConfiguration"

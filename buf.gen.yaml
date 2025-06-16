@@ -1,5 +1,4 @@
 version: v2
-clean: true
 managed:
   enabled: true
   override:
@@ -12,5 +11,17 @@ plugins:
   - local: protoc-gen-connect-go
     out: proto/gen
     opt: paths=source_relative
+  - local: protoc-gen-es
+    out: web/src/lib/gen
+    opt: target=ts
+    include_imports: true
+  - local: protoc-gen-connect-openapi
+    out: proto/gen/openapi
+    strategy: all
+    opt:
+      - allow-get
+      - with-streaming
+      - path=openapi.yaml
+      - base=proto/gen/openapi/base.yaml
 inputs:
   - directory: proto

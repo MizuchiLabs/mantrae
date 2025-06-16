@@ -15,15 +15,21 @@ SELECT
 FROM
   settings
 WHERE
-  key = ?
-LIMIT
-  1;
+  key = ?;
 
 -- name: ListSettings :many
 SELECT
   *
 FROM
   settings;
+
+-- name: UpdateSetting :one
+UPDATE settings
+SET
+  value = ?,
+  update_at = CURRENT_TIMESTAMP
+WHERE
+  key = ? RETURNING *;
 
 -- name: DeleteSetting :exec
 DELETE FROM settings

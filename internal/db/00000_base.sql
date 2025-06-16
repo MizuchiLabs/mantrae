@@ -1,20 +1,117 @@
 -- +goose Up
 CREATE TABLE "profiles" (
-  id TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE dns_providers (
+CREATE TABLE "entry_points" (
   id INTEGER PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  type VARCHAR(255) NOT NULL,
-  config JSON NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT FALSE,
+  profile_id INTEGER NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  address VARCHAR(255) NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE http_routers (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE tcp_routers (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE udp_routers (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE http_services (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE tcp_services (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE udp_services (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE http_middlewares (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE tcp_middlewares (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  source TEXT DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
 );
 
 CREATE TABLE traefik (
@@ -34,7 +131,7 @@ CREATE TABLE traefik (
 );
 
 CREATE TABLE "users" (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   username VARCHAR(255) NOT NULL UNIQUE,
   password TEXT NOT NULL,
   email VARCHAR(255),
@@ -42,6 +139,16 @@ CREATE TABLE "users" (
   otp VARCHAR(6),
   otp_expiry TIMESTAMP,
   last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE dns_providers (
+  id INTEGER PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  type VARCHAR(255) NOT NULL,
+  config JSON NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -77,7 +184,7 @@ CREATE TABLE "router_dns_provider" (
 );
 
 CREATE TABLE errors (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   category TEXT NOT NULL,
   message TEXT NOT NULL,

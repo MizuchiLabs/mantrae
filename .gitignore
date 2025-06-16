@@ -10,8 +10,6 @@
 *.dylib
 /bin
 /builds
-mantrae
-mantrae-agent
 
 # Test binary, built with `go test -c`
 *.test

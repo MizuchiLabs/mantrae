@@ -5,10 +5,9 @@ import (
 
 	"connectrpc.com/connect"
 
-	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/db"
-	profilev1 "github.com/mizuchilabs/mantrae/proto/gen/server/v1"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type ProfileService struct {
@@ -21,14 +20,14 @@ func NewProfileService(app *config.App) *ProfileService {
 
 func (s *ProfileService) GetProfile(
 	ctx context.Context,
-	req *connect.Request[profilev1.GetProfileRequest],
-) (*connect.Response[profilev1.GetProfileResponse], error) {
+	req *connect.Request[mantraev1.GetProfileRequest],
+) (*connect.Response[mantraev1.GetProfileResponse], error) {
 	profile, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&profilev1.GetProfileResponse{
-		Profile: &profilev1.Profile{
+	return connect.NewResponse(&mantraev1.GetProfileResponse{
+		Profile: &mantraev1.Profile{
 			Id:          profile.ID,
 			Name:        profile.Name,
 			Description: SafeString(profile.Description),
@@ -40,15 +39,9 @@ func (s *ProfileService) GetProfile(
 
 func (s *ProfileService) CreateProfile(
 	ctx context.Context,
-	req *connect.Request[profilev1.CreateProfileRequest],
-) (*connect.Response[profilev1.CreateProfileResponse], error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
+	req *connect.Request[mantraev1.CreateProfileRequest],
+) (*connect.Response[mantraev1.CreateProfileResponse], error) {
 	params := db.CreateProfileParams{
-		ID:   id.String(),
 		Name: req.Msg.Name,
 	}
 	if req.Msg.Description != nil {
@@ -59,8 +52,8 @@ func (s *ProfileService) CreateProfile(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&profilev1.CreateProfileResponse{
-		Profile: &profilev1.Profile{
+	return connect.NewResponse(&mantraev1.CreateProfileResponse{
+		Profile: &mantraev1.Profile{
 			Id:          profile.ID,
 			Name:        profile.Name,
 			Description: SafeString(profile.Description),
@@ -72,8 +65,8 @@ func (s *ProfileService) CreateProfile(
 
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context,
-	req *connect.Request[profilev1.UpdateProfileRequest],
-) (*connect.Response[profilev1.UpdateProfileResponse], error) {
+	req *connect.Request[mantraev1.UpdateProfileRequest],
+) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
 	params := db.UpdateProfileParams{
 		ID:   req.Msg.Id,
 		Name: req.Msg.Name,
@@ -86,8 +79,8 @@ func (s *ProfileService) UpdateProfile(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&profilev1.UpdateProfileResponse{
-		Profile: &profilev1.Profile{
+	return connect.NewResponse(&mantraev1.UpdateProfileResponse{
+		Profile: &mantraev1.Profile{
 			Id:          profile.ID,
 			Name:        profile.Name,
 			Description: SafeString(profile.Description),
@@ -99,19 +92,19 @@ func (s *ProfileService) UpdateProfile(
 
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context,
-	req *connect.Request[profilev1.DeleteProfileRequest],
-) (*connect.Response[profilev1.DeleteProfileResponse], error) {
+	req *connect.Request[mantraev1.DeleteProfileRequest],
+) (*connect.Response[mantraev1.DeleteProfileResponse], error) {
 	err := s.app.Conn.GetQuery().DeleteProfile(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&profilev1.DeleteProfileResponse{}), nil
+	return connect.NewResponse(&mantraev1.DeleteProfileResponse{}), nil
 }
 
 func (s *ProfileService) ListProfiles(
 	ctx context.Context,
-	req *connect.Request[profilev1.ListProfilesRequest],
-) (*connect.Response[profilev1.ListProfilesResponse], error) {
+	req *connect.Request[mantraev1.ListProfilesRequest],
+) (*connect.Response[mantraev1.ListProfilesResponse], error) {
 	var params db.ListProfilesParams
 	if req.Msg.Limit == nil {
 		params.Limit = 100
@@ -133,9 +126,9 @@ func (s *ProfileService) ListProfiles(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var profiles []*profilev1.Profile
+	var profiles []*mantraev1.Profile
 	for _, profile := range dbProfiles {
-		profiles = append(profiles, &profilev1.Profile{
+		profiles = append(profiles, &mantraev1.Profile{
 			Id:          profile.ID,
 			Name:        profile.Name,
 			Description: SafeString(profile.Description),
@@ -143,7 +136,7 @@ func (s *ProfileService) ListProfiles(
 			UpdatedAt:   SafeTimestamp(profile.UpdatedAt),
 		})
 	}
-	return connect.NewResponse(&profilev1.ListProfilesResponse{
+	return connect.NewResponse(&mantraev1.ListProfilesResponse{
 		Profiles:   profiles,
 		TotalCount: totalCount,
 	}), nil

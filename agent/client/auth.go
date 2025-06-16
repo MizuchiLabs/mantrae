@@ -11,15 +11,15 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
-	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
-	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 )
 
 const tokenFile = "data/.mantrae-token"
 
 type TokenSource struct {
 	mu       sync.Mutex
-	client   agentv1connect.AgentServiceClient
+	client   mantraev1connect.AgentServiceClient
 	token    string
 	fallback bool
 }
@@ -75,7 +75,7 @@ func (ts *TokenSource) SetClient() error {
 		return err
 	}
 
-	ts.client = agentv1connect.NewAgentServiceClient(
+	ts.client = mantraev1connect.NewAgentServiceClient(
 		http.DefaultClient,
 		claims.ServerURL,
 		connect.WithInterceptors(ts.Interceptor()),
@@ -91,7 +91,7 @@ func (ts *TokenSource) Refresh(ctx context.Context) error {
 		return errors.New("no client")
 	}
 
-	req := connect.NewRequest(&agentv1.HealthCheckRequest{})
+	req := connect.NewRequest(&mantraev1.HealthCheckRequest{})
 	req.Header().Set("Authorization", "Bearer "+ts.token)
 	if claims, err := DecodeJWT(ts.token); err == nil {
 		req.Header().Set(meta.HeaderAgentID, claims.AgentID)
@@ -158,7 +158,7 @@ func (ts *TokenSource) GetToken() string {
 	return ts.token
 }
 
-func (ts *TokenSource) GetClient() agentv1connect.AgentServiceClient {
+func (ts *TokenSource) GetClient() mantraev1connect.AgentServiceClient {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 	return ts.client

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package agent.v1;
+package mantrae.v1;
 
 import "google/protobuf/timestamp.proto";
 

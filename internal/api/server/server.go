@@ -18,7 +18,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/api/service"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/util"
-	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
+	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/mizuchilabs/mantrae/web"
 )
 
@@ -113,7 +113,10 @@ func (s *Server) registerServices() {
 	// Common interceptors
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
-		connect.WithInterceptors(middlewares.Logging()),
+		connect.WithInterceptors(
+			middlewares.Authentication(s.app),
+			middlewares.Logging(),
+		),
 		connect.WithRecover(
 			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
 				// Log the panic with context
@@ -138,7 +141,13 @@ func (s *Server) registerServices() {
 	// Routes
 	s.routes()
 
-	serviceNames := []string{agentv1connect.AgentServiceName}
+	serviceNames := []string{
+		mantraev1connect.ProfileServiceName,
+		mantraev1connect.UserServiceName,
+		mantraev1connect.EntryPointServiceName,
+		mantraev1connect.SettingServiceName,
+		mantraev1connect.AgentServiceName,
+	}
 
 	checker := grpchealth.NewStaticChecker(serviceNames...)
 	reflector := grpcreflect.NewStaticReflector(serviceNames...)
@@ -148,8 +157,24 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
 	// Service implementations
-	agentOpts := append(opts, connect.WithInterceptors(middlewares.AgentAuth(s.app)))
-	s.mux.Handle(
-		agentv1connect.NewAgentServiceHandler(service.NewAgentService(s.app), agentOpts...),
-	)
+	s.mux.Handle(mantraev1connect.NewProfileServiceHandler(
+		service.NewProfileService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewUserServiceHandler(
+		service.NewUserService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewEntryPointServiceHandler(
+		service.NewEntryPointService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewSettingServiceHandler(
+		service.NewSettingService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewAgentServiceHandler(
+		service.NewAgentService(s.app),
+		opts...,
+	))
 }

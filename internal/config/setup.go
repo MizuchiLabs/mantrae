@@ -142,12 +142,8 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 	q := a.Conn.GetQuery()
 	profile, err := q.GetProfileByName(ctx, a.Config.Traefik.Profile)
 	if err != nil {
-		profileID, err := q.CreateProfile(ctx, db.CreateProfileParams{
-			Name:     a.Config.Traefik.Profile,
-			Url:      a.Config.Traefik.URL,
-			Username: &a.Config.Traefik.Username,
-			Password: &a.Config.Traefik.Password,
-			Tls:      a.Config.Traefik.TLS,
+		profile, err := q.CreateProfile(ctx, db.CreateProfileParams{
+			Name: a.Config.Traefik.Profile,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to create default profile: %w", err)
@@ -155,7 +151,7 @@ func (a *App) setDefaultProfile(ctx context.Context) error {
 
 		// Create default local config
 		if err := q.UpsertTraefikConfig(ctx, db.UpsertTraefikConfigParams{
-			ProfileID: profileID,
+			ProfileID: profile.ID,
 			Source:    source.Local,
 		}); err != nil {
 			return fmt.Errorf("failed to create default profile: %w", err)

@@ -16,7 +16,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/traefik"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
-	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type AgentService struct {
@@ -29,8 +29,8 @@ func NewAgentService(app *config.App) *AgentService {
 
 func (s *AgentService) HealthCheck(
 	ctx context.Context,
-	req *connect.Request[agentv1.HealthCheckRequest],
-) (*connect.Response[agentv1.HealthCheckResponse], error) {
+	req *connect.Request[mantraev1.HealthCheckRequest],
+) (*connect.Response[mantraev1.HealthCheckResponse], error) {
 	// Rotate Token
 	token, err := s.updateToken(ctx, req.Header().Get(meta.HeaderAgentID))
 	if err != nil {
@@ -40,13 +40,13 @@ func (s *AgentService) HealthCheck(
 		Type:     util.EventTypeUpdate,
 		Category: util.EventCategoryAgent,
 	}
-	return connect.NewResponse(&agentv1.HealthCheckResponse{Ok: true, Token: *token}), nil
+	return connect.NewResponse(&mantraev1.HealthCheckResponse{Ok: true, Token: *token}), nil
 }
 
 func (s *AgentService) GetContainer(
 	ctx context.Context,
-	req *connect.Request[agentv1.GetContainerRequest],
-) (*connect.Response[agentv1.GetContainerResponse], error) {
+	req *connect.Request[mantraev1.GetContainerRequest],
+) (*connect.Response[mantraev1.GetContainerResponse], error) {
 	agent := middlewares.GetAgentContext(ctx)
 	if agent == nil {
 		return nil, connect.NewError(
@@ -98,7 +98,7 @@ func (s *AgentService) GetContainer(
 		Type:     util.EventTypeUpdate,
 		Category: util.EventCategoryAgent,
 	}
-	return connect.NewResponse(&agentv1.GetContainerResponse{}), nil
+	return connect.NewResponse(&mantraev1.GetContainerResponse{}), nil
 }
 
 func (s *AgentService) updateToken(ctx context.Context, id string) (*string, error) {

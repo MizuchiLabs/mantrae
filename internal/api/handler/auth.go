@@ -46,12 +46,7 @@ func Login(a *config.App) http.HandlerFunc {
 			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
-		userPassword, err := q.GetUserPassword(r.Context(), user.ID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if err = bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(request.Password)); err != nil {
+		if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 			http.Error(w, "Invalid username or password.", http.StatusUnauthorized)
 			return
 		}

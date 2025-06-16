@@ -2,19 +2,11 @@
 INSERT INTO
   users (username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?) RETURNING id;
+  (?, ?, ?, ?) RETURNING *;
 
--- name: GetUser :one
+-- name: GetUserByID :one
 SELECT
-  id,
-  username,
-  email,
-  is_admin,
-  otp,
-  otp_expiry,
-  last_login,
-  created_at,
-  updated_at
+  *
 FROM
   users
 WHERE
@@ -22,15 +14,7 @@ WHERE
 
 -- name: GetUserByUsername :one
 SELECT
-  id,
-  username,
-  email,
-  is_admin,
-  otp,
-  otp_expiry,
-  last_login,
-  created_at,
-  updated_at
+  *
 FROM
   users
 WHERE
@@ -38,45 +22,31 @@ WHERE
 
 -- name: GetUserByEmail :one
 SELECT
-  id,
-  username,
-  email,
-  is_admin,
-  otp,
-  otp_expiry,
-  last_login,
-  created_at,
-  updated_at
+  *
 FROM
   users
 WHERE
   email = ?;
 
--- name: GetUserPassword :one
-SELECT
-  password
-FROM
-  users
-WHERE
-  id = ?;
-
 -- name: ListUsers :many
 SELECT
-  id,
-  username,
-  email,
-  is_admin,
-  otp,
-  otp_expiry,
-  last_login,
-  created_at,
-  updated_at
+  *
 FROM
   users
 ORDER BY
-  username;
+  username
+LIMIT
+  ?
+OFFSET
+  ?;
 
--- name: UpdateUser :exec
+-- name: CountUsers :one
+SELECT
+  COUNT(*)
+FROM
+  users;
+
+-- name: UpdateUser :one
 UPDATE users
 SET
   username = ?,
@@ -84,7 +54,7 @@ SET
   is_admin = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ?;
+  id = ? RETURNING *;
 
 -- name: UpdateUserLastLogin :exec
 UPDATE users

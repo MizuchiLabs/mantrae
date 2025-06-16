@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+  rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+  rpc VerifyJWT(VerifyJWTRequest) returns (VerifyJWTResponse);
+  rpc VerifyOTP(VerifyOTPRequest) returns (VerifyOTPResponse);
+  rpc SendOTP(SendOTPRequest) returns (SendOTPResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string password = 3;
+  string email = 4;
+  bool is_admin = 5;
+  string otp = 6;
+  google.protobuf.Timestamp otp_expiry = 7;
+  google.protobuf.Timestamp last_login = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message LoginUserRequest {
+  oneof identifier {
+    string username = 1;
+    string email = 2;
+  }
+  string password = 3;
+  bool remember = 4;
+}
+message LoginUserResponse {
+  string token = 1;
+}
+
+message VerifyJWTRequest {
+  string token = 1;
+}
+message VerifyJWTResponse {
+  string user_id = 1;
+}
+
+message VerifyOTPRequest {
+  oneof identifier {
+    string username = 1;
+    string email = 2;
+  }
+  string otp = 3;
+}
+message VerifyOTPResponse {
+  string token = 1;
+}
+
+message SendOTPRequest {
+  oneof identifier {
+    string username = 1;
+    string email = 2;
+  }
+}
+message SendOTPResponse {}
+
+message GetUserRequest {
+  oneof identifier {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+  }
+}
+message GetUserResponse {
+  User user = 1;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string password = 2;
+  string email = 3;
+  bool is_admin = 4;
+}
+message CreateUserResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  bool is_admin = 4;
+}
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+message DeleteUserResponse {}
+
+message ListUsersRequest {
+  optional int64 limit = 1;
+  optional int64 offset = 2;
+}
+message ListUsersResponse {
+  repeated User users = 1;
+  int64 total_count = 2;
+}

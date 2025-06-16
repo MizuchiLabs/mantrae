@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service EntryPointService {
+  rpc GetEntryPoint(GetEntryPointRequest) returns (GetEntryPointResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateEntryPoint(CreateEntryPointRequest) returns (CreateEntryPointResponse);
+  rpc UpdateEntryPoint(UpdateEntryPointRequest) returns (UpdateEntryPointResponse);
+  rpc DeleteEntryPoint(DeleteEntryPointRequest) returns (DeleteEntryPointResponse);
+  rpc ListEntryPoints(ListEntryPointsRequest) returns (ListEntryPointsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message EntryPoint {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  bool is_default = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message GetEntryPointRequest {
+  int64 id = 1;
+}
+message GetEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message CreateEntryPointRequest {
+  string name = 1;
+  string address = 2;
+  bool is_default = 3;
+}
+message CreateEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message UpdateEntryPointRequest {
+  int64 id = 1;
+  string name = 2;
+  string address = 3;
+  bool is_default = 4;
+}
+message UpdateEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message DeleteEntryPointRequest {
+  int64 id = 1;
+}
+message DeleteEntryPointResponse {}
+
+message ListEntryPointsRequest {
+  optional int64 limit = 1;
+  optional int64 offset = 2;
+}
+message ListEntryPointsResponse {
+  repeated EntryPoint entry_points = 1;
+  int64 total_count = 2;
+}

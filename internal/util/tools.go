@@ -3,7 +3,9 @@ package util
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"net"
@@ -83,6 +85,11 @@ func GenerateOTP() (string, error) {
 	}
 
 	return string(token), nil
+}
+
+func HashOTP(otp string) string {
+	sum := sha256.Sum256([]byte(otp))
+	return hex.EncodeToString(sum[:])
 }
 
 // IsValidURL checks if a URL is valid url string

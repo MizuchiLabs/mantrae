@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	agentv1 "github.com/mizuchilabs/mantrae/proto/gen/agent/v1"
-	"github.com/mizuchilabs/mantrae/proto/gen/agent/v1/agentv1connect"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -54,7 +54,7 @@ func Client(quit chan os.Signal) {
 
 // doContainer invokes GetContainer using current token/claims
 func doContainer(
-	client agentv1connect.AgentServiceClient,
+	client mantraev1connect.AgentServiceClient,
 	quit chan os.Signal,
 ) {
 	// build payload
@@ -80,8 +80,8 @@ func doContainer(
 }
 
 // sendContainer creates a GetContainerRequest with information about the local machine
-func sendContainerRequest() *connect.Request[agentv1.GetContainerRequest] {
-	var request agentv1.GetContainerRequest
+func sendContainerRequest() *connect.Request[mantraev1.GetContainerRequest] {
+	var request mantraev1.GetContainerRequest
 
 	// Get hostname
 	hostname, err := os.Hostname()
@@ -108,7 +108,7 @@ func sendContainerRequest() *connect.Request[agentv1.GetContainerRequest] {
 }
 
 // getContainers retrieves all containers and their info on the local machine
-func getContainers() ([]*agentv1.Container, error) {
+func getContainers() ([]*mantraev1.Container, error) {
 	// Create a new Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -121,7 +121,7 @@ func getContainers() ([]*agentv1.Container, error) {
 		return nil, errors.New("failed to list containers")
 	}
 
-	var result []*agentv1.Container
+	var result []*mantraev1.Container
 	portMap := make(map[int32]int32)
 
 	// Iterate over each container and populate the Container struct
@@ -180,7 +180,7 @@ func getContainers() ([]*agentv1.Container, error) {
 		}
 
 		// Populate the Container struct
-		container := &agentv1.Container{
+		container := &mantraev1.Container{
 			Id:      c.ID,
 			Name:    c.Names[0], // Take the first name if multiple exist
 			Labels:  containerJSON.Config.Labels,
