@@ -3,10 +3,10 @@ INSERT INTO
   traefik_instances (
     id,
     profile_id,
-    entrypoints,
-    overview,
-    config,
-    version,
+    url,
+    username,
+    password,
+    tls,
     created_at,
     updated_at
   )
@@ -55,6 +55,10 @@ FROM
 -- name: UpdateTraefikInstance :one
 UPDATE traefik_instances
 SET
+  url = ?,
+  username = ?,
+  password = ?,
+  tls = ?,
   entrypoints = ?,
   overview = ?,
   config = ?,

@@ -14,6 +14,9 @@ service MiddlewareService {
   rpc ListMiddlewares(ListMiddlewaresRequest) returns (ListMiddlewaresResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
+  rpc GetMiddlewarePlugins(GetMiddlewarePluginsRequest) returns (GetMiddlewarePluginsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
 }
 
 enum MiddlewareType {
@@ -25,12 +28,34 @@ enum MiddlewareType {
 message Middleware {
   int64 id = 1;
   int64 profile_id = 2;
-  string name = 3;
-  string config = 4;
-  string source = 5;
+  string agent_id = 3;
+  string name = 4;
+  string config = 5;
   MiddlewareType type = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
+}
+
+message Plugin {
+  string id = 1;
+  string name = 2;
+  string display_name = 3;
+  string author = 4;
+  string type = 5;
+  string import = 6;
+  string summary = 7;
+  string icon_url = 8;
+  string banner_url = 9;
+  string readme = 10;
+  string latest_version = 11;
+  repeated string versions = 12;
+  int64 stars = 13;
+  PluginSnippet snippet = 14;
+  string created_at = 15;
+}
+
+message PluginSnippet {
+  string yaml = 1;
 }
 
 message GetMiddlewareRequest {
@@ -43,9 +68,9 @@ message GetMiddlewareResponse {
 
 message CreateMiddlewareRequest {
   int64 profile_id = 1;
-  string name = 2;
-  string config = 3;
-  string source = 4;
+  string agent_id = 2;
+  string name = 3;
+  string config = 4;
   MiddlewareType type = 5;
 }
 message CreateMiddlewareResponse {
@@ -56,8 +81,7 @@ message UpdateMiddlewareRequest {
   int64 id = 1;
   string name = 2;
   string config = 3;
-  string source = 4;
-  MiddlewareType type = 5;
+  MiddlewareType type = 4;
 }
 message UpdateMiddlewareResponse {
   Middleware middleware = 1;
@@ -76,4 +100,9 @@ message ListMiddlewaresRequest {
 message ListMiddlewaresResponse {
   repeated Middleware middlewares = 1;
   int64 total_count = 2;
+}
+
+message GetMiddlewarePluginsRequest {}
+message GetMiddlewarePluginsResponse {
+  repeated Plugin plugins = 1;
 }

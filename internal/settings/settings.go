@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/store"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 )
 
 type SettingWithDescription struct {
@@ -51,11 +52,11 @@ type Settings struct {
 }
 
 type SettingsManager struct {
-	conn     *db.Connection
+	conn     *store.Connection
 	defaults *Settings
 }
 
-func NewSettingsManager(conn *db.Connection) *SettingsManager {
+func NewManager(conn *store.Connection) *SettingsManager {
 	return &SettingsManager{
 		conn:     conn,
 		defaults: getDefaults(),

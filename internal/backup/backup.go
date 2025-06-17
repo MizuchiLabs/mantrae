@@ -11,14 +11,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/app"
-	"github.com/mizuchilabs/mantrae/internal/db"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/storage"
+	"github.com/mizuchilabs/mantrae/internal/store"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 type BackupManager struct {
-	Conn      *db.Connection
+	Conn      *store.Connection
 	Settings  *settings.SettingsManager
 	Storage   storage.Backend
 	stopChan  chan struct{}
@@ -26,10 +26,7 @@ type BackupManager struct {
 	mu        sync.Mutex
 }
 
-func NewManager(
-	conn *db.Connection,
-	settings *settings.SettingsManager,
-) *BackupManager {
+func NewManager(conn *store.Connection, settings *settings.SettingsManager) *BackupManager {
 	return &BackupManager{
 		Conn:     conn,
 		Settings: settings,
@@ -184,7 +181,7 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("invalid backup file name")
 	}
 
-	dbPath := app.ResolvePath("mantrae.db")
+	dbPath := util.ResolvePath("mantrae.db")
 	walPath := dbPath + "-wal"
 	shmPath := dbPath + "-shm"
 

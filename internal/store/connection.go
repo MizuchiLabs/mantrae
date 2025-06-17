@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/app"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )
@@ -30,7 +30,7 @@ type Connection struct {
 func NewConnection(path string) *Connection {
 	var dataSource string
 	if path == "" {
-		dataSource = fmt.Sprintf("file:%s", filepath.ToSlash(app.ResolvePath("mantrae.db")))
+		dataSource = fmt.Sprintf("file:%s", filepath.ToSlash(util.ResolvePath("mantrae.db")))
 	} else {
 		dataSource = path
 	}

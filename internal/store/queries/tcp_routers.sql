@@ -2,9 +2,9 @@
 INSERT INTO
   tcp_routers (
     profile_id,
+    agent_id,
     name,
     config,
-    source,
     created_at,
     updated_at
   )
@@ -19,7 +19,7 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTcpRouterByProfile :one
+-- name: GetTcpRoutersByProfile :many
 SELECT
   *
 FROM
@@ -50,7 +50,6 @@ UPDATE tcp_routers
 SET
   name = ?,
   config = ?,
-  source = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

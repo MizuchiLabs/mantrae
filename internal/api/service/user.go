@@ -8,11 +8,12 @@ import (
 	"connectrpc.com/connect"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/db"
 	"github.com/mizuchilabs/mantrae/internal/mail"
 	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
@@ -51,7 +52,7 @@ func (s *UserService) LoginUser(
 	if req.Msg.Remember {
 		expirationTime = time.Now().Add(30 * 24 * time.Hour)
 	}
-	token, err := util.EncodeUserJWT(user.Username, s.app.Config.Secret, expirationTime)
+	token, err := util.EncodeUserJWT(user.Username, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -109,7 +110,7 @@ func (s *UserService) VerifyOTP(
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
-	token, err := util.EncodeUserJWT(user.Username, s.app.Config.Secret, expirationTime)
+	token, err := util.EncodeUserJWT(user.Username, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -223,7 +224,13 @@ func (s *UserService) CreateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateUserRequest],
 ) (*connect.Response[mantraev1.CreateUserResponse], error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	params := db.CreateUserParams{
+		ID:       id.String(),
 		Username: req.Msg.Username,
 		Password: req.Msg.Password,
 		IsAdmin:  req.Msg.IsAdmin,

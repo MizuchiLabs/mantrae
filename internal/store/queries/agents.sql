@@ -1,8 +1,8 @@
--- name: CreateAgent :exec
+-- name: CreateAgent :one
 INSERT INTO
   agents (id, profile_id, token, created_at)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP);
+  (?, ?, ?, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetAgent :one
 SELECT
@@ -17,16 +17,20 @@ SELECT
   *
 FROM
   agents
-ORDER BY
-  hostname;
-
--- name: ListAgentsByProfile :many
-SELECT
-  *
-FROM
-  agents
 WHERE
-  profile_id = ?;
+  profile_id = ?
+ORDER BY
+  created_at DESC
+LIMIT
+  ?
+OFFSET
+  ?;
+
+-- name: CountAgents :one
+SELECT
+  COUNT(*)
+FROM
+  agents;
 
 -- name: UpdateAgent :one
 UPDATE agents

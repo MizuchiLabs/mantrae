@@ -3,43 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/db"
-	"github.com/mizuchilabs/mantrae/internal/source"
-	"github.com/mizuchilabs/mantrae/internal/traefik"
-	"github.com/traefik/traefik/v3/pkg/config/runtime"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
-
-func GetTraefikConfig(a *config.App) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		q := a.Conn.GetQuery()
-		profile_id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		src := source.Source(r.PathValue("source"))
-		if !src.Valid() {
-			http.Error(w, "invalid source", http.StatusBadRequest)
-			return
-		}
-		config, err := q.GetTraefikConfigBySource(r.Context(), db.GetTraefikConfigBySourceParams{
-			ProfileID: profile_id,
-			Source:    src,
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(config); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-}
 
 func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -49,47 +16,112 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// Initialize merged config
-		merged := &db.TraefikConfiguration{
-			Routers:        make(map[string]*runtime.RouterInfo),
-			Middlewares:    make(map[string]*runtime.MiddlewareInfo),
-			Services:       make(map[string]*db.ServiceInfo),
-			TCPRouters:     make(map[string]*runtime.TCPRouterInfo),
-			TCPMiddlewares: make(map[string]*runtime.TCPMiddlewareInfo),
-			TCPServices:    make(map[string]*runtime.TCPServiceInfo),
-			UDPRouters:     make(map[string]*runtime.UDPRouterInfo),
-			UDPServices:    make(map[string]*runtime.UDPServiceInfo),
+
+		cfg := &dynamic.Configuration{
+			HTTP: &dynamic.HTTPConfiguration{
+				Routers:     make(map[string]*dynamic.Router),
+				Middlewares: make(map[string]*dynamic.Middleware),
+				Services:    make(map[string]*dynamic.Service),
+			},
+			TCP: &dynamic.TCPConfiguration{
+				Routers:     make(map[string]*dynamic.TCPRouter),
+				Middlewares: make(map[string]*dynamic.TCPMiddleware),
+				Services:    make(map[string]*dynamic.TCPService),
+			},
+			UDP: &dynamic.UDPConfiguration{
+				Routers:  make(map[string]*dynamic.UDPRouter),
+				Services: make(map[string]*dynamic.UDPService),
+			},
 		}
 
-		// Get local config
-		local, err := q.GetLocalTraefikConfig(r.Context(), profile.ID)
+		// Routers
+		httpRouters, err := q.GetHttpRoutersByProfile(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		agents, err := q.GetAgentTraefikConfigs(r.Context(), profile.ID)
+		tcpRouters, err := q.GetTcpRoutersByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		udpRouters, err := q.GetUdpRoutersByProfile(r.Context(), profile.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Merge agent configurations (agent config)
-		for _, agent := range agents {
-			merged = traefik.MergeConfigs(merged, agent.Config)
+		// Services
+		httpServices, err := q.GetHttpServicesByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		if local.Config == nil && merged == nil {
-			w.WriteHeader(http.StatusOK)
+		tcpServices, err := q.GetTcpServicesByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		udpServices, err := q.GetUdpServicesByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Merge with local config
-		merged = traefik.MergeConfigs(merged, local.Config)
+		// Middlewares
+		httpMiddlewares, err := q.GetHttpMiddlewaresByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tcpMiddlewares, err := q.GetTcpMiddlewaresByProfile(r.Context(), profile.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		// Convert to dynamic
-		dynamic := traefik.ConvertToDynamicConfig(merged)
+		for _, r := range httpRouters {
+			cfg.HTTP.Routers[r.Name] = r.Config
+		}
+		for _, r := range tcpRouters {
+			cfg.TCP.Routers[r.Name] = r.Config
+		}
+		for _, r := range udpRouters {
+			cfg.UDP.Routers[r.Name] = r.Config
+		}
+
+		for _, s := range httpServices {
+			cfg.HTTP.Services[s.Name] = s.Config
+		}
+		for _, s := range tcpServices {
+			cfg.TCP.Services[s.Name] = s.Config
+		}
+		for _, s := range udpServices {
+			cfg.UDP.Services[s.Name] = s.Config
+		}
+
+		for _, m := range httpMiddlewares {
+			cfg.HTTP.Middlewares[m.Name] = m.Config
+		}
+		for _, m := range tcpMiddlewares {
+			cfg.TCP.Middlewares[m.Name] = m.Config
+		}
+
+		// Cleanup empty sections (to avoid Traefik {} block warnings)
+		if len(cfg.HTTP.Routers) == 0 && len(cfg.HTTP.Middlewares) == 0 &&
+			len(cfg.HTTP.Services) == 0 {
+			cfg.HTTP = nil
+		}
+		if len(cfg.TCP.Routers) == 0 && len(cfg.TCP.Middlewares) == 0 &&
+			len(cfg.TCP.Services) == 0 {
+			cfg.TCP = nil
+		}
+		if len(cfg.UDP.Routers) == 0 && len(cfg.UDP.Services) == 0 {
+			cfg.UDP = nil
+		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(dynamic); err != nil {
+		if err := json.NewEncoder(w).Encode(cfg); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

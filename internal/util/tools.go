@@ -7,11 +7,13 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"math/big"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,11 +27,23 @@ func IsTest() bool {
 	return strings.HasSuffix(os.Args[0], ".test")
 }
 
-func SafeDeref(s *string) string {
-	if s == nil {
-		return ""
+func ResolvePath(path string) string {
+	basePath := "data"
+	if dbPath := os.Getenv("BASE_PATH"); dbPath != "" {
+		basePath = dbPath
 	}
-	return *s
+
+	// If the provided path is absolute, return it as-is
+	if filepath.IsAbs(path) {
+		return path
+	}
+
+	// Create the base directory if it doesn't exist
+	if err := os.MkdirAll(basePath, 0755); err != nil {
+		log.Printf("Warning: failed to create base directory: %v", err)
+	}
+
+	return filepath.Join(basePath, path)
 }
 
 // GenPassword generates a random password of the specified length

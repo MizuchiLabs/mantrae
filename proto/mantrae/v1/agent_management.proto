@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+import "mantrae/v1/agent.proto";
+
+service AgentManagementService {
+  rpc GetAgent(GetAgentRequest) returns (GetAgentResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateAgent(CreateAgentRequest) returns (CreateAgentResponse);
+  rpc UpdateAgentIP(UpdateAgentIPRequest) returns (UpdateAgentIPResponse);
+  rpc DeleteAgent(DeleteAgentRequest) returns (DeleteAgentResponse);
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc RotateAgentToken(RotateAgentTokenRequest) returns (RotateAgentTokenResponse);
+}
+
+message Agent {
+  string id = 1;
+  int64 profile_id = 2;
+  string hostname = 3;
+  string public_ip = 4;
+  string active_ip = 5;
+  string token = 6;
+  repeated string private_ips = 7;
+  repeated Container containers = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetAgentRequest {
+  string id = 1;
+}
+message GetAgentResponse {
+  Agent agent = 1;
+}
+
+message CreateAgentRequest {
+  int64 profile_id = 1;
+}
+message CreateAgentResponse {
+  Agent agent = 1;
+}
+
+message UpdateAgentIPRequest {
+  string id = 1;
+  string ip = 2;
+}
+message UpdateAgentIPResponse {
+  Agent agent = 1;
+}
+
+message DeleteAgentRequest {
+  string id = 1;
+}
+message DeleteAgentResponse {}
+
+message ListAgentsRequest {
+  int64 profile_id = 1;
+  optional int64 limit = 2;
+  optional int64 offset = 3;
+}
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+  int64 total_count = 2;
+}
+
+message RotateAgentTokenRequest {
+  string id = 1;
+}
+message RotateAgentTokenResponse {
+  string token = 1;
+}

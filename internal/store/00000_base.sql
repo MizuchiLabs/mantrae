@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE "profiles" (
+CREATE TABLE profiles (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   description TEXT,
@@ -7,7 +7,7 @@ CREATE TABLE "profiles" (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "entry_points" (
+CREATE TABLE entry_points (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
@@ -21,13 +21,14 @@ CREATE TABLE "entry_points" (
 CREATE TABLE http_routers (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -36,13 +37,14 @@ CREATE INDEX idx_http_routers_profile_name ON http_routers (profile_id, name);
 CREATE TABLE tcp_routers (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -51,13 +53,14 @@ CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, na
 CREATE TABLE udp_routers (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -66,12 +69,13 @@ CREATE INDEX idx_udp_routers_profile_name ON udp_routers (profile_id, name);
 CREATE TABLE http_services (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -80,12 +84,13 @@ CREATE INDEX idx_http_services_profile_name ON http_services (profile_id, name);
 CREATE TABLE tcp_services (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -94,12 +99,13 @@ CREATE INDEX idx_tcp_services_profile_name ON tcp_services (profile_id, name);
 CREATE TABLE udp_services (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -108,13 +114,14 @@ CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
 CREATE TABLE http_middlewares (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -123,13 +130,14 @@ CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, 
 CREATE TABLE tcp_middlewares (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
-  source TEXT DEFAULT 'user' CHECK (source IN ('user', 'agent')),
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
 
@@ -142,6 +150,10 @@ CREATE TABLE traefik_instances (
   overview TEXT,
   config TEXT,
   version TEXT,
+  url TEXT NOT NULL,
+  username TEXT,
+  password TEXT,
+  tls BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service BackupService {
+  rpc CreateBackup(CreateBackupRequest) returns (CreateBackupResponse);
+  rpc RestoreBackup(RestoreBackupRequest) returns (RestoreBackupResponse);
+  rpc ListBackups(ListBackupsRequest) returns (ListBackupsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc DeleteBackup(DeleteBackupRequest) returns (DeleteBackupResponse);
+  rpc DownloadBackup(DownloadBackupRequest) returns (stream DownloadBackupResponse);
+  rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse);
+}
+
+message Backup {
+  string name = 1;
+  int64 size = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message CreateBackupRequest {}
+message CreateBackupResponse {}
+
+message RestoreBackupRequest {
+  string name = 1;
+}
+message RestoreBackupResponse {}
+
+message ListBackupsRequest {}
+message ListBackupsResponse {
+  repeated Backup backups = 1;
+}
+
+message DeleteBackupRequest {
+  string name = 1;
+}
+message DeleteBackupResponse {}
+
+message DownloadBackupRequest {
+  string name = 1;
+}
+message DownloadBackupResponse {
+  bytes data = 1;
+}
+
+message UploadBackupRequest {
+  bytes data = 1;
+}
+message UploadBackupResponse {}

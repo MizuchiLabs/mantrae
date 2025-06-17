@@ -1,8 +1,8 @@
 -- name: CreateUser :one
 INSERT INTO
-  users (username, password, email, is_admin)
+  users (id, username, password, email, is_admin)
 VALUES
-  (?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetUserByID :one
 SELECT
@@ -33,6 +33,20 @@ SELECT
   *
 FROM
   users
+ORDER BY
+  username
+LIMIT
+  ?
+OFFSET
+  ?;
+
+-- name: ListAdminUsers :many
+SELECT
+  *
+FROM
+  users
+WHERE
+  is_admin = TRUE
 ORDER BY
   username
 LIMIT

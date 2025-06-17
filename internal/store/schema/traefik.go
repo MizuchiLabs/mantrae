@@ -1,25 +1,29 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 	"github.com/traefik/traefik/v3/pkg/types"
 )
 
 // EntryPoint -----------------------------------------------------------------
+type EntryPoints []EntryPoint
+
 type EntryPoint struct {
-	Name            string `json:"name,omitempty"`
-	Address         string `json:"address,omitempty"`
-	AllowACMEByPass bool   `json:"allow_acme_by_pass,omitempty"`
-	ReusePort       bool   `json:"reuse_port,omitempty"`
-	AsDefault       bool   `json:"as_default,omitempty"`
-	// Transport        *EntryPointsTransport `json:"transport,omitempty"`
-	ProxyProtocol    *ProxyProtocol    `json:"proxy_protocol,omitempty"`
-	ForwardedHeaders *ForwardedHeaders `json:"forwarded_headers,omitempty"`
-	HTTP             HTTPConfig        `json:"http"`
-	HTTP2            *HTTP2Config      `json:"http_2,omitempty"`
-	HTTP3            *HTTP3Config      `json:"http_3,omitempty"`
-	// UDP              *UDPConfig           `json:"udp,omitempty"`
-	Observability *ObservabilityConfig `json:"observability,omitempty"`
+	Name             string                `json:"name,omitempty"`
+	Address          string                `json:"address,omitempty"`
+	AllowACMEByPass  bool                  `json:"allow_acme_by_pass,omitempty"`
+	ReusePort        bool                  `json:"reuse_port,omitempty"`
+	AsDefault        bool                  `json:"as_default,omitempty"`
+	Transport        *EntryPointsTransport `json:"transport,omitempty"`
+	ProxyProtocol    *ProxyProtocol        `json:"proxy_protocol,omitempty"`
+	ForwardedHeaders *ForwardedHeaders     `json:"forwarded_headers,omitempty"`
+	HTTP             HTTPConfig            `json:"http"`
+	HTTP2            *HTTP2Config          `json:"http_2,omitempty"`
+	HTTP3            *HTTP3Config          `json:"http_3,omitempty"`
+	UDP              *UDPConfig            `json:"udp,omitempty"`
+	Observability    *ObservabilityConfig  `json:"observability,omitempty"`
 }
 
 type TLSConfig struct {
@@ -51,9 +55,9 @@ type HTTP3Config struct {
 	AdvertisedPort int `json:"advertised_port,omitempty"`
 }
 
-// type UDPConfig struct {
-// 	Timeout ptypes.Duration `json:"timeout,omitempty"`
-// }
+type UDPConfig struct {
+	Timeout time.Duration `json:"timeout,omitempty"`
+}
 
 type ObservabilityConfig struct {
 	AccessLogs *bool `json:"access_logs,omitempty"`
@@ -77,12 +81,12 @@ type ProxyProtocol struct {
 	TrustedIPs []string `json:"trusted_i_ps,omitempty"`
 }
 
-// type EntryPointsTransport struct {
-// 	// LifeCycle            *LifeCycle
-// 	// RespondingTimeouts   *RespondingTimeouts
-// 	KeepAliveMaxTime     ptypes.Duration
-// 	KeepAliveMaxRequests int
-// }
+type EntryPointsTransport struct {
+	// LifeCycle            *LifeCycle
+	// RespondingTimeouts   *RespondingTimeouts
+	KeepAliveMaxTime     time.Duration
+	KeepAliveMaxRequests int
+}
 
 // Overview -------------------------------------------------------------------
 type Overview struct {
@@ -122,4 +126,11 @@ type Configuration struct {
 type serviceInfoRepresentation struct {
 	*runtime.ServiceInfo
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
+}
+
+// Version -------------------------------------------------------------------
+type Version struct {
+	Version   string `json:"version,omitempty"`
+	Codename  string `json:"codename,omitempty"`
+	StartDate string `json:"startDate,omitempty"`
 }

@@ -2,9 +2,9 @@
 INSERT INTO
   http_middlewares (
     profile_id,
+    agent_id,
     name,
     config,
-    source,
     enabled,
     created_at,
     updated_at
@@ -28,7 +28,7 @@ FROM
 WHERE
   id = ?;
 
--- name: GetHttpMiddlewareByProfile :one
+-- name: GetHttpMiddlewaresByProfile :many
 SELECT
   *
 FROM
@@ -59,7 +59,6 @@ UPDATE http_middlewares
 SET
   name = ?,
   config = ?,
-  source = ?,
   enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE

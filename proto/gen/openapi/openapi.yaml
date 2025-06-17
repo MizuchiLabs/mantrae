@@ -38,9 +38,6 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
-      examples:
-        - 1s
-        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -289,6 +286,286 @@ components:
           additionalProperties: true
       additionalProperties: true
       description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+    mantrae.v1.Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        hostname:
+          type: string
+          title: hostname
+        publicIp:
+          type: string
+          title: public_ip
+        activeIp:
+          type: string
+          title: active_ip
+        token:
+          type: string
+          title: token
+        privateIps:
+          type: array
+          items:
+            type: string
+          title: private_ips
+        containers:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Container'
+          title: containers
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: Agent
+      additionalProperties: false
+    mantrae.v1.CreateAgentRequest:
+      type: object
+      properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+      title: CreateAgentRequest
+      additionalProperties: false
+    mantrae.v1.CreateAgentResponse:
+      type: object
+      properties:
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
+      title: CreateAgentResponse
+      additionalProperties: false
+    mantrae.v1.DeleteAgentRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+      title: DeleteAgentRequest
+      additionalProperties: false
+    mantrae.v1.DeleteAgentResponse:
+      type: object
+      title: DeleteAgentResponse
+      additionalProperties: false
+    mantrae.v1.GetAgentRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+      title: GetAgentRequest
+      additionalProperties: false
+    mantrae.v1.GetAgentResponse:
+      type: object
+      properties:
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
+      title: GetAgentResponse
+      additionalProperties: false
+    mantrae.v1.ListAgentsRequest:
+      type: object
+      properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        limit:
+          type:
+            - integer
+            - string
+          title: limit
+          format: int64
+          nullable: true
+        offset:
+          type:
+            - integer
+            - string
+          title: offset
+          format: int64
+          nullable: true
+      title: ListAgentsRequest
+      additionalProperties: false
+    mantrae.v1.ListAgentsResponse:
+      type: object
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Agent'
+          title: agents
+        totalCount:
+          type:
+            - integer
+            - string
+          title: total_count
+          format: int64
+      title: ListAgentsResponse
+      additionalProperties: false
+    mantrae.v1.RotateAgentTokenRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+      title: RotateAgentTokenRequest
+      additionalProperties: false
+    mantrae.v1.RotateAgentTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          title: token
+      title: RotateAgentTokenResponse
+      additionalProperties: false
+    mantrae.v1.UpdateAgentIPRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+        ip:
+          type: string
+          title: ip
+      title: UpdateAgentIPRequest
+      additionalProperties: false
+    mantrae.v1.UpdateAgentIPResponse:
+      type: object
+      properties:
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
+      title: UpdateAgentIPResponse
+      additionalProperties: false
+    encoding:
+      title: encoding
+      enum:
+        - proto
+        - json
+      description: Define which encoding or 'Message-Codec' to use
+    base64:
+      type: boolean
+      title: base64
+      description: Specifies if the message query param is base64 encoded, which may be required for binary data
+    compression:
+      title: compression
+      enum:
+        - identity
+        - gzip
+        - br
+      description: Which compression algorithm to use for this request
+    connect:
+      title: connect
+      enum:
+        - v1
+      description: Define the version of the Connect protocol
+    mantrae.v1.Backup:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+        size:
+          type:
+            - integer
+            - string
+          title: size
+          format: int64
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: Backup
+      additionalProperties: false
+    mantrae.v1.CreateBackupRequest:
+      type: object
+      title: CreateBackupRequest
+      additionalProperties: false
+    mantrae.v1.CreateBackupResponse:
+      type: object
+      title: CreateBackupResponse
+      additionalProperties: false
+    mantrae.v1.DeleteBackupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+      title: DeleteBackupRequest
+      additionalProperties: false
+    mantrae.v1.DeleteBackupResponse:
+      type: object
+      title: DeleteBackupResponse
+      additionalProperties: false
+    mantrae.v1.DownloadBackupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+      title: DownloadBackupRequest
+      additionalProperties: false
+    mantrae.v1.DownloadBackupResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          title: data
+          format: byte
+      title: DownloadBackupResponse
+      additionalProperties: false
+    mantrae.v1.ListBackupsRequest:
+      type: object
+      title: ListBackupsRequest
+      additionalProperties: false
+    mantrae.v1.ListBackupsResponse:
+      type: object
+      properties:
+        backups:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Backup'
+          title: backups
+      title: ListBackupsResponse
+      additionalProperties: false
+    mantrae.v1.RestoreBackupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+      title: RestoreBackupRequest
+      additionalProperties: false
+    mantrae.v1.RestoreBackupResponse:
+      type: object
+      title: RestoreBackupResponse
+      additionalProperties: false
+    mantrae.v1.UploadBackupRequest:
+      type: object
+      properties:
+        data:
+          type: string
+          title: data
+          format: byte
+      title: UploadBackupRequest
+      additionalProperties: false
+    mantrae.v1.UploadBackupResponse:
+      type: object
+      title: UploadBackupResponse
+      additionalProperties: false
     mantrae.v1.CreateEntryPointRequest:
       type: object
       properties:
@@ -434,28 +711,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.EntryPoint'
       title: UpdateEntryPointResponse
       additionalProperties: false
-    encoding:
-      title: encoding
-      enum:
-        - proto
-        - json
-      description: Define which encoding or 'Message-Codec' to use
-    base64:
-      type: boolean
-      title: base64
-      description: Specifies if the message query param is base64 encoded, which may be required for binary data
-    compression:
-      title: compression
-      enum:
-        - identity
-        - gzip
-        - br
-      description: Which compression algorithm to use for this request
-    connect:
-      title: connect
-      enum:
-        - v1
-      description: Define the version of the Connect protocol
     mantrae.v1.MiddlewareType:
       type: string
       title: MiddlewareType
@@ -472,15 +727,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
@@ -508,6 +763,20 @@ components:
     mantrae.v1.DeleteMiddlewareResponse:
       type: object
       title: DeleteMiddlewareResponse
+      additionalProperties: false
+    mantrae.v1.GetMiddlewarePluginsRequest:
+      type: object
+      title: GetMiddlewarePluginsRequest
+      additionalProperties: false
+    mantrae.v1.GetMiddlewarePluginsResponse:
+      type: object
+      properties:
+        plugins:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Plugin'
+          title: plugins
+      title: GetMiddlewarePluginsResponse
       additionalProperties: false
     mantrae.v1.GetMiddlewareRequest:
       type: object
@@ -584,15 +853,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
@@ -603,6 +872,69 @@ components:
           title: updated_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
       title: Middleware
+      additionalProperties: false
+    mantrae.v1.Plugin:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+        name:
+          type: string
+          title: name
+        displayName:
+          type: string
+          title: display_name
+        author:
+          type: string
+          title: author
+        type:
+          type: string
+          title: type
+        import:
+          type: string
+          title: import
+        summary:
+          type: string
+          title: summary
+        iconUrl:
+          type: string
+          title: icon_url
+        bannerUrl:
+          type: string
+          title: banner_url
+        readme:
+          type: string
+          title: readme
+        latestVersion:
+          type: string
+          title: latest_version
+        versions:
+          type: array
+          items:
+            type: string
+          title: versions
+        stars:
+          type:
+            - integer
+            - string
+          title: stars
+          format: int64
+        snippet:
+          title: snippet
+          $ref: '#/components/schemas/mantrae.v1.PluginSnippet'
+        createdAt:
+          type: string
+          title: created_at
+      title: Plugin
+      additionalProperties: false
+    mantrae.v1.PluginSnippet:
+      type: object
+      properties:
+        yaml:
+          type: string
+          title: yaml
+      title: PluginSnippet
       additionalProperties: false
     mantrae.v1.UpdateMiddlewareRequest:
       type: object
@@ -619,9 +951,6 @@ components:
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
@@ -790,15 +1119,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         enabled:
           type: boolean
           title: enabled
@@ -905,15 +1234,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         enabled:
           type: boolean
           title: enabled
@@ -943,9 +1272,6 @@ components:
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         enabled:
           type: boolean
           title: enabled
@@ -979,15 +1305,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
@@ -1091,15 +1417,15 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
         name:
           type: string
           title: name
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
@@ -1126,9 +1452,6 @@ components:
         config:
           type: string
           title: config
-        source:
-          type: string
-          title: source
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
@@ -1247,28 +1570,31 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            id:
-              type: string
-              title: id
-          title: id
-          required:
+        - required:
             - id
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - id
+              - required:
+                  - username
+      properties:
+        id:
+          type: string
+          title: id
+        username:
+          type: string
+          title: username
+        email:
+          type: string
+          title: email
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -1316,22 +1642,24 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+        email:
+          type: string
+          title: email
         password:
           type: string
           title: password
@@ -1350,21 +1678,24 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
+      properties:
+        username:
+          type: string
+          title: username
+        email:
+          type: string
+          title: email
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -1449,22 +1780,24 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+        email:
+          type: string
+          title: email
         otp:
           type: string
           title: otp
@@ -1551,6 +1884,705 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.HealthCheckResponse'
+  /mantrae.v1.AgentManagementService/GetAgent:
+    get:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: GetAgent
+      operationId: mantrae.v1.AgentManagementService.GetAgent.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetAgentRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetAgentResponse'
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: GetAgent
+      operationId: mantrae.v1.AgentManagementService.GetAgent
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetAgentRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetAgentResponse'
+  /mantrae.v1.AgentManagementService/CreateAgent:
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: CreateAgent
+      operationId: mantrae.v1.AgentManagementService.CreateAgent
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.CreateAgentRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.CreateAgentResponse'
+  /mantrae.v1.AgentManagementService/UpdateAgentIP:
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: UpdateAgentIP
+      operationId: mantrae.v1.AgentManagementService.UpdateAgentIP
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UpdateAgentIPRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UpdateAgentIPResponse'
+  /mantrae.v1.AgentManagementService/DeleteAgent:
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: DeleteAgent
+      operationId: mantrae.v1.AgentManagementService.DeleteAgent
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteAgentRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteAgentResponse'
+  /mantrae.v1.AgentManagementService/ListAgents:
+    get:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: ListAgents
+      operationId: mantrae.v1.AgentManagementService.ListAgents.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListAgentsRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListAgentsResponse'
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: ListAgents
+      operationId: mantrae.v1.AgentManagementService.ListAgents
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListAgentsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListAgentsResponse'
+  /mantrae.v1.AgentManagementService/RotateAgentToken:
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: RotateAgentToken
+      operationId: mantrae.v1.AgentManagementService.RotateAgentToken
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenResponse'
+  /mantrae.v1.BackupService/CreateBackup:
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: CreateBackup
+      operationId: mantrae.v1.BackupService.CreateBackup
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.CreateBackupRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.CreateBackupResponse'
+  /mantrae.v1.BackupService/RestoreBackup:
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: RestoreBackup
+      operationId: mantrae.v1.BackupService.RestoreBackup
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.RestoreBackupRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.RestoreBackupResponse'
+  /mantrae.v1.BackupService/ListBackups:
+    get:
+      tags:
+        - mantrae.v1.BackupService
+      summary: ListBackups
+      operationId: mantrae.v1.BackupService.ListBackups.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListBackupsRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListBackupsResponse'
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: ListBackups
+      operationId: mantrae.v1.BackupService.ListBackups
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListBackupsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListBackupsResponse'
+  /mantrae.v1.BackupService/DeleteBackup:
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: DeleteBackup
+      operationId: mantrae.v1.BackupService.DeleteBackup
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteBackupRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteBackupResponse'
+  /mantrae.v1.BackupService/DownloadBackup:
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: DownloadBackup
+      operationId: mantrae.v1.BackupService.DownloadBackup
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/connect+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/connect+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc-web:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc-web+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+          application/grpc-web+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DownloadBackupRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
+  /mantrae.v1.BackupService/UploadBackup:
+    post:
+      tags:
+        - mantrae.v1.BackupService
+      summary: UploadBackup
+      operationId: mantrae.v1.BackupService.UploadBackup
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/connect+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/connect+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc-web:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc-web+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+          application/grpc-web+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
   /mantrae.v1.EntryPointService/GetEntryPoint:
     get:
       tags:
@@ -2105,6 +3137,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListMiddlewaresResponse'
+  /mantrae.v1.MiddlewareService/GetMiddlewarePlugins:
+    get:
+      tags:
+        - mantrae.v1.MiddlewareService
+      summary: GetMiddlewarePlugins
+      operationId: mantrae.v1.MiddlewareService.GetMiddlewarePlugins.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetMiddlewarePluginsRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetMiddlewarePluginsResponse'
+    post:
+      tags:
+        - mantrae.v1.MiddlewareService
+      summary: GetMiddlewarePlugins
+      operationId: mantrae.v1.MiddlewareService.GetMiddlewarePlugins
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetMiddlewarePluginsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetMiddlewarePluginsResponse'
   /mantrae.v1.ProfileService/GetProfile:
     get:
       tags:
@@ -3562,6 +4680,8 @@ paths:
                 $ref: '#/components/schemas/mantrae.v1.ListUsersResponse'
 tags:
   - name: mantrae.v1.AgentService
+  - name: mantrae.v1.AgentManagementService
+  - name: mantrae.v1.BackupService
   - name: mantrae.v1.EntryPointService
   - name: mantrae.v1.MiddlewareService
   - name: mantrae.v1.ProfileService

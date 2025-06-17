@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/mizuchilabs/mantrae/internal/app"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 // LocalStorage implements StorageBackend for local filesystem
@@ -17,7 +17,7 @@ type LocalStorage struct {
 }
 
 func NewLocalStorage(path string) (*LocalStorage, error) {
-	resolvedPath := app.ResolvePath(path)
+	resolvedPath := util.ResolvePath(path)
 	if err := os.MkdirAll(resolvedPath, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create storage directory: %w", err)
 	}

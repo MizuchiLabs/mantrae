@@ -62,7 +62,7 @@ sql:
           - column: "traefik_instances.entrypoints"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "EntryPoint"
+              type: "EntryPoints"
               pointer: true
           - column: "traefik_instances.overview"
             go_type:

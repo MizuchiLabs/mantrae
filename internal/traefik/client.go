@@ -7,13 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
-	"github.com/mizuchilabs/mantrae/internal/source"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const (
@@ -23,64 +21,67 @@ const (
 	VersionAPI     = "/api/version"
 )
 
-func UpdateTraefikAPI(DB *sql.DB, profile db.Profile) error {
-	rawResponse, err := fetch(profile, RawAPI)
+func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
+	q := db.New(DB)
+	instance, err := q.GetTraefikInstance(context.Background(), instanceID)
 	if err != nil {
-		slog.Error("Failed to fetch raw data", "error", err)
-
-		// Clear api data
-		if err = ClearTraefikAPI(DB, profile.ID); err != nil {
-			slog.Error("Failed to clear API data", "error", err)
-		}
-		return err
+		return fmt.Errorf("failed to get traefik instance: %w", err)
 	}
-	defer rawResponse.Close()
 
-	var config db.TraefikConfiguration
-	if err = json.NewDecoder(rawResponse).Decode(&config); err != nil {
+	rawResp, err := fetch(instance, RawAPI)
+	if err != nil {
+		return fmt.Errorf("failed to fetch %s: %w", instance.Url+RawAPI, err)
+	}
+	defer rawResp.Close()
+
+	var config schema.Configuration
+	if err = json.NewDecoder(rawResp).Decode(&config); err != nil {
 		return fmt.Errorf("failed to decode raw data: %w", err)
 	}
 
-	epResponse, err := fetch(profile, EntrypointsAPI)
+	entrypointsResp, err := fetch(instance, EntrypointsAPI)
 	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", profile.Url+EntrypointsAPI, err)
+		return fmt.Errorf("failed to fetch %s: %w", instance.Url+EntrypointsAPI, err)
 	}
-	defer epResponse.Close()
+	defer entrypointsResp.Close()
 
-	var entrypoints db.TraefikEntryPoints
-	if err = json.NewDecoder(epResponse).Decode(&entrypoints); err != nil {
+	var entrypoints schema.EntryPoints
+	if err = json.NewDecoder(entrypointsResp).Decode(&entrypoints); err != nil {
 		return fmt.Errorf("failed to decode entrypoints: %w", err)
 	}
-	oResponse, err := fetch(profile, OverviewAPI)
-	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", profile.Url+OverviewAPI, err)
-	}
-	defer epResponse.Close()
 
-	var overview db.TraefikOverview
-	if err = json.NewDecoder(oResponse).Decode(&overview); err != nil {
+	overviewResp, err := fetch(instance, OverviewAPI)
+	if err != nil {
+		return fmt.Errorf("failed to fetch %s: %w", instance.Url+OverviewAPI, err)
+	}
+	defer overviewResp.Close()
+
+	var overview schema.Overview
+	if err = json.NewDecoder(overviewResp).Decode(&overview); err != nil {
 		return fmt.Errorf("failed to decode overview: %w", err)
 	}
 
-	vResponse, err := fetch(profile, VersionAPI)
+	versionResp, err := fetch(instance, VersionAPI)
 	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", profile.Url+VersionAPI, err)
+		return fmt.Errorf("failed to fetch %s: %w", instance.Url+VersionAPI, err)
 	}
-	defer vResponse.Close()
+	defer versionResp.Close()
 
-	var version db.TraefikVersion
-	if err := json.NewDecoder(vResponse).Decode(&version); err != nil {
+	var version schema.Version
+	if err := json.NewDecoder(versionResp).Decode(&version); err != nil {
 		return fmt.Errorf("failed to decode version: %w", err)
 	}
 
-	q := db.New(DB)
-	if err := q.UpsertTraefikConfig(context.Background(), db.UpsertTraefikConfigParams{
-		ProfileID:   profile.ID,
+	if _, err := q.UpdateTraefikInstance(context.Background(), db.UpdateTraefikInstanceParams{
+		ID:          instance.ID,
+		Url:         instance.Url,
+		Username:    instance.Username,
+		Password:    instance.Password,
+		Tls:         instance.Tls,
 		Entrypoints: &entrypoints,
 		Overview:    &overview,
 		Version:     &version.Version,
 		Config:      &config,
-		Source:      source.API,
 	}); err != nil {
 		return fmt.Errorf("failed to update api data: %w", err)
 	}
@@ -88,72 +89,31 @@ func UpdateTraefikAPI(DB *sql.DB, profile db.Profile) error {
 	return nil
 }
 
-func ClearTraefikAPI(DB *sql.DB, profileID int64) error {
-	q := db.New(DB)
-	if err := q.UpsertTraefikConfig(context.Background(), db.UpsertTraefikConfigParams{
-		ProfileID:   profileID,
-		Source:      source.API,
-		Entrypoints: nil,
-		Overview:    nil,
-		Version:     nil,
-		Config:      nil,
-	}); err != nil {
-		return fmt.Errorf("Failed to clear API data: %w", err)
-	}
-	return nil
-}
-
-func GetTraefikConfig(DB *sql.DB) {
-	q := db.New(DB)
-	profiles, err := q.ListProfiles(context.Background())
-	if err != nil {
-		slog.Error("Failed to get profiles", "error", err)
-		return
-	}
-
-	for _, profile := range profiles {
-		if profile.Url == "" {
-			continue
-		}
-
-		if err := UpdateTraefikAPI(DB, profile); err != nil {
-			slog.Error("Failed to update api data", "error", err)
-			continue
-		}
-	}
-
-	// Broadcast the update to all clients
-	util.Broadcast <- util.EventMessage{
-		Type:     util.EventTypeUpdate,
-		Category: util.EventCategoryTraefik,
-	}
-}
-
-func fetch(profile db.Profile, endpoint string) (io.ReadCloser, error) {
-	if profile.Url == "" {
+func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) {
+	if instance.Url == "" {
 		return nil, fmt.Errorf("invalid URL or endpoint")
 	}
 
 	client := http.Client{Timeout: time.Second * 10}
-	if !profile.Tls {
+	if !instance.Tls {
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 	}
 
-	req, err := http.NewRequest("GET", profile.Url+endpoint, nil)
+	req, err := http.NewRequest("GET", instance.Url+endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if profile.Username != nil && profile.Password != nil {
-		req.SetBasicAuth(*profile.Username, *profile.Password)
+	if instance.Username != nil && instance.Password != nil {
+		req.SetBasicAuth(*instance.Username, *instance.Password)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch %s: %w", profile.Url+endpoint, err)
+		return nil, fmt.Errorf("failed to fetch %s: %w", instance.Url+endpoint, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {

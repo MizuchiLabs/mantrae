@@ -11,12 +11,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/db"
 	"github.com/mizuchilabs/mantrae/internal/settings"
-	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/traefik/paerser/parser"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type AgentService struct {
@@ -47,38 +49,38 @@ func (s *AgentService) GetContainer(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetContainerRequest],
 ) (*connect.Response[mantraev1.GetContainerResponse], error) {
-	agent := middlewares.GetAgentContext(ctx)
-	if agent == nil {
-		return nil, connect.NewError(
-			connect.CodeInternal,
-			errors.New("agent context missing"),
-		)
+	agentID, ok := middlewares.GetAgentIDFromContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("agent context missing"))
 	}
 
 	// Upsert agent
 	params := db.UpdateAgentParams{
-		ID:       agent.ID,
+		ID:       agentID,
 		Hostname: &req.Msg.Hostname,
 		PublicIp: &req.Msg.PublicIp,
 	}
-	if agent.ActiveIp == nil {
-		params.ActiveIp = &req.Msg.PublicIp
-	}
+	// if agent.ActiveIp == nil {
+	// 	params.ActiveIp = &req.Msg.PublicIp
+	// }
 
-	privateIPs := db.AgentPrivateIPs{IPs: make([]string, len(req.Msg.PrivateIps))}
+	privateIPs := schema.AgentPrivateIPs{
+		IPs: make([]string, len(req.Msg.PrivateIps)),
+	}
 	privateIPs.IPs = req.Msg.PrivateIps
 	params.PrivateIps = &privateIPs
 
-	var containers db.AgentContainers
+	var containers schema.AgentContainers
 	for _, container := range req.Msg.Containers {
-		containers = append(containers, db.AgentContainer{
+		created := container.Created.AsTime()
+		containers = append(containers, schema.AgentContainer{
 			ID:      container.Id,
 			Name:    container.Name,
 			Labels:  container.Labels,
 			Image:   container.Image,
 			Portmap: container.Portmap,
 			Status:  container.Status,
-			Created: container.Created.AsTime(),
+			Created: &created,
 		})
 	}
 	params.Containers = &containers
@@ -89,8 +91,8 @@ func (s *AgentService) GetContainer(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// Update agent config
-	if err = traefik.DecodeAgentConfig(s.app.Conn.Get(), updatedAgent); err != nil {
+	// Update dynamic config
+	if err = s.DecodeAgentConfig(updatedAgent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -108,7 +110,7 @@ func (s *AgentService) updateToken(ctx context.Context, id string) (*string, err
 		return nil, err
 	}
 
-	claims, err := DecodeJWT(agent.Token, s.app.Config.Secret)
+	claims, err := DecodeJWT(agent.Token, s.app.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +127,7 @@ func (s *AgentService) updateToken(ctx context.Context, id string) (*string, err
 		return nil, err
 	}
 
-	token, err := claims.EncodeJWT(s.app.Config.Secret, agentInterval.Duration(time.Hour*72))
+	token, err := claims.EncodeJWT(s.app.Secret, agentInterval.Duration(time.Hour*72))
 	if err != nil {
 		return nil, err
 	}
@@ -186,4 +188,100 @@ func DecodeJWT(tokenString, secret string) (*AgentClaims, error) {
 		return nil, err
 	}
 	return claims, nil
+}
+
+func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
+	ctx := context.Background()
+
+	q := s.app.Conn.GetQuery()
+	for _, container := range *agent.Containers {
+		dynConfig := &dynamic.Configuration{
+			HTTP: &dynamic.HTTPConfiguration{},
+			TCP:  &dynamic.TCPConfiguration{},
+			UDP:  &dynamic.UDPConfiguration{},
+			TLS:  &dynamic.TLSConfiguration{},
+		}
+
+		err := parser.Decode(
+			container.Labels,
+			dynConfig,
+			parser.DefaultRootName,
+			"traefik.http",
+			"traefik.tcp",
+			"traefik.udp",
+			"traefik.tls.stores.default",
+		)
+		if err != nil {
+			return err
+		}
+
+		for k, r := range dynConfig.HTTP.Routers {
+			q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+		for k, r := range dynConfig.TCP.Routers {
+			q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+		for k, r := range dynConfig.UDP.Routers {
+			q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+
+		for k, r := range dynConfig.HTTP.Services {
+			q.CreateHttpService(ctx, db.CreateHttpServiceParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+		for k, r := range dynConfig.TCP.Services {
+			q.CreateTcpService(ctx, db.CreateTcpServiceParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+		for k, r := range dynConfig.UDP.Services {
+			q.CreateUdpService(ctx, db.CreateUdpServiceParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+
+		for k, r := range dynConfig.HTTP.Middlewares {
+			q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+		for k, r := range dynConfig.TCP.Middlewares {
+			q.CreateTcpMiddleware(ctx, db.CreateTcpMiddlewareParams{
+				ProfileID: agent.ProfileID,
+				AgentID:   &agent.ID,
+				Name:      k,
+				Config:    r,
+			})
+		}
+	}
+
+	return nil
 }

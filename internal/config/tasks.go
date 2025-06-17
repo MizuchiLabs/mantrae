@@ -29,13 +29,23 @@ func (a *App) syncTraefik(ctx context.Context) {
 	ticker := time.NewTicker(duration.Duration(time.Hour))
 	defer ticker.Stop()
 
-	traefik.GetTraefikConfig(a.Conn.Get())
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			traefik.GetTraefikConfig(a.Conn.Get())
+			instances, err := a.Conn.GetQuery().ListTraefikInstances(ctx)
+			if err != nil {
+				slog.Error("failed to list traefik instances", "error", err)
+				continue
+			}
+
+			for _, instance := range instances {
+				if err := traefik.UpdateTraefikAPI(a.Conn.Get(), instance.ID); err != nil {
+					slog.Error("failed to update traefik api", "error", err)
+					continue
+				}
+			}
 		}
 	}
 }

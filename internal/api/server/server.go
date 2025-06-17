@@ -8,45 +8,68 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime/debug"
-	"strings"
 	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
+	"github.com/caarlos0/env/v11"
+	"github.com/mizuchilabs/mantrae/internal/api/handler"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/api/service"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/mizuchilabs/mantrae/web"
 )
 
+const elementsHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+</head>
+<body>
+    <elements-api
+        apiDescriptionUrl="/openapi.yaml"
+        router="hash"
+        layout="sidebar"
+    />
+</body>
+</html>
+`
+
 type Server struct {
-	mux *http.ServeMux
-	app *config.App
+	Host          string `env:"HOST"           envDefault:"0.0.0.0"`
+	Port          string `env:"PORT"           envDefault:"3000"`
+	SecureTraefik bool   `env:"SECURE_TRAEFIK" envDefault:"false"`
+	mux           *http.ServeMux
+	app           *config.App
 }
 
 func NewServer(app *config.App) *Server {
+	cfg, err := env.ParseAs[Server]()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &Server{
-		mux: http.NewServeMux(),
-		app: app,
+		Host: cfg.Host,
+		Port: cfg.Port,
+		mux:  http.NewServeMux(),
+		app:  app,
 	}
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	// Start the event processor before registering services
-	util.StartEventProcessor(ctx)
-
 	s.registerServices()
 	defer s.app.Conn.Close()
-	host := s.app.Config.Server.Host
-	port := s.app.Config.Server.Port
-	allowedOrigins := s.getAllowedOrigins(ctx)
 
 	server := &http.Server{
-		Addr:              host + ":" + port,
-		Handler:           middlewares.CORS(allowedOrigins...)(s.mux),
+		Addr:              s.Host + ":" + s.Port,
+		Handler:           middlewares.WithCORS(s.mux, s.app),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
@@ -58,7 +81,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start server in a goroutine
 	go func() {
-		slog.Info("Server starting", "host", host, "port", port)
+		slog.Info("Server starting", "host", s.Host, "port", s.Port)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
 		}
@@ -79,34 +102,6 @@ func (s *Server) Start(ctx context.Context) error {
 	case err := <-serverErr:
 		return fmt.Errorf("server error: %w", err)
 	}
-}
-
-func (s *Server) getAllowedOrigins(ctx context.Context) []string {
-	var origins []string
-
-	// Always allow development frontend
-	devOrigin := "http://127.0.0.1:5173"
-	origins = append(origins, devOrigin)
-
-	// Get server URL from settings for production
-	if serverURL, err := s.app.SM.Get(ctx, "server_url"); err == nil {
-		if url := serverURL.String(""); url != "" && url != devOrigin {
-			origins = append(origins, strings.TrimSuffix(url, "/"))
-		}
-	}
-
-	// Remove duplicates
-	seen := make(map[string]bool)
-	var uniqueOrigins []string
-	for _, origin := range origins {
-		if !seen[origin] {
-			uniqueOrigins = append(uniqueOrigins, origin)
-			seen[origin] = true
-		}
-	}
-
-	slog.Debug("CORS allowed origins", "origins", uniqueOrigins)
-	return uniqueOrigins
 }
 
 func (s *Server) registerServices() {
@@ -138,15 +133,16 @@ func (s *Server) registerServices() {
 	}
 	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
-	// Routes
-	s.routes()
-
 	serviceNames := []string{
 		mantraev1connect.ProfileServiceName,
 		mantraev1connect.UserServiceName,
 		mantraev1connect.EntryPointServiceName,
 		mantraev1connect.SettingServiceName,
 		mantraev1connect.AgentServiceName,
+		mantraev1connect.AgentManagementServiceName,
+		mantraev1connect.RouterServiceName,
+		mantraev1connect.ServiceServiceName,
+		mantraev1connect.MiddlewareServiceName,
 	}
 
 	checker := grpchealth.NewStaticChecker(serviceNames...)
@@ -155,6 +151,19 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpchealth.NewHandler(checker))
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	// Serve OpenAPI specs file
+	s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "proto/gen/openapi/openapi.yaml")
+	})
+
+	// Serve Elements UI
+	s.mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		if _, err := w.Write([]byte(elementsHTML)); err != nil {
+			slog.Error("failed to write elements HTML", "error", err)
+		}
+	})
 
 	// Service implementations
 	s.mux.Handle(mantraev1connect.NewProfileServiceHandler(
@@ -177,4 +186,34 @@ func (s *Server) registerServices() {
 		service.NewAgentService(s.app),
 		opts...,
 	))
+	s.mux.Handle(mantraev1connect.NewAgentManagementServiceHandler(
+		service.NewAgentManagementService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewRouterServiceHandler(
+		service.NewRouterService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewServiceServiceHandler(
+		service.NewServiceService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewMiddlewareServiceHandler(
+		service.NewMiddlewareService(s.app),
+		opts...,
+	))
+
+	// Traefik endpoint (HTTP) ------------------------------------------------
+	mw := middlewares.NewMiddlewareHandler(s.app)
+	logChain := middlewares.Chain(mw.Logger)
+	basicChain := middlewares.Chain(mw.Logger, mw.BasicAuth)
+
+	if s.SecureTraefik {
+		s.mux.Handle("GET /{name}", basicChain(handler.PublishTraefikConfig(s.app)))
+	} else {
+		s.mux.Handle("GET /{name}", logChain(handler.PublishTraefikConfig(s.app)))
+	}
+
+	// TODO: OIDC
+	// TODO: Public IP
 }

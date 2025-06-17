@@ -1,8 +1,15 @@
 package middlewares
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 	"strings"
+
+	connectcors "connectrpc.com/cors"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/rs/cors"
 )
 
 const (
@@ -44,4 +51,24 @@ func CORS(allowedOrigins ...string) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// WithCORS adds CORS support to a Connect HTTP handler.
+func WithCORS(h http.Handler, app *config.App) http.Handler {
+	serverURL, err := app.Conn.GetQuery().GetSetting(context.Background(), settings.KeyServerURL)
+	if err != nil {
+		slog.Error("Failed to get server URL", "error", err)
+		return h
+	}
+	if serverURL.Value == "" {
+		slog.Error("Server URL not set")
+		return h
+	}
+	middleware := cors.New(cors.Options{
+		AllowedOrigins: []string{serverURL.Value},
+		AllowedMethods: connectcors.AllowedMethods(),
+		AllowedHeaders: connectcors.AllowedHeaders(),
+		ExposedHeaders: connectcors.ExposedHeaders(),
+	})
+	return middleware.Handler(h)
 }

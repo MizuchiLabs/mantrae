@@ -2,9 +2,9 @@
 INSERT INTO
   tcp_middlewares (
     profile_id,
+    agent_id,
     name,
     config,
-    source,
     enabled,
     created_at,
     updated_at
@@ -28,7 +28,7 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTcpMiddlewareByProfile :one
+-- name: GetTcpMiddlewaresByProfile :many
 SELECT
   *
 FROM
@@ -59,7 +59,6 @@ UPDATE tcp_middlewares
 SET
   name = ?,
   config = ?,
-  source = ?,
   enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE

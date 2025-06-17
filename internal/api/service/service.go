@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -14,68 +13,68 @@ import (
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
-type RouterService struct {
+type Service struct {
 	app *config.App
 }
 
-func NewRouterService(app *config.App) *RouterService {
-	return &RouterService{app: app}
+func NewServiceService(app *config.App) *Service {
+	return &Service{app: app}
 }
 
-func (s *RouterService) GetRouter(
+func (s *Service) GetService(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetRouterRequest],
-) (*connect.Response[mantraev1.GetRouterResponse], error) {
-	var router *mantraev1.Router
+	req *connect.Request[mantraev1.GetServiceRequest],
+) (*connect.Response[mantraev1.GetServiceResponse], error) {
+	var service *mantraev1.Service
 
 	switch req.Msg.Type {
-	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-		res, err := s.app.Conn.GetQuery().GetHttpRouter(ctx, req.Msg.Id)
+	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
+		res, err := s.app.Conn.GetQuery().GetHttpService(ctx, req.Msg.Id)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoHttpRouter(res)
+		service, err = buildProtoHttpService(res)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_TCP:
-		res, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Msg.Id)
+	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
+		res, err := s.app.Conn.GetQuery().GetTcpService(ctx, req.Msg.Id)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		router, err = buildProtoTcpRouter(res)
+		service, err = buildProtoTcpService(res)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_UDP:
-		res, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Msg.Id)
+	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
+		res, err := s.app.Conn.GetQuery().GetUdpService(ctx, req.Msg.Id)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		router, err = buildProtoUdpRouter(res)
+		service, err = buildProtoUdpService(res)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
 
-	return connect.NewResponse(&mantraev1.GetRouterResponse{Router: router}), nil
+	return connect.NewResponse(&mantraev1.GetServiceResponse{Service: service}), nil
 }
 
-func (s *RouterService) CreateRouter(
+func (s *Service) CreateService(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateRouterRequest],
-) (*connect.Response[mantraev1.CreateRouterResponse], error) {
-	var router *mantraev1.Router
+	req *connect.Request[mantraev1.CreateServiceRequest],
+) (*connect.Response[mantraev1.CreateServiceResponse], error) {
+	var service *mantraev1.Service
 
 	switch req.Msg.Type {
-	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-		var params db.CreateHttpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
+		var params db.CreateHttpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -85,18 +84,18 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		dbRouter, err := s.app.Conn.GetQuery().CreateHttpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().CreateHttpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoHttpRouter(dbRouter)
+		service, err = buildProtoHttpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_TCP:
-		var params db.CreateTcpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
+		var params db.CreateTcpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -106,18 +105,18 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		dbRouter, err := s.app.Conn.GetQuery().CreateTcpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().CreateTcpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoTcpRouter(dbRouter)
+		service, err = buildProtoTcpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_UDP:
-		var params db.CreateUdpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
+		var params db.CreateUdpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -127,106 +126,104 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		dbRouter, err := s.app.Conn.GetQuery().CreateUdpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().CreateUdpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoUdpRouter(dbRouter)
+		service, err = buildProtoUdpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
-
-	return connect.NewResponse(&mantraev1.CreateRouterResponse{Router: router}), nil
+	return connect.NewResponse(&mantraev1.CreateServiceResponse{Service: service}), nil
 }
 
-func (s *RouterService) UpdateRouter(
+func (s *Service) UpdateService(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateRouterRequest],
-) (*connect.Response[mantraev1.UpdateRouterResponse], error) {
-	var router *mantraev1.Router
+	req *connect.Request[mantraev1.UpdateServiceRequest],
+) (*connect.Response[mantraev1.UpdateServiceResponse], error) {
+	var service *mantraev1.Service
 
 	switch req.Msg.Type {
-	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-		var params db.UpdateHttpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
+		var params db.UpdateHttpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
 
-		dbRouter, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().UpdateHttpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoHttpRouter(dbRouter)
+		service, err = buildProtoHttpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_TCP:
-		var params db.UpdateTcpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
+		var params db.UpdateTcpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
 
-		dbRouter, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().UpdateTcpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoTcpRouter(dbRouter)
+		service, err = buildProtoTcpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_UDP:
-		var params db.UpdateUdpRouterParams
+	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
+		var params db.UpdateUdpServiceParams
 		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
 
-		dbRouter, err := s.app.Conn.GetQuery().UpdateUdpRouter(ctx, params)
+		dbService, err := s.app.Conn.GetQuery().UpdateUdpService(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		router, err = buildProtoUdpRouter(dbRouter)
+		service, err = buildProtoUdpService(dbService)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
-
-	return connect.NewResponse(&mantraev1.UpdateRouterResponse{Router: router}), nil
+	return connect.NewResponse(&mantraev1.UpdateServiceResponse{Service: service}), nil
 }
 
-func (s *RouterService) DeleteRouter(
+func (s *Service) DeleteService(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteRouterRequest],
-) (*connect.Response[mantraev1.DeleteRouterResponse], error) {
-	err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id)
+	req *connect.Request[mantraev1.DeleteServiceRequest],
+) (*connect.Response[mantraev1.DeleteServiceResponse], error) {
+	err := s.app.Conn.GetQuery().DeleteHttpService(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.DeleteRouterResponse{}), nil
+	return connect.NewResponse(&mantraev1.DeleteServiceResponse{}), nil
 }
 
-func (s *RouterService) ListRouters(
+func (s *Service) ListServices(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListRoutersRequest],
-) (*connect.Response[mantraev1.ListRoutersResponse], error) {
+	req *connect.Request[mantraev1.ListServicesRequest],
+) (*connect.Response[mantraev1.ListServicesResponse], error) {
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -240,134 +237,120 @@ func (s *RouterService) ListRouters(
 		offset = *req.Msg.Offset
 	}
 
-	var routers []*mantraev1.Router
+	var services []*mantraev1.Service
 	var totalCount int64
 	switch req.Msg.Type {
-	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-		params := db.ListHttpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListHttpRouters(ctx, params)
+	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
+		params := db.ListHttpServicesParams{Limit: limit, Offset: offset}
+		dbServices, err := s.app.Conn.GetQuery().ListHttpServices(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountHttpRouters(ctx)
+		totalCount, err = s.app.Conn.GetQuery().CountHttpServices(ctx)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoHttpRouter(dbRouter)
+		for _, dbService := range dbServices {
+			service, err := buildProtoHttpService(dbService)
 			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
+				slog.Error("Failed to build proto service", "error", err)
 				continue
 			}
-			routers = append(routers, router)
+			services = append(services, service)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_TCP:
-		params := db.ListTcpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListTcpRouters(ctx, params)
+	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
+		params := db.ListTcpServicesParams{Limit: limit, Offset: offset}
+		dbServices, err := s.app.Conn.GetQuery().ListTcpServices(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountTcpRouters(ctx)
+		totalCount, err = s.app.Conn.GetQuery().CountTcpServices(ctx)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoTcpRouter(dbRouter)
+		for _, dbService := range dbServices {
+			service, err := buildProtoTcpService(dbService)
 			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
+				slog.Error("Failed to build proto service", "error", err)
 				continue
 			}
-			routers = append(routers, router)
+			services = append(services, service)
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_UDP:
-		params := db.ListUdpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListUdpRouters(ctx, params)
+	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
+		params := db.ListUdpServicesParams{Limit: limit, Offset: offset}
+		dbServices, err := s.app.Conn.GetQuery().ListUdpServices(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountUdpRouters(ctx)
+		totalCount, err = s.app.Conn.GetQuery().CountUdpServices(ctx)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoUdpRouter(dbRouter)
+		for _, dbService := range dbServices {
+			service, err := buildProtoUdpService(dbService)
 			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
+				slog.Error("Failed to build proto service", "error", err)
 				continue
 			}
-			routers = append(routers, router)
+			services = append(services, service)
 		}
 
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
 
-	return connect.NewResponse(&mantraev1.ListRoutersResponse{
-		Routers:    routers,
+	return connect.NewResponse(&mantraev1.ListServicesResponse{
+		Services:   services,
 		TotalCount: totalCount,
 	}), nil
 }
 
-func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {
+func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {
 	configBytes, err := json.Marshal(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal HTTP config: %w", err)
 	}
-	return &mantraev1.Router{
+	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
 		Config:    string(configBytes),
-		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_HTTP,
+		Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}, nil
 }
 
-func buildProtoTcpRouter(r db.TcpRouter) (*mantraev1.Router, error) {
+func buildProtoTcpService(r db.TcpService) (*mantraev1.Service, error) {
 	configBytes, err := json.Marshal(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal TCP config: %w", err)
 	}
-	return &mantraev1.Router{
+	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
 		Config:    string(configBytes),
-		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_TCP,
+		Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}, nil
 }
 
-func buildProtoUdpRouter(r db.UdpRouter) (*mantraev1.Router, error) {
+func buildProtoUdpService(r db.UdpService) (*mantraev1.Service, error) {
 	configBytes, err := json.Marshal(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal UDP config: %w", err)
 	}
-	return &mantraev1.Router{
+	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
 		Config:    string(configBytes),
-		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_UDP,
+		Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}, nil

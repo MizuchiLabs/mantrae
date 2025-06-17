@@ -26,9 +26,9 @@ enum RouterType {
 message Router {
   int64 id = 1;
   int64 profile_id = 2;
-  string name = 3;
-  string config = 4;
-  string source = 5;
+  string agent_id = 3;
+  string name = 4;
+  string config = 5;
   bool enabled = 6;
   RouterType type = 7;
   google.protobuf.Timestamp created_at = 8;
@@ -45,9 +45,9 @@ message GetRouterResponse {
 
 message CreateRouterRequest {
   int64 profile_id = 1;
-  string name = 2;
-  string config = 3;
-  string source = 4;
+  string agent_id = 2;
+  string name = 3;
+  string config = 4;
   bool enabled = 5;
   RouterType type = 6;
 }
@@ -59,9 +59,8 @@ message UpdateRouterRequest {
   int64 id = 1;
   string name = 2;
   string config = 3;
-  string source = 4;
-  bool enabled = 5;
-  RouterType type = 6;
+  bool enabled = 4;
+  RouterType type = 5;
 }
 message UpdateRouterResponse {
   Router router = 1;

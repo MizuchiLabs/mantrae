@@ -6,7 +6,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 

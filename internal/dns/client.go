@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -34,7 +34,7 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 		return nil, fmt.Errorf("invalid provider id")
 	}
 
-	provider, err := q.GetDNSProvider(context.Background(), id)
+	provider, err := q.GetDnsProvider(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
