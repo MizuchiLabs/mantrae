@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service ServiceService {
+  rpc GetService(GetServiceRequest) returns (GetServiceResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse);
+  rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse);
+  rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+enum ServiceType {
+  SERVICE_TYPE_UNSPECIFIED = 0;
+  SERVICE_TYPE_HTTP = 1;
+  SERVICE_TYPE_TCP = 2;
+  SERVICE_TYPE_UDP = 3;
+}
+
+message Service {
+  int64 id = 1;
+  int64 profile_id = 2;
+  string name = 3;
+  string config = 4;
+  string source = 5;
+  ServiceType type = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message GetServiceRequest {
+  int64 id = 1;
+  ServiceType type = 2;
+}
+message GetServiceResponse {
+  Service service = 1;
+}
+
+message CreateServiceRequest {
+  int64 profile_id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  ServiceType type = 5;
+}
+message CreateServiceResponse {
+  Service service = 1;
+}
+
+message UpdateServiceRequest {
+  int64 id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  ServiceType type = 5;
+}
+message UpdateServiceResponse {
+  Service service = 1;
+}
+
+message DeleteServiceRequest {
+  int64 id = 1;
+}
+message DeleteServiceResponse {}
+
+message ListServicesRequest {
+  ServiceType type = 1;
+  optional int64 limit = 2;
+  optional int64 offset = 3;
+}
+message ListServicesResponse {
+  repeated Service services = 1;
+  int64 total_count = 2;
+}

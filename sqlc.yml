@@ -1,13 +1,13 @@
 version: "2"
 sql:
   - engine: "sqlite"
-    # schema: "internal/db/migrations"
-    schema: "internal/db/00000_base.sql"
-    queries: "internal/db/queries"
+    # schema: "internal/store/migrations"
+    schema: "internal/store/00000_base.sql"
+    queries: "internal/store/queries"
     gen:
       go:
         package: "db"
-        out: "internal/db"
+        out: "internal/store/db"
         emit_json_tags: true
         emit_prepared_queries: true
         emit_interface: true
@@ -54,32 +54,34 @@ sql:
               import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
               type: "TCPMiddleware"
               pointer: true
-          - column: "traefik.config"
+          - column: "traefik_instances.config"
             go_type:
-              type: "TraefikConfiguration"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "Configuration"
               pointer: true
-          - column: "traefik.entrypoints"
+          - column: "traefik_instances.entrypoints"
             go_type:
-              type: "TraefikEntryPoints"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "EntryPoint"
               pointer: true
-          - column: "traefik.overview"
+          - column: "traefik_instances.overview"
             go_type:
-              type: "TraefikOverview"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "Overview"
               pointer: true
-          - column: "traefik.source"
-            go_type:
-              import: "github.com/MizuchiLabs/mantrae/internal/source"
-              type: "Source"
           - column: "dns_providers.config"
             go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "DNSProviderConfig"
               pointer: true
           - column: "agents.private_ips"
             go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "AgentPrivateIPs"
               pointer: true
           - column: "agents.containers"
             go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "AgentContainers"
               pointer: true
 

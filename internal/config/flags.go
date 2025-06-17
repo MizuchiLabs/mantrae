@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
+	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/pkg/build"
 )
 
@@ -32,7 +32,7 @@ func ParseFlags() {
 	}
 
 	if f.Squash {
-		db.Squash()
+		store.Squash()
 		os.Exit(1)
 	}
 	build.Update(f.Update)

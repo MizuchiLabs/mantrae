@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service MiddlewareService {
+  rpc GetMiddleware(GetMiddlewareRequest) returns (GetMiddlewareResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateMiddleware(CreateMiddlewareRequest) returns (CreateMiddlewareResponse);
+  rpc UpdateMiddleware(UpdateMiddlewareRequest) returns (UpdateMiddlewareResponse);
+  rpc DeleteMiddleware(DeleteMiddlewareRequest) returns (DeleteMiddlewareResponse);
+  rpc ListMiddlewares(ListMiddlewaresRequest) returns (ListMiddlewaresResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+enum MiddlewareType {
+  MIDDLEWARE_TYPE_UNSPECIFIED = 0;
+  MIDDLEWARE_TYPE_HTTP = 1;
+  MIDDLEWARE_TYPE_TCP = 2;
+}
+
+message Middleware {
+  int64 id = 1;
+  int64 profile_id = 2;
+  string name = 3;
+  string config = 4;
+  string source = 5;
+  MiddlewareType type = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message GetMiddlewareRequest {
+  int64 id = 1;
+  MiddlewareType type = 2;
+}
+message GetMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message CreateMiddlewareRequest {
+  int64 profile_id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  MiddlewareType type = 5;
+}
+message CreateMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message UpdateMiddlewareRequest {
+  int64 id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  MiddlewareType type = 5;
+}
+message UpdateMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message DeleteMiddlewareRequest {
+  int64 id = 1;
+}
+message DeleteMiddlewareResponse {}
+
+message ListMiddlewaresRequest {
+  MiddlewareType type = 1;
+  optional int64 limit = 2;
+  optional int64 offset = 3;
+}
+message ListMiddlewaresResponse {
+  repeated Middleware middlewares = 1;
+  int64 total_count = 2;
+}

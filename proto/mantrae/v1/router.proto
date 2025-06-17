@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service RouterService {
+  rpc GetRouter(GetRouterRequest) returns (GetRouterResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateRouter(CreateRouterRequest) returns (CreateRouterResponse);
+  rpc UpdateRouter(UpdateRouterRequest) returns (UpdateRouterResponse);
+  rpc DeleteRouter(DeleteRouterRequest) returns (DeleteRouterResponse);
+  rpc ListRouters(ListRoutersRequest) returns (ListRoutersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+enum RouterType {
+  ROUTER_TYPE_UNSPECIFIED = 0;
+  ROUTER_TYPE_HTTP = 1;
+  ROUTER_TYPE_TCP = 2;
+  ROUTER_TYPE_UDP = 3;
+}
+
+message Router {
+  int64 id = 1;
+  int64 profile_id = 2;
+  string name = 3;
+  string config = 4;
+  string source = 5;
+  bool enabled = 6;
+  RouterType type = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message GetRouterRequest {
+  int64 id = 1;
+  RouterType type = 2;
+}
+message GetRouterResponse {
+  Router router = 1;
+}
+
+message CreateRouterRequest {
+  int64 profile_id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  bool enabled = 5;
+  RouterType type = 6;
+}
+message CreateRouterResponse {
+  Router router = 1;
+}
+
+message UpdateRouterRequest {
+  int64 id = 1;
+  string name = 2;
+  string config = 3;
+  string source = 4;
+  bool enabled = 5;
+  RouterType type = 6;
+}
+message UpdateRouterResponse {
+  Router router = 1;
+}
+
+message DeleteRouterRequest {
+  int64 id = 1;
+}
+message DeleteRouterResponse {}
+
+message ListRoutersRequest {
+  RouterType type = 1;
+  optional int64 limit = 2;
+  optional int64 offset = 3;
+}
+message ListRoutersResponse {
+  repeated Router routers = 1;
+  int64 total_count = 2;
+}

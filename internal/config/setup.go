@@ -9,9 +9,10 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/app"
 	"github.com/mizuchilabs/mantrae/internal/backup"
-	"github.com/mizuchilabs/mantrae/internal/db"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/source"
+	"github.com/mizuchilabs/mantrae/internal/store"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
@@ -19,7 +20,7 @@ import (
 
 type App struct {
 	Config *app.Config
-	Conn   *db.Connection
+	Conn   *store.Connection
 	BM     *backup.BackupManager
 	SM     *settings.SettingsManager
 }
@@ -37,13 +38,7 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	conn, err := db.NewDBConnection()
-	if err != nil {
-		if conn != nil {
-			defer conn.Close()
-		}
-		return nil, err
-	}
+	conn := store.NewConnection("")
 
 	// Setup settings manager
 	sm := settings.NewSettingsManager(conn)
