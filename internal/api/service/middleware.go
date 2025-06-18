@@ -14,6 +14,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type MiddlewareService struct {
@@ -67,17 +68,19 @@ func (s *MiddlewareService) CreateMiddleware(
 	req *connect.Request[mantraev1.CreateMiddlewareRequest],
 ) (*connect.Response[mantraev1.CreateMiddlewareResponse], error) {
 	var middleware *mantraev1.Middleware
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
 		var params db.CreateHttpMiddlewareParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.Middleware](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbMiddleware, err := s.app.Conn.GetQuery().CreateHttpMiddleware(ctx, params)
@@ -92,13 +95,14 @@ func (s *MiddlewareService) CreateMiddleware(
 
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
 		var params db.CreateTcpMiddlewareParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.TCPMiddleware](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbMiddleware, err := s.app.Conn.GetQuery().CreateTcpMiddleware(ctx, params)
@@ -126,15 +130,17 @@ func (s *MiddlewareService) UpdateMiddleware(
 	req *connect.Request[mantraev1.UpdateMiddlewareRequest],
 ) (*connect.Response[mantraev1.UpdateMiddlewareResponse], error) {
 	var middleware *mantraev1.Middleware
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
 		var params db.UpdateHttpMiddlewareParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.Middleware](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbMiddleware, err := s.app.Conn.GetQuery().UpdateHttpMiddleware(ctx, params)
 		if err != nil {
@@ -148,11 +154,12 @@ func (s *MiddlewareService) UpdateMiddleware(
 
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
 		var params db.UpdateTcpMiddlewareParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.TCPMiddleware](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbMiddleware, err := s.app.Conn.GetQuery().UpdateTcpMiddleware(ctx, params)
 		if err != nil {
@@ -258,7 +265,7 @@ func (s *MiddlewareService) ListMiddlewares(
 }
 
 func buildProtoHttpMiddleware(r db.HttpMiddleware) (*mantraev1.Middleware, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal HTTP config: %w", err)
 	}
@@ -266,7 +273,7 @@ func buildProtoHttpMiddleware(r db.HttpMiddleware) (*mantraev1.Middleware, error
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
@@ -274,7 +281,7 @@ func buildProtoHttpMiddleware(r db.HttpMiddleware) (*mantraev1.Middleware, error
 }
 
 func buildProtoTcpMiddleware(r db.TcpMiddleware) (*mantraev1.Middleware, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal TCP config: %w", err)
 	}
@@ -282,7 +289,7 @@ func buildProtoTcpMiddleware(r db.TcpMiddleware) (*mantraev1.Middleware, error) 
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),

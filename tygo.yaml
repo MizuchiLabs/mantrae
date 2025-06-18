@@ -1,0 +1,11 @@
+packages:
+  - path: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+    output_path: "web/src/lib/gen/tygo/dynamic"
+    type_mappings:
+      ptypes.Duration: string
+
+  - path: "github.com/traefik/traefik/v3/pkg/tls"
+    output_path: "web/src/lib/gen/tygo/tls"
+
+  - path: "github.com/traefik/traefik/v3/pkg/types"
+    output_path: "web/src/lib/gen/tygo/types"

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -12,6 +11,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type RouterService struct {
@@ -72,17 +72,19 @@ func (s *RouterService) CreateRouter(
 	req *connect.Request[mantraev1.CreateRouterRequest],
 ) (*connect.Response[mantraev1.CreateRouterResponse], error) {
 	var router *mantraev1.Router
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
 		var params db.CreateHttpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.Router](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateHttpRouter(ctx, params)
@@ -97,13 +99,15 @@ func (s *RouterService) CreateRouter(
 
 	case mantraev1.RouterType_ROUTER_TYPE_TCP:
 		var params db.CreateTcpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+
+		params.Config, err = UnmarshalStruct[dynamic.TCPRouter](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateTcpRouter(ctx, params)
@@ -118,13 +122,15 @@ func (s *RouterService) CreateRouter(
 
 	case mantraev1.RouterType_ROUTER_TYPE_UDP:
 		var params db.CreateUdpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+
+		params.Config, err = UnmarshalStruct[dynamic.UDPRouter](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateUdpRouter(ctx, params)
@@ -149,15 +155,17 @@ func (s *RouterService) UpdateRouter(
 	req *connect.Request[mantraev1.UpdateRouterRequest],
 ) (*connect.Response[mantraev1.UpdateRouterResponse], error) {
 	var router *mantraev1.Router
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
 		var params db.UpdateHttpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.Router](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, params)
 		if err != nil {
@@ -171,11 +179,12 @@ func (s *RouterService) UpdateRouter(
 
 	case mantraev1.RouterType_ROUTER_TYPE_TCP:
 		var params db.UpdateTcpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.TCPRouter](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, params)
 		if err != nil {
@@ -189,11 +198,12 @@ func (s *RouterService) UpdateRouter(
 
 	case mantraev1.RouterType_ROUTER_TYPE_UDP:
 		var params db.UpdateUdpRouterParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.UDPRouter](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateUdpRouter(ctx, params)
 		if err != nil {
@@ -323,7 +333,7 @@ func (s *RouterService) ListRouters(
 }
 
 func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal HTTP config: %w", err)
 	}
@@ -331,7 +341,7 @@ func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Enabled:   r.Enabled,
 		Type:      mantraev1.RouterType_ROUTER_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
@@ -340,7 +350,7 @@ func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {
 }
 
 func buildProtoTcpRouter(r db.TcpRouter) (*mantraev1.Router, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal TCP config: %w", err)
 	}
@@ -348,7 +358,7 @@ func buildProtoTcpRouter(r db.TcpRouter) (*mantraev1.Router, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Enabled:   r.Enabled,
 		Type:      mantraev1.RouterType_ROUTER_TYPE_TCP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
@@ -357,7 +367,7 @@ func buildProtoTcpRouter(r db.TcpRouter) (*mantraev1.Router, error) {
 }
 
 func buildProtoUdpRouter(r db.UdpRouter) (*mantraev1.Router, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal UDP config: %w", err)
 	}
@@ -365,7 +375,7 @@ func buildProtoUdpRouter(r db.UdpRouter) (*mantraev1.Router, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Enabled:   r.Enabled,
 		Type:      mantraev1.RouterType_ROUTER_TYPE_UDP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),

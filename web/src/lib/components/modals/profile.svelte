@@ -7,6 +7,7 @@
 	import Separator from '../ui/separator/separator.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import { profileClient } from '$lib/api';
+	import { ConnectError } from '@connectrpc/connect';
 
 	interface Props {
 		profile?: Profile;
@@ -24,13 +25,11 @@
 				await profileClient.createProfile({ name: profile.name, description: profile.description });
 				toast.success('Profile created successfully');
 			}
-			open = false;
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error('Failed to save profile', {
-				description: e.message
-			});
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to save profile', { description: e.message });
 		}
+		open = false;
 	};
 
 	const handleDelete = async () => {
@@ -40,11 +39,9 @@
 			await profileClient.deleteProfile({ id: profile.id });
 			toast.success('Profile deleted successfully');
 			open = false;
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error('Failed to delete profile', {
-				description: e.message
-			});
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete profile', { description: e.message });
 		}
 	};
 </script>

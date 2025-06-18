@@ -16,10 +16,17 @@ service DnsProviderService {
   }
 }
 
+enum DnsProviderType {
+  DNS_PROVIDER_TYPE_UNSPECIFIED = 0;
+  DNS_PROVIDER_TYPE_CLOUDFLARE = 1;
+  DNS_PROVIDER_TYPE_POWERDNS = 2;
+  DNS_PROVIDER_TYPE_TECHNITIUM = 3;
+}
+
 message DnsProvider {
   int64 id = 1;
   string name = 2;
-  string type = 3;
+  DnsProviderType type = 3;
   DnsProviderConfig config = 4;
   bool is_active = 5;
   google.protobuf.Timestamp created_at = 6;
@@ -44,7 +51,7 @@ message GetDnsProviderResponse {
 
 message CreateDnsProviderRequest {
   string name = 1;
-  string type = 2;
+  DnsProviderType type = 2;
   DnsProviderConfig config = 3;
   bool is_active = 4;
 }
@@ -53,8 +60,9 @@ message CreateDnsProviderResponse {
 }
 
 message UpdateDnsProviderRequest {
+  int64 id = 1;
   string name = 2;
-  string type = 3;
+  DnsProviderType type = 3;
   DnsProviderConfig config = 4;
   bool is_active = 5;
 }

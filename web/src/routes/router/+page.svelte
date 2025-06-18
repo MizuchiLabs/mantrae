@@ -4,17 +4,16 @@
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
-	import type { DeleteRouterParams, Router, Service, TLS } from '$lib/types/router';
 	import { Pencil, Route, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, rdps, routerServiceMerge, type RouterWithService } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { source } from '$lib/stores/source';
-	import { onMount } from 'svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 	import { profile } from '$lib/stores/profile';
 	import type { BulkAction } from '$lib/components/tables/types';
+	import { routerClient } from '$lib/api';
+	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
+	import type { Service } from '$lib/gen/mantrae/v1/service_pb';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -23,29 +22,11 @@
 		service: Service;
 	}
 
-	const defaultRouter: Router = {
-		name: '',
-		protocol: 'http',
-		tls: {},
-		entryPoints: [],
-		middlewares: [],
-		rule: '',
-		service: ''
-	};
-	const defaultService: Service = {
-		name: defaultRouter.name,
-		protocol: defaultRouter.protocol,
-		loadBalancer: {
-			servers: [],
-			passHostHeader: true
-		}
-	};
-
 	const initialModalState: ModalState = {
 		isOpen: false,
 		mode: 'create',
-		router: defaultRouter,
-		service: defaultService
+		router: {} as Router,
+		service: {} as Service
 	};
 	let modalState = $state(initialModalState);
 
@@ -53,8 +34,8 @@
 		modalState = {
 			isOpen: true,
 			mode: 'create',
-			router: defaultRouter,
-			service: defaultService
+			router: {} as Router,
+			service: {} as Service
 		};
 	}
 
@@ -73,12 +54,7 @@
 				toast.error('Invalid profile ID');
 				return;
 			}
-			const params: DeleteRouterParams = {
-				profileId: profile?.id,
-				name: router.name,
-				protocol: router.protocol
-			};
-			await api.deleteRouter(params);
+			await routerClient.deleteRouter({ id: router.id });
 			toast.success('Router deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -86,24 +62,24 @@
 		}
 	};
 
-	async function handleBulkDelete(selectedRows: RouterWithService[]) {
-		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
-			if (!confirmed) return;
+	// async function handleBulkDelete(selectedRows: RouterWithService[]) {
+	// 	try {
+	// 		const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+	// 		if (!confirmed) return;
+	//
+	// 		const items = selectedRows.map((row) => ({
+	// 			name: row.router.name,
+	// 			protocol: row.router.protocol
+	// 		}));
+	// 		await api.bulkDeleteRouter(items);
+	// 		toast.success(`Successfully deleted ${selectedRows.length} routers`);
+	// 	} catch (err: unknown) {
+	// 		const e = err as Error;
+	// 		toast.error(`Failed to delete routers: ${e.message}`);
+	// 	}
+	// }
 
-			const items = selectedRows.map((row) => ({
-				name: row.router.name,
-				protocol: row.router.protocol
-			}));
-			await api.bulkDeleteRouter(items);
-			toast.success(`Successfully deleted ${selectedRows.length} routers`);
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(`Failed to delete routers: ${e.message}`);
-		}
-	}
-
-	const defaultColumns: ColumnDef<RouterWithService>[] = [
+	const columns: ColumnDef<Router>[] = [
 		{
 			header: 'Name',
 			accessorKey: 'router.name',
@@ -116,11 +92,11 @@
 		},
 		{
 			header: 'Protocol',
-			accessorKey: 'router.protocol',
+			accessorKey: 'router.type',
 			id: 'protocol',
 			enableSorting: true,
 			cell: ({ row, column }) => {
-				return renderComponent(ColumnBadge<RouterWithService>, {
+				return renderComponent(ColumnBadge<Router>, {
 					label: row.getValue('protocol') as string,
 					class: 'hover:cursor-pointer',
 					column: column
@@ -135,7 +111,7 @@
 			cell: ({ row, column }) => {
 				const name = row.getValue('provider') as string;
 				const provider = name?.split('@')[1];
-				return renderComponent(ColumnBadge<RouterWithService>, {
+				return renderComponent(ColumnBadge<Router>, {
 					label: provider ? provider.toLowerCase() : 'http',
 					variant: 'secondary',
 					class: 'hover:cursor-pointer',
@@ -151,7 +127,7 @@
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
 				const entrypoints = row.getValue('entrypoints') as string[];
-				return renderComponent(ColumnBadge<RouterWithService>, {
+				return renderComponent(ColumnBadge<Router>, {
 					label: entrypoints?.length ? entrypoints : 'None',
 					variant: entrypoints?.length ? 'secondary' : 'outline',
 					class: 'hover:cursor-pointer',
@@ -167,7 +143,7 @@
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
 				const middlewares = row.getValue('middlewares') as string[];
-				return renderComponent(ColumnBadge<RouterWithService>, {
+				return renderComponent(ColumnBadge<Router>, {
 					label: middlewares?.length ? middlewares : 'None',
 					variant: middlewares?.length ? 'secondary' : 'outline',
 					class: 'hover:cursor-pointer',
@@ -181,94 +157,94 @@
 			id: 'rule',
 			enableSorting: true,
 			cell: ({ row }) => {
-				if (row.original.router.protocol === 'udp') return;
+				if (row.original.type === RouterType.UDP) return;
 				return renderComponent(ColumnRule, {
 					rule: row.getValue('rule') as string,
-					protocol: row.original.router.protocol as 'http' | 'tcp'
+					type: row.original.type as RouterType.HTTP | RouterType.TCP
 				});
 			}
 		},
-		{
-			header: 'DNS',
-			accessorKey: 'router.name',
-			id: 'dns',
-			enableSorting: true,
-			filterFn: (row, columnId, filterValue) => {
-				const routerName = row.getValue(columnId) as string;
-				const matches = $rdps?.some(
-					(rdp) => rdp.routerName === routerName && rdp.providerName === filterValue
-				);
-				return !!matches;
-			},
-			cell: ({ row, column }) => {
-				// Return early if no rdps data
-				if (!$rdps) {
-					return renderComponent(ColumnBadge, {
-						label: ['Disabled'],
-						variant: 'outline'
-					});
-				}
-				const name = row.getValue('dns') as string;
-				const dns = $rdps?.filter((item) => item.routerName === name);
-				const rdpNames = dns.length ? [...new Set(dns.map((item) => item.providerName))] : [];
-
-				return renderComponent(ColumnBadge<RouterWithService>, {
-					label: rdpNames.length ? rdpNames : ['Disabled'],
-					variant: rdpNames.length ? 'secondary' : 'outline',
-					class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined,
-					column: rdpNames.length ? column : undefined
-				});
-			}
-		},
-		{
-			header: 'TLS',
-			accessorFn: (row) => row.router.tls,
-			id: 'tls',
-			enableSorting: true,
-			filterFn: (row, columnId, filterValue) => {
-				const tls = row.getValue(columnId) as TLS;
-				return tls?.certResolver === filterValue;
-			},
-			cell: ({ row, column }) => {
-				const tls = row.getValue('tls') as TLS;
-
-				let label = 'Disabled';
-				if (tls) {
-					label = tls.certResolver ? tls.certResolver : 'Enabled';
-				}
-				return renderComponent(ColumnBadge<RouterWithService>, {
-					label,
-					variant: tls ? 'secondary' : 'outline',
-					class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
-					tls,
-					column: tls?.certResolver ? column : undefined
-				});
-			}
-		},
-		{
-			header: 'Server Status',
-			accessorFn: (row) => row.service.serverStatus,
-			id: 'serverStatus',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const status = row.getValue('serverStatus') as Record<string, string>;
-				if (status === undefined) {
-					return renderComponent(ColumnBadge, {
-						label: 'N/A',
-						variant: 'secondary'
-					});
-				}
-				const upCount = Object.values(status).filter((status) => status === 'UP').length;
-				const totalCount = Object.values(status).length;
-				const greenBadge = 'bg-green-300 dark:bg-green-600';
-				const redBadge = 'bg-red-300 dark:bg-red-600';
-				return renderComponent(ColumnBadge, {
-					label: `${upCount}/${totalCount}`,
-					variant: 'secondary',
-					class: upCount === totalCount ? greenBadge : redBadge
-				});
-			}
-		},
+		// {
+		// 	header: 'DNS',
+		// 	accessorKey: 'router.name',
+		// 	id: 'dns',
+		// 	enableSorting: true,
+		// 	filterFn: (row, columnId, filterValue) => {
+		// 		const routerName = row.getValue(columnId) as string;
+		// 		const matches = $rdps?.some(
+		// 			(rdp) => rdp.routerName === routerName && rdp.providerName === filterValue
+		// 		);
+		// 		return !!matches;
+		// 	},
+		// 	cell: ({ row, column }) => {
+		// 		// Return early if no rdps data
+		// 		if (!$rdps) {
+		// 			return renderComponent(ColumnBadge, {
+		// 				label: ['Disabled'],
+		// 				variant: 'outline'
+		// 			});
+		// 		}
+		// 		const name = row.getValue('dns') as string;
+		// 		const dns = $rdps?.filter((item) => item.routerName === name);
+		// 		const rdpNames = dns.length ? [...new Set(dns.map((item) => item.providerName))] : [];
+		//
+		// 		return renderComponent(ColumnBadge<RouterWithService>, {
+		// 			label: rdpNames.length ? rdpNames : ['Disabled'],
+		// 			variant: rdpNames.length ? 'secondary' : 'outline',
+		// 			class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined,
+		// 			column: rdpNames.length ? column : undefined
+		// 		});
+		// 	}
+		// },
+		// {
+		// 	header: 'TLS',
+		// 	accessorKey: 'router.tls',
+		// 	id: 'tls',
+		// 	enableSorting: true,
+		// 	filterFn: (row, columnId, filterValue) => {
+		// 		const tls = row.getValue(columnId) as TLS;
+		// 		return tls?.certResolver === filterValue;
+		// 	},
+		// 	cell: ({ row, column }) => {
+		// 		const tls = row.getValue('tls') as TLS;
+		//
+		// 		let label = 'Disabled';
+		// 		if (tls) {
+		// 			label = tls.certResolver ? tls.certResolver : 'Enabled';
+		// 		}
+		// 		return renderComponent(ColumnBadge<RouterWithService>, {
+		// 			label,
+		// 			variant: tls ? 'secondary' : 'outline',
+		// 			class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
+		// 			tls,
+		// 			column: tls?.certResolver ? column : undefined
+		// 		});
+		// 	}
+		// },
+		// {
+		// 	header: 'Server Status',
+		// 	accessorFn: (row) => row.service.serverStatus,
+		// 	id: 'serverStatus',
+		// 	enableSorting: true,
+		// 	cell: ({ row }) => {
+		// 		const status = row.getValue('serverStatus') as Record<string, string>;
+		// 		if (status === undefined) {
+		// 			return renderComponent(ColumnBadge, {
+		// 				label: 'N/A',
+		// 				variant: 'secondary'
+		// 			});
+		// 		}
+		// 		const upCount = Object.values(status).filter((status) => status === 'UP').length;
+		// 		const totalCount = Object.values(status).length;
+		// 		const greenBadge = 'bg-green-300 dark:bg-green-600';
+		// 		const redBadge = 'bg-red-300 dark:bg-red-600';
+		// 		return renderComponent(ColumnBadge, {
+		// 			label: `${upCount}/${totalCount}`,
+		// 			variant: 'secondary',
+		// 			class: upCount === totalCount ? greenBadge : redBadge
+		// 		});
+		// 	}
+		// },
 		{
 			id: 'actions',
 			enableHiding: false,
@@ -300,7 +276,7 @@
 		}
 	];
 
-	const routerBulkActions: BulkAction<RouterWithService>[] = [
+	const routerBulkActions: BulkAction<Router>[] = [
 		{
 			type: 'button',
 			label: 'Delete',
@@ -309,22 +285,6 @@
 			onClick: handleBulkDelete
 		}
 	];
-
-	let columns: ColumnDef<RouterWithService>[] = $derived(
-		source.value === TraefikSource.LOCAL
-			? defaultColumns.filter((c) => c.id !== 'provider' && c.id !== 'serverStatus')
-			: defaultColumns
-	);
-
-	$effect(() => {
-		if (profile.isValid() && source.value) {
-			api.getTraefikConfig(source.value);
-		}
-	});
-
-	onMount(async () => {
-		await api.listDNSProviders();
-	});
 </script>
 
 <svelte:head>
@@ -336,20 +296,17 @@
 		<Route />
 		<h1 class="text-2xl font-bold">Router Management</h1>
 	</div>
-	{#if source.value === TraefikSource.LOCAL}
+	{#await routerClient.listRouters({}) then value}
 		<DataTable
 			{columns}
-			data={$routerServiceMerge || []}
-			showSourceTabs={true}
+			data={value.routers}
+			bulkActions={routerBulkActions}
 			createButton={{
 				label: 'Add Router',
 				onClick: openCreateModal
 			}}
-			bulkActions={routerBulkActions}
 		/>
-	{:else}
-		<DataTable {columns} data={$routerServiceMerge || []} showSourceTabs={true} />
-	{/if}
+	{/await}
 </div>
 
 <RouterModal

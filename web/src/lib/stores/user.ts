@@ -43,7 +43,7 @@ class UserStore {
 
 	// Validation methods
 	hasValidId(): boolean {
-		return typeof this.id === 'number' && !isNaN(this.id);
+		return typeof this.id === 'string' && this.id.length > 0;
 	}
 
 	hasValidUsername(): boolean {
@@ -51,7 +51,7 @@ class UserStore {
 	}
 
 	isLoggedIn(): boolean {
-		return this.value !== null && this.hasValidId() && this.hasValidUsername();
+		return this.value !== null && this.hasValidId();
 	}
 
 	hasEmail(): boolean {

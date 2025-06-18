@@ -13,6 +13,7 @@ import { BackupService } from './gen/mantrae/v1/backup_pb';
 import { AgentManagementService } from './gen/mantrae/v1/agent_management_pb';
 import { EntryPointService } from './gen/mantrae/v1/entry_point_pb';
 import { DnsProviderService } from './gen/mantrae/v1/dns_provider_pb';
+import { UtilService } from './gen/mantrae/v1/util_pb';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -54,3 +55,4 @@ export const serviceClient = useClient(ServiceService);
 export const middlewareClient = useClient(MiddlewareService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
+export const utilClient = useClient(UtilService);

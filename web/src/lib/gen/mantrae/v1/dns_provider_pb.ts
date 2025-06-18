@@ -2,8 +2,8 @@
 // @generated from file mantrae/v1/dns_provider.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/dns_provider.proto.
  */
 export const file_mantrae_v1_dns_provider: GenFile = /*@__PURE__*/
-  fileDesc("Ch1tYW50cmFlL3YxL2Ruc19wcm92aWRlci5wcm90bxIKbWFudHJhZS52MSLXAQoLRG5zUHJvdmlkZXISCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIMCgR0eXBlGAMgASgJEi0KBmNvbmZpZxgEIAEoCzIdLm1hbnRyYWUudjEuRG5zUHJvdmlkZXJDb25maWcSEQoJaXNfYWN0aXZlGAUgASgIEi4KCmNyZWF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInoKEURuc1Byb3ZpZGVyQ29uZmlnEg8KB2FwaV9rZXkYASABKAkSDwoHYXBpX3VybBgCIAEoCRIKCgJpcBgDIAEoCRIPCgdwcm94aWVkGAQgASgIEhMKC2F1dG9fdXBkYXRlGAUgASgIEhEKCXpvbmVfdHlwZRgGIAEoCSIjChVHZXREbnNQcm92aWRlclJlcXVlc3QSCgoCaWQYASABKAMiRwoWR2V0RG5zUHJvdmlkZXJSZXNwb25zZRItCgxkbnNfcHJvdmlkZXIYASABKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyIngKGENyZWF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIMCgRuYW1lGAEgASgJEgwKBHR5cGUYAiABKAkSLQoGY29uZmlnGAMgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBCABKAgiSgoZQ3JlYXRlRG5zUHJvdmlkZXJSZXNwb25zZRItCgxkbnNfcHJvdmlkZXIYASABKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyIngKGFVwZGF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIMCgRuYW1lGAIgASgJEgwKBHR5cGUYAyABKAkSLQoGY29uZmlnGAQgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBSABKAgiSgoZVXBkYXRlRG5zUHJvdmlkZXJSZXNwb25zZRItCgxkbnNfcHJvdmlkZXIYASABKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyIiYKGERlbGV0ZURuc1Byb3ZpZGVyUmVxdWVzdBIKCgJpZBgBIAEoAyIbChlEZWxldGVEbnNQcm92aWRlclJlc3BvbnNlIlcKF0xpc3REbnNQcm92aWRlcnNSZXF1ZXN0EhIKBWxpbWl0GAEgASgDSACIAQESEwoGb2Zmc2V0GAIgASgDSAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiXwoYTGlzdERuc1Byb3ZpZGVyc1Jlc3BvbnNlEi4KDWRuc19wcm92aWRlcnMYASADKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyEhMKC3RvdGFsX2NvdW50GAIgASgDMvwDChJEbnNQcm92aWRlclNlcnZpY2USXAoOR2V0RG5zUHJvdmlkZXISIS5tYW50cmFlLnYxLkdldERuc1Byb3ZpZGVyUmVxdWVzdBoiLm1hbnRyYWUudjEuR2V0RG5zUHJvdmlkZXJSZXNwb25zZSIDkAIBEmAKEUNyZWF0ZURuc1Byb3ZpZGVyEiQubWFudHJhZS52MS5DcmVhdGVEbnNQcm92aWRlclJlcXVlc3QaJS5tYW50cmFlLnYxLkNyZWF0ZURuc1Byb3ZpZGVyUmVzcG9uc2USYAoRVXBkYXRlRG5zUHJvdmlkZXISJC5tYW50cmFlLnYxLlVwZGF0ZURuc1Byb3ZpZGVyUmVxdWVzdBolLm1hbnRyYWUudjEuVXBkYXRlRG5zUHJvdmlkZXJSZXNwb25zZRJgChFEZWxldGVEbnNQcm92aWRlchIkLm1hbnRyYWUudjEuRGVsZXRlRG5zUHJvdmlkZXJSZXF1ZXN0GiUubWFudHJhZS52MS5EZWxldGVEbnNQcm92aWRlclJlc3BvbnNlEmIKEExpc3REbnNQcm92aWRlcnMSIy5tYW50cmFlLnYxLkxpc3REbnNQcm92aWRlcnNSZXF1ZXN0GiQubWFudHJhZS52MS5MaXN0RG5zUHJvdmlkZXJzUmVzcG9uc2UiA5ACAUKqAQoOY29tLm1hbnRyYWUudjFCEERuc1Byb3ZpZGVyUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("Ch1tYW50cmFlL3YxL2Ruc19wcm92aWRlci5wcm90bxIKbWFudHJhZS52MSL0AQoLRG5zUHJvdmlkZXISCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIpCgR0eXBlGAMgASgOMhsubWFudHJhZS52MS5EbnNQcm92aWRlclR5cGUSLQoGY29uZmlnGAQgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiegoRRG5zUHJvdmlkZXJDb25maWcSDwoHYXBpX2tleRgBIAEoCRIPCgdhcGlfdXJsGAIgASgJEgoKAmlwGAMgASgJEg8KB3Byb3hpZWQYBCABKAgSEwoLYXV0b191cGRhdGUYBSABKAgSEQoJem9uZV90eXBlGAYgASgJIiMKFUdldERuc1Byb3ZpZGVyUmVxdWVzdBIKCgJpZBgBIAEoAyJHChZHZXREbnNQcm92aWRlclJlc3BvbnNlEi0KDGRuc19wcm92aWRlchgBIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIilQEKGENyZWF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIMCgRuYW1lGAEgASgJEikKBHR5cGUYAiABKA4yGy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyVHlwZRItCgZjb25maWcYAyABKAsyHS5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyQ29uZmlnEhEKCWlzX2FjdGl2ZRgEIAEoCCJKChlDcmVhdGVEbnNQcm92aWRlclJlc3BvbnNlEi0KDGRuc19wcm92aWRlchgBIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIioQEKGFVwZGF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIKCgJpZBgBIAEoAxIMCgRuYW1lGAIgASgJEikKBHR5cGUYAyABKA4yGy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyVHlwZRItCgZjb25maWcYBCABKAsyHS5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyQ29uZmlnEhEKCWlzX2FjdGl2ZRgFIAEoCCJKChlVcGRhdGVEbnNQcm92aWRlclJlc3BvbnNlEi0KDGRuc19wcm92aWRlchgBIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIiJgoYRGVsZXRlRG5zUHJvdmlkZXJSZXF1ZXN0EgoKAmlkGAEgASgDIhsKGURlbGV0ZURuc1Byb3ZpZGVyUmVzcG9uc2UiVwoXTGlzdERuc1Byb3ZpZGVyc1JlcXVlc3QSEgoFbGltaXQYASABKANIAIgBARITCgZvZmZzZXQYAiABKANIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJfChhMaXN0RG5zUHJvdmlkZXJzUmVzcG9uc2USLgoNZG5zX3Byb3ZpZGVycxgBIAMoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXISEwoLdG90YWxfY291bnQYAiABKAMqmAEKD0Ruc1Byb3ZpZGVyVHlwZRIhCh1ETlNfUFJPVklERVJfVFlQRV9VTlNQRUNJRklFRBAAEiAKHEROU19QUk9WSURFUl9UWVBFX0NMT1VERkxBUkUQARIeChpETlNfUFJPVklERVJfVFlQRV9QT1dFUkROUxACEiAKHEROU19QUk9WSURFUl9UWVBFX1RFQ0hOSVRJVU0QAzL8AwoSRG5zUHJvdmlkZXJTZXJ2aWNlElwKDkdldERuc1Byb3ZpZGVyEiEubWFudHJhZS52MS5HZXREbnNQcm92aWRlclJlcXVlc3QaIi5tYW50cmFlLnYxLkdldERuc1Byb3ZpZGVyUmVzcG9uc2UiA5ACARJgChFDcmVhdGVEbnNQcm92aWRlchIkLm1hbnRyYWUudjEuQ3JlYXRlRG5zUHJvdmlkZXJSZXF1ZXN0GiUubWFudHJhZS52MS5DcmVhdGVEbnNQcm92aWRlclJlc3BvbnNlEmAKEVVwZGF0ZURuc1Byb3ZpZGVyEiQubWFudHJhZS52MS5VcGRhdGVEbnNQcm92aWRlclJlcXVlc3QaJS5tYW50cmFlLnYxLlVwZGF0ZURuc1Byb3ZpZGVyUmVzcG9uc2USYAoRRGVsZXRlRG5zUHJvdmlkZXISJC5tYW50cmFlLnYxLkRlbGV0ZURuc1Byb3ZpZGVyUmVxdWVzdBolLm1hbnRyYWUudjEuRGVsZXRlRG5zUHJvdmlkZXJSZXNwb25zZRJiChBMaXN0RG5zUHJvdmlkZXJzEiMubWFudHJhZS52MS5MaXN0RG5zUHJvdmlkZXJzUmVxdWVzdBokLm1hbnRyYWUudjEuTGlzdERuc1Byb3ZpZGVyc1Jlc3BvbnNlIgOQAgFCqgEKDmNvbS5tYW50cmFlLnYxQhBEbnNQcm92aWRlclByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.DnsProvider
@@ -29,9 +29,9 @@ export type DnsProvider = Message<"mantrae.v1.DnsProvider"> & {
   name: string;
 
   /**
-   * @generated from field: string type = 3;
+   * @generated from field: mantrae.v1.DnsProviderType type = 3;
    */
-  type: string;
+  type: DnsProviderType;
 
   /**
    * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
@@ -147,9 +147,9 @@ export type CreateDnsProviderRequest = Message<"mantrae.v1.CreateDnsProviderRequ
   name: string;
 
   /**
-   * @generated from field: string type = 2;
+   * @generated from field: mantrae.v1.DnsProviderType type = 2;
    */
-  type: string;
+  type: DnsProviderType;
 
   /**
    * @generated from field: mantrae.v1.DnsProviderConfig config = 3;
@@ -191,14 +191,19 @@ export const CreateDnsProviderResponseSchema: GenMessage<CreateDnsProviderRespon
  */
 export type UpdateDnsProviderRequest = Message<"mantrae.v1.UpdateDnsProviderRequest"> & {
   /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
+
+  /**
    * @generated from field: string name = 2;
    */
   name: string;
 
   /**
-   * @generated from field: string type = 3;
+   * @generated from field: mantrae.v1.DnsProviderType type = 3;
    */
-  type: string;
+  type: DnsProviderType;
 
   /**
    * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
@@ -308,6 +313,37 @@ export type ListDnsProvidersResponse = Message<"mantrae.v1.ListDnsProvidersRespo
  */
 export const ListDnsProvidersResponseSchema: GenMessage<ListDnsProvidersResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_dns_provider, 11);
+
+/**
+ * @generated from enum mantrae.v1.DnsProviderType
+ */
+export enum DnsProviderType {
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_CLOUDFLARE = 1;
+   */
+  CLOUDFLARE = 1,
+
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_POWERDNS = 2;
+   */
+  POWERDNS = 2,
+
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_TECHNITIUM = 3;
+   */
+  TECHNITIUM = 3,
+}
+
+/**
+ * Describes the enum mantrae.v1.DnsProviderType.
+ */
+export const DnsProviderTypeSchema: GenEnum<DnsProviderType> = /*@__PURE__*/
+  enumDesc(file_mantrae_v1_dns_provider, 0);
 
 /**
  * @generated from service mantrae.v1.DnsProviderService

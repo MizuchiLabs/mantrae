@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
 service RouterService {
@@ -28,7 +29,7 @@ message Router {
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
-  string config = 5;
+  google.protobuf.Struct config = 5;
   bool enabled = 6;
   RouterType type = 7;
   google.protobuf.Timestamp created_at = 8;
@@ -47,7 +48,7 @@ message CreateRouterRequest {
   int64 profile_id = 1;
   string agent_id = 2;
   string name = 3;
-  string config = 4;
+  google.protobuf.Struct config = 4;
   bool enabled = 5;
   RouterType type = 6;
 }
@@ -58,7 +59,7 @@ message CreateRouterResponse {
 message UpdateRouterRequest {
   int64 id = 1;
   string name = 2;
-  string config = 3;
+  google.protobuf.Struct config = 3;
   bool enabled = 4;
   RouterType type = 5;
 }

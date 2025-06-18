@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
 service MiddlewareService {
@@ -30,7 +31,7 @@ message Middleware {
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
-  string config = 5;
+  google.protobuf.Struct config = 5;
   MiddlewareType type = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
@@ -70,7 +71,7 @@ message CreateMiddlewareRequest {
   int64 profile_id = 1;
   string agent_id = 2;
   string name = 3;
-  string config = 4;
+  google.protobuf.Struct config = 4;
   MiddlewareType type = 5;
 }
 message CreateMiddlewareResponse {
@@ -80,7 +81,7 @@ message CreateMiddlewareResponse {
 message UpdateMiddlewareRequest {
   int64 id = 1;
   string name = 2;
-  string config = 3;
+  google.protobuf.Struct config = 3;
   MiddlewareType type = 4;
 }
 message UpdateMiddlewareResponse {

@@ -20,14 +20,10 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { TraefikSource } from '$lib/types';
-	import { source } from '$lib/stores/source';
-	import { api, rdps } from '$lib/api';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -51,20 +47,13 @@
 			label: string;
 			onClick: () => void;
 		};
-		showSourceTabs?: boolean;
 		onRowSelection?: (selectedRows: TData[]) => void;
 		getRowClassName?: (row: TData) => string;
 		bulkActions?: BulkAction<TData>[] | undefined;
 	};
 
-	let {
-		data,
-		columns,
-		createButton,
-		showSourceTabs,
-		getRowClassName,
-		bulkActions
-	}: DataTableProps<TData, TValue> = $props();
+	let { data, columns, createButton, getRowClassName, bulkActions }: DataTableProps<TData, TValue> =
+		$props();
 
 	// Pagination
 	const pageSizeOptions = [10, 25, 50, 100];
@@ -185,18 +174,6 @@
 		}
 	});
 
-	// Update localStorage and fetch config when tab changes
-	async function handleTabChange(value: string) {
-		if (!source.isValid(value)) return;
-		source.value = value;
-		// Reset table state
-		table.resetRowSelection();
-		table.resetColumnFilters();
-		table.resetGlobalFilter();
-		table.resetColumnOrder();
-		table.resetPagination();
-		await Promise.all([api.getTraefikConfig(source.value), api.listDNSProviders()]);
-	}
 	function handleLimitChange(value: string) {
 		if (!value) return;
 		table.setPageSize(Number(value));
@@ -225,17 +202,6 @@
 				onclick={() => table.setGlobalFilter('')}
 			/>
 		</div>
-
-		<!-- Tabs -->
-		{#if showSourceTabs}
-			<Tabs.Root bind:value={source.value} onValueChange={handleTabChange}>
-				<Tabs.List class="grid w-[400px] grid-cols-3">
-					<Tabs.Trigger value={TraefikSource.LOCAL}>Local</Tabs.Trigger>
-					<Tabs.Trigger value={TraefikSource.API}>API</Tabs.Trigger>
-					<Tabs.Trigger value={TraefikSource.AGENT}>Agent</Tabs.Trigger>
-				</Tabs.List>
-			</Tabs.Root>
-		{/if}
 
 		{#if table.getState().columnFilters.length > 0}
 			<Button onclick={() => table.setColumnFilters([])}>Clear Filters</Button>
@@ -281,69 +247,67 @@
 
 	<!-- Table -->
 	<div class="rounded-md border">
-		{#key source.value + $rdps + JSON.stringify(data)}
-			<Table.Root>
-				<Table.Header>
-					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-						<Table.Row>
-							{#each headerGroup.headers as header (header.id)}
-								<Table.Head>
-									{#if !header.isPlaceholder}
-										<div class="flex items-center">
-											<Button
-												variant="ghost"
-												size="sm"
-												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-												data-sortable={header.column.getCanSort()}
-												onclick={() => header.column.toggleSorting()}
-											>
-												<FlexRender
-													content={header.column.columnDef.header}
-													context={header.getContext()}
-												/>
-												{#if header.column.getCanSort()}
-													{#if header.column.getIsSorted() === 'asc'}
-														<ArrowDown />
-													{:else if header.column.getIsSorted() === 'desc'}
-														<ArrowUp />
-													{/if}
+		<Table.Root>
+			<Table.Header>
+				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+					<Table.Row>
+						{#each headerGroup.headers as header (header.id)}
+							<Table.Head>
+								{#if !header.isPlaceholder}
+									<div class="flex items-center">
+										<Button
+											variant="ghost"
+											size="sm"
+											class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+											data-sortable={header.column.getCanSort()}
+											onclick={() => header.column.toggleSorting()}
+										>
+											<FlexRender
+												content={header.column.columnDef.header}
+												context={header.getContext()}
+											/>
+											{#if header.column.getCanSort()}
+												{#if header.column.getIsSorted() === 'asc'}
+													<ArrowDown />
+												{:else if header.column.getIsSorted() === 'desc'}
+													<ArrowUp />
 												{/if}
-											</Button>
-										</div>
-									{/if}
-								</Table.Head>
-							{/each}
-						</Table.Row>
-					{/each}
-				</Table.Header>
-				<Table.Body>
-					{#each table.getRowModel().rows as row (row.id)}
-						<Table.Row
-							data-state={row.getIsSelected() && 'selected'}
-							class={getRowClassName ? getRowClassName(row.original) : ''}
-						>
-							{#each row.getVisibleCells() as cell (cell.id)}
-								<Table.Cell>
-									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-								</Table.Cell>
-							{/each}
-						</Table.Row>
-					{:else}
-						<Table.Row>
-							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-				<Table.Footer>
-					<Table.Row class="border-t">
-						<Table.Cell colspan={columns.length}>Total</Table.Cell>
-						<Table.Cell class="mr-4 text-right"
-							>{table.getPrePaginationRowModel().rows.length}</Table.Cell
-						>
+											{/if}
+										</Button>
+									</div>
+								{/if}
+							</Table.Head>
+						{/each}
 					</Table.Row>
-				</Table.Footer>
-			</Table.Root>
-		{/key}
+				{/each}
+			</Table.Header>
+			<Table.Body>
+				{#each table.getRowModel().rows as row (row.id)}
+					<Table.Row
+						data-state={row.getIsSelected() && 'selected'}
+						class={getRowClassName ? getRowClassName(row.original) : ''}
+					>
+						{#each row.getVisibleCells() as cell (cell.id)}
+							<Table.Cell>
+								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+							</Table.Cell>
+						{/each}
+					</Table.Row>
+				{:else}
+					<Table.Row>
+						<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+					</Table.Row>
+				{/each}
+			</Table.Body>
+			<Table.Footer>
+				<Table.Row class="border-t">
+					<Table.Cell colspan={columns.length}>Total</Table.Cell>
+					<Table.Cell class="mr-4 text-right">
+						{table.getPrePaginationRowModel().rows.length}
+					</Table.Cell>
+				</Table.Row>
+			</Table.Footer>
+		</Table.Root>
 	</div>
 	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
 		<BulkActions

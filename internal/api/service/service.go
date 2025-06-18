@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Service struct {
@@ -71,17 +71,19 @@ func (s *Service) CreateService(
 	req *connect.Request[mantraev1.CreateServiceRequest],
 ) (*connect.Response[mantraev1.CreateServiceResponse], error) {
 	var service *mantraev1.Service
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
 		var params db.CreateHttpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.Service](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbService, err := s.app.Conn.GetQuery().CreateHttpService(ctx, params)
@@ -96,13 +98,14 @@ func (s *Service) CreateService(
 
 	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
 		var params db.CreateTcpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.TCPService](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbService, err := s.app.Conn.GetQuery().CreateTcpService(ctx, params)
@@ -117,13 +120,14 @@ func (s *Service) CreateService(
 
 	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
 		var params db.CreateUdpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ProfileID = req.Msg.ProfileId
 		params.Name = req.Msg.Name
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		params.Config, err = UnmarshalStruct[dynamic.UDPService](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
 		dbService, err := s.app.Conn.GetQuery().CreateUdpService(ctx, params)
@@ -147,15 +151,17 @@ func (s *Service) UpdateService(
 	req *connect.Request[mantraev1.UpdateServiceRequest],
 ) (*connect.Response[mantraev1.UpdateServiceResponse], error) {
 	var service *mantraev1.Service
+	var err error
 
 	switch req.Msg.Type {
 	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
 		var params db.UpdateHttpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.Service](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbService, err := s.app.Conn.GetQuery().UpdateHttpService(ctx, params)
 		if err != nil {
@@ -169,11 +175,12 @@ func (s *Service) UpdateService(
 
 	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
 		var params db.UpdateTcpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.TCPService](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbService, err := s.app.Conn.GetQuery().UpdateTcpService(ctx, params)
 		if err != nil {
@@ -187,11 +194,12 @@ func (s *Service) UpdateService(
 
 	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
 		var params db.UpdateUdpServiceParams
-		if err := json.Unmarshal([]byte(req.Msg.Config), &params.Config); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Config, err = UnmarshalStruct[dynamic.UDPService](req.Msg.Config)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		dbService, err := s.app.Conn.GetQuery().UpdateUdpService(ctx, params)
 		if err != nil {
@@ -309,7 +317,7 @@ func (s *Service) ListServices(
 }
 
 func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal HTTP config: %w", err)
 	}
@@ -317,7 +325,7 @@ func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
@@ -325,7 +333,7 @@ func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {
 }
 
 func buildProtoTcpService(r db.TcpService) (*mantraev1.Service, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal TCP config: %w", err)
 	}
@@ -333,7 +341,7 @@ func buildProtoTcpService(r db.TcpService) (*mantraev1.Service, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
@@ -341,7 +349,7 @@ func buildProtoTcpService(r db.TcpService) (*mantraev1.Service, error) {
 }
 
 func buildProtoUdpService(r db.UdpService) (*mantraev1.Service, error) {
-	configBytes, err := json.Marshal(r.Config)
+	config, err := MarshalStruct(r.Config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal UDP config: %w", err)
 	}
@@ -349,7 +357,7 @@ func buildProtoUdpService(r db.UdpService) (*mantraev1.Service, error) {
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		Name:      r.Name,
-		Config:    string(configBytes),
+		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),

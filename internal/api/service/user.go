@@ -207,6 +207,18 @@ func (s *UserService) CreateUser(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	if req.Msg.Username == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("username is required"),
+		)
+	}
+	if req.Msg.Password == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("password is required"),
+		)
+	}
 
 	params := db.CreateUserParams{
 		ID:       id.String(),
@@ -217,6 +229,7 @@ func (s *UserService) CreateUser(
 	if req.Msg.Email != "" {
 		params.Email = &req.Msg.Email
 	}
+
 	user, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -238,6 +251,19 @@ func (s *UserService) UpdateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateUserRequest],
 ) (*connect.Response[mantraev1.UpdateUserResponse], error) {
+	if req.Msg.Id == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("id is required"),
+		)
+	}
+	if req.Msg.Username == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("username is required"),
+		)
+	}
+
 	params := db.UpdateUserParams{
 		ID:       req.Msg.Id,
 		Username: req.Msg.Username,
@@ -250,6 +276,22 @@ func (s *UserService) UpdateUser(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	// Update password if provided
+	if req.Msg.Password != nil {
+		hash, err := util.HashPassword(*req.Msg.Password)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		if err := s.app.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+			ID:       user.ID,
+			Password: hash,
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
 	return connect.NewResponse(&mantraev1.UpdateUserResponse{
 		User: &mantraev1.User{
 			Id:        user.ID,
@@ -267,8 +309,7 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteUserRequest],
 ) (*connect.Response[mantraev1.DeleteUserResponse], error) {
-	err := s.app.Conn.GetQuery().DeleteUser(ctx, req.Msg.Id)
-	if err != nil {
+	if err := s.app.Conn.GetQuery().DeleteUser(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.DeleteUserResponse{}), nil

@@ -4,13 +4,12 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { Pencil, Trash, Users } from '@lucide/svelte';
-	import { type User } from '$lib/types';
 	import UserModal from '$lib/components/modals/user.svelte';
-	import { api, users } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { onMount } from 'svelte';
 	import { DateFormat } from '$lib/stores/common';
+	import type { User } from '$lib/gen/mantrae/v1/user_pb';
+	import { userClient } from '$lib/api';
 
 	interface ModalState {
 		isOpen: boolean;
@@ -22,7 +21,7 @@
 
 	const deleteUser = async (user: User) => {
 		try {
-			await api.deleteUser(user.id);
+			await userClient.deleteUser({ id: user.id });
 			toast.success('User deleted');
 		} catch (err: unknown) {
 			const e = err as Error;
@@ -88,32 +87,21 @@
 							type: 'button',
 							label: 'Edit User',
 							icon: Pencil,
-							onClick: () => {
-								modalState = {
-									isOpen: true,
-									user: row.original
-								};
-							}
+							onClick: () => (modalState = { isOpen: true, user: row.original })
 						},
 						{
 							type: 'button',
 							label: 'Delete User',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => {
-								deleteUser(row.original);
-							},
-							disabled: row.original.id === 1
+							onClick: () => deleteUser(row.original),
+							disabled: row.original.id === ''
 						}
 					]
 				});
 			}
 		}
 	];
-
-	onMount(async () => {
-		await api.listUsers();
-	});
 </script>
 
 <svelte:head>
@@ -125,16 +113,16 @@
 		<Users />
 		<h1 class="text-2xl font-bold">User Management</h1>
 	</div>
-	<DataTable
-		{columns}
-		data={$users || []}
-		createButton={{
-			label: 'Add User',
-			onClick: () => {
-				modalState = { isOpen: true };
-			}
-		}}
-	/>
+	{#await userClient.listUsers({}) then result}
+		<DataTable
+			{columns}
+			data={result.users || []}
+			createButton={{
+				label: 'Add User',
+				onClick: () => (modalState = { isOpen: true })
+			}}
+		/>
+	{/await}
 </div>
 
 <UserModal bind:open={modalState.isOpen} user={modalState.user} />

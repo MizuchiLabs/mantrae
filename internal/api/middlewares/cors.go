@@ -28,7 +28,8 @@ func WithCORS(h http.Handler, app *config.App, port string) http.Handler {
 	return cors.New(cors.Options{
 		AllowedOrigins: allowedOrigins,
 		AllowedMethods: connectcors.AllowedMethods(),
-		AllowedHeaders: connectcors.AllowedHeaders(),
+		// AllowedHeaders: connectcors.AllowedHeaders(),
+		AllowedHeaders: []string{"*"},
 		ExposedHeaders: connectcors.ExposedHeaders(),
 		MaxAge:         int(2 * time.Hour / time.Second),
 	}).Handler(h)

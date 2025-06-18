@@ -4,7 +4,6 @@
 	import { Button, type ButtonProps } from '$lib/components/ui/button/index.js';
 	import { type Component } from 'svelte';
 	import { Ellipsis, Tag, Tags, type IconProps } from '@lucide/svelte';
-	import { api, profiles, type RouterWithService } from '$lib/api';
 	import type { UpsertRouterParams } from '$lib/types/router';
 	import { toast } from 'svelte-sonner';
 	import type { Profile } from '$lib/types';

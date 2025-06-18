@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { api, loading } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { type Router, type Service, type UpsertRouterParams } from '$lib/types/router';
 	import { toast } from 'svelte-sonner';
 	import RouterForm from '../forms/router.svelte';
 	import ServiceForm from '../forms/service.svelte';
 	import Separator from '../ui/separator/separator.svelte';
-	import { source } from '$lib/stores/source';
+	import type { Router } from '$lib/gen/mantrae/v1/router_pb';
+	import type { Service } from '$lib/gen/mantrae/v1/service_pb';
 
 	interface Props {
 		router: Router;
@@ -27,7 +26,7 @@
 	const update = async () => {
 		try {
 			// Ensure proper name formatting and synchronization
-			if (service.loadBalancer?.servers?.length === 0 && source.isLocal()) {
+			if (service.loadBalancer?.servers?.length === 0) {
 				toast.error('At least one server is required');
 				return;
 			}
@@ -78,8 +77,6 @@
 
 		<Separator />
 
-		{#if source.isLocal()}
-			<Button type="submit" onclick={update} disabled={$loading}>Save</Button>
-		{/if}
+		<Button type="submit" onclick={update}>Save</Button>
 	</Dialog.Content>
 </Dialog.Root>

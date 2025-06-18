@@ -1,8 +1,10 @@
 package service
 
 import (
+	"encoding/json"
 	"time"
 
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -39,4 +41,34 @@ func SafeTimestamp(t *time.Time) *timestamppb.Timestamp {
 		return nil
 	}
 	return timestamppb.New(*t)
+}
+
+func UnmarshalStruct[T any](s *structpb.Struct) (*T, error) {
+	// Marshal the proto Struct to JSON bytes
+	data, err := s.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal into your target struct
+	var out T
+	if err := json.Unmarshal(data, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func MarshalStruct[T any](s *T) (*structpb.Struct, error) {
+	// Marshal the target struct to JSON bytes
+	data, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal into your proto Struct
+	var out structpb.Struct
+	if err := out.UnmarshalJSON(data); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

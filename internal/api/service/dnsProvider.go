@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 
@@ -27,11 +28,28 @@ func (s *DnsProviderService) GetDnsProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	var dnsType mantraev1.DnsProviderType
+	switch dnsProvider.Type {
+	case "cloudflare":
+		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
+		break
+	case "powerdns":
+		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
+		break
+	case "technitium":
+		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
+		break
+	default:
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid dns provider type"),
+		)
+	}
 	return connect.NewResponse(&mantraev1.GetDnsProviderResponse{
 		DnsProvider: &mantraev1.DnsProvider{
 			Id:   dnsProvider.ID,
 			Name: dnsProvider.Name,
-			Type: dnsProvider.Type,
+			Type: dnsType,
 			Config: &mantraev1.DnsProviderConfig{
 				ApiKey:     dnsProvider.Config.APIKey,
 				ApiUrl:     dnsProvider.Config.APIUrl,
@@ -51,9 +69,27 @@ func (s *DnsProviderService) CreateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateDnsProviderRequest],
 ) (*connect.Response[mantraev1.CreateDnsProviderResponse], error) {
+	var dnsType string
+	switch req.Msg.Type {
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
+		dnsType = "cloudflare"
+		break
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
+		dnsType = "powerdns"
+		break
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
+		dnsType = "technitium"
+		break
+	default:
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid dns provider type"),
+		)
+	}
+
 	params := db.CreateDnsProviderParams{
 		Name: req.Msg.Name,
-		Type: req.Msg.Type,
+		Type: dnsType,
 		Config: &schema.DNSProviderConfig{
 			APIKey:     req.Msg.Config.ApiKey,
 			APIUrl:     req.Msg.Config.ApiUrl,
@@ -73,7 +109,7 @@ func (s *DnsProviderService) CreateDnsProvider(
 		DnsProvider: &mantraev1.DnsProvider{
 			Id:   dnsProvider.ID,
 			Name: dnsProvider.Name,
-			Type: dnsProvider.Type,
+			Type: req.Msg.Type,
 			Config: &mantraev1.DnsProviderConfig{
 				ApiKey:     dnsProvider.Config.APIKey,
 				ApiUrl:     dnsProvider.Config.APIUrl,
@@ -93,9 +129,27 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateDnsProviderRequest],
 ) (*connect.Response[mantraev1.UpdateDnsProviderResponse], error) {
+	var dnsType string
+	switch req.Msg.Type {
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
+		dnsType = "cloudflare"
+		break
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
+		dnsType = "powerdns"
+		break
+	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
+		dnsType = "technitium"
+		break
+	default:
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid dns provider type"),
+		)
+	}
+
 	params := db.UpdateDnsProviderParams{
 		Name: req.Msg.Name,
-		Type: req.Msg.Type,
+		Type: dnsType,
 		Config: &schema.DNSProviderConfig{
 			APIKey:     req.Msg.Config.ApiKey,
 			APIUrl:     req.Msg.Config.ApiUrl,
@@ -115,7 +169,7 @@ func (s *DnsProviderService) UpdateDnsProvider(
 		DnsProvider: &mantraev1.DnsProvider{
 			Id:   dnsProvider.ID,
 			Name: dnsProvider.Name,
-			Type: dnsProvider.Type,
+			Type: req.Msg.Type,
 			Config: &mantraev1.DnsProviderConfig{
 				ApiKey:     dnsProvider.Config.APIKey,
 				ApiUrl:     dnsProvider.Config.APIUrl,
@@ -169,10 +223,28 @@ func (s *DnsProviderService) ListDnsProviders(
 
 	var dnsProviders []*mantraev1.DnsProvider
 	for _, dnsProvider := range dbDNSProviders {
+		var dnsType mantraev1.DnsProviderType
+		switch dnsProvider.Type {
+		case "cloudflare":
+			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
+			break
+		case "powerdns":
+			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
+			break
+		case "technitium":
+			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
+			break
+		default:
+			return nil, connect.NewError(
+				connect.CodeInvalidArgument,
+				errors.New("invalid dns provider type"),
+			)
+		}
+
 		dnsProviders = append(dnsProviders, &mantraev1.DnsProvider{
 			Id:   dnsProvider.ID,
 			Name: dnsProvider.Name,
-			Type: dnsProvider.Type,
+			Type: dnsType,
 			Config: &mantraev1.DnsProviderConfig{
 				ApiKey:     dnsProvider.Config.APIKey,
 				ApiUrl:     dnsProvider.Config.APIUrl,
