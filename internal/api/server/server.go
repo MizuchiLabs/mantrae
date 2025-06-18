@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
@@ -19,7 +18,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/api/service"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
-	"github.com/mizuchilabs/mantrae/web"
 )
 
 const elementsHTML = `<!DOCTYPE html>
@@ -127,11 +125,11 @@ func (s *Server) registerServices() {
 	}
 
 	// Static files
-	staticContent, err := fs.Sub(web.StaticFS, "build")
-	if err != nil {
-		log.Fatal(err)
-	}
-	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
+	// staticContent, err := fs.Sub(web.StaticFS, "build")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
 	serviceNames := []string{
 		mantraev1connect.ProfileServiceName,

@@ -106,7 +106,7 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 			}
 
 			// Add claims to context
-			ctx = context.WithValue(ctx, AuthUserIDKey, claims.ID)
+			ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
 			return next(ctx, req)
 		}
 	})

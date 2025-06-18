@@ -10,20 +10,20 @@ import (
 const CookieName = "auth_token"
 
 type UserClaims struct {
-	Username string `json:"username,omitempty"`
+	UserID string `json:"user_id,omitempty"`
 	jwt.RegisteredClaims
 }
 
 // EncodeUserJWT generates a JWT for user login
-func EncodeUserJWT(username, secret string, expirationTime time.Time) (string, error) {
-	if username == "" {
+func EncodeUserJWT(userID, secret string, expirationTime time.Time) (string, error) {
+	if userID == "" {
 		return "", errors.New("username cannot be empty")
 	}
 	if expirationTime.IsZero() {
 		expirationTime = time.Now().Add(24 * time.Hour)
 	}
 	claims := &UserClaims{
-		Username: username,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

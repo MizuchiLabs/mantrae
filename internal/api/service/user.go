@@ -51,7 +51,7 @@ func (s *UserService) LoginUser(
 	if req.Msg.Remember {
 		expirationTime = time.Now().Add(30 * 24 * time.Hour)
 	}
-	token, err := util.EncodeUserJWT(user.Username, s.app.Secret, expirationTime)
+	token, err := util.EncodeUserJWT(user.ID, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -109,7 +109,7 @@ func (s *UserService) VerifyOTP(
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
-	token, err := util.EncodeUserJWT(user.Username, s.app.Secret, expirationTime)
+	token, err := util.EncodeUserJWT(user.ID, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

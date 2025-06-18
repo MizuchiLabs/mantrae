@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"time"
 
 	connectcors "connectrpc.com/cors"
 	"github.com/mizuchilabs/mantrae/internal/config"
@@ -25,10 +26,10 @@ func WithCORS(h http.Handler, app *config.App, port string) http.Handler {
 	}
 
 	return cors.New(cors.Options{
-		AllowedOrigins:   allowedOrigins,
-		AllowedMethods:   connectcors.AllowedMethods(),
-		AllowedHeaders:   connectcors.AllowedHeaders(),
-		ExposedHeaders:   connectcors.ExposedHeaders(),
-		AllowCredentials: true,
+		AllowedOrigins: allowedOrigins,
+		AllowedMethods: connectcors.AllowedMethods(),
+		AllowedHeaders: connectcors.AllowedHeaders(),
+		ExposedHeaders: connectcors.ExposedHeaders(),
+		MaxAge:         int(2 * time.Hour / time.Second),
 	}).Handler(h)
 }
