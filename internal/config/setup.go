@@ -46,7 +46,6 @@ func Setup(ctx context.Context) (*App, error) {
 	if err := app.setupDefaultData(ctx); err != nil {
 		return nil, err
 	}
-	slog.Info("Default data initialized")
 
 	// Start background jobs
 	app.setupBackgroundJobs(ctx)

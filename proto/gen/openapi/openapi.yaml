@@ -569,6 +569,177 @@ components:
       type: object
       title: UploadBackupResponse
       additionalProperties: false
+    mantrae.v1.CreateDnsProviderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+        type:
+          type: string
+          title: type
+        config:
+          title: config
+          $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
+        isActive:
+          type: boolean
+          title: is_active
+      title: CreateDnsProviderRequest
+      additionalProperties: false
+    mantrae.v1.CreateDnsProviderResponse:
+      type: object
+      properties:
+        dnsProvider:
+          title: dns_provider
+          $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+      title: CreateDnsProviderResponse
+      additionalProperties: false
+    mantrae.v1.DeleteDnsProviderRequest:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: DeleteDnsProviderRequest
+      additionalProperties: false
+    mantrae.v1.DeleteDnsProviderResponse:
+      type: object
+      title: DeleteDnsProviderResponse
+      additionalProperties: false
+    mantrae.v1.DnsProvider:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        name:
+          type: string
+          title: name
+        type:
+          type: string
+          title: type
+        config:
+          title: config
+          $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
+        isActive:
+          type: boolean
+          title: is_active
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: DnsProvider
+      additionalProperties: false
+    mantrae.v1.DnsProviderConfig:
+      type: object
+      properties:
+        apiKey:
+          type: string
+          title: api_key
+        apiUrl:
+          type: string
+          title: api_url
+        ip:
+          type: string
+          title: ip
+        proxied:
+          type: boolean
+          title: proxied
+        autoUpdate:
+          type: boolean
+          title: auto_update
+        zoneType:
+          type: string
+          title: zone_type
+      title: DnsProviderConfig
+      additionalProperties: false
+    mantrae.v1.GetDnsProviderRequest:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: GetDnsProviderRequest
+      additionalProperties: false
+    mantrae.v1.GetDnsProviderResponse:
+      type: object
+      properties:
+        dnsProvider:
+          title: dns_provider
+          $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+      title: GetDnsProviderResponse
+      additionalProperties: false
+    mantrae.v1.ListDnsProvidersRequest:
+      type: object
+      properties:
+        limit:
+          type:
+            - integer
+            - string
+          title: limit
+          format: int64
+          nullable: true
+        offset:
+          type:
+            - integer
+            - string
+          title: offset
+          format: int64
+          nullable: true
+      title: ListDnsProvidersRequest
+      additionalProperties: false
+    mantrae.v1.ListDnsProvidersResponse:
+      type: object
+      properties:
+        dnsProviders:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_providers
+        totalCount:
+          type:
+            - integer
+            - string
+          title: total_count
+          format: int64
+      title: ListDnsProvidersResponse
+      additionalProperties: false
+    mantrae.v1.UpdateDnsProviderRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+        type:
+          type: string
+          title: type
+        config:
+          title: config
+          $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
+        isActive:
+          type: boolean
+          title: is_active
+      title: UpdateDnsProviderRequest
+      additionalProperties: false
+    mantrae.v1.UpdateDnsProviderResponse:
+      type: object
+      properties:
+        dnsProvider:
+          title: dns_provider
+          $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+      title: UpdateDnsProviderResponse
+      additionalProperties: false
     mantrae.v1.CreateEntryPointRequest:
       type: object
       properties:
@@ -1804,6 +1975,33 @@ components:
           title: token
       title: VerifyOTPResponse
       additionalProperties: false
+    mantrae.v1.GetPublicIPRequest:
+      type: object
+      title: GetPublicIPRequest
+      additionalProperties: false
+    mantrae.v1.GetPublicIPResponse:
+      type: object
+      properties:
+        ipv4:
+          type: string
+          title: ipv4
+        ipv6:
+          type: string
+          title: ipv6
+      title: GetPublicIPResponse
+      additionalProperties: false
+    mantrae.v1.GetVersionRequest:
+      type: object
+      title: GetVersionRequest
+      additionalProperties: false
+    mantrae.v1.GetVersionResponse:
+      type: object
+      properties:
+        version:
+          type: string
+          title: version
+      title: GetVersionResponse
+      additionalProperties: false
 security:
   - BearerAuth: []
 paths:
@@ -2576,6 +2774,283 @@ paths:
             application/grpc-web+json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
+  /mantrae.v1.DnsProviderService/GetDnsProvider:
+    get:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: GetDnsProvider
+      operationId: mantrae.v1.DnsProviderService.GetDnsProvider.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetDnsProviderRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetDnsProviderResponse'
+    post:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: GetDnsProvider
+      operationId: mantrae.v1.DnsProviderService.GetDnsProvider
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetDnsProviderRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetDnsProviderResponse'
+  /mantrae.v1.DnsProviderService/CreateDnsProvider:
+    post:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: CreateDnsProvider
+      operationId: mantrae.v1.DnsProviderService.CreateDnsProvider
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.CreateDnsProviderRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.CreateDnsProviderResponse'
+  /mantrae.v1.DnsProviderService/UpdateDnsProvider:
+    post:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: UpdateDnsProvider
+      operationId: mantrae.v1.DnsProviderService.UpdateDnsProvider
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UpdateDnsProviderRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UpdateDnsProviderResponse'
+  /mantrae.v1.DnsProviderService/DeleteDnsProvider:
+    post:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: DeleteDnsProvider
+      operationId: mantrae.v1.DnsProviderService.DeleteDnsProvider
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteDnsProviderRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteDnsProviderResponse'
+  /mantrae.v1.DnsProviderService/ListDnsProviders:
+    get:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: ListDnsProviders
+      operationId: mantrae.v1.DnsProviderService.ListDnsProviders.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListDnsProvidersRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListDnsProvidersResponse'
+    post:
+      tags:
+        - mantrae.v1.DnsProviderService
+      summary: ListDnsProviders
+      operationId: mantrae.v1.DnsProviderService.ListDnsProviders
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListDnsProvidersRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListDnsProvidersResponse'
   /mantrae.v1.EntryPointService/GetEntryPoint:
     get:
       tags:
@@ -4671,10 +5146,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListUsersResponse'
+  /mantrae.v1.UtilService/GetVersion:
+    post:
+      tags:
+        - mantrae.v1.UtilService
+      summary: GetVersion
+      operationId: mantrae.v1.UtilService.GetVersion
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetVersionRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetVersionResponse'
+  /mantrae.v1.UtilService/GetPublicIP:
+    post:
+      tags:
+        - mantrae.v1.UtilService
+      summary: GetPublicIP
+      operationId: mantrae.v1.UtilService.GetPublicIP
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetPublicIPRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetPublicIPResponse'
 tags:
   - name: mantrae.v1.AgentService
   - name: mantrae.v1.AgentManagementService
   - name: mantrae.v1.BackupService
+  - name: mantrae.v1.DnsProviderService
   - name: mantrae.v1.EntryPointService
   - name: mantrae.v1.MiddlewareService
   - name: mantrae.v1.ProfileService
@@ -4682,3 +5228,4 @@ tags:
   - name: mantrae.v1.ServiceService
   - name: mantrae.v1.SettingService
   - name: mantrae.v1.UserService
+  - name: mantrae.v1.UtilService

@@ -12,7 +12,7 @@ type MiddlewareHandler struct {
 	app *config.App
 }
 
-// NewMiddleware creates a new middleware set with configuration
+// NewMiddlewareHandler creates a new middleware set with configuration
 func NewMiddlewareHandler(app *config.App) *MiddlewareHandler {
 	return &MiddlewareHandler{app: app}
 }

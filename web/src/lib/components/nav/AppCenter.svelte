@@ -5,7 +5,6 @@
 	import { Layers, Route } from '@lucide/svelte';
 	import type { Router, Service } from '$lib/types/router';
 	import type { Middleware } from '$lib/types/middlewares';
-	import { middlewares, routerServiceMerge } from '$lib/api';
 	import { source } from '$lib/stores/source';
 	import { TraefikSource } from '$lib/types';
 

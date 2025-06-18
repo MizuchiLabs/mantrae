@@ -1,58 +1,53 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Globe, Shield, Bot, LayoutDashboard, Origami, Users } from '@lucide/svelte';
 	import {
-		Globe,
-		Shield,
-		Bot,
-		LayoutDashboard,
-		Origami,
-		Users,
-		TriangleAlert,
-		Trash2
-	} from '@lucide/svelte';
-	import { onMount } from 'svelte';
-	import { api, errors, profiles, stats } from '$lib/api';
-	import { TraefikSource } from '$lib/types';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { toast } from 'svelte-sonner';
+		agentClient,
+		dnsClient,
+		middlewareClient,
+		profileClient,
+		routerClient,
+		serviceClient,
+		userClient
+	} from '$lib/api';
 
-	interface ProfileStats {
-		id: number;
-		name: string;
-		url: string;
-		routers: number;
-		services: number;
-		middlewares: number;
-		agents: number;
-	}
-	let profileStats: ProfileStats[] = $state([]);
-
-	const clearErrors = async () => {
-		await api.deleteErrorsByProfile();
-		toast.success('Errors cleared successfully');
-	};
-
-	onMount(async () => {
-		await api.loadStats();
-		await api.listErrors();
-
-		if (!$profiles) return;
-		await api.getTraefikConfig(TraefikSource.LOCAL);
-
-		// Get profile stats
-		const t = await api.getTraefikStats();
-		profileStats =
-			t?.map((cfg) => ({
-				id: cfg.id,
-				name: cfg.name,
-				url: cfg.url,
-				routers: cfg.routers,
-				services: cfg.services,
-				middlewares: cfg.middlewares,
-				agents: cfg.agents
-			})) || [];
-	});
+	// interface ProfileStats {
+	// 	id: number;
+	// 	name: string;
+	// 	url: string;
+	// 	routers: number;
+	// 	services: number;
+	// 	middlewares: number;
+	// 	agents: number;
+	// }
+	// let profileStats: ProfileStats[] = $state([]);
+	//
+	// const clearErrors = async () => {
+	// 	await api.deleteErrorsByProfile();
+	// 	toast.success('Errors cleared successfully');
+	// };
+	//
+	// onMount(async () => {
+	// 	await api.loadStats();
+	// 	await api.listErrors();
+	//
+	// 	if (!$profiles) return;
+	// 	await api.getTraefikConfig(TraefikSource.LOCAL);
+	//
+	// 	// Get profile stats
+	// 	const t = await api.getTraefikStats();
+	// 	profileStats =
+	// 		t?.map((cfg) => ({
+	// 			id: cfg.id,
+	// 			name: cfg.name,
+	// 			url: cfg.url,
+	// 			routers: cfg.routers,
+	// 			services: cfg.services,
+	// 			middlewares: cfg.middlewares,
+	// 			agents: cfg.agents
+	// 		})) || [];
+	// });
 </script>
 
 <div class="container mx-auto p-6">
@@ -71,7 +66,9 @@
 				<Origami class="text-muted-foreground h-4 w-4" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{$stats.profiles}</div>
+				{#await profileClient.listProfiles({}) then result}
+					<div class="text-2xl font-bold">{result.totalCount}</div>
+				{/await}
 			</Card.Content>
 		</Card.Root>
 
@@ -81,7 +78,9 @@
 				<Bot class="text-muted-foreground h-4 w-4" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{$stats.agents}</div>
+				{#await agentClient.listAgents({}) then result}
+					<div class="text-2xl font-bold">{result.totalCount}</div>
+				{/await}
 				<p class="text-muted-foreground text-xs">Across all profiles</p>
 			</Card.Content>
 		</Card.Root>
@@ -92,12 +91,14 @@
 				<Globe class="text-muted-foreground h-4 w-4" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">
-					{$stats.activeDNS || 'None'}
-				</div>
-				<p class="text-muted-foreground text-xs">
-					{$stats.dnsProviders} providers configured
-				</p>
+				{#await dnsClient.listDnsProviders({}) then result}
+					<!-- <div class="text-2xl font-bold"> -->
+					<!-- 	{$stats.activeDNS || 'None'} -->
+					<!-- </div> -->
+					<p class="text-muted-foreground text-xs">
+						{result.totalCount}providers configured
+					</p>
+				{/await}
 			</Card.Content>
 		</Card.Root>
 
@@ -107,7 +108,9 @@
 				<Users class="text-muted-foreground h-4 w-4" />
 			</Card.Header>
 			<Card.Content>
-				<div class="text-2xl font-bold">{$stats.users}</div>
+				{#await userClient.listUsers({}) then result}
+					<div class="text-2xl font-bold">{result.totalCount}</div>
+				{/await}
 				<p class="text-muted-foreground text-xs"></p>
 			</Card.Content>
 		</Card.Root>
@@ -121,35 +124,49 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-4">
-					{#each profileStats as profile (profile.id)}
-						<div class="flex items-center justify-between">
-							<div class="flex items-center space-x-4">
-								<Shield class="h-4 w-4" />
-								<div class="space-y-1">
-									<p class="text-sm leading-none font-medium">
-										{profile.name}
-									</p>
-									<p class="text-muted-foreground text-xs">
-										{profile.url}
-									</p>
+					{#await profileClient.listProfiles({}) then result}
+						{#each result.profiles || [] as profile (profile.id)}
+							<div class="flex items-center justify-between">
+								<div class="flex items-center space-x-4">
+									<Shield class="h-4 w-4" />
+									<div class="space-y-1">
+										<p class="text-sm leading-none font-medium">
+											{profile.name}
+										</p>
+										<p class="text-muted-foreground text-xs">
+											{profile.description}
+										</p>
+									</div>
+								</div>
+								<div class="flex items-center gap-2">
+									{#await agentClient.listAgents({}) then result}
+										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
+											{result.totalCount}
+											{result.totalCount === 1n ? 'Agent' : 'Agents'}
+										</Badge>
+									{/await}
+									{#await routerClient.listRouters({}) then result}
+										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
+											{result.totalCount}
+											{result.totalCount === 1n ? 'Router' : 'Routers'}
+										</Badge>
+									{/await}
+									{#await serviceClient.listServices({}) then result}
+										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
+											{result.totalCount}
+											{result.totalCount === 1n ? 'Service' : 'Services'}
+										</Badge>
+									{/await}
+									{#await middlewareClient.listMiddlewares({}) then result}
+										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
+											{result.totalCount}
+											{result.totalCount === 1n ? 'Middleware' : 'Middlewares'}
+										</Badge>
+									{/await}
 								</div>
 							</div>
-							<div class="flex items-center gap-2">
-								<Badge variant={profile.agents > 0 ? 'default' : 'secondary'}>
-									{profile.agents}
-									{profile.agents === 1 ? 'Agent' : 'Agents'}
-								</Badge>
-								<Badge variant={profile.routers > 0 ? 'default' : 'secondary'}>
-									{profile.routers}
-									{profile.routers === 1 ? 'Router' : 'Routers'}
-								</Badge>
-								<Badge variant={profile.middlewares > 0 ? 'default' : 'secondary'}>
-									{profile.middlewares}
-									{profile.middlewares === 1 ? 'Middleware' : 'Middlewares'}
-								</Badge>
-							</div>
-						</div>
-					{/each}
+						{/each}
+					{/await}
 				</div>
 			</Card.Content>
 		</Card.Root>
@@ -159,33 +176,35 @@
 			<Card.Header>
 				<Card.Title class="flex items-center justify-between gap-2">
 					System Errors
-					<Button
-						variant="ghost"
-						size="icon"
-						class="rounded-full hover:bg-red-300"
-						onclick={clearErrors}
-					>
-						<Trash2 />
-					</Button>
+					<!-- <Button -->
+					<!-- 	variant="ghost" -->
+					<!-- 	size="icon" -->
+					<!-- 	class="rounded-full hover:bg-red-300" -->
+					<!-- 	onclick={() => errorClient.deleteErrorsByProfile({})} -->
+					<!-- > -->
+					<!-- 	<Trash2 /> -->
+					<!-- </Button> -->
 				</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-4">
-					{#each $errors as error (error.id)}
-						<div class="flex items-center">
-							<div class="relative mr-4">
-								<TriangleAlert class="h-4 w-4 text-red-500" />
-							</div>
-							<div class="space-y-1">
-								<p class="text-sm">
-									{error.message}
-								</p>
-								<p class="text-muted-foreground text-sm">
-									{error.details}
-								</p>
-							</div>
-						</div>
-					{/each}
+					<!-- {#await errorClient.listErrors({}) then result} -->
+					<!-- 	{#each result.errors || [] as error (error.id)} -->
+					<!-- 		<div class="flex items-center"> -->
+					<!-- 			<div class="relative mr-4"> -->
+					<!-- 				<TriangleAlert class="h-4 w-4 text-red-500" /> -->
+					<!-- 			</div> -->
+					<!-- 			<div class="space-y-1"> -->
+					<!-- 				<p class="text-sm"> -->
+					<!-- 					{error.message} -->
+					<!-- 				</p> -->
+					<!-- 				<p class="text-muted-foreground text-sm"> -->
+					<!-- 					{error.details} -->
+					<!-- 				</p> -->
+					<!-- 			</div> -->
+					<!-- 		</div> -->
+					<!-- 	{/each} -->
+					<!-- {/await} -->
 				</div>
 			</Card.Content>
 		</Card.Root>

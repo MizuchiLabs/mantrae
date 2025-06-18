@@ -1,7 +1,6 @@
 -- name: CreateDnsProvider :one
 INSERT INTO
   dns_providers (
-    id,
     name,
     type,
     config,
@@ -10,15 +9,7 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetDnsProvider :one
 SELECT

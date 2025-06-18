@@ -1,7 +1,9 @@
 import type { LayoutLoad } from './$types';
-import { api } from '$lib/api';
+import { logout, useClient } from '$lib/api';
 import { goto } from '$app/navigation';
 import { user } from '$lib/stores/user';
+import { UserService } from '$lib/gen/mantrae/v1/user_pb';
+import { token } from '$lib/stores/common';
 
 export const ssr = false;
 export const prerender = true;
@@ -12,35 +14,43 @@ const isPublicRoute = (path: string) => {
 };
 
 export const load: LayoutLoad = async ({ url, fetch }) => {
-	const currentPath = url.pathname;
-	const isPublic = isPublicRoute(currentPath);
-
-	// Try to verify authentication via cookie
-	try {
-		const isVerified = await api.verify(fetch);
-
-		if (isVerified) {
-			// User is authenticated
-			if (isPublic) {
-				// Authenticated user trying to access login page - redirect to home
-				await goto('/');
-				return;
-			}
-			// Continue to protected route
-			return;
-		} else {
-			// Verification failed but no exception thrown
-			throw new Error('Authentication failed');
-		}
-	} catch (_) {
-		// Authentication failed
+	// Case 1: No token and accessing protected route
+	if (!token.value && !isPublicRoute(url.pathname)) {
+		await goto('/login/');
 		user.clear();
-
-		if (!isPublic) {
-			// User trying to access protected route without auth - redirect to login
-			await goto('/login');
-		}
-		// If already on public route, stay there
 		return;
 	}
+
+	// If we have a token, verify it
+	if (token.value) {
+		try {
+			const client = useClient(UserService, fetch);
+			const userId = (await client.verifyJWT({ token: token.value })).userId;
+			if (!userId) {
+				throw new Error('Invalid token');
+			}
+			const data = await client.getUser({ identifier: { value: userId, case: 'id' } });
+			if (!data.user || !data.user.id) {
+				throw new Error('User not found');
+			}
+
+			// Redirect to home if trying to access login page while authenticated
+			if (isPublicRoute(url.pathname) && user.isLoggedIn()) {
+				await goto('/');
+			}
+			return;
+		} catch (error) {
+			// Token verification failed, clean up
+			logout();
+			user.clear();
+			throw new Error('Token verification failed: ' + error);
+		}
+	}
+
+	// No token and trying to access protected route
+	if (!isPublicRoute) {
+		await goto('/login');
+	}
+
+	return;
 };

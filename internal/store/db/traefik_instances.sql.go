@@ -28,7 +28,6 @@ func (q *Queries) CountTraefikInstances(ctx context.Context) (int64, error) {
 const createTraefikInstance = `-- name: CreateTraefikInstance :one
 INSERT INTO
   traefik_instances (
-    id,
     profile_id,
     url,
     username,
@@ -44,14 +43,12 @@ VALUES
     ?,
     ?,
     ?,
-    ?,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   ) RETURNING id, profile_id, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
 `
 
 type CreateTraefikInstanceParams struct {
-	ID        int64   `json:"id"`
 	ProfileID int64   `json:"profileId"`
 	Url       string  `json:"url"`
 	Username  *string `json:"username"`
@@ -61,7 +58,6 @@ type CreateTraefikInstanceParams struct {
 
 func (q *Queries) CreateTraefikInstance(ctx context.Context, arg CreateTraefikInstanceParams) (TraefikInstance, error) {
 	row := q.queryRow(ctx, q.createTraefikInstanceStmt, createTraefikInstance,
-		arg.ID,
 		arg.ProfileID,
 		arg.Url,
 		arg.Username,

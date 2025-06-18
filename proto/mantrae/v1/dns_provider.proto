@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service DnsProviderService {
+  rpc GetDnsProvider(GetDnsProviderRequest) returns (GetDnsProviderResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateDnsProvider(CreateDnsProviderRequest) returns (CreateDnsProviderResponse);
+  rpc UpdateDnsProvider(UpdateDnsProviderRequest) returns (UpdateDnsProviderResponse);
+  rpc DeleteDnsProvider(DeleteDnsProviderRequest) returns (DeleteDnsProviderResponse);
+  rpc ListDnsProviders(ListDnsProvidersRequest) returns (ListDnsProvidersResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message DnsProvider {
+  int64 id = 1;
+  string name = 2;
+  string type = 3;
+  DnsProviderConfig config = 4;
+  bool is_active = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message DnsProviderConfig {
+  string api_key = 1;
+  string api_url = 2;
+  string ip = 3;
+  bool proxied = 4;
+  bool auto_update = 5;
+  string zone_type = 6;
+}
+
+message GetDnsProviderRequest {
+  int64 id = 1;
+}
+message GetDnsProviderResponse {
+  DnsProvider dns_provider = 1;
+}
+
+message CreateDnsProviderRequest {
+  string name = 1;
+  string type = 2;
+  DnsProviderConfig config = 3;
+  bool is_active = 4;
+}
+message CreateDnsProviderResponse {
+  DnsProvider dns_provider = 1;
+}
+
+message UpdateDnsProviderRequest {
+  string name = 2;
+  string type = 3;
+  DnsProviderConfig config = 4;
+  bool is_active = 5;
+}
+message UpdateDnsProviderResponse {
+  DnsProvider dns_provider = 1;
+}
+
+message DeleteDnsProviderRequest {
+  int64 id = 1;
+}
+message DeleteDnsProviderResponse {}
+
+message ListDnsProvidersRequest {
+  optional int64 limit = 1;
+  optional int64 offset = 2;
+}
+message ListDnsProvidersResponse {
+  repeated DnsProvider dns_providers = 1;
+  int64 total_count = 2;
+}

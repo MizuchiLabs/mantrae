@@ -22,7 +22,7 @@ const (
 	AuthAgentIDKey ctxKey = "agent_id"
 )
 
-// BasicAuth middleware for simple authentication
+// BasicAuth middleware for http endpoints
 func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
@@ -51,6 +51,7 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	})
 }
 
+// Authentication middleware for gRPC endpoints
 func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 	return connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
@@ -106,12 +107,12 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 
 			// Add claims to context
 			ctx = context.WithValue(ctx, AuthUserIDKey, claims.ID)
-
 			return next(ctx, req)
 		}
 	})
 }
 
+// Helper
 func isPublicEndpoint(procedure string) bool {
 	publicEndpoints := map[string]bool{
 		mantraev1connect.UserServiceLoginUserProcedure: true,
@@ -121,7 +122,6 @@ func isPublicEndpoint(procedure string) bool {
 	return publicEndpoints[procedure]
 }
 
-// Helper functions to get auth info from context
 func GetUserIDFromContext(ctx context.Context) (string, bool) {
 	id, ok := ctx.Value(AuthUserIDKey).(string)
 	return id, ok

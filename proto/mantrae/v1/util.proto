@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service UtilService {
+  rpc GetVersion(GetVersionRequest) returns (GetVersionResponse);
+  rpc GetPublicIP(GetPublicIPRequest) returns (GetPublicIPResponse);
+}
+
+message GetVersionRequest {}
+message GetVersionResponse {
+  string version = 1;
+}
+
+message GetPublicIPRequest {}
+message GetPublicIPResponse {
+  string ipv4 = 1;
+  string ipv6 = 2;
+}

@@ -28,7 +28,6 @@ func (q *Queries) CountDnsProviders(ctx context.Context) (int64, error) {
 const createDnsProvider = `-- name: CreateDnsProvider :one
 INSERT INTO
   dns_providers (
-    id,
     name,
     type,
     config,
@@ -37,19 +36,10 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, name, type, config, is_active, created_at, updated_at
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, type, config, is_active, created_at, updated_at
 `
 
 type CreateDnsProviderParams struct {
-	ID       int64                     `json:"id"`
 	Name     string                    `json:"name"`
 	Type     string                    `json:"type"`
 	Config   *schema.DNSProviderConfig `json:"config"`
@@ -58,7 +48,6 @@ type CreateDnsProviderParams struct {
 
 func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderParams) (DnsProvider, error) {
 	row := q.queryRow(ctx, q.createDnsProviderStmt, createDnsProvider,
-		arg.ID,
 		arg.Name,
 		arg.Type,
 		arg.Config,

@@ -52,9 +52,9 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 			return nil, err
 		}
 		if machineIPs.IPv4 != "" {
-			provider.Config.TraefikIP = machineIPs.IPv4
+			provider.Config.IP = machineIPs.IPv4
 		} else if machineIPs.IPv6 != "" {
-			provider.Config.TraefikIP = machineIPs.IPv6
+			provider.Config.IP = machineIPs.IPv6
 		}
 	}
 

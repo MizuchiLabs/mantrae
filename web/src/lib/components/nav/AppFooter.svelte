@@ -2,13 +2,15 @@
 	import { BookText } from '@lucide/svelte';
 	import { Button } from '../ui/button';
 	import { onMount } from 'svelte';
-	import { api } from '$lib/api';
+	import { useClient } from '$lib/api';
 	import Separator from '../ui/separator/separator.svelte';
+	import { UtilService } from '$lib/gen/mantrae/v1/util_pb';
 
 	let version = $state('');
 	onMount(async () => {
-		const data = await api.getVersion();
-		version = data.version;
+		const client = useClient(UtilService);
+		const res = await client.getVersion({});
+		version = res.version;
 	});
 </script>
 

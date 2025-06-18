@@ -25,18 +25,14 @@
 		CircleUserRound,
 		Sun,
 		Moon,
-		Zap,
 		type IconProps
 	} from '@lucide/svelte';
-	import InfoModal from '../modals/info.svelte';
-	import ProfileModal from '../modals/profile.svelte';
-	import UserModal from '../modals/user.svelte';
-	import { profiles, api } from '$lib/api';
 	import { slide } from 'svelte/transition';
 	import type { Profile } from '$lib/types';
 	import { theme } from '$lib/stores/theme';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
+	import { logout, profileClient } from '$lib/api';
 
 	let {
 		ref = $bindable(null),
@@ -99,14 +95,15 @@
 	let modalState = $state(initialModalState);
 	let infoModalOpen = $state(false);
 	let userModalOpen = $state(false);
+	// let profiles = $derived(client.listProfiles({}).then((res) => res.profiles));
 </script>
 
-<ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} />
-<InfoModal bind:open={infoModalOpen} />
-
-{#if user.isLoggedIn() && user.value}
-	<UserModal bind:open={userModalOpen} user={user.value} />
-{/if}
+<!-- <ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} /> -->
+<!-- <InfoModal bind:open={infoModalOpen} /> -->
+<!---->
+<!-- {#if user.isLoggedIn() && user.value} -->
+<!-- 	<UserModal bind:open={userModalOpen} user={user.value} /> -->
+<!-- {/if} -->
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<!-- Profile Selection -->
@@ -130,7 +127,7 @@
 									<span class="truncate font-semibold">
 										{profile.name ? profile.name : 'Select Profile'}
 									</span>
-									<span class="truncate text-xs">{profile.value?.url ?? ''}</span>
+									<span class="truncate text-xs">{profile.value?.description ?? ''}</span>
 								</div>
 								<ChevronsUpDown class="ml-auto" />
 							</Sidebar.MenuButton>
@@ -143,26 +140,28 @@
 						sideOffset={4}
 					>
 						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
-						{#each $profiles as p (p.name)}
-							<DropdownMenu.Item
-								onSelect={() => (profile.value = p)}
-								class="flex justify-between gap-2"
-							>
-								<div class="flex items-center gap-2">
-									<div class="flex size-6 items-center justify-center rounded-sm border">
-										<Tag class="size-4 shrink-0" />
-									</div>
-									{p.name}
-								</div>
-								<Button
-									variant="secondary"
-									class="h-8 w-4 rounded-full"
-									onclick={() => (modalState = { isOpen: true, profile: p })}
+						{#await profileClient.listProfiles({}) then result}
+							{#each result.profiles || [] as p (p.id)}
+								<DropdownMenu.Item
+									onSelect={() => (profile.value = p)}
+									class="flex justify-between gap-2"
 								>
-									<Pencil />
-								</Button>
-							</DropdownMenu.Item>
-						{/each}
+									<div class="flex items-center gap-2">
+										<div class="flex size-6 items-center justify-center rounded-sm border">
+											<Tag class="size-4 shrink-0" />
+										</div>
+										{p.name}
+									</div>
+									<Button
+										variant="secondary"
+										class="h-8 w-4 rounded-full"
+										onclick={() => (modalState = { isOpen: true, profile: p })}
+									>
+										<Pencil />
+									</Button>
+								</DropdownMenu.Item>
+							{/each}
+						{/await}
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item class="gap-2 p-2" onSelect={() => (modalState = { isOpen: true })}>
 							<div class="bg-background flex size-6 items-center justify-center rounded-md border">
@@ -240,25 +239,25 @@
 		</Sidebar.Group>
 
 		<!-- Extra buttons (Traefik, etc.) -->
-		<Sidebar.Group class="mt-auto">
-			<Sidebar.GroupContent>
-				<Sidebar.GroupLabel>Status</Sidebar.GroupLabel>
-				<Sidebar.Menu>
-					{#if $profiles}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
-								{#snippet child({ props })}
-									<button {...props} onclick={() => (infoModalOpen = true)}>
-										<Zap />
-										<span>Traefik Status</span>
-									</button>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
-					{/if}
-				</Sidebar.Menu>
-			</Sidebar.GroupContent>
-		</Sidebar.Group>
+		<!-- <Sidebar.Group class="mt-auto"> -->
+		<!-- 	<Sidebar.GroupContent> -->
+		<!-- 		<Sidebar.GroupLabel>Status</Sidebar.GroupLabel> -->
+		<!-- 		<Sidebar.Menu> -->
+		<!-- 			{#if $profiles} -->
+		<!-- 				<Sidebar.MenuItem> -->
+		<!-- 					<Sidebar.MenuButton> -->
+		<!-- 						{#snippet child({ props })} -->
+		<!-- 							<button {...props} onclick={() => (infoModalOpen = true)}> -->
+		<!-- 								<Zap /> -->
+		<!-- 								<span>Traefik Status</span> -->
+		<!-- 							</button> -->
+		<!-- 						{/snippet} -->
+		<!-- 					</Sidebar.MenuButton> -->
+		<!-- 				</Sidebar.MenuItem> -->
+		<!-- 			{/if} -->
+		<!-- 		</Sidebar.Menu> -->
+		<!-- 	</Sidebar.GroupContent> -->
+		<!-- </Sidebar.Group> -->
 	</Sidebar.Content>
 
 	<!-- User Profile -->
@@ -324,7 +323,7 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item onSelect={() => api.logout()}>
+						<DropdownMenu.Item onSelect={() => logout()}>
 							<LogOut />
 							Log out
 						</DropdownMenu.Item>

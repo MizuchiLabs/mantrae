@@ -26,7 +26,6 @@ func (q *Queries) CountEntryPoints(ctx context.Context) (int64, error) {
 const createEntryPoint = `-- name: CreateEntryPoint :one
 INSERT INTO
   entry_points (
-    id,
     profile_id,
     name,
     address,
@@ -35,19 +34,10 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
 `
 
 type CreateEntryPointParams struct {
-	ID        int64  `json:"id"`
 	ProfileID int64  `json:"profileId"`
 	Name      string `json:"name"`
 	Address   string `json:"address"`
@@ -56,7 +46,6 @@ type CreateEntryPointParams struct {
 
 func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointParams) (EntryPoint, error) {
 	row := q.queryRow(ctx, q.createEntryPointStmt, createEntryPoint,
-		arg.ID,
 		arg.ProfileID,
 		arg.Name,
 		arg.Address,

@@ -29,7 +29,7 @@ func NewCloudflareProvider(d *schema.DNSProviderConfig) *CloudflareProvider {
 
 	return &CloudflareProvider{
 		Client:     client,
-		ExternalIP: d.TraefikIP,
+		ExternalIP: d.IP,
 		Proxied:    &d.Proxied,
 	}
 }

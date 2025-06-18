@@ -3,12 +3,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { api, loading } from '$lib/api';
-	import type { Profile } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
+	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+	import { profileClient } from '$lib/api';
 
 	interface Props {
 		profile?: Profile;
@@ -19,16 +17,11 @@
 
 	const handleSubmit = async () => {
 		try {
-			// Strip trailing slashes from URL
-			if (profile.url?.endsWith('/')) {
-				profile.url = profile.url.slice(0, -1);
-			}
-
 			if (profile.id) {
-				await api.updateProfile(profile as Profile);
+				await profileClient.updateProfile({ name: profile.name, description: profile.description });
 				toast.success('Profile updated successfully');
 			} else {
-				await api.createProfile(profile as Profile);
+				await profileClient.createProfile({ name: profile.name, description: profile.description });
 				toast.success('Profile created successfully');
 			}
 			open = false;
@@ -44,7 +37,7 @@
 		if (!profile.id) return;
 
 		try {
-			await api.deleteProfile(profile.id);
+			await profileClient.deleteProfile({ id: profile.id });
 			toast.success('Profile deleted successfully');
 			open = false;
 		} catch (err: unknown) {
@@ -70,34 +63,21 @@
 			</div>
 
 			<div class="space-y-1">
-				<Label for="url">URL</Label>
-				<Input id="url" bind:value={profile.url} required placeholder="http://localhost:8080" />
-			</div>
-
-			<div class="space-y-1">
-				<Label for="username">Username (optional)</Label>
-				<Input id="username" bind:value={profile.username} placeholder="admin" autocomplete="off" />
-			</div>
-
-			<div class="space-y-1">
-				<Label for="password">Password (optional)</Label>
-				<PasswordInput bind:value={profile.password} autocomplete="new-password" />
-			</div>
-
-			<div class="flex items-center space-x-2">
-				<Checkbox id="tls" checked={profile.tls} />
-				<Label for="tls">Enable TLS</Label>
+				<Label for="description">Description</Label>
+				<Input
+					id="description"
+					bind:value={profile.description}
+					placeholder="My Traefik instance"
+				/>
 			</div>
 
 			<Separator />
 
 			<div class="flex justify-end space-x-2">
 				{#if profile.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} disabled={$loading}>
-						Delete
-					</Button>
+					<Button type="button" variant="destructive" onclick={handleDelete}>Delete</Button>
 				{/if}
-				<Button type="submit" disabled={$loading}>{profile.id ? 'Update' : 'Create'}</Button>
+				<Button type="submit">{profile.id ? 'Update' : 'Create'}</Button>
 			</div>
 		</form>
 	</Dialog.Content>

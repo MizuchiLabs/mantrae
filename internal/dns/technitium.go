@@ -29,7 +29,7 @@ func NewTechnitiumProvider(d *schema.DNSProviderConfig) *TechnitiumProvider {
 	return &TechnitiumProvider{
 		BaseURL:    d.APIUrl,
 		APIKey:     d.APIKey,
-		ExternalIP: d.TraefikIP,
+		ExternalIP: d.IP,
 		ZoneType:   d.ZoneType,
 	}
 }

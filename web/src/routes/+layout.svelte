@@ -1,42 +1,26 @@
 <script lang="ts">
-	import { api } from '$lib/api';
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import AppHeader from '$lib/components/nav/AppHeader.svelte';
 	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
-	import AppCenter from '$lib/components/nav/AppCenter.svelte';
+	// import AppCenter from '$lib/components/nav/AppCenter.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import { closeSSE, initializeSSE } from '$lib/sse';
-	import { user } from '$lib/stores/user';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/state';
-	import { onMount } from 'svelte';
 	import '../app.css';
+	import { token } from '$lib/stores/common';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 	let { children }: Props = $props();
-
-	// Realtime updates
-	$effect(() => {
-		if (user.isLoggedIn()) {
-			initializeSSE();
-		} else {
-			closeSSE();
-		}
-	});
-
-	onMount(async () => {
-		await api.load();
-	});
 </script>
 
 <Toaster />
-<AppCenter />
+<!-- <AppCenter /> -->
 
 <Sidebar.Provider>
-	{#if user.isLoggedIn()}
+	{#if token.value}
 		<div class="bg-background flex h-screen w-full">
 			<AppSidebar />
 			<div class="flex w-full flex-1 flex-col">

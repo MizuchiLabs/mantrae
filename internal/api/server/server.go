@@ -69,7 +69,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	server := &http.Server{
 		Addr:              s.Host + ":" + s.Port,
-		Handler:           middlewares.WithCORS(s.mux, s.app),
+		Handler:           middlewares.WithCORS(s.mux, s.app, s.Port),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
@@ -138,11 +138,13 @@ func (s *Server) registerServices() {
 		mantraev1connect.UserServiceName,
 		mantraev1connect.EntryPointServiceName,
 		mantraev1connect.SettingServiceName,
+		mantraev1connect.DnsProviderServiceName,
 		mantraev1connect.AgentServiceName,
 		mantraev1connect.AgentManagementServiceName,
 		mantraev1connect.RouterServiceName,
 		mantraev1connect.ServiceServiceName,
 		mantraev1connect.MiddlewareServiceName,
+		mantraev1connect.UtilServiceName,
 	}
 
 	checker := grpchealth.NewStaticChecker(serviceNames...)
@@ -182,6 +184,10 @@ func (s *Server) registerServices() {
 		service.NewSettingService(s.app),
 		opts...,
 	))
+	s.mux.Handle(mantraev1connect.NewDnsProviderServiceHandler(
+		service.NewDnsProviderService(s.app),
+		opts...,
+	))
 	s.mux.Handle(mantraev1connect.NewAgentServiceHandler(
 		service.NewAgentService(s.app),
 		opts...,
@@ -200,6 +206,10 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewMiddlewareServiceHandler(
 		service.NewMiddlewareService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewUtilServiceHandler(
+		service.NewUtilService(s.app),
 		opts...,
 	))
 

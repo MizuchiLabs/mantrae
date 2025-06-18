@@ -1,7 +1,6 @@
 -- name: CreateTraefikInstance :one
 INSERT INTO
   traefik_instances (
-    id,
     profile_id,
     url,
     username,
@@ -12,7 +11,6 @@ INSERT INTO
   )
 VALUES
   (
-    ?,
     ?,
     ?,
     ?,

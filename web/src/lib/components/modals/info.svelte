@@ -5,7 +5,6 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { entrypoints, overview, version, dynamicJSON, dynamicYAML, api } from '$lib/api';
 	import Highlight, { LineNumbers } from 'svelte-highlight';
 	import { json, yaml } from 'svelte-highlight/languages';
 	import CopyButton from '../ui/copy-button/copy-button.svelte';

@@ -1,5 +1,6 @@
+import type { User } from '$lib/gen/mantrae/v1/user_pb';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { createLocalStorage } from '$lib/storage.svelte';
-import type { User } from '$lib/types';
 
 class UserStore {
 	private store = createLocalStorage<User | null>('current_user', null);
@@ -12,8 +13,7 @@ class UserStore {
 		this.store.value = user;
 	}
 
-	// Safe getters for required fields
-	get id(): number | undefined {
+	get id(): string | undefined {
 		return this.value?.id;
 	}
 
@@ -25,20 +25,19 @@ class UserStore {
 		return this.value?.isAdmin ?? false;
 	}
 
-	// Optional field getters
 	get email(): string | undefined {
 		return this.value?.email;
 	}
 
-	get lastLogin(): string | undefined {
+	get lastLogin(): Timestamp | undefined {
 		return this.value?.lastLogin;
 	}
 
-	get createdAt(): string | undefined {
+	get createdAt(): Timestamp | undefined {
 		return this.value?.createdAt;
 	}
 
-	get updatedAt(): string | undefined {
+	get updatedAt(): Timestamp | undefined {
 		return this.value?.updatedAt;
 	}
 

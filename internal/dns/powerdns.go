@@ -20,7 +20,7 @@ func NewPowerDNSProvider(d *schema.DNSProviderConfig) *PowerDNSProvider {
 
 	return &PowerDNSProvider{
 		Client:     client,
-		ExternalIP: d.TraefikIP,
+		ExternalIP: d.IP,
 	}
 }
 
