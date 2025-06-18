@@ -37,17 +37,16 @@ func Setup(ctx context.Context) (*App, error) {
 	}
 
 	app.Conn = store.NewConnection("")
+	app.SM = settings.NewManager(app.Conn)
+	app.SM.Start(ctx)
+
 	app.BM = backup.NewManager(app.Conn, app.SM)
 	app.BM.Start(ctx)
-
-	app.SM = settings.NewManager(app.Conn)
-	if err := app.SM.Initialize(ctx); err != nil {
-		return nil, fmt.Errorf("failed to initialize settings: %w", err)
-	}
 
 	if err := app.setupDefaultData(ctx); err != nil {
 		return nil, err
 	}
+	slog.Info("Default data initialized")
 
 	// Start background jobs
 	app.setupBackgroundJobs(ctx)
@@ -65,8 +64,8 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 
 	if len(admins) == 0 {
 		// Generate password if not provided
-		password := os.Getenv("ADMIN_PASSWORD")
-		if password == "" {
+		password, ok := os.LookupEnv("ADMIN_PASSWORD")
+		if !ok {
 			password = util.GenPassword(32)
 			slog.Info("Generated new admin", "password", password)
 		}
@@ -76,8 +75,8 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 			return fmt.Errorf("failed to hash password: %w", err)
 		}
 
-		email := os.Getenv("ADMIN_EMAIL")
-		if email == "" {
+		email, ok := os.LookupEnv("ADMIN_EMAIL")
+		if !ok {
 			email = "admin@localhost"
 		}
 

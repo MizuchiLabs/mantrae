@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -19,17 +20,24 @@ import (
 
 type BackupManager struct {
 	Conn      *store.Connection
-	Settings  *settings.SettingsManager
+	SM        *settings.SettingsManager
 	Storage   storage.Backend
 	stopChan  chan struct{}
 	waitGroup sync.WaitGroup
 	mu        sync.Mutex
 }
 
-func NewManager(conn *store.Connection, settings *settings.SettingsManager) *BackupManager {
+func NewManager(conn *store.Connection, sm *settings.SettingsManager) *BackupManager {
+	if conn == nil {
+		log.Fatal("No database connection provided")
+	}
+	if sm == nil {
+		log.Fatal("No settings manager provided")
+	}
+
 	return &BackupManager{
 		Conn:     conn,
-		Settings: settings,
+		SM:       sm,
 		stopChan: make(chan struct{}),
 	}
 }
@@ -50,8 +58,11 @@ func (m *BackupManager) Stop() {
 }
 
 func (m *BackupManager) SetStorage(ctx context.Context) error {
-	storageSet, _ := m.Settings.Get(ctx, settings.KeyBackupStorage)
-	storageType := storage.BackendType(storageSet.String("local"))
+	backupStorage, ok := m.SM.Get(settings.KeyBackupStorage)
+	if !ok {
+		return fmt.Errorf("failed to get backup storage setting")
+	}
+	storageType := storage.BackendType(backupStorage)
 	if !storageType.Valid() {
 		return fmt.Errorf("storage backend not configured")
 	}
@@ -60,12 +71,11 @@ func (m *BackupManager) SetStorage(ctx context.Context) error {
 	var newStorage storage.Backend
 	switch storageType {
 	case storage.BackendTypeLocal:
-		pathSet, err := m.Settings.Get(ctx, settings.KeyBackupPath)
-		if err != nil {
-			return fmt.Errorf("failed to get backup path: %w", err)
+		path, ok := m.SM.Get(settings.KeyBackupPath)
+		if !ok {
+			return fmt.Errorf("failed to get backup path")
 		}
 
-		path := pathSet.String("backups")
 		newStorage, err = storage.NewLocalStorage(path)
 		if err != nil {
 			return fmt.Errorf("failed to create local storage: %w", err)
@@ -73,7 +83,7 @@ func (m *BackupManager) SetStorage(ctx context.Context) error {
 		slog.Debug("backup storage set to local", "path", path)
 
 	case storage.BackendTypeS3:
-		newStorage, err = storage.NewS3Storage(ctx, m.Settings)
+		newStorage, err = storage.NewS3Storage(ctx, m.SM)
 		if err != nil {
 			return fmt.Errorf("failed to create s3 storage: %w", err)
 		}
@@ -91,14 +101,13 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 	defer m.waitGroup.Done()
 
 	// Get backup interval
-	intervalSet, err := m.Settings.Get(ctx, settings.KeyBackupInterval)
-	if err != nil {
-		slog.Error("failed to get backup interval", "error", err)
+	interval, ok := m.SM.Get(settings.KeyBackupInterval)
+	if !ok {
+		slog.Error("failed to get backup interval")
 		return
 	}
-	interval := intervalSet.Duration(24)
 
-	ticker := time.NewTicker(interval)
+	ticker := time.NewTicker(settings.AsDuration(interval))
 	defer ticker.Stop()
 
 	for {
@@ -304,17 +313,16 @@ func (m *BackupManager) cleanup(ctx context.Context) error {
 		return fmt.Errorf("failed to list backups: %w", err)
 	}
 
-	retentionSet, err := m.Settings.Get(ctx, settings.KeyBackupKeep)
-	if err != nil {
-		return fmt.Errorf("failed to get retention setting: %w", err)
+	retention, ok := m.SM.Get(settings.KeyBackupKeep)
+	if !ok {
+		return fmt.Errorf("failed to get retention setting")
 	}
-	retention := retentionSet.Int(7)
-	if len(files) <= retention {
+	if len(files) <= settings.AsInt(retention) {
 		return nil
 	}
 
 	// Delete older backups
-	for _, file := range files[retention:] {
+	for _, file := range files[settings.AsInt(retention):] {
 		if err := m.Storage.Delete(ctx, file.Name); err != nil {
 			return fmt.Errorf("failed to delete old backup %s: %w", file.Name, err)
 		}

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/joeig/go-powerdns/v3"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 type PowerDNSProvider struct {
@@ -15,7 +15,7 @@ type PowerDNSProvider struct {
 	ExternalIP string
 }
 
-func NewPowerDNSProvider(d *db.DNSProviderConfig) *PowerDNSProvider {
+func NewPowerDNSProvider(d *schema.DNSProviderConfig) *PowerDNSProvider {
 	client := powerdns.New(d.APIUrl, "", powerdns.WithAPIKey(d.APIKey))
 
 	return &PowerDNSProvider{

@@ -209,9 +209,9 @@ func (s *Server) registerServices() {
 	basicChain := middlewares.Chain(mw.Logger, mw.BasicAuth)
 
 	if s.SecureTraefik {
-		s.mux.Handle("GET /{name}", basicChain(handler.PublishTraefikConfig(s.app)))
+		s.mux.Handle("GET /api/{name}", basicChain(handler.PublishTraefikConfig(s.app)))
 	} else {
-		s.mux.Handle("GET /{name}", logChain(handler.PublishTraefikConfig(s.app)))
+		s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
 	}
 
 	// TODO: OIDC

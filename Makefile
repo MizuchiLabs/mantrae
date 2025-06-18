@@ -61,20 +61,20 @@ upgrade:
 
 .PHONY: db-up
 db-up:
-	goose sqlite3 data/mantrae.db -dir internal/db/migrations up-by-one
+	goose sqlite3 data/mantrae.db -dir internal/store/migrations up-by-one
 
 .PHONY: db-down
 db-down:
-	goose sqlite3 data/mantrae.db -dir internal/db/migrations down
+	goose sqlite3 data/mantrae.db -dir internal/store/migrations down
 
 .PHONY: db-reset
 db-reset:
 	rm -f mantrae.db
-	goose sqlite3 data/mantrae.db -dir internal/db/migrations up
+	goose sqlite3 data/mantrae.db -dir internal/store/migrations up
 
 .PHONY: db-status
 db-status:
-	goose sqlite3 data/mantrae.db -dir internal/db/migrations status
+	goose sqlite3 data/mantrae.db -dir internal/store/migrations status
 
 .PHONY: run
 run-server:

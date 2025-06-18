@@ -2,17 +2,18 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
 	"sort"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/mizuchilabs/mantrae/internal/settings"
 )
 
 type S3Config struct {
@@ -31,7 +32,7 @@ type S3Storage struct {
 }
 
 func NewS3Storage(ctx context.Context, sm *settings.SettingsManager) (*S3Storage, error) {
-	cfgData, err := getSettings(ctx, sm)
+	cfgData, err := getSettings(sm)
 	if err != nil {
 		return nil, err
 	}
@@ -160,45 +161,39 @@ func (s *S3Storage) Delete(ctx context.Context, name string) error {
 	return nil
 }
 
-func getSettings(ctx context.Context, sm *settings.SettingsManager) (*S3Config, error) {
-	region, err := sm.Get(ctx, settings.KeyS3Region)
-	if err != nil {
-		return nil, err
+func getSettings(sm *settings.SettingsManager) (*S3Config, error) {
+	region, ok := sm.Get(settings.KeyS3Region)
+	if !ok {
+		return nil, errors.New("failed to get S3 region")
 	}
-
-	endpoint, err := sm.Get(ctx, settings.KeyS3Endpoint)
-	if err != nil {
-		return nil, err
+	endpoint, ok := sm.Get(settings.KeyS3Endpoint)
+	if !ok {
+		return nil, errors.New("failed to get S3 endpoint")
 	}
-
-	bucket, err := sm.Get(ctx, settings.KeyS3Bucket)
-	if err != nil {
-		return nil, err
+	bucket, ok := sm.Get(settings.KeyS3Bucket)
+	if !ok {
+		return nil, errors.New("failed to get S3 bucket")
 	}
-
-	accessKey, err := sm.Get(ctx, settings.KeyS3AccessKey)
-	if err != nil {
-		return nil, err
+	accessKey, ok := sm.Get(settings.KeyS3AccessKey)
+	if !ok {
+		return nil, errors.New("failed to get S3 access key")
 	}
-
-	secretKey, err := sm.Get(ctx, settings.KeyS3SecretKey)
-	if err != nil {
-		return nil, err
+	secretKey, ok := sm.Get(settings.KeyS3SecretKey)
+	if !ok {
+		return nil, errors.New("failed to get S3 secret key")
 	}
-
-	usePathStyle, err := sm.Get(ctx, settings.KeyS3UsePathStyle)
-	if err != nil {
-		return nil, err
+	usePathStyle, ok := sm.Get(settings.KeyS3UsePathStyle)
+	if !ok {
+		return nil, errors.New("failed to get S3 use path style")
 	}
 
 	cfg := S3Config{
-		Region:       region.String("us-east-1"),
-		Endpoint:     endpoint.String(""),
-		Bucket:       bucket.String("mantrae"),
-		AccessKey:    accessKey.String(""),
-		SecretKey:    secretKey.String(""),
-		UsePathStyle: usePathStyle.Bool(false),
+		Region:       region,
+		Endpoint:     endpoint,
+		Bucket:       bucket,
+		AccessKey:    accessKey,
+		SecretKey:    secretKey,
+		UsePathStyle: settings.AsBool(usePathStyle),
 	}
-
 	return &cfg, nil
 }

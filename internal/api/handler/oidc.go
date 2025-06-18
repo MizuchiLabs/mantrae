@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/db"
-	"github.com/mizuchilabs/mantrae/internal/settings"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"golang.org/x/oauth2"
 )
 
@@ -196,7 +196,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 
 		// Generate JWT and set cookie
 		expirationTime := time.Now().Add(24 * time.Hour)
-		jwtToken, err := util.EncodeUserJWT(user.Username, a.Config.Secret, expirationTime)
+		jwtToken, err := util.EncodeUserJWT(user.Username, a.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, "Failed to generate JWT", http.StatusInternalServerError)
 			return
@@ -234,11 +234,11 @@ func OIDCStatus(a *config.App) http.HandlerFunc {
 		}
 
 		if err == nil && oidcConfig != nil {
-			providerName, _ := a.SM.Get(r.Context(), settings.KeyOIDCProviderName)
-			pwLogin, _ := a.SM.Get(r.Context(), settings.KeyPasswordLoginDisabled)
+			providerName, _ := a.SM.Get(settings.KeyOIDCProviderName)
+			pwLogin, _ := a.SM.Get(settings.KeyPasswordLoginDisabled)
 			response["enabled"] = oidcConfig.Enabled
-			response["provider"] = providerName.String("")
-			response["loginDisabled"] = pwLogin.Bool(false)
+			response["provider"] = providerName
+			response["loginDisabled"] = settings.AsBool(pwLogin)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -287,45 +287,42 @@ func setupOIDCConfig(
 func getOIDCConfig(ctx context.Context, a *config.App) (*OIDCConfig, error) {
 	config := &OIDCConfig{Scopes: []string{"openid", "email", "profile"}}
 
-	sets, err := a.SM.GetAll(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get settings: %w", err)
-	}
+	sets := a.SM.GetAll()
 
 	// Parse settings (same as before but simplified validation)
 	if enabled, exists := sets[settings.KeyOIDCEnabled]; exists {
-		config.Enabled = enabled.Bool(false)
+		config.Enabled = settings.AsBool(enabled)
 	}
 	if !config.Enabled {
 		return config, nil // Return early if disabled
 	}
 
 	if pkce, exists := sets[settings.KeyOIDCPKCE]; exists {
-		config.UsePKCE = pkce.Bool(false)
+		config.UsePKCE = settings.AsBool(pkce)
 	}
 
 	if clientID, exists := sets[settings.KeyOIDCClientID]; exists {
-		config.ClientID = clientID.String("")
+		config.ClientID = clientID
 	}
 
 	if !config.UsePKCE {
 		if clientSecret, exists := sets[settings.KeyOIDCClientSecret]; exists {
-			config.ClientSecret = clientSecret.String("")
+			config.ClientSecret = clientSecret
 		}
 	}
 
 	if serverURL, exists := sets[settings.KeyServerURL]; exists {
-		if parsed, err := url.Parse(serverURL.String("")); err == nil {
+		if parsed, err := url.Parse(serverURL); err == nil {
 			config.RedirectURL = strings.TrimSuffix(parsed.String(), "/") + "/api/oidc/callback"
 		}
 	}
 
 	if issuerURL, exists := sets[settings.KeyOIDCIssuerURL]; exists {
-		config.IssuerURL = issuerURL.String("")
+		config.IssuerURL = issuerURL
 	}
 
-	if scopes, exists := sets["oauth_scopes"]; exists && scopes.String("") != "" {
-		config.Scopes = strings.Split(scopes.String(""), ",")
+	if scopes, exists := sets["oauth_scopes"]; exists && scopes != "" {
+		config.Scopes = strings.Split(scopes, ",")
 		for i := range config.Scopes {
 			config.Scopes[i] = strings.TrimSpace(config.Scopes[i])
 		}
@@ -395,12 +392,12 @@ func findOrCreateOIDCUser(
 			IsAdmin:  false,
 		}
 
-		newUserID, err := q.CreateUser(ctx, params)
+		newUser, err := q.CreateUser(ctx, params)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create OIDC user: %w", err)
 		}
 		user = &db.User{
-			ID:       newUserID,
+			ID:       newUser.ID,
 			Username: username,
 			Email:    &userInfo.Email,
 			IsAdmin:  false,
@@ -408,11 +405,11 @@ func findOrCreateOIDCUser(
 	} else {
 		// Update existing user's email if verified
 		if userInfo.Email != "" && userInfo.EmailVerified {
-			if err := q.UpdateUser(ctx, db.UpdateUserParams{
+			if _, err := q.UpdateUser(ctx, db.UpdateUserParams{
+				ID:       user.ID,
 				Username: user.Username,
 				Email:    &userInfo.Email,
 				IsAdmin:  user.IsAdmin,
-				ID:       user.ID,
 			}); err != nil {
 				return nil, fmt.Errorf("failed to update user email: %w", err)
 			}

@@ -1,12 +1,5 @@
 -- +goose Up
-CREATE TABLE profiles (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  description TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+-- Create new tables that don't exist in the old schema
 CREATE TABLE entry_points (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -32,8 +25,6 @@ CREATE TABLE http_routers (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_http_routers_profile_name ON http_routers (profile_id, name);
-
 CREATE TABLE tcp_routers (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -47,8 +38,6 @@ CREATE TABLE tcp_routers (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
 
 CREATE TABLE udp_routers (
   id INTEGER PRIMARY KEY,
@@ -64,8 +53,6 @@ CREATE TABLE udp_routers (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_udp_routers_profile_name ON udp_routers (profile_id, name);
-
 CREATE TABLE http_services (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -78,8 +65,6 @@ CREATE TABLE http_services (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_http_services_profile_name ON http_services (profile_id, name);
 
 CREATE TABLE tcp_services (
   id INTEGER PRIMARY KEY,
@@ -94,8 +79,6 @@ CREATE TABLE tcp_services (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_tcp_services_profile_name ON tcp_services (profile_id, name);
-
 CREATE TABLE udp_services (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -108,8 +91,6 @@ CREATE TABLE udp_services (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
 
 CREATE TABLE http_middlewares (
   id INTEGER PRIMARY KEY,
@@ -125,8 +106,6 @@ CREATE TABLE http_middlewares (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, name);
-
 CREATE TABLE tcp_middlewares (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -140,8 +119,6 @@ CREATE TABLE tcp_middlewares (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
 
 CREATE TABLE traefik_instances (
   id INTEGER PRIMARY KEY,
@@ -159,7 +136,69 @@ CREATE TABLE traefik_instances (
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
-CREATE TABLE users (
+-- Migrate data from old traefik table to new traefik_instances
+INSERT INTO
+  traefik_instances (
+    profile_id,
+    entrypoints,
+    overview,
+    config,
+    version,
+    url,
+    username,
+    password,
+    tls,
+    created_at,
+    updated_at
+  )
+SELECT
+  t.profile_id,
+  t.entrypoints,
+  t.overview,
+  t.config,
+  t.version,
+  p.url,
+  p.username,
+  p.password,
+  p.tls,
+  t.created_at,
+  t.updated_at
+FROM
+  traefik t
+  JOIN profiles p ON t.profile_id = p.id;
+
+-- Update profiles table structure
+-- Remove columns that are now in traefik_instances
+ALTER TABLE profiles
+DROP COLUMN url;
+
+ALTER TABLE profiles
+DROP COLUMN username;
+
+ALTER TABLE profiles
+DROP COLUMN password;
+
+ALTER TABLE profiles
+DROP COLUMN tls;
+
+-- Add description column to profiles
+ALTER TABLE profiles
+ADD COLUMN description TEXT;
+
+-- Update agents table - change JSON columns to TEXT
+UPDATE agents
+SET
+  private_ips = CASE
+    WHEN private_ips IS NOT NULL THEN private_ips
+    ELSE NULL
+  END,
+  containers = CASE
+    WHEN containers IS NOT NULL THEN containers
+    ELSE NULL
+  END;
+
+-- Update users table - change id to TEXT and remove AUTOINCREMENT
+CREATE TABLE users_new (
   id TEXT PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
@@ -172,46 +211,43 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE settings (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+INSERT INTO
+  users_new (
+    id,
+    username,
+    password,
+    email,
+    is_admin,
+    otp,
+    otp_expiry,
+    last_login,
+    created_at,
+    updated_at
+  )
+SELECT
+  CAST(id AS TEXT),
+  username,
+  password,
+  email,
+  is_admin,
+  otp,
+  otp_expiry,
+  last_login,
+  created_at,
+  updated_at
+FROM
+  users;
 
-CREATE TABLE errors (
-  id INTEGER PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
-  category TEXT NOT NULL,
-  message TEXT NOT NULL,
-  details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-);
+DROP TABLE users;
 
-CREATE TABLE agents (
-  id TEXT PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
-  hostname TEXT,
-  public_ip TEXT,
-  private_ips TEXT,
-  containers TEXT,
-  active_ip TEXT,
-  token TEXT NOT NULL DEFAULT '',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-);
+ALTER TABLE users_new
+RENAME TO users;
 
-CREATE TABLE dns_providers (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  type TEXT NOT NULL,
-  config TEXT NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Update settings table - remove description column
+ALTER TABLE settings
+DROP COLUMN description;
 
+-- Create new DNS provider association tables
 CREATE TABLE http_router_dns_providers (
   http_router_id INTEGER NOT NULL,
   dns_provider_id INTEGER NOT NULL,
@@ -228,64 +264,29 @@ CREATE TABLE tcp_router_dns_providers (
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
 );
 
--- +goose StatementBegin
-CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE dns_providers
-SET
-  is_active = 0
-WHERE
-  is_active = 1;
+-- Create indexes
+CREATE INDEX idx_http_routers_profile_name ON http_routers (profile_id, name);
 
-END;
+CREATE INDEX idx_tcp_routers_profile_name ON tcp_routers (profile_id, name);
 
--- +goose StatementEnd
--- +goose StatementBegin
-CREATE TRIGGER ensure_single_active_update BEFORE
-UPDATE ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE dns_providers
-SET
-  is_active = 0
-WHERE
-  is_active = 1;
+CREATE INDEX idx_udp_routers_profile_name ON udp_routers (profile_id, name);
 
-END;
+CREATE INDEX idx_http_services_profile_name ON http_services (profile_id, name);
 
--- +goose StatementEnd
--- +goose Down
-DROP TABLE IF EXISTS profiles;
+CREATE INDEX idx_tcp_services_profile_name ON tcp_services (profile_id, name);
 
-DROP TABLE IF EXISTS entry_points;
+CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
 
-DROP TABLE IF EXISTS http_routers;
+CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, name);
 
-DROP TABLE IF EXISTS tcp_routers;
+CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
 
-DROP TABLE IF EXISTS udp_routers;
+-- Drop old tables and constraints
+DROP TABLE router_dns_provider;
 
-DROP TABLE IF EXISTS http_services;
+DROP TABLE traefik;
 
-DROP TABLE IF EXISTS tcp_services;
-
-DROP TABLE IF EXISTS udp_services;
-
-DROP TABLE IF EXISTS http_middlewares;
-
-DROP TABLE IF EXISTS tcp_middlewares;
-
-DROP TABLE IF EXISTS traefik_instances;
-
-DROP TABLE IF EXISTS users;
-
-DROP TABLE IF EXISTS settings;
-
-DROP TABLE IF EXISTS errors;
-
-DROP TABLE IF EXISTS agents;
-
-DROP TABLE IF EXISTS dns_providers;
-
-DROP TABLE IF EXISTS http_router_dns_providers;
-
-DROP TABLE IF EXISTS tcp_router_dns_providers;
-
-DROP TABLE IF EXISTS udp_router_dns_providers;
+-- Remove old triggers for DNS providers (they still apply)
+-- The triggers are preserved as they're still relevant
+-- Remove old unique index on errors table
+DROP INDEX unique_dns_error;

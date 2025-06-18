@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mizuchilabs/mantrae/internal/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 type CloudflareProvider struct {
@@ -16,7 +16,7 @@ type CloudflareProvider struct {
 	Proxied    *bool
 }
 
-func NewCloudflareProvider(d *db.DNSProviderConfig) *CloudflareProvider {
+func NewCloudflareProvider(d *schema.DNSProviderConfig) *CloudflareProvider {
 	if d == nil || d.APIKey == "" {
 		slog.Error("Invalid Cloudflare provider config")
 		return nil

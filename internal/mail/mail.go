@@ -1,12 +1,14 @@
 package mail
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/smtp"
 
-	"github.com/mizuchilabs/mantrae/internal/mail/templates"
 	"github.com/domodwyer/mailyak/v3"
+	"github.com/mizuchilabs/mantrae/internal/mail/templates"
+	"github.com/mizuchilabs/mantrae/internal/settings"
 )
 
 type EmailConfig struct {
@@ -17,7 +19,12 @@ type EmailConfig struct {
 	From     string
 }
 
-func Send(to, templateName string, email EmailConfig, data map[string]any) error {
+func Send(sm *settings.SettingsManager, to, templateName string, data map[string]any) error {
+	email, err := getConfig(sm)
+	if err != nil {
+		return err
+	}
+
 	client := mailyak.New(
 		email.Host+":"+email.Port,
 		smtp.PlainAuth("", email.Username, email.Password, email.Host),
@@ -52,4 +59,35 @@ func Send(to, templateName string, email EmailConfig, data map[string]any) error
 		return fmt.Errorf("failed to send email: %w, check your SMTP settings", err)
 	}
 	return nil
+}
+
+func getConfig(sm *settings.SettingsManager) (*EmailConfig, error) {
+	host, ok := sm.Get(settings.KeyEmailHost)
+	if !ok {
+		return nil, errors.New("failed to get email host")
+	}
+	port, ok := sm.Get(settings.KeyEmailPort)
+	if !ok {
+		return nil, errors.New("failed to get email port")
+	}
+	username, ok := sm.Get(settings.KeyEmailUser)
+	if !ok {
+		return nil, errors.New("failed to get email username")
+	}
+	password, ok := sm.Get(settings.KeyEmailPassword)
+	if !ok {
+		return nil, errors.New("failed to get email password")
+	}
+	from, ok := sm.Get(settings.KeyEmailFrom)
+	if !ok {
+		return nil, errors.New("failed to get email from")
+	}
+
+	return &EmailConfig{
+		Host:     host,
+		Port:     port,
+		Username: username,
+		Password: password,
+		From:     from,
+	}, nil
 }

@@ -122,12 +122,12 @@ func (s *AgentService) updateToken(ctx context.Context, id string) (*string, err
 		return &agent.Token, nil // Still valid
 	}
 
-	agentInterval, err := s.app.SM.Get(ctx, settings.KeyAgentCleanupInterval)
-	if err != nil {
-		return nil, err
+	agentInterval, ok := s.app.SM.Get(settings.KeyAgentCleanupInterval)
+	if !ok {
+		return nil, errors.New("failed to get agent cleanup interval setting")
 	}
 
-	token, err := claims.EncodeJWT(s.app.Secret, agentInterval.Duration(time.Hour*72))
+	token, err := claims.EncodeJWT(s.app.Secret, settings.AsDuration(agentInterval))
 	if err != nil {
 		return nil, err
 	}

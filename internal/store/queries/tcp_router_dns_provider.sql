@@ -26,3 +26,17 @@ DELETE FROM tcp_router_dns_providers
 WHERE
   tcp_router_id = ?
   AND dns_provider_id = ?;
+
+-- name: GetTcpRouterDomains :many
+SELECT
+  tr.id AS router_id,
+  tr.name AS router_name,
+  tr.config AS config_json,
+  p.name AS profile_name,
+  dp.id AS dns_provider_id,
+  dp.name AS dns_provider_name
+FROM
+  tcp_routers tr
+  JOIN profiles p ON tr.profile_id = p.id
+  LEFT JOIN tcp_router_dns_providers link ON link.tcp_router_id = tr.id
+  LEFT JOIN dns_providers dp ON link.dns_provider_id = dp.id;

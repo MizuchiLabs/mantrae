@@ -2,17 +2,14 @@ package settings
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 )
 
-func (sm *SettingsManager) validateSetting(
-	ctx context.Context,
-	params *db.UpsertSettingParams,
-) error {
+func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettingParams) error {
 	q := sm.conn.GetQuery()
 
 	// Trim whitespace
@@ -22,54 +19,53 @@ func (sm *SettingsManager) validateSetting(
 	case KeyServerURL:
 		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
-			return fmt.Errorf("Server URL cannot be empty")
+			return errors.New("server url cannot be empty")
 		}
 
 	case KeyS3Endpoint:
 		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
-			return fmt.Errorf("OIDC issuer URL cannot be empty")
+			return errors.New("S3 endpoint cannot be empty")
 		}
 
 	case KeyOIDCIssuerURL:
 		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
-			return fmt.Errorf("OIDC issuer URL cannot be empty")
+			return errors.New("OIDC issuer URL cannot be empty")
 		}
 
 	case KeyEmailPort:
 		port, err := strconv.Atoi(params.Value)
 		if err != nil || port < 1 || port > 65535 {
-			return fmt.Errorf("email port must be a valid TCP port (1-65535)")
+			return errors.New("email port must be an integer between 1 and 65535")
 		}
 
 	case KeyBackupKeep:
 		i, err := strconv.Atoi(params.Value)
 		if err != nil || i < 1 {
-			return fmt.Errorf("backup_keep must be an integer >= 1")
+			return errors.New("backup keep must be an integer greater than 0")
 		}
 
 	case KeyPasswordLoginDisabled:
 		// Don't allow disabling password login unless OIDC is enabled
-		enabled, err := sm.Get(ctx, KeyOIDCEnabled)
-		if err != nil {
-			return fmt.Errorf("failed to get OIDC setting: %w", err)
+		enabled, ok := sm.Get(KeyOIDCEnabled)
+		if !ok {
+			return errors.New("failed to get OIDC setting")
 		}
-		if params.Value == "true" && !enabled.Bool(false) {
-			return fmt.Errorf("cannot disable password login when OIDC is not enabled")
+		if params.Value == "true" && !AsBool(enabled) {
+			return errors.New("password login cannot be disabled unless OIDC is enabled")
 		}
 
 	case KeyOIDCEnabled:
 		// If Password Login is disabled ensure to enable it again if oidc gets disabled
-		pwLogin, err := sm.Get(ctx, KeyPasswordLoginDisabled)
-		if err != nil {
-			return fmt.Errorf("failed to get OIDC setting: %w", err)
+		pwLogin, ok := sm.Get(KeyPasswordLoginDisabled)
+		if !ok {
+			return errors.New("failed to get password login setting")
 		}
-		if params.Value == "false" && pwLogin.Bool(false) {
+		if params.Value == "false" && AsBool(pwLogin) {
 			return q.UpsertSetting(ctx, db.UpsertSettingParams{
-				Key:         KeyPasswordLoginDisabled,
-				Value:       "false",
-				Description: pwLogin.Description,
+				Key:   KeyPasswordLoginDisabled,
+				Value: "false",
 			})
 		}
 	}

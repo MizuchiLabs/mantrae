@@ -12,7 +12,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/mail"
-	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -156,31 +155,11 @@ func (s *UserService) SendOTP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	sets, err := s.app.SM.GetAll(ctx)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	var config mail.EmailConfig
-	for _, s := range sets {
-		switch s.Value {
-		case settings.KeyEmailHost:
-			config.Host = s.Value.(string)
-		case settings.KeyEmailPort:
-			config.Port = s.Value.(string)
-		case settings.KeyEmailUser:
-			config.Username = s.Value.(string)
-		case settings.KeyEmailPassword:
-			config.Password = s.Value.(string)
-		case settings.KeyEmailFrom:
-			config.From = s.Value.(string)
-		}
-	}
 	data := map[string]any{
 		"Token": token,
 		"Date":  expiresAt.Format("Jan 2, 2006 at 15:04"),
 	}
-	if err := mail.Send(*user.Email, "reset-password", config, data); err != nil {
+	if err := mail.Send(s.app.SM, *user.Email, "reset-password", data); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
