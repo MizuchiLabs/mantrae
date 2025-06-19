@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTcpRoutersByProfile :many
-SELECT
-  *
-FROM
-  tcp_routers
-WHERE
-  profile_id = ?;
-
 -- name: ListTcpRouters :many
 SELECT
   *
 FROM
   tcp_routers
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

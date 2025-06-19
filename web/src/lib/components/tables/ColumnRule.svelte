@@ -1,12 +1,14 @@
 <script lang="ts">
 	import * as HoverCard from '$lib/components/ui/hover-card';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
 	import { Link, ListTree } from '@lucide/svelte';
 
 	interface Props {
 		rule: string;
-		protocol: 'http' | 'tcp';
+		routerType: RouterType.HTTP | RouterType.TCP;
 	}
-	let { rule, protocol }: Props = $props();
+	let { rule, routerType }: Props = $props();
 
 	interface ParsedRule {
 		value: string;
@@ -84,13 +86,13 @@
 	let parsedRules: ParsedRule[] = $derived(parseRule(rule));
 
 	function getUrl(domain: string): string {
-		const prefix = protocol === 'http' ? 'http://' : 'https://';
+		const prefix = routerType === RouterType.HTTP ? 'http://' : 'https://';
 		return `${prefix}${domain}`;
 	}
 </script>
 
 {#if parsedRules.length === 0}
-	<span class="text-muted-foreground">No rules</span>
+	<Badge variant="outline" class="text-xs">None</Badge>
 {:else if parsedRules.length === 1}
 	{#if parsedRules[0].isClickable}
 		<a

@@ -94,9 +94,10 @@ message DeleteMiddlewareRequest {
 message DeleteMiddlewareResponse {}
 
 message ListMiddlewaresRequest {
-  MiddlewareType type = 1;
-  optional int64 limit = 2;
-  optional int64 offset = 3;
+  int64 profile_id = 1;
+  optional MiddlewareType type = 2;
+  optional int64 limit = 3;
+  optional int64 offset = 4;
 }
 message ListMiddlewaresResponse {
   repeated Middleware middlewares = 1;

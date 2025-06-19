@@ -28,21 +28,19 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTraefikInstanceByProfile :one
-SELECT
-  *
-FROM
-  traefik_instances
-WHERE
-  profile_id = ?;
-
 -- name: ListTraefikInstances :many
 SELECT
   *
 FROM
   traefik_instances
+WHERE
+  profile_id = ?
 ORDER BY
-  created_at DESC;
+  created_at DESC
+LIMIT
+  ?
+OFFSET
+  ?;
 
 -- name: CountTraefikInstances :one
 SELECT

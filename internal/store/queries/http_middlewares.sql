@@ -28,19 +28,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetHttpMiddlewaresByProfile :many
-SELECT
-  *
-FROM
-  http_middlewares
-WHERE
-  profile_id = ?;
-
 -- name: ListHttpMiddlewares :many
 SELECT
   *
 FROM
   http_middlewares
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

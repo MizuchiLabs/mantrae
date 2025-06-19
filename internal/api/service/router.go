@@ -10,8 +10,8 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type RouterService struct {
@@ -82,7 +82,7 @@ func (s *RouterService) CreateRouter(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.Router](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Router](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -105,7 +105,7 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		params.Config, err = UnmarshalStruct[dynamic.TCPRouter](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -128,7 +128,7 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		params.Config, err = UnmarshalStruct[dynamic.UDPRouter](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.UDPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -162,7 +162,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateHttpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.Router](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Router](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -181,7 +181,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateTcpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.TCPRouter](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -200,7 +200,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateUdpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.UDPRouter](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.UDPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -237,6 +237,13 @@ func (s *RouterService) ListRouters(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListRoutersRequest],
 ) (*connect.Response[mantraev1.ListRoutersResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -252,84 +259,124 @@ func (s *RouterService) ListRouters(
 
 	var routers []*mantraev1.Router
 	var totalCount int64
-	switch req.Msg.Type {
-	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-		params := db.ListHttpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListHttpRouters(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		totalCount, err = s.app.Conn.GetQuery().CountHttpRouters(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
 
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoHttpRouter(dbRouter)
-			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
-				continue
-			}
-			routers = append(routers, router)
-		}
-
-	case mantraev1.RouterType_ROUTER_TYPE_TCP:
-		params := db.ListTcpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListTcpRouters(ctx, params)
+	if req.Msg.Type == nil {
+		httpRouters, totalHttp, err := listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams](
+			ctx,
+			s.app.Conn.GetQuery().ListHttpRouters,
+			s.app.Conn.GetQuery().CountHttpRouters,
+			buildProtoHttpRouter,
+			db.ListHttpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountTcpRouters(ctx)
+		tcpRouters, totalTcp, err := listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams](
+			ctx,
+			s.app.Conn.GetQuery().ListTcpRouters,
+			s.app.Conn.GetQuery().CountTcpRouters,
+			buildProtoTcpRouter,
+			db.ListTcpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+		)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		udpRouters, totalUdp, err := listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams](
+			ctx,
+			s.app.Conn.GetQuery().ListUdpRouters,
+			s.app.Conn.GetQuery().CountUdpRouters,
+			buildProtoUdpRouter,
+			db.ListUdpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoTcpRouter(dbRouter)
-			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
-				continue
-			}
-			routers = append(routers, router)
+		routers = append(routers, httpRouters...)
+		routers = append(routers, tcpRouters...)
+		routers = append(routers, udpRouters...)
+		totalCount = totalHttp + totalTcp + totalUdp
+	} else {
+		var err error
+		switch *req.Msg.Type {
+		case mantraev1.RouterType_ROUTER_TYPE_HTTP:
+			params := db.ListHttpRoutersParams{Limit: limit, Offset: offset}
+			routers, totalCount, err = listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams](
+				ctx,
+				s.app.Conn.GetQuery().ListHttpRouters,
+				s.app.Conn.GetQuery().CountHttpRouters,
+				buildProtoHttpRouter,
+				params,
+			)
+
+		case mantraev1.RouterType_ROUTER_TYPE_TCP:
+			params := db.ListTcpRoutersParams{Limit: limit, Offset: offset}
+			routers, totalCount, err = listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams](
+				ctx,
+				s.app.Conn.GetQuery().ListTcpRouters,
+				s.app.Conn.GetQuery().CountTcpRouters,
+				buildProtoTcpRouter,
+				params,
+			)
+
+		case mantraev1.RouterType_ROUTER_TYPE_UDP:
+			params := db.ListUdpRoutersParams{Limit: limit, Offset: offset}
+			routers, totalCount, err = listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams](
+				ctx,
+				s.app.Conn.GetQuery().ListUdpRouters,
+				s.app.Conn.GetQuery().CountUdpRouters,
+				buildProtoUdpRouter,
+				params,
+			)
+
+		default:
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
 		}
 
-	case mantraev1.RouterType_ROUTER_TYPE_UDP:
-		params := db.ListUdpRoutersParams{
-			Limit:  limit,
-			Offset: offset,
-		}
-		dbRouters, err := s.app.Conn.GetQuery().ListUdpRouters(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountUdpRouters(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		for _, dbRouter := range dbRouters {
-			router, err := buildProtoUdpRouter(dbRouter)
-			if err != nil {
-				slog.Error("Failed to build proto router", "error", err)
-				continue
-			}
-			routers = append(routers, router)
-		}
-
-	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
 	}
 
 	return connect.NewResponse(&mantraev1.ListRoutersResponse{
 		Routers:    routers,
 		TotalCount: totalCount,
 	}), nil
+}
+
+// Helpers
+func listRouters[
+	DBType any,
+	ProtoType any,
+	ParamsType any,
+](
+	ctx context.Context,
+	listFn func(context.Context, ParamsType) ([]DBType, error),
+	countFn func(context.Context) (int64, error),
+	buildFn func(DBType) (*mantraev1.Router, error),
+	params ParamsType,
+) ([]*mantraev1.Router, int64, error) {
+	dbRouters, err := listFn(ctx, params)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	totalCount, err := countFn(ctx)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var routers []*mantraev1.Router
+	for _, dbRouter := range dbRouters {
+		router, err := buildFn(dbRouter)
+		if err != nil {
+			slog.Error("Failed to build proto router", "error", err)
+			continue
+		}
+		routers = append(routers, router)
+	}
+
+	return routers, totalCount, nil
 }
 
 func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {

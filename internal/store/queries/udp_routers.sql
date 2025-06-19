@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetUdpRoutersByProfile :many
-SELECT
-  *
-FROM
-  udp_routers
-WHERE
-  profile_id = ?;
-
 -- name: ListUdpRouters :many
 SELECT
   *
 FROM
   udp_routers
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

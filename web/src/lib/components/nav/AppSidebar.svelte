@@ -28,11 +28,13 @@
 		type IconProps
 	} from '@lucide/svelte';
 	import { slide } from 'svelte/transition';
-	import type { Profile } from '$lib/types';
 	import { theme } from '$lib/stores/theme';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
 	import { logout, profileClient } from '$lib/api';
+	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+	import ProfileModal from '$lib/components/modals/profile.svelte';
+	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 
 	let {
 		ref = $bindable(null),
@@ -86,19 +88,17 @@
 			.filter((r): r is Route => r !== null)
 	);
 
-	interface ModalState {
-		isOpen: boolean;
-		profile?: Profile;
-	}
+	let modalProfile = $state({} as Profile);
+	let modalProfileOpen = $state(false);
 
-	const initialModalState: ModalState = { isOpen: false };
-	let modalState = $state(initialModalState);
-	let infoModalOpen = $state(false);
-	let userModalOpen = $state(false);
-	// let profiles = $derived(client.listProfiles({}).then((res) => res.profiles));
+	let modalUser = $state({} as User);
+	let modalUserOpen = $state(false);
+
+	// let modalInfo = $state({} as TraefikInfo);
+	let modalInfoOpen = $state(false);
 </script>
 
-<!-- <ProfileModal profile={modalState.profile} bind:open={modalState.isOpen} /> -->
+<ProfileModal bind:profile={modalProfile} bind:open={modalProfileOpen} />
 <!-- <InfoModal bind:open={infoModalOpen} /> -->
 <!---->
 <!-- {#if user.isLoggedIn() && user.value} -->
@@ -140,8 +140,8 @@
 						sideOffset={4}
 					>
 						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
-						{#await profileClient.listProfiles({}) then result}
-							{#each result.profiles || [] as p (p.id)}
+						{#await profileClient.listProfiles({ limit: -1n, offset: 0n }) then value}
+							{#each value.profiles || [] as p (p.id)}
 								<DropdownMenu.Item
 									onSelect={() => (profile.value = p)}
 									class="flex justify-between gap-2"
@@ -155,7 +155,10 @@
 									<Button
 										variant="secondary"
 										class="h-8 w-4 rounded-full"
-										onclick={() => (modalState = { isOpen: true, profile: p })}
+										onclick={() => {
+											modalProfile = p;
+											modalProfileOpen = true;
+										}}
 									>
 										<Pencil />
 									</Button>
@@ -163,7 +166,13 @@
 							{/each}
 						{/await}
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item class="gap-2 p-2" onSelect={() => (modalState = { isOpen: true })}>
+						<DropdownMenu.Item
+							class="gap-2 p-2"
+							onSelect={() => {
+								modalProfile = {} as Profile;
+								modalProfileOpen = true;
+							}}
+						>
 							<div class="bg-background flex size-6 items-center justify-center rounded-md border">
 								<Plus class="size-4" />
 							</div>

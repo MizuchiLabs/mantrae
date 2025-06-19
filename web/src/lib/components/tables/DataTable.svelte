@@ -36,30 +36,42 @@
 		Search,
 		X
 	} from '@lucide/svelte';
-	import { limit } from '$lib/stores/common';
 	import BulkActions from './BulkActions.svelte';
 	import type { BulkAction } from './types';
+	import { pageIndex, pageSize } from '$lib/stores/common';
 
 	type DataTableProps<TData, TValue> = {
-		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
+		columns: ColumnDef<TData, TValue>[];
+		rowCount: number;
+		onPaginationChange?: (pagination: PaginationState) => void;
+		onSortingChange?: (sorting: SortingState) => void;
+		onRowSelection?: (rowSelection: RowSelectionState) => void;
+		getRowClassName?: (row: TData) => string;
+		bulkActions?: BulkAction<TData>[] | undefined;
 		createButton?: {
 			label: string;
 			onClick: () => void;
 		};
-		onRowSelection?: (selectedRows: TData[]) => void;
-		getRowClassName?: (row: TData) => string;
-		bulkActions?: BulkAction<TData>[] | undefined;
 	};
 
-	let { data, columns, createButton, getRowClassName, bulkActions }: DataTableProps<TData, TValue> =
-		$props();
+	let {
+		data,
+		columns,
+		rowCount,
+		onPaginationChange,
+		onSortingChange,
+		onRowSelection,
+		getRowClassName,
+		bulkActions,
+		createButton
+	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
 	const pageSizeOptions = [10, 25, 50, 100];
 	let pagination = $state<PaginationState>({
-		pageIndex: 0,
-		pageSize: parseInt(limit.value ?? pageSizeOptions[0].toString())
+		pageIndex: pageIndex.value ?? 0,
+		pageSize: pageSize.value ?? 10
 	});
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $derived<ColumnFiltersState>([]);
@@ -93,7 +105,9 @@
 			},
 			...columns
 		],
-		autoResetAll: true,
+		manualPagination: true,
+		rowCount: rowCount,
+		autoResetAll: false,
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);
@@ -116,6 +130,9 @@
 			} else {
 				pagination = updater;
 			}
+			if (onPaginationChange) onPaginationChange(pagination);
+			pageIndex.value = pagination.pageIndex;
+			pageSize.value = pagination.pageSize;
 		},
 		onSortingChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -123,6 +140,7 @@
 			} else {
 				sorting = updater;
 			}
+			if (onSortingChange) onSortingChange(sorting);
 		},
 		onColumnFiltersChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -144,6 +162,7 @@
 			} else {
 				rowSelection = updater;
 			}
+			if (onRowSelection) onRowSelection(rowSelection);
 		},
 		onGlobalFilterChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -174,12 +193,6 @@
 		}
 	});
 
-	function handleLimitChange(value: string) {
-		if (!value) return;
-		table.setPageSize(Number(value));
-		pagination.pageSize = Number(value);
-		limit.value = value;
-	}
 	function clearFilter(columnId: string) {
 		const column = table.getColumn(columnId);
 		if (column) column.setFilterValue(undefined);
@@ -303,7 +316,7 @@
 				<Table.Row class="border-t">
 					<Table.Cell colspan={columns.length}>Total</Table.Cell>
 					<Table.Cell class="mr-4 text-right">
-						{table.getPrePaginationRowModel().rows.length}
+						{table.getPaginationRowModel().rows.length}
 					</Table.Cell>
 				</Table.Row>
 			</Table.Footer>
@@ -324,8 +337,8 @@
 			<Select.Root
 				type="single"
 				allowDeselect={false}
-				value={limit.value ?? pagination.pageSize.toString()}
-				onValueChange={handleLimitChange}
+				value={pagination.pageSize.toString()}
+				onValueChange={(value) => table.setPageSize(Number(value))}
 			>
 				<Select.Trigger class="w-[180px]">
 					{pagination.pageSize}

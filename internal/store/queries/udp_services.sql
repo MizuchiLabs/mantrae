@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetUdpServicesByProfile :many
-SELECT
-  *
-FROM
-  udp_services
-WHERE
-  profile_id = ?;
-
 -- name: ListUdpServices :many
 SELECT
   *
 FROM
   udp_services
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

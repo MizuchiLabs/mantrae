@@ -1,6 +1,10 @@
 package schema
 
-import "time"
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"time"
+)
 
 type AgentPrivateIPs struct {
 	IPs []string `json:"privateIps,omitempty"`
@@ -17,3 +21,11 @@ type AgentContainer struct {
 }
 
 type AgentContainers []AgentContainer
+
+func (c *AgentContainers) Scan(data any) error {
+	return scanJSON(data, &c)
+}
+
+func (c *AgentContainers) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}

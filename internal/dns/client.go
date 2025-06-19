@@ -215,6 +215,9 @@ func getDomainConfig(ctx context.Context, q *db.Queries) (map[string][]DNSRouter
 		return nil, err
 	} else {
 		for _, r := range httpRouters {
+			if r.DnsProviderID == nil {
+				continue
+			}
 			if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID, q); err != nil {
 				return nil, err
 			}
@@ -226,6 +229,9 @@ func getDomainConfig(ctx context.Context, q *db.Queries) (map[string][]DNSRouter
 		return nil, err
 	} else {
 		for _, r := range tcpRouters {
+			if r.DnsProviderID == nil {
+				continue
+			}
 			if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID, q); err != nil {
 				return nil, err
 			}

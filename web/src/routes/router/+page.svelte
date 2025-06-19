@@ -3,86 +3,59 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { Pencil, Route, Trash } from '@lucide/svelte';
-	import { TraefikSource } from '$lib/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
-	import { profile } from '$lib/stores/profile';
-	import type { BulkAction } from '$lib/components/tables/types';
 	import { routerClient } from '$lib/api';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { Service } from '$lib/gen/mantrae/v1/service_pb';
+	import { ConnectError } from '@connectrpc/connect';
+	import { profile } from '$lib/stores/profile';
+	import type { RouterTLSConfig } from '$lib/gen/tygo/dynamic';
+	import type { BulkAction } from '$lib/components/tables/types';
+	import { onMount } from 'svelte';
+	import { pageIndex, pageSize } from '$lib/stores/common';
 
-	interface ModalState {
-		isOpen: boolean;
-		mode: 'create' | 'edit';
-		router: Router;
-		service: Service;
-	}
+	let modalRouter = $state({} as Router);
+	let modalRouterOpen = $state(false);
 
-	const initialModalState: ModalState = {
-		isOpen: false,
-		mode: 'create',
-		router: {} as Router,
-		service: {} as Service
-	};
-	let modalState = $state(initialModalState);
+	// Data state
+	let data = $state<Router[]>([]);
+	let rowCount = $state<number>(0);
 
-	function openCreateModal() {
-		modalState = {
-			isOpen: true,
-			mode: 'create',
-			router: {} as Router,
-			service: {} as Service
-		};
-	}
-
-	function openEditModal(router: Router, service: Service) {
-		modalState = {
-			isOpen: true,
-			mode: 'edit',
-			router,
-			service
-		};
-	}
-
-	const deleteRouter = async (router: Router) => {
+	const deleteRouter = async (id: bigint) => {
 		try {
-			if (!profile.hasValidId() || !profile.id) {
-				toast.error('Invalid profile ID');
-				return;
-			}
-			await routerClient.deleteRouter({ id: router.id });
+			await routerClient.deleteRouter({ id: id });
+			await refreshRouters(pageSize.value ?? 10, 0);
 			toast.success('Router deleted');
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(e.message);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete router', { description: e.message });
 		}
 	};
 
-	// async function handleBulkDelete(selectedRows: RouterWithService[]) {
-	// 	try {
-	// 		const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
-	// 		if (!confirmed) return;
-	//
-	// 		const items = selectedRows.map((row) => ({
-	// 			name: row.router.name,
-	// 			protocol: row.router.protocol
-	// 		}));
-	// 		await api.bulkDeleteRouter(items);
-	// 		toast.success(`Successfully deleted ${selectedRows.length} routers`);
-	// 	} catch (err: unknown) {
-	// 		const e = err as Error;
-	// 		toast.error(`Failed to delete routers: ${e.message}`);
-	// 	}
-	// }
+	async function handleBulkDelete(selectedRows: Router[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			if (!confirmed) return;
+
+			const routerIds = selectedRows.map((row) => ({ id: row.id }));
+			for (const router of routerIds) {
+				await routerClient.deleteRouter(router);
+			}
+			await refreshRouters(pageSize.value ?? 10, 0);
+			toast.success(`Successfully deleted ${selectedRows.length} routers`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete routers', { description: e.message });
+		}
+	}
 
 	const columns: ColumnDef<Router>[] = [
 		{
 			header: 'Name',
-			accessorKey: 'router.name',
+			accessorKey: 'name',
 			id: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
@@ -92,36 +65,33 @@
 		},
 		{
 			header: 'Protocol',
-			accessorKey: 'router.type',
+			accessorKey: 'type',
 			id: 'protocol',
 			enableSorting: true,
 			cell: ({ row, column }) => {
+				let protocol = row.getValue('protocol') as
+					| RouterType.HTTP
+					| RouterType.TCP
+					| RouterType.UDP;
+
+				let label = 'Unspecified';
+				if (protocol === RouterType.HTTP) {
+					label = 'HTTP';
+				} else if (protocol === RouterType.TCP) {
+					label = 'TCP';
+				} else if (protocol === RouterType.UDP) {
+					label = 'UDP';
+				}
 				return renderComponent(ColumnBadge<Router>, {
-					label: row.getValue('protocol') as string,
-					class: 'hover:cursor-pointer',
-					column: column
-				});
-			}
-		},
-		{
-			header: 'Provider',
-			accessorKey: 'router.name',
-			id: 'provider',
-			enableSorting: true,
-			cell: ({ row, column }) => {
-				const name = row.getValue('provider') as string;
-				const provider = name?.split('@')[1];
-				return renderComponent(ColumnBadge<Router>, {
-					label: provider ? provider.toLowerCase() : 'http',
-					variant: 'secondary',
-					class: 'hover:cursor-pointer',
+					label: label,
+					class: 'hover:cursor-pointer italic',
 					column: column
 				});
 			}
 		},
 		{
 			header: 'Entrypoints',
-			accessorKey: 'router.entryPoints',
+			accessorKey: 'entryPoints',
 			id: 'entrypoints',
 			enableSorting: true,
 			filterFn: 'arrIncludes',
@@ -137,7 +107,7 @@
 		},
 		{
 			header: 'Middlewares',
-			accessorKey: 'router.middlewares',
+			accessorKey: 'middlewares',
 			id: 'middlewares',
 			enableSorting: true,
 			filterFn: 'arrIncludes',
@@ -153,98 +123,48 @@
 		},
 		{
 			header: 'Rules',
-			accessorKey: 'router.rule',
+			accessorKey: 'config.rule',
 			id: 'rule',
 			enableSorting: true,
 			cell: ({ row }) => {
-				if (row.original.type === RouterType.UDP) return;
+				let rule = '';
+				if (row.original.config?.rule !== undefined) {
+					rule = row.getValue('rule') as string;
+				}
 				return renderComponent(ColumnRule, {
-					rule: row.getValue('rule') as string,
-					type: row.original.type as RouterType.HTTP | RouterType.TCP
+					rule: rule,
+					routerType: row.original.type as RouterType.HTTP | RouterType.TCP
 				});
 			}
 		},
-		// {
-		// 	header: 'DNS',
-		// 	accessorKey: 'router.name',
-		// 	id: 'dns',
-		// 	enableSorting: true,
-		// 	filterFn: (row, columnId, filterValue) => {
-		// 		const routerName = row.getValue(columnId) as string;
-		// 		const matches = $rdps?.some(
-		// 			(rdp) => rdp.routerName === routerName && rdp.providerName === filterValue
-		// 		);
-		// 		return !!matches;
-		// 	},
-		// 	cell: ({ row, column }) => {
-		// 		// Return early if no rdps data
-		// 		if (!$rdps) {
-		// 			return renderComponent(ColumnBadge, {
-		// 				label: ['Disabled'],
-		// 				variant: 'outline'
-		// 			});
-		// 		}
-		// 		const name = row.getValue('dns') as string;
-		// 		const dns = $rdps?.filter((item) => item.routerName === name);
-		// 		const rdpNames = dns.length ? [...new Set(dns.map((item) => item.providerName))] : [];
-		//
-		// 		return renderComponent(ColumnBadge<RouterWithService>, {
-		// 			label: rdpNames.length ? rdpNames : ['Disabled'],
-		// 			variant: rdpNames.length ? 'secondary' : 'outline',
-		// 			class: rdpNames.length ? 'bg-blue-300 dark:bg-blue-700' : undefined,
-		// 			column: rdpNames.length ? column : undefined
-		// 		});
-		// 	}
-		// },
-		// {
-		// 	header: 'TLS',
-		// 	accessorKey: 'router.tls',
-		// 	id: 'tls',
-		// 	enableSorting: true,
-		// 	filterFn: (row, columnId, filterValue) => {
-		// 		const tls = row.getValue(columnId) as TLS;
-		// 		return tls?.certResolver === filterValue;
-		// 	},
-		// 	cell: ({ row, column }) => {
-		// 		const tls = row.getValue('tls') as TLS;
-		//
-		// 		let label = 'Disabled';
-		// 		if (tls) {
-		// 			label = tls.certResolver ? tls.certResolver : 'Enabled';
-		// 		}
-		// 		return renderComponent(ColumnBadge<RouterWithService>, {
-		// 			label,
-		// 			variant: tls ? 'secondary' : 'outline',
-		// 			class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
-		// 			tls,
-		// 			column: tls?.certResolver ? column : undefined
-		// 		});
-		// 	}
-		// },
-		// {
-		// 	header: 'Server Status',
-		// 	accessorFn: (row) => row.service.serverStatus,
-		// 	id: 'serverStatus',
-		// 	enableSorting: true,
-		// 	cell: ({ row }) => {
-		// 		const status = row.getValue('serverStatus') as Record<string, string>;
-		// 		if (status === undefined) {
-		// 			return renderComponent(ColumnBadge, {
-		// 				label: 'N/A',
-		// 				variant: 'secondary'
-		// 			});
-		// 		}
-		// 		const upCount = Object.values(status).filter((status) => status === 'UP').length;
-		// 		const totalCount = Object.values(status).length;
-		// 		const greenBadge = 'bg-green-300 dark:bg-green-600';
-		// 		const redBadge = 'bg-red-300 dark:bg-red-600';
-		// 		return renderComponent(ColumnBadge, {
-		// 			label: `${upCount}/${totalCount}`,
-		// 			variant: 'secondary',
-		// 			class: upCount === totalCount ? greenBadge : redBadge
-		// 		});
-		// 	}
-		// },
+		{
+			header: 'TLS',
+			accessorKey: 'config.tls',
+			id: 'tls',
+			enableSorting: true,
+			filterFn: (row, columnId, filterValue) => {
+				const tls = row.getValue(columnId) as RouterTLSConfig;
+				return tls?.certResolver === filterValue;
+			},
+			cell: ({ row, column }) => {
+				let tls = undefined;
+				if (row.original.config?.tls !== undefined) {
+					tls = row.getValue('tls') as RouterTLSConfig;
+				}
+
+				let label = 'Disabled';
+				if (tls) {
+					label = tls.certResolver ? tls.certResolver : 'Enabled';
+				}
+				return renderComponent(ColumnBadge<Router>, {
+					label,
+					variant: tls ? 'secondary' : 'outline',
+					class: tls ? 'bg-slate-300 dark:bg-slate-700' : '',
+					tls,
+					column: tls?.certResolver ? column : undefined
+				});
+			}
+		},
 		{
 			id: 'actions',
 			enableHiding: false,
@@ -256,7 +176,8 @@
 							label: 'Edit Router',
 							icon: Pencil,
 							onClick: () => {
-								openEditModal(row.original.router, row.original.service);
+								modalRouter = row.original;
+								modalRouterOpen = true;
 							}
 						},
 						{
@@ -264,13 +185,9 @@
 							label: 'Delete Router',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => {
-								deleteRouter(row.original.router);
-							},
-							disabled: source.value !== TraefikSource.LOCAL
+							onClick: () => deleteRouter(row.original.id)
 						}
-					],
-					shareObject: source.value === TraefikSource.LOCAL ? row.original : undefined
+					]
 				});
 			}
 		}
@@ -285,6 +202,23 @@
 			onClick: handleBulkDelete
 		}
 	];
+
+	async function handlePaginationChange(p: PaginationState) {
+		await refreshRouters(p.pageSize, p.pageIndex);
+	}
+	async function refreshRouters(pageSize: number, pageIndex: number) {
+		const response = await routerClient.listRouters({
+			profileId: profile.id,
+			limit: BigInt(pageSize),
+			offset: BigInt(pageIndex * pageSize)
+		});
+		data = response.routers;
+		rowCount = Number(response.totalCount);
+	}
+
+	onMount(async () => {
+		await refreshRouters(pageSize.value ?? 10, pageIndex.value ?? 0);
+	});
 </script>
 
 <svelte:head>
@@ -296,22 +230,21 @@
 		<Route />
 		<h1 class="text-2xl font-bold">Router Management</h1>
 	</div>
-	{#await routerClient.listRouters({}) then value}
-		<DataTable
-			{columns}
-			data={value.routers}
-			bulkActions={routerBulkActions}
-			createButton={{
-				label: 'Add Router',
-				onClick: openCreateModal
-			}}
-		/>
-	{/await}
+	<DataTable
+		{data}
+		{columns}
+		{rowCount}
+		createButton={{
+			label: 'Create Router',
+			onClick: () => {
+				modalRouter = { type: RouterType.HTTP } as Router;
+				modalRouterOpen = true;
+			}
+		}}
+		onRowSelection={(selections) => console.log(selections)}
+		onPaginationChange={handlePaginationChange}
+		bulkActions={routerBulkActions}
+	/>
 </div>
 
-<RouterModal
-	mode={modalState.mode}
-	bind:open={modalState.isOpen}
-	bind:router={modalState.router}
-	bind:service={modalState.service}
-/>
+<RouterModal bind:open={modalRouterOpen} bind:router={modalRouter} bind:data />

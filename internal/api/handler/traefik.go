@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
@@ -35,76 +36,100 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		}
 
 		// Routers
-		httpRouters, err := q.GetHttpRoutersByProfile(r.Context(), profile.ID)
+		httpRouters, err := q.ListHttpRouters(
+			r.Context(),
+			db.ListHttpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tcpRouters, err := q.GetTcpRoutersByProfile(r.Context(), profile.ID)
+		tcpRouters, err := q.ListTcpRouters(
+			r.Context(),
+			db.ListTcpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		udpRouters, err := q.GetUdpRoutersByProfile(r.Context(), profile.ID)
+		udpRouters, err := q.ListUdpRouters(
+			r.Context(),
+			db.ListUdpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Services
-		httpServices, err := q.GetHttpServicesByProfile(r.Context(), profile.ID)
+		httpServices, err := q.ListHttpServices(
+			r.Context(),
+			db.ListHttpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tcpServices, err := q.GetTcpServicesByProfile(r.Context(), profile.ID)
+		tcpServices, err := q.ListTcpServices(
+			r.Context(),
+			db.ListTcpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		udpServices, err := q.GetUdpServicesByProfile(r.Context(), profile.ID)
+		udpServices, err := q.ListUdpServices(
+			r.Context(),
+			db.ListUdpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Middlewares
-		httpMiddlewares, err := q.GetHttpMiddlewaresByProfile(r.Context(), profile.ID)
+		httpMiddlewares, err := q.ListHttpMiddlewares(
+			r.Context(),
+			db.ListHttpMiddlewaresParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tcpMiddlewares, err := q.GetTcpMiddlewaresByProfile(r.Context(), profile.ID)
+		tcpMiddlewares, err := q.ListTcpMiddlewares(
+			r.Context(),
+			db.ListTcpMiddlewaresParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		for _, r := range httpRouters {
-			cfg.HTTP.Routers[r.Name] = r.Config
+			cfg.HTTP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 		for _, r := range tcpRouters {
-			cfg.TCP.Routers[r.Name] = r.Config
+			cfg.TCP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 		for _, r := range udpRouters {
-			cfg.UDP.Routers[r.Name] = r.Config
+			cfg.UDP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 
 		for _, s := range httpServices {
-			cfg.HTTP.Services[s.Name] = s.Config
+			cfg.HTTP.Services[s.Name] = s.Config.ToDynamic()
 		}
 		for _, s := range tcpServices {
-			cfg.TCP.Services[s.Name] = s.Config
+			cfg.TCP.Services[s.Name] = s.Config.ToDynamic()
 		}
 		for _, s := range udpServices {
-			cfg.UDP.Services[s.Name] = s.Config
+			cfg.UDP.Services[s.Name] = s.Config.ToDynamic()
 		}
 
 		for _, m := range httpMiddlewares {
-			cfg.HTTP.Middlewares[m.Name] = m.Config
+			cfg.HTTP.Middlewares[m.Name] = m.Config.ToDynamic()
 		}
 		for _, m := range tcpMiddlewares {
-			cfg.TCP.Middlewares[m.Name] = m.Config
+			cfg.TCP.Middlewares[m.Name] = m.Config.ToDynamic()
 		}
 
 		// Cleanup empty sections (to avoid Traefik {} block warnings)

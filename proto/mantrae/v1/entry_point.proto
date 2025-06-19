@@ -57,8 +57,9 @@ message DeleteEntryPointRequest {
 message DeleteEntryPointResponse {}
 
 message ListEntryPointsRequest {
-  optional int64 limit = 1;
-  optional int64 offset = 2;
+  int64 profile_id = 1;
+  optional int64 limit = 2;
+  optional int64 offset = 3;
 }
 message ListEntryPointsResponse {
   repeated EntryPoint entry_points = 1;

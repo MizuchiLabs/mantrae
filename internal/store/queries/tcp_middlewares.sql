@@ -28,19 +28,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTcpMiddlewaresByProfile :many
-SELECT
-  *
-FROM
-  tcp_middlewares
-WHERE
-  profile_id = ?;
-
 -- name: ListTcpMiddlewares :many
 SELECT
   *
 FROM
   tcp_middlewares
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

@@ -8,22 +8,31 @@
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import { profileClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
+	import { profile as profileStore } from '$lib/stores/profile';
 
 	interface Props {
-		profile?: Profile;
+		profile: Profile;
 		open?: boolean;
 	}
 
-	let { profile = $bindable({} as Profile), open = $bindable(false) }: Props = $props();
+	let { profile = $bindable(), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
 			if (profile.id) {
-				await profileClient.updateProfile({ name: profile.name, description: profile.description });
+				const result = await profileClient.updateProfile({
+					name: profile.name,
+					description: profile.description
+				});
 				toast.success('Profile updated successfully');
+				if (result.profile) profileStore.value = result.profile;
 			} else {
-				await profileClient.createProfile({ name: profile.name, description: profile.description });
+				const result = await profileClient.createProfile({
+					name: profile.name,
+					description: profile.description
+				});
 				toast.success('Profile created successfully');
+				if (result.profile) profileStore.value = result.profile;
 			}
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -38,43 +47,47 @@
 		try {
 			await profileClient.deleteProfile({ id: profile.id });
 			toast.success('Profile deleted successfully');
-			open = false;
+			if (profile.id === profileStore.value?.id) {
+				let profiles = await profileClient.listProfiles({ limit: -1n, offset: 0n });
+				profileStore.value = profiles.profiles[0];
+			} else {
+				profileStore.value = {} as Profile;
+			}
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete profile', { description: e.message });
 		}
+		open = false;
 	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{profile.id ? 'Edit' : 'Add'} Profile</Dialog.Title>
-			<Dialog.Description>Configure your Traefik instance connection details.</Dialog.Description>
+			<Dialog.Title>{profile.id ? 'Edit' : 'Create'} Profile</Dialog.Title>
+			<Dialog.Description>Configure your profile settings</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="space-y-4">
-			<div class="space-y-1">
+		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
+			<div>
 				<Label for="name">Name</Label>
 				<Input id="name" bind:value={profile.name} required placeholder="traefik-site" />
 			</div>
 
-			<div class="space-y-1">
+			<div>
 				<Label for="description">Description</Label>
-				<Input
-					id="description"
-					bind:value={profile.description}
-					placeholder="My Traefik instance"
-				/>
+				<Input id="description" bind:value={profile.description} placeholder="Site description" />
 			</div>
 
 			<Separator />
 
-			<div class="flex justify-end space-x-2">
+			<div class="flex w-full flex-row-reverse gap-2">
+				<Button type="submit" class="w-full">{profile.id ? 'Update' : 'Create'}</Button>
 				{#if profile.id}
-					<Button type="button" variant="destructive" onclick={handleDelete}>Delete</Button>
+					<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
+						Delete
+					</Button>
 				{/if}
-				<Button type="submit">{profile.id ? 'Update' : 'Create'}</Button>
 			</div>
 		</form>
 	</Dialog.Content>

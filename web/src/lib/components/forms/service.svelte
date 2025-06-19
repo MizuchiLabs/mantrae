@@ -6,7 +6,6 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { type Router, type Service } from '$lib/types/router';
 	import { Plus, Trash } from '@lucide/svelte';
-	import { source } from '$lib/stores/source';
 
 	interface Props {
 		service: Service;
@@ -75,7 +74,6 @@
 						class="col-span-3"
 						bind:checked={passHostHeader}
 						onCheckedChange={update}
-						disabled={!source.isLocal()}
 					/>
 				</div>
 			{/if}
@@ -90,28 +88,23 @@
 							bind:value={servers[i]}
 							placeholder={router.protocol === 'http' ? 'http://127.0.0.1:8080' : '127.0.0.1:8080'}
 							oninput={update}
-							disabled={!source.isLocal()}
 						/>
-						{#if source.isLocal()}
-							<Button
-								variant="ghost"
-								size="icon"
-								type="button"
-								class="text-red-500"
-								onclick={() => removeItem(i)}
-							>
-								<Trash />
-							</Button>
-						{/if}
+						<Button
+							variant="ghost"
+							size="icon"
+							type="button"
+							class="text-red-500"
+							onclick={() => removeItem(i)}
+						>
+							<Trash />
+						</Button>
 					</div>
 				{/each}
 			</div>
-			{#if source.isLocal()}
-				<Button type="button" variant="outline" onclick={addItem} class="w-full">
-					<Plus />
-					Add Server
-				</Button>
-			{/if}
+			<Button type="button" variant="outline" onclick={addItem} class="w-full">
+				<Plus />
+				Add Server
+			</Button>
 		</form>
 	</Card.Content>
 </Card.Root>

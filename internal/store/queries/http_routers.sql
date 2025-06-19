@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetHttpRoutersByProfile :many
-SELECT
-  *
-FROM
-  http_routers
-WHERE
-  profile_id = ?;
-
 -- name: ListHttpRouters :many
 SELECT
   *
 FROM
   http_routers
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

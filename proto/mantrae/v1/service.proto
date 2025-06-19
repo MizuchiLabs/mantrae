@@ -70,9 +70,10 @@ message DeleteServiceRequest {
 message DeleteServiceResponse {}
 
 message ListServicesRequest {
-  ServiceType type = 1;
-  optional int64 limit = 2;
-  optional int64 offset = 3;
+  int64 profile_id = 1;
+  optional ServiceType type = 2;
+  optional int64 limit = 3;
+  optional int64 offset = 4;
 }
 message ListServicesResponse {
   repeated Service services = 1;

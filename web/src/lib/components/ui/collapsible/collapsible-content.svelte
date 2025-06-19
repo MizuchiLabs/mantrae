@@ -1,26 +1,7 @@
 <script lang="ts">
-	import { Collapsible as CollapsiblePrimitive } from 'bits-ui';
-	import { slide } from 'svelte/transition';
+	import { Collapsible as CollapsiblePrimitive } from "bits-ui";
 
-	type $$Props = CollapsiblePrimitive.ContentProps;
-
-	interface Props {
-		transition?: $$Props['transition'];
-		transitionConfig?: $$Props['transitionConfig'];
-		children?: import('svelte').Snippet;
-		[key: string]: any;
-	}
-
-	let {
-		transition = slide,
-		transitionConfig = {
-			duration: 150
-		},
-		children,
-		...rest
-	}: Props = $props();
+	let { ref = $bindable(null), ...restProps }: CollapsiblePrimitive.ContentProps = $props();
 </script>
 
-<CollapsiblePrimitive.Content {transition} {transitionConfig} {...rest}>
-	{@render children?.()}
-</CollapsiblePrimitive.Content>
+<CollapsiblePrimitive.Content bind:ref data-slot="collapsible-content" {...restProps} />

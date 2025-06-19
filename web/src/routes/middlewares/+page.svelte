@@ -7,10 +7,8 @@
 	import type { DeleteMiddlewareParams, Middleware } from '$lib/types/middlewares';
 	import { Layers, Pencil, Trash } from '@lucide/svelte';
 	import { TraefikSource } from '$lib/types';
-	import { api, middlewares } from '$lib/api';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { source } from '$lib/stores/source';
 	import { profile } from '$lib/stores/profile';
 	import type { BulkAction } from '$lib/components/tables/types';
 

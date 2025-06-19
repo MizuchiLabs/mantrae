@@ -24,6 +24,8 @@ SELECT
   *
 FROM
   entry_points
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

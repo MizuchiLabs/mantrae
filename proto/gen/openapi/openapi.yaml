@@ -836,6 +836,12 @@ components:
     mantrae.v1.ListEntryPointsRequest:
       type: object
       properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         limit:
           type:
             - integer
@@ -1053,8 +1059,15 @@ components:
     mantrae.v1.ListMiddlewaresRequest:
       type: object
       properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         type:
           title: type
+          nullable: true
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
         limit:
           type:
@@ -1434,8 +1447,15 @@ components:
     mantrae.v1.ListRoutersRequest:
       type: object
       properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         type:
           title: type
+          nullable: true
           $ref: '#/components/schemas/mantrae.v1.RouterType'
         limit:
           type:
@@ -1617,8 +1637,15 @@ components:
     mantrae.v1.ListServicesRequest:
       type: object
       properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         type:
           title: type
+          nullable: true
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
         limit:
           type:

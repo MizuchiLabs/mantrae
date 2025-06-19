@@ -220,7 +220,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapRouter(r),
 			})
 		}
 		for k, r := range dynConfig.TCP.Routers {
@@ -228,7 +228,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapTCPRouter(r),
 			})
 		}
 		for k, r := range dynConfig.UDP.Routers {
@@ -236,7 +236,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapUDPRouter(r),
 			})
 		}
 
@@ -245,7 +245,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapService(r),
 			})
 		}
 		for k, r := range dynConfig.TCP.Services {
@@ -253,7 +253,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapTCPService(r),
 			})
 		}
 		for k, r := range dynConfig.UDP.Services {
@@ -261,7 +261,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapUDPService(r),
 			})
 		}
 
@@ -270,7 +270,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapMiddleware(r),
 			})
 		}
 		for k, r := range dynConfig.TCP.Middlewares {
@@ -278,7 +278,7 @@ func (s *AgentService) DecodeAgentConfig(agent db.Agent) error {
 				ProfileID: agent.ProfileID,
 				AgentID:   &agent.ID,
 				Name:      k,
-				Config:    r,
+				Config:    schema.WrapTCPMiddleware(r),
 			})
 		}
 	}

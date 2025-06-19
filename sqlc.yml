@@ -15,42 +15,42 @@ sql:
         overrides:
           - column: "http_routers.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "Router"
               pointer: true
           - column: "tcp_routers.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "TCPRouter"
               pointer: true
           - column: "udp_routers.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "UDPRouter"
               pointer: true
           - column: "http_services.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "Service"
               pointer: true
           - column: "tcp_services.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "TCPService"
               pointer: true
           - column: "udp_services.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "UDPService"
               pointer: true
           - column: "http_middlewares.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "Middleware"
               pointer: true
           - column: "tcp_middlewares.config"
             go_type:
-              import: "github.com/traefik/traefik/v3/pkg/config/dynamic"
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "TCPMiddleware"
               pointer: true
           - column: "traefik_instances.config"

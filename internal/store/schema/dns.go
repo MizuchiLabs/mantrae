@@ -1,5 +1,10 @@
 package schema
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+)
+
 type DNSProviderConfig struct {
 	APIKey     string `json:"apiKey"`
 	APIUrl     string `json:"apiUrl"`
@@ -7,4 +12,12 @@ type DNSProviderConfig struct {
 	Proxied    bool   `json:"proxied"`
 	AutoUpdate bool   `json:"autoUpdate"`
 	ZoneType   string `json:"zoneType"`
+}
+
+func (c *DNSProviderConfig) Scan(data any) error {
+	return scanJSON(data, &c)
+}
+
+func (c *DNSProviderConfig) Value() (driver.Value, error) {
+	return json.Marshal(c)
 }

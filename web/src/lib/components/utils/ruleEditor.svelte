@@ -6,18 +6,19 @@
 	import { ValidateRule } from './ruleString';
 	import { CircleCheck, CircleX } from '@lucide/svelte';
 	import { ruleTab } from '$lib/stores/common';
+	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
 
 	interface Props {
-		rule: string | undefined;
-		type: 'http' | 'tcp';
+		rule: string;
+		type: RouterType.HTTP | RouterType.TCP;
 		disabled?: boolean;
 	}
 
-	let { rule = $bindable(), type = $bindable(), disabled = false }: Props = $props();
+	let { rule = $bindable(), type = $bindable(RouterType.HTTP), disabled = false }: Props = $props();
 
 	// Simplified rule templates
 	const ruleTemplates = {
-		http: [
+		[RouterType.HTTP]: [
 			'Header(`key`, `value`)',
 			'HeaderRegexp(`key`, `regexp`)',
 			'Host(`domain`)',
@@ -30,7 +31,12 @@
 			'QueryRegexp(`key`, `regexp`)',
 			'ClientIP(`ip`)'
 		],
-		tcp: ['HostSNI(`domain`)', 'HostSNIRegexp(`regexp`)', 'ClientIP(`ip`)', 'ALPN(`protocol`)']
+		[RouterType.TCP]: [
+			'HostSNI(`domain`)',
+			'HostSNIRegexp(`regexp`)',
+			'ClientIP(`ip`)',
+			'ALPN(`protocol`)'
+		]
 	};
 
 	// Editor state
@@ -51,11 +57,11 @@
 	$effect(() => {
 		if (!rule) return;
 
-		const hostPattern = type === 'http' ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
+		const hostPattern = type === RouterType.HTTP ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
 		const pathPattern = /Path\(`(.*?)`\)/;
 
 		host = rule.match(hostPattern)?.[1] ?? '';
-		path = type === 'http' ? (rule.match(pathPattern)?.[1] ?? '') : '';
+		path = type === RouterType.HTTP ? (rule.match(pathPattern)?.[1] ?? '') : '';
 
 		checkSimpleMode();
 	});
@@ -83,16 +89,16 @@
 	// Simple mode handler
 	function handleSimpleInput() {
 		if (!host && !path) {
-			rule = undefined;
+			rule = '';
 			return;
 		}
 
-		if (type === 'http') {
+		if (type === RouterType.HTTP) {
 			rule = [host ? `Host(\`${host}\`)` : null, path ? `Path(\`${path}\`)` : null]
 				.filter(Boolean)
 				.join(' && ');
 		} else {
-			rule = host ? `HostSNI(\`${host}\`)` : undefined;
+			rule = host ? `HostSNI(\`${host}\`)` : '';
 		}
 	}
 
@@ -206,11 +212,7 @@
 	}
 </script>
 
-<Tabs.Root
-	value={ruleTab.value}
-	onValueChange={(value) => (ruleTab.value = value)}
-	class="flex flex-col gap-2"
->
+<Tabs.Root value={ruleTab.value} onValueChange={(value) => (ruleTab.value = value)}>
 	{#if !disabled}
 		<div class="flex justify-end">
 			<Tabs.List class="h-8">
@@ -223,31 +225,33 @@
 	{/if}
 
 	<Tabs.Content value="simple">
-		<div class="grid grid-cols-8 items-center gap-2">
-			<Label for="host" class="col-span-1 text-right">Domain</Label>
-			<Input
-				id="host"
-				bind:value={host}
-				oninput={handleSimpleInput}
-				placeholder="example.com"
-				class={type === 'http' ? 'col-span-5' : 'col-span-7'}
-				{disabled}
-			/>
-			{#if type === 'http'}
+		<div class="flex flex-col gap-2">
+			<Label for="host">Domain</Label>
+			<div class="grid grid-cols-8 items-center gap-2">
 				<Input
-					id="path"
-					bind:value={path}
+					id="host"
+					bind:value={host}
 					oninput={handleSimpleInput}
-					placeholder="/path"
-					class="col-span-2"
+					placeholder="example.com"
+					class={type === RouterType.HTTP ? 'col-span-6' : 'col-span-8'}
 					{disabled}
 				/>
-			{/if}
+				{#if type === RouterType.HTTP}
+					<Input
+						id="path"
+						bind:value={path}
+						oninput={handleSimpleInput}
+						placeholder="/path"
+						class="col-span-2"
+						{disabled}
+					/>
+				{/if}
+			</div>
 		</div>
 	</Tabs.Content>
 
 	<Tabs.Content value="advanced">
-		<Label for="rule">Rules</Label>
+		<Label for="rule" class="mb-2">Rules</Label>
 		<div class="relative mb-4 rounded-lg border">
 			<Textarea
 				id="rulesTextarea"

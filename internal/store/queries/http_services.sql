@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetHttpServicesByProfile :many
-SELECT
-  *
-FROM
-  http_services
-WHERE
-  profile_id = ?;
-
 -- name: ListHttpServices :many
 SELECT
   *
 FROM
   http_services
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

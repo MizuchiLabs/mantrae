@@ -9,8 +9,8 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type Service struct {
@@ -81,7 +81,7 @@ func (s *Service) CreateService(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.Service](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Service](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -103,7 +103,7 @@ func (s *Service) CreateService(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.TCPService](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -125,7 +125,7 @@ func (s *Service) CreateService(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.UDPService](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.UDPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -158,7 +158,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateHttpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.Service](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Service](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -177,7 +177,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateTcpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.TCPService](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -196,7 +196,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateUdpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.UDPService](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.UDPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -247,73 +247,128 @@ func (s *Service) ListServices(
 
 	var services []*mantraev1.Service
 	var totalCount int64
-	switch req.Msg.Type {
-	case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
-		params := db.ListHttpServicesParams{Limit: limit, Offset: offset}
-		dbServices, err := s.app.Conn.GetQuery().ListHttpServices(ctx, params)
+
+	if req.Msg.Type == nil {
+		httpParams := db.ListHttpServicesParams{Limit: limit, Offset: offset}
+		tcpParams := db.ListTcpServicesParams{Limit: limit, Offset: offset}
+		udpParams := db.ListUdpServicesParams{Limit: limit, Offset: offset}
+
+		httpServices, totalHttp, err := listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
+			ctx,
+			s.app.Conn.GetQuery().ListHttpServices,
+			s.app.Conn.GetQuery().CountHttpServices,
+			buildProtoHttpService,
+			httpParams,
+		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountHttpServices(ctx)
+		tcpServices, totalTcp, err := listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams](
+			ctx,
+			s.app.Conn.GetQuery().ListTcpServices,
+			s.app.Conn.GetQuery().CountTcpServices,
+			buildProtoTcpService,
+			tcpParams,
+		)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		udpServices, totalUdp, err := listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams](
+			ctx,
+			s.app.Conn.GetQuery().ListUdpServices,
+			s.app.Conn.GetQuery().CountUdpServices,
+			buildProtoUdpService,
+			udpParams,
+		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		for _, dbService := range dbServices {
-			service, err := buildProtoHttpService(dbService)
-			if err != nil {
-				slog.Error("Failed to build proto service", "error", err)
-				continue
-			}
-			services = append(services, service)
+		services = append(services, httpServices...)
+		services = append(services, tcpServices...)
+		services = append(services, udpServices...)
+		totalCount = totalHttp + totalTcp + totalUdp
+	} else {
+		var err error
+		switch *req.Msg.Type {
+		case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
+			params := db.ListHttpServicesParams{Limit: limit, Offset: offset}
+			services, totalCount, err = listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
+				ctx,
+				s.app.Conn.GetQuery().ListHttpServices,
+				s.app.Conn.GetQuery().CountHttpServices,
+				buildProtoHttpService,
+				params,
+			)
+
+		case mantraev1.ServiceType_SERVICE_TYPE_TCP:
+			params := db.ListTcpServicesParams{Limit: limit, Offset: offset}
+			services, totalCount, err = listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams](
+				ctx,
+				s.app.Conn.GetQuery().ListTcpServices,
+				s.app.Conn.GetQuery().CountTcpServices,
+				buildProtoTcpService,
+				params,
+			)
+
+		case mantraev1.ServiceType_SERVICE_TYPE_UDP:
+			params := db.ListUdpServicesParams{Limit: limit, Offset: offset}
+			services, totalCount, err = listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams](
+				ctx,
+				s.app.Conn.GetQuery().ListUdpServices,
+				s.app.Conn.GetQuery().CountUdpServices,
+				buildProtoUdpService,
+				params,
+			)
+
+		default:
+			return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 		}
 
-	case mantraev1.ServiceType_SERVICE_TYPE_TCP:
-		params := db.ListTcpServicesParams{Limit: limit, Offset: offset}
-		dbServices, err := s.app.Conn.GetQuery().ListTcpServices(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		totalCount, err = s.app.Conn.GetQuery().CountTcpServices(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		for _, dbService := range dbServices {
-			service, err := buildProtoTcpService(dbService)
-			if err != nil {
-				slog.Error("Failed to build proto service", "error", err)
-				continue
-			}
-			services = append(services, service)
-		}
-
-	case mantraev1.ServiceType_SERVICE_TYPE_UDP:
-		params := db.ListUdpServicesParams{Limit: limit, Offset: offset}
-		dbServices, err := s.app.Conn.GetQuery().ListUdpServices(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		totalCount, err = s.app.Conn.GetQuery().CountUdpServices(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		for _, dbService := range dbServices {
-			service, err := buildProtoUdpService(dbService)
-			if err != nil {
-				slog.Error("Failed to build proto service", "error", err)
-				continue
-			}
-			services = append(services, service)
-		}
-
-	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
 
 	return connect.NewResponse(&mantraev1.ListServicesResponse{
 		Services:   services,
 		TotalCount: totalCount,
 	}), nil
+}
+
+// Helpers
+func listServices[
+	DBType any,
+	ProtoType any,
+	ParamsType any,
+](
+	ctx context.Context,
+	listFn func(context.Context, ParamsType) ([]DBType, error),
+	countFn func(context.Context) (int64, error),
+	buildFn func(DBType) (*mantraev1.Service, error),
+	params ParamsType,
+) ([]*mantraev1.Service, int64, error) {
+	dbServices, err := listFn(ctx, params)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	totalCount, err := countFn(ctx)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var services []*mantraev1.Service
+	for _, dbService := range dbServices {
+		service, err := buildFn(dbService)
+		if err != nil {
+			slog.Error("Failed to build proto service", "error", err)
+			continue
+		}
+		services = append(services, service)
+	}
+
+	return services, totalCount, nil
 }
 
 func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {

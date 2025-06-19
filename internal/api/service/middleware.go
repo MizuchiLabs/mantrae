@@ -13,8 +13,8 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type MiddlewareService struct {
@@ -78,7 +78,7 @@ func (s *MiddlewareService) CreateMiddleware(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.Middleware](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Middleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -100,7 +100,7 @@ func (s *MiddlewareService) CreateMiddleware(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = UnmarshalStruct[dynamic.TCPMiddleware](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -137,7 +137,7 @@ func (s *MiddlewareService) UpdateMiddleware(
 		var params db.UpdateHttpMiddlewareParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.Middleware](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.Middleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -156,7 +156,7 @@ func (s *MiddlewareService) UpdateMiddleware(
 		var params db.UpdateTcpMiddlewareParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
-		params.Config, err = UnmarshalStruct[dynamic.TCPMiddleware](req.Msg.Config)
+		params.Config, err = UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -211,57 +211,112 @@ func (s *MiddlewareService) ListMiddlewares(
 
 	var middlewares []*mantraev1.Middleware
 	var totalCount int64
-	switch req.Msg.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		params := db.ListHttpMiddlewaresParams{Limit: limit, Offset: offset}
-		dbMiddlewares, err := s.app.Conn.GetQuery().ListHttpMiddlewares(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		totalCount, err = s.app.Conn.GetQuery().CountHttpMiddlewares(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
 
-		for _, dbMiddleware := range dbMiddlewares {
-			middleware, err := buildProtoHttpMiddleware(dbMiddleware)
-			if err != nil {
-				slog.Error("Failed to build proto middleware", "error", err)
-				continue
-			}
-			middlewares = append(middlewares, middleware)
-		}
+	if req.Msg.Type == nil {
+		httpParams := db.ListHttpMiddlewaresParams{Limit: limit, Offset: offset}
+		tcpParams := db.ListTcpMiddlewaresParams{Limit: limit, Offset: offset}
 
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		params := db.ListTcpMiddlewaresParams{Limit: limit, Offset: offset}
-		dbMiddlewares, err := s.app.Conn.GetQuery().ListTcpMiddlewares(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		totalCount, err = s.app.Conn.GetQuery().CountTcpMiddlewares(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		for _, dbMiddleware := range dbMiddlewares {
-			middleware, err := buildProtoTcpMiddleware(dbMiddleware)
-			if err != nil {
-				slog.Error("Failed to build proto middleware", "error", err)
-				continue
-			}
-			middlewares = append(middlewares, middleware)
-		}
-
-	default:
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid middleware type"),
+		httpMiddlewares, totalHttp, err := listMiddlewares[db.HttpMiddleware, mantraev1.Middleware, db.ListHttpMiddlewaresParams](
+			ctx,
+			s.app.Conn.GetQuery().ListHttpMiddlewares,
+			s.app.Conn.GetQuery().CountHttpMiddlewares,
+			buildProtoHttpMiddleware,
+			httpParams,
 		)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		tcpMiddlewares, totalTcp, err := listMiddlewares[db.TcpMiddleware, mantraev1.Middleware, db.ListTcpMiddlewaresParams](
+			ctx,
+			s.app.Conn.GetQuery().ListTcpMiddlewares,
+			s.app.Conn.GetQuery().CountTcpMiddlewares,
+			buildProtoTcpMiddleware,
+			tcpParams,
+		)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		middlewares = append(middlewares, httpMiddlewares...)
+		middlewares = append(middlewares, tcpMiddlewares...)
+		totalCount = totalHttp + totalTcp
+	} else {
+		var err error
+		switch *req.Msg.Type {
+		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
+			params := db.ListHttpMiddlewaresParams{Limit: limit, Offset: offset}
+			middlewares, totalCount, err = listMiddlewares[db.HttpMiddleware, mantraev1.Middleware, db.ListHttpMiddlewaresParams](
+				ctx,
+				s.app.Conn.GetQuery().ListHttpMiddlewares,
+				s.app.Conn.GetQuery().CountHttpMiddlewares,
+				buildProtoHttpMiddleware,
+				params,
+			)
+
+		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
+			params := db.ListTcpMiddlewaresParams{Limit: limit, Offset: offset}
+			middlewares, totalCount, err = listMiddlewares[db.TcpMiddleware, mantraev1.Middleware, db.ListTcpMiddlewaresParams](
+				ctx,
+				s.app.Conn.GetQuery().ListTcpMiddlewares,
+				s.app.Conn.GetQuery().CountTcpMiddlewares,
+				buildProtoTcpMiddleware,
+				params,
+			)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+
+		default:
+			return nil, connect.NewError(
+				connect.CodeInvalidArgument,
+				errors.New("invalid middleware type"),
+			)
+		}
+
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	return connect.NewResponse(&mantraev1.ListMiddlewaresResponse{
 		Middlewares: middlewares,
 		TotalCount:  totalCount,
 	}), nil
+}
+
+// Helpers
+func listMiddlewares[
+	DBType any,
+	ProtoType any,
+	ParamsType any,
+](
+	ctx context.Context,
+	listFn func(context.Context, ParamsType) ([]DBType, error),
+	countFn func(context.Context) (int64, error),
+	buildFn func(DBType) (*mantraev1.Middleware, error),
+	params ParamsType,
+) ([]*mantraev1.Middleware, int64, error) {
+	dbMiddlewares, err := listFn(ctx, params)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	totalCount, err := countFn(ctx)
+	if err != nil {
+		return nil, 0, connect.NewError(connect.CodeInternal, err)
+	}
+
+	var middlewares []*mantraev1.Middleware
+	for _, dbMiddleware := range dbMiddlewares {
+		middleware, err := buildFn(dbMiddleware)
+		if err != nil {
+			slog.Error("Failed to build proto middleware", "error", err)
+			continue
+		}
+		middlewares = append(middlewares, middleware)
+	}
+
+	return middlewares, totalCount, nil
 }
 
 func buildProtoHttpMiddleware(r db.HttpMiddleware) (*mantraev1.Middleware, error) {

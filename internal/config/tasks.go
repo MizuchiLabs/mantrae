@@ -7,6 +7,7 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/dns"
 	"github.com/mizuchilabs/mantrae/internal/settings"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
 )
 
@@ -33,16 +34,29 @@ func (a *App) syncTraefik(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			instances, err := a.Conn.GetQuery().ListTraefikInstances(ctx)
+			profiles, err := a.Conn.GetQuery().
+				ListProfiles(ctx, db.ListProfilesParams{Limit: -1, Offset: 0})
 			if err != nil {
-				slog.Error("failed to list traefik instances", "error", err)
+				slog.Error("failed to list profiles", "error", err)
 				continue
 			}
-
-			for _, instance := range instances {
-				if err := traefik.UpdateTraefikAPI(a.Conn.Get(), instance.ID); err != nil {
-					slog.Error("failed to update traefik api", "error", err)
+			for _, profile := range profiles {
+				instances, err := a.Conn.GetQuery().
+					ListTraefikInstances(ctx, db.ListTraefikInstancesParams{
+						ProfileID: profile.ID,
+						Limit:     -1,
+						Offset:    0,
+					})
+				if err != nil {
+					slog.Error("failed to list traefik instances", "error", err)
 					continue
+				}
+
+				for _, instance := range instances {
+					if err := traefik.UpdateTraefikAPI(a.Conn.Get(), instance.ID); err != nil {
+						slog.Error("failed to update traefik api", "error", err)
+						continue
+					}
 				}
 			}
 		}

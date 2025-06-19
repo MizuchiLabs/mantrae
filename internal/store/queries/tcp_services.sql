@@ -19,19 +19,13 @@ FROM
 WHERE
   id = ?;
 
--- name: GetTcpServicesByProfile :many
-SELECT
-  *
-FROM
-  tcp_services
-WHERE
-  profile_id = ?;
-
 -- name: ListTcpServices :many
 SELECT
   *
 FROM
   tcp_services
+WHERE
+  profile_id = ?
 ORDER BY
   name
 LIMIT

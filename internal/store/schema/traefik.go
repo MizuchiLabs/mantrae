@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"time"
 
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
@@ -133,4 +135,37 @@ type Version struct {
 	Version   string `json:"version,omitempty"`
 	Codename  string `json:"codename,omitempty"`
 	StartDate string `json:"startDate,omitempty"`
+}
+
+// JSON marshalling and unmarshalling helper
+func (e *EntryPoints) Scan(data any) error {
+	return scanJSON(data, &e)
+}
+
+func (e *EntryPoints) Value() (driver.Value, error) {
+	return json.Marshal(e)
+}
+
+func (c *Overview) Scan(data any) error {
+	return scanJSON(data, &c)
+}
+
+func (c *Overview) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+func (c *Configuration) Scan(data any) error {
+	return scanJSON(data, &c)
+}
+
+func (c *Configuration) Value() (driver.Value, error) {
+	return json.Marshal(c)
+}
+
+func (v *Version) Scan(data any) error {
+	return scanJSON(data, &v)
+}
+
+func (v *Version) Value() (driver.Value, error) {
+	return json.Marshal(v)
 }
