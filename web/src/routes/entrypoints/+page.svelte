@@ -1,31 +1,32 @@
 <script lang="ts">
-	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
+	import { entryPointClient, routerClient } from '$lib/api';
+	import EntryPointModal from '$lib/components/modals/entrypoint.svelte';
+	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
-	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { Layers, Pencil, Trash } from '@lucide/svelte';
-	import { renderComponent } from '$lib/components/ui/data-table';
-	import { toast } from 'svelte-sonner';
-	import { profile } from '$lib/stores/profile';
 	import type { BulkAction } from '$lib/components/tables/types';
-	import { MiddlewareType, type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
-	import { onMount } from 'svelte';
+	import { renderComponent } from '$lib/components/ui/data-table';
+	import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
-	import { middlewareClient } from '$lib/api';
+	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
+	import { EthernetPort, Pencil, Trash } from '@lucide/svelte';
+	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
-	let item = $state({} as Middleware);
+	let item = $state({} as EntryPoint);
 	let open = $state(false);
 
 	// Data state
-	let data = $state<Middleware[]>([]);
+	let data = $state<EntryPoint[]>([]);
 	let rowCount = $state<number>(0);
 
-	const columns: ColumnDef<Middleware>[] = [
+	const columns: ColumnDef<EntryPoint>[] = [
 		{
 			header: 'Name',
 			accessorKey: 'name',
+			id: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('name') as string;
@@ -33,43 +34,23 @@
 			}
 		},
 		{
-			header: 'Protocol',
-			accessorKey: 'protocol',
+			header: 'Address',
+			accessorKey: 'address',
+			id: 'address',
 			enableSorting: true,
-			cell: ({ row, column }) => {
-				return renderComponent(ColumnBadge<Middleware>, {
-					label: row.getValue('protocol') as string,
-					class: 'hover:cursor-pointer',
-					column: column
-				});
+			cell: ({ row }) => {
+				const address = row.getValue('address') as string;
+				return address;
 			}
 		},
 		{
-			header: 'Type',
-			accessorKey: 'type',
-			enableSorting: true,
-			cell: ({ row, column }) => {
-				return renderComponent(ColumnBadge<Middleware>, {
-					label: row.getValue('type') as string,
-					class: 'hover:cursor-pointer',
-					column: column
-				});
-			}
-		},
-		{
-			header: 'Provider',
-			accessorFn: (row) => row.name,
-			id: 'provider',
-			enableSorting: true,
-			cell: ({ row, column }) => {
-				const name = row.getValue('provider') as string;
-				const provider = name?.split('@')[1];
-				return renderComponent(ColumnBadge<Middleware>, {
-					label: provider ? provider.toLowerCase() : 'http',
-					variant: 'secondary',
-					class: 'hover:cursor-pointer',
-					column: column
-				});
+			header: 'Default',
+			accessorKey: 'isDefault',
+			id: 'isDefault',
+			enableHiding: false,
+			cell: ({ row }) => {
+				let isDefault = row.getValue('isDefault') as boolean;
+				return renderComponent(ColumnCheck, { checked: isDefault });
 			}
 		},
 		{
@@ -80,7 +61,7 @@
 					actions: [
 						{
 							type: 'button',
-							label: 'Edit Middleware',
+							label: 'Edit EntryPoint',
 							icon: Pencil,
 							onClick: () => {
 								item = row.original;
@@ -89,7 +70,7 @@
 						},
 						{
 							type: 'button',
-							label: 'Delete Middleware',
+							label: 'Delete EntryPoint',
 							icon: Trash,
 							classProps: 'text-destructive',
 							onClick: () => deleteItem(row.original.id)
@@ -100,7 +81,7 @@
 		}
 	];
 
-	const bulkActions: BulkAction<Middleware>[] = [
+	const bulkActions: BulkAction<EntryPoint>[] = [
 		{
 			type: 'button',
 			label: 'Delete',
@@ -114,25 +95,25 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint) => {
+	async function deleteItem(id: bigint) {
 		try {
-			await middlewareClient.deleteMiddleware({ id: id });
+			await entryPointClient.deleteEntryPoint({ id: id });
 			await refreshData(pageSize.value ?? 10, 0);
-			toast.success('Router deleted');
+			toast.success('EntryPoint deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete router', { description: e.message });
 		}
-	};
+	}
 
-	async function bulkDelete(selectedRows: Middleware[]) {
+	async function bulkDelete(selectedRows: EntryPoint[]) {
 		try {
 			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
 			if (!confirmed) return;
 
-			const rows = selectedRows.map((row) => ({ id: row.id }));
-			for (const row of rows) {
-				await middlewareClient.deleteMiddleware({ id: row.id });
+			const routerIds = selectedRows.map((row) => ({ id: row.id }));
+			for (const router of routerIds) {
+				await routerClient.deleteRouter(router);
 			}
 			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(`Successfully deleted ${selectedRows.length} routers`);
@@ -141,13 +122,14 @@
 			toast.error('Failed to delete routers', { description: e.message });
 		}
 	}
+
 	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await middlewareClient.listMiddlewares({
+		const response = await entryPointClient.listEntryPoints({
 			profileId: profile.id,
 			limit: BigInt(pageSize),
 			offset: BigInt(pageIndex * pageSize)
 		});
-		data = response.middlewares;
+		data = response.entryPoints;
 		rowCount = Number(response.totalCount);
 	}
 
@@ -157,13 +139,13 @@
 </script>
 
 <svelte:head>
-	<title>Middlewares</title>
+	<title>EntryPoints</title>
 </svelte:head>
 
 <div class="flex flex-col gap-4">
 	<div class="flex items-center justify-start gap-2">
-		<Layers />
-		<h1 class="text-2xl font-bold">Middleware Management</h1>
+		<EthernetPort />
+		<h1 class="text-2xl font-bold">EntryPoint Management</h1>
 	</div>
 	<DataTable
 		{data}
@@ -172,13 +154,13 @@
 		{onPaginationChange}
 		{bulkActions}
 		createButton={{
-			label: 'Create Middleware',
+			label: 'Create EntryPoint',
 			onClick: () => {
-				item = { type: MiddlewareType.HTTP } as Middleware;
+				item = {} as EntryPoint;
 				open = true;
 			}
 		}}
 	/>
 </div>
 
-<MiddlewareModal bind:open bind:item bind:data />
+<EntryPointModal bind:open bind:item bind:data />

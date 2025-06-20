@@ -17,8 +17,7 @@ service SettingService {
 message Setting {
   string key = 1;
   string value = 2;
-  string description = 3;
-  google.protobuf.Timestamp updated_at = 4;
+  google.protobuf.Timestamp updated_at = 3;
 }
 
 message GetSettingRequest {

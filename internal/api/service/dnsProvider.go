@@ -69,6 +69,10 @@ func (s *DnsProviderService) CreateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateDnsProviderRequest],
 ) (*connect.Response[mantraev1.CreateDnsProviderResponse], error) {
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var dnsType string
 	switch req.Msg.Type {
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
@@ -129,6 +133,10 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateDnsProviderRequest],
 ) (*connect.Response[mantraev1.UpdateDnsProviderResponse], error) {
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var dnsType string
 	switch req.Msg.Type {
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
@@ -148,6 +156,7 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	}
 
 	params := db.UpdateDnsProviderParams{
+		ID:   req.Msg.Id,
 		Name: req.Msg.Name,
 		Type: dnsType,
 		Config: &schema.DNSProviderConfig{

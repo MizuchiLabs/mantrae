@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/entry_point.proto.
  */
 export const file_mantrae_v1_entry_point: GenFile = /*@__PURE__*/
-  fileDesc("ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIqsBCgpFbnRyeVBvaW50EgoKAmlkGAEgASgDEgwKBG5hbWUYAiABKAkSDwoHYWRkcmVzcxgDIAEoCRISCgppc19kZWZhdWx0GAQgASgIEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiIKFEdldEVudHJ5UG9pbnRSZXF1ZXN0EgoKAmlkGAEgASgDIkQKFUdldEVudHJ5UG9pbnRSZXNwb25zZRIrCgtlbnRyeV9wb2ludBgBIAEoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludCJMChdDcmVhdGVFbnRyeVBvaW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEg8KB2FkZHJlc3MYAiABKAkSEgoKaXNfZGVmYXVsdBgDIAEoCCJHChhDcmVhdGVFbnRyeVBvaW50UmVzcG9uc2USKwoLZW50cnlfcG9pbnQYASABKAsyFi5tYW50cmFlLnYxLkVudHJ5UG9pbnQiWAoXVXBkYXRlRW50cnlQb2ludFJlcXVlc3QSCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIPCgdhZGRyZXNzGAMgASgJEhIKCmlzX2RlZmF1bHQYBCABKAgiRwoYVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IiUKF0RlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0EgoKAmlkGAEgASgDIhoKGERlbGV0ZUVudHJ5UG9pbnRSZXNwb25zZSJqChZMaXN0RW50cnlQb2ludHNSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAMSEgoFbGltaXQYAiABKANIAIgBARITCgZvZmZzZXQYAyABKANIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJcChdMaXN0RW50cnlQb2ludHNSZXNwb25zZRIsCgxlbnRyeV9wb2ludHMYASADKAsyFi5tYW50cmFlLnYxLkVudHJ5UG9pbnQSEwoLdG90YWxfY291bnQYAiABKAMy7AMKEUVudHJ5UG9pbnRTZXJ2aWNlElkKDUdldEVudHJ5UG9pbnQSIC5tYW50cmFlLnYxLkdldEVudHJ5UG9pbnRSZXF1ZXN0GiEubWFudHJhZS52MS5HZXRFbnRyeVBvaW50UmVzcG9uc2UiA5ACARJdChBDcmVhdGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5DcmVhdGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuQ3JlYXRlRW50cnlQb2ludFJlc3BvbnNlEl0KEFVwZGF0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLlVwZGF0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5VcGRhdGVFbnRyeVBvaW50UmVzcG9uc2USXQoQRGVsZXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuRGVsZXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLkRlbGV0ZUVudHJ5UG9pbnRSZXNwb25zZRJfCg9MaXN0RW50cnlQb2ludHMSIi5tYW50cmFlLnYxLkxpc3RFbnRyeVBvaW50c1JlcXVlc3QaIy5tYW50cmFlLnYxLkxpc3RFbnRyeVBvaW50c1Jlc3BvbnNlIgOQAgFCqQEKDmNvbS5tYW50cmFlLnYxQg9FbnRyeVBvaW50UHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIr8BCgpFbnRyeVBvaW50EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSDAoEbmFtZRgDIAEoCRIPCgdhZGRyZXNzGAQgASgJEhIKCmlzX2RlZmF1bHQYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiIgoUR2V0RW50cnlQb2ludFJlcXVlc3QSCgoCaWQYASABKAMiRAoVR2V0RW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50ImAKF0NyZWF0ZUVudHJ5UG9pbnRSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAMSDAoEbmFtZRgCIAEoCRIPCgdhZGRyZXNzGAMgASgJEhIKCmlzX2RlZmF1bHQYBCABKAgiRwoYQ3JlYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IlgKF1VwZGF0ZUVudHJ5UG9pbnRSZXF1ZXN0EgoKAmlkGAEgASgDEgwKBG5hbWUYAiABKAkSDwoHYWRkcmVzcxgDIAEoCRISCgppc19kZWZhdWx0GAQgASgIIkcKGFVwZGF0ZUVudHJ5UG9pbnRSZXNwb25zZRIrCgtlbnRyeV9wb2ludBgBIAEoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludCIlChdEZWxldGVFbnRyeVBvaW50UmVxdWVzdBIKCgJpZBgBIAEoAyIaChhEZWxldGVFbnRyeVBvaW50UmVzcG9uc2UiagoWTGlzdEVudHJ5UG9pbnRzUmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgDEhIKBWxpbWl0GAIgASgDSACIAQESEwoGb2Zmc2V0GAMgASgDSAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiXAoXTGlzdEVudHJ5UG9pbnRzUmVzcG9uc2USLAoMZW50cnlfcG9pbnRzGAEgAygLMhYubWFudHJhZS52MS5FbnRyeVBvaW50EhMKC3RvdGFsX2NvdW50GAIgASgDMuwDChFFbnRyeVBvaW50U2VydmljZRJZCg1HZXRFbnRyeVBvaW50EiAubWFudHJhZS52MS5HZXRFbnRyeVBvaW50UmVxdWVzdBohLm1hbnRyYWUudjEuR2V0RW50cnlQb2ludFJlc3BvbnNlIgOQAgESXQoQQ3JlYXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuQ3JlYXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLkNyZWF0ZUVudHJ5UG9pbnRSZXNwb25zZRJdChBVcGRhdGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5VcGRhdGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEl0KEERlbGV0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLkRlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5EZWxldGVFbnRyeVBvaW50UmVzcG9uc2USXwoPTGlzdEVudHJ5UG9pbnRzEiIubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXF1ZXN0GiMubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIPRW50cnlQb2ludFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.EntryPoint
@@ -24,27 +24,32 @@ export type EntryPoint = Message<"mantrae.v1.EntryPoint"> & {
   id: bigint;
 
   /**
-   * @generated from field: string name = 2;
+   * @generated from field: int64 profile_id = 2;
+   */
+  profileId: bigint;
+
+  /**
+   * @generated from field: string name = 3;
    */
   name: string;
 
   /**
-   * @generated from field: string address = 3;
+   * @generated from field: string address = 4;
    */
   address: string;
 
   /**
-   * @generated from field: bool is_default = 4;
+   * @generated from field: bool is_default = 5;
    */
   isDefault: boolean;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 5;
+   * @generated from field: google.protobuf.Timestamp created_at = 6;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 6;
+   * @generated from field: google.protobuf.Timestamp updated_at = 7;
    */
   updatedAt?: Timestamp;
 };
@@ -95,17 +100,22 @@ export const GetEntryPointResponseSchema: GenMessage<GetEntryPointResponse> = /*
  */
 export type CreateEntryPointRequest = Message<"mantrae.v1.CreateEntryPointRequest"> & {
   /**
-   * @generated from field: string name = 1;
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
+
+  /**
+   * @generated from field: string name = 2;
    */
   name: string;
 
   /**
-   * @generated from field: string address = 2;
+   * @generated from field: string address = 3;
    */
   address: string;
 
   /**
-   * @generated from field: bool is_default = 3;
+   * @generated from field: bool is_default = 4;
    */
   isDefault: boolean;
 };

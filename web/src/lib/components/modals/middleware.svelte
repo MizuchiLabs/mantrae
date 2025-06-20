@@ -1,229 +1,135 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import {
-		type Middleware,
-		type SupportedMiddleware,
-		type SupportedMiddlewareHTTP,
-		type SupportedMiddlewareTCP,
-		type UpsertMiddlewareParams,
-		getDefaultValuesForType,
-		getMetadataForMiddleware,
-		getTCPDefaultValuesForType,
-		HTTPMiddlewareKeys,
-		TCPMiddlewareKeys
-	} from '$lib/types/middlewares';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { api } from '$lib/api';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import DynamicForm from '../forms/DynamicForm.svelte';
-	import PluginForm from '../forms/PluginForm.svelte';
-	import { source } from '$lib/stores/source';
+	import { MiddlewareType, type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
+	import { middlewareClient } from '$lib/api';
+	import { middlewareTypes } from '$lib/types';
+	import { ConnectError } from '@connectrpc/connect';
+	import { profile } from '$lib/stores/profile';
+	import { pageIndex, pageSize } from '$lib/stores/common';
+	import HttpMiddleware from '../forms/httpMiddleware.svelte';
 
 	interface Props {
-		middleware: Middleware;
+		data: Middleware[];
+		item: Middleware;
 		open?: boolean;
-		mode?: 'create' | 'edit';
 	}
-	let { middleware = $bindable(), open = $bindable(false), mode = 'create' }: Props = $props();
+	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 
-	type FormData = Record<string, unknown>;
-	let currentFormData = $state<FormData>({});
-
-	// Helper to extract middleware config
-	function extractMiddlewareConfig(mw: Middleware): FormData {
-		if (!mw.type) return {};
-
-		// Get the default structure for the middleware type
-		const defaultConfig =
-			mw.protocol === 'http'
-				? getDefaultValuesForType(mw.type as SupportedMiddlewareHTTP)
-				: getTCPDefaultValuesForType(mw.type as SupportedMiddlewareTCP);
-
-		// Get the current config values
-		const currentConfig: FormData = {};
-		for (const [key, value] of Object.entries(mw)) {
-			if (!['name', 'protocol', 'type'].includes(key)) {
-				currentConfig[key] = value;
-			}
-		}
-
-		// Deep merge the default structure with the current config
-		const mergeObjects = (target: Record<string, unknown>, source: Record<string, unknown>) => {
-			for (const key of Object.keys(source)) {
-				if (source[key] instanceof Object && !Array.isArray(source[key])) {
-					target[key] = target[key] || {};
-					mergeObjects(
-						target[key] as Record<string, unknown>,
-						source[key] as Record<string, unknown>
-					);
-				} else {
-					// Only use default if there's no current value
-					if (!(key in target)) {
-						target[key] = source[key];
-					}
-				}
-			}
-		};
-
-		// Start with current config and fill in missing values from defaults
-		const result = { ...currentConfig } as FormData;
-		mergeObjects(result, defaultConfig as Record<string, unknown>);
-
-		return result;
-	}
-
-	// Initialize or update form data when middleware changes or modal opens
-	$effect(() => {
-		if (open && middleware.type) {
-			const existingConfig = extractMiddlewareConfig(middleware);
-
-			if (Object.keys(existingConfig).length > 0) {
-				currentFormData = existingConfig as FormData;
+	const handleSubmit = async () => {
+		try {
+			if (item.id) {
+				await middlewareClient.updateMiddleware({
+					id: item.id,
+					name: item.name,
+					config: item.config,
+					type: item.type
+				});
+				toast.success('Middleware updated successfully');
 			} else {
-				if (middleware.protocol === 'http') {
-					currentFormData = getDefaultValuesForType(
-						middleware.type as SupportedMiddlewareHTTP
-					) as FormData;
-				} else {
-					currentFormData = getTCPDefaultValuesForType(
-						middleware.type as SupportedMiddlewareTCP
-					) as FormData;
-				}
+				await middlewareClient.createMiddleware({
+					profileId: profile.id,
+					name: item.name,
+					config: item.config,
+					type: item.type
+				});
+				toast.success('Middleware created successfully');
 			}
-		}
-	});
 
-	const handleTypeChange = (value: string) => {
-		middleware.type = value as SupportedMiddleware;
-	};
-	const handleProtocolChange = () => {
-		middleware.protocol = middleware.protocol === 'http' ? 'tcp' : 'http';
-		middleware.type = undefined;
+			// Refresh data
+			const response = await middlewareClient.listMiddlewares({
+				profileId: profile.id,
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response.middlewares;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to save item', { description: e.message });
+		}
+		open = false;
 	};
 
-	let isValid = $derived(!!middleware.name && !!middleware.type);
-	const onSubmit = async (formData: Record<string, unknown>) => {
-		if (!isValid) {
-			toast.error('Please fill in all required fields');
-			return;
-		}
+	const handleDelete = async () => {
+		if (!item.id) return;
 
 		try {
-			const params: UpsertMiddlewareParams = {
-				name: middleware.name,
-				protocol: middleware.protocol,
-				type: middleware.type,
-				middleware: {},
-				tcpMiddleware: {}
-			};
+			await middlewareClient.deleteMiddleware({ id: item.id });
+			toast.success('Middleware deleted successfully');
 
-			if (middleware.protocol === 'http' && middleware.type) {
-				params.middleware = {
-					[middleware.type]: formData
-				};
-			} else if (middleware.protocol === 'tcp' && middleware.type) {
-				params.tcpMiddleware = {
-					[middleware.type]: formData
-				};
-			}
-
-			await api.upsertMiddleware(params);
-			toast.success(`Middleware updated successfully`);
-			resetForm();
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(`Failed to update middleware`, {
-				description: e.message
+			// Refresh data
+			const response = await middlewareClient.listMiddlewares({
+				profileId: profile.id,
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
 			});
+			data = response.middlewares;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete item', { description: e.message });
 		}
-	};
-
-	function resetForm() {
 		open = false;
-		middleware = {
-			name: '',
-			protocol: 'http',
-			type: undefined
-		};
-	}
+	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{mode === 'edit' ? 'Update' : 'Add'} Middleware</Dialog.Title>
+			<Dialog.Title>{item.id ? 'Edit' : 'Create'} Middleware</Dialog.Title>
 			<Dialog.Description>Configure your Traefik middleware</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="flex flex-col gap-4 py-2">
-			{#if mode === 'create'}
-				<div class="flex flex-col gap-2">
-					<span class="text-primary text-sm">Middleware Type & Protocol</span>
-					<div class="flex items-center gap-4">
-						<Select.Root
-							type="single"
-							bind:value={middleware.type}
-							onValueChange={handleTypeChange}
-							disabled={!source.isLocal()}
-						>
-							<Select.Trigger>
-								{middleware.type ? middleware.type : 'Select type'}
-							</Select.Trigger>
-							<Select.Content>
-								{#if middleware.protocol === 'http'}
-									{#each HTTPMiddlewareKeys as type (type.value)}
-										{#if type.value !== 'plugin'}
-											<Select.Item value={type.value}>{type.label}</Select.Item>
-										{/if}
-									{/each}
-								{:else if middleware.protocol === 'tcp'}
-									{#each TCPMiddlewareKeys as type (type.value)}
-										<Select.Item value={type.value}>{type.label}</Select.Item>
-									{/each}
-								{/if}
-							</Select.Content>
-						</Select.Root>
-						<div class="flex items-center gap-2">
-							<Label for="protocol">{middleware.protocol.toUpperCase()}</Label>
-							<Switch
-								name="protocol"
-								checked={middleware.protocol === 'http'}
-								onCheckedChange={handleProtocolChange}
-								disabled={!source.isLocal()}
-							/>
-						</div>
-					</div>
+		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
+			<div class="grid w-full grid-cols-3 gap-2">
+				<div class="col-span-2 flex flex-col gap-2">
+					<Label for="name">Name</Label>
+					<Input id="name" bind:value={item.name} required placeholder="Middleware Name" />
 				</div>
-			{/if}
-			<div class="flex flex-col gap-2">
-				<Label for="name">Name</Label>
-				<Input
-					type="text"
-					name="name"
-					bind:value={middleware.name}
-					disabled={!source.isLocal()}
-					required
-				/>
+
+				<div class="col-span-1 flex flex-col gap-2">
+					<Label for="type" class="text-right">Protocol</Label>
+					<Select.Root
+						type="single"
+						name="type"
+						value={item.type?.toString()}
+						onValueChange={(value) => (item.type = parseInt(value, 10))}
+					>
+						<Select.Trigger class="w-full">
+							{middlewareTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Group>
+								<Select.Label>Middleware Type</Select.Label>
+								{#each middlewareTypes as t (t.value)}
+									<Select.Item value={t.value.toString()} label={t.label}>
+										{t.label}
+									</Select.Item>
+								{/each}
+							</Select.Group>
+						</Select.Content>
+					</Select.Root>
+				</div>
 			</div>
-		</div>
 
-		<Separator />
-
-		{#if middleware.type}
-			{#if middleware.type === 'plugin'}
-				<PluginForm bind:data={currentFormData} disabled={!source.isLocal()} {onSubmit} />
-			{:else}
-				<DynamicForm
-					data={currentFormData}
-					metadata={getMetadataForMiddleware(middleware.type)}
-					disabled={!source.isLocal()}
-					{onSubmit}
-				/>
+			{#if item.type === MiddlewareType.HTTP}
+				<HttpMiddleware bind:middleware={item} />
 			{/if}
-		{/if}
+
+			<Separator />
+
+			<div class="flex w-full flex-row-reverse gap-2">
+				<Button type="submit" class="w-full">{item.id ? 'Update' : 'Create'}</Button>
+				{#if item.id}
+					<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
+						Delete
+					</Button>
+				{/if}
+			</div>
+		</form>
 	</Dialog.Content>
 </Dialog.Root>

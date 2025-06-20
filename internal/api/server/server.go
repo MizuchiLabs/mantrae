@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/api/service"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
+	"github.com/mizuchilabs/mantrae/web"
 )
 
 const elementsHTML = `<!DOCTYPE html>
@@ -125,11 +127,11 @@ func (s *Server) registerServices() {
 	}
 
 	// Static files
-	// staticContent, err := fs.Sub(web.StaticFS, "build")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
+	staticContent, err := fs.Sub(web.StaticFS, "build")
+	if err != nil {
+		log.Fatal(err)
+	}
+	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
 
 	serviceNames := []string{
 		mantraev1connect.ProfileServiceName,
@@ -142,6 +144,7 @@ func (s *Server) registerServices() {
 		mantraev1connect.RouterServiceName,
 		mantraev1connect.ServiceServiceName,
 		mantraev1connect.MiddlewareServiceName,
+		mantraev1connect.BackupServiceName,
 		mantraev1connect.UtilServiceName,
 	}
 
@@ -204,6 +207,10 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewMiddlewareServiceHandler(
 		service.NewMiddlewareService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewBackupServiceHandler(
+		service.NewBackupService(s.app),
 		opts...,
 	))
 	s.mux.Handle(mantraev1connect.NewUtilServiceHandler(

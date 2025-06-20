@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Globe, Shield, Bot, LayoutDashboard, Origami, Users } from '@lucide/svelte';
+	import { Globe, Shield, Bot, Origami, Users, Gauge } from '@lucide/svelte';
+	import { profile } from '$lib/stores/profile';
 	import {
 		agentClient,
 		dnsClient,
@@ -11,49 +12,12 @@
 		serviceClient,
 		userClient
 	} from '$lib/api';
-
-	// interface ProfileStats {
-	// 	id: number;
-	// 	name: string;
-	// 	url: string;
-	// 	routers: number;
-	// 	services: number;
-	// 	middlewares: number;
-	// 	agents: number;
-	// }
-	// let profileStats: ProfileStats[] = $state([]);
-	//
-	// const clearErrors = async () => {
-	// 	await api.deleteErrorsByProfile();
-	// 	toast.success('Errors cleared successfully');
-	// };
-	//
-	// onMount(async () => {
-	// 	await api.loadStats();
-	// 	await api.listErrors();
-	//
-	// 	if (!$profiles) return;
-	// 	await api.getTraefikConfig(TraefikSource.LOCAL);
-	//
-	// 	// Get profile stats
-	// 	const t = await api.getTraefikStats();
-	// 	profileStats =
-	// 		t?.map((cfg) => ({
-	// 			id: cfg.id,
-	// 			name: cfg.name,
-	// 			url: cfg.url,
-	// 			routers: cfg.routers,
-	// 			services: cfg.services,
-	// 			middlewares: cfg.middlewares,
-	// 			agents: cfg.agents
-	// 		})) || [];
-	// });
 </script>
 
 <div class="container mx-auto p-6">
 	<h2 class="mb-6 text-3xl font-bold tracking-tight">
 		<div class="flex flex-row items-center gap-2">
-			<LayoutDashboard />
+			<Gauge />
 			Dashboard
 		</div>
 	</h2>
@@ -78,10 +42,9 @@
 				<Bot class="text-muted-foreground h-4 w-4" />
 			</Card.Header>
 			<Card.Content>
-				{#await agentClient.listAgents({}) then result}
+				{#await agentClient.listAgents({ profileId: profile.id }) then result}
 					<div class="text-2xl font-bold">{result.totalCount}</div>
 				{/await}
-				<p class="text-muted-foreground text-xs">Across all profiles</p>
 			</Card.Content>
 		</Card.Root>
 
@@ -92,11 +55,11 @@
 			</Card.Header>
 			<Card.Content>
 				{#await dnsClient.listDnsProviders({}) then result}
-					<!-- <div class="text-2xl font-bold"> -->
-					<!-- 	{$stats.activeDNS || 'None'} -->
-					<!-- </div> -->
+					<div class="text-2xl font-bold">
+						{result.dnsProviders.find((p) => p.isActive)?.name || 'None'}
+					</div>
 					<p class="text-muted-foreground text-xs">
-						{result.totalCount}providers configured
+						{result.totalCount} providers configured
 					</p>
 				{/await}
 			</Card.Content>
@@ -139,25 +102,25 @@
 									</div>
 								</div>
 								<div class="flex items-center gap-2">
-									{#await agentClient.listAgents({}) then result}
+									{#await agentClient.listAgents({ profileId: profile.id }) then result}
 										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
 											{result.totalCount}
 											{result.totalCount === 1n ? 'Agent' : 'Agents'}
 										</Badge>
 									{/await}
-									{#await routerClient.listRouters({}) then result}
+									{#await routerClient.listRouters({ profileId: profile.id }) then result}
 										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
 											{result.totalCount}
 											{result.totalCount === 1n ? 'Router' : 'Routers'}
 										</Badge>
 									{/await}
-									{#await serviceClient.listServices({}) then result}
+									{#await serviceClient.listServices({ profileId: profile.id }) then result}
 										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
 											{result.totalCount}
 											{result.totalCount === 1n ? 'Service' : 'Services'}
 										</Badge>
 									{/await}
-									{#await middlewareClient.listMiddlewares({}) then result}
+									{#await middlewareClient.listMiddlewares({ profileId: profile.id }) then result}
 										<Badge variant={result.totalCount > 0 ? 'default' : 'secondary'}>
 											{result.totalCount}
 											{result.totalCount === 1n ? 'Middleware' : 'Middlewares'}

@@ -71,6 +71,16 @@ func (s *RouterService) CreateRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateRouterRequest],
 ) (*connect.Response[mantraev1.CreateRouterResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var router *mantraev1.Router
 	var err error
 
@@ -82,10 +92,12 @@ func (s *RouterService) CreateRouter(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
+
 		params.Config, err = UnmarshalStruct[schema.Router](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateHttpRouter(ctx, params)
 		if err != nil {
@@ -109,6 +121,7 @@ func (s *RouterService) CreateRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateTcpRouter(ctx, params)
 		if err != nil {
@@ -132,6 +145,7 @@ func (s *RouterService) CreateRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().CreateUdpRouter(ctx, params)
 		if err != nil {
@@ -154,6 +168,13 @@ func (s *RouterService) UpdateRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateRouterRequest],
 ) (*connect.Response[mantraev1.UpdateRouterResponse], error) {
+	if req.Msg.Id == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var router *mantraev1.Router
 	var err error
 
@@ -166,6 +187,7 @@ func (s *RouterService) UpdateRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, params)
 		if err != nil {
@@ -185,6 +207,7 @@ func (s *RouterService) UpdateRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, params)
 		if err != nil {
@@ -204,6 +227,7 @@ func (s *RouterService) UpdateRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		params.Config.Service = params.Name
 
 		dbRouter, err := s.app.Conn.GetQuery().UpdateUdpRouter(ctx, params)
 		if err != nil {
@@ -300,33 +324,30 @@ func (s *RouterService) ListRouters(
 		var err error
 		switch *req.Msg.Type {
 		case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-			params := db.ListHttpRoutersParams{Limit: limit, Offset: offset}
 			routers, totalCount, err = listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams](
 				ctx,
 				s.app.Conn.GetQuery().ListHttpRouters,
 				s.app.Conn.GetQuery().CountHttpRouters,
 				buildProtoHttpRouter,
-				params,
+				db.ListHttpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		case mantraev1.RouterType_ROUTER_TYPE_TCP:
-			params := db.ListTcpRoutersParams{Limit: limit, Offset: offset}
 			routers, totalCount, err = listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams](
 				ctx,
 				s.app.Conn.GetQuery().ListTcpRouters,
 				s.app.Conn.GetQuery().CountTcpRouters,
 				buildProtoTcpRouter,
-				params,
+				db.ListTcpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		case mantraev1.RouterType_ROUTER_TYPE_UDP:
-			params := db.ListUdpRoutersParams{Limit: limit, Offset: offset}
 			routers, totalCount, err = listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams](
 				ctx,
 				s.app.Conn.GetQuery().ListUdpRouters,
 				s.app.Conn.GetQuery().CountUdpRouters,
 				buildProtoUdpRouter,
-				params,
+				db.ListUdpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		default:

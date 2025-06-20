@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -70,6 +71,16 @@ func (s *Service) CreateService(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateServiceRequest],
 ) (*connect.Response[mantraev1.CreateServiceResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var service *mantraev1.Service
 	var err error
 
@@ -150,6 +161,13 @@ func (s *Service) UpdateService(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateServiceRequest],
 ) (*connect.Response[mantraev1.UpdateServiceResponse], error) {
+	if req.Msg.Id == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var service *mantraev1.Service
 	var err error
 
@@ -232,6 +250,13 @@ func (s *Service) ListServices(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListServicesRequest],
 ) (*connect.Response[mantraev1.ListServicesResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -249,16 +274,12 @@ func (s *Service) ListServices(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		httpParams := db.ListHttpServicesParams{Limit: limit, Offset: offset}
-		tcpParams := db.ListTcpServicesParams{Limit: limit, Offset: offset}
-		udpParams := db.ListUdpServicesParams{Limit: limit, Offset: offset}
-
 		httpServices, totalHttp, err := listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
 			ctx,
 			s.app.Conn.GetQuery().ListHttpServices,
 			s.app.Conn.GetQuery().CountHttpServices,
 			buildProtoHttpService,
-			httpParams,
+			db.ListHttpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -268,7 +289,7 @@ func (s *Service) ListServices(
 			s.app.Conn.GetQuery().ListTcpServices,
 			s.app.Conn.GetQuery().CountTcpServices,
 			buildProtoTcpService,
-			tcpParams,
+			db.ListTcpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -278,7 +299,7 @@ func (s *Service) ListServices(
 			s.app.Conn.GetQuery().ListUdpServices,
 			s.app.Conn.GetQuery().CountUdpServices,
 			buildProtoUdpService,
-			udpParams,
+			db.ListUdpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -292,33 +313,30 @@ func (s *Service) ListServices(
 		var err error
 		switch *req.Msg.Type {
 		case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
-			params := db.ListHttpServicesParams{Limit: limit, Offset: offset}
 			services, totalCount, err = listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
 				ctx,
 				s.app.Conn.GetQuery().ListHttpServices,
 				s.app.Conn.GetQuery().CountHttpServices,
 				buildProtoHttpService,
-				params,
+				db.ListHttpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		case mantraev1.ServiceType_SERVICE_TYPE_TCP:
-			params := db.ListTcpServicesParams{Limit: limit, Offset: offset}
 			services, totalCount, err = listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams](
 				ctx,
 				s.app.Conn.GetQuery().ListTcpServices,
 				s.app.Conn.GetQuery().CountTcpServices,
 				buildProtoTcpService,
-				params,
+				db.ListTcpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		case mantraev1.ServiceType_SERVICE_TYPE_UDP:
-			params := db.ListUdpServicesParams{Limit: limit, Offset: offset}
 			services, totalCount, err = listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams](
 				ctx,
 				s.app.Conn.GetQuery().ListUdpServices,
 				s.app.Conn.GetQuery().CountUdpServices,
 				buildProtoUdpService,
-				params,
+				db.ListUdpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		default:

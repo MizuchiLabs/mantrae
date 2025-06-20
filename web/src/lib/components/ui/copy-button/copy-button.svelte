@@ -32,7 +32,7 @@
 	{...restProps}
 	{variant}
 	{size}
-	class={cn(className)}
+	class={cn(className) + ' right-0.5 hover:bg-transparent '}
 	type="button"
 	name="copy"
 	tabindex={-1}

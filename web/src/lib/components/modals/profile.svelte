@@ -11,25 +11,25 @@
 	import { profile as profileStore } from '$lib/stores/profile';
 
 	interface Props {
-		profile: Profile;
+		item: Profile;
 		open?: boolean;
 	}
 
-	let { profile = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
-			if (profile.id) {
+			if (item.id) {
 				const result = await profileClient.updateProfile({
-					name: profile.name,
-					description: profile.description
+					name: item.name,
+					description: item.description
 				});
 				toast.success('Profile updated successfully');
 				if (result.profile) profileStore.value = result.profile;
 			} else {
 				const result = await profileClient.createProfile({
-					name: profile.name,
-					description: profile.description
+					name: item.name,
+					description: item.description
 				});
 				toast.success('Profile created successfully');
 				if (result.profile) profileStore.value = result.profile;
@@ -42,12 +42,12 @@
 	};
 
 	const handleDelete = async () => {
-		if (!profile.id) return;
+		if (!item.id) return;
 
 		try {
-			await profileClient.deleteProfile({ id: profile.id });
+			await profileClient.deleteProfile({ id: item.id });
 			toast.success('Profile deleted successfully');
-			if (profile.id === profileStore.value?.id) {
+			if (item.id === profileStore.value?.id) {
 				let profiles = await profileClient.listProfiles({ limit: -1n, offset: 0n });
 				profileStore.value = profiles.profiles[0];
 			} else {
@@ -62,32 +62,34 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{profile.id ? 'Edit' : 'Create'} Profile</Dialog.Title>
+			<Dialog.Title>{item?.id ? 'Edit' : 'Create'} Profile</Dialog.Title>
 			<Dialog.Description>Configure your profile settings</Dialog.Description>
 		</Dialog.Header>
 
 		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
-			<div>
+			<div class="flex flex-col gap-2">
 				<Label for="name">Name</Label>
-				<Input id="name" bind:value={profile.name} required placeholder="traefik-site" />
+				<Input id="name" bind:value={item.name} required placeholder="traefik-site" />
 			</div>
 
-			<div>
+			<div class="flex flex-col gap-2">
 				<Label for="description">Description</Label>
-				<Input id="description" bind:value={profile.description} placeholder="Site description" />
+				<Input id="description" bind:value={item.description} placeholder="Site description" />
 			</div>
 
 			<Separator />
 
-			<div class="flex w-full flex-row-reverse gap-2">
-				<Button type="submit" class="w-full">{profile.id ? 'Update' : 'Create'}</Button>
-				{#if profile.id}
-					<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
+			<div class="flex w-full flex-row gap-2">
+				{#if item.id}
+					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
 						Delete
 					</Button>
 				{/if}
+				<Button type="submit" class="flex-1" onclick={handleSubmit}>
+					{item.id ? 'Update' : 'Create'}
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

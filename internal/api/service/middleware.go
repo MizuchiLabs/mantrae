@@ -67,6 +67,16 @@ func (s *MiddlewareService) CreateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateMiddlewareRequest],
 ) (*connect.Response[mantraev1.CreateMiddlewareResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var middleware *mantraev1.Middleware
 	var err error
 
@@ -129,6 +139,13 @@ func (s *MiddlewareService) UpdateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateMiddlewareRequest],
 ) (*connect.Response[mantraev1.UpdateMiddlewareResponse], error) {
+	if req.Msg.Id == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
+	}
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	var middleware *mantraev1.Middleware
 	var err error
 
@@ -196,6 +213,13 @@ func (s *MiddlewareService) ListMiddlewares(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListMiddlewaresRequest],
 ) (*connect.Response[mantraev1.ListMiddlewaresResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -213,15 +237,16 @@ func (s *MiddlewareService) ListMiddlewares(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		httpParams := db.ListHttpMiddlewaresParams{Limit: limit, Offset: offset}
-		tcpParams := db.ListTcpMiddlewaresParams{Limit: limit, Offset: offset}
-
 		httpMiddlewares, totalHttp, err := listMiddlewares[db.HttpMiddleware, mantraev1.Middleware, db.ListHttpMiddlewaresParams](
 			ctx,
 			s.app.Conn.GetQuery().ListHttpMiddlewares,
 			s.app.Conn.GetQuery().CountHttpMiddlewares,
 			buildProtoHttpMiddleware,
-			httpParams,
+			db.ListHttpMiddlewaresParams{
+				ProfileID: req.Msg.ProfileId,
+				Limit:     limit,
+				Offset:    offset,
+			},
 		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -231,7 +256,7 @@ func (s *MiddlewareService) ListMiddlewares(
 			s.app.Conn.GetQuery().ListTcpMiddlewares,
 			s.app.Conn.GetQuery().CountTcpMiddlewares,
 			buildProtoTcpMiddleware,
-			tcpParams,
+			db.ListTcpMiddlewaresParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 		)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -244,23 +269,21 @@ func (s *MiddlewareService) ListMiddlewares(
 		var err error
 		switch *req.Msg.Type {
 		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-			params := db.ListHttpMiddlewaresParams{Limit: limit, Offset: offset}
 			middlewares, totalCount, err = listMiddlewares[db.HttpMiddleware, mantraev1.Middleware, db.ListHttpMiddlewaresParams](
 				ctx,
 				s.app.Conn.GetQuery().ListHttpMiddlewares,
 				s.app.Conn.GetQuery().CountHttpMiddlewares,
 				buildProtoHttpMiddleware,
-				params,
+				db.ListHttpMiddlewaresParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 
 		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-			params := db.ListTcpMiddlewaresParams{Limit: limit, Offset: offset}
 			middlewares, totalCount, err = listMiddlewares[db.TcpMiddleware, mantraev1.Middleware, db.ListTcpMiddlewaresParams](
 				ctx,
 				s.app.Conn.GetQuery().ListTcpMiddlewares,
 				s.app.Conn.GetQuery().CountTcpMiddlewares,
 				buildProtoTcpMiddleware,
-				params,
+				db.ListTcpMiddlewaresParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
 			)
 			if err != nil {
 				return nil, connect.NewError(connect.CodeInternal, err)

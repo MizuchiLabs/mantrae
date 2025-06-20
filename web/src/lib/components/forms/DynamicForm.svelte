@@ -4,7 +4,6 @@
 	import FormField from './FormField.svelte';
 	import type { FieldMetadata } from '$lib/types/middlewares';
 	import Separator from '../ui/separator/separator.svelte';
-	import { loading } from '$lib/api';
 
 	interface Props {
 		data: Record<string, unknown>;
@@ -66,5 +65,5 @@
 	</div>
 
 	<Separator class="my-4" />
-	<Button type="submit" class="w-full" disabled={$loading}>Save</Button>
+	<Button type="submit" class="w-full">Save</Button>
 </form>

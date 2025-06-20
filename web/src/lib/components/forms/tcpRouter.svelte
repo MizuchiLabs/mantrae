@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { Router as HttpRouter, RouterTLSConfig } from '$lib/gen/tygo/dynamic';
+	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/tygo/dynamic';
 	import { Star } from '@lucide/svelte';
 	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
 	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
@@ -15,8 +15,8 @@
 
 	let { router = $bindable() }: { router: Router } = $props();
 
+	let config = $state(unmarshalConfig(router.config) as TCPRouter);
 	let certResolvers: string[] = $state([]);
-	let config = $state(unmarshalConfig(router.config) as HttpRouter);
 
 	$effect(() => {
 		if (config) router.config = marshalConfig(config);
@@ -33,12 +33,12 @@
 		const resolverSet = new Set(
 			response.routers
 				.filter((r) => {
-					let tmp = unmarshalConfig(r.config) as HttpRouter;
+					let tmp = unmarshalConfig(r.config) as TCPRouter;
 					if (!tmp?.tls?.certResolver) return false;
 					return true;
 				})
 				.map((r) => {
-					let tmp = unmarshalConfig(r.config) as HttpRouter;
+					let tmp = unmarshalConfig(r.config) as TCPRouter;
 					return tmp.tls?.certResolver ?? '';
 				})
 		);
@@ -103,7 +103,7 @@
 						return;
 					}
 
-					if (!config.tls) config.tls = {} as RouterTLSConfig;
+					if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
 					config.tls.certResolver = input.value;
 				}}
 			/>
@@ -112,7 +112,7 @@
 					{#if resolver !== config.tls?.certResolver}
 						<Badge
 							onclick={() => {
-								if (!config.tls) config.tls = {} as RouterTLSConfig;
+								if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
 								config.tls.certResolver = resolver;
 							}}
 							class="mt-1 cursor-pointer"
@@ -126,7 +126,7 @@
 	</div>
 
 	<!-- Rule -->
-	{#if router.type === RouterType.HTTP}
+	{#if router.type === RouterType.TCP}
 		<RuleEditor bind:rule={config.rule} bind:type={router.type} />
 	{/if}
 </div>

@@ -4,50 +4,91 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import type { Agent, UpdateAgentIPParams } from '$lib/types';
 	import { toast } from 'svelte-sonner';
-	import { api } from '$lib/api';
 	import Separator from '../ui/separator/separator.svelte';
 	import CopyButton from '../ui/copy-button/copy-button.svelte';
-	import { DateFormat } from '$lib/stores/common';
+	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { RotateCcw } from '@lucide/svelte';
+	import type { Agent } from '$lib/gen/mantrae/v1/agent_management_pb';
+	import { agentClient } from '$lib/api';
+	import { profile } from '$lib/stores/profile';
+	import { ConnectError } from '@connectrpc/connect';
+	import { timestampDate } from '@bufbuild/protobuf/wkt';
 
 	interface Props {
-		agent: Agent | undefined;
+		data: Agent[];
+		item: Agent;
 		open?: boolean;
 	}
 
-	let { agent = $bindable({} as Agent), open = $bindable(false) }: Props = $props();
+	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let newIP = $state('');
 
 	const handleSubmit = async (ip: string | undefined) => {
-		if (agent.id) {
-			if (!ip) return;
-			const params: UpdateAgentIPParams = {
-				id: agent.id,
-				activeIp: ip
-			};
-			await api.updateAgentIP(params);
-			toast.success(`Agent ${agent.hostname} updated successfully`);
-		} else {
-			await api.createAgent();
-			toast.success(`Agent ${agent.hostname} created successfully`);
+		try {
+			if (item.id) {
+				await agentClient.updateAgentIP({ id: item.id, ip: ip });
+				toast.success(`Agent ${item.hostname} updated successfully`);
+			} else {
+				await agentClient.createAgent({ profileId: profile.id });
+				toast.success(`Agent ${item.hostname} created successfully`);
+			}
+
+			// Refresh data
+			let response = await agentClient.listAgents({
+				profileId: profile.id,
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response.agents;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to save agent', { description: e.message });
+		}
+		open = false;
+	};
+	const handleDelete = async () => {
+		if (!item.id) return;
+
+		try {
+			await agentClient.deleteAgent({ id: item.id });
+			toast.success('Agent deleted successfully');
+
+			// Refresh data
+			let response = await agentClient.listAgents({
+				profileId: profile.id,
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response.agents;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete agent', { description: e.message });
 		}
 		open = false;
 	};
 	const handleRotate = async () => {
-		agent.token = await api.rotateAgentToken(agent.id);
+		const response = await agentClient.rotateAgentToken({ id: item.id });
+		item.token = response.token;
 		toast.success('Token rotated successfully');
+
+		// Refresh data
+		let response2 = await agentClient.listAgents({
+			profileId: profile.id,
+			limit: BigInt(pageSize.value ?? 10),
+			offset: BigInt(pageIndex.value ?? 0)
+		});
+		data = response2.agents;
 	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="sm:max-w-[425px]">
 		<Dialog.Header>
-			<Dialog.Title>{agent.hostname ? 'Update' : 'Connect your'} Agent</Dialog.Title>
+			<Dialog.Title>{item.hostname ? 'Update' : 'Connect your'} Agent</Dialog.Title>
 			<Dialog.Description>
-				{agent.hostname
+				{item.hostname
 					? 'Update the active IP address for your agent'
 					: 'Copy the token for your agent below'}
 			</Dialog.Description>
@@ -56,36 +97,36 @@
 		<Separator />
 
 		<div class="flex flex-col gap-4">
-			{#if agent.hostname}
+			{#if item.hostname}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="hostname">Hostname</Label>
 					<div class="col-span-3 space-x-2">
-						<Badge variant="secondary">{agent.hostname}</Badge>
+						<Badge variant="secondary">{item.hostname}</Badge>
 					</div>
 				</div>
 			{/if}
 
-			{#if agent.publicIp}
+			{#if item.publicIp}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="publicip">Public IP</Label>
 					<div class="col-span-3 space-x-2">
-						{#if agent.activeIp === agent.publicIp || !agent.activeIp}
-							<Badge variant="default">{agent.publicIp ?? 'None'}</Badge>
+						{#if item.activeIp === item.publicIp || !item.activeIp}
+							<Badge variant="default">{item.publicIp ?? 'None'}</Badge>
 						{:else}
-							<button onclick={() => handleSubmit(agent.publicIp)}>
-								<Badge variant="secondary">{agent.publicIp}</Badge>
+							<button onclick={() => handleSubmit(item.publicIp)}>
+								<Badge variant="secondary">{item.publicIp}</Badge>
 							</button>
 						{/if}
 					</div>
 				</div>
 			{/if}
 
-			{#if agent.privateIps?.privateIps?.length > 0}
+			{#if item.privateIps?.length > 0}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="privateip">Private IPs</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each agent.privateIps?.privateIps ?? [] as ip (ip)}
-							{#if agent.activeIp === ip}
+						{#each item.privateIps ?? [] as ip (ip)}
+							{#if item.activeIp === ip}
 								<Badge variant="default">{ip ?? 'None'}</Badge>
 							{:else}
 								<button onclick={() => handleSubmit(ip)}>
@@ -97,11 +138,11 @@
 				</div>
 			{/if}
 
-			{#if agent.containers?.length > 0}
+			{#if item.containers?.length > 0}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="containers">Containers</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each agent.containers ?? [] as container (container.id)}
+						{#each item.containers ?? [] as container (container.id)}
 							{#if container.name}
 								<Badge variant="secondary">
 									{typeof container.name === 'string' ? container.name.slice(1) : ''}
@@ -112,11 +153,15 @@
 				</div>
 			{/if}
 
-			{#if agent.hostname}
+			{#if item.hostname}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="lastseen">Last Seen</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						<Badge variant="secondary">{DateFormat.format(new Date(agent.updatedAt))}</Badge>
+						<Badge variant="secondary">
+							{#if item.updatedAt}
+								{DateFormat.format(timestampDate(item.updatedAt))}
+							{/if}
+						</Badge>
 					</div>
 				</div>
 
@@ -137,8 +182,8 @@
 				<Label for="token">Token</Label>
 				<div class="flex w-full items-center gap-1">
 					<div class="relative flex w-full">
-						<Input id="token" name="token" type="text" value={agent.token} class="pr-10" readonly />
-						<CopyButton text={agent.token} class="absolute right-0" />
+						<Input id="token" name="token" type="text" value={item.token} class="pr-10" readonly />
+						<CopyButton text={item.token} class="absolute right-0" />
 					</div>
 					<Button
 						variant="ghost"
@@ -150,10 +195,14 @@
 				</div>
 			</div>
 
-			{#if agent.hostname && newIP}
-				<Separator />
+			<Separator />
+
+			<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
+				Delete
+			</Button>
+			{#if item.id && newIP}
 				<Button type="submit" class="w-full cursor-pointer" onclick={() => handleSubmit(newIP)}>
-					{agent.id ? 'Update' : 'Save'}
+					{item.id ? 'Update' : 'Save'}
 				</Button>
 			{/if}
 		</div>

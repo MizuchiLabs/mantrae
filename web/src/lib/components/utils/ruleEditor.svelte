@@ -9,7 +9,7 @@
 	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
 
 	interface Props {
-		rule: string;
+		rule?: string;
 		type: RouterType.HTTP | RouterType.TCP;
 		disabled?: boolean;
 	}

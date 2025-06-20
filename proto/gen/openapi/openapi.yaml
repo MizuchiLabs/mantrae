@@ -754,6 +754,12 @@ components:
     mantrae.v1.CreateEntryPointRequest:
       type: object
       properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         name:
           type: string
           title: name
@@ -796,6 +802,12 @@ components:
             - integer
             - string
           title: id
+          format: int64
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
           format: int64
         name:
           type: string
@@ -1781,9 +1793,6 @@ components:
         value:
           type: string
           title: value
-        description:
-          type: string
-          title: description
         updatedAt:
           title: updated_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'

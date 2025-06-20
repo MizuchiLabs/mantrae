@@ -1,17 +1,14 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import logo from '$lib/images/logo-white.svg';
 	import type { Component, ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Blocks,
-		ChevronRight,
 		ChevronsUpDown,
 		Globe,
-		House,
 		Layers,
 		LogOut,
 		Plus,
@@ -21,20 +18,21 @@
 		Bot,
 		Tag,
 		Pencil,
-		Wrench,
 		CircleUserRound,
 		Sun,
 		Moon,
-		type IconProps
+		type IconProps,
+		EthernetPort,
+		Gauge
 	} from '@lucide/svelte';
-	import { slide } from 'svelte/transition';
 	import { theme } from '$lib/stores/theme';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
 	import { logout, profileClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import ProfileModal from '$lib/components/modals/profile.svelte';
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
+	import ProfileModal from '$lib/components/modals/profile.svelte';
+	import UserModal from '$lib/components/modals/user.svelte';
 
 	let {
 		ref = $bindable(null),
@@ -53,40 +51,19 @@
 		adminOnly?: boolean;
 		subItems?: Route[];
 	};
-	const routes: Route[] = [
-		{ title: 'Overview', url: '/', icon: House },
+	const mainRoutes: Route[] = [
+		{ title: 'Dashboard', url: '/', icon: Gauge },
 		{ title: 'Router', url: '/router/', icon: Route },
 		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
-		{ title: 'Plugins', url: '/plugins/', icon: Blocks },
-		{ title: 'Agents', url: '/agents/', icon: Bot },
-		{
-			title: 'Settings',
-			url: '/settings/',
-			icon: Settings,
-			subItems: [
-				{ title: 'General', url: '/settings/', icon: Wrench, adminOnly: true },
-				{ title: 'Users', url: '/users/', icon: Users, adminOnly: true },
-				{ title: 'DNS', url: '/dns/', icon: Globe, adminOnly: true }
-			]
-		}
+		{ title: 'EntryPoints', url: '/entrypoints/', icon: EthernetPort }
 	];
-
-	// Filter out any routes that the user doesn't have access to
-	const usableRoutes = $derived(
-		routes
-			.filter((route) => !user || !route.adminOnly || user.isAdmin)
-			.map((route) => {
-				if (route.subItems) {
-					const filteredSubs = route.subItems.filter(
-						(sub) => !user || !sub.adminOnly || user.isAdmin
-					);
-					if (filteredSubs.length === 0) return null; // skip this route if no visible subs
-					return { ...route, subItems: filteredSubs };
-				}
-				return route;
-			})
-			.filter((r): r is Route => r !== null)
-	);
+	const adminRoutes: Route[] = [
+		{ title: 'Users', url: '/users/', icon: Users },
+		{ title: 'Agents', url: '/agents/', icon: Bot },
+		{ title: 'DNS', url: '/dns/', icon: Globe },
+		{ title: 'Plugins', url: '/plugins/', icon: Blocks },
+		{ title: 'Settings', url: '/settings/', icon: Settings }
+	];
 
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
@@ -98,12 +75,12 @@
 	let modalInfoOpen = $state(false);
 </script>
 
-<ProfileModal bind:profile={modalProfile} bind:open={modalProfileOpen} />
+<ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
 <!-- <InfoModal bind:open={infoModalOpen} /> -->
-<!---->
-<!-- {#if user.isLoggedIn() && user.value} -->
-<!-- 	<UserModal bind:open={userModalOpen} user={user.value} /> -->
-<!-- {/if} -->
+
+{#if user.isLoggedIn() && user.value}
+	<UserModal bind:open={modalUserOpen} bind:item={modalUser} data={undefined} />
+{/if}
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
 	<!-- Profile Selection -->
@@ -184,65 +161,41 @@
 		</Sidebar.Menu>
 	</Sidebar.Header>
 
-	<!-- Navigation -->
 	<Sidebar.Content>
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>Dashboard</Sidebar.GroupLabel>
-			<Sidebar.Menu>
-				{#each usableRoutes as route (route.title)}
-					{#if route.subItems}
-						<Collapsible.Root class="group/collapsible">
-							<Sidebar.MenuItem>
-								<Collapsible.Trigger>
-									{#snippet child({ props })}
-										<Sidebar.MenuButton {...props}>
-											{#snippet tooltipContent()}
-												{route.title}
-											{/snippet}
-											{#if route.icon}
-												<route.icon />
-											{/if}
-											<span>{route.title}</span>
-											<ChevronRight
-												class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-											/>
-										</Sidebar.MenuButton>
-									{/snippet}
-								</Collapsible.Trigger>
-								<Collapsible.Content forceMount>
-									{#snippet child({ props, open })}
-										{#if open}
-											<div {...props} transition:slide={{ duration: 200 }}>
-												{#each route.subItems || [] as subItem (subItem.title)}
-													<Sidebar.MenuSub>
-														<Sidebar.MenuSubButton>
-															{#snippet child({ props })}
-																<a href={subItem.url} {...props}>
-																	<subItem.icon />
-																	<span>{subItem.title}</span>
-																</a>
-															{/snippet}
-														</Sidebar.MenuSubButton>
-													</Sidebar.MenuSub>
-												{/each}
-											</div>
-										{/if}
-									{/snippet}
-								</Collapsible.Content>
-							</Sidebar.MenuItem>
-						</Collapsible.Root>
-					{:else}
+			<Sidebar.GroupLabel>Overview</Sidebar.GroupLabel>
+			<Sidebar.GroupContent class="flex flex-col gap-2">
+				<Sidebar.Menu>
+					{#each mainRoutes as r (r.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton tooltipContent={r.title}>
 								{#snippet child({ props })}
-									<a href={route.url} {...props}>
-										<route.icon />
-										<span>{route.title}</span>
+									<a href={r.url} {...props}>
+										<r.icon />
+										<span>{r.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-					{/if}
+					{/each}
+				</Sidebar.Menu>
+			</Sidebar.GroupContent>
+		</Sidebar.Group>
+
+		<Sidebar.Group class="group-data-[collapsible=icon]:hidden">
+			<Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
+			<Sidebar.Menu>
+				{#each adminRoutes as r (r.title)}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton tooltipContent={r.title}>
+							{#snippet child({ props })}
+								<a href={r.url} {...props}>
+									<r.icon />
+									<span>{r.title}</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
 				{/each}
 			</Sidebar.Menu>
 		</Sidebar.Group>
@@ -317,7 +270,7 @@
 						</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Group>
-							<DropdownMenu.Item onSelect={() => (userModalOpen = true)}>
+							<DropdownMenu.Item onSelect={() => (modalUserOpen = true)}>
 								<CircleUserRound />
 								Account
 							</DropdownMenu.Item>

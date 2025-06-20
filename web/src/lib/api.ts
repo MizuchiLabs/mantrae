@@ -45,6 +45,7 @@ export function logout() {
 	goto('/login');
 }
 
+// Clients
 export const profileClient = useClient(ProfileService);
 export const userClient = useClient(UserService);
 export const entryPointClient = useClient(EntryPointService);

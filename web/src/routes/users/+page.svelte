@@ -1,33 +1,26 @@
 <script lang="ts">
-	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { Pencil, Trash, Users } from '@lucide/svelte';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { DateFormat } from '$lib/stores/common';
+	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
+	import { ConnectError } from '@connectrpc/connect';
+	import { onMount } from 'svelte';
+	import type { BulkAction } from '$lib/components/tables/types';
+	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
+	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
 
-	interface ModalState {
-		isOpen: boolean;
-		user?: User;
-	}
+	let item = $state({} as User);
+	let open = $state(false);
 
-	const initialModalState: ModalState = { isOpen: false };
-	let modalState = $state(initialModalState);
-
-	const deleteUser = async (user: User) => {
-		try {
-			await userClient.deleteUser({ id: user.id });
-			toast.success('User deleted');
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(e.message);
-		}
-	};
+	// Data state
+	let data = $state<User[]>([]);
+	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<User>[] = [
 		{
@@ -45,18 +38,8 @@
 			accessorKey: 'isAdmin',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const admin = row.getValue('isAdmin') as boolean;
-				if (admin) {
-					return renderComponent(ColumnBadge, {
-						label: 'Yes',
-						variant: 'default'
-					});
-				} else {
-					return renderComponent(ColumnBadge, {
-						label: 'No',
-						variant: 'secondary'
-					});
-				}
+				const checked = row.getValue('isAdmin') as boolean;
+				return renderComponent(ColumnCheck, { checked });
 			}
 		},
 		{
@@ -64,8 +47,8 @@
 			accessorKey: 'lastLogin',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const date = row.getValue('lastLogin') as string;
-				return DateFormat.format(new Date(date));
+				const date = row.getValue('lastLogin') as Timestamp;
+				return DateFormat.format(timestampDate(date));
 			}
 		},
 		{
@@ -73,8 +56,8 @@
 			accessorKey: 'createdAt',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as string;
-				return DateFormat.format(new Date(date));
+				const date = row.getValue('createdAt') as Timestamp;
+				return DateFormat.format(timestampDate(date));
 			}
 		},
 		{
@@ -87,21 +70,78 @@
 							type: 'button',
 							label: 'Edit User',
 							icon: Pencil,
-							onClick: () => (modalState = { isOpen: true, user: row.original })
+							onClick: () => {
+								item = row.original;
+								open = true;
+							}
 						},
 						{
 							type: 'button',
 							label: 'Delete User',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteUser(row.original),
-							disabled: row.original.id === ''
+							onClick: () => deleteItem(row.original.id)
 						}
 					]
 				});
 			}
 		}
 	];
+
+	const bulkActions: BulkAction<User>[] = [
+		{
+			type: 'button',
+			label: 'Delete',
+			icon: Trash,
+			variant: 'destructive',
+			onClick: bulkDelete
+		}
+	];
+
+	async function onPaginationChange(p: PaginationState) {
+		await refreshData(p.pageSize, p.pageIndex);
+	}
+
+	const deleteItem = async (id: string) => {
+		try {
+			await userClient.deleteUser({ id: id });
+			await refreshData(pageSize.value ?? 10, 0);
+			toast.success('Router deleted');
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete router', { description: e.message });
+		}
+	};
+
+	async function bulkDelete(selectedRows: User[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} Users?`);
+			if (!confirmed) return;
+
+			const ids = selectedRows.map((row) => ({ id: row.id }));
+			for (const row of ids) {
+				await userClient.deleteUser({ id: row.id });
+			}
+			await refreshData(pageSize.value ?? 10, 0);
+			toast.success(`Successfully deleted ${selectedRows.length} Users`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete DNS Providers', { description: e.message });
+		}
+	}
+
+	async function refreshData(pageSize: number, pageIndex: number) {
+		const response = await userClient.listUsers({
+			limit: BigInt(pageSize),
+			offset: BigInt(pageIndex * pageSize)
+		});
+		data = response.users;
+		rowCount = Number(response.totalCount);
+	}
+
+	onMount(async () => {
+		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	});
 </script>
 
 <svelte:head>
@@ -113,16 +153,20 @@
 		<Users />
 		<h1 class="text-2xl font-bold">User Management</h1>
 	</div>
-	{#await userClient.listUsers({}) then result}
-		<DataTable
-			{columns}
-			data={result.users || []}
-			createButton={{
-				label: 'Add User',
-				onClick: () => (modalState = { isOpen: true })
-			}}
-		/>
-	{/await}
+	<DataTable
+		{data}
+		{columns}
+		{rowCount}
+		{onPaginationChange}
+		{bulkActions}
+		createButton={{
+			label: 'Add User',
+			onClick: () => {
+				item = {} as User;
+				open = true;
+			}
+		}}
+	/>
 </div>
 
-<UserModal bind:open={modalState.isOpen} user={modalState.user} />
+<UserModal bind:open bind:item bind:data />

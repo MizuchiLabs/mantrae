@@ -68,7 +68,7 @@
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
-	const pageSizeOptions = [10, 25, 50, 100];
+	const pageSizeOptions = [5, 10, 25, 50, 100];
 	let pagination = $state<PaginationState>({
 		pageIndex: pageIndex.value ?? 0,
 		pageSize: pageSize.value ?? 10
@@ -107,7 +107,6 @@
 		],
 		manualPagination: true,
 		rowCount: rowCount,
-		autoResetAll: false,
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);

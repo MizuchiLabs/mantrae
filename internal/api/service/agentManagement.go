@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"connectrpc.com/connect"
@@ -56,6 +57,13 @@ func (s *AgentManagementService) CreateAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateAgentRequest],
 ) (*connect.Response[mantraev1.CreateAgentResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -64,6 +72,12 @@ func (s *AgentManagementService) CreateAgent(
 	serverUrl, err := s.app.Conn.GetQuery().GetSetting(ctx, settings.KeyServerURL)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if serverUrl.Value == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("server url is required, check your settings"),
+		)
 	}
 
 	claims := &AgentClaims{
@@ -138,7 +152,15 @@ func (s *AgentManagementService) ListAgents(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListAgentsRequest],
 ) (*connect.Response[mantraev1.ListAgentsResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	var params db.ListAgentsParams
+	params.ProfileID = req.Msg.ProfileId
 	if req.Msg.Limit == nil {
 		params.Limit = 100
 	} else {
@@ -162,16 +184,20 @@ func (s *AgentManagementService) ListAgents(
 	var agents []*mantraev1.Agent
 	for _, agent := range dbAgents {
 		agents = append(agents, &mantraev1.Agent{
-			Id:         agent.ID,
-			ProfileId:  agent.ProfileID,
-			Hostname:   SafeString(agent.Hostname),
-			PublicIp:   SafeString(agent.PublicIp),
-			ActiveIp:   SafeString(agent.ActiveIp),
-			Token:      agent.Token,
-			PrivateIps: agent.PrivateIps.IPs,
-			CreatedAt:  SafeTimestamp(agent.CreatedAt),
-			UpdatedAt:  SafeTimestamp(agent.UpdatedAt),
+			Id:        agent.ID,
+			ProfileId: agent.ProfileID,
+			Hostname:  SafeString(agent.Hostname),
+			PublicIp:  SafeString(agent.PublicIp),
+			ActiveIp:  SafeString(agent.ActiveIp),
+			Token:     agent.Token,
+			CreatedAt: SafeTimestamp(agent.CreatedAt),
+			UpdatedAt: SafeTimestamp(agent.UpdatedAt),
 		})
+		if agent.PrivateIps != nil {
+			for _, ip := range agent.PrivateIps.IPs {
+				agents[len(agents)-1].PrivateIps = append(agents[len(agents)-1].PrivateIps, ip)
+			}
+		}
 	}
 	return connect.NewResponse(&mantraev1.ListAgentsResponse{
 		Agents:     agents,

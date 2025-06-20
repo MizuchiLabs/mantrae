@@ -46,3 +46,33 @@ export const dnsProviderTypes = Object.keys(DnsProviderType)
 			.replace(/^\w/, (c) => c.toUpperCase()),
 		value: DnsProviderType[key as keyof typeof DnsProviderType]
 	}));
+
+export const HTTPMiddlewareKeys = [
+	{ value: 'addPrefix', label: 'Add Prefix' },
+	{ value: 'basicAuth', label: 'Basic Auth' },
+	{ value: 'digestAuth', label: 'Digest Auth' },
+	{ value: 'buffering', label: 'Buffering' },
+	{ value: 'chain', label: 'Chain' },
+	{ value: 'circuitBreaker', label: 'Circuit Breaker' },
+	{ value: 'compress', label: 'Compress' },
+	{ value: 'errorPage', label: 'Error Page' },
+	{ value: 'forwardAuth', label: 'Forward Auth' },
+	{ value: 'headers', label: 'Headers' },
+	{ value: 'ipAllowList', label: 'IP Allow List' },
+	{ value: 'inFlightReq', label: 'In-Flight Request' },
+	{ value: 'passTLSClientCert', label: 'Pass TLS Client Cert' },
+	{ value: 'rateLimit', label: 'Rate Limit' },
+	{ value: 'redirectRegex', label: 'Redirect Regex' },
+	{ value: 'redirectScheme', label: 'Redirect Scheme' },
+	{ value: 'replacePath', label: 'Replace Path' },
+	{ value: 'replacePathRegex', label: 'Replace Path Regex' },
+	{ value: 'retry', label: 'Retry' },
+	{ value: 'stripPrefix', label: 'Strip Prefix' },
+	{ value: 'stripPrefixRegex', label: 'Strip Prefix Regex' },
+	{ value: 'plugin', label: 'Plugin' }
+];
+
+export const TCPMiddlewareKeys = [
+	{ value: 'ipAllowList', label: 'IP Allow List' },
+	{ value: 'inFlightConn', label: 'In-Flight Connection' }
+];

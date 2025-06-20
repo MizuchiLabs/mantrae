@@ -10,38 +10,46 @@
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { userId } from '$lib/stores/common';
+	import { pageIndex, pageSize, userId } from '$lib/stores/common';
 
 	interface Props {
-		user?: User;
+		data: User[];
+		item: User;
 		open?: boolean;
 	}
 
-	let { user = $bindable({} as User), open = $bindable(false) }: Props = $props();
+	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
-	let isSelf = $derived(user?.id === userId.value);
+	let isSelf = $derived(item?.id === userId.value);
 
 	const handleSubmit = async () => {
 		try {
-			if (user.id) {
+			if (item.id) {
 				await userClient.updateUser({
-					id: user.id,
-					username: user.username,
-					email: user.email,
-					isAdmin: user.isAdmin,
-					password: user.password
+					id: item.id,
+					username: item.username,
+					email: item.email,
+					isAdmin: item.isAdmin,
+					password: item.password
 				});
-				toast.success(`User ${user.username} updated successfully.`);
+				toast.success(`User ${item.username} updated successfully.`);
 			} else {
 				await userClient.createUser({
-					username: user.username,
-					password: user.password,
-					email: user.email,
-					isAdmin: user.isAdmin
+					username: item.username,
+					password: item.password,
+					email: item.email,
+					isAdmin: item.isAdmin
 				});
-				toast.success(`User ${user.username} created successfully.`);
+				toast.success(`User ${item.username} created successfully.`);
 			}
+
+			// Refresh data
+			let response = await userClient.listUsers({
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response.users;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error(`Failed to update user`, { description: e.message });
@@ -49,15 +57,35 @@
 		password = '';
 		open = false;
 	};
+
+	const handleDelete = async () => {
+		if (!item.id) return;
+
+		try {
+			await userClient.deleteUser({ id: item.id });
+			toast.success('EntryPoint deleted successfully');
+
+			// Refresh data
+			let response = await userClient.listUsers({
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response.users;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete entry point', { description: e.message });
+		}
+		open = false;
+	};
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
 		<Dialog.Header>
 			{#if isSelf}
 				<Dialog.Title>Update Profile</Dialog.Title>
 			{:else}
-				<Dialog.Title>{user?.id ? 'Update' : 'Add'} User</Dialog.Title>
+				<Dialog.Title>{item?.id ? 'Update' : 'Add'} User</Dialog.Title>
 			{/if}
 		</Dialog.Header>
 
@@ -65,18 +93,18 @@
 			<!-- Username -->
 			<div class="space-y-1">
 				<Label for="name">Name</Label>
-				<Input name="name" type="text" bind:value={user.username} placeholder="Name" required />
+				<Input name="name" type="text" bind:value={item.username} placeholder="Name" required />
 			</div>
 
 			<!-- Email -->
 			<div class="space-y-1">
 				<Label for="Email">Email</Label>
-				<Input name="Email" type="email" bind:value={user.email} placeholder="Email" />
+				<Input name="Email" type="email" bind:value={item.email} placeholder="Email" />
 			</div>
 
 			<!-- Password -->
 			<div class="space-y-1">
-				{#if user.id}
+				{#if item.id}
 					<Label for="Password">Password (leave empty to keep current)</Label>
 					<PasswordInput bind:value={password} />
 				{:else}
@@ -91,8 +119,8 @@
 					<Label for="admin">Set Admin</Label>
 					<Switch
 						id="admin"
-						checked={user.isAdmin || false}
-						onCheckedChange={(e) => (user.isAdmin = e)}
+						checked={item.isAdmin || false}
+						onCheckedChange={(e) => (item.isAdmin = e)}
 						class="col-span-3"
 					/>
 				</div>
@@ -100,9 +128,16 @@
 
 			<Separator />
 
-			<Button type="submit" class="w-full">
-				{user.id ? 'Update' : 'Save'}
-			</Button>
+			<div class="flex w-full flex-row gap-2">
+				{#if item.id}
+					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
+						Delete
+					</Button>
+				{/if}
+				<Button type="submit" class="flex-1" onclick={handleSubmit}>
+					{item.id ? 'Update' : 'Create'}
+				</Button>
+			</div>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

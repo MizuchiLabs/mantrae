@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 
@@ -41,6 +42,10 @@ func (s *ProfileService) CreateProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateProfileRequest],
 ) (*connect.Response[mantraev1.CreateProfileResponse], error) {
+	if req.Msg.Name == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+
 	params := db.CreateProfileParams{
 		Name: req.Msg.Name,
 	}

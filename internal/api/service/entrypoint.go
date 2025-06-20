@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 
@@ -43,6 +44,7 @@ func (s *EntryPointService) CreateEntryPoint(
 	req *connect.Request[mantraev1.CreateEntryPointRequest],
 ) (*connect.Response[mantraev1.CreateEntryPointResponse], error) {
 	params := db.CreateEntryPointParams{
+		ProfileID: req.Msg.ProfileId,
 		Name:      req.Msg.Name,
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
@@ -54,6 +56,7 @@ func (s *EntryPointService) CreateEntryPoint(
 	return connect.NewResponse(&mantraev1.CreateEntryPointResponse{
 		EntryPoint: &mantraev1.EntryPoint{
 			Id:        entryPoint.ID,
+			ProfileId: entryPoint.ProfileID,
 			Name:      entryPoint.Name,
 			Address:   entryPoint.Address,
 			IsDefault: entryPoint.IsDefault,
@@ -80,6 +83,7 @@ func (s *EntryPointService) UpdateEntryPoint(
 	return connect.NewResponse(&mantraev1.UpdateEntryPointResponse{
 		EntryPoint: &mantraev1.EntryPoint{
 			Id:        entryPoint.ID,
+			ProfileId: entryPoint.ProfileID,
 			Name:      entryPoint.Name,
 			Address:   entryPoint.Address,
 			IsDefault: entryPoint.IsDefault,
@@ -104,7 +108,15 @@ func (s *EntryPointService) ListEntryPoints(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListEntryPointsRequest],
 ) (*connect.Response[mantraev1.ListEntryPointsResponse], error) {
+	if req.Msg.ProfileId == 0 {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("profile id is required"),
+		)
+	}
+
 	var params db.ListEntryPointsParams
+	params.ProfileID = req.Msg.ProfileId
 	if req.Msg.Limit == nil {
 		params.Limit = 100
 	} else {
@@ -129,6 +141,7 @@ func (s *EntryPointService) ListEntryPoints(
 	for _, entryPoint := range dbEntryPoints {
 		entryPoints = append(entryPoints, &mantraev1.EntryPoint{
 			Id:        entryPoint.ID,
+			ProfileId: entryPoint.ProfileID,
 			Name:      entryPoint.Name,
 			Address:   entryPoint.Address,
 			IsDefault: entryPoint.IsDefault,

@@ -1,34 +1,26 @@
 <script lang="ts">
+	import { agentClient } from '$lib/api';
+	import AgentModal from '$lib/components/modals/agent.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
-	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
-	import { type Agent } from '$lib/types';
-	import AgentModal from '$lib/components/modals/agent.svelte';
-	import { api, agents } from '$lib/api';
+	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import { toast } from 'svelte-sonner';
-	import { DateFormat } from '$lib/stores/common';
+	import type { Agent } from '$lib/gen/mantrae/v1/agent_management_pb';
+	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
+	import { profile } from '$lib/stores/profile';
+	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import { ConnectError } from '@connectrpc/connect';
+	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
+	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
-	import { readable } from 'svelte/store';
+	import { toast } from 'svelte-sonner';
 
-	interface ModalState {
-		isOpen: boolean;
-		agent?: Agent;
-	}
+	let item = $state({} as Agent);
+	let open = $state(false);
 
-	const initialModalState: ModalState = { isOpen: false };
-	let modalState = $state(initialModalState);
-
-	const deleteAgent = async (agent: Agent) => {
-		try {
-			await api.deleteAgent(agent.id);
-			toast.success('Agent deleted');
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(e.message);
-		}
-	};
+	// Data state
+	let data = $state<Agent[]>([]);
+	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<Agent>[] = [
 		{
@@ -53,8 +45,8 @@
 			accessorKey: 'updatedAt',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const date = row.getValue('updatedAt') as string;
-				return DateFormat.format(new Date(date));
+				const date = row.getValue('updatedAt') as Timestamp;
+				return DateFormat.format(timestampDate(date));
 			}
 		},
 		{
@@ -62,8 +54,8 @@
 			accessorKey: 'createdAt',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as string;
-				return DateFormat.format(new Date(date));
+				const date = row.getValue('createdAt') as Timestamp;
+				return DateFormat.format(timestampDate(date));
 			}
 		},
 		{
@@ -79,10 +71,8 @@
 							label: editText,
 							icon: editIcon,
 							onClick: () => {
-								modalState = {
-									isOpen: true,
-									agent: row.original
-								};
+								item = row.original;
+								open = true;
 							}
 						},
 						{
@@ -90,7 +80,7 @@
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteAgent(row.original)
+							onClick: () => deleteItem(row.original.id)
 						}
 					]
 				});
@@ -98,20 +88,87 @@
 		}
 	];
 
-	const now = readable(new Date(), (set) => {
-		const interval = setInterval(() => {
-			set(new Date());
-		}, 1000);
-		return () => clearInterval(interval);
-	});
-	let agentStatus = $derived((agent: Agent) => {
-		const lastSeen = new Date(agent.updatedAt);
-		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
-		return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
-	});
+	// const now = readable(new Date(), (set) => {
+	// 	const interval = setInterval(() => {
+	// 		set(new Date());
+	// 	}, 1000);
+	// 	return () => clearInterval(interval);
+	// });
+	// let agentStatus = $derived((agent: Agent) => {
+	// 	const lastSeen = new Date(agent.updatedAt);
+	// 	const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
+	// 	return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
+	// });
+
+	const bulkActions: BulkAction<Agent>[] = [
+		{
+			type: 'button',
+			label: 'Delete',
+			icon: Trash,
+			variant: 'destructive',
+			onClick: bulkDelete
+		}
+	];
+
+	async function onPaginationChange(p: PaginationState) {
+		await refreshData(p.pageSize, p.pageIndex);
+	}
+
+	const deleteItem = async (id: string) => {
+		try {
+			await agentClient.deleteAgent({ id: id });
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success('Agent deleted');
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete router', { description: e.message });
+		}
+	};
+
+	async function bulkDelete(selectedRows: Agent[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			if (!confirmed) return;
+
+			const rows = selectedRows.map((row) => ({ id: row.id }));
+			for (const row of rows) {
+				await agentClient.deleteAgent({ id: row.id });
+			}
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`Successfully deleted ${selectedRows.length} agents`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete agents', { description: e.message });
+		}
+	}
+
+	async function refreshData(pageSize: number, pageIndex: number) {
+		const response = await agentClient.listAgents({
+			profileId: profile.id,
+			limit: BigInt(pageSize),
+			offset: BigInt(pageIndex * pageSize)
+		});
+		data = response.agents;
+		rowCount = Number(response.totalCount);
+	}
+
+	async function createAgent() {
+		try {
+			const response = await agentClient.createAgent({ profileId: profile.id });
+			if (!response.agent) return;
+
+			toast.success('Agent created');
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			item = response.agent;
+			open = true;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to create agent', { description: e.message });
+		}
+	}
 
 	onMount(async () => {
-		await api.listAgentsByProfile();
+		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 	});
 </script>
 
@@ -125,14 +182,16 @@
 		<h1 class="text-2xl font-bold">Agent Management</h1>
 	</div>
 	<DataTable
+		{data}
 		{columns}
-		data={$agents || []}
-		getRowClassName={agentStatus}
+		{rowCount}
+		{onPaginationChange}
+		{bulkActions}
 		createButton={{
 			label: 'Add Agent',
-			onClick: () => api.createAgent()
+			onClick: createAgent
 		}}
 	/>
 </div>
 
-<AgentModal bind:open={modalState.isOpen} agent={modalState.agent} />
+<AgentModal bind:open bind:item bind:data />
