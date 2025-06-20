@@ -7,8 +7,9 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { fade } from 'svelte/transition';
 	import { page } from '$app/state';
-	import '../app.css';
 	import { token } from '$lib/stores/common';
+	import { ModeWatcher } from 'mode-watcher';
+	import '../app.css';
 
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -16,6 +17,7 @@
 	let { children }: Props = $props();
 </script>
 
+<ModeWatcher />
 <Toaster />
 <!-- <AppCenter /> -->
 

@@ -25,7 +25,6 @@
 		EthernetPort,
 		Gauge
 	} from '@lucide/svelte';
-	import { theme } from '$lib/stores/theme';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
 	import { logout, profileClient } from '$lib/api';
@@ -33,6 +32,7 @@
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import ProfileModal from '$lib/components/modals/profile.svelte';
 	import UserModal from '$lib/components/modals/user.svelte';
+	import { toggleMode, mode } from 'mode-watcher';
 
 	let {
 		ref = $bindable(null),
@@ -274,8 +274,8 @@
 								<CircleUserRound />
 								Account
 							</DropdownMenu.Item>
-							<DropdownMenu.Item onSelect={() => theme.toggle()}>
-								{#if theme.value === 'dark'}
+							<DropdownMenu.Item onSelect={toggleMode}>
+								{#if mode.current === 'dark'}
 									<Sun class="size-4" />
 									<span>Light Mode</span>
 								{:else}
