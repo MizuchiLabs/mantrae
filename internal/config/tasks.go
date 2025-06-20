@@ -13,7 +13,6 @@ import (
 
 // setupBackgroundJobs initiates essential background operations for the application.
 func (a *App) setupBackgroundJobs(ctx context.Context) {
-	slog.Info("Starting background tasks...")
 	go a.syncTraefik(ctx)
 	go a.syncDNS(ctx)
 	// go a.cleanupAgents(ctx)

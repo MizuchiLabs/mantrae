@@ -19,7 +19,7 @@ import (
 
 // Settings defines all application settings
 type Settings struct {
-	ServerURL             string        `setting:"server_url"              default:"http://127.0.0.1:3000"`
+	ServerURL             string        `setting:"server_url"              default:""`
 	BackupEnabled         bool          `setting:"backup_enabled"          default:"true"`
 	BackupInterval        time.Duration `setting:"backup_interval"         default:"24h"`
 	BackupKeep            int           `setting:"backup_keep"             default:"3"`

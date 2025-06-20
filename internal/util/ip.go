@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -149,4 +150,20 @@ func IsValidIPv6(ip string) bool {
 		return false
 	}
 	return parsedIP.To4() == nil && parsedIP.To16() != nil
+}
+
+func GetLocalIP() string {
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		port = "3000"
+	}
+	addrs, _ := net.InterfaceAddrs()
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return fmt.Sprintf("http://%s:%s", ipnet.IP.String(), port)
+			}
+		}
+	}
+	return fmt.Sprintf("http://127.0.0.1:%s", port)
 }

@@ -111,5 +111,11 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 		}
 	}
 
+	// Check default server url
+	serverURL, ok := a.SM.Get("server_url")
+	if !ok || serverURL == "" {
+		a.SM.Set(ctx, "server_url", util.GetLocalIP())
+	}
+
 	return nil
 }

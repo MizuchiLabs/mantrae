@@ -81,7 +81,12 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start server in a goroutine
 	go func() {
-		slog.Info("Server starting", "host", s.Host, "port", s.Port)
+		serverUrl, _ := s.app.SM.Get("server_url")
+		if serverUrl == "" {
+			serverUrl = s.Host + ":" + s.Port
+		}
+		slog.Info("Server listening on", "address", "127.0.0.1:"+s.Port)
+		slog.Info("Agents can connect to", "address", serverUrl)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
 		}
