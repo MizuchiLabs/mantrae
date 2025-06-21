@@ -1,9 +1,10 @@
 import type { LayoutLoad } from './$types';
-import { logout, useClient } from '$lib/api';
+import { logout, profileClient, useClient } from '$lib/api';
 import { goto } from '$app/navigation';
 import { user } from '$lib/stores/user';
 import { UserService } from '$lib/gen/mantrae/v1/user_pb';
 import { token } from '$lib/stores/common';
+import { profile } from '$lib/stores/profile';
 
 export const ssr = false;
 export const prerender = true;
@@ -25,13 +26,14 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 	if (token.value) {
 		try {
 			const client = useClient(UserService, fetch);
-			const userId = (await client.verifyJWT({ token: token.value })).userId;
-			if (!userId) {
+			const verified = await client.verifyJWT({ token: token.value });
+			if (!verified.user) {
 				throw new Error('Invalid token');
 			}
-			const data = await client.getUser({ identifier: { value: userId, case: 'id' } });
-			if (!data.user || !data.user.id) {
-				throw new Error('User not found');
+			user.value = verified.user;
+			if (!profile.id) {
+				const response = await profileClient.listProfiles({});
+				profile.value = response.profiles[0];
 			}
 
 			// Redirect to home if trying to access login page while authenticated

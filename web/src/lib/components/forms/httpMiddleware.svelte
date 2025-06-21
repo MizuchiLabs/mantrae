@@ -10,10 +10,17 @@
 	let { middleware = $bindable() }: { middleware: Middleware } = $props();
 
 	let config = $state(unmarshalConfig(middleware.config) as HttpMiddleware);
-	let selectedType = $state('');
+	let selectedType = $state(config ? Object.keys(config)[0] : '');
 
 	$effect(() => {
 		if (config) middleware.config = marshalConfig(config);
+		// if (selectedType) {
+		// 	config = {
+		// 		...config,
+		// 		[selectedType]: {}
+		// 	};
+		// 	// middleware.config = marshalConfig(config);
+		// }
 	});
 </script>
 

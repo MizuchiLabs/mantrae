@@ -56,7 +56,9 @@ message Plugin {
 }
 
 message PluginSnippet {
-  string yaml = 1;
+  string k8s = 1;
+  string yaml = 2;
+  string toml = 3;
 }
 
 message GetMiddlewareRequest {

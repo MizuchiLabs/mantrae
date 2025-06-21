@@ -14,6 +14,7 @@ import { AgentManagementService } from './gen/mantrae/v1/agent_management_pb';
 import { EntryPointService } from './gen/mantrae/v1/entry_point_pb';
 import { DnsProviderService } from './gen/mantrae/v1/dns_provider_pb';
 import { UtilService } from './gen/mantrae/v1/util_pb';
+import { user } from './stores/user';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -42,6 +43,7 @@ export function useClient<T extends DescService>(
 
 export function logout() {
 	token.value = null;
+	user.clear();
 	goto('/login');
 }
 

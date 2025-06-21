@@ -67,7 +67,6 @@
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
 
-	let modalUser = $state({} as User);
 	let modalUserOpen = $state(false);
 
 	// let modalInfo = $state({} as TraefikInfo);
@@ -78,7 +77,7 @@
 <!-- <InfoModal bind:open={infoModalOpen} /> -->
 
 {#if user.isLoggedIn() && user.value}
-	<UserModal bind:open={modalUserOpen} bind:item={modalUser} data={undefined} />
+	<UserModal bind:open={modalUserOpen} bind:item={user.value} data={undefined} />
 {/if}
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>

@@ -74,8 +74,20 @@ func (s *UserService) VerifyJWT(
 	if !ok || userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 	}
+	user, err := s.app.Conn.GetQuery().GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 
-	return connect.NewResponse(&mantraev1.VerifyJWTResponse{UserId: userID}), nil
+	return connect.NewResponse(&mantraev1.VerifyJWTResponse{User: &mantraev1.User{
+		Id:        user.ID,
+		Username:  user.Username,
+		Email:     SafeString(user.Email),
+		IsAdmin:   user.IsAdmin,
+		LastLogin: SafeTimestamp(user.LastLogin),
+		CreatedAt: SafeTimestamp(user.CreatedAt),
+		UpdatedAt: SafeTimestamp(user.UpdatedAt),
+	}}), nil
 }
 
 func (s *UserService) VerifyOTP(

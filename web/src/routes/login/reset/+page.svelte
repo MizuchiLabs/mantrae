@@ -8,6 +8,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { token } from '$lib/stores/common';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/stores/user';
 
 	let otp = $state('');
 
@@ -28,7 +29,8 @@
 			});
 			token.value = response.token ?? null;
 			const verified = await userClient.verifyJWT({ token: token.value });
-			if (verified.userId) {
+			if (verified.user) {
+				user.value = verified.user;
 				await goto('/');
 			}
 			toast.success('Token verified successfully!', {

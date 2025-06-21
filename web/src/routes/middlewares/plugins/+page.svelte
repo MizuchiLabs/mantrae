@@ -14,19 +14,25 @@
 	import YAML from 'yaml';
 	import { slide } from 'svelte/transition';
 	import CopyButton from '$lib/components/ui/copy-button/copy-button.svelte';
+	import { MiddlewareType, type Plugin } from '$lib/gen/mantrae/v1/middleware_pb';
+	import { middlewareClient } from '$lib/api';
+	import { ConnectError } from '@connectrpc/connect';
+	import { profile } from '$lib/stores/profile';
+	import { marshalConfig } from '$lib/types';
 
 	// State
 	let open = $state(false);
 	let search = $state('');
 	let currentPage = $state(1);
 	let perPage = $state(10);
+	let plugins = $state([] as Plugin[]);
 	let selectedPlugin = $state<Plugin | undefined>(undefined);
 	let yamlSnippet = $state('');
 	let cliSnippet = $state('');
 
 	// Derived values
 	let filteredPlugins = $derived(
-		$plugins.filter(
+		plugins.filter(
 			(plugin) =>
 				!search ||
 				plugin.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,38 +51,33 @@
 	});
 
 	async function installPlugin(plugin: Plugin) {
+		if (!plugin.snippet) return;
 		const data = YAML.parse(plugin.snippet.yaml);
-		const pluginContent = extractPluginContent(data);
-		const name = Object.keys(pluginContent)[0];
 
-		toast.success('Installed plugin!', {
-			description: `The plugin ${name} has been added to the middlewares.`
-		});
+		const middlewares = data.http?.middlewares;
+		if (!middlewares) return;
+		const pluginContent = Object.values(middlewares)[0];
+		const name = Object.keys(pluginContent?.plugin || {})[0];
 
-		const middleware: UpsertMiddlewareParams = {
-			name: `${name}@http`,
-			protocol: 'http',
-			type: 'plugin',
-			middleware: {
-				plugin: {
-					[name]: pluginContent[name]
-				}
-			}
-		};
-		await api.upsertMiddleware(middleware);
+		try {
+			await middlewareClient.createMiddleware({
+				profileId: profile.value?.id,
+				type: MiddlewareType.HTTP,
+				name: name,
+				config: marshalConfig(pluginContent)
+			});
+			toast.success('Installed plugin!', {
+				description: `The plugin ${name} has been added to the middlewares.`
+			});
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to install plugin', { description: e.message });
+		}
 
 		selectedPlugin = plugin;
 		yamlSnippet = generateYamlSnippet(plugin);
 		cliSnippet = generateCmdSnippet(plugin);
 		open = true;
-	}
-
-	function extractPluginContent(data: Record<string, unknown>) {
-		const middlewares = data.http?.middlewares;
-		if (!middlewares) return null;
-
-		const firstMiddleware = Object.values(middlewares)[0];
-		return firstMiddleware?.plugin || null;
 	}
 
 	function generateYamlSnippet(plugin: Plugin) {
@@ -93,7 +94,8 @@
 	}
 
 	onMount(async () => {
-		await api.getMiddlewarePlugins();
+		const response = await middlewareClient.getMiddlewarePlugins({});
+		plugins = response.plugins;
 	});
 </script>
 
@@ -178,7 +180,7 @@
 </div>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="max-w-xl">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-2xl overflow-auto">
 		<Dialog.Header>
 			<Dialog.Title>Install {selectedPlugin?.displayName}</Dialog.Title>
 			<Dialog.Description>
@@ -194,11 +196,16 @@
 				</Tabs.List>
 			</div>
 			<Tabs.Content value="yaml" class="relative">
-				<Textarea bind:value={yamlSnippet} rows={yamlSnippet?.split('\n').length || 5} readonly />
+				<Textarea value={yamlSnippet} rows={yamlSnippet?.split('\n').length || 5} readonly />
 				<CopyButton text={yamlSnippet} class="absolute top-1 right-1" />
 			</Tabs.Content>
-			<Tabs.Content value="cli" class="relative">
-				<Textarea bind:value={cliSnippet} rows={cliSnippet?.split('\n').length || 2} readonly />
+			<Tabs.Content value="cli" class="relative overflow-x-auto">
+				<Textarea
+					bind:value={cliSnippet}
+					class="break-all whitespace-pre-wrap"
+					rows={cliSnippet?.split('\n').length || 2}
+					readonly
+				/>
 				<CopyButton text={cliSnippet} class="bg-background absolute top-1 right-1" />
 			</Tabs.Content>
 		</Tabs.Root>

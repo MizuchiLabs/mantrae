@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package mantrae.v1;
 
-import "google/protobuf/timestamp.proto";
-
 service UtilService {
   rpc GetVersion(GetVersionRequest) returns (GetVersionResponse);
   rpc GetPublicIP(GetPublicIPRequest) returns (GetPublicIPResponse);

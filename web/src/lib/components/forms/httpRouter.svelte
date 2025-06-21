@@ -55,7 +55,7 @@
 				{config.entryPoints?.join(', ') || 'Select entrypoints'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await entryPointClient.listEntryPoints( { profileId: router.profileId, limit: -1n, offset: 0n } ) then value}
+				{#await entryPointClient.listEntryPoints( { profileId: profile.id, limit: -1n, offset: 0n } ) then value}
 					{#each value.entryPoints as e (e.id)}
 						<Select.Item value={e.name}>
 							<div class="flex items-center gap-2">
@@ -79,7 +79,7 @@
 				{config.middlewares?.join(', ') || 'Select middlewares'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await middlewareClient.listMiddlewares( { profileId: router.profileId, type: MiddlewareType.HTTP, limit: -1n, offset: 0n } ) then value}
+				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: MiddlewareType.HTTP, limit: -1n, offset: 0n } ) then value}
 					{#each value.middlewares as middleware (middleware.name)}
 						<Select.Item value={middleware.name}>
 							{middleware.name}

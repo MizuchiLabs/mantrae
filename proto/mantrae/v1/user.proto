@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service UserService {
@@ -35,10 +36,10 @@ message User {
 
 message LoginUserRequest {
   oneof identifier {
-    string username = 1;
-    string email = 2;
+    string username = 1 [(buf.validate.field).string.min_len = 3];
+    string email = 2 [(buf.validate.field).string.email = true];
   }
-  string password = 3;
+  string password = 3 [(buf.validate.field).string.min_len = 8];
   bool remember = 4;
 }
 message LoginUserResponse {
@@ -46,18 +47,18 @@ message LoginUserResponse {
 }
 
 message VerifyJWTRequest {
-  string token = 1;
+  string token = 1 [(buf.validate.field).string.min_len = 1];
 }
 message VerifyJWTResponse {
-  string user_id = 1;
+  User user = 1;
 }
 
 message VerifyOTPRequest {
   oneof identifier {
-    string username = 1;
-    string email = 2;
+    string username = 1 [(buf.validate.field).string.min_len = 3];
+    string email = 2 [(buf.validate.field).string.email = true];
   }
-  string otp = 3;
+  string otp = 3 [(buf.validate.field).string.min_len = 6];
 }
 message VerifyOTPResponse {
   string token = 1;
@@ -65,17 +66,17 @@ message VerifyOTPResponse {
 
 message SendOTPRequest {
   oneof identifier {
-    string username = 1;
-    string email = 2;
+    string username = 1 [(buf.validate.field).string.min_len = 3];
+    string email = 2 [(buf.validate.field).string.email = true];
   }
 }
 message SendOTPResponse {}
 
 message GetUserRequest {
   oneof identifier {
-    string id = 1;
-    string username = 2;
-    string email = 3;
+    string id = 1 [(buf.validate.field).string.min_len = 1];
+    string username = 2 [(buf.validate.field).string.min_len = 3];
+    string email = 3 [(buf.validate.field).string.email = true];
   }
 }
 message GetUserResponse {
@@ -83,9 +84,9 @@ message GetUserResponse {
 }
 
 message CreateUserRequest {
-  string username = 1;
-  string password = 2;
-  string email = 3;
+  string username = 1 [(buf.validate.field).string.min_len = 3];
+  string password = 2 [(buf.validate.field).string.min_len = 8];
+  string email = 3 [(buf.validate.field).string.email = true];
   bool is_admin = 4;
 }
 message CreateUserResponse {
@@ -93,18 +94,18 @@ message CreateUserResponse {
 }
 
 message UpdateUserRequest {
-  string id = 1;
-  string username = 2;
-  string email = 3;
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string username = 2 [(buf.validate.field).string.min_len = 3];
+  string email = 3 [(buf.validate.field).string.email = true];
   bool is_admin = 4;
-  optional string password = 5;
+  optional string password = 5 [(buf.validate.field).string.min_len = 8];
 }
 message UpdateUserResponse {
   User user = 1;
 }
 
 message DeleteUserRequest {
-  string id = 1;
+  string id = 1 [(buf.validate.field).string.min_len = 1];
 }
 message DeleteUserResponse {}
 

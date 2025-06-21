@@ -8,4 +8,5 @@ lint:
 breaking:
   use:
     - FILE
-
+deps:
+  - buf.build/bufbuild/protovalidate:v0.13.3

@@ -38,9 +38,6 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
-      examples:
-        - 1s
-        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -1231,9 +1228,15 @@ components:
     mantrae.v1.PluginSnippet:
       type: object
       properties:
+        k8s:
+          type: string
+          title: k8s
         yaml:
           type: string
           title: yaml
+        toml:
+          type: string
+          title: toml
       title: PluginSnippet
       additionalProperties: false
     mantrae.v1.UpdateMiddlewareRequest:
@@ -1848,12 +1851,15 @@ components:
         username:
           type: string
           title: username
+          minLength: 3
         password:
           type: string
           title: password
+          minLength: 8
         email:
           type: string
           title: email
+          format: email
         isAdmin:
           type: boolean
           title: is_admin
@@ -1873,6 +1879,7 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
       title: DeleteUserRequest
       additionalProperties: false
     mantrae.v1.DeleteUserResponse:
@@ -1881,28 +1888,34 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            id:
-              type: string
-              title: id
-          title: id
-          required:
+        - required:
             - id
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - id
+              - required:
+                  - username
+      properties:
+        id:
+          type: string
+          title: id
+          minLength: 1
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -1950,25 +1963,30 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         password:
           type: string
           title: password
+          minLength: 8
         remember:
           type: boolean
           title: remember
@@ -1984,21 +2002,26 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
+      properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2011,18 +2034,22 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
         username:
           type: string
           title: username
+          minLength: 3
         email:
           type: string
           title: email
+          format: email
         isAdmin:
           type: boolean
           title: is_admin
         password:
           type: string
           title: password
+          minLength: 8
           nullable: true
       title: UpdateUserRequest
       additionalProperties: false
@@ -2075,37 +2102,43 @@ components:
         token:
           type: string
           title: token
+          minLength: 1
       title: VerifyJWTRequest
       additionalProperties: false
     mantrae.v1.VerifyJWTResponse:
       type: object
       properties:
-        userId:
-          type: string
-          title: user_id
+        user:
+          title: user
+          $ref: '#/components/schemas/mantrae.v1.User'
       title: VerifyJWTResponse
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         otp:
           type: string
           title: otp
+          minLength: 6
       title: VerifyOTPRequest
       additionalProperties: false
     mantrae.v1.VerifyOTPResponse:

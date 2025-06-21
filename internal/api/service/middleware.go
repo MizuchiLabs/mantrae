@@ -384,13 +384,37 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 	}
 	defer resp.Body.Close()
 
-	var allPlugins []*mantraev1.Plugin
+	var allPlugins []schema.Plugin
 	if err := json.NewDecoder(resp.Body).Decode(&allPlugins); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	plugins := slices.DeleteFunc(allPlugins, func(p *mantraev1.Plugin) bool {
+	cleanPlugins := slices.DeleteFunc(allPlugins, func(p schema.Plugin) bool {
 		return p.Type != "middleware"
 	})
+	var plugins []*mantraev1.Plugin
+	for _, p := range cleanPlugins {
+		plugins = append(plugins, &mantraev1.Plugin{
+			Id:            p.ID,
+			Name:          p.Name,
+			DisplayName:   p.DisplayName,
+			Author:        p.Author,
+			Type:          p.Type,
+			Import:        p.Import,
+			Summary:       p.Summary,
+			IconUrl:       p.IconUrl,
+			BannerUrl:     p.BannerUrl,
+			Readme:        p.Readme,
+			LatestVersion: p.LatestVersion,
+			Versions:      p.Versions,
+			Stars:         p.Stars,
+			Snippet: &mantraev1.PluginSnippet{
+				K8S:  p.Snippet.K8S,
+				Yaml: p.Snippet.Yaml,
+				Toml: p.Snippet.Toml,
+			},
+			CreatedAt: p.CreatedAt,
+		})
+	}
 
 	return connect.NewResponse(&mantraev1.GetMiddlewarePluginsResponse{Plugins: plugins}), nil
 }

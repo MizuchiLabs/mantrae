@@ -12,6 +12,30 @@ type (
 	TCPMiddleware dynamic.TCPMiddleware
 )
 
+type Plugin struct {
+	ID            string        `json:"id"`
+	Name          string        `json:"name"`
+	DisplayName   string        `json:"displayName"`
+	Author        string        `json:"author"`
+	Type          string        `json:"type"`
+	Import        string        `json:"import"`
+	Summary       string        `json:"summary"`
+	IconUrl       string        `json:"iconUrl"`
+	BannerUrl     string        `json:"bannerUrl"`
+	Readme        string        `json:"readme"`
+	LatestVersion string        `json:"latestVersion"`
+	Versions      []string      `json:"versions"`
+	Stars         int64         `json:"stars"`
+	Snippet       PluginSnippet `json:"snippet"`
+	CreatedAt     string        `json:"createdAt"`
+}
+
+type PluginSnippet struct {
+	K8S  string `json:"k8s"`
+	Yaml string `json:"yaml"`
+	Toml string `json:"toml"`
+}
+
 func (m *Middleware) Scan(data any) error {
 	return scanJSON(data, &m)
 }

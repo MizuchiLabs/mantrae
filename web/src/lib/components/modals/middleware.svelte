@@ -122,13 +122,15 @@
 
 			<Separator />
 
-			<div class="flex w-full flex-row-reverse gap-2">
-				<Button type="submit" class="w-full">{item.id ? 'Update' : 'Create'}</Button>
+			<div class="flex w-full flex-row gap-2">
 				{#if item.id}
-					<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
+					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
 						Delete
 					</Button>
 				{/if}
+				<Button type="submit" class="flex-1" onclick={handleSubmit}>
+					{item.id ? 'Update' : 'Create'}
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

@@ -10,10 +10,11 @@
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { pageIndex, pageSize, userId } from '$lib/stores/common';
+	import { pageIndex, pageSize } from '$lib/stores/common';
+	import { user } from '$lib/stores/user';
 
 	interface Props {
-		data: User[];
+		data?: User[];
 		item: User;
 		open?: boolean;
 	}
@@ -21,7 +22,7 @@
 	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
-	let isSelf = $derived(item?.id === userId.value);
+	let isSelf = $derived(item?.id === user.value?.id);
 
 	const handleSubmit = async () => {
 		try {
@@ -45,6 +46,7 @@
 			}
 
 			// Refresh data
+			if (!data) return;
 			let response = await userClient.listUsers({
 				limit: BigInt(pageSize.value ?? 10),
 				offset: BigInt(pageIndex.value ?? 0)
@@ -66,6 +68,7 @@
 			toast.success('EntryPoint deleted successfully');
 
 			// Refresh data
+			if (!data) return;
 			let response = await userClient.listUsers({
 				limit: BigInt(pageSize.value ?? 10),
 				offset: BigInt(pageIndex.value ?? 0)
@@ -80,12 +83,26 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
 		<Dialog.Header>
 			{#if isSelf}
 				<Dialog.Title>Update Profile</Dialog.Title>
+				<Dialog.Description>Configure your profile settings</Dialog.Description>
 			{:else}
-				<Dialog.Title>{item?.id ? 'Update' : 'Add'} User</Dialog.Title>
+				<div class="flex flex-row justify-between gap-2">
+					<div>
+						<Dialog.Title>{item?.id ? 'Update' : 'Add'} User</Dialog.Title>
+						<Dialog.Description>Configure your user settings</Dialog.Description>
+					</div>
+					<div class="mr-4 flex items-center gap-2">
+						<Label for="admin">Admin</Label>
+						<Switch
+							id="admin"
+							checked={item.isAdmin || false}
+							onCheckedChange={(e) => (item.isAdmin = e)}
+						/>
+					</div>
+				</div>
 			{/if}
 		</Dialog.Header>
 
@@ -112,19 +129,6 @@
 					<PasswordInput bind:value={password} required />
 				{/if}
 			</div>
-
-			<!-- Admin -->
-			{#if !isSelf}
-				<div class="flex items-center gap-2 space-y-1">
-					<Label for="admin">Set Admin</Label>
-					<Switch
-						id="admin"
-						checked={item.isAdmin || false}
-						onCheckedChange={(e) => (item.isAdmin = e)}
-						class="col-span-3"
-					/>
-				</div>
-			{/if}
 
 			<Separator />
 

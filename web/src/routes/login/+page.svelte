@@ -5,7 +5,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { toast } from 'svelte-sonner';
-	import { userClient } from '$lib/api';
+	import { profileClient, userClient } from '$lib/api';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { goto } from '$app/navigation';
@@ -13,6 +13,8 @@
 	import type { OAuthStatus } from '$lib/types';
 	import { token } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
+	import type { User } from '$lib/gen/mantrae/v1/user_pb';
+	import { profile } from '$lib/stores/profile';
 
 	let username = $state('');
 	let password = $state('');
@@ -58,7 +60,12 @@
 			}
 
 			const verified = await userClient.verifyJWT({ token: token.value });
-			if (verified.userId) {
+			if (verified.user) {
+				user.value = verified.user;
+				if (!profile.id) {
+					const response = await profileClient.listProfiles({});
+					profile.value = response.profiles[0];
+				}
 				await goto('/');
 			}
 			toast.success('Logged in successfully!');

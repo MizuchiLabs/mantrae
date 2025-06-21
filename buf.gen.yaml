@@ -4,6 +4,9 @@ managed:
   override:
     - file_option: go_package_prefix
       value: github.com/mizuchilabs/mantrae/proto/gen
+  disable:
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
 plugins:
   - local: protoc-gen-go
     out: proto/gen

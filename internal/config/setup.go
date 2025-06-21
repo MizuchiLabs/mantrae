@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"os"
 
 	"github.com/caarlos0/env/v11"
@@ -114,6 +115,13 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	// Check default server url
 	serverURL, ok := a.SM.Get("server_url")
 	if !ok || serverURL == "" {
+		a.SM.Set(ctx, "server_url", util.GetLocalIP())
+	}
+	u, err := url.Parse(serverURL)
+	if err != nil {
+		return fmt.Errorf("failed to parse server url: %w", err)
+	}
+	if u.Hostname() == "127.0.0.1" || u.Hostname() == "localhost" {
 		a.SM.Set(ctx, "server_url", util.GetLocalIP())
 	}
 

@@ -14,6 +14,9 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
+	import type { TCPMiddleware } from '$lib/gen/tygo/dynamic';
+	import type { Middleware as HTTPMiddleware } from '$lib/gen/tygo/dynamic';
+	import type { JsonObject } from '@bufbuild/protobuf';
 
 	let item = $state({} as Middleware);
 	let open = $state(false);
@@ -34,39 +37,34 @@
 		},
 		{
 			header: 'Protocol',
-			accessorKey: 'protocol',
+			accessorKey: 'type',
 			enableSorting: true,
 			cell: ({ row, column }) => {
+				let protocol = row.getValue('type') as MiddlewareType.HTTP | MiddlewareType.TCP;
+
+				let label = 'Unspecified';
+				if (protocol === MiddlewareType.HTTP) {
+					label = 'HTTP';
+				} else if (protocol === MiddlewareType.TCP) {
+					label = 'TCP';
+				}
 				return renderComponent(ColumnBadge<Middleware>, {
-					label: row.getValue('protocol') as string,
-					class: 'hover:cursor-pointer',
+					label: label,
+					class: 'hover:cursor-pointer italic',
 					column: column
 				});
 			}
 		},
 		{
 			header: 'Type',
-			accessorKey: 'type',
+			accessorKey: 'config',
 			enableSorting: true,
 			cell: ({ row, column }) => {
+				let config = row.getValue('config') as JsonObject;
+				let label = config ? Object.keys(config)[0] : 'unknown';
+
 				return renderComponent(ColumnBadge<Middleware>, {
-					label: row.getValue('type') as string,
-					class: 'hover:cursor-pointer',
-					column: column
-				});
-			}
-		},
-		{
-			header: 'Provider',
-			accessorFn: (row) => row.name,
-			id: 'provider',
-			enableSorting: true,
-			cell: ({ row, column }) => {
-				const name = row.getValue('provider') as string;
-				const provider = name?.split('@')[1];
-				return renderComponent(ColumnBadge<Middleware>, {
-					label: provider ? provider.toLowerCase() : 'http',
-					variant: 'secondary',
+					label: label,
 					class: 'hover:cursor-pointer',
 					column: column
 				});

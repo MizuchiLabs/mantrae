@@ -13,6 +13,7 @@ import (
 	"connectrpc.com/connect"
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
+	"connectrpc.com/validate"
 	"github.com/caarlos0/env/v11"
 	"github.com/mizuchilabs/mantrae/internal/api/handler"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
@@ -110,12 +111,18 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) registerServices() {
+	validator, err := validate.NewInterceptor()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Common interceptors
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
-			middlewares.Authentication(s.app),
 			middlewares.Logging(),
+			middlewares.Authentication(s.app),
+			validator,
 		),
 		connect.WithRecover(
 			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
@@ -235,5 +242,4 @@ func (s *Server) registerServices() {
 	}
 
 	// TODO: OIDC
-	// TODO: Public IP
 }
