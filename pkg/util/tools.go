@@ -1,7 +1,9 @@
 package util
 
 import (
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -37,4 +39,20 @@ func GetEnv[T any](key string, fallback T) T {
 		return result
 	}
 	return fallback
+}
+
+func ResolvePath(path string) string {
+	basePath := GetEnv("BASE_PATH", "data")
+
+	// If the provided path is absolute, return it as-is
+	if filepath.IsAbs(path) {
+		return path
+	}
+
+	// Create the base directory if it doesn't exist
+	if err := os.MkdirAll(basePath, 0755); err != nil {
+		log.Printf("Warning: failed to create base directory: %v", err)
+	}
+
+	return filepath.Join(basePath, path)
 }
