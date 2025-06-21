@@ -8,13 +8,10 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Input } from '$lib/components/ui/input';
 	import { Delete } from '@lucide/svelte';
-	import type { Plugin } from '$lib/types';
-	import { api, plugins } from '$lib/api';
 	import { onMount } from 'svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { toast } from 'svelte-sonner';
 	import YAML from 'yaml';
-	import type { UpsertMiddlewareParams } from '$lib/types/middlewares';
 	import { slide } from 'svelte/transition';
 	import CopyButton from '$lib/components/ui/copy-button/copy-button.svelte';
 

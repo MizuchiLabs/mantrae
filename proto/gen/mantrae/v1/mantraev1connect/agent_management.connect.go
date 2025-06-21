@@ -51,6 +51,9 @@ const (
 	// AgentManagementServiceRotateAgentTokenProcedure is the fully-qualified name of the
 	// AgentManagementService's RotateAgentToken RPC.
 	AgentManagementServiceRotateAgentTokenProcedure = "/mantrae.v1.AgentManagementService/RotateAgentToken"
+	// AgentManagementServiceBootstrapAgentProcedure is the fully-qualified name of the
+	// AgentManagementService's BootstrapAgent RPC.
+	AgentManagementServiceBootstrapAgentProcedure = "/mantrae.v1.AgentManagementService/BootstrapAgent"
 )
 
 // AgentManagementServiceClient is a client for the mantrae.v1.AgentManagementService service.
@@ -61,6 +64,7 @@ type AgentManagementServiceClient interface {
 	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
+	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
 }
 
 // NewAgentManagementServiceClient constructs a client for the mantrae.v1.AgentManagementService
@@ -112,6 +116,12 @@ func NewAgentManagementServiceClient(httpClient connect.HTTPClient, baseURL stri
 			connect.WithSchema(agentManagementServiceMethods.ByName("RotateAgentToken")),
 			connect.WithClientOptions(opts...),
 		),
+		bootstrapAgent: connect.NewClient[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse](
+			httpClient,
+			baseURL+AgentManagementServiceBootstrapAgentProcedure,
+			connect.WithSchema(agentManagementServiceMethods.ByName("BootstrapAgent")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -123,6 +133,7 @@ type agentManagementServiceClient struct {
 	deleteAgent      *connect.Client[v1.DeleteAgentRequest, v1.DeleteAgentResponse]
 	listAgents       *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
 	rotateAgentToken *connect.Client[v1.RotateAgentTokenRequest, v1.RotateAgentTokenResponse]
+	bootstrapAgent   *connect.Client[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse]
 }
 
 // GetAgent calls mantrae.v1.AgentManagementService.GetAgent.
@@ -155,6 +166,11 @@ func (c *agentManagementServiceClient) RotateAgentToken(ctx context.Context, req
 	return c.rotateAgentToken.CallUnary(ctx, req)
 }
 
+// BootstrapAgent calls mantrae.v1.AgentManagementService.BootstrapAgent.
+func (c *agentManagementServiceClient) BootstrapAgent(ctx context.Context, req *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
+	return c.bootstrapAgent.CallUnary(ctx, req)
+}
+
 // AgentManagementServiceHandler is an implementation of the mantrae.v1.AgentManagementService
 // service.
 type AgentManagementServiceHandler interface {
@@ -164,6 +180,7 @@ type AgentManagementServiceHandler interface {
 	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
+	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
 }
 
 // NewAgentManagementServiceHandler builds an HTTP handler from the service implementation. It
@@ -211,6 +228,12 @@ func NewAgentManagementServiceHandler(svc AgentManagementServiceHandler, opts ..
 		connect.WithSchema(agentManagementServiceMethods.ByName("RotateAgentToken")),
 		connect.WithHandlerOptions(opts...),
 	)
+	agentManagementServiceBootstrapAgentHandler := connect.NewUnaryHandler(
+		AgentManagementServiceBootstrapAgentProcedure,
+		svc.BootstrapAgent,
+		connect.WithSchema(agentManagementServiceMethods.ByName("BootstrapAgent")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mantrae.v1.AgentManagementService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AgentManagementServiceGetAgentProcedure:
@@ -225,6 +248,8 @@ func NewAgentManagementServiceHandler(svc AgentManagementServiceHandler, opts ..
 			agentManagementServiceListAgentsHandler.ServeHTTP(w, r)
 		case AgentManagementServiceRotateAgentTokenProcedure:
 			agentManagementServiceRotateAgentTokenHandler.ServeHTTP(w, r)
+		case AgentManagementServiceBootstrapAgentProcedure:
+			agentManagementServiceBootstrapAgentHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -256,4 +281,8 @@ func (UnimplementedAgentManagementServiceHandler) ListAgents(context.Context, *c
 
 func (UnimplementedAgentManagementServiceHandler) RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentManagementService.RotateAgentToken is not implemented"))
+}
+
+func (UnimplementedAgentManagementServiceHandler) BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentManagementService.BootstrapAgent is not implemented"))
 }

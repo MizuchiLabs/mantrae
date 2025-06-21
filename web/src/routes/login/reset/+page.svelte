@@ -2,27 +2,41 @@
 	import * as InputOTP from '$lib/components/ui/input-otp/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { REGEXP_ONLY_DIGITS } from 'bits-ui';
-	import { api } from '$lib/api';
 	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
+	import { userClient } from '$lib/api';
+	import { ConnectError } from '@connectrpc/connect';
+	import { token } from '$lib/stores/common';
+	import { goto } from '$app/navigation';
 
-	let token = $state('');
+	let otp = $state('');
 
 	// Clean and trim the value
 	const pasteTransformer = (value: string) => value.replace(/[^0-9]/g, '').trim();
 	const onComplete = async () => {
 		const username = page.url.searchParams.get('username');
-		if (!username || !token) return;
+		if (!username || !otp) return;
+		const isEmail = username.includes('@');
+
 		try {
-			await api.verifyOTP(username, token);
+			const response = await userClient.verifyOTP({
+				identifier: {
+					case: isEmail ? 'email' : 'username',
+					value: username
+				},
+				otp
+			});
+			token.value = response.token ?? null;
+			const verified = await userClient.verifyJWT({ token: token.value });
+			if (verified.userId) {
+				await goto('/');
+			}
 			toast.success('Token verified successfully!', {
 				description: 'Please reset your password!'
 			});
-		} catch (error) {
-			let err = error as Error;
-			toast.error('Failed to verify Token: ', {
-				description: err.message
-			});
+		} catch (err) {
+			let e = ConnectError.from(err);
+			toast.error('Failed to verify Token', { description: e.message });
 		}
 	};
 	// Handle Ctrl+V paste
@@ -32,7 +46,7 @@
 			try {
 				const text = await navigator.clipboard.readText();
 				const cleaned = pasteTransformer(text);
-				token = cleaned.slice(0, 6); // Limit to max length
+				otp = cleaned.slice(0, 6); // Limit to max length
 			} catch (err) {
 				console.error('Failed to read clipboard:', err);
 			}
@@ -49,7 +63,7 @@
 		<InputOTP.Root
 			maxlength={6}
 			pattern={REGEXP_ONLY_DIGITS}
-			bind:value={token}
+			bind:value={otp}
 			{onComplete}
 			{pasteTransformer}
 			onkeydown={handleKeyDown}

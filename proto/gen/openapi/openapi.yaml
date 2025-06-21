@@ -38,6 +38,9 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
+      examples:
+        - 1s
+        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -327,6 +330,28 @@ components:
           title: updated_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
       title: Agent
+      additionalProperties: false
+    mantrae.v1.BootstrapAgentRequest:
+      type: object
+      properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        token:
+          type: string
+          title: token
+      title: BootstrapAgentRequest
+      additionalProperties: false
+    mantrae.v1.BootstrapAgentResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          title: token
+      title: BootstrapAgentResponse
       additionalProperties: false
     mantrae.v1.CreateAgentRequest:
       type: object
@@ -1856,31 +1881,28 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - id
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - id
-              - required:
-                  - username
-      properties:
-        id:
-          type: string
-          title: id
-        username:
-          type: string
-          title: username
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
           title: email
+          required:
+            - email
+        - properties:
+            id:
+              type: string
+              title: id
+          title: id
+          required:
+            - id
+        - properties:
+            username:
+              type: string
+              title: username
+          title: username
+          required:
+            - username
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -1928,24 +1950,22 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
           title: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+          title: username
+          required:
+            - username
+      properties:
         password:
           type: string
           title: password
@@ -1964,24 +1984,21 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
           title: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+          title: username
+          required:
+            - username
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2070,24 +2087,22 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
           title: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+          title: username
+          required:
+            - username
+      properties:
         otp:
           type: string
           title: otp
@@ -2513,6 +2528,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenResponse'
+  /mantrae.v1.AgentManagementService/BootstrapAgent:
+    post:
+      tags:
+        - mantrae.v1.AgentManagementService
+      summary: BootstrapAgent
+      operationId: mantrae.v1.AgentManagementService.BootstrapAgent
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.BootstrapAgentRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.BootstrapAgentResponse'
   /mantrae.v1.BackupService/CreateBackup:
     post:
       tags:

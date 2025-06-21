@@ -238,3 +238,81 @@ func (s *AgentManagementService) RotateAgentToken(
 
 	return connect.NewResponse(&mantraev1.RotateAgentTokenResponse{}), nil
 }
+
+func (s *AgentManagementService) BootstrapAgent(
+	ctx context.Context,
+	req *connect.Request[mantraev1.BootstrapAgentRequest],
+) (*connect.Response[mantraev1.BootstrapAgentResponse], error) {
+	enabled, ok := s.app.SM.Get(settings.KeyAgentBootstrapEnabled)
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("failed to get agent bootstrap enabled setting"),
+		)
+	}
+	if enabled != "true" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("agent bootstrap is disabled, check your settings"),
+		)
+	}
+	if req.Msg.Token == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("token is required"),
+		)
+	}
+
+	// Check if token is valid
+	bootstrapToken, ok := s.app.SM.Get(settings.KeyAgentBootstrapToken)
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("failed to get agent bootstrap token setting"),
+		)
+	}
+	if bootstrapToken != req.Msg.Token {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid token"),
+		)
+	}
+
+	// Toke is valid, create agent
+	agent, err := s.app.Conn.GetQuery().CreateAgent(ctx, db.CreateAgentParams{
+		ProfileID: req.Msg.ProfileId,
+	})
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	serverUrl, err := s.app.Conn.GetQuery().GetSetting(ctx, settings.KeyServerURL)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if serverUrl.Value == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("server url is required, check your settings"),
+		)
+	}
+
+	claims := &AgentClaims{
+		AgentID:   agent.ID,
+		ProfileID: agent.ProfileID,
+		ServerURL: serverUrl.Value,
+	}
+	token, err := claims.EncodeJWT(s.app.Secret, time.Hour*72)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	if err := s.app.Conn.GetQuery().UpdateAgentToken(ctx, db.UpdateAgentTokenParams{
+		ID:    agent.ID,
+		Token: token,
+	}); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&mantraev1.BootstrapAgentResponse{Token: token}), nil
+}

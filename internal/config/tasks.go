@@ -9,13 +9,15 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 // setupBackgroundJobs initiates essential background operations for the application.
 func (a *App) setupBackgroundJobs(ctx context.Context) {
 	go a.syncTraefik(ctx)
 	go a.syncDNS(ctx)
-	// go a.cleanupAgents(ctx)
+	go a.cleanupAgents(ctx)
+	go a.refreshAgentBootstrapToken(ctx)
 }
 
 // syncTraefik periodically syncs the Traefik configuration
@@ -88,77 +90,111 @@ func (a *App) syncDNS(ctx context.Context) {
 	}
 }
 
-// func (a *App) cleanupAgents(ctx context.Context) {
-// 	duration, err := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
-// 	if err != nil {
-// 		slog.Error("failed to get agent cleanup interval setting", "error", err)
-// 		return
-// 	}
-// 	ticker := time.NewTicker(duration.Duration(time.Hour))
-// 	defer ticker.Stop()
-//
-// 	for {
-// 		select {
-// 		case <-ctx.Done():
-// 			return
-// 		case <-ticker.C:
-// 			enabled, err := a.SM.Get(ctx, settings.KeyAgentCleanupEnabled)
-// 			if err != nil {
-// 				slog.Error("failed to get agent cleanup enabled setting", "error", err)
-// 				return
-// 			}
-// 			if enabled.Bool(false) {
-// 				return
-// 			}
-//
-// 			// Timeout to delete old agents
-// 			timeout, err := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
-// 			if err != nil {
-// 				slog.Error("failed to get agent cleanup interval setting", "error", err)
-// 				return
-// 			}
-//
-// 			q := a.Conn.GetQuery()
-// 			agents, err := q.ListAgents(ctx)
-// 			if err != nil {
-// 				slog.Error("failed to list agents", "error", err)
-// 				return
-// 			}
-//
-// 			for _, agent := range agents {
-// 				if agent.UpdatedAt == nil || agent.Hostname == nil {
-// 					continue
-// 				}
-//
-// 				if time.Now().Sub(*agent.UpdatedAt) > timeout.Duration(time.Hour*24) {
-// 					if err := q.DeleteTraefikConfigByAgent(ctx, &agent.ID); err != nil {
-// 						slog.Error(
-// 							"failed to delete agent config",
-// 							"id",
-// 							agent.ID,
-// 							"error",
-// 							err,
-// 						)
-// 						continue
-// 					}
-// 					if err := q.DeleteAgent(ctx, agent.ID); err != nil {
-// 						slog.Error(
-// 							"failed to delete disconnected agent",
-// 							"id",
-// 							agent.ID,
-// 							"error",
-// 							err,
-// 						)
-// 						continue
-// 					} else {
-// 						slog.Info("Deleted disconnected agent", "id", agent.ID)
-// 						util.Broadcast <- util.EventMessage{
-// 							Type:     util.EventTypeDelete,
-// 							Category: util.EventCategoryAgent,
-// 						}
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+func (a *App) cleanupAgents(ctx context.Context) {
+	duration, ok := a.SM.Get(settings.KeyAgentCleanupInterval)
+	if !ok {
+		slog.Error("failed to get agent cleanup interval setting")
+		return
+	}
+
+	ticker := time.NewTicker(settings.AsDuration(duration))
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			enabled, ok := a.SM.Get(settings.KeyAgentCleanupEnabled)
+			if !ok {
+				slog.Error("failed to get agent cleanup enabled setting")
+				return
+			}
+			if enabled != "true" {
+				slog.Info("agent cleanup is disabled, skipping")
+				return
+			}
+
+			// Timeout to delete old agents
+			timeout, ok := a.SM.Get(settings.KeyAgentCleanupInterval)
+			if !ok {
+				slog.Error("failed to get agent cleanup interval setting")
+				return
+			}
+
+			// List profiles
+			profiles, err := a.Conn.GetQuery().ListProfiles(ctx, db.ListProfilesParams{
+				Limit:  -1,
+				Offset: 0,
+			})
+			if err != nil {
+				slog.Error("failed to list profiles", "error", err)
+				continue
+			}
+
+			var agents []db.Agent
+			for _, profile := range profiles {
+				a, err := a.Conn.GetQuery().ListAgents(ctx, db.ListAgentsParams{
+					ProfileID: profile.ID,
+					Limit:     -1,
+					Offset:    0,
+				})
+				if err != nil {
+					slog.Error("failed to list agents", "error", err)
+					continue
+				}
+				agents = append(agents, a...)
+			}
+
+			for _, agent := range agents {
+				if agent.UpdatedAt == nil || agent.Hostname == nil {
+					continue
+				}
+
+				if time.Now().Sub(*agent.UpdatedAt) > settings.AsDuration(timeout) {
+					if err := a.Conn.GetQuery().DeleteAgent(ctx, agent.ID); err != nil {
+						slog.Error(
+							"failed to delete disconnected agent",
+							"id",
+							agent.ID,
+							"error",
+							err,
+						)
+						continue
+					} else {
+						slog.Info("Deleted disconnected agent", "id", agent.ID)
+					}
+				}
+			}
+		}
+	}
+}
+
+func (a *App) refreshAgentBootstrapToken(ctx context.Context) {
+	ticker := time.NewTicker(time.Hour * 24)
+	defer ticker.Stop()
+
+	token, err := util.GenerateBootstrapToken()
+	if err != nil {
+		slog.Error("failed to generate agent bootstrap token", "error", err)
+	}
+	if err := a.SM.Set(ctx, settings.KeyAgentBootstrapToken, token); err != nil {
+		slog.Error("failed to update agent bootstrap token", "error", err)
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			token, err := util.GenerateBootstrapToken()
+			if err != nil {
+				slog.Error("failed to generate agent bootstrap token", "error", err)
+				continue
+			}
+			if err := a.SM.Set(ctx, settings.KeyAgentBootstrapToken, token); err != nil {
+				slog.Error("failed to update agent bootstrap token", "error", err)
+			}
+		}
+	}
+}

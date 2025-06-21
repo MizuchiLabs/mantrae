@@ -61,7 +61,6 @@
 		{ title: 'Users', url: '/users/', icon: Users },
 		{ title: 'Agents', url: '/agents/', icon: Bot },
 		{ title: 'DNS', url: '/dns/', icon: Globe },
-		{ title: 'Plugins', url: '/plugins/', icon: Blocks },
 		{ title: 'Settings', url: '/settings/', icon: Settings }
 	];
 

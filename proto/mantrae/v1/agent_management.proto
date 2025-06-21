@@ -16,6 +16,7 @@ service AgentManagementService {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
   rpc RotateAgentToken(RotateAgentTokenRequest) returns (RotateAgentTokenResponse);
+  rpc BootstrapAgent(BootstrapAgentRequest) returns (BootstrapAgentResponse);
 }
 
 message Agent {
@@ -72,5 +73,13 @@ message RotateAgentTokenRequest {
   string id = 1;
 }
 message RotateAgentTokenResponse {
+  string token = 1;
+}
+
+message BootstrapAgentRequest {
+  int64 profile_id = 1;
+  string token = 2;
+}
+message BootstrapAgentResponse {
   string token = 1;
 }

@@ -44,7 +44,7 @@
 		const isEmail = username.includes('@');
 
 		try {
-			const res = await userClient.loginUser({
+			const response = await userClient.loginUser({
 				identifier: {
 					case: isEmail ? 'email' : 'username',
 					value: username
@@ -52,8 +52,7 @@
 				password: password,
 				remember: remember
 			});
-			token.value = res.token ?? null;
-
+			token.value = response.token ?? null;
 			if (!token.value) {
 				throw new Error('No token received');
 			}

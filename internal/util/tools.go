@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -68,6 +69,14 @@ func HashPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(hash), nil
+}
+
+func GenerateBootstrapToken() (string, error) {
+	b := make([]byte, 24) // ~192 bits
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return "bs_" + base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(b), nil
 }
 
 // IsHtpasswdFormat checks if a string is already in htpasswd format
