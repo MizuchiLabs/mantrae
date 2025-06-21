@@ -37,9 +37,9 @@ UPDATE agents
 SET
   hostname = COALESCE(?, hostname),
   public_ip = COALESCE(?, public_ip),
-  private_ips = COALESCE(?, private_ips),
-  containers = COALESCE(?, containers),
+  private_ip = COALESCE(?, private_ip),
   active_ip = COALESCE(?, active_ip),
+  containers = COALESCE(?, containers),
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

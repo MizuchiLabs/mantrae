@@ -129,6 +129,68 @@ components:
          the Joda Time's [`ISODateTimeFormat.dateTime()`](
          http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()
          ) to obtain a formatter capable of generating timestamps in this format.
+    mantrae.v1.Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          title: id
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        hostname:
+          type: string
+          title: hostname
+        publicIp:
+          type: string
+          title: public_ip
+        privateIp:
+          type: string
+          title: private_ip
+        activeIp:
+          type: string
+          title: active_ip
+        token:
+          type: string
+          title: token
+        containers:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Container'
+          title: containers
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: Agent
+      additionalProperties: false
+    mantrae.v1.BootstrapAgentRequest:
+      type: object
+      properties:
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        token:
+          type: string
+          title: token
+      title: BootstrapAgentRequest
+      additionalProperties: false
+    mantrae.v1.BootstrapAgentResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          title: token
+      title: BootstrapAgentResponse
+      additionalProperties: false
     mantrae.v1.Container:
       type: object
       properties:
@@ -186,170 +248,6 @@ components:
           format: int32
       title: PortmapEntry
       additionalProperties: false
-    mantrae.v1.GetContainerRequest:
-      type: object
-      properties:
-        hostname:
-          type: string
-          title: hostname
-        publicIp:
-          type: string
-          title: public_ip
-        privateIps:
-          type: array
-          items:
-            type: string
-          title: private_ips
-        containers:
-          type: array
-          items:
-            $ref: '#/components/schemas/mantrae.v1.Container'
-          title: containers
-        updated:
-          title: updated
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-      title: GetContainerRequest
-      additionalProperties: false
-    mantrae.v1.GetContainerResponse:
-      type: object
-      title: GetContainerResponse
-      additionalProperties: false
-    mantrae.v1.HealthCheckRequest:
-      type: object
-      title: HealthCheckRequest
-      additionalProperties: false
-    mantrae.v1.HealthCheckResponse:
-      type: object
-      properties:
-        ok:
-          type: boolean
-          title: ok
-        token:
-          type: string
-          title: token
-      title: HealthCheckResponse
-      additionalProperties: false
-    connect-protocol-version:
-      type: number
-      title: Connect-Protocol-Version
-      enum:
-        - 1
-      description: Define the version of the Connect protocol
-      const: 1
-    connect-timeout-header:
-      type: number
-      title: Connect-Timeout-Ms
-      description: Define the timeout, in ms
-    connect.error:
-      type: object
-      properties:
-        code:
-          type: string
-          examples:
-            - not_found
-          enum:
-            - canceled
-            - unknown
-            - invalid_argument
-            - deadline_exceeded
-            - not_found
-            - already_exists
-            - permission_denied
-            - resource_exhausted
-            - failed_precondition
-            - aborted
-            - out_of_range
-            - unimplemented
-            - internal
-            - unavailable
-            - data_loss
-            - unauthenticated
-          description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
-        message:
-          type: string
-          description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
-        detail:
-          $ref: '#/components/schemas/google.protobuf.Any'
-      title: Connect Error
-      additionalProperties: true
-      description: 'Error type returned by Connect: https://connectrpc.com/docs/go/errors/#http-representation'
-    google.protobuf.Any:
-      type: object
-      properties:
-        type:
-          type: string
-        value:
-          type: string
-          format: binary
-        debug:
-          type: object
-          additionalProperties: true
-      additionalProperties: true
-      description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-    mantrae.v1.Agent:
-      type: object
-      properties:
-        id:
-          type: string
-          title: id
-        profileId:
-          type:
-            - integer
-            - string
-          title: profile_id
-          format: int64
-        hostname:
-          type: string
-          title: hostname
-        publicIp:
-          type: string
-          title: public_ip
-        activeIp:
-          type: string
-          title: active_ip
-        token:
-          type: string
-          title: token
-        privateIps:
-          type: array
-          items:
-            type: string
-          title: private_ips
-        containers:
-          type: array
-          items:
-            $ref: '#/components/schemas/mantrae.v1.Container'
-          title: containers
-        createdAt:
-          title: created_at
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-        updatedAt:
-          title: updated_at
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-      title: Agent
-      additionalProperties: false
-    mantrae.v1.BootstrapAgentRequest:
-      type: object
-      properties:
-        profileId:
-          type:
-            - integer
-            - string
-          title: profile_id
-          format: int64
-        token:
-          type: string
-          title: token
-      title: BootstrapAgentRequest
-      additionalProperties: false
-    mantrae.v1.BootstrapAgentResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          title: token
-      title: BootstrapAgentResponse
-      additionalProperties: false
     mantrae.v1.CreateAgentRequest:
       type: object
       properties:
@@ -396,6 +294,25 @@ components:
           title: agent
           $ref: '#/components/schemas/mantrae.v1.Agent'
       title: GetAgentResponse
+      additionalProperties: false
+    mantrae.v1.HealthCheckRequest:
+      type: object
+      properties:
+        publicIp:
+          type: string
+          title: public_ip
+        privateIp:
+          type: string
+          title: private_ip
+      title: HealthCheckRequest
+      additionalProperties: false
+    mantrae.v1.HealthCheckResponse:
+      type: object
+      properties:
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
+      title: HealthCheckResponse
       additionalProperties: false
     mantrae.v1.ListAgentsRequest:
       type: object
@@ -495,6 +412,63 @@ components:
       enum:
         - v1
       description: Define the version of the Connect protocol
+    connect-protocol-version:
+      type: number
+      title: Connect-Protocol-Version
+      enum:
+        - 1
+      description: Define the version of the Connect protocol
+      const: 1
+    connect-timeout-header:
+      type: number
+      title: Connect-Timeout-Ms
+      description: Define the timeout, in ms
+    connect.error:
+      type: object
+      properties:
+        code:
+          type: string
+          examples:
+            - not_found
+          enum:
+            - canceled
+            - unknown
+            - invalid_argument
+            - deadline_exceeded
+            - not_found
+            - already_exists
+            - permission_denied
+            - resource_exhausted
+            - failed_precondition
+            - aborted
+            - out_of_range
+            - unimplemented
+            - internal
+            - unavailable
+            - data_loss
+            - unauthenticated
+          description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+        message:
+          type: string
+          description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+        detail:
+          $ref: '#/components/schemas/google.protobuf.Any'
+      title: Connect Error
+      additionalProperties: true
+      description: 'Error type returned by Connect: https://connectrpc.com/docs/go/errors/#http-representation'
+    google.protobuf.Any:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: string
+          format: binary
+        debug:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+      description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
     mantrae.v1.Backup:
       type: object
       properties:
@@ -2179,82 +2153,12 @@ components:
 security:
   - BearerAuth: []
 paths:
-  /mantrae.v1.AgentService/GetContainer:
-    post:
-      tags:
-        - mantrae.v1.AgentService
-      summary: GetContainer
-      operationId: mantrae.v1.AgentService.GetContainer
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.GetContainerRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetContainerResponse'
-  /mantrae.v1.AgentService/HealthCheck:
-    post:
-      tags:
-        - mantrae.v1.AgentService
-      summary: HealthCheck
-      operationId: mantrae.v1.AgentService.HealthCheck
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.HealthCheckRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.HealthCheckResponse'
-  /mantrae.v1.AgentManagementService/GetAgent:
+  /mantrae.v1.AgentService/GetAgent:
     get:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: GetAgent
-      operationId: mantrae.v1.AgentManagementService.GetAgent.get
+      operationId: mantrae.v1.AgentService.GetAgent.get
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2303,9 +2207,9 @@ paths:
                 $ref: '#/components/schemas/mantrae.v1.GetAgentResponse'
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: GetAgent
-      operationId: mantrae.v1.AgentManagementService.GetAgent
+      operationId: mantrae.v1.AgentService.GetAgent
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2335,12 +2239,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetAgentResponse'
-  /mantrae.v1.AgentManagementService/CreateAgent:
+  /mantrae.v1.AgentService/CreateAgent:
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: CreateAgent
-      operationId: mantrae.v1.AgentManagementService.CreateAgent
+      operationId: mantrae.v1.AgentService.CreateAgent
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2370,12 +2274,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.CreateAgentResponse'
-  /mantrae.v1.AgentManagementService/UpdateAgentIP:
+  /mantrae.v1.AgentService/UpdateAgentIP:
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: UpdateAgentIP
-      operationId: mantrae.v1.AgentManagementService.UpdateAgentIP
+      operationId: mantrae.v1.AgentService.UpdateAgentIP
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2405,12 +2309,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.UpdateAgentIPResponse'
-  /mantrae.v1.AgentManagementService/DeleteAgent:
+  /mantrae.v1.AgentService/DeleteAgent:
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: DeleteAgent
-      operationId: mantrae.v1.AgentManagementService.DeleteAgent
+      operationId: mantrae.v1.AgentService.DeleteAgent
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2440,12 +2344,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.DeleteAgentResponse'
-  /mantrae.v1.AgentManagementService/ListAgents:
+  /mantrae.v1.AgentService/ListAgents:
     get:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: ListAgents
-      operationId: mantrae.v1.AgentManagementService.ListAgents.get
+      operationId: mantrae.v1.AgentService.ListAgents.get
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2494,9 +2398,9 @@ paths:
                 $ref: '#/components/schemas/mantrae.v1.ListAgentsResponse'
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: ListAgents
-      operationId: mantrae.v1.AgentManagementService.ListAgents
+      operationId: mantrae.v1.AgentService.ListAgents
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2526,12 +2430,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListAgentsResponse'
-  /mantrae.v1.AgentManagementService/RotateAgentToken:
+  /mantrae.v1.AgentService/HealthCheck:
     post:
       tags:
-        - mantrae.v1.AgentManagementService
-      summary: RotateAgentToken
-      operationId: mantrae.v1.AgentManagementService.RotateAgentToken
+        - mantrae.v1.AgentService
+      summary: HealthCheck
+      operationId: mantrae.v1.AgentService.HealthCheck
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2546,7 +2450,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenRequest'
+              $ref: '#/components/schemas/mantrae.v1.HealthCheckRequest'
         required: true
       responses:
         default:
@@ -2560,13 +2464,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenResponse'
-  /mantrae.v1.AgentManagementService/BootstrapAgent:
+                $ref: '#/components/schemas/mantrae.v1.HealthCheckResponse'
+  /mantrae.v1.AgentService/BootstrapAgent:
     post:
       tags:
-        - mantrae.v1.AgentManagementService
+        - mantrae.v1.AgentService
       summary: BootstrapAgent
-      operationId: mantrae.v1.AgentManagementService.BootstrapAgent
+      operationId: mantrae.v1.AgentService.BootstrapAgent
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2596,6 +2500,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.BootstrapAgentResponse'
+  /mantrae.v1.AgentService/RotateAgentToken:
+    post:
+      tags:
+        - mantrae.v1.AgentService
+      summary: RotateAgentToken
+      operationId: mantrae.v1.AgentService.RotateAgentToken
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenResponse'
   /mantrae.v1.BackupService/CreateBackup:
     post:
       tags:
@@ -5427,7 +5366,6 @@ paths:
                 $ref: '#/components/schemas/mantrae.v1.GetPublicIPResponse'
 tags:
   - name: mantrae.v1.AgentService
-  - name: mantrae.v1.AgentManagementService
   - name: mantrae.v1.BackupService
   - name: mantrae.v1.DnsProviderService
   - name: mantrae.v1.EntryPointService

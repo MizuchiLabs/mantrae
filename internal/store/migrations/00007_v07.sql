@@ -188,14 +188,16 @@ ADD COLUMN description TEXT;
 -- Update agents table - change JSON columns to TEXT
 UPDATE agents
 SET
-  private_ips = CASE
-    WHEN private_ips IS NOT NULL THEN private_ips
-    ELSE NULL
-  END,
   containers = CASE
     WHEN containers IS NOT NULL THEN containers
     ELSE NULL
   END;
+
+ALTER TABLE agents
+DROP COLUMN private_ips;
+
+ALTER TABLE agents
+ADD COLUMN private_ip TEXT;
 
 -- Update users table - change id to TEXT and remove AUTOINCREMENT
 CREATE TABLE users_new (

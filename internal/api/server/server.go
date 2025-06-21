@@ -152,7 +152,6 @@ func (s *Server) registerServices() {
 		mantraev1connect.SettingServiceName,
 		mantraev1connect.DnsProviderServiceName,
 		mantraev1connect.AgentServiceName,
-		mantraev1connect.AgentManagementServiceName,
 		mantraev1connect.RouterServiceName,
 		mantraev1connect.ServiceServiceName,
 		mantraev1connect.MiddlewareServiceName,
@@ -203,10 +202,6 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewAgentServiceHandler(
 		service.NewAgentService(s.app),
-		opts...,
-	))
-	s.mux.Handle(mantraev1connect.NewAgentManagementServiceHandler(
-		service.NewAgentManagementService(s.app),
 		opts...,
 	))
 	s.mux.Handle(mantraev1connect.NewRouterServiceHandler(

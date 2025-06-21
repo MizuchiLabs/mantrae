@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -8,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mizuchilabs/mantrae/agent/client"
+	"github.com/mizuchilabs/mantrae/agent/internal/client"
 	"github.com/mizuchilabs/mantrae/pkg/build"
 	"github.com/mizuchilabs/mantrae/pkg/logger"
 )
@@ -29,5 +30,10 @@ func main() {
 
 	logger.Setup()
 	slog.Info("Starting agent...")
-	client.Client(quit)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go client.Client(ctx, quit)
+	<-ctx.Done()
 }

@@ -12,7 +12,69 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/agent.proto.
  */
 export const file_mantrae_v1_agent: GenFile = /*@__PURE__*/
-  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIrgCCglDb250YWluZXISCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIxCgZsYWJlbHMYAyADKAsyIS5tYW50cmFlLnYxLkNvbnRhaW5lci5MYWJlbHNFbnRyeRINCgVpbWFnZRgEIAEoCRIzCgdwb3J0bWFwGAUgAygLMiIubWFudHJhZS52MS5Db250YWluZXIuUG9ydG1hcEVudHJ5Eg4KBnN0YXR1cxgGIAEoCRIrCgdjcmVhdGVkGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBotCgtMYWJlbHNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBGi4KDFBvcnRtYXBFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBIqcBChNHZXRDb250YWluZXJSZXF1ZXN0EhAKCGhvc3RuYW1lGAEgASgJEhEKCXB1YmxpY19pcBgCIAEoCRITCgtwcml2YXRlX2lwcxgDIAMoCRIpCgpjb250YWluZXJzGAQgAygLMhUubWFudHJhZS52MS5Db250YWluZXISKwoHdXBkYXRlZBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiFgoUR2V0Q29udGFpbmVyUmVzcG9uc2UiFAoSSGVhbHRoQ2hlY2tSZXF1ZXN0IjAKE0hlYWx0aENoZWNrUmVzcG9uc2USCgoCb2sYASABKAgSDQoFdG9rZW4YAiABKAkysQEKDEFnZW50U2VydmljZRJRCgxHZXRDb250YWluZXISHy5tYW50cmFlLnYxLkdldENvbnRhaW5lclJlcXVlc3QaIC5tYW50cmFlLnYxLkdldENvbnRhaW5lclJlc3BvbnNlEk4KC0hlYWx0aENoZWNrEh4ubWFudHJhZS52MS5IZWFsdGhDaGVja1JlcXVlc3QaHy5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVzcG9uc2VCpAEKDmNvbS5tYW50cmFlLnYxQgpBZ2VudFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIo0CCgVBZ2VudBIKCgJpZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgDEhAKCGhvc3RuYW1lGAMgASgJEhEKCXB1YmxpY19pcBgEIAEoCRISCgpwcml2YXRlX2lwGAUgASgJEhEKCWFjdGl2ZV9pcBgGIAEoCRINCgV0b2tlbhgHIAEoCRIpCgpjb250YWluZXJzGAggAygLMhUubWFudHJhZS52MS5Db250YWluZXISLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiuAIKCUNvbnRhaW5lchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEjEKBmxhYmVscxgDIAMoCzIhLm1hbnRyYWUudjEuQ29udGFpbmVyLkxhYmVsc0VudHJ5Eg0KBWltYWdlGAQgASgJEjMKB3BvcnRtYXAYBSADKAsyIi5tYW50cmFlLnYxLkNvbnRhaW5lci5Qb3J0bWFwRW50cnkSDgoGc3RhdHVzGAYgASgJEisKB2NyZWF0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMUG9ydG1hcEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEiHQoPR2V0QWdlbnRSZXF1ZXN0EgoKAmlkGAEgASgJIjQKEEdldEFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IigKEkNyZWF0ZUFnZW50UmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgDIjcKE0NyZWF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50Ii4KFFVwZGF0ZUFnZW50SVBSZXF1ZXN0EgoKAmlkGAEgASgJEgoKAmlwGAIgASgJIjkKFVVwZGF0ZUFnZW50SVBSZXNwb25zZRIgCgVhZ2VudBgBIAEoCzIRLm1hbnRyYWUudjEuQWdlbnQiIAoSRGVsZXRlQWdlbnRSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0RlbGV0ZUFnZW50UmVzcG9uc2UiZQoRTGlzdEFnZW50c1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoAxISCgVsaW1pdBgCIAEoA0gAiAEBEhMKBm9mZnNldBgDIAEoA0gBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IkwKEkxpc3RBZ2VudHNSZXNwb25zZRIhCgZhZ2VudHMYASADKAsyES5tYW50cmFlLnYxLkFnZW50EhMKC3RvdGFsX2NvdW50GAIgASgDIjsKEkhlYWx0aENoZWNrUmVxdWVzdBIRCglwdWJsaWNfaXAYASABKAkSEgoKcHJpdmF0ZV9pcBgCIAEoCSI3ChNIZWFsdGhDaGVja1Jlc3BvbnNlEiAKBWFnZW50GAEgASgLMhEubWFudHJhZS52MS5BZ2VudCIlChdSb3RhdGVBZ2VudFRva2VuUmVxdWVzdBIKCgJpZBgBIAEoCSIpChhSb3RhdGVBZ2VudFRva2VuUmVzcG9uc2USDQoFdG9rZW4YASABKAkiOgoVQm9vdHN0cmFwQWdlbnRSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAMSDQoFdG9rZW4YAiABKAkiJwoWQm9vdHN0cmFwQWdlbnRSZXNwb25zZRINCgV0b2tlbhgBIAEoCTKqBQoMQWdlbnRTZXJ2aWNlEkoKCEdldEFnZW50EhsubWFudHJhZS52MS5HZXRBZ2VudFJlcXVlc3QaHC5tYW50cmFlLnYxLkdldEFnZW50UmVzcG9uc2UiA5ACARJOCgtDcmVhdGVBZ2VudBIeLm1hbnRyYWUudjEuQ3JlYXRlQWdlbnRSZXF1ZXN0Gh8ubWFudHJhZS52MS5DcmVhdGVBZ2VudFJlc3BvbnNlElQKDVVwZGF0ZUFnZW50SVASIC5tYW50cmFlLnYxLlVwZGF0ZUFnZW50SVBSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVBZ2VudElQUmVzcG9uc2USTgoLRGVsZXRlQWdlbnQSHi5tYW50cmFlLnYxLkRlbGV0ZUFnZW50UmVxdWVzdBofLm1hbnRyYWUudjEuRGVsZXRlQWdlbnRSZXNwb25zZRJQCgpMaXN0QWdlbnRzEh0ubWFudHJhZS52MS5MaXN0QWdlbnRzUmVxdWVzdBoeLm1hbnRyYWUudjEuTGlzdEFnZW50c1Jlc3BvbnNlIgOQAgESTgoLSGVhbHRoQ2hlY2sSHi5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVxdWVzdBofLm1hbnRyYWUudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJXCg5Cb290c3RyYXBBZ2VudBIhLm1hbnRyYWUudjEuQm9vdHN0cmFwQWdlbnRSZXF1ZXN0GiIubWFudHJhZS52MS5Cb290c3RyYXBBZ2VudFJlc3BvbnNlEl0KEFJvdGF0ZUFnZW50VG9rZW4SIy5tYW50cmFlLnYxLlJvdGF0ZUFnZW50VG9rZW5SZXF1ZXN0GiQubWFudHJhZS52MS5Sb3RhdGVBZ2VudFRva2VuUmVzcG9uc2VCpAEKDmNvbS5tYW50cmFlLnYxQgpBZ2VudFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+
+/**
+ * @generated from message mantrae.v1.Agent
+ */
+export type Agent = Message<"mantrae.v1.Agent"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: int64 profile_id = 2;
+   */
+  profileId: bigint;
+
+  /**
+   * @generated from field: string hostname = 3;
+   */
+  hostname: string;
+
+  /**
+   * @generated from field: string public_ip = 4;
+   */
+  publicIp: string;
+
+  /**
+   * @generated from field: string private_ip = 5;
+   */
+  privateIp: string;
+
+  /**
+   * @generated from field: string active_ip = 6;
+   */
+  activeIp: string;
+
+  /**
+   * @generated from field: string token = 7;
+   */
+  token: string;
+
+  /**
+   * @generated from field: repeated mantrae.v1.Container containers = 8;
+   */
+  containers: Container[];
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 9;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 10;
+   */
+  updatedAt?: Timestamp;
+};
+
+/**
+ * Describes the message mantrae.v1.Agent.
+ * Use `create(AgentSchema)` to create a new message.
+ */
+export const AgentSchema: GenMessage<Agent> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 0);
 
 /**
  * @generated from message mantrae.v1.Container
@@ -59,62 +121,207 @@ export type Container = Message<"mantrae.v1.Container"> & {
  * Use `create(ContainerSchema)` to create a new message.
  */
 export const ContainerSchema: GenMessage<Container> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 0);
-
-/**
- * @generated from message mantrae.v1.GetContainerRequest
- */
-export type GetContainerRequest = Message<"mantrae.v1.GetContainerRequest"> & {
-  /**
-   * @generated from field: string hostname = 1;
-   */
-  hostname: string;
-
-  /**
-   * @generated from field: string public_ip = 2;
-   */
-  publicIp: string;
-
-  /**
-   * @generated from field: repeated string private_ips = 3;
-   */
-  privateIps: string[];
-
-  /**
-   * @generated from field: repeated mantrae.v1.Container containers = 4;
-   */
-  containers: Container[];
-
-  /**
-   * @generated from field: google.protobuf.Timestamp updated = 5;
-   */
-  updated?: Timestamp;
-};
-
-/**
- * Describes the message mantrae.v1.GetContainerRequest.
- * Use `create(GetContainerRequestSchema)` to create a new message.
- */
-export const GetContainerRequestSchema: GenMessage<GetContainerRequest> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_agent, 1);
 
 /**
- * @generated from message mantrae.v1.GetContainerResponse
+ * @generated from message mantrae.v1.GetAgentRequest
  */
-export type GetContainerResponse = Message<"mantrae.v1.GetContainerResponse"> & {
+export type GetAgentRequest = Message<"mantrae.v1.GetAgentRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
 };
 
 /**
- * Describes the message mantrae.v1.GetContainerResponse.
- * Use `create(GetContainerResponseSchema)` to create a new message.
+ * Describes the message mantrae.v1.GetAgentRequest.
+ * Use `create(GetAgentRequestSchema)` to create a new message.
  */
-export const GetContainerResponseSchema: GenMessage<GetContainerResponse> = /*@__PURE__*/
+export const GetAgentRequestSchema: GenMessage<GetAgentRequest> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_agent, 2);
+
+/**
+ * @generated from message mantrae.v1.GetAgentResponse
+ */
+export type GetAgentResponse = Message<"mantrae.v1.GetAgentResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Agent agent = 1;
+   */
+  agent?: Agent;
+};
+
+/**
+ * Describes the message mantrae.v1.GetAgentResponse.
+ * Use `create(GetAgentResponseSchema)` to create a new message.
+ */
+export const GetAgentResponseSchema: GenMessage<GetAgentResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 3);
+
+/**
+ * @generated from message mantrae.v1.CreateAgentRequest
+ */
+export type CreateAgentRequest = Message<"mantrae.v1.CreateAgentRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
+};
+
+/**
+ * Describes the message mantrae.v1.CreateAgentRequest.
+ * Use `create(CreateAgentRequestSchema)` to create a new message.
+ */
+export const CreateAgentRequestSchema: GenMessage<CreateAgentRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 4);
+
+/**
+ * @generated from message mantrae.v1.CreateAgentResponse
+ */
+export type CreateAgentResponse = Message<"mantrae.v1.CreateAgentResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Agent agent = 1;
+   */
+  agent?: Agent;
+};
+
+/**
+ * Describes the message mantrae.v1.CreateAgentResponse.
+ * Use `create(CreateAgentResponseSchema)` to create a new message.
+ */
+export const CreateAgentResponseSchema: GenMessage<CreateAgentResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 5);
+
+/**
+ * @generated from message mantrae.v1.UpdateAgentIPRequest
+ */
+export type UpdateAgentIPRequest = Message<"mantrae.v1.UpdateAgentIPRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string ip = 2;
+   */
+  ip: string;
+};
+
+/**
+ * Describes the message mantrae.v1.UpdateAgentIPRequest.
+ * Use `create(UpdateAgentIPRequestSchema)` to create a new message.
+ */
+export const UpdateAgentIPRequestSchema: GenMessage<UpdateAgentIPRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 6);
+
+/**
+ * @generated from message mantrae.v1.UpdateAgentIPResponse
+ */
+export type UpdateAgentIPResponse = Message<"mantrae.v1.UpdateAgentIPResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Agent agent = 1;
+   */
+  agent?: Agent;
+};
+
+/**
+ * Describes the message mantrae.v1.UpdateAgentIPResponse.
+ * Use `create(UpdateAgentIPResponseSchema)` to create a new message.
+ */
+export const UpdateAgentIPResponseSchema: GenMessage<UpdateAgentIPResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 7);
+
+/**
+ * @generated from message mantrae.v1.DeleteAgentRequest
+ */
+export type DeleteAgentRequest = Message<"mantrae.v1.DeleteAgentRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message mantrae.v1.DeleteAgentRequest.
+ * Use `create(DeleteAgentRequestSchema)` to create a new message.
+ */
+export const DeleteAgentRequestSchema: GenMessage<DeleteAgentRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 8);
+
+/**
+ * @generated from message mantrae.v1.DeleteAgentResponse
+ */
+export type DeleteAgentResponse = Message<"mantrae.v1.DeleteAgentResponse"> & {
+};
+
+/**
+ * Describes the message mantrae.v1.DeleteAgentResponse.
+ * Use `create(DeleteAgentResponseSchema)` to create a new message.
+ */
+export const DeleteAgentResponseSchema: GenMessage<DeleteAgentResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 9);
+
+/**
+ * @generated from message mantrae.v1.ListAgentsRequest
+ */
+export type ListAgentsRequest = Message<"mantrae.v1.ListAgentsRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
+
+  /**
+   * @generated from field: optional int64 limit = 2;
+   */
+  limit?: bigint;
+
+  /**
+   * @generated from field: optional int64 offset = 3;
+   */
+  offset?: bigint;
+};
+
+/**
+ * Describes the message mantrae.v1.ListAgentsRequest.
+ * Use `create(ListAgentsRequestSchema)` to create a new message.
+ */
+export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 10);
+
+/**
+ * @generated from message mantrae.v1.ListAgentsResponse
+ */
+export type ListAgentsResponse = Message<"mantrae.v1.ListAgentsResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.Agent agents = 1;
+   */
+  agents: Agent[];
+
+  /**
+   * @generated from field: int64 total_count = 2;
+   */
+  totalCount: bigint;
+};
+
+/**
+ * Describes the message mantrae.v1.ListAgentsResponse.
+ * Use `create(ListAgentsResponseSchema)` to create a new message.
+ */
+export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 11);
 
 /**
  * @generated from message mantrae.v1.HealthCheckRequest
  */
 export type HealthCheckRequest = Message<"mantrae.v1.HealthCheckRequest"> & {
+  /**
+   * @generated from field: string public_ip = 1;
+   */
+  publicIp: string;
+
+  /**
+   * @generated from field: string private_ip = 2;
+   */
+  privateIp: string;
 };
 
 /**
@@ -122,16 +329,67 @@ export type HealthCheckRequest = Message<"mantrae.v1.HealthCheckRequest"> & {
  * Use `create(HealthCheckRequestSchema)` to create a new message.
  */
 export const HealthCheckRequestSchema: GenMessage<HealthCheckRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 3);
+  messageDesc(file_mantrae_v1_agent, 12);
 
 /**
  * @generated from message mantrae.v1.HealthCheckResponse
  */
 export type HealthCheckResponse = Message<"mantrae.v1.HealthCheckResponse"> & {
   /**
-   * @generated from field: bool ok = 1;
+   * @generated from field: mantrae.v1.Agent agent = 1;
    */
-  ok: boolean;
+  agent?: Agent;
+};
+
+/**
+ * Describes the message mantrae.v1.HealthCheckResponse.
+ * Use `create(HealthCheckResponseSchema)` to create a new message.
+ */
+export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 13);
+
+/**
+ * @generated from message mantrae.v1.RotateAgentTokenRequest
+ */
+export type RotateAgentTokenRequest = Message<"mantrae.v1.RotateAgentTokenRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message mantrae.v1.RotateAgentTokenRequest.
+ * Use `create(RotateAgentTokenRequestSchema)` to create a new message.
+ */
+export const RotateAgentTokenRequestSchema: GenMessage<RotateAgentTokenRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 14);
+
+/**
+ * @generated from message mantrae.v1.RotateAgentTokenResponse
+ */
+export type RotateAgentTokenResponse = Message<"mantrae.v1.RotateAgentTokenResponse"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+};
+
+/**
+ * Describes the message mantrae.v1.RotateAgentTokenResponse.
+ * Use `create(RotateAgentTokenResponseSchema)` to create a new message.
+ */
+export const RotateAgentTokenResponseSchema: GenMessage<RotateAgentTokenResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 15);
+
+/**
+ * @generated from message mantrae.v1.BootstrapAgentRequest
+ */
+export type BootstrapAgentRequest = Message<"mantrae.v1.BootstrapAgentRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
 
   /**
    * @generated from field: string token = 2;
@@ -140,23 +398,72 @@ export type HealthCheckResponse = Message<"mantrae.v1.HealthCheckResponse"> & {
 };
 
 /**
- * Describes the message mantrae.v1.HealthCheckResponse.
- * Use `create(HealthCheckResponseSchema)` to create a new message.
+ * Describes the message mantrae.v1.BootstrapAgentRequest.
+ * Use `create(BootstrapAgentRequestSchema)` to create a new message.
  */
-export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 4);
+export const BootstrapAgentRequestSchema: GenMessage<BootstrapAgentRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 16);
+
+/**
+ * @generated from message mantrae.v1.BootstrapAgentResponse
+ */
+export type BootstrapAgentResponse = Message<"mantrae.v1.BootstrapAgentResponse"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+};
+
+/**
+ * Describes the message mantrae.v1.BootstrapAgentResponse.
+ * Use `create(BootstrapAgentResponseSchema)` to create a new message.
+ */
+export const BootstrapAgentResponseSchema: GenMessage<BootstrapAgentResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_agent, 17);
 
 /**
  * @generated from service mantrae.v1.AgentService
  */
 export const AgentService: GenService<{
   /**
-   * @generated from rpc mantrae.v1.AgentService.GetContainer
+   * @generated from rpc mantrae.v1.AgentService.GetAgent
    */
-  getContainer: {
+  getAgent: {
     methodKind: "unary";
-    input: typeof GetContainerRequestSchema;
-    output: typeof GetContainerResponseSchema;
+    input: typeof GetAgentRequestSchema;
+    output: typeof GetAgentResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.CreateAgent
+   */
+  createAgent: {
+    methodKind: "unary";
+    input: typeof CreateAgentRequestSchema;
+    output: typeof CreateAgentResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.UpdateAgentIP
+   */
+  updateAgentIP: {
+    methodKind: "unary";
+    input: typeof UpdateAgentIPRequestSchema;
+    output: typeof UpdateAgentIPResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.DeleteAgent
+   */
+  deleteAgent: {
+    methodKind: "unary";
+    input: typeof DeleteAgentRequestSchema;
+    output: typeof DeleteAgentResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.ListAgents
+   */
+  listAgents: {
+    methodKind: "unary";
+    input: typeof ListAgentsRequestSchema;
+    output: typeof ListAgentsResponseSchema;
   },
   /**
    * @generated from rpc mantrae.v1.AgentService.HealthCheck
@@ -165,6 +472,22 @@ export const AgentService: GenService<{
     methodKind: "unary";
     input: typeof HealthCheckRequestSchema;
     output: typeof HealthCheckResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.BootstrapAgent
+   */
+  bootstrapAgent: {
+    methodKind: "unary";
+    input: typeof BootstrapAgentRequestSchema;
+    output: typeof BootstrapAgentResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.AgentService.RotateAgentToken
+   */
+  rotateAgentToken: {
+    methodKind: "unary";
+    input: typeof RotateAgentTokenRequestSchema;
+    output: typeof RotateAgentTokenResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_mantrae_v1_agent, 0);

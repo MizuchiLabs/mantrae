@@ -33,18 +33,40 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AgentServiceGetContainerProcedure is the fully-qualified name of the AgentService's GetContainer
+	// AgentServiceGetAgentProcedure is the fully-qualified name of the AgentService's GetAgent RPC.
+	AgentServiceGetAgentProcedure = "/mantrae.v1.AgentService/GetAgent"
+	// AgentServiceCreateAgentProcedure is the fully-qualified name of the AgentService's CreateAgent
 	// RPC.
-	AgentServiceGetContainerProcedure = "/mantrae.v1.AgentService/GetContainer"
+	AgentServiceCreateAgentProcedure = "/mantrae.v1.AgentService/CreateAgent"
+	// AgentServiceUpdateAgentIPProcedure is the fully-qualified name of the AgentService's
+	// UpdateAgentIP RPC.
+	AgentServiceUpdateAgentIPProcedure = "/mantrae.v1.AgentService/UpdateAgentIP"
+	// AgentServiceDeleteAgentProcedure is the fully-qualified name of the AgentService's DeleteAgent
+	// RPC.
+	AgentServiceDeleteAgentProcedure = "/mantrae.v1.AgentService/DeleteAgent"
+	// AgentServiceListAgentsProcedure is the fully-qualified name of the AgentService's ListAgents RPC.
+	AgentServiceListAgentsProcedure = "/mantrae.v1.AgentService/ListAgents"
 	// AgentServiceHealthCheckProcedure is the fully-qualified name of the AgentService's HealthCheck
 	// RPC.
 	AgentServiceHealthCheckProcedure = "/mantrae.v1.AgentService/HealthCheck"
+	// AgentServiceBootstrapAgentProcedure is the fully-qualified name of the AgentService's
+	// BootstrapAgent RPC.
+	AgentServiceBootstrapAgentProcedure = "/mantrae.v1.AgentService/BootstrapAgent"
+	// AgentServiceRotateAgentTokenProcedure is the fully-qualified name of the AgentService's
+	// RotateAgentToken RPC.
+	AgentServiceRotateAgentTokenProcedure = "/mantrae.v1.AgentService/RotateAgentToken"
 )
 
 // AgentServiceClient is a client for the mantrae.v1.AgentService service.
 type AgentServiceClient interface {
-	GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error)
+	GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error)
+	CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error)
+	UpdateAgentIP(context.Context, *connect.Request[v1.UpdateAgentIPRequest]) (*connect.Response[v1.UpdateAgentIPResponse], error)
+	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
+	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
+	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
+	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
 }
 
 // NewAgentServiceClient constructs a client for the mantrae.v1.AgentService service. By default, it
@@ -58,10 +80,36 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 	baseURL = strings.TrimRight(baseURL, "/")
 	agentServiceMethods := v1.File_mantrae_v1_agent_proto.Services().ByName("AgentService").Methods()
 	return &agentServiceClient{
-		getContainer: connect.NewClient[v1.GetContainerRequest, v1.GetContainerResponse](
+		getAgent: connect.NewClient[v1.GetAgentRequest, v1.GetAgentResponse](
 			httpClient,
-			baseURL+AgentServiceGetContainerProcedure,
-			connect.WithSchema(agentServiceMethods.ByName("GetContainer")),
+			baseURL+AgentServiceGetAgentProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("GetAgent")),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
+		createAgent: connect.NewClient[v1.CreateAgentRequest, v1.CreateAgentResponse](
+			httpClient,
+			baseURL+AgentServiceCreateAgentProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("CreateAgent")),
+			connect.WithClientOptions(opts...),
+		),
+		updateAgentIP: connect.NewClient[v1.UpdateAgentIPRequest, v1.UpdateAgentIPResponse](
+			httpClient,
+			baseURL+AgentServiceUpdateAgentIPProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("UpdateAgentIP")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteAgent: connect.NewClient[v1.DeleteAgentRequest, v1.DeleteAgentResponse](
+			httpClient,
+			baseURL+AgentServiceDeleteAgentProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("DeleteAgent")),
+			connect.WithClientOptions(opts...),
+		),
+		listAgents: connect.NewClient[v1.ListAgentsRequest, v1.ListAgentsResponse](
+			httpClient,
+			baseURL+AgentServiceListAgentsProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("ListAgents")),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		healthCheck: connect.NewClient[v1.HealthCheckRequest, v1.HealthCheckResponse](
@@ -70,18 +118,56 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 			connect.WithClientOptions(opts...),
 		),
+		bootstrapAgent: connect.NewClient[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse](
+			httpClient,
+			baseURL+AgentServiceBootstrapAgentProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("BootstrapAgent")),
+			connect.WithClientOptions(opts...),
+		),
+		rotateAgentToken: connect.NewClient[v1.RotateAgentTokenRequest, v1.RotateAgentTokenResponse](
+			httpClient,
+			baseURL+AgentServiceRotateAgentTokenProcedure,
+			connect.WithSchema(agentServiceMethods.ByName("RotateAgentToken")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // agentServiceClient implements AgentServiceClient.
 type agentServiceClient struct {
-	getContainer *connect.Client[v1.GetContainerRequest, v1.GetContainerResponse]
-	healthCheck  *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
+	getAgent         *connect.Client[v1.GetAgentRequest, v1.GetAgentResponse]
+	createAgent      *connect.Client[v1.CreateAgentRequest, v1.CreateAgentResponse]
+	updateAgentIP    *connect.Client[v1.UpdateAgentIPRequest, v1.UpdateAgentIPResponse]
+	deleteAgent      *connect.Client[v1.DeleteAgentRequest, v1.DeleteAgentResponse]
+	listAgents       *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	healthCheck      *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
+	bootstrapAgent   *connect.Client[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse]
+	rotateAgentToken *connect.Client[v1.RotateAgentTokenRequest, v1.RotateAgentTokenResponse]
 }
 
-// GetContainer calls mantrae.v1.AgentService.GetContainer.
-func (c *agentServiceClient) GetContainer(ctx context.Context, req *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error) {
-	return c.getContainer.CallUnary(ctx, req)
+// GetAgent calls mantrae.v1.AgentService.GetAgent.
+func (c *agentServiceClient) GetAgent(ctx context.Context, req *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error) {
+	return c.getAgent.CallUnary(ctx, req)
+}
+
+// CreateAgent calls mantrae.v1.AgentService.CreateAgent.
+func (c *agentServiceClient) CreateAgent(ctx context.Context, req *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error) {
+	return c.createAgent.CallUnary(ctx, req)
+}
+
+// UpdateAgentIP calls mantrae.v1.AgentService.UpdateAgentIP.
+func (c *agentServiceClient) UpdateAgentIP(ctx context.Context, req *connect.Request[v1.UpdateAgentIPRequest]) (*connect.Response[v1.UpdateAgentIPResponse], error) {
+	return c.updateAgentIP.CallUnary(ctx, req)
+}
+
+// DeleteAgent calls mantrae.v1.AgentService.DeleteAgent.
+func (c *agentServiceClient) DeleteAgent(ctx context.Context, req *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error) {
+	return c.deleteAgent.CallUnary(ctx, req)
+}
+
+// ListAgents calls mantrae.v1.AgentService.ListAgents.
+func (c *agentServiceClient) ListAgents(ctx context.Context, req *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
+	return c.listAgents.CallUnary(ctx, req)
 }
 
 // HealthCheck calls mantrae.v1.AgentService.HealthCheck.
@@ -89,10 +175,26 @@ func (c *agentServiceClient) HealthCheck(ctx context.Context, req *connect.Reque
 	return c.healthCheck.CallUnary(ctx, req)
 }
 
+// BootstrapAgent calls mantrae.v1.AgentService.BootstrapAgent.
+func (c *agentServiceClient) BootstrapAgent(ctx context.Context, req *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
+	return c.bootstrapAgent.CallUnary(ctx, req)
+}
+
+// RotateAgentToken calls mantrae.v1.AgentService.RotateAgentToken.
+func (c *agentServiceClient) RotateAgentToken(ctx context.Context, req *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error) {
+	return c.rotateAgentToken.CallUnary(ctx, req)
+}
+
 // AgentServiceHandler is an implementation of the mantrae.v1.AgentService service.
 type AgentServiceHandler interface {
-	GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error)
+	GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error)
+	CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error)
+	UpdateAgentIP(context.Context, *connect.Request[v1.UpdateAgentIPRequest]) (*connect.Response[v1.UpdateAgentIPResponse], error)
+	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
+	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
+	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
+	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
 }
 
 // NewAgentServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -102,10 +204,36 @@ type AgentServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	agentServiceMethods := v1.File_mantrae_v1_agent_proto.Services().ByName("AgentService").Methods()
-	agentServiceGetContainerHandler := connect.NewUnaryHandler(
-		AgentServiceGetContainerProcedure,
-		svc.GetContainer,
-		connect.WithSchema(agentServiceMethods.ByName("GetContainer")),
+	agentServiceGetAgentHandler := connect.NewUnaryHandler(
+		AgentServiceGetAgentProcedure,
+		svc.GetAgent,
+		connect.WithSchema(agentServiceMethods.ByName("GetAgent")),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentServiceCreateAgentHandler := connect.NewUnaryHandler(
+		AgentServiceCreateAgentProcedure,
+		svc.CreateAgent,
+		connect.WithSchema(agentServiceMethods.ByName("CreateAgent")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentServiceUpdateAgentIPHandler := connect.NewUnaryHandler(
+		AgentServiceUpdateAgentIPProcedure,
+		svc.UpdateAgentIP,
+		connect.WithSchema(agentServiceMethods.ByName("UpdateAgentIP")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentServiceDeleteAgentHandler := connect.NewUnaryHandler(
+		AgentServiceDeleteAgentProcedure,
+		svc.DeleteAgent,
+		connect.WithSchema(agentServiceMethods.ByName("DeleteAgent")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentServiceListAgentsHandler := connect.NewUnaryHandler(
+		AgentServiceListAgentsProcedure,
+		svc.ListAgents,
+		connect.WithSchema(agentServiceMethods.ByName("ListAgents")),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	agentServiceHealthCheckHandler := connect.NewUnaryHandler(
@@ -114,12 +242,36 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 		connect.WithHandlerOptions(opts...),
 	)
+	agentServiceBootstrapAgentHandler := connect.NewUnaryHandler(
+		AgentServiceBootstrapAgentProcedure,
+		svc.BootstrapAgent,
+		connect.WithSchema(agentServiceMethods.ByName("BootstrapAgent")),
+		connect.WithHandlerOptions(opts...),
+	)
+	agentServiceRotateAgentTokenHandler := connect.NewUnaryHandler(
+		AgentServiceRotateAgentTokenProcedure,
+		svc.RotateAgentToken,
+		connect.WithSchema(agentServiceMethods.ByName("RotateAgentToken")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mantrae.v1.AgentService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AgentServiceGetContainerProcedure:
-			agentServiceGetContainerHandler.ServeHTTP(w, r)
+		case AgentServiceGetAgentProcedure:
+			agentServiceGetAgentHandler.ServeHTTP(w, r)
+		case AgentServiceCreateAgentProcedure:
+			agentServiceCreateAgentHandler.ServeHTTP(w, r)
+		case AgentServiceUpdateAgentIPProcedure:
+			agentServiceUpdateAgentIPHandler.ServeHTTP(w, r)
+		case AgentServiceDeleteAgentProcedure:
+			agentServiceDeleteAgentHandler.ServeHTTP(w, r)
+		case AgentServiceListAgentsProcedure:
+			agentServiceListAgentsHandler.ServeHTTP(w, r)
 		case AgentServiceHealthCheckProcedure:
 			agentServiceHealthCheckHandler.ServeHTTP(w, r)
+		case AgentServiceBootstrapAgentProcedure:
+			agentServiceBootstrapAgentHandler.ServeHTTP(w, r)
+		case AgentServiceRotateAgentTokenProcedure:
+			agentServiceRotateAgentTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -129,10 +281,34 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 // UnimplementedAgentServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAgentServiceHandler struct{}
 
-func (UnimplementedAgentServiceHandler) GetContainer(context.Context, *connect.Request[v1.GetContainerRequest]) (*connect.Response[v1.GetContainerResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.GetContainer is not implemented"))
+func (UnimplementedAgentServiceHandler) GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.GetAgent is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.CreateAgent is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) UpdateAgentIP(context.Context, *connect.Request[v1.UpdateAgentIPRequest]) (*connect.Response[v1.UpdateAgentIPResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.UpdateAgentIP is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.DeleteAgent is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.ListAgents is not implemented"))
 }
 
 func (UnimplementedAgentServiceHandler) HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.HealthCheck is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.BootstrapAgent is not implemented"))
+}
+
+func (UnimplementedAgentServiceHandler) RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.RotateAgentToken is not implemented"))
 }

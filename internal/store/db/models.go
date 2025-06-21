@@ -15,12 +15,12 @@ type Agent struct {
 	ProfileID  int64                   `json:"profileId"`
 	Hostname   *string                 `json:"hostname"`
 	PublicIp   *string                 `json:"publicIp"`
-	PrivateIps *schema.AgentPrivateIPs `json:"privateIps"`
 	Containers *schema.AgentContainers `json:"containers"`
 	ActiveIp   *string                 `json:"activeIp"`
 	Token      string                  `json:"token"`
 	CreatedAt  *time.Time              `json:"createdAt"`
 	UpdatedAt  *time.Time              `json:"updatedAt"`
+	PrivateIp  *string                 `json:"privateIp"`
 }
 
 type DnsProvider struct {

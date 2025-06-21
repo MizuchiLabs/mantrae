@@ -193,7 +193,7 @@ CREATE TABLE agents (
   profile_id INTEGER NOT NULL,
   hostname TEXT,
   public_ip TEXT,
-  private_ips TEXT,
+  private_ip TEXT,
   containers TEXT,
   active_ip TEXT,
   token TEXT NOT NULL DEFAULT '',

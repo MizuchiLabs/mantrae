@@ -9,11 +9,11 @@
 	import CopyButton from '../ui/copy-button/copy-button.svelte';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { RotateCcw } from '@lucide/svelte';
-	import type { Agent } from '$lib/gen/mantrae/v1/agent_management_pb';
 	import { agentClient } from '$lib/api';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
+	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 
 	interface Props {
 		data: Agent[];
@@ -121,19 +121,17 @@
 				</div>
 			{/if}
 
-			{#if item.privateIps?.length > 0}
+			{#if item.privateIp !== ''}
 				<div class="grid grid-cols-4 items-center gap-2">
 					<Label for="privateip">Private IPs</Label>
 					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each item.privateIps ?? [] as ip (ip)}
-							{#if item.activeIp === ip}
-								<Badge variant="default">{ip ?? 'None'}</Badge>
-							{:else}
-								<button onclick={() => handleSubmit(ip)}>
-									<Badge variant="secondary">{ip}</Badge>
-								</button>
-							{/if}
-						{/each}
+						{#if item.activeIp === item.privateIp}
+							<Badge variant="default">{item.privateIp ?? 'None'}</Badge>
+						{:else}
+							<button onclick={() => handleSubmit(item.privateIp)}>
+								<Badge variant="secondary">{item.privateIp}</Badge>
+							</button>
+						{/if}
 					</div>
 				</div>
 			{/if}

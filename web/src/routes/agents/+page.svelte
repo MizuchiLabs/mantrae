@@ -5,7 +5,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import type { Agent } from '$lib/gen/mantrae/v1/agent_management_pb';
+	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
