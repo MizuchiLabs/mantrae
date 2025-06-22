@@ -10,7 +10,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import { type Service } from '$lib/gen/mantrae/v1/service_pb';
+	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { routerTypes } from '$lib/types';
@@ -31,6 +31,45 @@
 
 	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 	let service = $state({} as Service);
+
+	$effect(() => {
+		if (!open) {
+			service = {} as Service;
+		}
+	});
+	$effect(() => {
+		if (item.id && open) {
+			serviceClient
+				.getServiceByRouter({
+					name: item.name,
+					type: item.type
+				})
+				.then((data) => {
+					service = data.service ?? ({} as Service);
+				});
+		}
+	});
+	$effect(() => {
+		if (item.profileId) {
+			service.profileId = item.profileId;
+		}
+		if (item.name) {
+			service.name = item.name;
+		}
+		if (item.type) {
+			switch (item.type) {
+				case RouterType.HTTP:
+					service.type = ServiceType.HTTP;
+					break;
+				case RouterType.TCP:
+					service.type = ServiceType.TCP;
+					break;
+				case RouterType.UDP:
+					service.type = ServiceType.UDP;
+					break;
+			}
+		}
+	});
 
 	const handleSubmit = async () => {
 		if (!profile.id) return;
@@ -238,7 +277,7 @@
 					</Card.Header>
 					<Card.Content class="flex flex-col gap-3">
 						{#if item.type === RouterType.HTTP}
-							<HTTPServiceForm bind:service bind:router={item} />
+							<HTTPServiceForm bind:service />
 						{/if}
 						<!-- {#if item.type === RouterType.TCP} -->
 						<!--     <TCPServiceForm bind:service bind:router={item} /> -->

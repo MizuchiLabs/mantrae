@@ -373,6 +373,48 @@ func (s *Service) ListServices(
 	}), nil
 }
 
+func (s *Service) GetServiceByRouter(
+	ctx context.Context,
+	req *connect.Request[mantraev1.GetServiceByRouterRequest],
+) (*connect.Response[mantraev1.GetServiceByRouterResponse], error) {
+	var service *mantraev1.Service
+
+	switch req.Msg.Type {
+	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
+		res, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, req.Msg.Name)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		service, err = buildProtoHttpService(res)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+	case mantraev1.RouterType_ROUTER_TYPE_TCP:
+		res, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, req.Msg.Name)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		service, err = buildProtoTcpService(res)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	case mantraev1.RouterType_ROUTER_TYPE_UDP:
+		res, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, req.Msg.Name)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		service, err = buildProtoUdpService(res)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	default:
+		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
+	}
+
+	return connect.NewResponse(&mantraev1.GetServiceByRouterResponse{Service: service}), nil
+}
+
 // Helpers
 func listServices[
 	DBType any,

@@ -1790,6 +1790,29 @@ components:
       type: object
       title: DeleteServiceResponse
       additionalProperties: false
+    mantrae.v1.GetServiceByRouterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          minLength: 1
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.RouterType'
+      title: GetServiceByRouterRequest
+      required:
+        - name
+        - type
+      additionalProperties: false
+    mantrae.v1.GetServiceByRouterResponse:
+      type: object
+      properties:
+        service:
+          title: service
+          $ref: '#/components/schemas/mantrae.v1.Service'
+      title: GetServiceByRouterResponse
+      additionalProperties: false
     mantrae.v1.GetServiceRequest:
       type: object
       properties:
@@ -4756,6 +4779,92 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListServicesResponse'
+  /mantrae.v1.ServiceService/GetServiceByRouter:
+    get:
+      tags:
+        - mantrae.v1.ServiceService
+      summary: GetServiceByRouter
+      operationId: mantrae.v1.ServiceService.GetServiceByRouter.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterResponse'
+    post:
+      tags:
+        - mantrae.v1.ServiceService
+      summary: GetServiceByRouter
+      operationId: mantrae.v1.ServiceService.GetServiceByRouter
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterResponse'
   /mantrae.v1.SettingService/GetSetting:
     get:
       tags:

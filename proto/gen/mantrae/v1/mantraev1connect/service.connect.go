@@ -48,6 +48,9 @@ const (
 	// ServiceServiceListServicesProcedure is the fully-qualified name of the ServiceService's
 	// ListServices RPC.
 	ServiceServiceListServicesProcedure = "/mantrae.v1.ServiceService/ListServices"
+	// ServiceServiceGetServiceByRouterProcedure is the fully-qualified name of the ServiceService's
+	// GetServiceByRouter RPC.
+	ServiceServiceGetServiceByRouterProcedure = "/mantrae.v1.ServiceService/GetServiceByRouter"
 )
 
 // ServiceServiceClient is a client for the mantrae.v1.ServiceService service.
@@ -57,6 +60,7 @@ type ServiceServiceClient interface {
 	UpdateService(context.Context, *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error)
 	DeleteService(context.Context, *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error)
 	ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error)
+	GetServiceByRouter(context.Context, *connect.Request[v1.GetServiceByRouterRequest]) (*connect.Response[v1.GetServiceByRouterResponse], error)
 }
 
 // NewServiceServiceClient constructs a client for the mantrae.v1.ServiceService service. By
@@ -102,16 +106,24 @@ func NewServiceServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
+		getServiceByRouter: connect.NewClient[v1.GetServiceByRouterRequest, v1.GetServiceByRouterResponse](
+			httpClient,
+			baseURL+ServiceServiceGetServiceByRouterProcedure,
+			connect.WithSchema(serviceServiceMethods.ByName("GetServiceByRouter")),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // serviceServiceClient implements ServiceServiceClient.
 type serviceServiceClient struct {
-	getService    *connect.Client[v1.GetServiceRequest, v1.GetServiceResponse]
-	createService *connect.Client[v1.CreateServiceRequest, v1.CreateServiceResponse]
-	updateService *connect.Client[v1.UpdateServiceRequest, v1.UpdateServiceResponse]
-	deleteService *connect.Client[v1.DeleteServiceRequest, v1.DeleteServiceResponse]
-	listServices  *connect.Client[v1.ListServicesRequest, v1.ListServicesResponse]
+	getService         *connect.Client[v1.GetServiceRequest, v1.GetServiceResponse]
+	createService      *connect.Client[v1.CreateServiceRequest, v1.CreateServiceResponse]
+	updateService      *connect.Client[v1.UpdateServiceRequest, v1.UpdateServiceResponse]
+	deleteService      *connect.Client[v1.DeleteServiceRequest, v1.DeleteServiceResponse]
+	listServices       *connect.Client[v1.ListServicesRequest, v1.ListServicesResponse]
+	getServiceByRouter *connect.Client[v1.GetServiceByRouterRequest, v1.GetServiceByRouterResponse]
 }
 
 // GetService calls mantrae.v1.ServiceService.GetService.
@@ -139,6 +151,11 @@ func (c *serviceServiceClient) ListServices(ctx context.Context, req *connect.Re
 	return c.listServices.CallUnary(ctx, req)
 }
 
+// GetServiceByRouter calls mantrae.v1.ServiceService.GetServiceByRouter.
+func (c *serviceServiceClient) GetServiceByRouter(ctx context.Context, req *connect.Request[v1.GetServiceByRouterRequest]) (*connect.Response[v1.GetServiceByRouterResponse], error) {
+	return c.getServiceByRouter.CallUnary(ctx, req)
+}
+
 // ServiceServiceHandler is an implementation of the mantrae.v1.ServiceService service.
 type ServiceServiceHandler interface {
 	GetService(context.Context, *connect.Request[v1.GetServiceRequest]) (*connect.Response[v1.GetServiceResponse], error)
@@ -146,6 +163,7 @@ type ServiceServiceHandler interface {
 	UpdateService(context.Context, *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error)
 	DeleteService(context.Context, *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error)
 	ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error)
+	GetServiceByRouter(context.Context, *connect.Request[v1.GetServiceByRouterRequest]) (*connect.Response[v1.GetServiceByRouterResponse], error)
 }
 
 // NewServiceServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -187,6 +205,13 @@ func NewServiceServiceHandler(svc ServiceServiceHandler, opts ...connect.Handler
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
+	serviceServiceGetServiceByRouterHandler := connect.NewUnaryHandler(
+		ServiceServiceGetServiceByRouterProcedure,
+		svc.GetServiceByRouter,
+		connect.WithSchema(serviceServiceMethods.ByName("GetServiceByRouter")),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mantrae.v1.ServiceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ServiceServiceGetServiceProcedure:
@@ -199,6 +224,8 @@ func NewServiceServiceHandler(svc ServiceServiceHandler, opts ...connect.Handler
 			serviceServiceDeleteServiceHandler.ServeHTTP(w, r)
 		case ServiceServiceListServicesProcedure:
 			serviceServiceListServicesHandler.ServeHTTP(w, r)
+		case ServiceServiceGetServiceByRouterProcedure:
+			serviceServiceGetServiceByRouterHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -226,4 +253,8 @@ func (UnimplementedServiceServiceHandler) DeleteService(context.Context, *connec
 
 func (UnimplementedServiceServiceHandler) ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.ListServices is not implemented"))
+}
+
+func (UnimplementedServiceServiceHandler) GetServiceByRouter(context.Context, *connect.Request[v1.GetServiceByRouterRequest]) (*connect.Response[v1.GetServiceByRouterResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.GetServiceByRouter is not implemented"))
 }

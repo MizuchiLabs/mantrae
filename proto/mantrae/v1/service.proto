@@ -5,6 +5,7 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "mantrae/v1/router.proto";
 
 service ServiceService {
   rpc GetService(GetServiceRequest) returns (GetServiceResponse) {
@@ -14,6 +15,9 @@ service ServiceService {
   rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse);
   rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse);
   rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc GetServiceByRouter(GetServiceByRouterRequest) returns (GetServiceByRouterResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
 }
@@ -118,4 +122,18 @@ message ListServicesRequest {
 message ListServicesResponse {
   repeated Service services = 1;
   int64 total_count = 2;
+}
+
+message GetServiceByRouterRequest {
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  RouterType type = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
+}
+message GetServiceByRouterResponse {
+  Service service = 1;
 }

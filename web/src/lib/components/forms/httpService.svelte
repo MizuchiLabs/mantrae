@@ -3,45 +3,26 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import type { Service as HttpService } from '$lib/gen/tygo/dynamic';
-	import { marshalConfig, unmarshalConfig } from '$lib/types';
 	import { Plus, Trash } from '@lucide/svelte';
+	import { marshalConfig } from '$lib/types';
 
 	interface Props {
 		service: Service;
-		router: Router;
 	}
-	let { service = $bindable(), router = $bindable() }: Props = $props();
+	let { service = $bindable() }: Props = $props();
 
-	let config = $state(unmarshalConfig(service.config) as HttpService);
+	let config = $state({} as HttpService);
 
 	$effect(() => {
-		if (config) {
-			if (!config.loadBalancer) config.loadBalancer = {};
-			if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
-			if (config.loadBalancer.servers.length === 0) {
-				config.loadBalancer.servers = [{ url: '' }];
-			}
-
-			service.config = marshalConfig(config);
+		if (service.config) {
+			config = service.config as HttpService;
 		}
-		if (router.name) {
-			service.name = router.name;
-		}
-		if (router.type) {
-			switch (router.type) {
-				case RouterType.HTTP:
-					service.type = ServiceType.HTTP;
-					break;
-				case RouterType.TCP:
-					service.type = ServiceType.TCP;
-					break;
-				case RouterType.UDP:
-					service.type = ServiceType.UDP;
-					break;
-			}
+		if (!config.loadBalancer) config.loadBalancer = {};
+		if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
+		if (config.loadBalancer.servers.length === 0) {
+			config.loadBalancer.servers = [{ url: '' }];
 		}
 	});
 </script>
@@ -56,6 +37,7 @@
 			onCheckedChange={(value) => {
 				if (!config.loadBalancer) config.loadBalancer = {};
 				config.loadBalancer.passHostHeader = value;
+				service.config = marshalConfig(config);
 			}}
 		/>
 	</div>
@@ -70,6 +52,7 @@
 					oninput={(e) => {
 						let input = e.target as HTMLInputElement;
 						server.url = input.value;
+						service.config = marshalConfig(config);
 					}}
 					placeholder={service.type === ServiceType.HTTP
 						? 'http://127.0.0.1:8080'
@@ -85,6 +68,7 @@
 						if (!config.loadBalancer) config.loadBalancer = {};
 						if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
 						config.loadBalancer.servers = config.loadBalancer.servers.filter((_, j) => j !== i);
+						service.config = marshalConfig(config);
 					}}
 				>
 					<Trash />
@@ -100,6 +84,7 @@
 			if (!config.loadBalancer) config.loadBalancer = {};
 			if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
 			config.loadBalancer.servers = [...config.loadBalancer.servers, { url: '' }];
+			service.config = marshalConfig(config);
 		}}
 	>
 		<Plus />
