@@ -229,12 +229,16 @@ func (s *Server) registerServices() {
 	mw := middlewares.NewMiddlewareHandler(s.app)
 	logChain := middlewares.Chain(mw.Logger)
 	basicChain := middlewares.Chain(mw.Logger, mw.BasicAuth)
+	jwtChain := middlewares.Chain(mw.Logger, mw.JWTAuth)
 
 	if s.SecureTraefik {
 		s.mux.Handle("GET /api/{name}", basicChain(handler.PublishTraefikConfig(s.app)))
 	} else {
 		s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
 	}
+
+	// Upload handler (HTTP) --------------------------------------------------
+	s.mux.Handle("POST /api/backup", jwtChain(handler.UploadBackup(s.app)))
 
 	// TODO: OIDC
 }

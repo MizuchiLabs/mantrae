@@ -259,11 +259,9 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 }
 
 func (m *BackupManager) List(ctx context.Context) ([]storage.StoredFile, error) {
-	// Set storage
 	if err := m.SetStorage(ctx); err != nil {
 		return nil, fmt.Errorf("failed to set storage: %w", err)
 	}
-
 	files, err := m.Storage.List(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list backups: %w", err)
@@ -281,16 +279,12 @@ func (m *BackupManager) List(ctx context.Context) ([]storage.StoredFile, error) 
 }
 
 func (m *BackupManager) Delete(ctx context.Context, id string) error {
-	// Set storage
 	if err := m.SetStorage(ctx); err != nil {
 		return fmt.Errorf("failed to set storage: %w", err)
 	}
-
-	// Delete backup file
 	if err := m.Storage.Delete(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete backup %s: %w", id, err)
 	}
-
 	return nil
 }
 
@@ -299,8 +293,8 @@ func (m *BackupManager) IsValidBackupFile(filename string) bool {
 	if strings.Contains(filename, "..") {
 		return false
 	}
-	// Check if filename matches pattern: backup_YYYYMMDD_HHMMSS.db
-	matched, err := filepath.Match("backup_[0-9]*_[0-9]*.db", filename)
+	// Check if filename matches pattern *.db
+	matched, err := filepath.Match("*.db", filename)
 	if err != nil {
 		return false
 	}

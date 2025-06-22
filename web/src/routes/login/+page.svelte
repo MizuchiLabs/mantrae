@@ -13,7 +13,6 @@
 	import type { OAuthStatus } from '$lib/types';
 	import { token } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
-	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import { profile } from '$lib/stores/profile';
 
 	let username = $state('');

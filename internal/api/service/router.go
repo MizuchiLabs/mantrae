@@ -239,6 +239,10 @@ func (s *RouterService) DeleteRouter(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
+		if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
 		if router.Config.Service != "" {
 			service, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, router.Config.Service)
 			if err != nil {
@@ -249,13 +253,12 @@ func (s *RouterService) DeleteRouter(
 			}
 		}
 
-		if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
 	case mantraev1.RouterType_ROUTER_TYPE_TCP:
 		router, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Msg.Id)
 		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if err := s.app.Conn.GetQuery().DeleteTcpRouter(ctx, req.Msg.Id); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 		if router.Config.Service != "" {
@@ -268,13 +271,12 @@ func (s *RouterService) DeleteRouter(
 			}
 		}
 
-		if err := s.app.Conn.GetQuery().DeleteTcpRouter(ctx, req.Msg.Id); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
 	case mantraev1.RouterType_ROUTER_TYPE_UDP:
 		router, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Msg.Id)
 		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if err := s.app.Conn.GetQuery().DeleteUdpRouter(ctx, req.Msg.Id); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 		if router.Config.Service != "" {
@@ -285,10 +287,6 @@ func (s *RouterService) DeleteRouter(
 			if err := s.app.Conn.GetQuery().DeleteUdpService(ctx, service.ID); err != nil {
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
-		}
-
-		if err := s.app.Conn.GetQuery().DeleteUdpRouter(ctx, req.Msg.Id); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 	default:

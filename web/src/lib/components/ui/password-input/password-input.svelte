@@ -6,7 +6,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 
 	type Props = WithElementRef<Omit<HTMLInputAttributes, 'type' | 'files'>> & {
-		text: string;
 		showPassword?: boolean;
 	};
 	let {

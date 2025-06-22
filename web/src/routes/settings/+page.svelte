@@ -8,7 +8,15 @@
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import { DatabaseBackup, Download, List, SaveIcon, Settings, Trash2 } from '@lucide/svelte';
+	import {
+		DatabaseBackup,
+		Download,
+		List,
+		SaveIcon,
+		Settings,
+		Trash2,
+		Upload
+	} from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { DateFormat } from '$lib/stores/common';
@@ -17,6 +25,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Backup } from '$lib/gen/mantrae/v1/backup_pb';
+	import { uploadBackup } from '$lib/api';
 
 	let settingsMap = $state<Record<string, string>>({});
 
@@ -276,6 +285,7 @@
 	// let restoreDynamicFile: HTMLInputElement | null = $state(null);
 	let backups = $state<Backup[]>([]);
 	let showBackupList = $state(false);
+	let uploadBackupFile: HTMLInputElement | null = $state(null);
 
 	async function deleteBackup(name: string) {
 		await backupClient.deleteBackup({ name });
@@ -286,6 +296,27 @@
 		await backupClient.createBackup({});
 		const response = await backupClient.listBackups({});
 		backups = response.backups;
+	}
+	async function downloadBackup(name?: string) {
+		if (!name) name = backups[0].name;
+		const stream = backupClient.downloadBackup({ name });
+
+		const chunks: Uint8Array[] = [];
+		for await (const chunk of stream) {
+			if (chunk.data.length > 0) {
+				chunks.push(chunk.data);
+			}
+		}
+
+		const blob = new Blob(chunks, { type: 'application/octet-stream' });
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name || 'backup.db';
+		a.click();
+
+		URL.revokeObjectURL(url);
 	}
 
 	onMount(async () => {
@@ -308,13 +339,13 @@
 		</Card.Header>
 		<Card.Content>
 			<div class="flex items-center justify-between gap-4">
-				<!-- <input -->
-				<!-- 	type="file" -->
-				<!-- 	accept=".db" -->
-				<!-- 	class="hidden" -->
-				<!-- 	bind:this={restoreDBFile} -->
-				<!-- 	onchange={(e) => api.restoreBackup(e.currentTarget.files)} -->
-				<!-- /> -->
+				<input
+					type="file"
+					accept=".db"
+					class="hidden"
+					bind:this={uploadBackupFile}
+					onchange={uploadBackup}
+				/>
 				<!---->
 				<!-- <input -->
 				<!-- 	type="file" -->
@@ -325,15 +356,15 @@
 				<!-- /> -->
 
 				<div class="flex items-center gap-4">
-					<!-- <Button onclick={() => api.downloadBackup()} variant="outline"> -->
-					<!-- 	<Download class="mr-2 size-4" /> -->
-					<!-- 	Download Backup -->
-					<!-- </Button> -->
+					<Button onclick={() => downloadBackup()} variant="outline">
+						<Download class="mr-2 size-4" />
+						Download Backup
+					</Button>
 
-					<!-- <Button variant="outline" onclick={() => restoreDBFile?.click()}> -->
-					<!-- 	<Upload class="mr-2 size-4" /> -->
-					<!-- 	Upload Backup -->
-					<!-- </Button> -->
+					<Button variant="outline" onclick={() => uploadBackupFile?.click()}>
+						<Upload class="mr-2 size-4" />
+						Upload Backup
+					</Button>
 
 					<Button variant="outline" onclick={() => (showBackupList = true)}>
 						<List class="mr-2 size-4" />
@@ -374,7 +405,7 @@
 			<div class="flex flex-col">
 				{#each backups || [] as b (b.name)}
 					<div class="flex items-center justify-between font-mono text-sm">
-						<Button variant="link" class="flex items-center">
+						<Button variant="link" class="flex items-center" onclick={() => downloadBackup(b.name)}>
 							{#if b.createdAt}
 								{DateFormat.format(timestampDate(b.createdAt))}
 							{/if}

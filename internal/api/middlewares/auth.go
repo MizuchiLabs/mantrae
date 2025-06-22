@@ -51,6 +51,41 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	})
 }
 
+// JWT authentication middleware for http endpoints
+func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		token = strings.TrimPrefix(token, "Bearer ")
+
+		claims, err := util.DecodeUserJWT(token, h.app.Secret)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		if claims.UserID == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Verify user exists in database
+		q := h.app.Conn.GetQuery()
+		user, err := q.GetUserByID(r.Context(), claims.UserID)
+		if err != nil {
+			http.Error(w, "User not found", http.StatusUnauthorized)
+			return
+		}
+
+		// Add user to context
+		ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // Authentication middleware for gRPC endpoints
 func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 	return connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {

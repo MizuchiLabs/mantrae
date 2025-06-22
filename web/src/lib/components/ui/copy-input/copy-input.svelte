@@ -7,9 +7,7 @@
 	import type { WithElementRef } from 'bits-ui';
 	import { scale } from 'svelte/transition';
 
-	type Props = WithElementRef<Omit<HTMLInputAttributes, 'type' | 'files'>> & {
-		text: string;
-	};
+	type Props = WithElementRef<Omit<HTMLInputAttributes, 'type' | 'files'>>;
 	let {
 		ref = $bindable(null),
 		value = $bindable(),

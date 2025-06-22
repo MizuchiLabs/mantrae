@@ -3,9 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/internal/config"
@@ -117,45 +115,4 @@ func (s *BackupService) DownloadBackup(
 	}
 
 	return nil
-}
-
-func (s *BackupService) UploadBackup(
-	ctx context.Context,
-	stream *connect.ClientStream[mantraev1.UploadBackupRequest],
-) (*connect.Response[mantraev1.UploadBackupResponse], error) {
-	// Create a pipe to stream data from gRPC into storage
-	pr, pw := io.Pipe()
-	defer pr.Close()
-
-	// Start storage write in background
-	filename := fmt.Sprintf("upload_%s.db", time.Now().UTC().Format("20060102_150405"))
-	storeErrChan := make(chan error, 1)
-	go func() {
-		defer pw.Close()
-		err := s.app.BM.Storage.Store(ctx, filename, pr)
-		storeErrChan <- err
-	}()
-
-	for stream.Receive() {
-		chunk := stream.Msg()
-		if len(chunk.Data) == 0 {
-			continue
-		}
-		if _, err := pw.Write(chunk.Data); err != nil {
-			pw.CloseWithError(err)
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-	}
-
-	if err := stream.Err(); err != nil {
-		pw.CloseWithError(err)
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	// Wait for store to finish
-	if err := <-storeErrChan; err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return connect.NewResponse(&mantraev1.UploadBackupResponse{}), nil
 }

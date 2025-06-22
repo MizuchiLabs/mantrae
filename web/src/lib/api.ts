@@ -3,6 +3,7 @@ import { createClient, type Client } from '@connectrpc/connect';
 import { createConnectTransport } from '@connectrpc/connect-web';
 import { goto } from '$app/navigation';
 import { token } from './stores/common';
+import { user } from './stores/user';
 import { ProfileService } from './gen/mantrae/v1/profile_pb';
 import { UserService } from './gen/mantrae/v1/user_pb';
 import { RouterService } from './gen/mantrae/v1/router_pb';
@@ -13,8 +14,8 @@ import { BackupService } from './gen/mantrae/v1/backup_pb';
 import { EntryPointService } from './gen/mantrae/v1/entry_point_pb';
 import { DnsProviderService } from './gen/mantrae/v1/dns_provider_pb';
 import { UtilService } from './gen/mantrae/v1/util_pb';
-import { user } from './stores/user';
 import { AgentService } from './gen/mantrae/v1/agent_pb';
+import { toast } from 'svelte-sonner';
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -45,6 +46,23 @@ export function logout() {
 	token.value = null;
 	user.clear();
 	goto('/login');
+}
+
+export async function uploadBackup(event: Event) {
+	const input = event.target as HTMLInputElement;
+	if (!input.files?.length) return;
+
+	const body = new FormData();
+	body.append('file', input.files[0]);
+
+	const headers = new Headers();
+	headers.set('Authorization', 'Bearer ' + token.value);
+
+	const response = await fetch(`${BASE_URL}/api/backup`, { method: 'POST', headers, body });
+	if (!response.ok) {
+		throw new Error('Failed to upload backup');
+	}
+	toast.success('Backup uploaded successfully');
 }
 
 // Clients

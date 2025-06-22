@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/backup.proto.
  */
 export const file_mantrae_v1_backup: GenFile = /*@__PURE__*/
-  fileDesc("ChdtYW50cmFlL3YxL2JhY2t1cC5wcm90bxIKbWFudHJhZS52MSJUCgZCYWNrdXASDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhUKE0NyZWF0ZUJhY2t1cFJlcXVlc3QiFgoUQ3JlYXRlQmFja3VwUmVzcG9uc2UiMAoUUmVzdG9yZUJhY2t1cFJlcXVlc3QSGAoEbmFtZRgBIAEoCUIKukgHyAEBcgIQASIXChVSZXN0b3JlQmFja3VwUmVzcG9uc2UiFAoSTGlzdEJhY2t1cHNSZXF1ZXN0IjoKE0xpc3RCYWNrdXBzUmVzcG9uc2USIwoHYmFja3VwcxgBIAMoCzISLm1hbnRyYWUudjEuQmFja3VwIi8KE0RlbGV0ZUJhY2t1cFJlcXVlc3QSGAoEbmFtZRgBIAEoCUIKukgHyAEBcgIQASIWChREZWxldGVCYWNrdXBSZXNwb25zZSIuChVEb3dubG9hZEJhY2t1cFJlcXVlc3QSFQoEbmFtZRgBIAEoCUIHukgEcgIQASImChZEb3dubG9hZEJhY2t1cFJlc3BvbnNlEgwKBGRhdGEYASABKAwiLwoTVXBsb2FkQmFja3VwUmVxdWVzdBIYCgRkYXRhGAEgASgMQgq6SAfIAQF6AhABIhYKFFVwbG9hZEJhY2t1cFJlc3BvbnNlMpAECg1CYWNrdXBTZXJ2aWNlElEKDENyZWF0ZUJhY2t1cBIfLm1hbnRyYWUudjEuQ3JlYXRlQmFja3VwUmVxdWVzdBogLm1hbnRyYWUudjEuQ3JlYXRlQmFja3VwUmVzcG9uc2USVAoNUmVzdG9yZUJhY2t1cBIgLm1hbnRyYWUudjEuUmVzdG9yZUJhY2t1cFJlcXVlc3QaIS5tYW50cmFlLnYxLlJlc3RvcmVCYWNrdXBSZXNwb25zZRJTCgtMaXN0QmFja3VwcxIeLm1hbnRyYWUudjEuTGlzdEJhY2t1cHNSZXF1ZXN0Gh8ubWFudHJhZS52MS5MaXN0QmFja3Vwc1Jlc3BvbnNlIgOQAgESUQoMRGVsZXRlQmFja3VwEh8ubWFudHJhZS52MS5EZWxldGVCYWNrdXBSZXF1ZXN0GiAubWFudHJhZS52MS5EZWxldGVCYWNrdXBSZXNwb25zZRJZCg5Eb3dubG9hZEJhY2t1cBIhLm1hbnRyYWUudjEuRG93bmxvYWRCYWNrdXBSZXF1ZXN0GiIubWFudHJhZS52MS5Eb3dubG9hZEJhY2t1cFJlc3BvbnNlMAESUwoMVXBsb2FkQmFja3VwEh8ubWFudHJhZS52MS5VcGxvYWRCYWNrdXBSZXF1ZXN0GiAubWFudHJhZS52MS5VcGxvYWRCYWNrdXBSZXNwb25zZSgBQqUBCg5jb20ubWFudHJhZS52MUILQmFja3VwUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("ChdtYW50cmFlL3YxL2JhY2t1cC5wcm90bxIKbWFudHJhZS52MSJUCgZCYWNrdXASDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhUKE0NyZWF0ZUJhY2t1cFJlcXVlc3QiFgoUQ3JlYXRlQmFja3VwUmVzcG9uc2UiMAoUUmVzdG9yZUJhY2t1cFJlcXVlc3QSGAoEbmFtZRgBIAEoCUIKukgHyAEBcgIQASIXChVSZXN0b3JlQmFja3VwUmVzcG9uc2UiFAoSTGlzdEJhY2t1cHNSZXF1ZXN0IjoKE0xpc3RCYWNrdXBzUmVzcG9uc2USIwoHYmFja3VwcxgBIAMoCzISLm1hbnRyYWUudjEuQmFja3VwIi8KE0RlbGV0ZUJhY2t1cFJlcXVlc3QSGAoEbmFtZRgBIAEoCUIKukgHyAEBcgIQASIWChREZWxldGVCYWNrdXBSZXNwb25zZSIuChVEb3dubG9hZEJhY2t1cFJlcXVlc3QSFQoEbmFtZRgBIAEoCUIHukgEcgIQASImChZEb3dubG9hZEJhY2t1cFJlc3BvbnNlEgwKBGRhdGEYASABKAwyuwMKDUJhY2t1cFNlcnZpY2USUQoMQ3JlYXRlQmFja3VwEh8ubWFudHJhZS52MS5DcmVhdGVCYWNrdXBSZXF1ZXN0GiAubWFudHJhZS52MS5DcmVhdGVCYWNrdXBSZXNwb25zZRJUCg1SZXN0b3JlQmFja3VwEiAubWFudHJhZS52MS5SZXN0b3JlQmFja3VwUmVxdWVzdBohLm1hbnRyYWUudjEuUmVzdG9yZUJhY2t1cFJlc3BvbnNlElMKC0xpc3RCYWNrdXBzEh4ubWFudHJhZS52MS5MaXN0QmFja3Vwc1JlcXVlc3QaHy5tYW50cmFlLnYxLkxpc3RCYWNrdXBzUmVzcG9uc2UiA5ACARJRCgxEZWxldGVCYWNrdXASHy5tYW50cmFlLnYxLkRlbGV0ZUJhY2t1cFJlcXVlc3QaIC5tYW50cmFlLnYxLkRlbGV0ZUJhY2t1cFJlc3BvbnNlElkKDkRvd25sb2FkQmFja3VwEiEubWFudHJhZS52MS5Eb3dubG9hZEJhY2t1cFJlcXVlc3QaIi5tYW50cmFlLnYxLkRvd25sb2FkQmFja3VwUmVzcG9uc2UwAUKlAQoOY29tLm1hbnRyYWUudjFCC0JhY2t1cFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Backup
@@ -193,36 +193,6 @@ export const DownloadBackupResponseSchema: GenMessage<DownloadBackupResponse> = 
   messageDesc(file_mantrae_v1_backup, 10);
 
 /**
- * @generated from message mantrae.v1.UploadBackupRequest
- */
-export type UploadBackupRequest = Message<"mantrae.v1.UploadBackupRequest"> & {
-  /**
-   * @generated from field: bytes data = 1;
-   */
-  data: Uint8Array;
-};
-
-/**
- * Describes the message mantrae.v1.UploadBackupRequest.
- * Use `create(UploadBackupRequestSchema)` to create a new message.
- */
-export const UploadBackupRequestSchema: GenMessage<UploadBackupRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_backup, 11);
-
-/**
- * @generated from message mantrae.v1.UploadBackupResponse
- */
-export type UploadBackupResponse = Message<"mantrae.v1.UploadBackupResponse"> & {
-};
-
-/**
- * Describes the message mantrae.v1.UploadBackupResponse.
- * Use `create(UploadBackupResponseSchema)` to create a new message.
- */
-export const UploadBackupResponseSchema: GenMessage<UploadBackupResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_backup, 12);
-
-/**
  * @generated from service mantrae.v1.BackupService
  */
 export const BackupService: GenService<{
@@ -259,20 +229,15 @@ export const BackupService: GenService<{
     output: typeof DeleteBackupResponseSchema;
   },
   /**
+   * See: https://github.com/connectrpc/connect-es/issues/669
+   * rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse); // stream doesn't work with connect-es
+   *
    * @generated from rpc mantrae.v1.BackupService.DownloadBackup
    */
   downloadBackup: {
     methodKind: "server_streaming";
     input: typeof DownloadBackupRequestSchema;
     output: typeof DownloadBackupResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.BackupService.UploadBackup
-   */
-  uploadBackup: {
-    methodKind: "client_streaming";
-    input: typeof UploadBackupRequestSchema;
-    output: typeof UploadBackupResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_mantrae_v1_backup, 0);
