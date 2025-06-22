@@ -49,9 +49,6 @@ const (
 	// AgentServiceHealthCheckProcedure is the fully-qualified name of the AgentService's HealthCheck
 	// RPC.
 	AgentServiceHealthCheckProcedure = "/mantrae.v1.AgentService/HealthCheck"
-	// AgentServiceBootstrapAgentProcedure is the fully-qualified name of the AgentService's
-	// BootstrapAgent RPC.
-	AgentServiceBootstrapAgentProcedure = "/mantrae.v1.AgentService/BootstrapAgent"
 	// AgentServiceRotateAgentTokenProcedure is the fully-qualified name of the AgentService's
 	// RotateAgentToken RPC.
 	AgentServiceRotateAgentTokenProcedure = "/mantrae.v1.AgentService/RotateAgentToken"
@@ -65,7 +62,6 @@ type AgentServiceClient interface {
 	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
-	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
 	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
 }
 
@@ -118,12 +114,6 @@ func NewAgentServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 			connect.WithClientOptions(opts...),
 		),
-		bootstrapAgent: connect.NewClient[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse](
-			httpClient,
-			baseURL+AgentServiceBootstrapAgentProcedure,
-			connect.WithSchema(agentServiceMethods.ByName("BootstrapAgent")),
-			connect.WithClientOptions(opts...),
-		),
 		rotateAgentToken: connect.NewClient[v1.RotateAgentTokenRequest, v1.RotateAgentTokenResponse](
 			httpClient,
 			baseURL+AgentServiceRotateAgentTokenProcedure,
@@ -141,7 +131,6 @@ type agentServiceClient struct {
 	deleteAgent      *connect.Client[v1.DeleteAgentRequest, v1.DeleteAgentResponse]
 	listAgents       *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
 	healthCheck      *connect.Client[v1.HealthCheckRequest, v1.HealthCheckResponse]
-	bootstrapAgent   *connect.Client[v1.BootstrapAgentRequest, v1.BootstrapAgentResponse]
 	rotateAgentToken *connect.Client[v1.RotateAgentTokenRequest, v1.RotateAgentTokenResponse]
 }
 
@@ -175,11 +164,6 @@ func (c *agentServiceClient) HealthCheck(ctx context.Context, req *connect.Reque
 	return c.healthCheck.CallUnary(ctx, req)
 }
 
-// BootstrapAgent calls mantrae.v1.AgentService.BootstrapAgent.
-func (c *agentServiceClient) BootstrapAgent(ctx context.Context, req *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
-	return c.bootstrapAgent.CallUnary(ctx, req)
-}
-
 // RotateAgentToken calls mantrae.v1.AgentService.RotateAgentToken.
 func (c *agentServiceClient) RotateAgentToken(ctx context.Context, req *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error) {
 	return c.rotateAgentToken.CallUnary(ctx, req)
@@ -193,7 +177,6 @@ type AgentServiceHandler interface {
 	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
-	BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error)
 	RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error)
 }
 
@@ -242,12 +225,6 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceBootstrapAgentHandler := connect.NewUnaryHandler(
-		AgentServiceBootstrapAgentProcedure,
-		svc.BootstrapAgent,
-		connect.WithSchema(agentServiceMethods.ByName("BootstrapAgent")),
-		connect.WithHandlerOptions(opts...),
-	)
 	agentServiceRotateAgentTokenHandler := connect.NewUnaryHandler(
 		AgentServiceRotateAgentTokenProcedure,
 		svc.RotateAgentToken,
@@ -268,8 +245,6 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 			agentServiceListAgentsHandler.ServeHTTP(w, r)
 		case AgentServiceHealthCheckProcedure:
 			agentServiceHealthCheckHandler.ServeHTTP(w, r)
-		case AgentServiceBootstrapAgentProcedure:
-			agentServiceBootstrapAgentHandler.ServeHTTP(w, r)
 		case AgentServiceRotateAgentTokenProcedure:
 			agentServiceRotateAgentTokenHandler.ServeHTTP(w, r)
 		default:
@@ -303,10 +278,6 @@ func (UnimplementedAgentServiceHandler) ListAgents(context.Context, *connect.Req
 
 func (UnimplementedAgentServiceHandler) HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.HealthCheck is not implemented"))
-}
-
-func (UnimplementedAgentServiceHandler) BootstrapAgent(context.Context, *connect.Request[v1.BootstrapAgentRequest]) (*connect.Response[v1.BootstrapAgentResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.BootstrapAgent is not implemented"))
 }
 
 func (UnimplementedAgentServiceHandler) RotateAgentToken(context.Context, *connect.Request[v1.RotateAgentTokenRequest]) (*connect.Response[v1.RotateAgentTokenResponse], error) {

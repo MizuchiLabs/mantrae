@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service ProfileService {
@@ -25,14 +26,20 @@ message Profile {
 }
 
 message GetProfileRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message GetProfileResponse {
   Profile profile = 1;
 }
 
 message CreateProfileRequest {
-  string name = 1;
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
   optional string description = 2;
 }
 message CreateProfileResponse {
@@ -40,8 +47,14 @@ message CreateProfileResponse {
 }
 
 message UpdateProfileRequest {
-  int64 id = 1;
-  string name = 2;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
   optional string description = 3;
 }
 message UpdateProfileResponse {
@@ -49,13 +62,20 @@ message UpdateProfileResponse {
 }
 
 message DeleteProfileRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message DeleteProfileResponse {}
 
 message ListProfilesRequest {
-  optional int64 limit = 1;
-  optional int64 offset = 2;
+  optional int64 limit = 1 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 2 [(buf.validate.field).int64.gte = 0];
 }
 message ListProfilesResponse {
   repeated Profile profiles = 1;

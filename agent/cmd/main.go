@@ -34,6 +34,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go client.Client(ctx, quit)
+	// start agent loop
+	go client.Client(ctx)
+
+	<-quit
+	slog.Info("Shutting down agent...")
+	cancel()
 	<-ctx.Done()
 }

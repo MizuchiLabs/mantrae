@@ -4,6 +4,7 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -12,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/agent.proto.
  */
 export const file_mantrae_v1_agent: GenFile = /*@__PURE__*/
-  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIo0CCgVBZ2VudBIKCgJpZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgDEhAKCGhvc3RuYW1lGAMgASgJEhEKCXB1YmxpY19pcBgEIAEoCRISCgpwcml2YXRlX2lwGAUgASgJEhEKCWFjdGl2ZV9pcBgGIAEoCRINCgV0b2tlbhgHIAEoCRIpCgpjb250YWluZXJzGAggAygLMhUubWFudHJhZS52MS5Db250YWluZXISLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiuAIKCUNvbnRhaW5lchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEjEKBmxhYmVscxgDIAMoCzIhLm1hbnRyYWUudjEuQ29udGFpbmVyLkxhYmVsc0VudHJ5Eg0KBWltYWdlGAQgASgJEjMKB3BvcnRtYXAYBSADKAsyIi5tYW50cmFlLnYxLkNvbnRhaW5lci5Qb3J0bWFwRW50cnkSDgoGc3RhdHVzGAYgASgJEisKB2NyZWF0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMUG9ydG1hcEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEiHQoPR2V0QWdlbnRSZXF1ZXN0EgoKAmlkGAEgASgJIjQKEEdldEFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IigKEkNyZWF0ZUFnZW50UmVxdWVzdBISCgpwcm9maWxlX2lkGAEgASgDIjcKE0NyZWF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50Ii4KFFVwZGF0ZUFnZW50SVBSZXF1ZXN0EgoKAmlkGAEgASgJEgoKAmlwGAIgASgJIjkKFVVwZGF0ZUFnZW50SVBSZXNwb25zZRIgCgVhZ2VudBgBIAEoCzIRLm1hbnRyYWUudjEuQWdlbnQiIAoSRGVsZXRlQWdlbnRSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0RlbGV0ZUFnZW50UmVzcG9uc2UiZQoRTGlzdEFnZW50c1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoAxISCgVsaW1pdBgCIAEoA0gAiAEBEhMKBm9mZnNldBgDIAEoA0gBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IkwKEkxpc3RBZ2VudHNSZXNwb25zZRIhCgZhZ2VudHMYASADKAsyES5tYW50cmFlLnYxLkFnZW50EhMKC3RvdGFsX2NvdW50GAIgASgDIjsKEkhlYWx0aENoZWNrUmVxdWVzdBIRCglwdWJsaWNfaXAYASABKAkSEgoKcHJpdmF0ZV9pcBgCIAEoCSI3ChNIZWFsdGhDaGVja1Jlc3BvbnNlEiAKBWFnZW50GAEgASgLMhEubWFudHJhZS52MS5BZ2VudCIlChdSb3RhdGVBZ2VudFRva2VuUmVxdWVzdBIKCgJpZBgBIAEoCSIpChhSb3RhdGVBZ2VudFRva2VuUmVzcG9uc2USDQoFdG9rZW4YASABKAkiOgoVQm9vdHN0cmFwQWdlbnRSZXF1ZXN0EhIKCnByb2ZpbGVfaWQYASABKAMSDQoFdG9rZW4YAiABKAkiJwoWQm9vdHN0cmFwQWdlbnRSZXNwb25zZRINCgV0b2tlbhgBIAEoCTKqBQoMQWdlbnRTZXJ2aWNlEkoKCEdldEFnZW50EhsubWFudHJhZS52MS5HZXRBZ2VudFJlcXVlc3QaHC5tYW50cmFlLnYxLkdldEFnZW50UmVzcG9uc2UiA5ACARJOCgtDcmVhdGVBZ2VudBIeLm1hbnRyYWUudjEuQ3JlYXRlQWdlbnRSZXF1ZXN0Gh8ubWFudHJhZS52MS5DcmVhdGVBZ2VudFJlc3BvbnNlElQKDVVwZGF0ZUFnZW50SVASIC5tYW50cmFlLnYxLlVwZGF0ZUFnZW50SVBSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVBZ2VudElQUmVzcG9uc2USTgoLRGVsZXRlQWdlbnQSHi5tYW50cmFlLnYxLkRlbGV0ZUFnZW50UmVxdWVzdBofLm1hbnRyYWUudjEuRGVsZXRlQWdlbnRSZXNwb25zZRJQCgpMaXN0QWdlbnRzEh0ubWFudHJhZS52MS5MaXN0QWdlbnRzUmVxdWVzdBoeLm1hbnRyYWUudjEuTGlzdEFnZW50c1Jlc3BvbnNlIgOQAgESTgoLSGVhbHRoQ2hlY2sSHi5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVxdWVzdBofLm1hbnRyYWUudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJXCg5Cb290c3RyYXBBZ2VudBIhLm1hbnRyYWUudjEuQm9vdHN0cmFwQWdlbnRSZXF1ZXN0GiIubWFudHJhZS52MS5Cb290c3RyYXBBZ2VudFJlc3BvbnNlEl0KEFJvdGF0ZUFnZW50VG9rZW4SIy5tYW50cmFlLnYxLlJvdGF0ZUFnZW50VG9rZW5SZXF1ZXN0GiQubWFudHJhZS52MS5Sb3RhdGVBZ2VudFRva2VuUmVzcG9uc2VCpAEKDmNvbS5tYW50cmFlLnYxQgpBZ2VudFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIo0CCgVBZ2VudBIKCgJpZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgDEhAKCGhvc3RuYW1lGAMgASgJEhEKCXB1YmxpY19pcBgEIAEoCRISCgpwcml2YXRlX2lwGAUgASgJEhEKCWFjdGl2ZV9pcBgGIAEoCRINCgV0b2tlbhgHIAEoCRIpCgpjb250YWluZXJzGAggAygLMhUubWFudHJhZS52MS5Db250YWluZXISLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiuAIKCUNvbnRhaW5lchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEjEKBmxhYmVscxgDIAMoCzIhLm1hbnRyYWUudjEuQ29udGFpbmVyLkxhYmVsc0VudHJ5Eg0KBWltYWdlGAQgASgJEjMKB3BvcnRtYXAYBSADKAsyIi5tYW50cmFlLnYxLkNvbnRhaW5lci5Qb3J0bWFwRW50cnkSDgoGc3RhdHVzGAYgASgJEisKB2NyZWF0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMUG9ydG1hcEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEiKQoPR2V0QWdlbnRSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABIjQKEEdldEFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IjQKEkNyZWF0ZUFnZW50UmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAIjcKE0NyZWF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IkYKFFVwZGF0ZUFnZW50SVBSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABEhYKAmlwGAIgASgJQgq6SAfIAQFyAhABIjkKFVVwZGF0ZUFnZW50SVBSZXNwb25zZRIgCgVhZ2VudBgBIAEoCzIRLm1hbnRyYWUudjEuQWdlbnQiLAoSRGVsZXRlQWdlbnRSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABIhUKE0RlbGV0ZUFnZW50UmVzcG9uc2Ui0gEKEUxpc3RBZ2VudHNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASagoFbGltaXQYAiABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAMgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiTAoSTGlzdEFnZW50c1Jlc3BvbnNlEiEKBmFnZW50cxgBIAMoCzIRLm1hbnRyYWUudjEuQWdlbnQSEwoLdG90YWxfY291bnQYAiABKAMihQEKEkhlYWx0aENoZWNrUmVxdWVzdBIbCgptYWNoaW5lX2lkGAEgASgJQge6SARyAhABEhkKCGhvc3RuYW1lGAIgASgJQge6SARyAhABEhoKCXB1YmxpY19pcBgDIAEoCUIHukgEcgIQARIbCgpwcml2YXRlX2lwGAQgASgJQge6SARyAhABIjcKE0hlYWx0aENoZWNrUmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IjEKF1JvdGF0ZUFnZW50VG9rZW5SZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABIikKGFJvdGF0ZUFnZW50VG9rZW5SZXNwb25zZRINCgV0b2tlbhgBIAEoCTLRBAoMQWdlbnRTZXJ2aWNlEkoKCEdldEFnZW50EhsubWFudHJhZS52MS5HZXRBZ2VudFJlcXVlc3QaHC5tYW50cmFlLnYxLkdldEFnZW50UmVzcG9uc2UiA5ACARJOCgtDcmVhdGVBZ2VudBIeLm1hbnRyYWUudjEuQ3JlYXRlQWdlbnRSZXF1ZXN0Gh8ubWFudHJhZS52MS5DcmVhdGVBZ2VudFJlc3BvbnNlElQKDVVwZGF0ZUFnZW50SVASIC5tYW50cmFlLnYxLlVwZGF0ZUFnZW50SVBSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVBZ2VudElQUmVzcG9uc2USTgoLRGVsZXRlQWdlbnQSHi5tYW50cmFlLnYxLkRlbGV0ZUFnZW50UmVxdWVzdBofLm1hbnRyYWUudjEuRGVsZXRlQWdlbnRSZXNwb25zZRJQCgpMaXN0QWdlbnRzEh0ubWFudHJhZS52MS5MaXN0QWdlbnRzUmVxdWVzdBoeLm1hbnRyYWUudjEuTGlzdEFnZW50c1Jlc3BvbnNlIgOQAgESTgoLSGVhbHRoQ2hlY2sSHi5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVxdWVzdBofLm1hbnRyYWUudjEuSGVhbHRoQ2hlY2tSZXNwb25zZRJdChBSb3RhdGVBZ2VudFRva2VuEiMubWFudHJhZS52MS5Sb3RhdGVBZ2VudFRva2VuUmVxdWVzdBokLm1hbnRyYWUudjEuUm90YXRlQWdlbnRUb2tlblJlc3BvbnNlQqQBCg5jb20ubWFudHJhZS52MUIKQWdlbnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Agent
@@ -314,12 +315,22 @@ export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PUR
  */
 export type HealthCheckRequest = Message<"mantrae.v1.HealthCheckRequest"> & {
   /**
-   * @generated from field: string public_ip = 1;
+   * @generated from field: string machine_id = 1;
+   */
+  machineId: string;
+
+  /**
+   * @generated from field: string hostname = 2;
+   */
+  hostname: string;
+
+  /**
+   * @generated from field: string public_ip = 3;
    */
   publicIp: string;
 
   /**
-   * @generated from field: string private_ip = 2;
+   * @generated from field: string private_ip = 4;
    */
   privateIp: string;
 };
@@ -383,45 +394,6 @@ export const RotateAgentTokenResponseSchema: GenMessage<RotateAgentTokenResponse
   messageDesc(file_mantrae_v1_agent, 15);
 
 /**
- * @generated from message mantrae.v1.BootstrapAgentRequest
- */
-export type BootstrapAgentRequest = Message<"mantrae.v1.BootstrapAgentRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
-
-  /**
-   * @generated from field: string token = 2;
-   */
-  token: string;
-};
-
-/**
- * Describes the message mantrae.v1.BootstrapAgentRequest.
- * Use `create(BootstrapAgentRequestSchema)` to create a new message.
- */
-export const BootstrapAgentRequestSchema: GenMessage<BootstrapAgentRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 16);
-
-/**
- * @generated from message mantrae.v1.BootstrapAgentResponse
- */
-export type BootstrapAgentResponse = Message<"mantrae.v1.BootstrapAgentResponse"> & {
-  /**
-   * @generated from field: string token = 1;
-   */
-  token: string;
-};
-
-/**
- * Describes the message mantrae.v1.BootstrapAgentResponse.
- * Use `create(BootstrapAgentResponseSchema)` to create a new message.
- */
-export const BootstrapAgentResponseSchema: GenMessage<BootstrapAgentResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 17);
-
-/**
  * @generated from service mantrae.v1.AgentService
  */
 export const AgentService: GenService<{
@@ -472,14 +444,6 @@ export const AgentService: GenService<{
     methodKind: "unary";
     input: typeof HealthCheckRequestSchema;
     output: typeof HealthCheckResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.AgentService.BootstrapAgent
-   */
-  bootstrapAgent: {
-    methodKind: "unary";
-    input: typeof BootstrapAgentRequestSchema;
-    output: typeof BootstrapAgentResponseSchema;
   },
   /**
    * @generated from rpc mantrae.v1.AgentService.RotateAgentToken

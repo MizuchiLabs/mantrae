@@ -19,6 +19,14 @@ FROM
 WHERE
   id = ?;
 
+-- name: GetUdpServiceByName :one
+SELECT
+  *
+FROM
+  udp_services
+WHERE
+  name = ?;
+
 -- name: ListUdpServices :many
 SELECT
   *

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -71,16 +70,6 @@ func (s *Service) CreateService(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateServiceRequest],
 ) (*connect.Response[mantraev1.CreateServiceResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var service *mantraev1.Service
 	var err error
 
@@ -161,13 +150,6 @@ func (s *Service) UpdateService(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateServiceRequest],
 ) (*connect.Response[mantraev1.UpdateServiceResponse], error) {
-	if req.Msg.Id == 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var service *mantraev1.Service
 	var err error
 
@@ -250,13 +232,6 @@ func (s *Service) ListServices(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListServicesRequest],
 ) (*connect.Response[mantraev1.ListServicesResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -397,6 +372,7 @@ func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {
 	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
@@ -413,6 +389,7 @@ func buildProtoTcpService(r db.TcpService) (*mantraev1.Service, error) {
 	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
@@ -429,6 +406,7 @@ func buildProtoUdpService(r db.UdpService) (*mantraev1.Service, error) {
 	return &mantraev1.Service{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,

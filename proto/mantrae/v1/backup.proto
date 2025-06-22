@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service BackupService {
@@ -25,7 +26,10 @@ message CreateBackupRequest {}
 message CreateBackupResponse {}
 
 message RestoreBackupRequest {
-  string name = 1;
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message RestoreBackupResponse {}
 
@@ -35,18 +39,24 @@ message ListBackupsResponse {
 }
 
 message DeleteBackupRequest {
-  string name = 1;
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message DeleteBackupResponse {}
 
 message DownloadBackupRequest {
-  string name = 1;
+  string name = 1 [(buf.validate.field).string.min_len = 1];
 }
 message DownloadBackupResponse {
   bytes data = 1;
 }
 
 message UploadBackupRequest {
-  bytes data = 1;
+  bytes data = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).bytes.min_len = 1
+  ];
 }
 message UploadBackupResponse {}

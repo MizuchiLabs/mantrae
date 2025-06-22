@@ -12,7 +12,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/agent/internal/collector"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
-	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 )
@@ -25,80 +24,81 @@ type TokenSource struct {
 	token    string
 	claims   *meta.AgentClaims
 	activeIP string
-	fallback bool
 }
 
 func NewTokenSource() *TokenSource {
-	return &TokenSource{fallback: false}
+	t := &TokenSource{}
+	if err := t.prepare(); err != nil {
+		slog.Error("failed to prepare token source", "error", err)
+	}
+	return t
 }
 
-// SetToken loads the token from disk or env
-func (t *TokenSource) SetToken(ctx context.Context) error {
+func (t *TokenSource) prepare() error {
 	t.mu.Lock()
-	if t.token != "" {
-		t.mu.Unlock()
+	defer t.mu.Unlock()
+
+	// Create token file if it doesn't exist
+	os.MkdirAll("data", 0o755)
+
+	token, ok := os.LookupEnv("TOKEN")
+	if !ok {
 		return nil
 	}
 
-	// Try to load from disk
-	data, err := os.ReadFile(tokenFile)
-	if err == nil {
-		t.token = strings.TrimSpace(string(data))
+	if err := os.WriteFile(tokenFile, []byte(token), 0o600); err != nil {
+		slog.Warn("could not write token file", "err", err)
 	}
-
-	// Fallback to env
-	if t.token == "" {
-		t.token = strings.TrimSpace(os.Getenv("TOKEN"))
-	}
-	if t.token == "" {
-		t.mu.Unlock()
-		return errors.New("no token found in environment or file")
-	}
-
-	// Write it back
-	_ = os.MkdirAll("data", 0o755)
-	if err := os.WriteFile(tokenFile, []byte(t.token), 0o600); err != nil {
-		slog.Warn("could not write token file", "error", err)
-	}
-	t.mu.Unlock()
-
-	return t.SetClient()
+	return nil
 }
 
-// SetClient initializes the client
-func (t *TokenSource) SetClient() error {
+// ensure loads token from disk, writes it back, decodes claims and initializes client.
+func (t *TokenSource) ensure(ctx context.Context) error {
 	t.mu.Lock()
-	if t.token == "" {
-		t.mu.Unlock()
-		return errors.New("no token")
+	defer t.mu.Unlock()
+
+	// already ready?
+	if t.client != nil && t.token != "" {
+		return nil
 	}
 
-	claims, err := util.DecodeUnsafeJWT[*meta.AgentClaims](t.token)
+	// load token if needed
+	if t.token == "" {
+		data, _ := os.ReadFile(tokenFile)
+		t.token = strings.TrimSpace(string(data))
+		if t.token == "" {
+			return errors.New("no token found")
+		}
+		if err := os.WriteFile(tokenFile, []byte(t.token), 0o600); err != nil {
+			slog.Warn("could not write token file", "err", err)
+		}
+	}
+
+	// parse & client
+	claims, err := meta.DecodeAgentToken(t.token, "")
 	if err != nil {
-		t.mu.Unlock()
 		return err
 	}
 	t.claims = claims
-
 	t.client = mantraev1connect.NewAgentServiceClient(
 		http.DefaultClient,
 		claims.ServerURL,
 		connect.WithInterceptors(t.Interceptor()),
 	)
-	t.mu.Unlock()
-
-	return t.Refresh(context.Background()) // Check health
+	return nil
 }
 
-// Refresh calls HealthCheck and handles token rotation
-func (t *TokenSource) Refresh(ctx context.Context) error {
-	if t.client == nil {
-		return errors.New("no client")
+// Refresh does a health‐check, rotates token or falls back on unauthenticated.
+func (t *TokenSource) Refresh(ctx context.Context) {
+	if err := t.ensure(ctx); err != nil {
+		slog.Error("Failed to connect to server", "error", err)
+		return
 	}
 
 	info := collector.GetMachineInfo()
-
 	req := connect.NewRequest(&mantraev1.HealthCheckRequest{
+		MachineId: info.MachineID,
+		Hostname:  info.Hostname,
 		PublicIp:  info.PublicIPs.IPv4,
 		PrivateIp: info.PrivateIPs.IPv4,
 	})
@@ -106,51 +106,47 @@ func (t *TokenSource) Refresh(ctx context.Context) error {
 	req.Header().Set(meta.HeaderAgentID, t.claims.AgentID)
 
 	resp, err := t.client.HealthCheck(ctx, req)
-	if err != nil {
-		// Try fallback to env after removing token
-		if connect.CodeOf(err) == connect.CodeUnauthenticated {
-			if err := os.Remove(tokenFile); err != nil {
-				return err
-			}
-			if !t.fallback {
-				t.fallback = true
-				return t.SetToken(ctx)
-			}
-			return errors.New("unauthenticated and no fallback $TOKEN available")
+	if connect.CodeOf(err) == connect.CodeUnauthenticated {
+		// remove stored token and retry once from env
+		os.Remove(tokenFile)
+		t.mu.Lock()
+		t.token, t.client = "", nil
+		t.mu.Unlock()
+		if err := t.ensure(ctx); err != nil {
+			slog.Error("Failed to connect to server", "error", err)
+			return
 		}
-		return err
+		t.Refresh(ctx)
+	} else if err != nil {
+		slog.Error("Failed to connect to server", "error", err)
+		return
 	}
 
-	// Shutdown on agent deletion
 	if resp.Msg.Agent == nil {
-		return errors.New("agent deleted")
+		slog.Error("Agent deleted")
+		return
 	}
 
-	// Handle token rotation
-	newToken := resp.Msg.Agent.Token
-	if newToken != "" && newToken != t.token {
+	// rotate token if changed
+	if nt := resp.Msg.Agent.Token; nt != "" && nt != t.token {
 		t.mu.Lock()
-		t.token = newToken
-		t.fallback = false
-		_ = os.WriteFile(tokenFile, []byte(newToken), 0o600)
+		t.token = nt
+		os.WriteFile(tokenFile, []byte(nt), 0o600)
 		t.mu.Unlock()
 	}
-
-	// Handle active IP rotation
-	newIP := resp.Msg.Agent.ActiveIp
-	if newIP != "" && newIP != t.activeIP {
+	// rotate active IP
+	if ip := resp.Msg.Agent.ActiveIp; ip != "" && ip != t.activeIP {
 		t.mu.Lock()
-		t.activeIP = newIP
+		t.activeIP = ip
 		t.mu.Unlock()
 	}
-	return nil
 }
 
 // Interceptor injects Authorization header, auto-refreshing on 401.
 func (t *TokenSource) Interceptor() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			if err := t.SetToken(ctx); err != nil {
+			if err := t.ensure(ctx); err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, err)
 			}
 			req.Header().Set("Authorization", "Bearer "+t.token)
@@ -158,8 +154,9 @@ func (t *TokenSource) Interceptor() connect.UnaryInterceptorFunc {
 
 			resp, err := next(ctx, req)
 			if connect.CodeOf(err) == connect.CodeUnauthenticated {
+				os.Remove(tokenFile)
 				t.mu.Lock()
-				t.token = ""
+				t.token, t.client = "", nil
 				t.mu.Unlock()
 			}
 			return resp, err

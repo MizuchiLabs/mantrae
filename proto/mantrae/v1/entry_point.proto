@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service EntryPointService {
@@ -27,16 +28,25 @@ message EntryPoint {
 }
 
 message GetEntryPointRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message GetEntryPointResponse {
   EntryPoint entry_point = 1;
 }
 
 message CreateEntryPointRequest {
-  int64 profile_id = 1;
-  string name = 2;
-  string address = 3;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string address = 3 [(buf.validate.field).string.min_len = 1];
   bool is_default = 4;
 }
 message CreateEntryPointResponse {
@@ -44,9 +54,15 @@ message CreateEntryPointResponse {
 }
 
 message UpdateEntryPointRequest {
-  int64 id = 1;
-  string name = 2;
-  string address = 3;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string address = 3 [(buf.validate.field).string.min_len = 1];
   bool is_default = 4;
 }
 message UpdateEntryPointResponse {
@@ -54,14 +70,24 @@ message UpdateEntryPointResponse {
 }
 
 message DeleteEntryPointRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message DeleteEntryPointResponse {}
 
 message ListEntryPointsRequest {
-  int64 profile_id = 1;
-  optional int64 limit = 2;
-  optional int64 offset = 3;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  optional int64 limit = 2 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 3 [(buf.validate.field).int64.gte = 0];
 }
 message ListEntryPointsResponse {
   repeated EntryPoint entry_points = 1;

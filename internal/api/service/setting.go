@@ -23,17 +23,12 @@ func (s *SettingService) GetSetting(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetSettingRequest],
 ) (*connect.Response[mantraev1.GetSettingResponse], error) {
-	setting, ok := s.app.SM.Get(req.Msg.Key)
+	value, ok := s.app.SM.Get(req.Msg.Key)
 	if !ok {
 		return nil, connect.NewError(connect.CodeInternal, errors.New("setting not found"))
 	}
 
-	return connect.NewResponse(&mantraev1.GetSettingResponse{
-		Setting: &mantraev1.Setting{
-			Key:   req.Msg.Key,
-			Value: setting,
-		},
-	}), nil
+	return connect.NewResponse(&mantraev1.GetSettingResponse{Value: value}), nil
 }
 
 func (s *SettingService) UpdateSetting(
@@ -48,10 +43,7 @@ func (s *SettingService) UpdateSetting(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateSettingResponse{
-		Setting: &mantraev1.Setting{
-			Key:   params.Key,
-			Value: params.Value,
-		},
+		Setting: &mantraev1.Setting{Key: params.Key, Value: params.Value},
 	}), nil
 }
 
@@ -61,10 +53,7 @@ func (s *SettingService) ListSettings(
 ) (*connect.Response[mantraev1.ListSettingsResponse], error) {
 	var settings []*mantraev1.Setting
 	for key, val := range s.app.SM.GetAll() {
-		settings = append(settings, &mantraev1.Setting{
-			Key:   key,
-			Value: val,
-		})
+		settings = append(settings, &mantraev1.Setting{Key: key, Value: val})
 	}
 	return connect.NewResponse(&mantraev1.ListSettingsResponse{Settings: settings}), nil
 }

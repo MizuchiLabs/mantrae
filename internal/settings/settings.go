@@ -44,8 +44,6 @@ type Settings struct {
 	OIDCProviderName      string        `setting:"oidc_provider_name"      default:""`
 	OIDCScopes            string        `setting:"oidc_scopes"             default:""`
 	OIDCPKCE              bool          `setting:"oidc_pkce"               default:"false"`
-	AgentBootstrapEnabled bool          `setting:"agent_bootstrap_enabled" default:"true"`
-	AgentBootstrapToken   string        `setting:"agent_bootstrap_token"   default:""`
 	AgentCleanupEnabled   bool          `setting:"agent_cleanup_enabled"   default:"true"`
 	AgentCleanupInterval  time.Duration `setting:"agent_cleanup_interval"  default:"24h"`
 	TraefikSyncInterval   time.Duration `setting:"traefik_sync_interval"   default:"20s"`

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -62,44 +63,82 @@ message PluginSnippet {
 }
 
 message GetMiddlewareRequest {
-  int64 id = 1;
-  MiddlewareType type = 2;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  MiddlewareType type = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 }
 message GetMiddlewareResponse {
   Middleware middleware = 1;
 }
 
 message CreateMiddlewareRequest {
-  int64 profile_id = 1;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
   string agent_id = 2;
-  string name = 3;
+  string name = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
   google.protobuf.Struct config = 4;
-  MiddlewareType type = 5;
+  MiddlewareType type = 5 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 }
 message CreateMiddlewareResponse {
   Middleware middleware = 1;
 }
 
 message UpdateMiddlewareRequest {
-  int64 id = 1;
-  string name = 2;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
   google.protobuf.Struct config = 3;
-  MiddlewareType type = 4;
+  MiddlewareType type = 4 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 }
 message UpdateMiddlewareResponse {
   Middleware middleware = 1;
 }
 
 message DeleteMiddlewareRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  MiddlewareType type = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
 }
 message DeleteMiddlewareResponse {}
 
 message ListMiddlewaresRequest {
-  int64 profile_id = 1;
-  optional MiddlewareType type = 2;
-  optional int64 limit = 3;
-  optional int64 offset = 4;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  optional MiddlewareType type = 2 [(buf.validate.field).enum.defined_only = true];
+  optional int64 limit = 3 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 4 [(buf.validate.field).int64.gte = 0];
 }
 message ListMiddlewaresResponse {
   repeated Middleware middlewares = 1;

@@ -67,16 +67,6 @@ func (s *MiddlewareService) CreateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateMiddlewareRequest],
 ) (*connect.Response[mantraev1.CreateMiddlewareResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var middleware *mantraev1.Middleware
 	var err error
 
@@ -139,13 +129,6 @@ func (s *MiddlewareService) UpdateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateMiddlewareRequest],
 ) (*connect.Response[mantraev1.UpdateMiddlewareResponse], error) {
-	if req.Msg.Id == 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var middleware *mantraev1.Middleware
 	var err error
 
@@ -213,13 +196,6 @@ func (s *MiddlewareService) ListMiddlewares(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListMiddlewaresRequest],
 ) (*connect.Response[mantraev1.ListMiddlewaresResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -350,6 +326,7 @@ func buildProtoHttpMiddleware(r db.HttpMiddleware) (*mantraev1.Middleware, error
 	return &mantraev1.Middleware{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
@@ -366,6 +343,7 @@ func buildProtoTcpMiddleware(r db.TcpMiddleware) (*mantraev1.Middleware, error) 
 	return &mantraev1.Middleware{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,

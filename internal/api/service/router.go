@@ -71,16 +71,6 @@ func (s *RouterService) CreateRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateRouterRequest],
 ) (*connect.Response[mantraev1.CreateRouterResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var router *mantraev1.Router
 	var err error
 
@@ -168,13 +158,6 @@ func (s *RouterService) UpdateRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateRouterRequest],
 ) (*connect.Response[mantraev1.UpdateRouterResponse], error) {
-	if req.Msg.Id == 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("id is required"))
-	}
-	if req.Msg.Name == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
-	}
-
 	var router *mantraev1.Router
 	var err error
 
@@ -250,10 +233,68 @@ func (s *RouterService) DeleteRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteRouterRequest],
 ) (*connect.Response[mantraev1.DeleteRouterResponse], error) {
-	err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	switch req.Msg.Type {
+	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
+		router, err := s.app.Conn.GetQuery().GetHttpRouter(ctx, req.Msg.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if router.Config.Service != "" {
+			service, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, router.Config.Service)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if err := s.app.Conn.GetQuery().DeleteHttpService(ctx, service.ID); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+		}
+
+		if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+	case mantraev1.RouterType_ROUTER_TYPE_TCP:
+		router, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Msg.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if router.Config.Service != "" {
+			service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, router.Config.Service)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if err := s.app.Conn.GetQuery().DeleteTcpService(ctx, service.ID); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+		}
+
+		if err := s.app.Conn.GetQuery().DeleteTcpRouter(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+	case mantraev1.RouterType_ROUTER_TYPE_UDP:
+		router, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Msg.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if router.Config.Service != "" {
+			service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, router.Config.Service)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+			if err := s.app.Conn.GetQuery().DeleteUdpService(ctx, service.ID); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
+		}
+
+		if err := s.app.Conn.GetQuery().DeleteUdpRouter(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+	default:
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
 	}
+
 	return connect.NewResponse(&mantraev1.DeleteRouterResponse{}), nil
 }
 
@@ -261,13 +302,6 @@ func (s *RouterService) ListRouters(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListRoutersRequest],
 ) (*connect.Response[mantraev1.ListRoutersResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	var limit int64
 	var offset int64
 	if req.Msg.Limit == nil {
@@ -408,6 +442,7 @@ func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Enabled:   r.Enabled,
@@ -425,6 +460,7 @@ func buildProtoTcpRouter(r db.TcpRouter) (*mantraev1.Router, error) {
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Enabled:   r.Enabled,
@@ -442,6 +478,7 @@ func buildProtoUdpRouter(r db.UdpRouter) (*mantraev1.Router, error) {
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
+		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
 		Config:    config,
 		Enabled:   r.Enabled,

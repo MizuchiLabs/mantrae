@@ -56,10 +56,10 @@
 	};
 
 	const handleDelete = async () => {
-		if (!item.id) return;
+		if (!item.id || !item.type) return;
 
 		try {
-			await middlewareClient.deleteMiddleware({ id: item.id });
+			await middlewareClient.deleteMiddleware({ id: item.id, type: item.type });
 			toast.success('Middleware deleted successfully');
 
 			// Refresh data

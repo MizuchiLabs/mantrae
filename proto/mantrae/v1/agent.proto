@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service AgentService {
@@ -15,7 +16,6 @@ service AgentService {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
-  rpc BootstrapAgent(BootstrapAgentRequest) returns (BootstrapAgentResponse);
   rpc RotateAgentToken(RotateAgentTokenRequest) returns (RotateAgentTokenResponse);
 }
 
@@ -43,36 +43,58 @@ message Container {
 }
 
 message GetAgentRequest {
-  string id = 1;
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message GetAgentResponse {
   Agent agent = 1;
 }
 
 message CreateAgentRequest {
-  int64 profile_id = 1;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message CreateAgentResponse {
   Agent agent = 1;
 }
 
 message UpdateAgentIPRequest {
-  string id = 1;
-  string ip = 2;
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string ip = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message UpdateAgentIPResponse {
   Agent agent = 1;
 }
 
 message DeleteAgentRequest {
-  string id = 1;
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message DeleteAgentResponse {}
 
 message ListAgentsRequest {
-  int64 profile_id = 1;
-  optional int64 limit = 2;
-  optional int64 offset = 3;
+  int64 profile_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  optional int64 limit = 2 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 3 [(buf.validate.field).int64.gte = 0];
 }
 message ListAgentsResponse {
   repeated Agent agents = 1;
@@ -80,24 +102,21 @@ message ListAgentsResponse {
 }
 
 message HealthCheckRequest {
-  string public_ip = 1;
-  string private_ip = 2;
+  string machine_id = 1 [(buf.validate.field).string.min_len = 1];
+  string hostname = 2 [(buf.validate.field).string.min_len = 1];
+  string public_ip = 3 [(buf.validate.field).string.min_len = 1];
+  string private_ip = 4 [(buf.validate.field).string.min_len = 1];
 }
 message HealthCheckResponse {
   Agent agent = 1;
 }
 
 message RotateAgentTokenRequest {
-  string id = 1;
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message RotateAgentTokenResponse {
-  string token = 1;
-}
-
-message BootstrapAgentRequest {
-  int64 profile_id = 1;
-  string token = 2;
-}
-message BootstrapAgentResponse {
   string token = 1;
 }

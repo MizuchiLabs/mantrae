@@ -204,6 +204,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getHttpServiceStmt, err = db.PrepareContext(ctx, getHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpService: %w", err)
 	}
+	if q.getHttpServiceByNameStmt, err = db.PrepareContext(ctx, getHttpServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpServiceByName: %w", err)
+	}
 	if q.getProfileStmt, err = db.PrepareContext(ctx, getProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query GetProfile: %w", err)
 	}
@@ -228,6 +231,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpServiceStmt, err = db.PrepareContext(ctx, getTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpService: %w", err)
 	}
+	if q.getTcpServiceByNameStmt, err = db.PrepareContext(ctx, getTcpServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpServiceByName: %w", err)
+	}
 	if q.getTraefikInstanceStmt, err = db.PrepareContext(ctx, getTraefikInstance); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTraefikInstance: %w", err)
 	}
@@ -236,6 +242,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getUdpServiceStmt, err = db.PrepareContext(ctx, getUdpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpService: %w", err)
+	}
+	if q.getUdpServiceByNameStmt, err = db.PrepareContext(ctx, getUdpServiceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUdpServiceByName: %w", err)
 	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
@@ -671,6 +680,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getHttpServiceStmt: %w", cerr)
 		}
 	}
+	if q.getHttpServiceByNameStmt != nil {
+		if cerr := q.getHttpServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpServiceByNameStmt: %w", cerr)
+		}
+	}
 	if q.getProfileStmt != nil {
 		if cerr := q.getProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getProfileStmt: %w", cerr)
@@ -711,6 +725,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpServiceStmt: %w", cerr)
 		}
 	}
+	if q.getTcpServiceByNameStmt != nil {
+		if cerr := q.getTcpServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpServiceByNameStmt: %w", cerr)
+		}
+	}
 	if q.getTraefikInstanceStmt != nil {
 		if cerr := q.getTraefikInstanceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTraefikInstanceStmt: %w", cerr)
@@ -724,6 +743,11 @@ func (q *Queries) Close() error {
 	if q.getUdpServiceStmt != nil {
 		if cerr := q.getUdpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUdpServiceStmt: %w", cerr)
+		}
+	}
+	if q.getUdpServiceByNameStmt != nil {
+		if cerr := q.getUdpServiceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUdpServiceByNameStmt: %w", cerr)
 		}
 	}
 	if q.getUserByEmailStmt != nil {
@@ -1040,6 +1064,7 @@ type Queries struct {
 	getHttpRouterDNSProviderStmt      *sql.Stmt
 	getHttpRouterDomainsStmt          *sql.Stmt
 	getHttpServiceStmt                *sql.Stmt
+	getHttpServiceByNameStmt          *sql.Stmt
 	getProfileStmt                    *sql.Stmt
 	getProfileByNameStmt              *sql.Stmt
 	getSettingStmt                    *sql.Stmt
@@ -1048,9 +1073,11 @@ type Queries struct {
 	getTcpRouterDNSProviderStmt       *sql.Stmt
 	getTcpRouterDomainsStmt           *sql.Stmt
 	getTcpServiceStmt                 *sql.Stmt
+	getTcpServiceByNameStmt           *sql.Stmt
 	getTraefikInstanceStmt            *sql.Stmt
 	getUdpRouterStmt                  *sql.Stmt
 	getUdpServiceStmt                 *sql.Stmt
+	getUdpServiceByNameStmt           *sql.Stmt
 	getUserByEmailStmt                *sql.Stmt
 	getUserByIDStmt                   *sql.Stmt
 	getUserByUsernameStmt             *sql.Stmt
@@ -1160,6 +1187,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHttpRouterDNSProviderStmt:      q.getHttpRouterDNSProviderStmt,
 		getHttpRouterDomainsStmt:          q.getHttpRouterDomainsStmt,
 		getHttpServiceStmt:                q.getHttpServiceStmt,
+		getHttpServiceByNameStmt:          q.getHttpServiceByNameStmt,
 		getProfileStmt:                    q.getProfileStmt,
 		getProfileByNameStmt:              q.getProfileByNameStmt,
 		getSettingStmt:                    q.getSettingStmt,
@@ -1168,9 +1196,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpRouterDNSProviderStmt:       q.getTcpRouterDNSProviderStmt,
 		getTcpRouterDomainsStmt:           q.getTcpRouterDomainsStmt,
 		getTcpServiceStmt:                 q.getTcpServiceStmt,
+		getTcpServiceByNameStmt:           q.getTcpServiceByNameStmt,
 		getTraefikInstanceStmt:            q.getTraefikInstanceStmt,
 		getUdpRouterStmt:                  q.getUdpRouterStmt,
 		getUdpServiceStmt:                 q.getUdpServiceStmt,
+		getUdpServiceByNameStmt:           q.getUdpServiceByNameStmt,
 		getUserByEmailStmt:                q.getUserByEmailStmt,
 		getUserByIDStmt:                   q.getUserByIDStmt,
 		getUserByUsernameStmt:             q.getUserByUsernameStmt,

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service SettingService {
@@ -21,15 +22,24 @@ message Setting {
 }
 
 message GetSettingRequest {
-  string key = 1;
+  string key = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message GetSettingResponse {
-  Setting setting = 1;
+  string value = 1;
 }
 
 message UpdateSettingRequest {
-  string key = 1;
-  string value = 2;
+  string key = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string value = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message UpdateSettingResponse {
   Setting setting = 1;

@@ -101,6 +101,30 @@ func (q *Queries) GetTcpService(ctx context.Context, id int64) (TcpService, erro
 	return i, err
 }
 
+const getTcpServiceByName = `-- name: GetTcpServiceByName :one
+SELECT
+  id, profile_id, agent_id, name, config, created_at, updated_at
+FROM
+  tcp_services
+WHERE
+  name = ?
+`
+
+func (q *Queries) GetTcpServiceByName(ctx context.Context, name string) (TcpService, error) {
+	row := q.queryRow(ctx, q.getTcpServiceByNameStmt, getTcpServiceByName, name)
+	var i TcpService
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.AgentID,
+		&i.Name,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listTcpServices = `-- name: ListTcpServices :many
 SELECT
   id, profile_id, agent_id, name, config, created_at, updated_at

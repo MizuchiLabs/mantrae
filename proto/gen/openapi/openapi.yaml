@@ -169,28 +169,6 @@ components:
           $ref: '#/components/schemas/google.protobuf.Timestamp'
       title: Agent
       additionalProperties: false
-    mantrae.v1.BootstrapAgentRequest:
-      type: object
-      properties:
-        profileId:
-          type:
-            - integer
-            - string
-          title: profile_id
-          format: int64
-        token:
-          type: string
-          title: token
-      title: BootstrapAgentRequest
-      additionalProperties: false
-    mantrae.v1.BootstrapAgentResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          title: token
-      title: BootstrapAgentResponse
-      additionalProperties: false
     mantrae.v1.Container:
       type: object
       properties:
@@ -252,12 +230,15 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: profile_id
           format: int64
       title: CreateAgentRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.CreateAgentResponse:
       type: object
@@ -273,7 +254,10 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
       title: DeleteAgentRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.DeleteAgentResponse:
       type: object
@@ -285,7 +269,10 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
       title: GetAgentRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.GetAgentResponse:
       type: object
@@ -298,12 +285,22 @@ components:
     mantrae.v1.HealthCheckRequest:
       type: object
       properties:
+        machineId:
+          type: string
+          title: machine_id
+          minLength: 1
+        hostname:
+          type: string
+          title: hostname
+          minLength: 1
         publicIp:
           type: string
           title: public_ip
+          minLength: 1
         privateIp:
           type: string
           title: private_ip
+          minLength: 1
       title: HealthCheckRequest
       additionalProperties: false
     mantrae.v1.HealthCheckResponse:
@@ -318,6 +315,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -329,6 +327,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -338,6 +342,8 @@ components:
           format: int64
           nullable: true
       title: ListAgentsRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.ListAgentsResponse:
       type: object
@@ -361,7 +367,10 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
       title: RotateAgentTokenRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.RotateAgentTokenResponse:
       type: object
@@ -377,10 +386,15 @@ components:
         id:
           type: string
           title: id
+          minLength: 1
         ip:
           type: string
           title: ip
+          minLength: 1
       title: UpdateAgentIPRequest
+      required:
+        - id
+        - ip
       additionalProperties: false
     mantrae.v1.UpdateAgentIPResponse:
       type: object
@@ -500,7 +514,10 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
       title: DeleteBackupRequest
+      required:
+        - name
       additionalProperties: false
     mantrae.v1.DeleteBackupResponse:
       type: object
@@ -512,6 +529,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
       title: DownloadBackupRequest
       additionalProperties: false
     mantrae.v1.DownloadBackupResponse:
@@ -543,7 +561,10 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
       title: RestoreBackupRequest
+      required:
+        - name
       additionalProperties: false
     mantrae.v1.RestoreBackupResponse:
       type: object
@@ -555,8 +576,11 @@ components:
         data:
           type: string
           title: data
+          minLength: 1
           format: byte
       title: UploadBackupRequest
+      required:
+        - data
       additionalProperties: false
     mantrae.v1.UploadBackupResponse:
       type: object
@@ -576,6 +600,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.DnsProviderType'
@@ -586,6 +611,9 @@ components:
           type: boolean
           title: is_active
       title: CreateDnsProviderRequest
+      required:
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.CreateDnsProviderResponse:
       type: object
@@ -599,12 +627,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: DeleteDnsProviderRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.DeleteDnsProviderResponse:
       type: object
@@ -666,12 +697,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: GetDnsProviderRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.GetDnsProviderResponse:
       type: object
@@ -690,6 +724,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -720,6 +760,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -728,6 +769,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.DnsProviderType'
@@ -738,6 +780,10 @@ components:
           type: boolean
           title: is_active
       title: UpdateDnsProviderRequest
+      required:
+        - id
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.UpdateDnsProviderResponse:
       type: object
@@ -751,6 +797,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -759,13 +806,18 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         address:
           type: string
           title: address
+          minLength: 1
         isDefault:
           type: boolean
           title: is_default
       title: CreateEntryPointRequest
+      required:
+        - profileId
+        - name
       additionalProperties: false
     mantrae.v1.CreateEntryPointResponse:
       type: object
@@ -779,12 +831,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: DeleteEntryPointRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.DeleteEntryPointResponse:
       type: object
@@ -826,12 +881,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: GetEntryPointRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.GetEntryPointResponse:
       type: object
@@ -845,6 +903,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -856,6 +915,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -865,6 +930,8 @@ components:
           format: int64
           nullable: true
       title: ListEntryPointsRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.ListEntryPointsResponse:
       type: object
@@ -886,6 +953,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -894,13 +962,18 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         address:
           type: string
           title: address
+          minLength: 1
         isDefault:
           type: boolean
           title: is_default
       title: UpdateEntryPointRequest
+      required:
+        - id
+        - name
       additionalProperties: false
     mantrae.v1.UpdateEntryPointResponse:
       type: object
@@ -986,6 +1059,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -997,6 +1071,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1004,6 +1079,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: CreateMiddlewareRequest
+      required:
+        - profileId
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.CreateMiddlewareResponse:
       type: object
@@ -1017,12 +1096,19 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: DeleteMiddlewareRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.DeleteMiddlewareResponse:
       type: object
@@ -1046,6 +1132,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1055,6 +1142,9 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: GetMiddlewareRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.GetMiddlewareResponse:
       type: object
@@ -1068,6 +1158,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1083,6 +1174,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -1092,6 +1189,8 @@ components:
           format: int64
           nullable: true
       title: ListMiddlewaresRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.ListMiddlewaresResponse:
       type: object
@@ -1217,6 +1316,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1225,6 +1325,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1232,6 +1333,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: UpdateMiddlewareRequest
+      required:
+        - id
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.UpdateMiddlewareResponse:
       type: object
@@ -1247,11 +1352,14 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         description:
           type: string
           title: description
           nullable: true
       title: CreateProfileRequest
+      required:
+        - name
       additionalProperties: false
     mantrae.v1.CreateProfileResponse:
       type: object
@@ -1265,12 +1373,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: DeleteProfileRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.DeleteProfileResponse:
       type: object
@@ -1280,12 +1391,15 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
       title: GetProfileRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.GetProfileResponse:
       type: object
@@ -1304,6 +1418,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -1357,6 +1477,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1365,11 +1486,15 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         description:
           type: string
           title: description
           nullable: true
       title: UpdateProfileRequest
+      required:
+        - id
+        - name
       additionalProperties: false
     mantrae.v1.UpdateProfileResponse:
       type: object
@@ -1391,6 +1516,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1402,6 +1528,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1412,6 +1539,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: CreateRouterRequest
+      required:
+        - profileId
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.CreateRouterResponse:
       type: object
@@ -1425,12 +1556,19 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: DeleteRouterRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.DeleteRouterResponse:
       type: object
@@ -1440,6 +1578,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1449,6 +1588,9 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: GetRouterRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.GetRouterResponse:
       type: object
@@ -1462,6 +1604,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1477,6 +1620,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -1486,6 +1635,8 @@ components:
           format: int64
           nullable: true
       title: ListRoutersRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.ListRoutersResponse:
       type: object
@@ -1545,6 +1696,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1553,6 +1705,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1563,6 +1716,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: UpdateRouterRequest
+      required:
+        - id
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.UpdateRouterResponse:
       type: object
@@ -1584,6 +1741,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1595,6 +1753,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1602,6 +1761,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: CreateServiceRequest
+      required:
+        - profileId
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.CreateServiceResponse:
       type: object
@@ -1615,12 +1778,19 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
           title: id
           format: int64
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: DeleteServiceRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.DeleteServiceResponse:
       type: object
@@ -1630,6 +1800,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1639,6 +1810,9 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: GetServiceRequest
+      required:
+        - id
+        - type
       additionalProperties: false
     mantrae.v1.GetServiceResponse:
       type: object
@@ -1652,6 +1826,7 @@ components:
       type: object
       properties:
         profileId:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1667,6 +1842,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -1676,6 +1857,8 @@ components:
           format: int64
           nullable: true
       title: ListServicesRequest
+      required:
+        - profileId
       additionalProperties: false
     mantrae.v1.ListServicesResponse:
       type: object
@@ -1732,6 +1915,7 @@ components:
       type: object
       properties:
         id:
+          exclusiveMinimum: 0
           type:
             - integer
             - string
@@ -1740,6 +1924,7 @@ components:
         name:
           type: string
           title: name
+          minLength: 1
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1747,6 +1932,10 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: UpdateServiceRequest
+      required:
+        - id
+        - name
+        - type
       additionalProperties: false
     mantrae.v1.UpdateServiceResponse:
       type: object
@@ -1762,14 +1951,17 @@ components:
         key:
           type: string
           title: key
+          minLength: 1
       title: GetSettingRequest
+      required:
+        - key
       additionalProperties: false
     mantrae.v1.GetSettingResponse:
       type: object
       properties:
-        setting:
-          title: setting
-          $ref: '#/components/schemas/mantrae.v1.Setting'
+        value:
+          type: string
+          title: value
       title: GetSettingResponse
       additionalProperties: false
     mantrae.v1.ListSettingsRequest:
@@ -1806,10 +1998,15 @@ components:
         key:
           type: string
           title: key
+          minLength: 1
         value:
           type: string
           title: value
+          minLength: 1
       title: UpdateSettingRequest
+      required:
+        - key
+        - value
       additionalProperties: false
     mantrae.v1.UpdateSettingResponse:
       type: object
@@ -1838,6 +2035,9 @@ components:
           type: boolean
           title: is_admin
       title: CreateUserRequest
+      required:
+        - username
+        - password
       additionalProperties: false
     mantrae.v1.CreateUserResponse:
       type: object
@@ -1855,6 +2055,8 @@ components:
           title: id
           minLength: 1
       title: DeleteUserRequest
+      required:
+        - id
       additionalProperties: false
     mantrae.v1.DeleteUserResponse:
       type: object
@@ -1909,6 +2111,12 @@ components:
             - string
           title: limit
           format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
           nullable: true
         offset:
           type:
@@ -1965,6 +2173,8 @@ components:
           type: boolean
           title: remember
       title: LoginUserRequest
+      required:
+        - password
       additionalProperties: false
     mantrae.v1.LoginUserResponse:
       type: object
@@ -2026,6 +2236,9 @@ components:
           minLength: 8
           nullable: true
       title: UpdateUserRequest
+      required:
+        - id
+        - username
       additionalProperties: false
     mantrae.v1.UpdateUserResponse:
       type: object
@@ -2078,6 +2291,8 @@ components:
           title: token
           minLength: 1
       title: VerifyJWTRequest
+      required:
+        - token
       additionalProperties: false
     mantrae.v1.VerifyJWTResponse:
       type: object
@@ -2114,6 +2329,8 @@ components:
           title: otp
           minLength: 6
       title: VerifyOTPRequest
+      required:
+        - otp
       additionalProperties: false
     mantrae.v1.VerifyOTPResponse:
       type: object
@@ -2465,41 +2682,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.HealthCheckResponse'
-  /mantrae.v1.AgentService/BootstrapAgent:
-    post:
-      tags:
-        - mantrae.v1.AgentService
-      summary: BootstrapAgent
-      operationId: mantrae.v1.AgentService.BootstrapAgent
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.BootstrapAgentRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.BootstrapAgentResponse'
   /mantrae.v1.AgentService/RotateAgentToken:
     post:
       tags:

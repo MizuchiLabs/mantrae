@@ -101,6 +101,30 @@ func (q *Queries) GetUdpService(ctx context.Context, id int64) (UdpService, erro
 	return i, err
 }
 
+const getUdpServiceByName = `-- name: GetUdpServiceByName :one
+SELECT
+  id, profile_id, agent_id, name, config, created_at, updated_at
+FROM
+  udp_services
+WHERE
+  name = ?
+`
+
+func (q *Queries) GetUdpServiceByName(ctx context.Context, name string) (UdpService, error) {
+	row := q.queryRow(ctx, q.getUdpServiceByNameStmt, getUdpServiceByName, name)
+	var i UdpService
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.AgentID,
+		&i.Name,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listUdpServices = `-- name: ListUdpServices :many
 SELECT
   id, profile_id, agent_id, name, config, created_at, updated_at

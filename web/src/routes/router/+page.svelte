@@ -12,7 +12,7 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Pencil, Route, Trash } from '@lucide/svelte';
+	import { Bot, Pencil, Route, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -28,17 +28,25 @@
 		{
 			header: 'Name',
 			accessorKey: 'name',
-			id: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
 				const name = row.getValue('name') as string;
-				return name?.split('@')[0];
+				if (row.original.agentId) {
+					return renderComponent(ColumnBadge<Router>, {
+						label: name?.split('@')[0],
+						variant: 'outline',
+						icon: Bot
+					});
+				}
+				return renderComponent(ColumnBadge<Router>, {
+					label: name?.split('@')[0],
+					variant: 'outline'
+				});
 			}
 		},
 		{
 			header: 'Protocol',
 			accessorKey: 'type',
-			id: 'type',
 			enableSorting: true,
 			cell: ({ row, column }) => {
 				let protocol = row.getValue('type') as RouterType.HTTP | RouterType.TCP | RouterType.UDP;
@@ -156,7 +164,7 @@
 							label: 'Delete Router',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original.id, row.original.type)
 						}
 					]
 				});
@@ -178,9 +186,9 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint) => {
+	const deleteItem = async (id: bigint, type: RouterType) => {
 		try {
-			await routerClient.deleteRouter({ id: id });
+			await routerClient.deleteRouter({ id: id, type: type });
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success('Router deleted');
 		} catch (err) {
@@ -194,9 +202,9 @@
 			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
 			if (!confirmed) return;
 
-			const rows = selectedRows.map((row) => ({ id: row.id }));
+			const rows = selectedRows.map((row) => ({ id: row.id, type: row.type }));
 			for (const row of rows) {
-				await routerClient.deleteRouter({ id: row.id });
+				await routerClient.deleteRouter({ id: row.id, type: row.type });
 			}
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Successfully deleted ${selectedRows.length} routers`);

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package mantrae.v1;
 
+import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 
 service DnsProviderService {
@@ -43,15 +44,24 @@ message DnsProviderConfig {
 }
 
 message GetDnsProviderRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message GetDnsProviderResponse {
   DnsProvider dns_provider = 1;
 }
 
 message CreateDnsProviderRequest {
-  string name = 1;
-  DnsProviderType type = 2;
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  DnsProviderType type = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
   DnsProviderConfig config = 3;
   bool is_active = 4;
 }
@@ -60,9 +70,18 @@ message CreateDnsProviderResponse {
 }
 
 message UpdateDnsProviderRequest {
-  int64 id = 1;
-  string name = 2;
-  DnsProviderType type = 3;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  DnsProviderType type = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).enum.defined_only = true
+  ];
   DnsProviderConfig config = 4;
   bool is_active = 5;
 }
@@ -71,13 +90,20 @@ message UpdateDnsProviderResponse {
 }
 
 message DeleteDnsProviderRequest {
-  int64 id = 1;
+  int64 id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).int64.gt = 0
+  ];
 }
 message DeleteDnsProviderResponse {}
 
 message ListDnsProvidersRequest {
-  optional int64 limit = 1;
-  optional int64 offset = 2;
+  optional int64 limit = 1 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 2 [(buf.validate.field).int64.gte = 0];
 }
 message ListDnsProvidersResponse {
   repeated DnsProvider dns_providers = 1;

@@ -19,6 +19,14 @@ FROM
 WHERE
   id = ?;
 
+-- name: GetTcpServiceByName :one
+SELECT
+  *
+FROM
+  tcp_services
+WHERE
+  name = ?;
+
 -- name: ListTcpServices :many
 SELECT
   *

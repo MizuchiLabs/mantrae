@@ -219,18 +219,6 @@ func (s *UserService) CreateUser(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if req.Msg.Username == "" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("username is required"),
-		)
-	}
-	if req.Msg.Password == "" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("password is required"),
-		)
-	}
 
 	params := db.CreateUserParams{
 		ID:       id.String(),
@@ -263,19 +251,6 @@ func (s *UserService) UpdateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateUserRequest],
 ) (*connect.Response[mantraev1.UpdateUserResponse], error) {
-	if req.Msg.Id == "" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("id is required"),
-		)
-	}
-	if req.Msg.Username == "" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("username is required"),
-		)
-	}
-
 	params := db.UpdateUserParams{
 		ID:       req.Msg.Id,
 		Username: req.Msg.Username,

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"connectrpc.com/connect"
 
@@ -108,13 +107,6 @@ func (s *EntryPointService) ListEntryPoints(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListEntryPointsRequest],
 ) (*connect.Response[mantraev1.ListEntryPointsResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	var params db.ListEntryPointsParams
 	params.ProfileID = req.Msg.ProfileId
 	if req.Msg.Limit == nil {

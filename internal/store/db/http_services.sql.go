@@ -101,6 +101,30 @@ func (q *Queries) GetHttpService(ctx context.Context, id int64) (HttpService, er
 	return i, err
 }
 
+const getHttpServiceByName = `-- name: GetHttpServiceByName :one
+SELECT
+  id, profile_id, agent_id, name, config, created_at, updated_at
+FROM
+  http_services
+WHERE
+  name = ?
+`
+
+func (q *Queries) GetHttpServiceByName(ctx context.Context, name string) (HttpService, error) {
+	row := q.queryRow(ctx, q.getHttpServiceByNameStmt, getHttpServiceByName, name)
+	var i HttpService
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.AgentID,
+		&i.Name,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listHttpServices = `-- name: ListHttpServices :many
 SELECT
   id, profile_id, agent_id, name, config, created_at, updated_at

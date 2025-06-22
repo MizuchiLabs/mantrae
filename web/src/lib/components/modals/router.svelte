@@ -91,10 +91,10 @@
 	};
 
 	const handleDelete = async () => {
-		if (!item.id) return;
+		if (!item.id || !item.type) return;
 
 		try {
-			await routerClient.deleteRouter({ id: item.id });
+			await routerClient.deleteRouter({ id: item.id, type: item.type });
 			toast.success('Router deleted successfully');
 
 			// Refresh data

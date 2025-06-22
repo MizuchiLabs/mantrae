@@ -9,7 +9,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
-	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
 // setupBackgroundJobs initiates essential background operations for the application.
@@ -17,7 +16,6 @@ func (a *App) setupBackgroundJobs(ctx context.Context) {
 	go a.syncTraefik(ctx)
 	go a.syncDNS(ctx)
 	go a.cleanupAgents(ctx)
-	go a.refreshAgentBootstrapToken(ctx)
 }
 
 // syncTraefik periodically syncs the Traefik configuration
@@ -165,35 +163,6 @@ func (a *App) cleanupAgents(ctx context.Context) {
 						slog.Info("Deleted disconnected agent", "id", agent.ID)
 					}
 				}
-			}
-		}
-	}
-}
-
-func (a *App) refreshAgentBootstrapToken(ctx context.Context) {
-	ticker := time.NewTicker(time.Hour * 24)
-	defer ticker.Stop()
-
-	token, err := util.GenerateBootstrapToken()
-	if err != nil {
-		slog.Error("failed to generate agent bootstrap token", "error", err)
-	}
-	if err := a.SM.Set(ctx, settings.KeyAgentBootstrapToken, token); err != nil {
-		slog.Error("failed to update agent bootstrap token", "error", err)
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			token, err := util.GenerateBootstrapToken()
-			if err != nil {
-				slog.Error("failed to generate agent bootstrap token", "error", err)
-				continue
-			}
-			if err := a.SM.Set(ctx, settings.KeyAgentBootstrapToken, token); err != nil {
-				slog.Error("failed to update agent bootstrap token", "error", err)
 			}
 		}
 	}

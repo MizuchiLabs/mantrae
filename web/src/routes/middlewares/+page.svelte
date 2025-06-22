@@ -90,7 +90,7 @@
 							label: 'Delete Middleware',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original.id, row.original.type)
 						}
 					]
 				});
@@ -112,9 +112,9 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint) => {
+	const deleteItem = async (id: bigint, type: MiddlewareType) => {
 		try {
-			await middlewareClient.deleteMiddleware({ id: id });
+			await middlewareClient.deleteMiddleware({ id: id, type: type });
 			await refreshData(pageSize.value ?? 10, 0);
 			toast.success('Router deleted');
 		} catch (err) {
@@ -128,9 +128,9 @@
 			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
 			if (!confirmed) return;
 
-			const rows = selectedRows.map((row) => ({ id: row.id }));
+			const rows = selectedRows.map((row) => ({ id: row.id, type: row.type }));
 			for (const row of rows) {
-				await middlewareClient.deleteMiddleware({ id: row.id });
+				await middlewareClient.deleteMiddleware({ id: row.id, type: row.type });
 			}
 			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(`Successfully deleted ${selectedRows.length} routers`);

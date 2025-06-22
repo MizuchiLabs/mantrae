@@ -8,13 +8,11 @@ import (
 
 	"connectrpc.com/connect"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
-	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
@@ -61,13 +59,6 @@ func (s *AgentService) CreateAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateAgentRequest],
 ) (*connect.Response[mantraev1.CreateAgentResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -84,7 +75,7 @@ func (s *AgentService) CreateAgent(
 		)
 	}
 
-	token, err := s.createToken(ctx, id.String())
+	token, err := s.createToken(id.String(), req.Msg.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -151,13 +142,6 @@ func (s *AgentService) ListAgents(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListAgentsRequest],
 ) (*connect.Response[mantraev1.ListAgentsResponse], error) {
-	if req.Msg.ProfileId == 0 {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("profile id is required"),
-		)
-	}
-
 	var params db.ListAgentsParams
 	params.ProfileID = req.Msg.ProfileId
 	if req.Msg.Limit == nil {
@@ -204,7 +188,14 @@ func (s *AgentService) HealthCheck(
 	ctx context.Context,
 	req *connect.Request[mantraev1.HealthCheckRequest],
 ) (*connect.Response[mantraev1.HealthCheckResponse], error) {
-	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Header().Get(meta.HeaderAgentID))
+	agentID := req.Header().Get(meta.HeaderAgentID)
+	if agentID == "" {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("agent id is required"),
+		)
+	}
+	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, agentID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -217,6 +208,12 @@ func (s *AgentService) HealthCheck(
 	// Update Agent
 	var params db.UpdateAgentParams
 	params.ID = agent.ID
+	// if req.Msg.MachineId != "" {
+	// 	params.MachineId = &req.Msg.MachineId
+	// }
+	if req.Msg.Hostname != "" {
+		params.Hostname = &req.Msg.Hostname
+	}
 	if req.Msg.PublicIp != "" {
 		params.PublicIp = &req.Msg.PublicIp
 	}
@@ -254,63 +251,8 @@ func (s *AgentService) RotateAgentToken(
 	return connect.NewResponse(&mantraev1.RotateAgentTokenResponse{}), nil
 }
 
-func (s *AgentService) BootstrapAgent(
-	ctx context.Context,
-	req *connect.Request[mantraev1.BootstrapAgentRequest],
-) (*connect.Response[mantraev1.BootstrapAgentResponse], error) {
-	enabled, ok := s.app.SM.Get(settings.KeyAgentBootstrapEnabled)
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("failed to get agent bootstrap enabled setting"),
-		)
-	}
-	if enabled != "true" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("agent bootstrap is disabled, check your settings"),
-		)
-	}
-	if req.Msg.Token == "" {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("token is required"),
-		)
-	}
-
-	// Check if token is valid
-	bootstrapToken, ok := s.app.SM.Get(settings.KeyAgentBootstrapToken)
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("failed to get agent bootstrap token setting"),
-		)
-	}
-	if bootstrapToken != req.Msg.Token {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid token"),
-		)
-	}
-
-	// Token is valid, create agent
-	agent, err := s.app.Conn.GetQuery().CreateAgent(ctx, db.CreateAgentParams{
-		ProfileID: req.Msg.ProfileId,
-	})
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	token, err := s.updateToken(ctx, &agent)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return connect.NewResponse(&mantraev1.BootstrapAgentResponse{Token: *token}), nil
-}
-
 func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*string, error) {
-	claims, err := util.DecodeJWT[*meta.AgentClaims](agent.Token, s.app.Secret)
+	claims, err := meta.DecodeAgentToken(agent.Token, s.app.Secret)
 	if err != nil {
 		return nil, err
 	}
@@ -322,7 +264,7 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 		return &agent.Token, nil // Token is still valid
 	}
 
-	token, err := s.createToken(ctx, agent.ID)
+	token, err := s.createToken(agent.ID, agent.ProfileID)
 	if err != nil {
 		return nil, err
 	}
@@ -333,17 +275,12 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 	}); err != nil {
 		return nil, err
 	}
-	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
 
+	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
 	return token, nil
 }
 
-func (s *AgentService) createToken(ctx context.Context, id string) (*string, error) {
-	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, id)
-	if err != nil {
-		return nil, errors.New("agent not found")
-	}
-
+func (s *AgentService) createToken(agentID string, profileID int64) (*string, error) {
 	serverUrl, ok := s.app.SM.Get(settings.KeyServerURL)
 	if !ok {
 		return nil, errors.New("failed to get server url setting")
@@ -354,16 +291,13 @@ func (s *AgentService) createToken(ctx context.Context, id string) (*string, err
 		return nil, errors.New("failed to get agent cleanup interval setting")
 	}
 
-	claims := &meta.AgentClaims{
-		AgentID:   agent.ID,
-		ProfileID: agent.ProfileID,
-		ServerURL: serverUrl,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(settings.AsDuration(agentInterval))),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-	token, err := util.EncodeJWT[*meta.AgentClaims](claims, s.app.Secret)
+	token, err := meta.EncodeAgentToken(
+		profileID,
+		agentID,
+		serverUrl,
+		s.app.Secret,
+		time.Now().Add(settings.AsDuration(agentInterval)),
+	)
 	if err != nil {
 		return nil, err
 	}

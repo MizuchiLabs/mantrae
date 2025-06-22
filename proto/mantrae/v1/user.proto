@@ -36,10 +36,14 @@ message User {
 
 message LoginUserRequest {
   oneof identifier {
+    option (buf.validate.oneof).required = true;
     string username = 1 [(buf.validate.field).string.min_len = 3];
     string email = 2 [(buf.validate.field).string.email = true];
   }
-  string password = 3 [(buf.validate.field).string.min_len = 8];
+  string password = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 8
+  ];
   bool remember = 4;
 }
 message LoginUserResponse {
@@ -47,7 +51,10 @@ message LoginUserResponse {
 }
 
 message VerifyJWTRequest {
-  string token = 1 [(buf.validate.field).string.min_len = 1];
+  string token = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message VerifyJWTResponse {
   User user = 1;
@@ -55,10 +62,14 @@ message VerifyJWTResponse {
 
 message VerifyOTPRequest {
   oneof identifier {
+    option (buf.validate.oneof).required = true;
     string username = 1 [(buf.validate.field).string.min_len = 3];
     string email = 2 [(buf.validate.field).string.email = true];
   }
-  string otp = 3 [(buf.validate.field).string.min_len = 6];
+  string otp = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 6
+  ];
 }
 message VerifyOTPResponse {
   string token = 1;
@@ -66,6 +77,7 @@ message VerifyOTPResponse {
 
 message SendOTPRequest {
   oneof identifier {
+    option (buf.validate.oneof).required = true;
     string username = 1 [(buf.validate.field).string.min_len = 3];
     string email = 2 [(buf.validate.field).string.email = true];
   }
@@ -74,6 +86,7 @@ message SendOTPResponse {}
 
 message GetUserRequest {
   oneof identifier {
+    option (buf.validate.oneof).required = true;
     string id = 1 [(buf.validate.field).string.min_len = 1];
     string username = 2 [(buf.validate.field).string.min_len = 3];
     string email = 3 [(buf.validate.field).string.email = true];
@@ -84,8 +97,14 @@ message GetUserResponse {
 }
 
 message CreateUserRequest {
-  string username = 1 [(buf.validate.field).string.min_len = 3];
-  string password = 2 [(buf.validate.field).string.min_len = 8];
+  string username = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 3
+  ];
+  string password = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 8
+  ];
   string email = 3 [(buf.validate.field).string.email = true];
   bool is_admin = 4;
 }
@@ -94,8 +113,14 @@ message CreateUserResponse {
 }
 
 message UpdateUserRequest {
-  string id = 1 [(buf.validate.field).string.min_len = 1];
-  string username = 2 [(buf.validate.field).string.min_len = 3];
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string username = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 3
+  ];
   string email = 3 [(buf.validate.field).string.email = true];
   bool is_admin = 4;
   optional string password = 5 [(buf.validate.field).string.min_len = 8];
@@ -105,13 +130,20 @@ message UpdateUserResponse {
 }
 
 message DeleteUserRequest {
-  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 message DeleteUserResponse {}
 
 message ListUsersRequest {
-  optional int64 limit = 1;
-  optional int64 offset = 2;
+  optional int64 limit = 1 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 2 [(buf.validate.field).int64.gte = 0];
 }
 message ListUsersResponse {
   repeated User users = 1;

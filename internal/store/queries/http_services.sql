@@ -19,6 +19,14 @@ FROM
 WHERE
   id = ?;
 
+-- name: GetHttpServiceByName :one
+SELECT
+  *
+FROM
+  http_services
+WHERE
+  name = ?;
+
 -- name: ListHttpServices :many
 SELECT
   *

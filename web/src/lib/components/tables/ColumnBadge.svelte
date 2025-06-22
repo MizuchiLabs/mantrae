@@ -2,18 +2,21 @@
 	import type { ComponentProps } from 'svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-	import type { TLS } from '$lib/types/router';
-	import { AlertTriangle, Eye, Globe, Key } from '@lucide/svelte';
+	import { AlertTriangle, Eye, Globe, Key, type IconProps } from '@lucide/svelte';
+	import { type Component } from 'svelte';
 	import type { Column } from '@tanstack/table-core';
+	import type { RouterTCPTLSConfig } from '$lib/gen/tygo/dynamic';
 
+	type IconComponent = Component<IconProps, Record<string, never>, ''>;
 	type Props = ComponentProps<typeof Badge> & {
 		label: string | string[];
+		icon?: IconComponent;
 		column?: Column<TData, unknown>;
 		limit?: number;
-		tls?: TLS;
+		tls?: RouterTCPTLSConfig;
 	};
 
-	let { variant = 'default', label, column, limit = 3, tls, ...restProps }: Props = $props();
+	let { variant = 'default', label, column, icon, limit = 3, tls, ...restProps }: Props = $props();
 
 	const isArray = Array.isArray(label);
 	const items = isArray ? label : [label];
@@ -79,6 +82,10 @@
 	<div class="flex flex-col items-start gap-1">
 		{#each visibleItems as item (item)}
 			<Badge {variant} onclick={() => column?.setFilterValue(item)} {...restProps}>
+				{#if icon}
+					{@const Icon = icon}
+					<Icon size={16} />
+				{/if}
 				{item}
 			</Badge>
 		{/each}

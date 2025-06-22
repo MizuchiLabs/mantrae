@@ -38,10 +38,8 @@ const (
 	KeyPasswordLoginDisabled = "password_login_disabled"
 
 	// Agent settings
-	KeyAgentBootstrapEnabled = "agent_bootstrap_enabled"
-	KeyAgentBootstrapToken   = "agent_bootstrap_token"
-	KeyAgentCleanupEnabled   = "agent_cleanup_enabled"
-	KeyAgentCleanupInterval  = "agent_cleanup_interval"
+	KeyAgentCleanupEnabled  = "agent_cleanup_enabled"
+	KeyAgentCleanupInterval = "agent_cleanup_interval"
 
 	// Background jobs settings
 	KeyTraefikSyncInterval = "traefik_sync_interval"
