@@ -18,9 +18,11 @@
 	import { CircleCheck, Globe } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import HTTPRouterForm from '../forms/httpRouter.svelte';
-	import HTTPServiceForm from '../forms/httpService.svelte';
 	import TCPRouterForm from '../forms/tcpRouter.svelte';
 	import UDPRouterForm from '../forms/udpRouter.svelte';
+	import HTTPServiceForm from '../forms/httpService.svelte';
+	import TCPServiceForm from '../forms/tcpService.svelte';
+	import UDPServiceForm from '../forms/udpService.svelte';
 	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
@@ -279,12 +281,12 @@
 						{#if item.type === RouterType.HTTP}
 							<HTTPServiceForm bind:service />
 						{/if}
-						<!-- {#if item.type === RouterType.TCP} -->
-						<!--     <TCPServiceForm bind:service bind:router={item} /> -->
-						<!-- {/if} -->
-						<!-- {#if item.type === RouterType.UDP} -->
-						<!--     <UDPServiceForm bind:service bind:router={item} /> -->
-						<!-- {/if} -->
+						{#if item.type === RouterType.TCP}
+							<TCPServiceForm bind:service bind:router={item} />
+						{/if}
+						{#if item.type === RouterType.UDP}
+							<UDPServiceForm bind:service bind:router={item} />
+						{/if}
 					</Card.Content>
 				</Card.Root>
 				<!-- <ServiceForm bind:service bind:router /> -->
