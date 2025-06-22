@@ -570,22 +570,6 @@ components:
       type: object
       title: RestoreBackupResponse
       additionalProperties: false
-    mantrae.v1.UploadBackupRequest:
-      type: object
-      properties:
-        data:
-          type: string
-          title: data
-          minLength: 1
-          format: byte
-      title: UploadBackupRequest
-      required:
-        - data
-      additionalProperties: false
-    mantrae.v1.UploadBackupResponse:
-      type: object
-      title: UploadBackupResponse
-      additionalProperties: false
     mantrae.v1.DnsProviderType:
       type: string
       title: DnsProviderType
@@ -2928,6 +2912,9 @@ paths:
       tags:
         - mantrae.v1.BackupService
       summary: DownloadBackup
+      description: |-
+        See: https://github.com/connectrpc/connect-es/issues/669
+         rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse); // stream doesn't work with connect-es
       operationId: mantrae.v1.BackupService.DownloadBackup
       parameters:
         - name: Connect-Protocol-Version
@@ -3021,104 +3008,6 @@ paths:
             application/grpc-web+json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.DownloadBackupResponse'
-  /mantrae.v1.BackupService/UploadBackup:
-    post:
-      tags:
-        - mantrae.v1.BackupService
-      summary: UploadBackup
-      operationId: mantrae.v1.BackupService.UploadBackup
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/connect+json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/connect+proto:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc+proto:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc+json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc-web:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc-web+proto:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-          application/grpc-web+json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UploadBackupRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/connect+json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/connect+proto:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc+proto:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc+json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc-web:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc-web+proto:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-            application/grpc-web+json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/connect+json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/connect+proto:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc+proto:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc+json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc-web:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc-web+proto:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
-            application/grpc-web+json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UploadBackupResponse'
   /mantrae.v1.DnsProviderService/GetDnsProvider:
     get:
       tags:

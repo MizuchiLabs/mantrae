@@ -13,7 +13,8 @@ service BackupService {
   }
   rpc DeleteBackup(DeleteBackupRequest) returns (DeleteBackupResponse);
   rpc DownloadBackup(DownloadBackupRequest) returns (stream DownloadBackupResponse);
-  rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse);
+  // See: https://github.com/connectrpc/connect-es/issues/669
+  // rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse); // stream doesn't work with connect-es
 }
 
 message Backup {
@@ -52,11 +53,3 @@ message DownloadBackupRequest {
 message DownloadBackupResponse {
   bytes data = 1;
 }
-
-message UploadBackupRequest {
-  bytes data = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).bytes.min_len = 1
-  ];
-}
-message UploadBackupResponse {}
