@@ -1164,6 +1164,11 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
+          minLength: 1
+          nullable: true
         type:
           title: type
           nullable: true
@@ -1610,6 +1615,11 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
+          minLength: 1
+          nullable: true
         type:
           title: type
           nullable: true
@@ -1832,6 +1842,11 @@ components:
             - string
           title: profile_id
           format: int64
+        agentId:
+          type: string
+          title: agent_id
+          minLength: 1
+          nullable: true
         type:
           title: type
           nullable: true

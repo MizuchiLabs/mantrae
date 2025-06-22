@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/traefik/paerser/parser"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -64,6 +66,12 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		connect.WithInterceptors(t.Interceptor()),
 	)
 
+	// Track which resources are synced
+	syncedRouters := map[string]struct{}{}
+	syncedServices := map[string]struct{}{}
+	syncedMiddlewares := map[string]struct{}{}
+
+	// Parse labels and upsert
 	for _, container := range containers {
 		dyn := &dynamic.Configuration{
 			HTTP: &dynamic.HTTPConfiguration{},
@@ -93,13 +101,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			routerClient,
 			mantraev1.RouterType_ROUTER_TYPE_HTTP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.HTTP.Routers))
-				for k, v := range dyn.HTTP.Routers {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.HTTP.Routers),
+			syncedRouters,
 		); err != nil {
 			return err
 		}
@@ -107,13 +110,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			routerClient,
 			mantraev1.RouterType_ROUTER_TYPE_TCP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.TCP.Routers))
-				for k, v := range dyn.TCP.Routers {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.TCP.Routers),
+			syncedRouters,
 		); err != nil {
 			return err
 		}
@@ -121,13 +119,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			routerClient,
 			mantraev1.RouterType_ROUTER_TYPE_UDP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.UDP.Routers))
-				for k, v := range dyn.UDP.Routers {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.UDP.Routers),
+			syncedRouters,
 		); err != nil {
 			return err
 		}
@@ -137,13 +130,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			serviceClient,
 			mantraev1.ServiceType_SERVICE_TYPE_HTTP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.HTTP.Services))
-				for k, v := range dyn.HTTP.Services {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.HTTP.Services),
+			syncedServices,
 		); err != nil {
 			return err
 		}
@@ -151,13 +139,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			serviceClient,
 			mantraev1.ServiceType_SERVICE_TYPE_TCP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.TCP.Services))
-				for k, v := range dyn.TCP.Services {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.TCP.Services),
+			syncedServices,
 		); err != nil {
 			return err
 		}
@@ -165,13 +148,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			serviceClient,
 			mantraev1.ServiceType_SERVICE_TYPE_UDP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.UDP.Services))
-				for k, v := range dyn.UDP.Services {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.UDP.Services),
+			syncedServices,
 		); err != nil {
 			return err
 		}
@@ -181,13 +159,8 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			middlewareClient,
 			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.HTTP.Middlewares))
-				for k, v := range dyn.HTTP.Middlewares {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.HTTP.Middlewares),
+			syncedMiddlewares,
 		); err != nil {
 			return err
 		}
@@ -195,19 +168,22 @@ func (t *TokenSource) Update(ctx context.Context) error {
 			ctx,
 			middlewareClient,
 			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
-			func() map[string]any {
-				m := make(map[string]any, len(dyn.TCP.Middlewares))
-				for k, v := range dyn.TCP.Middlewares {
-					m[k] = v
-				}
-				return m
-			}(),
+			ToAnyMap(dyn.TCP.Middlewares),
+			syncedMiddlewares,
 		); err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return t.cleanup(
+		ctx,
+		routerClient,
+		serviceClient,
+		middlewareClient,
+		syncedRouters,
+		syncedServices,
+		syncedMiddlewares,
+	)
 }
 
 func injectServiceAddresses(d *dynamic.Configuration, ip string, port uint16) {
@@ -228,49 +204,61 @@ func (t *TokenSource) upsertRouters(
 	client mantraev1connect.RouterServiceClient,
 	typ mantraev1.RouterType,
 	routers map[string]any,
+	synced map[string]struct{},
 ) error {
-	listReq := connect.NewRequest(
-		&mantraev1.ListRoutersRequest{ProfileId: t.claims.ProfileID, Type: &typ},
-	)
-	listResp, err := client.ListRouters(ctx, listReq)
+	res, err := client.ListRouters(ctx, connect.NewRequest(&mantraev1.ListRoutersRequest{
+		ProfileId: t.claims.ProfileID,
+		AgentId:   &t.claims.AgentID,
+		Type:      &typ,
+	}))
 	if err != nil {
 		return err
 	}
-	existing := make(map[string]int64, len(listResp.Msg.Routers))
-	for _, r := range listResp.Msg.Routers {
-		existing[r.Name] = r.Id
+
+	existing := make(map[string]*mantraev1.Router, len(res.Msg.Routers))
+	for _, r := range res.Msg.Routers {
+		existing[r.Name] = r
 	}
 
 	for name, cfg := range routers {
-		s, err := ToProtoStruct(cfg)
+		synced[name] = struct{}{}
+		newConfig, err := ToProtoStruct(cfg)
 		if err != nil {
 			return err
 		}
-		if id, found := existing[name]; found {
-			upd := &mantraev1.UpdateRouterRequest{
-				Id:      id,
+
+		if r, found := existing[name]; found {
+			if proto.Equal(r.Config, newConfig) {
+				slog.Debug("Skipped updating router", "name", name, "id", r.Id)
+				continue
+			}
+			params := &mantraev1.UpdateRouterRequest{
+				Id:      r.Id,
 				Name:    name,
-				Config:  s,
+				Config:  newConfig,
 				Enabled: true,
 				Type:    typ,
 			}
-			if _, err := client.UpdateRouter(ctx, connect.NewRequest(upd)); err != nil {
+			if _, err := client.UpdateRouter(ctx, connect.NewRequest(params)); err != nil {
 				return err
 			}
+			slog.Debug("Updated router", "name", name, "id", r.Id)
 		} else {
-			cr := &mantraev1.CreateRouterRequest{
+			params := &mantraev1.CreateRouterRequest{
 				ProfileId: t.claims.ProfileID,
 				AgentId:   t.claims.AgentID,
 				Name:      name,
-				Config:    s,
+				Config:    newConfig,
 				Enabled:   true,
 				Type:      typ,
 			}
-			if _, err := client.CreateRouter(ctx, connect.NewRequest(cr)); err != nil {
+			if _, err := client.CreateRouter(ctx, connect.NewRequest(params)); err != nil {
 				return err
 			}
+			slog.Debug("Created router", "name", name, "id", r.Id)
 		}
 	}
+
 	return nil
 }
 
@@ -279,41 +267,59 @@ func (t *TokenSource) upsertServices(
 	client mantraev1connect.ServiceServiceClient,
 	typ mantraev1.ServiceType,
 	services map[string]any,
+	synced map[string]struct{},
 ) error {
-	listReq := connect.NewRequest(
-		&mantraev1.ListServicesRequest{ProfileId: t.claims.ProfileID, Type: &typ},
-	)
-	listResp, err := client.ListServices(ctx, listReq)
+	res, err := client.ListServices(ctx, connect.NewRequest(&mantraev1.ListServicesRequest{
+		ProfileId: t.claims.ProfileID,
+		AgentId:   &t.claims.AgentID,
+		Type:      &typ,
+	}))
 	if err != nil {
 		return err
 	}
-	existing := make(map[string]int64, len(listResp.Msg.Services))
-	for _, s := range listResp.Msg.Services {
-		existing[s.Name] = s.Id
+
+	existing := make(map[string]*mantraev1.Service, len(res.Msg.Services))
+	for _, s := range res.Msg.Services {
+		existing[s.Name] = s
 	}
+
 	for name, cfg := range services {
-		s, err := ToProtoStruct(cfg)
+		synced[name] = struct{}{}
+		newConfig, err := ToProtoStruct(cfg)
 		if err != nil {
 			return err
 		}
-		if id, found := existing[name]; found {
-			upd := &mantraev1.UpdateServiceRequest{Id: id, Name: name, Config: s, Type: typ}
-			if _, err := client.UpdateService(ctx, connect.NewRequest(upd)); err != nil {
+
+		if s, found := existing[name]; found {
+			if proto.Equal(s.Config, newConfig) {
+				slog.Debug("Skipped updating service", "name", name, "id", s.Id)
+				continue
+			}
+			params := &mantraev1.UpdateServiceRequest{
+				Id:     s.Id,
+				Name:   name,
+				Config: newConfig,
+				Type:   typ,
+			}
+			if _, err := client.UpdateService(ctx, connect.NewRequest(params)); err != nil {
 				return err
 			}
+			slog.Debug("Updated service", "name", name, "id", s.Id)
 		} else {
-			cr := &mantraev1.CreateServiceRequest{
+			params := &mantraev1.CreateServiceRequest{
 				ProfileId: t.claims.ProfileID,
 				AgentId:   t.claims.AgentID,
 				Name:      name,
-				Config:    s,
+				Config:    newConfig,
 				Type:      typ,
 			}
-			if _, err := client.CreateService(ctx, connect.NewRequest(cr)); err != nil {
+			if _, err := client.CreateService(ctx, connect.NewRequest(params)); err != nil {
 				return err
 			}
+			slog.Debug("Created service", "name", name, "id", s.Id)
 		}
 	}
+
 	return nil
 }
 
@@ -322,42 +328,153 @@ func (t *TokenSource) upsertMiddlewares(
 	client mantraev1connect.MiddlewareServiceClient,
 	typ mantraev1.MiddlewareType,
 	middlewares map[string]any,
+	synced map[string]struct{},
 ) error {
-	listReq := connect.NewRequest(
-		&mantraev1.ListMiddlewaresRequest{ProfileId: t.claims.ProfileID, Type: &typ},
-	)
-	listResp, err := client.ListMiddlewares(ctx, listReq)
+	res, err := client.ListMiddlewares(ctx, connect.NewRequest(&mantraev1.ListMiddlewaresRequest{
+		ProfileId: t.claims.ProfileID,
+		AgentId:   &t.claims.AgentID,
+		Type:      &typ,
+	}))
 	if err != nil {
 		return err
 	}
-	existing := make(map[string]int64, len(listResp.Msg.Middlewares))
-	for _, m := range listResp.Msg.Middlewares {
-		existing[m.Name] = m.Id
+
+	existing := make(map[string]*mantraev1.Middleware, len(res.Msg.Middlewares))
+	for _, m := range res.Msg.Middlewares {
+		existing[m.Name] = m
 	}
+
 	for name, cfg := range middlewares {
-		s, err := ToProtoStruct(cfg)
+		synced[name] = struct{}{}
+		newConfig, err := ToProtoStruct(cfg)
 		if err != nil {
 			return err
 		}
-		if id, found := existing[name]; found {
-			upd := &mantraev1.UpdateMiddlewareRequest{Id: id, Name: name, Config: s, Type: typ}
-			if _, err := client.UpdateMiddleware(ctx, connect.NewRequest(upd)); err != nil {
+
+		if m, found := existing[name]; found {
+			if proto.Equal(m.Config, newConfig) {
+				slog.Debug("Skipped updating middleware", "name", name, "id", m.Id)
+				continue
+			}
+			params := &mantraev1.UpdateMiddlewareRequest{
+				Id:     m.Id,
+				Name:   name,
+				Config: newConfig,
+				Type:   typ,
+			}
+			if _, err := client.UpdateMiddleware(ctx, connect.NewRequest(params)); err != nil {
 				return err
 			}
+			slog.Debug("Updated middleware", "name", name, "id", m.Id)
 		} else {
-			cr := &mantraev1.CreateMiddlewareRequest{
+			params := &mantraev1.CreateMiddlewareRequest{
 				ProfileId: t.claims.ProfileID,
 				AgentId:   t.claims.AgentID,
 				Name:      name,
-				Config:    s,
+				Config:    newConfig,
 				Type:      typ,
 			}
-			if _, err := client.CreateMiddleware(ctx, connect.NewRequest(cr)); err != nil {
+			if _, err := client.CreateMiddleware(ctx, connect.NewRequest(params)); err != nil {
 				return err
+			}
+			slog.Debug("Created middleware", "name", name, "id", m.Id)
+		}
+	}
+
+	return nil
+}
+
+// cleanup removes all stale resources
+func (t *TokenSource) cleanup(
+	ctx context.Context,
+	routerClient mantraev1connect.RouterServiceClient,
+	serviceClient mantraev1connect.ServiceServiceClient,
+	middlewareClient mantraev1connect.MiddlewareServiceClient,
+	syncedRouters map[string]struct{},
+	syncedServices map[string]struct{},
+	syncedMiddlewares map[string]struct{},
+) error {
+	// Cleanup Routers
+	routers, err := routerClient.ListRouters(ctx, connect.NewRequest(&mantraev1.ListRoutersRequest{
+		ProfileId: t.claims.ProfileID,
+		AgentId:   &t.claims.AgentID,
+	}))
+	if err != nil {
+		return err
+	}
+	for _, r := range routers.Msg.Routers {
+		if _, ok := syncedRouters[r.Name]; !ok {
+			if _, err := routerClient.DeleteRouter(
+				ctx,
+				connect.NewRequest(&mantraev1.DeleteRouterRequest{Id: r.Id, Type: r.Type}),
+			); err != nil {
+				slog.Error("Failed to delete stale router", "name", r.Name, "err", err)
+			} else {
+				slog.Info("Deleted stale router", "name", r.Name)
 			}
 		}
 	}
+
+	// Cleanup Services
+	services, err := serviceClient.ListServices(
+		ctx,
+		connect.NewRequest(&mantraev1.ListServicesRequest{
+			ProfileId: t.claims.ProfileID,
+			AgentId:   &t.claims.AgentID,
+		}),
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range services.Msg.Services {
+		if _, ok := syncedServices[s.Name]; !ok {
+			if _, err := serviceClient.DeleteService(
+				ctx,
+				connect.NewRequest(&mantraev1.DeleteServiceRequest{Id: s.Id, Type: s.Type}),
+			); err != nil {
+				slog.Error("Failed to delete stale service", "name", s.Name, "err", err)
+			} else {
+				slog.Info("Deleted stale service", "name", s.Name)
+			}
+		}
+	}
+
+	// Cleanup Middlewares
+	middlewares, err := middlewareClient.ListMiddlewares(
+		ctx,
+		connect.NewRequest(&mantraev1.ListMiddlewaresRequest{
+			ProfileId: t.claims.ProfileID,
+			AgentId:   &t.claims.AgentID,
+		}),
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range middlewares.Msg.Middlewares {
+		if _, ok := syncedMiddlewares[m.Name]; !ok {
+			if _, err := middlewareClient.DeleteMiddleware(
+				ctx,
+				connect.NewRequest(&mantraev1.DeleteMiddlewareRequest{Id: m.Id, Type: m.Type}),
+			); err != nil {
+				slog.Error("Failed to delete stale middleware", "name", m.Name, "err", err)
+			} else {
+				slog.Info("Deleted stale middleware", "name", m.Name)
+			}
+		}
+	}
+
 	return nil
+}
+
+// ToAnyMap converts a map[string]T to map[string]any
+func ToAnyMap[T any](in map[string]T) map[string]any {
+	out := make(map[string]any, len(in))
+	for k, v := range in {
+		out[k] = v
+	}
+	return out
 }
 
 // ToProtoStruct converts any Go struct to *structpb.Struct

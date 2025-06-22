@@ -41,11 +41,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListTcpServicesByAgent :many
+SELECT
+  *
+FROM
+  tcp_services
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountTcpServices :one
 SELECT
   COUNT(*)
 FROM
   tcp_services;
+
+-- name: CountTcpServicesByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_services
+WHERE
+  profile_id = ?;
+
+-- name: CountTcpServicesByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_services
+WHERE
+  agent_id = ?;
 
 -- name: UpdateTcpService :one
 UPDATE tcp_services

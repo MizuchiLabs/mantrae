@@ -36,23 +36,77 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countHttpMiddlewaresStmt, err = db.PrepareContext(ctx, countHttpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query CountHttpMiddlewares: %w", err)
 	}
+	if q.countHttpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, countHttpMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpMiddlewaresByAgent: %w", err)
+	}
+	if q.countHttpMiddlewaresByProfileStmt, err = db.PrepareContext(ctx, countHttpMiddlewaresByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpMiddlewaresByProfile: %w", err)
+	}
 	if q.countHttpRoutersStmt, err = db.PrepareContext(ctx, countHttpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query CountHttpRouters: %w", err)
+	}
+	if q.countHttpRoutersByAgentStmt, err = db.PrepareContext(ctx, countHttpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpRoutersByAgent: %w", err)
+	}
+	if q.countHttpRoutersByProfileStmt, err = db.PrepareContext(ctx, countHttpRoutersByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpRoutersByProfile: %w", err)
 	}
 	if q.countHttpServicesStmt, err = db.PrepareContext(ctx, countHttpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountHttpServices: %w", err)
 	}
+	if q.countHttpServicesByAgentStmt, err = db.PrepareContext(ctx, countHttpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpServicesByAgent: %w", err)
+	}
+	if q.countHttpServicesByProfileStmt, err = db.PrepareContext(ctx, countHttpServicesByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpServicesByProfile: %w", err)
+	}
+	if q.countMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, countMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountMiddlewaresByAgent: %w", err)
+	}
+	if q.countMiddlewaresByProfileStmt, err = db.PrepareContext(ctx, countMiddlewaresByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountMiddlewaresByProfile: %w", err)
+	}
 	if q.countProfilesStmt, err = db.PrepareContext(ctx, countProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query CountProfiles: %w", err)
+	}
+	if q.countRoutersByAgentStmt, err = db.PrepareContext(ctx, countRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountRoutersByAgent: %w", err)
+	}
+	if q.countRoutersByProfileStmt, err = db.PrepareContext(ctx, countRoutersByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountRoutersByProfile: %w", err)
+	}
+	if q.countServicesByAgentStmt, err = db.PrepareContext(ctx, countServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountServicesByAgent: %w", err)
+	}
+	if q.countServicesByProfileStmt, err = db.PrepareContext(ctx, countServicesByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountServicesByProfile: %w", err)
 	}
 	if q.countTcpMiddlewaresStmt, err = db.PrepareContext(ctx, countTcpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpMiddlewares: %w", err)
 	}
+	if q.countTcpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, countTcpMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpMiddlewaresByAgent: %w", err)
+	}
+	if q.countTcpMiddlewaresByProfileStmt, err = db.PrepareContext(ctx, countTcpMiddlewaresByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpMiddlewaresByProfile: %w", err)
+	}
 	if q.countTcpRoutersStmt, err = db.PrepareContext(ctx, countTcpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpRouters: %w", err)
 	}
+	if q.countTcpRoutersByAgentStmt, err = db.PrepareContext(ctx, countTcpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpRoutersByAgent: %w", err)
+	}
+	if q.countTcpRoutersByProfileStmt, err = db.PrepareContext(ctx, countTcpRoutersByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpRoutersByProfile: %w", err)
+	}
 	if q.countTcpServicesStmt, err = db.PrepareContext(ctx, countTcpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpServices: %w", err)
+	}
+	if q.countTcpServicesByAgentStmt, err = db.PrepareContext(ctx, countTcpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpServicesByAgent: %w", err)
+	}
+	if q.countTcpServicesByProfileStmt, err = db.PrepareContext(ctx, countTcpServicesByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpServicesByProfile: %w", err)
 	}
 	if q.countTraefikInstancesStmt, err = db.PrepareContext(ctx, countTraefikInstances); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTraefikInstances: %w", err)
@@ -60,8 +114,20 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countUdpRoutersStmt, err = db.PrepareContext(ctx, countUdpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUdpRouters: %w", err)
 	}
+	if q.countUdpRoutersByAgentStmt, err = db.PrepareContext(ctx, countUdpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUdpRoutersByAgent: %w", err)
+	}
+	if q.countUdpRoutersByProfileStmt, err = db.PrepareContext(ctx, countUdpRoutersByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUdpRoutersByProfile: %w", err)
+	}
 	if q.countUdpServicesStmt, err = db.PrepareContext(ctx, countUdpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUdpServices: %w", err)
+	}
+	if q.countUdpServicesByAgentStmt, err = db.PrepareContext(ctx, countUdpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUdpServicesByAgent: %w", err)
+	}
+	if q.countUdpServicesByProfileStmt, err = db.PrepareContext(ctx, countUdpServicesByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountUdpServicesByProfile: %w", err)
 	}
 	if q.countUsersStmt, err = db.PrepareContext(ctx, countUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUsers: %w", err)
@@ -273,17 +339,44 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listHttpMiddlewaresStmt, err = db.PrepareContext(ctx, listHttpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpMiddlewares: %w", err)
 	}
+	if q.listHttpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, listHttpMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpMiddlewaresByAgent: %w", err)
+	}
 	if q.listHttpRouterDNSProvidersStmt, err = db.PrepareContext(ctx, listHttpRouterDNSProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpRouterDNSProviders: %w", err)
 	}
 	if q.listHttpRoutersStmt, err = db.PrepareContext(ctx, listHttpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpRouters: %w", err)
 	}
+	if q.listHttpRoutersByAgentStmt, err = db.PrepareContext(ctx, listHttpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpRoutersByAgent: %w", err)
+	}
 	if q.listHttpServicesStmt, err = db.PrepareContext(ctx, listHttpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpServices: %w", err)
 	}
+	if q.listHttpServicesByAgentStmt, err = db.PrepareContext(ctx, listHttpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpServicesByAgent: %w", err)
+	}
+	if q.listMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, listMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMiddlewaresByAgent: %w", err)
+	}
+	if q.listMiddlewaresByProfileStmt, err = db.PrepareContext(ctx, listMiddlewaresByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query ListMiddlewaresByProfile: %w", err)
+	}
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
+	}
+	if q.listRoutersByAgentStmt, err = db.PrepareContext(ctx, listRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRoutersByAgent: %w", err)
+	}
+	if q.listRoutersByProfileStmt, err = db.PrepareContext(ctx, listRoutersByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query ListRoutersByProfile: %w", err)
+	}
+	if q.listServicesByAgentStmt, err = db.PrepareContext(ctx, listServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServicesByAgent: %w", err)
+	}
+	if q.listServicesByProfileStmt, err = db.PrepareContext(ctx, listServicesByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServicesByProfile: %w", err)
 	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
@@ -291,14 +384,23 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listTcpMiddlewaresStmt, err = db.PrepareContext(ctx, listTcpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpMiddlewares: %w", err)
 	}
+	if q.listTcpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, listTcpMiddlewaresByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpMiddlewaresByAgent: %w", err)
+	}
 	if q.listTcpRouterDNSProvidersStmt, err = db.PrepareContext(ctx, listTcpRouterDNSProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpRouterDNSProviders: %w", err)
 	}
 	if q.listTcpRoutersStmt, err = db.PrepareContext(ctx, listTcpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpRouters: %w", err)
 	}
+	if q.listTcpRoutersByAgentStmt, err = db.PrepareContext(ctx, listTcpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpRoutersByAgent: %w", err)
+	}
 	if q.listTcpServicesStmt, err = db.PrepareContext(ctx, listTcpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpServices: %w", err)
+	}
+	if q.listTcpServicesByAgentStmt, err = db.PrepareContext(ctx, listTcpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpServicesByAgent: %w", err)
 	}
 	if q.listTraefikInstancesStmt, err = db.PrepareContext(ctx, listTraefikInstances); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTraefikInstances: %w", err)
@@ -306,8 +408,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listUdpRoutersStmt, err = db.PrepareContext(ctx, listUdpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUdpRouters: %w", err)
 	}
+	if q.listUdpRoutersByAgentStmt, err = db.PrepareContext(ctx, listUdpRoutersByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUdpRoutersByAgent: %w", err)
+	}
 	if q.listUdpServicesStmt, err = db.PrepareContext(ctx, listUdpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUdpServices: %w", err)
+	}
+	if q.listUdpServicesByAgentStmt, err = db.PrepareContext(ctx, listUdpServicesByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUdpServicesByAgent: %w", err)
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
@@ -400,9 +508,29 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countHttpMiddlewaresStmt: %w", cerr)
 		}
 	}
+	if q.countHttpMiddlewaresByAgentStmt != nil {
+		if cerr := q.countHttpMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countHttpMiddlewaresByProfileStmt != nil {
+		if cerr := q.countHttpMiddlewaresByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpMiddlewaresByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countHttpRoutersStmt != nil {
 		if cerr := q.countHttpRoutersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countHttpRoutersStmt: %w", cerr)
+		}
+	}
+	if q.countHttpRoutersByAgentStmt != nil {
+		if cerr := q.countHttpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpRoutersByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countHttpRoutersByProfileStmt != nil {
+		if cerr := q.countHttpRoutersByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpRoutersByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countHttpServicesStmt != nil {
@@ -410,9 +538,49 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countHttpServicesStmt: %w", cerr)
 		}
 	}
+	if q.countHttpServicesByAgentStmt != nil {
+		if cerr := q.countHttpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countHttpServicesByProfileStmt != nil {
+		if cerr := q.countHttpServicesByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpServicesByProfileStmt: %w", cerr)
+		}
+	}
+	if q.countMiddlewaresByAgentStmt != nil {
+		if cerr := q.countMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countMiddlewaresByProfileStmt != nil {
+		if cerr := q.countMiddlewaresByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countMiddlewaresByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countProfilesStmt != nil {
 		if cerr := q.countProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countProfilesStmt: %w", cerr)
+		}
+	}
+	if q.countRoutersByAgentStmt != nil {
+		if cerr := q.countRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countRoutersByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countRoutersByProfileStmt != nil {
+		if cerr := q.countRoutersByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countRoutersByProfileStmt: %w", cerr)
+		}
+	}
+	if q.countServicesByAgentStmt != nil {
+		if cerr := q.countServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countServicesByProfileStmt != nil {
+		if cerr := q.countServicesByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countTcpMiddlewaresStmt != nil {
@@ -420,14 +588,44 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countTcpMiddlewaresStmt: %w", cerr)
 		}
 	}
+	if q.countTcpMiddlewaresByAgentStmt != nil {
+		if cerr := q.countTcpMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countTcpMiddlewaresByProfileStmt != nil {
+		if cerr := q.countTcpMiddlewaresByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpMiddlewaresByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countTcpRoutersStmt != nil {
 		if cerr := q.countTcpRoutersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countTcpRoutersStmt: %w", cerr)
 		}
 	}
+	if q.countTcpRoutersByAgentStmt != nil {
+		if cerr := q.countTcpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpRoutersByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countTcpRoutersByProfileStmt != nil {
+		if cerr := q.countTcpRoutersByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpRoutersByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countTcpServicesStmt != nil {
 		if cerr := q.countTcpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countTcpServicesStmt: %w", cerr)
+		}
+	}
+	if q.countTcpServicesByAgentStmt != nil {
+		if cerr := q.countTcpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countTcpServicesByProfileStmt != nil {
+		if cerr := q.countTcpServicesByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countTraefikInstancesStmt != nil {
@@ -440,9 +638,29 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countUdpRoutersStmt: %w", cerr)
 		}
 	}
+	if q.countUdpRoutersByAgentStmt != nil {
+		if cerr := q.countUdpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUdpRoutersByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countUdpRoutersByProfileStmt != nil {
+		if cerr := q.countUdpRoutersByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUdpRoutersByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countUdpServicesStmt != nil {
 		if cerr := q.countUdpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countUdpServicesStmt: %w", cerr)
+		}
+	}
+	if q.countUdpServicesByAgentStmt != nil {
+		if cerr := q.countUdpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUdpServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countUdpServicesByProfileStmt != nil {
+		if cerr := q.countUdpServicesByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countUdpServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countUsersStmt != nil {
@@ -795,6 +1013,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listHttpMiddlewaresStmt: %w", cerr)
 		}
 	}
+	if q.listHttpMiddlewaresByAgentStmt != nil {
+		if cerr := q.listHttpMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
 	if q.listHttpRouterDNSProvidersStmt != nil {
 		if cerr := q.listHttpRouterDNSProvidersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listHttpRouterDNSProvidersStmt: %w", cerr)
@@ -805,14 +1028,54 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listHttpRoutersStmt: %w", cerr)
 		}
 	}
+	if q.listHttpRoutersByAgentStmt != nil {
+		if cerr := q.listHttpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpRoutersByAgentStmt: %w", cerr)
+		}
+	}
 	if q.listHttpServicesStmt != nil {
 		if cerr := q.listHttpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listHttpServicesStmt: %w", cerr)
 		}
 	}
+	if q.listHttpServicesByAgentStmt != nil {
+		if cerr := q.listHttpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listMiddlewaresByAgentStmt != nil {
+		if cerr := q.listMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listMiddlewaresByProfileStmt != nil {
+		if cerr := q.listMiddlewaresByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listMiddlewaresByProfileStmt: %w", cerr)
+		}
+	}
 	if q.listProfilesStmt != nil {
 		if cerr := q.listProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
+		}
+	}
+	if q.listRoutersByAgentStmt != nil {
+		if cerr := q.listRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listRoutersByProfileStmt != nil {
+		if cerr := q.listRoutersByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listRoutersByProfileStmt: %w", cerr)
+		}
+	}
+	if q.listServicesByAgentStmt != nil {
+		if cerr := q.listServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServicesByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listServicesByProfileStmt != nil {
+		if cerr := q.listServicesByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.listSettingsStmt != nil {
@@ -825,6 +1088,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listTcpMiddlewaresStmt: %w", cerr)
 		}
 	}
+	if q.listTcpMiddlewaresByAgentStmt != nil {
+		if cerr := q.listTcpMiddlewaresByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpMiddlewaresByAgentStmt: %w", cerr)
+		}
+	}
 	if q.listTcpRouterDNSProvidersStmt != nil {
 		if cerr := q.listTcpRouterDNSProvidersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listTcpRouterDNSProvidersStmt: %w", cerr)
@@ -835,9 +1103,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listTcpRoutersStmt: %w", cerr)
 		}
 	}
+	if q.listTcpRoutersByAgentStmt != nil {
+		if cerr := q.listTcpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpRoutersByAgentStmt: %w", cerr)
+		}
+	}
 	if q.listTcpServicesStmt != nil {
 		if cerr := q.listTcpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listTcpServicesStmt: %w", cerr)
+		}
+	}
+	if q.listTcpServicesByAgentStmt != nil {
+		if cerr := q.listTcpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpServicesByAgentStmt: %w", cerr)
 		}
 	}
 	if q.listTraefikInstancesStmt != nil {
@@ -850,9 +1128,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listUdpRoutersStmt: %w", cerr)
 		}
 	}
+	if q.listUdpRoutersByAgentStmt != nil {
+		if cerr := q.listUdpRoutersByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUdpRoutersByAgentStmt: %w", cerr)
+		}
+	}
 	if q.listUdpServicesStmt != nil {
 		if cerr := q.listUdpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUdpServicesStmt: %w", cerr)
+		}
+	}
+	if q.listUdpServicesByAgentStmt != nil {
+		if cerr := q.listUdpServicesByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUdpServicesByAgentStmt: %w", cerr)
 		}
 	}
 	if q.listUsersStmt != nil {
@@ -1008,15 +1296,37 @@ type Queries struct {
 	countDnsProvidersStmt             *sql.Stmt
 	countEntryPointsStmt              *sql.Stmt
 	countHttpMiddlewaresStmt          *sql.Stmt
+	countHttpMiddlewaresByAgentStmt   *sql.Stmt
+	countHttpMiddlewaresByProfileStmt *sql.Stmt
 	countHttpRoutersStmt              *sql.Stmt
+	countHttpRoutersByAgentStmt       *sql.Stmt
+	countHttpRoutersByProfileStmt     *sql.Stmt
 	countHttpServicesStmt             *sql.Stmt
+	countHttpServicesByAgentStmt      *sql.Stmt
+	countHttpServicesByProfileStmt    *sql.Stmt
+	countMiddlewaresByAgentStmt       *sql.Stmt
+	countMiddlewaresByProfileStmt     *sql.Stmt
 	countProfilesStmt                 *sql.Stmt
+	countRoutersByAgentStmt           *sql.Stmt
+	countRoutersByProfileStmt         *sql.Stmt
+	countServicesByAgentStmt          *sql.Stmt
+	countServicesByProfileStmt        *sql.Stmt
 	countTcpMiddlewaresStmt           *sql.Stmt
+	countTcpMiddlewaresByAgentStmt    *sql.Stmt
+	countTcpMiddlewaresByProfileStmt  *sql.Stmt
 	countTcpRoutersStmt               *sql.Stmt
+	countTcpRoutersByAgentStmt        *sql.Stmt
+	countTcpRoutersByProfileStmt      *sql.Stmt
 	countTcpServicesStmt              *sql.Stmt
+	countTcpServicesByAgentStmt       *sql.Stmt
+	countTcpServicesByProfileStmt     *sql.Stmt
 	countTraefikInstancesStmt         *sql.Stmt
 	countUdpRoutersStmt               *sql.Stmt
+	countUdpRoutersByAgentStmt        *sql.Stmt
+	countUdpRoutersByProfileStmt      *sql.Stmt
 	countUdpServicesStmt              *sql.Stmt
+	countUdpServicesByAgentStmt       *sql.Stmt
+	countUdpServicesByProfileStmt     *sql.Stmt
 	countUsersStmt                    *sql.Stmt
 	createAgentStmt                   *sql.Stmt
 	createDnsProviderStmt             *sql.Stmt
@@ -1087,18 +1397,32 @@ type Queries struct {
 	listEntryPointsStmt               *sql.Stmt
 	listErrorsStmt                    *sql.Stmt
 	listHttpMiddlewaresStmt           *sql.Stmt
+	listHttpMiddlewaresByAgentStmt    *sql.Stmt
 	listHttpRouterDNSProvidersStmt    *sql.Stmt
 	listHttpRoutersStmt               *sql.Stmt
+	listHttpRoutersByAgentStmt        *sql.Stmt
 	listHttpServicesStmt              *sql.Stmt
+	listHttpServicesByAgentStmt       *sql.Stmt
+	listMiddlewaresByAgentStmt        *sql.Stmt
+	listMiddlewaresByProfileStmt      *sql.Stmt
 	listProfilesStmt                  *sql.Stmt
+	listRoutersByAgentStmt            *sql.Stmt
+	listRoutersByProfileStmt          *sql.Stmt
+	listServicesByAgentStmt           *sql.Stmt
+	listServicesByProfileStmt         *sql.Stmt
 	listSettingsStmt                  *sql.Stmt
 	listTcpMiddlewaresStmt            *sql.Stmt
+	listTcpMiddlewaresByAgentStmt     *sql.Stmt
 	listTcpRouterDNSProvidersStmt     *sql.Stmt
 	listTcpRoutersStmt                *sql.Stmt
+	listTcpRoutersByAgentStmt         *sql.Stmt
 	listTcpServicesStmt               *sql.Stmt
+	listTcpServicesByAgentStmt        *sql.Stmt
 	listTraefikInstancesStmt          *sql.Stmt
 	listUdpRoutersStmt                *sql.Stmt
+	listUdpRoutersByAgentStmt         *sql.Stmt
 	listUdpServicesStmt               *sql.Stmt
+	listUdpServicesByAgentStmt        *sql.Stmt
 	listUsersStmt                     *sql.Stmt
 	logErrorStmt                      *sql.Stmt
 	updateAgentStmt                   *sql.Stmt
@@ -1131,15 +1455,37 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countDnsProvidersStmt:             q.countDnsProvidersStmt,
 		countEntryPointsStmt:              q.countEntryPointsStmt,
 		countHttpMiddlewaresStmt:          q.countHttpMiddlewaresStmt,
+		countHttpMiddlewaresByAgentStmt:   q.countHttpMiddlewaresByAgentStmt,
+		countHttpMiddlewaresByProfileStmt: q.countHttpMiddlewaresByProfileStmt,
 		countHttpRoutersStmt:              q.countHttpRoutersStmt,
+		countHttpRoutersByAgentStmt:       q.countHttpRoutersByAgentStmt,
+		countHttpRoutersByProfileStmt:     q.countHttpRoutersByProfileStmt,
 		countHttpServicesStmt:             q.countHttpServicesStmt,
+		countHttpServicesByAgentStmt:      q.countHttpServicesByAgentStmt,
+		countHttpServicesByProfileStmt:    q.countHttpServicesByProfileStmt,
+		countMiddlewaresByAgentStmt:       q.countMiddlewaresByAgentStmt,
+		countMiddlewaresByProfileStmt:     q.countMiddlewaresByProfileStmt,
 		countProfilesStmt:                 q.countProfilesStmt,
+		countRoutersByAgentStmt:           q.countRoutersByAgentStmt,
+		countRoutersByProfileStmt:         q.countRoutersByProfileStmt,
+		countServicesByAgentStmt:          q.countServicesByAgentStmt,
+		countServicesByProfileStmt:        q.countServicesByProfileStmt,
 		countTcpMiddlewaresStmt:           q.countTcpMiddlewaresStmt,
+		countTcpMiddlewaresByAgentStmt:    q.countTcpMiddlewaresByAgentStmt,
+		countTcpMiddlewaresByProfileStmt:  q.countTcpMiddlewaresByProfileStmt,
 		countTcpRoutersStmt:               q.countTcpRoutersStmt,
+		countTcpRoutersByAgentStmt:        q.countTcpRoutersByAgentStmt,
+		countTcpRoutersByProfileStmt:      q.countTcpRoutersByProfileStmt,
 		countTcpServicesStmt:              q.countTcpServicesStmt,
+		countTcpServicesByAgentStmt:       q.countTcpServicesByAgentStmt,
+		countTcpServicesByProfileStmt:     q.countTcpServicesByProfileStmt,
 		countTraefikInstancesStmt:         q.countTraefikInstancesStmt,
 		countUdpRoutersStmt:               q.countUdpRoutersStmt,
+		countUdpRoutersByAgentStmt:        q.countUdpRoutersByAgentStmt,
+		countUdpRoutersByProfileStmt:      q.countUdpRoutersByProfileStmt,
 		countUdpServicesStmt:              q.countUdpServicesStmt,
+		countUdpServicesByAgentStmt:       q.countUdpServicesByAgentStmt,
+		countUdpServicesByProfileStmt:     q.countUdpServicesByProfileStmt,
 		countUsersStmt:                    q.countUsersStmt,
 		createAgentStmt:                   q.createAgentStmt,
 		createDnsProviderStmt:             q.createDnsProviderStmt,
@@ -1210,18 +1556,32 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listEntryPointsStmt:               q.listEntryPointsStmt,
 		listErrorsStmt:                    q.listErrorsStmt,
 		listHttpMiddlewaresStmt:           q.listHttpMiddlewaresStmt,
+		listHttpMiddlewaresByAgentStmt:    q.listHttpMiddlewaresByAgentStmt,
 		listHttpRouterDNSProvidersStmt:    q.listHttpRouterDNSProvidersStmt,
 		listHttpRoutersStmt:               q.listHttpRoutersStmt,
+		listHttpRoutersByAgentStmt:        q.listHttpRoutersByAgentStmt,
 		listHttpServicesStmt:              q.listHttpServicesStmt,
+		listHttpServicesByAgentStmt:       q.listHttpServicesByAgentStmt,
+		listMiddlewaresByAgentStmt:        q.listMiddlewaresByAgentStmt,
+		listMiddlewaresByProfileStmt:      q.listMiddlewaresByProfileStmt,
 		listProfilesStmt:                  q.listProfilesStmt,
+		listRoutersByAgentStmt:            q.listRoutersByAgentStmt,
+		listRoutersByProfileStmt:          q.listRoutersByProfileStmt,
+		listServicesByAgentStmt:           q.listServicesByAgentStmt,
+		listServicesByProfileStmt:         q.listServicesByProfileStmt,
 		listSettingsStmt:                  q.listSettingsStmt,
 		listTcpMiddlewaresStmt:            q.listTcpMiddlewaresStmt,
+		listTcpMiddlewaresByAgentStmt:     q.listTcpMiddlewaresByAgentStmt,
 		listTcpRouterDNSProvidersStmt:     q.listTcpRouterDNSProvidersStmt,
 		listTcpRoutersStmt:                q.listTcpRoutersStmt,
+		listTcpRoutersByAgentStmt:         q.listTcpRoutersByAgentStmt,
 		listTcpServicesStmt:               q.listTcpServicesStmt,
+		listTcpServicesByAgentStmt:        q.listTcpServicesByAgentStmt,
 		listTraefikInstancesStmt:          q.listTraefikInstancesStmt,
 		listUdpRoutersStmt:                q.listUdpRoutersStmt,
+		listUdpRoutersByAgentStmt:         q.listUdpRoutersByAgentStmt,
 		listUdpServicesStmt:               q.listUdpServicesStmt,
+		listUdpServicesByAgentStmt:        q.listUdpServicesByAgentStmt,
 		listUsersStmt:                     q.listUsersStmt,
 		logErrorStmt:                      q.logErrorStmt,
 		updateAgentStmt:                   q.updateAgentStmt,

@@ -42,11 +42,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListTcpMiddlewaresByAgent :many
+SELECT
+  *
+FROM
+  tcp_middlewares
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountTcpMiddlewares :one
 SELECT
   COUNT(*)
 FROM
   tcp_middlewares;
+
+-- name: CountTcpMiddlewaresByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_middlewares
+WHERE
+  profile_id = ?;
+
+-- name: CountTcpMiddlewaresByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_middlewares
+WHERE
+  agent_id = ?;
 
 -- name: UpdateTcpMiddleware :one
 UPDATE tcp_middlewares

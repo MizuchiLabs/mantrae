@@ -25,6 +25,38 @@ func (q *Queries) CountTcpRouters(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countTcpRoutersByAgent = `-- name: CountTcpRoutersByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_routers
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) CountTcpRoutersByAgent(ctx context.Context, agentID *string) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpRoutersByAgentStmt, countTcpRoutersByAgent, agentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTcpRoutersByProfile = `-- name: CountTcpRoutersByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_routers
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) CountTcpRoutersByProfile(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpRoutersByProfileStmt, countTcpRoutersByProfile, profileID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createTcpRouter = `-- name: CreateTcpRouter :one
 INSERT INTO
   tcp_routers (
@@ -126,6 +158,59 @@ type ListTcpRoutersParams struct {
 
 func (q *Queries) ListTcpRouters(ctx context.Context, arg ListTcpRoutersParams) ([]TcpRouter, error) {
 	rows, err := q.query(ctx, q.listTcpRoutersStmt, listTcpRouters, arg.ProfileID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TcpRouter
+	for rows.Next() {
+		var i TcpRouter
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTcpRoutersByAgent = `-- name: ListTcpRoutersByAgent :many
+SELECT
+  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+FROM
+  tcp_routers
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?
+`
+
+type ListTcpRoutersByAgentParams struct {
+	AgentID *string `json:"agentId"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
+func (q *Queries) ListTcpRoutersByAgent(ctx context.Context, arg ListTcpRoutersByAgentParams) ([]TcpRouter, error) {
+	rows, err := q.query(ctx, q.listTcpRoutersByAgentStmt, listTcpRoutersByAgent, arg.AgentID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

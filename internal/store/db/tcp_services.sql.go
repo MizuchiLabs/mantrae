@@ -25,6 +25,38 @@ func (q *Queries) CountTcpServices(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countTcpServicesByAgent = `-- name: CountTcpServicesByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_services
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) CountTcpServicesByAgent(ctx context.Context, agentID *string) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpServicesByAgentStmt, countTcpServicesByAgent, agentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTcpServicesByProfile = `-- name: CountTcpServicesByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  tcp_services
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) CountTcpServicesByProfile(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpServicesByProfileStmt, countTcpServicesByProfile, profileID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createTcpService = `-- name: CreateTcpService :one
 INSERT INTO
   tcp_services (
@@ -148,6 +180,58 @@ type ListTcpServicesParams struct {
 
 func (q *Queries) ListTcpServices(ctx context.Context, arg ListTcpServicesParams) ([]TcpService, error) {
 	rows, err := q.query(ctx, q.listTcpServicesStmt, listTcpServices, arg.ProfileID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []TcpService
+	for rows.Next() {
+		var i TcpService
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Name,
+			&i.Config,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTcpServicesByAgent = `-- name: ListTcpServicesByAgent :many
+SELECT
+  id, profile_id, agent_id, name, config, created_at, updated_at
+FROM
+  tcp_services
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?
+`
+
+type ListTcpServicesByAgentParams struct {
+	AgentID *string `json:"agentId"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
+func (q *Queries) ListTcpServicesByAgent(ctx context.Context, arg ListTcpServicesByAgentParams) ([]TcpService, error) {
+	rows, err := q.query(ctx, q.listTcpServicesByAgentStmt, listTcpServicesByAgent, arg.AgentID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

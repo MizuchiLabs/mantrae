@@ -106,13 +106,14 @@ message ListServicesRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).int64.gt = 0
   ];
-  optional ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
-  optional int64 limit = 3 [(buf.validate.field).cel = {
+  optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
+  optional ServiceType type = 3 [(buf.validate.field).enum.defined_only = true];
+  optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"
     expression: "this == -1 || this > 0"
   }];
-  optional int64 offset = 4 [(buf.validate.field).int64.gte = 0];
+  optional int64 offset = 5 [(buf.validate.field).int64.gte = 0];
 }
 message ListServicesResponse {
   repeated Service services = 1;

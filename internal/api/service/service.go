@@ -249,70 +249,114 @@ func (s *Service) ListServices(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		httpServices, totalHttp, err := listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
-			ctx,
-			s.app.Conn.GetQuery().ListHttpServices,
-			s.app.Conn.GetQuery().CountHttpServices,
-			buildProtoHttpService,
-			db.ListHttpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
+		var err error
+		if req.Msg.AgentId == nil {
+			services, totalCount, err = listServices[db.ListServicesByProfileRow, mantraev1.Service, db.ListServicesByProfileParams, db.CountServicesByProfileParams](
+				ctx,
+				s.app.Conn.GetQuery().ListServicesByProfile,
+				s.app.Conn.GetQuery().CountServicesByProfile,
+				buildServicesByProfile,
+				db.ListServicesByProfileParams{
+					ProfileID:   req.Msg.ProfileId,
+					ProfileID_2: req.Msg.ProfileId,
+					ProfileID_3: req.Msg.ProfileId,
+					Limit:       limit,
+					Offset:      offset,
+				},
+				db.CountServicesByProfileParams{
+					ProfileID:   req.Msg.ProfileId,
+					ProfileID_2: req.Msg.ProfileId,
+					ProfileID_3: req.Msg.ProfileId,
+				},
+			)
+		} else {
+			services, totalCount, err = listServices[db.ListServicesByAgentRow, mantraev1.Service, db.ListServicesByAgentParams, db.CountServicesByAgentParams](
+				ctx,
+				s.app.Conn.GetQuery().ListServicesByAgent,
+				s.app.Conn.GetQuery().CountServicesByAgent,
+				buildServicesByAgent,
+				db.ListServicesByAgentParams{
+					AgentID:   req.Msg.AgentId,
+					AgentID_2: req.Msg.AgentId,
+					AgentID_3: req.Msg.AgentId,
+					Limit:     limit,
+					Offset:    offset,
+				},
+				db.CountServicesByAgentParams{
+					AgentID:   req.Msg.AgentId,
+					AgentID_2: req.Msg.AgentId,
+					AgentID_3: req.Msg.AgentId,
+				},
+			)
+		}
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		tcpServices, totalTcp, err := listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams](
-			ctx,
-			s.app.Conn.GetQuery().ListTcpServices,
-			s.app.Conn.GetQuery().CountTcpServices,
-			buildProtoTcpService,
-			db.ListTcpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		udpServices, totalUdp, err := listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams](
-			ctx,
-			s.app.Conn.GetQuery().ListUdpServices,
-			s.app.Conn.GetQuery().CountUdpServices,
-			buildProtoUdpService,
-			db.ListUdpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		services = append(services, httpServices...)
-		services = append(services, tcpServices...)
-		services = append(services, udpServices...)
-		totalCount = totalHttp + totalTcp + totalUdp
 	} else {
 		var err error
 		switch *req.Msg.Type {
 		case mantraev1.ServiceType_SERVICE_TYPE_HTTP:
-			services, totalCount, err = listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams](
-				ctx,
-				s.app.Conn.GetQuery().ListHttpServices,
-				s.app.Conn.GetQuery().CountHttpServices,
-				buildProtoHttpService,
-				db.ListHttpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				services, totalCount, err = listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListHttpServices,
+					s.app.Conn.GetQuery().CountHttpServicesByProfile,
+					buildProtoHttpService,
+					db.ListHttpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				services, totalCount, err = listServices[db.HttpService, mantraev1.Service, db.ListHttpServicesByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListHttpServicesByAgent,
+					s.app.Conn.GetQuery().CountHttpServicesByAgent,
+					buildProtoHttpService,
+					db.ListHttpServicesByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		case mantraev1.ServiceType_SERVICE_TYPE_TCP:
-			services, totalCount, err = listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams](
-				ctx,
-				s.app.Conn.GetQuery().ListTcpServices,
-				s.app.Conn.GetQuery().CountTcpServices,
-				buildProtoTcpService,
-				db.ListTcpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				services, totalCount, err = listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListTcpServices,
+					s.app.Conn.GetQuery().CountTcpServicesByProfile,
+					buildProtoTcpService,
+					db.ListTcpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				services, totalCount, err = listServices[db.TcpService, mantraev1.Service, db.ListTcpServicesByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListTcpServicesByAgent,
+					s.app.Conn.GetQuery().CountTcpServicesByAgent,
+					buildProtoTcpService,
+					db.ListTcpServicesByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		case mantraev1.ServiceType_SERVICE_TYPE_UDP:
-			services, totalCount, err = listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams](
-				ctx,
-				s.app.Conn.GetQuery().ListUdpServices,
-				s.app.Conn.GetQuery().CountUdpServices,
-				buildProtoUdpService,
-				db.ListUdpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				services, totalCount, err = listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListUdpServices,
+					s.app.Conn.GetQuery().CountUdpServicesByProfile,
+					buildProtoUdpService,
+					db.ListUdpServicesParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				services, totalCount, err = listServices[db.UdpService, mantraev1.Service, db.ListUdpServicesByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListUdpServicesByAgent,
+					s.app.Conn.GetQuery().CountUdpServicesByAgent,
+					buildProtoUdpService,
+					db.ListUdpServicesByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		default:
 			return nil, connect.NewError(connect.CodeInvalidArgument, nil)
@@ -333,20 +377,22 @@ func (s *Service) ListServices(
 func listServices[
 	DBType any,
 	ProtoType any,
-	ParamsType any,
+	ListParams any,
+	CountParams any,
 ](
 	ctx context.Context,
-	listFn func(context.Context, ParamsType) ([]DBType, error),
-	countFn func(context.Context) (int64, error),
+	listFn func(context.Context, ListParams) ([]DBType, error),
+	countFn func(context.Context, CountParams) (int64, error),
 	buildFn func(DBType) (*mantraev1.Service, error),
-	params ParamsType,
+	listParams ListParams,
+	countParams CountParams,
 ) ([]*mantraev1.Service, int64, error) {
-	dbServices, err := listFn(ctx, params)
+	dbServices, err := listFn(ctx, listParams)
 	if err != nil {
 		return nil, 0, connect.NewError(connect.CodeInternal, err)
 	}
 
-	totalCount, err := countFn(ctx)
+	totalCount, err := countFn(ctx, countParams)
 	if err != nil {
 		return nil, 0, connect.NewError(connect.CodeInternal, err)
 	}
@@ -362,6 +408,100 @@ func listServices[
 	}
 
 	return services, totalCount, nil
+}
+
+func buildServicesByProfile(r db.ListServicesByProfileRow) (*mantraev1.Service, error) {
+	config, err := MarshalStruct(r.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal service config: %w", err)
+	}
+	var service mantraev1.Service
+	switch r.Type {
+	case "http":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "tcp":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "udp":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	default:
+		return nil, fmt.Errorf("invalid service type: %s", r.Type)
+	}
+
+	return &service, nil
+}
+
+func buildServicesByAgent(r db.ListServicesByAgentRow) (*mantraev1.Service, error) {
+	config, err := MarshalStruct(r.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal service config: %w", err)
+	}
+	var service mantraev1.Service
+	switch r.Type {
+	case "http":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "tcp":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "udp":
+		service = mantraev1.Service{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	default:
+		return nil, fmt.Errorf("invalid service type: %s", r.Type)
+	}
+
+	return &service, nil
 }
 
 func buildProtoHttpService(r db.HttpService) (*mantraev1.Service, error) {

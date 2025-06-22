@@ -319,70 +319,114 @@ func (s *RouterService) ListRouters(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		httpRouters, totalHttp, err := listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams](
-			ctx,
-			s.app.Conn.GetQuery().ListHttpRouters,
-			s.app.Conn.GetQuery().CountHttpRouters,
-			buildProtoHttpRouter,
-			db.ListHttpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
+		var err error
+		if req.Msg.AgentId == nil {
+			routers, totalCount, err = listRouters[db.ListRoutersByProfileRow, mantraev1.Router, db.ListRoutersByProfileParams, db.CountRoutersByProfileParams](
+				ctx,
+				s.app.Conn.GetQuery().ListRoutersByProfile,
+				s.app.Conn.GetQuery().CountRoutersByProfile,
+				buildRoutersByProfile,
+				db.ListRoutersByProfileParams{
+					ProfileID:   req.Msg.ProfileId,
+					ProfileID_2: req.Msg.ProfileId,
+					ProfileID_3: req.Msg.ProfileId,
+					Limit:       limit,
+					Offset:      offset,
+				},
+				db.CountRoutersByProfileParams{
+					ProfileID:   req.Msg.ProfileId,
+					ProfileID_2: req.Msg.ProfileId,
+					ProfileID_3: req.Msg.ProfileId,
+				},
+			)
+		} else {
+			routers, totalCount, err = listRouters[db.ListRoutersByAgentRow, mantraev1.Router, db.ListRoutersByAgentParams, db.CountRoutersByAgentParams](
+				ctx,
+				s.app.Conn.GetQuery().ListRoutersByAgent,
+				s.app.Conn.GetQuery().CountRoutersByAgent,
+				buildRoutersByAgent,
+				db.ListRoutersByAgentParams{
+					AgentID:   req.Msg.AgentId,
+					AgentID_2: req.Msg.AgentId,
+					AgentID_3: req.Msg.AgentId,
+					Limit:     limit,
+					Offset:    offset,
+				},
+				db.CountRoutersByAgentParams{
+					AgentID:   req.Msg.AgentId,
+					AgentID_2: req.Msg.AgentId,
+					AgentID_3: req.Msg.AgentId,
+				},
+			)
+		}
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		tcpRouters, totalTcp, err := listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams](
-			ctx,
-			s.app.Conn.GetQuery().ListTcpRouters,
-			s.app.Conn.GetQuery().CountTcpRouters,
-			buildProtoTcpRouter,
-			db.ListTcpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		udpRouters, totalUdp, err := listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams](
-			ctx,
-			s.app.Conn.GetQuery().ListUdpRouters,
-			s.app.Conn.GetQuery().CountUdpRouters,
-			buildProtoUdpRouter,
-			db.ListUdpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-		)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		routers = append(routers, httpRouters...)
-		routers = append(routers, tcpRouters...)
-		routers = append(routers, udpRouters...)
-		totalCount = totalHttp + totalTcp + totalUdp
 	} else {
 		var err error
 		switch *req.Msg.Type {
 		case mantraev1.RouterType_ROUTER_TYPE_HTTP:
-			routers, totalCount, err = listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams](
-				ctx,
-				s.app.Conn.GetQuery().ListHttpRouters,
-				s.app.Conn.GetQuery().CountHttpRouters,
-				buildProtoHttpRouter,
-				db.ListHttpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				routers, totalCount, err = listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListHttpRouters,
+					s.app.Conn.GetQuery().CountHttpRoutersByProfile,
+					buildProtoHttpRouter,
+					db.ListHttpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				routers, totalCount, err = listRouters[db.HttpRouter, mantraev1.Router, db.ListHttpRoutersByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListHttpRoutersByAgent,
+					s.app.Conn.GetQuery().CountHttpRoutersByAgent,
+					buildProtoHttpRouter,
+					db.ListHttpRoutersByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		case mantraev1.RouterType_ROUTER_TYPE_TCP:
-			routers, totalCount, err = listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams](
-				ctx,
-				s.app.Conn.GetQuery().ListTcpRouters,
-				s.app.Conn.GetQuery().CountTcpRouters,
-				buildProtoTcpRouter,
-				db.ListTcpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				routers, totalCount, err = listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListTcpRouters,
+					s.app.Conn.GetQuery().CountTcpRoutersByProfile,
+					buildProtoTcpRouter,
+					db.ListTcpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				routers, totalCount, err = listRouters[db.TcpRouter, mantraev1.Router, db.ListTcpRoutersByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListTcpRoutersByAgent,
+					s.app.Conn.GetQuery().CountTcpRoutersByAgent,
+					buildProtoTcpRouter,
+					db.ListTcpRoutersByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		case mantraev1.RouterType_ROUTER_TYPE_UDP:
-			routers, totalCount, err = listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams](
-				ctx,
-				s.app.Conn.GetQuery().ListUdpRouters,
-				s.app.Conn.GetQuery().CountUdpRouters,
-				buildProtoUdpRouter,
-				db.ListUdpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
-			)
+			if req.Msg.AgentId == nil {
+				routers, totalCount, err = listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersParams, int64](
+					ctx,
+					s.app.Conn.GetQuery().ListUdpRouters,
+					s.app.Conn.GetQuery().CountUdpRoutersByProfile,
+					buildProtoUdpRouter,
+					db.ListUdpRoutersParams{ProfileID: req.Msg.ProfileId, Limit: limit, Offset: offset},
+					req.Msg.ProfileId,
+				)
+			} else {
+				routers, totalCount, err = listRouters[db.UdpRouter, mantraev1.Router, db.ListUdpRoutersByAgentParams, *string](
+					ctx,
+					s.app.Conn.GetQuery().ListUdpRoutersByAgent,
+					s.app.Conn.GetQuery().CountUdpRoutersByAgent,
+					buildProtoUdpRouter,
+					db.ListUdpRoutersByAgentParams{AgentID: req.Msg.AgentId, Limit: limit, Offset: offset},
+					req.Msg.AgentId,
+				)
+			}
 
 		default:
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
@@ -403,20 +447,22 @@ func (s *RouterService) ListRouters(
 func listRouters[
 	DBType any,
 	ProtoType any,
-	ParamsType any,
+	ListParams any,
+	CountParams any,
 ](
 	ctx context.Context,
-	listFn func(context.Context, ParamsType) ([]DBType, error),
-	countFn func(context.Context) (int64, error),
+	listFn func(context.Context, ListParams) ([]DBType, error),
+	countFn func(context.Context, CountParams) (int64, error),
 	buildFn func(DBType) (*mantraev1.Router, error),
-	params ParamsType,
+	listParams ListParams,
+	countParams CountParams,
 ) ([]*mantraev1.Router, int64, error) {
-	dbRouters, err := listFn(ctx, params)
+	dbRouters, err := listFn(ctx, listParams)
 	if err != nil {
 		return nil, 0, connect.NewError(connect.CodeInternal, err)
 	}
 
-	totalCount, err := countFn(ctx)
+	totalCount, err := countFn(ctx, countParams)
 	if err != nil {
 		return nil, 0, connect.NewError(connect.CodeInternal, err)
 	}
@@ -432,6 +478,106 @@ func listRouters[
 	}
 
 	return routers, totalCount, nil
+}
+
+func buildRoutersByProfile(r db.ListRoutersByProfileRow) (*mantraev1.Router, error) {
+	config, err := MarshalStruct(r.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal router config: %w", err)
+	}
+	var router mantraev1.Router
+	switch r.Type {
+	case "http":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_HTTP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "tcp":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_TCP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "udp":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_UDP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	default:
+		return nil, fmt.Errorf("invalid router type: %s", r.Type)
+	}
+
+	return &router, nil
+}
+
+func buildRoutersByAgent(r db.ListRoutersByAgentRow) (*mantraev1.Router, error) {
+	config, err := MarshalStruct(r.Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal router config: %w", err)
+	}
+	var router mantraev1.Router
+	switch r.Type {
+	case "http":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_HTTP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "tcp":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_TCP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	case "udp":
+		router = mantraev1.Router{
+			Id:        r.ID,
+			ProfileId: r.ProfileID,
+			AgentId:   SafeString(r.AgentID),
+			Name:      r.Name,
+			Config:    config,
+			Enabled:   r.Enabled,
+			Type:      mantraev1.RouterType_ROUTER_TYPE_UDP,
+			CreatedAt: SafeTimestamp(r.CreatedAt),
+			UpdatedAt: SafeTimestamp(r.UpdatedAt),
+		}
+	default:
+		return nil, fmt.Errorf("invalid router type: %s", r.Type)
+	}
+
+	return &router, nil
 }
 
 func buildProtoHttpRouter(r db.HttpRouter) (*mantraev1.Router, error) {

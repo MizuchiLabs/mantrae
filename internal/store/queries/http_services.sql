@@ -41,11 +41,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListHttpServicesByAgent :many
+SELECT
+  *
+FROM
+  http_services
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountHttpServices :one
 SELECT
   COUNT(*)
 FROM
   http_services;
+
+-- name: CountHttpServicesByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  http_services
+WHERE
+  profile_id = ?;
+
+-- name: CountHttpServicesByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  http_services
+WHERE
+  agent_id = ?;
 
 -- name: UpdateHttpService :one
 UPDATE http_services

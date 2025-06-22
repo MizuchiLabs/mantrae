@@ -25,6 +25,38 @@ func (q *Queries) CountHttpServices(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countHttpServicesByAgent = `-- name: CountHttpServicesByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  http_services
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) CountHttpServicesByAgent(ctx context.Context, agentID *string) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpServicesByAgentStmt, countHttpServicesByAgent, agentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countHttpServicesByProfile = `-- name: CountHttpServicesByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  http_services
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) CountHttpServicesByProfile(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpServicesByProfileStmt, countHttpServicesByProfile, profileID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createHttpService = `-- name: CreateHttpService :one
 INSERT INTO
   http_services (
@@ -148,6 +180,58 @@ type ListHttpServicesParams struct {
 
 func (q *Queries) ListHttpServices(ctx context.Context, arg ListHttpServicesParams) ([]HttpService, error) {
 	rows, err := q.query(ctx, q.listHttpServicesStmt, listHttpServices, arg.ProfileID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []HttpService
+	for rows.Next() {
+		var i HttpService
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Name,
+			&i.Config,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listHttpServicesByAgent = `-- name: ListHttpServicesByAgent :many
+SELECT
+  id, profile_id, agent_id, name, config, created_at, updated_at
+FROM
+  http_services
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?
+`
+
+type ListHttpServicesByAgentParams struct {
+	AgentID *string `json:"agentId"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
+func (q *Queries) ListHttpServicesByAgent(ctx context.Context, arg ListHttpServicesByAgentParams) ([]HttpService, error) {
+	rows, err := q.query(ctx, q.listHttpServicesByAgentStmt, listHttpServicesByAgent, arg.AgentID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

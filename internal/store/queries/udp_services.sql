@@ -41,11 +41,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListUdpServicesByAgent :many
+SELECT
+  *
+FROM
+  udp_services
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountUdpServices :one
 SELECT
   COUNT(*)
 FROM
   udp_services;
+
+-- name: CountUdpServicesByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  udp_services
+WHERE
+  profile_id = ?;
+
+-- name: CountUdpServicesByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  udp_services
+WHERE
+  agent_id = ?;
 
 -- name: UpdateUdpService :one
 UPDATE udp_services

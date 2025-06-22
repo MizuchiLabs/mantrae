@@ -42,11 +42,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListHttpMiddlewaresByAgent :many
+SELECT
+  *
+FROM
+  http_middlewares
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountHttpMiddlewares :one
 SELECT
   COUNT(*)
 FROM
   http_middlewares;
+
+-- name: CountHttpMiddlewaresByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  http_middlewares
+WHERE
+  profile_id = ?;
+
+-- name: CountHttpMiddlewaresByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  http_middlewares
+WHERE
+  agent_id = ?;
 
 -- name: UpdateHttpMiddleware :one
 UPDATE http_middlewares

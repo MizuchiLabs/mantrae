@@ -12,35 +12,42 @@ import (
 
 // GetContainers retrieves all local containers
 func GetContainers() ([]types.Container, error) {
-	// Create a new Docker client
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, errors.New("failed to create Docker client")
 	}
 
-	// Get all containers
-	containers, err := cli.ContainerList(context.Background(), container.ListOptions{})
+	containers, err := cli.ContainerList(
+		context.Background(),
+		container.ListOptions{All: false},
+	)
 	if err != nil {
 		return nil, errors.New("failed to list containers")
 	}
 
 	var result []types.Container
-	// portMap := make(map[int32]int32)
-
-	// Iterate over each container and populate the Container struct
 	for _, c := range containers {
-		// Skip Traefik
+		// Skip Traefik by name
+		skip := false
 		for _, name := range c.Names {
 			if strings.Contains(strings.ToLower(name), "traefik") {
-				continue
+				skip = true
+				break
 			}
 		}
+		if skip {
+			continue
+		}
 
-		// Populate PortInfo
-		// for _, p := range c.Ports {
-		// 	fmt.Printf("%s:%d -> %d/%s\n", p.IP, p.PublicPort, p.PrivatePort, p.Type)
-		// 	// portMap[int32(p.PublicPort)] = int32(p.PrivatePort)
-		// }
+		// Must have at least one exposed port
+		if len(c.Ports) == 0 {
+			continue
+		}
+
+		// Must have at least one label
+		if len(c.Labels) == 0 {
+			continue
+		}
 		result = append(result, c)
 	}
 

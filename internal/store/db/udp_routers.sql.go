@@ -25,6 +25,38 @@ func (q *Queries) CountUdpRouters(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countUdpRoutersByAgent = `-- name: CountUdpRoutersByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  udp_routers
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) CountUdpRoutersByAgent(ctx context.Context, agentID *string) (int64, error) {
+	row := q.queryRow(ctx, q.countUdpRoutersByAgentStmt, countUdpRoutersByAgent, agentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUdpRoutersByProfile = `-- name: CountUdpRoutersByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  udp_routers
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) CountUdpRoutersByProfile(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countUdpRoutersByProfileStmt, countUdpRoutersByProfile, profileID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUdpRouter = `-- name: CreateUdpRouter :one
 INSERT INTO
   udp_routers (
@@ -126,6 +158,59 @@ type ListUdpRoutersParams struct {
 
 func (q *Queries) ListUdpRouters(ctx context.Context, arg ListUdpRoutersParams) ([]UdpRouter, error) {
 	rows, err := q.query(ctx, q.listUdpRoutersStmt, listUdpRouters, arg.ProfileID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UdpRouter
+	for rows.Next() {
+		var i UdpRouter
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUdpRoutersByAgent = `-- name: ListUdpRoutersByAgent :many
+SELECT
+  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+FROM
+  udp_routers
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?
+`
+
+type ListUdpRoutersByAgentParams struct {
+	AgentID *string `json:"agentId"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
+func (q *Queries) ListUdpRoutersByAgent(ctx context.Context, arg ListUdpRoutersByAgentParams) ([]UdpRouter, error) {
+	rows, err := q.query(ctx, q.listUdpRoutersByAgentStmt, listUdpRoutersByAgent, arg.AgentID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

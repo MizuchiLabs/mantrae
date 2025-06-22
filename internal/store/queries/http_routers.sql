@@ -33,11 +33,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListHttpRoutersByAgent :many
+SELECT
+  *
+FROM
+  http_routers
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountHttpRouters :one
 SELECT
   COUNT(*)
 FROM
   http_routers;
+
+-- name: CountHttpRoutersByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  http_routers
+WHERE
+  profile_id = ?;
+
+-- name: CountHttpRoutersByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  http_routers
+WHERE
+  agent_id = ?;
 
 -- name: UpdateHttpRouter :one
 UPDATE http_routers

@@ -25,6 +25,38 @@ func (q *Queries) CountHttpRouters(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countHttpRoutersByAgent = `-- name: CountHttpRoutersByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  http_routers
+WHERE
+  agent_id = ?
+`
+
+func (q *Queries) CountHttpRoutersByAgent(ctx context.Context, agentID *string) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpRoutersByAgentStmt, countHttpRoutersByAgent, agentID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countHttpRoutersByProfile = `-- name: CountHttpRoutersByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  http_routers
+WHERE
+  profile_id = ?
+`
+
+func (q *Queries) CountHttpRoutersByProfile(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpRoutersByProfileStmt, countHttpRoutersByProfile, profileID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createHttpRouter = `-- name: CreateHttpRouter :one
 INSERT INTO
   http_routers (
@@ -126,6 +158,59 @@ type ListHttpRoutersParams struct {
 
 func (q *Queries) ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams) ([]HttpRouter, error) {
 	rows, err := q.query(ctx, q.listHttpRoutersStmt, listHttpRouters, arg.ProfileID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []HttpRouter
+	for rows.Next() {
+		var i HttpRouter
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProfileID,
+			&i.AgentID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listHttpRoutersByAgent = `-- name: ListHttpRoutersByAgent :many
+SELECT
+  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+FROM
+  http_routers
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?
+`
+
+type ListHttpRoutersByAgentParams struct {
+	AgentID *string `json:"agentId"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
+func (q *Queries) ListHttpRoutersByAgent(ctx context.Context, arg ListHttpRoutersByAgentParams) ([]HttpRouter, error) {
+	rows, err := q.query(ctx, q.listHttpRoutersByAgentStmt, listHttpRoutersByAgent, arg.AgentID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

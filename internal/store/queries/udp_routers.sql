@@ -33,11 +33,41 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListUdpRoutersByAgent :many
+SELECT
+  *
+FROM
+  udp_routers
+WHERE
+  agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountUdpRouters :one
 SELECT
   COUNT(*)
 FROM
   udp_routers;
+
+-- name: CountUdpRoutersByProfile :one
+SELECT
+  COUNT(*)
+FROM
+  udp_routers
+WHERE
+  profile_id = ?;
+
+-- name: CountUdpRoutersByAgent :one
+SELECT
+  COUNT(*)
+FROM
+  udp_routers
+WHERE
+  agent_id = ?;
 
 -- name: UpdateUdpRouter :one
 UPDATE udp_routers
