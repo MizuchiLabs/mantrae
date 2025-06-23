@@ -6,6 +6,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
@@ -22,19 +23,12 @@ func (s *EntryPointService) GetEntryPoint(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetEntryPointRequest],
 ) (*connect.Response[mantraev1.GetEntryPointResponse], error) {
-	entryPoint, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, req.Msg.Id)
+	result, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.GetEntryPointResponse{
-		EntryPoint: &mantraev1.EntryPoint{
-			Id:        entryPoint.ID,
-			Name:      entryPoint.Name,
-			Address:   entryPoint.Address,
-			IsDefault: entryPoint.IsDefault,
-			CreatedAt: SafeTimestamp(entryPoint.CreatedAt),
-			UpdatedAt: SafeTimestamp(entryPoint.UpdatedAt),
-		},
+		EntryPoint: convert.EntryPointToProto(&result),
 	}), nil
 }
 
@@ -48,20 +42,12 @@ func (s *EntryPointService) CreateEntryPoint(
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
 	}
-	entryPoint, err := s.app.Conn.GetQuery().CreateEntryPoint(ctx, params)
+	result, err := s.app.Conn.GetQuery().CreateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateEntryPointResponse{
-		EntryPoint: &mantraev1.EntryPoint{
-			Id:        entryPoint.ID,
-			ProfileId: entryPoint.ProfileID,
-			Name:      entryPoint.Name,
-			Address:   entryPoint.Address,
-			IsDefault: entryPoint.IsDefault,
-			CreatedAt: SafeTimestamp(entryPoint.CreatedAt),
-			UpdatedAt: SafeTimestamp(entryPoint.UpdatedAt),
-		},
+		EntryPoint: convert.EntryPointToProto(&result),
 	}), nil
 }
 
@@ -75,20 +61,12 @@ func (s *EntryPointService) UpdateEntryPoint(
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
 	}
-	entryPoint, err := s.app.Conn.GetQuery().UpdateEntryPoint(ctx, params)
+	result, err := s.app.Conn.GetQuery().UpdateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateEntryPointResponse{
-		EntryPoint: &mantraev1.EntryPoint{
-			Id:        entryPoint.ID,
-			ProfileId: entryPoint.ProfileID,
-			Name:      entryPoint.Name,
-			Address:   entryPoint.Address,
-			IsDefault: entryPoint.IsDefault,
-			CreatedAt: SafeTimestamp(entryPoint.CreatedAt),
-			UpdatedAt: SafeTimestamp(entryPoint.UpdatedAt),
-		},
+		EntryPoint: convert.EntryPointToProto(&result),
 	}), nil
 }
 
@@ -120,7 +98,7 @@ func (s *EntryPointService) ListEntryPoints(
 		params.Offset = *req.Msg.Offset
 	}
 
-	dbEntryPoints, err := s.app.Conn.GetQuery().ListEntryPoints(ctx, params)
+	result, err := s.app.Conn.GetQuery().ListEntryPoints(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -129,20 +107,8 @@ func (s *EntryPointService) ListEntryPoints(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var entryPoints []*mantraev1.EntryPoint
-	for _, entryPoint := range dbEntryPoints {
-		entryPoints = append(entryPoints, &mantraev1.EntryPoint{
-			Id:        entryPoint.ID,
-			ProfileId: entryPoint.ProfileID,
-			Name:      entryPoint.Name,
-			Address:   entryPoint.Address,
-			IsDefault: entryPoint.IsDefault,
-			CreatedAt: SafeTimestamp(entryPoint.CreatedAt),
-			UpdatedAt: SafeTimestamp(entryPoint.UpdatedAt),
-		})
-	}
 	return connect.NewResponse(&mantraev1.ListEntryPointsResponse{
-		EntryPoints: entryPoints,
+		EntryPoints: convert.EntryPointsToProto(result),
 		TotalCount:  totalCount,
 	}), nil
 }

@@ -235,7 +235,7 @@ func OIDCStatus(a *config.App) http.HandlerFunc {
 
 		if err == nil && oidcConfig != nil {
 			providerName, _ := a.SM.Get(settings.KeyOIDCProviderName)
-			pwLogin, _ := a.SM.Get(settings.KeyPasswordLoginDisabled)
+			pwLogin, _ := a.SM.Get(settings.KeyPasswordLoginEnabled)
 			response["enabled"] = oidcConfig.Enabled
 			response["provider"] = providerName
 			response["loginDisabled"] = settings.AsBool(pwLogin)
@@ -286,41 +286,35 @@ func setupOIDCConfig(
 
 func getOIDCConfig(ctx context.Context, a *config.App) (*OIDCConfig, error) {
 	config := &OIDCConfig{Scopes: []string{"openid", "email", "profile"}}
-
 	sets := a.SM.GetAll()
 
 	// Parse settings (same as before but simplified validation)
 	if enabled, exists := sets[settings.KeyOIDCEnabled]; exists {
 		config.Enabled = settings.AsBool(enabled)
 	}
+	// Return early if disabled
 	if !config.Enabled {
-		return config, nil // Return early if disabled
+		return config, nil
 	}
-
 	if pkce, exists := sets[settings.KeyOIDCPKCE]; exists {
 		config.UsePKCE = settings.AsBool(pkce)
 	}
-
 	if clientID, exists := sets[settings.KeyOIDCClientID]; exists {
 		config.ClientID = clientID
 	}
-
 	if !config.UsePKCE {
 		if clientSecret, exists := sets[settings.KeyOIDCClientSecret]; exists {
 			config.ClientSecret = clientSecret
 		}
 	}
-
 	if serverURL, exists := sets[settings.KeyServerURL]; exists {
 		if parsed, err := url.Parse(serverURL); err == nil {
 			config.RedirectURL = strings.TrimSuffix(parsed.String(), "/") + "/api/oidc/callback"
 		}
 	}
-
 	if issuerURL, exists := sets[settings.KeyOIDCIssuerURL]; exists {
 		config.IssuerURL = issuerURL
 	}
-
 	if scopes, exists := sets["oauth_scopes"]; exists && scopes != "" {
 		config.Scopes = strings.Split(scopes, ",")
 		for i := range config.Scopes {

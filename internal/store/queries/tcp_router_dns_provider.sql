@@ -4,22 +4,14 @@ OR IGNORE INTO tcp_router_dns_providers (tcp_router_id, dns_provider_id)
 VALUES
   (?, ?);
 
--- name: GetTcpRouterDNSProvider :one
+-- name: GetDnsProvidersByTcpRouter :many
 SELECT
-  *
+  dp.*
 FROM
-  tcp_router_dns_providers
+  dns_providers dp
+  JOIN tcp_router_dns_providers trdp ON dp.id = trdp.dns_provider_id
 WHERE
-  tcp_router_id = ?
-  AND dns_provider_id = ?;
-
--- name: ListTcpRouterDNSProviders :many
-SELECT
-  *
-FROM
-  tcp_router_dns_providers
-WHERE
-  tcp_router_id = ?;
+  trdp.tcp_router_id = ?;
 
 -- name: DeleteTcpRouterDNSProvider :exec
 DELETE FROM tcp_router_dns_providers

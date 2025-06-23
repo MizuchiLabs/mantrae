@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"maps"
 	"os"
 	"reflect"
 	"strconv"
@@ -19,36 +18,36 @@ import (
 
 // Settings defines all application settings
 type Settings struct {
-	ServerURL             string        `setting:"server_url"              default:""`
-	BackupEnabled         bool          `setting:"backup_enabled"          default:"true"`
-	BackupInterval        time.Duration `setting:"backup_interval"         default:"24h"`
-	BackupKeep            int           `setting:"backup_keep"             default:"3"`
-	BackupStorage         string        `setting:"backup_storage_select"   default:"local"`
-	BackupPath            string        `setting:"backup_path"             default:"backups"`
-	S3Endpoint            string        `setting:"s3_endpoint"             default:""`
-	S3Bucket              string        `setting:"s3_bucket"               default:"mantrae"`
-	S3Region              string        `setting:"s3_region"               default:"us-east-1"`
-	S3AccessKey           string        `setting:"s3_access_key"           default:""`
-	S3SecretKey           string        `setting:"s3_secret_key"           default:""`
-	S3UsePathStyle        bool          `setting:"s3_use_path_style"       default:"false"`
-	EmailHost             string        `setting:"email_host"              default:"localhost"`
-	EmailPort             int           `setting:"email_port"              default:"587"`
-	EmailUser             string        `setting:"email_user"              default:""`
-	EmailPassword         string        `setting:"email_password"          default:""`
-	EmailFrom             string        `setting:"email_from"              default:"mantrae@localhost"`
-	PasswordLoginDisabled bool          `setting:"password_login_disabled" default:"false"`
-	OIDCEnabled           bool          `setting:"oidc_enabled"            default:"false"`
-	OIDCClientID          string        `setting:"oidc_client_id"          default:""`
-	OIDCClientSecret      string        `setting:"oidc_client_secret"      default:""`
-	OIDCIssuerURL         string        `setting:"oidc_issuer_url"         default:""`
-	OIDCProviderName      string        `setting:"oidc_provider_name"      default:""`
-	OIDCScopes            string        `setting:"oidc_scopes"             default:""`
-	OIDCPKCE              bool          `setting:"oidc_pkce"               default:"false"`
-	AgentCleanupEnabled   bool          `setting:"agent_cleanup_enabled"   default:"true"`
-	AgentCleanupInterval  time.Duration `setting:"agent_cleanup_interval"  default:"24h"`
-	TraefikSyncInterval   time.Duration `setting:"traefik_sync_interval"   default:"20s"`
-	DNSSyncInterval       time.Duration `setting:"dns_sync_interval"       default:"3m"`
-	AgentCheckInterval    time.Duration `setting:"agent_check_interval"    default:"5m"`
+	ServerURL            string        `setting:"server_url"             default:""`
+	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"`
+	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"`
+	BackupKeep           int           `setting:"backup_keep"            default:"3"`
+	BackupStorage        string        `setting:"backup_storage_select"  default:"local"`
+	BackupPath           string        `setting:"backup_path"            default:"backups"`
+	S3Endpoint           string        `setting:"s3_endpoint"            default:""`
+	S3Bucket             string        `setting:"s3_bucket"              default:"mantrae"`
+	S3Region             string        `setting:"s3_region"              default:"us-east-1"`
+	S3AccessKey          string        `setting:"s3_access_key"          default:""`
+	S3SecretKey          string        `setting:"s3_secret_key"          default:""`
+	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"`
+	EmailHost            string        `setting:"email_host"             default:"localhost"`
+	EmailPort            int           `setting:"email_port"             default:"587"`
+	EmailUser            string        `setting:"email_user"             default:""`
+	EmailPassword        string        `setting:"email_password"         default:""`
+	EmailFrom            string        `setting:"email_from"             default:"mantrae@localhost"`
+	PasswordLoginEnabled bool          `setting:"password_login_enabled" default:"true"`
+	OIDCEnabled          bool          `setting:"oidc_enabled"           default:"false"`
+	OIDCClientID         string        `setting:"oidc_client_id"         default:""`
+	OIDCClientSecret     string        `setting:"oidc_client_secret"     default:""`
+	OIDCIssuerURL        string        `setting:"oidc_issuer_url"        default:""`
+	OIDCProviderName     string        `setting:"oidc_provider_name"     default:""`
+	OIDCScopes           string        `setting:"oidc_scopes"            default:""`
+	OIDCPKCE             bool          `setting:"oidc_pkce"              default:"false"`
+	AgentCleanupEnabled  bool          `setting:"agent_cleanup_enabled"  default:"true"`
+	AgentCleanupInterval time.Duration `setting:"agent_cleanup_interval" default:"24h"`
+	TraefikSyncInterval  time.Duration `setting:"traefik_sync_interval"  default:"20s"`
+	DNSSyncInterval      time.Duration `setting:"dns_sync_interval"      default:"3m"`
+	AgentCheckInterval   time.Duration `setting:"agent_check_interval"   default:"5m"`
 }
 
 type SettingsManager struct {
@@ -131,15 +130,12 @@ func (sm *SettingsManager) validKeys() map[string]struct{} {
 
 func (sm *SettingsManager) Get(key string) (string, bool) {
 	sm.mu.RLock()
-	defer sm.mu.RUnlock()
 	val, ok := sm.cache[key]
+	sm.mu.RUnlock()
 	return val, ok
 }
 
 func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
-	sm.mu.Lock()
-	defer sm.mu.Unlock()
-
 	if _, ok := sm.validKeys()[key]; !ok {
 		return fmt.Errorf("invalid setting key: %s", key)
 	}
@@ -149,28 +145,48 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 		return err
 	}
 
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	// Store old value for potential rollback
+	oldVal, existed := sm.cache[key]
+
+	// Update cache first
 	sm.cache[key] = val
-	return sm.conn.GetQuery().UpsertSetting(ctx, *params)
+
+	// Update database
+	if err := sm.conn.GetQuery().UpsertSetting(ctx, *params); err != nil {
+		// Rollback cache on database error
+		if existed {
+			sm.cache[key] = oldVal
+		} else {
+			delete(sm.cache, key)
+		}
+		return fmt.Errorf("failed to update setting in database: %w", err)
+	}
+
+	return nil
 }
 
 func (sm *SettingsManager) GetAll() map[string]string {
 	sm.mu.RLock()
-	defer sm.mu.RUnlock()
-	c := make(map[string]string)
-	maps.Copy(c, sm.cache)
-	return c
+	result := make(map[string]string, len(sm.cache))
+	for k, v := range sm.cache {
+		result[k] = v
+	}
+	sm.mu.RUnlock()
+	return result
 }
 
 func (sm *SettingsManager) GetMany(keys []string) map[string]string {
 	sm.mu.RLock()
-	defer sm.mu.RUnlock()
-
 	result := make(map[string]string, len(keys))
 	for _, k := range keys {
 		if val, ok := sm.cache[k]; ok {
 			result[k] = val
 		}
 	}
+	sm.mu.RUnlock()
 	return result
 }
 

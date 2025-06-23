@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -24,44 +25,13 @@ func (s *DnsProviderService) GetDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetDnsProviderRequest],
 ) (*connect.Response[mantraev1.GetDnsProviderResponse], error) {
-	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
+	result, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	var dnsType mantraev1.DnsProviderType
-	switch dnsProvider.Type {
-	case "cloudflare":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
-		break
-	case "powerdns":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
-		break
-	case "technitium":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
-		break
-	default:
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid dns provider type"),
-		)
-	}
+
 	return connect.NewResponse(&mantraev1.GetDnsProviderResponse{
-		DnsProvider: &mantraev1.DnsProvider{
-			Id:   dnsProvider.ID,
-			Name: dnsProvider.Name,
-			Type: dnsType,
-			Config: &mantraev1.DnsProviderConfig{
-				ApiKey:     dnsProvider.Config.APIKey,
-				ApiUrl:     dnsProvider.Config.APIUrl,
-				Ip:         dnsProvider.Config.IP,
-				Proxied:    dnsProvider.Config.Proxied,
-				AutoUpdate: dnsProvider.Config.AutoUpdate,
-				ZoneType:   dnsProvider.Config.ZoneType,
-			},
-			IsActive:  dnsProvider.IsActive,
-			CreatedAt: SafeTimestamp(dnsProvider.CreatedAt),
-			UpdatedAt: SafeTimestamp(dnsProvider.UpdatedAt),
-		},
+		DnsProvider: convert.DNSProviderToProto(&result),
 	}), nil
 }
 
@@ -101,27 +71,12 @@ func (s *DnsProviderService) CreateDnsProvider(
 		IsActive: req.Msg.IsActive,
 	}
 
-	dnsProvider, err := s.app.Conn.GetQuery().CreateDnsProvider(ctx, params)
+	result, err := s.app.Conn.GetQuery().CreateDnsProvider(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateDnsProviderResponse{
-		DnsProvider: &mantraev1.DnsProvider{
-			Id:   dnsProvider.ID,
-			Name: dnsProvider.Name,
-			Type: req.Msg.Type,
-			Config: &mantraev1.DnsProviderConfig{
-				ApiKey:     dnsProvider.Config.APIKey,
-				ApiUrl:     dnsProvider.Config.APIUrl,
-				Ip:         dnsProvider.Config.IP,
-				Proxied:    dnsProvider.Config.Proxied,
-				AutoUpdate: dnsProvider.Config.AutoUpdate,
-				ZoneType:   dnsProvider.Config.ZoneType,
-			},
-			IsActive:  dnsProvider.IsActive,
-			CreatedAt: SafeTimestamp(dnsProvider.CreatedAt),
-			UpdatedAt: SafeTimestamp(dnsProvider.UpdatedAt),
-		},
+		DnsProvider: convert.DNSProviderToProto(&result),
 	}), nil
 }
 
@@ -162,27 +117,12 @@ func (s *DnsProviderService) UpdateDnsProvider(
 		IsActive: req.Msg.IsActive,
 	}
 
-	dnsProvider, err := s.app.Conn.GetQuery().UpdateDnsProvider(ctx, params)
+	result, err := s.app.Conn.GetQuery().UpdateDnsProvider(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateDnsProviderResponse{
-		DnsProvider: &mantraev1.DnsProvider{
-			Id:   dnsProvider.ID,
-			Name: dnsProvider.Name,
-			Type: req.Msg.Type,
-			Config: &mantraev1.DnsProviderConfig{
-				ApiKey:     dnsProvider.Config.APIKey,
-				ApiUrl:     dnsProvider.Config.APIUrl,
-				Ip:         dnsProvider.Config.IP,
-				Proxied:    dnsProvider.Config.Proxied,
-				AutoUpdate: dnsProvider.Config.AutoUpdate,
-				ZoneType:   dnsProvider.Config.ZoneType,
-			},
-			IsActive:  dnsProvider.IsActive,
-			CreatedAt: SafeTimestamp(dnsProvider.CreatedAt),
-			UpdatedAt: SafeTimestamp(dnsProvider.UpdatedAt),
-		},
+		DnsProvider: convert.DNSProviderToProto(&result),
 	}), nil
 }
 
@@ -190,8 +130,7 @@ func (s *DnsProviderService) DeleteDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteDnsProviderRequest],
 ) (*connect.Response[mantraev1.DeleteDnsProviderResponse], error) {
-	err := s.app.Conn.GetQuery().DeleteDnsProvider(ctx, req.Msg.Id)
-	if err != nil {
+	if err := s.app.Conn.GetQuery().DeleteDnsProvider(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.DeleteDnsProviderResponse{}), nil
@@ -213,7 +152,7 @@ func (s *DnsProviderService) ListDnsProviders(
 		params.Offset = *req.Msg.Offset
 	}
 
-	dbDNSProviders, err := s.app.Conn.GetQuery().ListDnsProviders(ctx, params)
+	result, err := s.app.Conn.GetQuery().ListDnsProviders(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -222,45 +161,8 @@ func (s *DnsProviderService) ListDnsProviders(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var dnsProviders []*mantraev1.DnsProvider
-	for _, dnsProvider := range dbDNSProviders {
-		var dnsType mantraev1.DnsProviderType
-		switch dnsProvider.Type {
-		case "cloudflare":
-			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
-			break
-		case "powerdns":
-			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
-			break
-		case "technitium":
-			dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
-			break
-		default:
-			return nil, connect.NewError(
-				connect.CodeInvalidArgument,
-				errors.New("invalid dns provider type"),
-			)
-		}
-
-		dnsProviders = append(dnsProviders, &mantraev1.DnsProvider{
-			Id:   dnsProvider.ID,
-			Name: dnsProvider.Name,
-			Type: dnsType,
-			Config: &mantraev1.DnsProviderConfig{
-				ApiKey:     dnsProvider.Config.APIKey,
-				ApiUrl:     dnsProvider.Config.APIUrl,
-				Ip:         dnsProvider.Config.IP,
-				Proxied:    dnsProvider.Config.Proxied,
-				AutoUpdate: dnsProvider.Config.AutoUpdate,
-				ZoneType:   dnsProvider.Config.ZoneType,
-			},
-			IsActive:  dnsProvider.IsActive,
-			CreatedAt: SafeTimestamp(dnsProvider.CreatedAt),
-			UpdatedAt: SafeTimestamp(dnsProvider.UpdatedAt),
-		})
-	}
 	return connect.NewResponse(&mantraev1.ListDnsProvidersResponse{
-		DnsProviders: dnsProviders,
+		DnsProviders: convert.DNSProvidersToProto(result),
 		TotalCount:   totalCount,
 	}), nil
 }

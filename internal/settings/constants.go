@@ -28,14 +28,14 @@ const (
 	KeyEmailFrom     = "email_from"
 
 	// OIDC settings
-	KeyOIDCEnabled           = "oidc_enabled"
-	KeyOIDCClientID          = "oidc_client_id"
-	KeyOIDCClientSecret      = "oidc_client_secret"
-	KeyOIDCProviderName      = "oidc_provider_name"
-	KeyOIDCIssuerURL         = "oidc_issuer_url"
-	KeyOIDCScopes            = "oidc_scopes"
-	KeyOIDCPKCE              = "oidc_pkce"
-	KeyPasswordLoginDisabled = "password_login_disabled"
+	KeyOIDCEnabled          = "oidc_enabled"
+	KeyOIDCClientID         = "oidc_client_id"
+	KeyOIDCClientSecret     = "oidc_client_secret"
+	KeyOIDCProviderName     = "oidc_provider_name"
+	KeyOIDCIssuerURL        = "oidc_issuer_url"
+	KeyOIDCScopes           = "oidc_scopes"
+	KeyOIDCPKCE             = "oidc_pkce"
+	KeyPasswordLoginEnabled = "password_login_enabled"
 
 	// Agent settings
 	KeyAgentCleanupEnabled  = "agent_cleanup_enabled"

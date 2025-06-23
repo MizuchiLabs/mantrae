@@ -6,6 +6,7 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
@@ -22,18 +23,12 @@ func (s *ProfileService) GetProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetProfileRequest],
 ) (*connect.Response[mantraev1.GetProfileResponse], error) {
-	profile, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
+	result, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.GetProfileResponse{
-		Profile: &mantraev1.Profile{
-			Id:          profile.ID,
-			Name:        profile.Name,
-			Description: SafeString(profile.Description),
-			CreatedAt:   SafeTimestamp(profile.CreatedAt),
-			UpdatedAt:   SafeTimestamp(profile.UpdatedAt),
-		},
+		Profile: convert.ProfileToProto(&result),
 	}), nil
 }
 
@@ -48,18 +43,12 @@ func (s *ProfileService) CreateProfile(
 		params.Description = req.Msg.Description
 	}
 
-	profile, err := s.app.Conn.GetQuery().CreateProfile(ctx, params)
+	result, err := s.app.Conn.GetQuery().CreateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateProfileResponse{
-		Profile: &mantraev1.Profile{
-			Id:          profile.ID,
-			Name:        profile.Name,
-			Description: SafeString(profile.Description),
-			CreatedAt:   SafeTimestamp(profile.CreatedAt),
-			UpdatedAt:   SafeTimestamp(profile.UpdatedAt),
-		},
+		Profile: convert.ProfileToProto(&result),
 	}), nil
 }
 
@@ -75,18 +64,12 @@ func (s *ProfileService) UpdateProfile(
 		params.Description = req.Msg.Description
 	}
 
-	profile, err := s.app.Conn.GetQuery().UpdateProfile(ctx, params)
+	result, err := s.app.Conn.GetQuery().UpdateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateProfileResponse{
-		Profile: &mantraev1.Profile{
-			Id:          profile.ID,
-			Name:        profile.Name,
-			Description: SafeString(profile.Description),
-			CreatedAt:   SafeTimestamp(profile.CreatedAt),
-			UpdatedAt:   SafeTimestamp(profile.UpdatedAt),
-		},
+		Profile: convert.ProfileToProto(&result),
 	}), nil
 }
 
@@ -117,7 +100,7 @@ func (s *ProfileService) ListProfiles(
 		params.Offset = *req.Msg.Offset
 	}
 
-	dbProfiles, err := s.app.Conn.GetQuery().ListProfiles(ctx, params)
+	result, err := s.app.Conn.GetQuery().ListProfiles(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -126,18 +109,8 @@ func (s *ProfileService) ListProfiles(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var profiles []*mantraev1.Profile
-	for _, profile := range dbProfiles {
-		profiles = append(profiles, &mantraev1.Profile{
-			Id:          profile.ID,
-			Name:        profile.Name,
-			Description: SafeString(profile.Description),
-			CreatedAt:   SafeTimestamp(profile.CreatedAt),
-			UpdatedAt:   SafeTimestamp(profile.UpdatedAt),
-		})
-	}
 	return connect.NewResponse(&mantraev1.ListProfilesResponse{
-		Profiles:   profiles,
+		Profiles:   convert.ProfilesToProto(result),
 		TotalCount: totalCount,
 	}), nil
 }

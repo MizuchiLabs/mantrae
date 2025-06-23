@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { agentClient, settingClient } from '$lib/api';
-	import { Label } from '$lib/components/ui/label/index.js';
+	import { agentClient } from '$lib/api';
 	import AgentModal from '$lib/components/modals/agent.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
-	import CopyInput from '$lib/components/ui/copy-input/copy-input.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
@@ -16,6 +14,7 @@
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { readable } from 'svelte/store';
 
 	let item = $state({} as Agent);
 	let open = $state(false);
@@ -90,17 +89,19 @@
 		}
 	];
 
-	// const now = readable(new Date(), (set) => {
-	// 	const interval = setInterval(() => {
-	// 		set(new Date());
-	// 	}, 1000);
-	// 	return () => clearInterval(interval);
-	// });
-	// let agentStatus = $derived((agent: Agent) => {
-	// 	const lastSeen = new Date(agent.updatedAt);
-	// 	const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
-	// 	return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
-	// });
+	const now = readable(new Date(), (set) => {
+		const interval = setInterval(() => {
+			set(new Date());
+		}, 1000);
+		return () => clearInterval(interval);
+	});
+	function getAgentStatus(agent: Agent) {
+		if (!agent.updatedAt) return false;
+		const lastSeen = new Date(timestampDate(agent.updatedAt));
+		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
+		// return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
+		return lastSeenInSeconds <= 30 ? true : false;
+	}
 
 	const bulkActions: BulkAction<Agent>[] = [
 		{
@@ -179,17 +180,9 @@
 </svelte:head>
 
 <div class="flex flex-col gap-2">
-	<div class="flex items-center justify-between gap-2">
-		<div class="flex items-center gap-2">
-			<Bot />
-			<h1 class="text-2xl font-bold">Agent Management</h1>
-		</div>
-		{#await settingClient.getSetting({ key: 'agent_bootstrap_token' }) then setting}
-			<div class="flex max-w-md flex-row items-center gap-2 overflow-hidden whitespace-nowrap">
-				<Label for="bootstrap_token" class="flex-1">Bootstrap Token</Label>
-				<CopyInput name="bootstrap_token" value={setting?.value} />
-			</div>
-		{/await}
+	<div class="flex items-center justify-start gap-2">
+		<Bot />
+		<h1 class="text-2xl font-bold">Agent Management</h1>
 	</div>
 	<DataTable
 		{data}
@@ -197,6 +190,10 @@
 		{rowCount}
 		{onPaginationChange}
 		{bulkActions}
+		rowClassModifiers={{
+			'bg-red-50': (r) => !getAgentStatus(r),
+			'bg-green-50': (r) => getAgentStatus(r)
+		}}
 		createButton={{
 			label: 'Add Agent',
 			onClick: createAgent

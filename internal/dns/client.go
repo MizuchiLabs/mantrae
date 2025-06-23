@@ -114,13 +114,13 @@ func DeleteDNS(ctx context.Context, q *db.Queries, proto string, routerID int64)
 			return fmt.Errorf("failed to extract domains: %w", err)
 		}
 
-		providers, err := q.ListHttpRouterDNSProviders(ctx, routerID)
+		providers, err := q.GetDnsProvidersByHttpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get DNS provider: %w", err)
 		}
 
 		for _, p := range providers {
-			provider, err := getProvider(p.DnsProviderID, q)
+			provider, err := getProvider(p.ID, q)
 			if err != nil {
 				slog.Error("Failed to get provider", "error", err, "provider", p)
 				continue
@@ -144,13 +144,13 @@ func DeleteDNS(ctx context.Context, q *db.Queries, proto string, routerID int64)
 			return fmt.Errorf("failed to extract domains: %w", err)
 		}
 
-		providers, err := q.ListTcpRouterDNSProviders(ctx, routerID)
+		providers, err := q.GetDnsProvidersByTcpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get DNS provider: %w", err)
 		}
 
 		for _, p := range providers {
-			provider, err := getProvider(p.DnsProviderID, q)
+			provider, err := getProvider(p.ID, q)
 			if err != nil {
 				slog.Error("Failed to get provider", "error", err, "provider", p)
 				continue

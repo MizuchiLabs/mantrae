@@ -5,6 +5,7 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "mantrae/v1/dns_provider.proto";
 
 service RouterService {
   rpc GetRouter(GetRouterRequest) returns (GetRouterResponse) {
@@ -33,8 +34,9 @@ message Router {
   google.protobuf.Struct config = 5;
   bool enabled = 6;
   RouterType type = 7;
-  google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
+  repeated DnsProvider dns_providers = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
 }
 
 message GetRouterRequest {

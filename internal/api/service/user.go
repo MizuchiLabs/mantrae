@@ -11,7 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/mail"
+	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -60,9 +62,7 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.LoginUserResponse{
-		Token: token,
-	}), nil
+	return connect.NewResponse(&mantraev1.LoginUserResponse{Token: token}), nil
 }
 
 func (s *UserService) VerifyJWT(
@@ -74,20 +74,14 @@ func (s *UserService) VerifyJWT(
 	if !ok || userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 	}
-	user, err := s.app.Conn.GetQuery().GetUserByID(ctx, userID)
+	result, err := s.app.Conn.GetQuery().GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.VerifyJWTResponse{User: &mantraev1.User{
-		Id:        user.ID,
-		Username:  user.Username,
-		Email:     SafeString(user.Email),
-		IsAdmin:   user.IsAdmin,
-		LastLogin: SafeTimestamp(user.LastLogin),
-		CreatedAt: SafeTimestamp(user.CreatedAt),
-		UpdatedAt: SafeTimestamp(user.UpdatedAt),
-	}}), nil
+	return connect.NewResponse(&mantraev1.VerifyJWTResponse{
+		User: convert.UserToProto(&result),
+	}), nil
 }
 
 func (s *UserService) VerifyOTP(
@@ -199,15 +193,7 @@ func (s *UserService) GetUser(
 	}
 
 	return connect.NewResponse(&mantraev1.GetUserResponse{
-		User: &mantraev1.User{
-			Id:        user.ID,
-			Username:  user.Username,
-			Email:     SafeString(user.Email),
-			IsAdmin:   user.IsAdmin,
-			LastLogin: SafeTimestamp(user.LastLogin),
-			CreatedAt: SafeTimestamp(user.CreatedAt),
-			UpdatedAt: SafeTimestamp(user.UpdatedAt),
-		},
+		User: convert.UserToProto(&user),
 	}), nil
 }
 
@@ -230,20 +216,12 @@ func (s *UserService) CreateUser(
 		params.Email = &req.Msg.Email
 	}
 
-	user, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
+	result, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateUserResponse{
-		User: &mantraev1.User{
-			Id:        user.ID,
-			Username:  user.Username,
-			Email:     SafeString(user.Email),
-			IsAdmin:   user.IsAdmin,
-			LastLogin: SafeTimestamp(user.LastLogin),
-			CreatedAt: SafeTimestamp(user.CreatedAt),
-			UpdatedAt: SafeTimestamp(user.UpdatedAt),
-		},
+		User: convert.UserToProto(&result),
 	}), nil
 }
 
@@ -280,15 +258,7 @@ func (s *UserService) UpdateUser(
 	}
 
 	return connect.NewResponse(&mantraev1.UpdateUserResponse{
-		User: &mantraev1.User{
-			Id:        user.ID,
-			Username:  user.Username,
-			Email:     SafeString(user.Email),
-			IsAdmin:   user.IsAdmin,
-			LastLogin: SafeTimestamp(user.LastLogin),
-			CreatedAt: SafeTimestamp(user.CreatedAt),
-			UpdatedAt: SafeTimestamp(user.UpdatedAt),
-		},
+		User: convert.UserToProto(&user),
 	}), nil
 }
 
@@ -318,7 +288,7 @@ func (s *UserService) ListUsers(
 		params.Offset = *req.Msg.Offset
 	}
 
-	dbUsers, err := s.app.Conn.GetQuery().ListUsers(ctx, params)
+	result, err := s.app.Conn.GetQuery().ListUsers(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -327,20 +297,40 @@ func (s *UserService) ListUsers(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	var users []*mantraev1.User
-	for _, user := range dbUsers {
-		users = append(users, &mantraev1.User{
-			Id:        user.ID,
-			Username:  user.Username,
-			Email:     SafeString(user.Email),
-			IsAdmin:   user.IsAdmin,
-			LastLogin: SafeTimestamp(user.LastLogin),
-			CreatedAt: SafeTimestamp(user.CreatedAt),
-			UpdatedAt: SafeTimestamp(user.UpdatedAt),
-		})
-	}
 	return connect.NewResponse(&mantraev1.ListUsersResponse{
-		Users:      users,
+		Users:      convert.UsersToProto(result),
 		TotalCount: totalCount,
+	}), nil
+}
+
+func (s *UserService) GetOIDCStatus(
+	ctx context.Context,
+	req *connect.Request[mantraev1.GetOIDCStatusRequest],
+) (*connect.Response[mantraev1.GetOIDCStatusResponse], error) {
+	oidcEnabled, ok := s.app.SM.Get(settings.KeyOIDCEnabled)
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInternal,
+			errors.New("failed to get oidc enabled setting"),
+		)
+	}
+	loginEnabled, ok := s.app.SM.Get(settings.KeyPasswordLoginEnabled)
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInternal,
+			errors.New("failed to get login disabled setting"),
+		)
+	}
+	provider, ok := s.app.SM.Get(settings.KeyOIDCProviderName)
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInternal,
+			errors.New("failed to get oidc provider name setting"),
+		)
+	}
+	return connect.NewResponse(&mantraev1.GetOIDCStatusResponse{
+		OidcEnabled:  oidcEnabled == "true",
+		LoginEnabled: loginEnabled == "true",
+		Provider:     provider,
 	}), nil
 }

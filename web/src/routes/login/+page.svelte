@@ -3,14 +3,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { toast } from 'svelte-sonner';
 	import { profileClient, userClient } from '$lib/api';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores/user';
-	import type { OAuthStatus } from '$lib/types';
 	import { token } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
@@ -18,7 +15,7 @@
 	let username = $state('');
 	let password = $state('');
 	let remember = $state(false);
-	// let oauthStatus: OAuthStatus = $state({ enabled: false, provider: '' });
+
 	const handleReset = async () => {
 		if (username.length > 0) {
 			toast.error('Please enter a username!');
@@ -73,55 +70,64 @@
 			toast.error('Failed to login', { description: e.message });
 		}
 	};
-	// const handleOIDCLogin = () => {
-	// 	window.location.href = '/api/oidc/login';
-	// };
-	// onMount(async () => {
-	// 	oauthStatus = await api.oauthStatus();
-	// });
+
+	const handleOIDCLogin = () => {
+		window.location.href = '/api/oidc/login';
+	};
 </script>
 
 {#if !user.isLoggedIn()}
-	<Card.Root class="w-[400px]">
-		<Card.Header>
-			<Card.Title>Login</Card.Title>
+	<Card.Root class="max-w-md">
+		<Card.Header class="flex flex-col items-center text-center">
+			<Card.Title class="text-2xl font-bold">Welcome back</Card.Title>
 			<Card.Description>Login to your account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form onsubmit={handleSubmit} class="space-y-4">
-				<!-- {#if !oauthStatus.loginDisabled} -->
-				<div class="flex flex-col gap-2">
-					<Label for="username">Username</Label>
-					<Input id="username" bind:value={username} />
-				</div>
-
-				<div class="flex flex-col gap-2">
-					<Label for="password">Password</Label>
-					<PasswordInput bind:value={password} />
-					<div class="mt-1 flex flex-row items-center justify-between">
-						<div class="items-top flex items-center justify-end gap-2">
-							<Checkbox id="remember" bind:checked={remember} />
-							<div class="grid gap-2 leading-none">
-								<Label for="terms1" class="text-sm">Remember me</Label>
+			{#await userClient.getOIDCStatus({}) then value}
+				<!-- promise was fulfilled -->
+				<form onsubmit={handleSubmit} class="p-4 md:p-6">
+					{#if value.loginEnabled}
+						<div class="flex flex-col gap-6">
+							<div class="grid gap-3">
+								<Label for="username">Username</Label>
+								<Input id="username" bind:value={username} />
 							</div>
+
+							<div class="grid gap-3">
+								<div class="flex items-center">
+									<Label for="password">Password</Label>
+									<button
+										class="text-muted-foreground ml-auto text-xs hover:underline"
+										type="button"
+										onclick={handleReset}
+									>
+										Forgot your password?
+									</button>
+								</div>
+								<PasswordInput bind:value={password} />
+							</div>
+
+							<Button type="submit" class="w-full">Login</Button>
+
+							{#if value.oidcEnabled}
+								<div
+									class="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
+								>
+									<span class="bg-background text-muted-foreground relative z-10 px-2">
+										Or continue with
+									</span>
+								</div>
+							{/if}
 						</div>
-						<button class="text-muted-foreground text-xs" type="button" onclick={handleReset}>
-							Forgot password?
-						</button>
-					</div>
-				</div>
+					{/if}
 
-				<Separator />
-
-				<Button type="submit" class="w-full">Login</Button>
-				<!-- {/if} -->
-
-				<!-- {#if oauthStatus.enabled} -->
-				<!-- 	<Button variant="outline" class="w-full" onclick={handleOIDCLogin}> -->
-				<!-- 		Login with {oauthStatus.provider || 'OIDC'} -->
-				<!-- 	</Button> -->
-				<!-- {/if} -->
-			</form>
+					{#if value.oidcEnabled}
+						<Button variant="outline" class="w-full" onclick={handleOIDCLogin}>
+							Login with {value.provider || 'OIDC'}
+						</Button>
+					{/if}
+				</form>
+			{/await}
 		</Card.Content>
 	</Card.Root>
 {/if}

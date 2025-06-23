@@ -118,5 +118,5 @@ message RotateAgentTokenRequest {
   ];
 }
 message RotateAgentTokenResponse {
-  string token = 1;
+  Agent agent = 1;
 }

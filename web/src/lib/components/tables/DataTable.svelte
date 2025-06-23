@@ -48,6 +48,7 @@
 		onSortingChange?: (sorting: SortingState) => void;
 		onRowSelection?: (rowSelection: RowSelectionState) => void;
 		getRowClassName?: (row: TData) => string;
+		rowClassModifiers?: Record<string, (row: TData) => boolean>;
 		bulkActions?: BulkAction<TData>[] | undefined;
 		createButton?: {
 			label: string;
@@ -63,6 +64,7 @@
 		onSortingChange,
 		onRowSelection,
 		getRowClassName,
+		rowClassModifiers,
 		bulkActions,
 		createButton
 	}: DataTableProps<TData, TValue> = $props();
@@ -192,6 +194,23 @@
 		}
 	});
 
+	// helper to merge all classes into one string
+	function computeRowClasses(row: TData) {
+		const classes: string[] = [];
+
+		if (getRowClassName) {
+			const c = getRowClassName(row);
+			if (c) classes.push(c);
+		}
+
+		if (rowClassModifiers) {
+			for (const [cls, fn] of Object.entries(rowClassModifiers)) {
+				if (fn(row)) classes.push(cls);
+			}
+		}
+		return classes.join(' ');
+	}
+
 	function clearFilter(columnId: string) {
 		const column = table.getColumn(columnId);
 		if (column) column.setFilterValue(undefined);
@@ -297,7 +316,7 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<Table.Row
 						data-state={row.getIsSelected() && 'selected'}
-						class={getRowClassName ? getRowClassName(row.original) : ''}
+						class={computeRowClasses(row.original)}
 					>
 						{#each row.getVisibleCells() as cell (cell.id)}
 							<Table.Cell>

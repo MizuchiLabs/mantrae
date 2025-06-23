@@ -1,4 +1,5 @@
-package service
+// Convert package contains functions to convert between db and proto types
+package convert
 
 import (
 	"encoding/json"

@@ -45,26 +45,45 @@ func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpR
 	return err
 }
 
-const getTcpRouterDNSProvider = `-- name: GetTcpRouterDNSProvider :one
+const getDnsProvidersByTcpRouter = `-- name: GetDnsProvidersByTcpRouter :many
 SELECT
-  tcp_router_id, dns_provider_id
+  dp.id, dp.name, dp.type, dp.config, dp.is_active, dp.created_at, dp.updated_at
 FROM
-  tcp_router_dns_providers
+  dns_providers dp
+  JOIN tcp_router_dns_providers trdp ON dp.id = trdp.dns_provider_id
 WHERE
-  tcp_router_id = ?
-  AND dns_provider_id = ?
+  trdp.tcp_router_id = ?
 `
 
-type GetTcpRouterDNSProviderParams struct {
-	TcpRouterID   int64 `json:"tcpRouterId"`
-	DnsProviderID int64 `json:"dnsProviderId"`
-}
-
-func (q *Queries) GetTcpRouterDNSProvider(ctx context.Context, arg GetTcpRouterDNSProviderParams) (TcpRouterDnsProvider, error) {
-	row := q.queryRow(ctx, q.getTcpRouterDNSProviderStmt, getTcpRouterDNSProvider, arg.TcpRouterID, arg.DnsProviderID)
-	var i TcpRouterDnsProvider
-	err := row.Scan(&i.TcpRouterID, &i.DnsProviderID)
-	return i, err
+func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID int64) ([]DnsProvider, error) {
+	rows, err := q.query(ctx, q.getDnsProvidersByTcpRouterStmt, getDnsProvidersByTcpRouter, tcpRouterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DnsProvider
+	for rows.Next() {
+		var i DnsProvider
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Type,
+			&i.Config,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTcpRouterDomains = `-- name: GetTcpRouterDomains :many
@@ -108,38 +127,6 @@ func (q *Queries) GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomain
 			&i.DnsProviderID,
 			&i.DnsProviderName,
 		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTcpRouterDNSProviders = `-- name: ListTcpRouterDNSProviders :many
-SELECT
-  tcp_router_id, dns_provider_id
-FROM
-  tcp_router_dns_providers
-WHERE
-  tcp_router_id = ?
-`
-
-func (q *Queries) ListTcpRouterDNSProviders(ctx context.Context, tcpRouterID int64) ([]TcpRouterDnsProvider, error) {
-	rows, err := q.query(ctx, q.listTcpRouterDNSProvidersStmt, listTcpRouterDNSProviders, tcpRouterID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []TcpRouterDnsProvider
-	for rows.Next() {
-		var i TcpRouterDnsProvider
-		if err := rows.Scan(&i.TcpRouterID, &i.DnsProviderID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -243,6 +243,10 @@
 		{rowCount}
 		{onPaginationChange}
 		{bulkActions}
+		rowClassModifiers={{
+			'bg-red-50': (r) => !r.enabled,
+			'bg-green-50': (r) => r.agentId !== ''
+		}}
 		createButton={{
 			label: 'Create Router',
 			onClick: () => {

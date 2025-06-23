@@ -51,6 +51,9 @@ const (
 	UserServiceDeleteUserProcedure = "/mantrae.v1.UserService/DeleteUser"
 	// UserServiceListUsersProcedure is the fully-qualified name of the UserService's ListUsers RPC.
 	UserServiceListUsersProcedure = "/mantrae.v1.UserService/ListUsers"
+	// UserServiceGetOIDCStatusProcedure is the fully-qualified name of the UserService's GetOIDCStatus
+	// RPC.
+	UserServiceGetOIDCStatusProcedure = "/mantrae.v1.UserService/GetOIDCStatus"
 )
 
 // UserServiceClient is a client for the mantrae.v1.UserService service.
@@ -64,6 +67,7 @@ type UserServiceClient interface {
 	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
 	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the mantrae.v1.UserService service. By default, it
@@ -133,20 +137,27 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
+		getOIDCStatus: connect.NewClient[v1.GetOIDCStatusRequest, v1.GetOIDCStatusResponse](
+			httpClient,
+			baseURL+UserServiceGetOIDCStatusProcedure,
+			connect.WithSchema(userServiceMethods.ByName("GetOIDCStatus")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	loginUser  *connect.Client[v1.LoginUserRequest, v1.LoginUserResponse]
-	verifyJWT  *connect.Client[v1.VerifyJWTRequest, v1.VerifyJWTResponse]
-	verifyOTP  *connect.Client[v1.VerifyOTPRequest, v1.VerifyOTPResponse]
-	sendOTP    *connect.Client[v1.SendOTPRequest, v1.SendOTPResponse]
-	getUser    *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
-	createUser *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
-	updateUser *connect.Client[v1.UpdateUserRequest, v1.UpdateUserResponse]
-	deleteUser *connect.Client[v1.DeleteUserRequest, v1.DeleteUserResponse]
-	listUsers  *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
+	loginUser     *connect.Client[v1.LoginUserRequest, v1.LoginUserResponse]
+	verifyJWT     *connect.Client[v1.VerifyJWTRequest, v1.VerifyJWTResponse]
+	verifyOTP     *connect.Client[v1.VerifyOTPRequest, v1.VerifyOTPResponse]
+	sendOTP       *connect.Client[v1.SendOTPRequest, v1.SendOTPResponse]
+	getUser       *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
+	createUser    *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
+	updateUser    *connect.Client[v1.UpdateUserRequest, v1.UpdateUserResponse]
+	deleteUser    *connect.Client[v1.DeleteUserRequest, v1.DeleteUserResponse]
+	listUsers     *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
+	getOIDCStatus *connect.Client[v1.GetOIDCStatusRequest, v1.GetOIDCStatusResponse]
 }
 
 // LoginUser calls mantrae.v1.UserService.LoginUser.
@@ -194,6 +205,11 @@ func (c *userServiceClient) ListUsers(ctx context.Context, req *connect.Request[
 	return c.listUsers.CallUnary(ctx, req)
 }
 
+// GetOIDCStatus calls mantrae.v1.UserService.GetOIDCStatus.
+func (c *userServiceClient) GetOIDCStatus(ctx context.Context, req *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error) {
+	return c.getOIDCStatus.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the mantrae.v1.UserService service.
 type UserServiceHandler interface {
 	LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error)
@@ -205,6 +221,7 @@ type UserServiceHandler interface {
 	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
 	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -270,6 +287,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceGetOIDCStatusHandler := connect.NewUnaryHandler(
+		UserServiceGetOIDCStatusProcedure,
+		svc.GetOIDCStatus,
+		connect.WithSchema(userServiceMethods.ByName("GetOIDCStatus")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mantrae.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceLoginUserProcedure:
@@ -290,6 +313,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceDeleteUserHandler.ServeHTTP(w, r)
 		case UserServiceListUsersProcedure:
 			userServiceListUsersHandler.ServeHTTP(w, r)
+		case UserServiceGetOIDCStatusProcedure:
+			userServiceGetOIDCStatusHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -333,4 +358,8 @@ func (UnimplementedUserServiceHandler) DeleteUser(context.Context, *connect.Requ
 
 func (UnimplementedUserServiceHandler) ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.ListUsers is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.GetOIDCStatus is not implemented"))
 }

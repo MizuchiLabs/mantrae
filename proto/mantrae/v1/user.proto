@@ -19,6 +19,7 @@ service UserService {
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
+  rpc GetOIDCStatus(GetOIDCStatusRequest) returns (GetOIDCStatusResponse);
 }
 
 message User {
@@ -148,4 +149,11 @@ message ListUsersRequest {
 message ListUsersResponse {
   repeated User users = 1;
   int64 total_count = 2;
+}
+
+message GetOIDCStatusRequest {}
+message GetOIDCStatusResponse {
+  bool oidc_enabled = 1;
+  bool login_enabled = 2;
+  string provider = 3;
 }

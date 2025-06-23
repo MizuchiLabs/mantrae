@@ -106,12 +106,21 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		}
 
 		for _, r := range httpRouters {
+			if !r.Enabled {
+				continue
+			}
 			cfg.HTTP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 		for _, r := range tcpRouters {
+			if !r.Enabled {
+				continue
+			}
 			cfg.TCP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 		for _, r := range udpRouters {
+			if !r.Enabled {
+				continue
+			}
 			cfg.UDP.Routers[r.Name] = r.Config.ToDynamic()
 		}
 
@@ -126,9 +135,15 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		}
 
 		for _, m := range httpMiddlewares {
+			if !m.Enabled {
+				continue
+			}
 			cfg.HTTP.Middlewares[m.Name] = m.Config.ToDynamic()
 		}
 		for _, m := range tcpMiddlewares {
+			if !m.Enabled {
+				continue
+			}
 			cfg.TCP.Middlewares[m.Name] = m.Config.ToDynamic()
 		}
 

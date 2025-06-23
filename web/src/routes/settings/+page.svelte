@@ -28,6 +28,8 @@
 	import { uploadBackup } from '$lib/api';
 
 	let settingsMap = $state<Record<string, string>>({});
+	let originalSettings: Record<string, string> = {};
+	let changedSettings: Record<string, string> = {};
 
 	// Define setting groups
 	const settingGroups = {
@@ -172,10 +174,10 @@
 					description: 'Turn on OpenID Connect authentication.'
 				},
 				{
-					key: 'password_login_disabled',
-					label: 'Disable Password Login',
+					key: 'password_login_enabled',
+					label: 'Password Login',
 					type: 'boolean',
-					description: 'Force users to log in only via OIDC (no local passwords).'
+					description: 'Force users to log in only via OIDC when disabled (no local passwords).'
 				},
 				{
 					key: 'oidc_client_id',
@@ -242,21 +244,51 @@
 		{ value: 's3', label: 'S3 Storage' }
 	];
 
+	function handleKeydown(e: KeyboardEvent, key: string) {
+		if (e.key === 'Enter') {
+			let input = e.currentTarget as HTMLInputElement;
+			updateSetting(key, input.value);
+			saveSettings();
+		}
+	}
+
 	async function updateSetting(key: string, value: string) {
 		settingsMap = { ...settingsMap, [key]: value };
+
+		if (value !== originalSettings[key]) {
+			changedSettings = { ...changedSettings, [key]: value };
+		} else {
+			// remove it if it was reverted to original
+			const { [key]: _, ...rest } = changedSettings;
+			changedSettings = rest;
+		}
 	}
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') saveSettings();
-	}
+
 	async function saveSettings() {
+		if (Object.keys(changedSettings).length === 0) return;
+
 		try {
 			await Promise.all(
-				Object.entries(settingsMap).map(([key, value]) =>
+				Object.entries(changedSettings).map(([key, value]) =>
 					settingClient.updateSetting({ key, value })
 				)
 			);
+
+			// merge deltas into original and clear
+			originalSettings = { ...originalSettings, ...changedSettings };
+			changedSettings = {};
 			toast.success('Settings saved');
 		} catch (err) {
+			// Revert UI changes back to original values
+			const revertedSettings = { ...settingsMap };
+			Object.keys(changedSettings).forEach((key) => {
+				revertedSettings[key] = originalSettings[key] || '';
+			});
+			settingsMap = revertedSettings;
+
+			// Clear changed settings since we reverted
+			changedSettings = {};
+
 			const e = ConnectError.from(err);
 			toast.error('Failed to save setting', { description: e.message });
 		}
@@ -281,8 +313,6 @@
 	}
 
 	// Backup handling
-	// let restoreDBFile: HTMLInputElement | null = $state(null);
-	// let restoreDynamicFile: HTMLInputElement | null = $state(null);
 	let backups = $state<Backup[]>([]);
 	let showBackupList = $state(false);
 	let uploadBackupFile: HTMLInputElement | null = $state(null);
@@ -322,6 +352,9 @@
 	onMount(async () => {
 		const response = await settingClient.listSettings({});
 		settingsMap = Object.fromEntries(response.settings.map((s) => [s.key, s.value]));
+		originalSettings = { ...settingsMap };
+		changedSettings = {};
+
 		const response2 = await backupClient.listBackups({});
 		backups = response2.backups;
 	});
@@ -485,7 +518,7 @@
 										autocomplete="off"
 										onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
 										onblur={saveSettings}
-										onkeydown={handleKeydown}
+										onkeydown={(e) => handleKeydown(e, setting.key)}
 									/>
 								{/if}
 								{#if setting.type === 'number'}
@@ -495,15 +528,17 @@
 										autocomplete="off"
 										onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
 										onblur={saveSettings}
-										onkeydown={handleKeydown}
+										onkeydown={(e) => handleKeydown(e, setting.key)}
 									/>
 								{/if}
 								{#if setting.type === 'boolean'}
 									<Switch
 										id={setting.key}
 										checked={settingsMap[setting.key] === 'true'}
-										onCheckedChange={(checked) =>
-											updateSetting(setting.key, checked ? 'true' : 'false')}
+										onCheckedChange={(checked) => {
+											updateSetting(setting.key, checked ? 'true' : 'false');
+											saveSettings();
+										}}
 									/>
 								{/if}
 								{#if setting.type === 'password'}
@@ -511,9 +546,9 @@
 										class="sm:w-auto md:w-[380px]"
 										value={settingsMap[setting.key]}
 										autocomplete="new-password"
-										onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
 										onblur={saveSettings}
-										onkeydown={handleKeydown}
+										onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
+										onkeydown={(e) => handleKeydown(e, setting.key)}
 									/>
 								{/if}
 								{#if setting.type === 'duration'}
@@ -521,10 +556,10 @@
 										type="text"
 										value={settingsMap[setting.key]}
 										autocomplete="off"
+										onblur={saveSettings}
 										onchange={(e) =>
 											updateSetting(setting.key, parseDuration(e.currentTarget.value))}
-										onblur={saveSettings}
-										onkeydown={handleKeydown}
+										onkeydown={(e) => handleKeydown(e, setting.key)}
 									/>
 								{/if}
 								{#if setting.type === 'select'}
@@ -556,7 +591,12 @@
 			{/each}
 
 			<div class="flex justify-end">
-				<Button variant="default" onclick={saveSettings} size="icon">
+				<Button
+					variant={Object.keys(changedSettings).length === 0 ? 'outline' : 'default'}
+					onclick={saveSettings}
+					size="icon"
+					disabled={Object.keys(changedSettings).length === 0}
+				>
 					<SaveIcon />
 				</Button>
 			</div>

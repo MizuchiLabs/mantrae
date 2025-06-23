@@ -46,26 +46,26 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 			return errors.New("backup keep must be an integer greater than 0")
 		}
 
-	case KeyPasswordLoginDisabled:
-		// Don't allow disabling password login unless OIDC is enabled
-		enabled, ok := sm.Get(KeyOIDCEnabled)
+	case KeyPasswordLoginEnabled:
+		// Don't allow disabling password login unless OIDC is oidcEnabled
+		oidcEnabled, ok := sm.Get(KeyOIDCEnabled)
 		if !ok {
 			return errors.New("failed to get OIDC setting")
 		}
-		if params.Value == "true" && !AsBool(enabled) {
+		if params.Value == "false" && !AsBool(oidcEnabled) {
 			return errors.New("password login cannot be disabled unless OIDC is enabled")
 		}
 
 	case KeyOIDCEnabled:
 		// If Password Login is disabled ensure to enable it again if oidc gets disabled
-		pwLogin, ok := sm.Get(KeyPasswordLoginDisabled)
+		pwLogin, ok := sm.Get(KeyPasswordLoginEnabled)
 		if !ok {
 			return errors.New("failed to get password login setting")
 		}
-		if params.Value == "false" && AsBool(pwLogin) {
+		if params.Value == "false" && !AsBool(pwLogin) {
 			return q.UpsertSetting(ctx, db.UpsertSettingParams{
-				Key:   KeyPasswordLoginDisabled,
-				Value: "false",
+				Key:   KeyPasswordLoginEnabled,
+				Value: "true",
 			})
 		}
 	}

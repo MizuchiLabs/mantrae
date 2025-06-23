@@ -249,6 +249,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDnsProviderByNameStmt, err = db.PrepareContext(ctx, getDnsProviderByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDnsProviderByName: %w", err)
 	}
+	if q.getDnsProvidersByHttpRouterStmt, err = db.PrepareContext(ctx, getDnsProvidersByHttpRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDnsProvidersByHttpRouter: %w", err)
+	}
+	if q.getDnsProvidersByTcpRouterStmt, err = db.PrepareContext(ctx, getDnsProvidersByTcpRouter); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDnsProvidersByTcpRouter: %w", err)
+	}
 	if q.getEntryPointStmt, err = db.PrepareContext(ctx, getEntryPoint); err != nil {
 		return nil, fmt.Errorf("error preparing query GetEntryPoint: %w", err)
 	}
@@ -260,9 +266,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getHttpRouterStmt, err = db.PrepareContext(ctx, getHttpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpRouter: %w", err)
-	}
-	if q.getHttpRouterDNSProviderStmt, err = db.PrepareContext(ctx, getHttpRouterDNSProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHttpRouterDNSProvider: %w", err)
 	}
 	if q.getHttpRouterDomainsStmt, err = db.PrepareContext(ctx, getHttpRouterDomains); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpRouterDomains: %w", err)
@@ -287,9 +290,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getTcpRouterStmt, err = db.PrepareContext(ctx, getTcpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpRouter: %w", err)
-	}
-	if q.getTcpRouterDNSProviderStmt, err = db.PrepareContext(ctx, getTcpRouterDNSProvider); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTcpRouterDNSProvider: %w", err)
 	}
 	if q.getTcpRouterDomainsStmt, err = db.PrepareContext(ctx, getTcpRouterDomains); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpRouterDomains: %w", err)
@@ -342,9 +342,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listHttpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, listHttpMiddlewaresByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpMiddlewaresByAgent: %w", err)
 	}
-	if q.listHttpRouterDNSProvidersStmt, err = db.PrepareContext(ctx, listHttpRouterDNSProviders); err != nil {
-		return nil, fmt.Errorf("error preparing query ListHttpRouterDNSProviders: %w", err)
-	}
 	if q.listHttpRoutersStmt, err = db.PrepareContext(ctx, listHttpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpRouters: %w", err)
 	}
@@ -386,9 +383,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listTcpMiddlewaresByAgentStmt, err = db.PrepareContext(ctx, listTcpMiddlewaresByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpMiddlewaresByAgent: %w", err)
-	}
-	if q.listTcpRouterDNSProvidersStmt, err = db.PrepareContext(ctx, listTcpRouterDNSProviders); err != nil {
-		return nil, fmt.Errorf("error preparing query ListTcpRouterDNSProviders: %w", err)
 	}
 	if q.listTcpRoutersStmt, err = db.PrepareContext(ctx, listTcpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpRouters: %w", err)
@@ -863,6 +857,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getDnsProviderByNameStmt: %w", cerr)
 		}
 	}
+	if q.getDnsProvidersByHttpRouterStmt != nil {
+		if cerr := q.getDnsProvidersByHttpRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDnsProvidersByHttpRouterStmt: %w", cerr)
+		}
+	}
+	if q.getDnsProvidersByTcpRouterStmt != nil {
+		if cerr := q.getDnsProvidersByTcpRouterStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDnsProvidersByTcpRouterStmt: %w", cerr)
+		}
+	}
 	if q.getEntryPointStmt != nil {
 		if cerr := q.getEntryPointStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getEntryPointStmt: %w", cerr)
@@ -881,11 +885,6 @@ func (q *Queries) Close() error {
 	if q.getHttpRouterStmt != nil {
 		if cerr := q.getHttpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getHttpRouterStmt: %w", cerr)
-		}
-	}
-	if q.getHttpRouterDNSProviderStmt != nil {
-		if cerr := q.getHttpRouterDNSProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHttpRouterDNSProviderStmt: %w", cerr)
 		}
 	}
 	if q.getHttpRouterDomainsStmt != nil {
@@ -926,11 +925,6 @@ func (q *Queries) Close() error {
 	if q.getTcpRouterStmt != nil {
 		if cerr := q.getTcpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTcpRouterStmt: %w", cerr)
-		}
-	}
-	if q.getTcpRouterDNSProviderStmt != nil {
-		if cerr := q.getTcpRouterDNSProviderStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTcpRouterDNSProviderStmt: %w", cerr)
 		}
 	}
 	if q.getTcpRouterDomainsStmt != nil {
@@ -1018,11 +1012,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listHttpMiddlewaresByAgentStmt: %w", cerr)
 		}
 	}
-	if q.listHttpRouterDNSProvidersStmt != nil {
-		if cerr := q.listHttpRouterDNSProvidersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listHttpRouterDNSProvidersStmt: %w", cerr)
-		}
-	}
 	if q.listHttpRoutersStmt != nil {
 		if cerr := q.listHttpRoutersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listHttpRoutersStmt: %w", cerr)
@@ -1091,11 +1080,6 @@ func (q *Queries) Close() error {
 	if q.listTcpMiddlewaresByAgentStmt != nil {
 		if cerr := q.listTcpMiddlewaresByAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listTcpMiddlewaresByAgentStmt: %w", cerr)
-		}
-	}
-	if q.listTcpRouterDNSProvidersStmt != nil {
-		if cerr := q.listTcpRouterDNSProvidersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listTcpRouterDNSProvidersStmt: %w", cerr)
 		}
 	}
 	if q.listTcpRoutersStmt != nil {
@@ -1367,11 +1351,12 @@ type Queries struct {
 	getAgentStmt                      *sql.Stmt
 	getDnsProviderStmt                *sql.Stmt
 	getDnsProviderByNameStmt          *sql.Stmt
+	getDnsProvidersByHttpRouterStmt   *sql.Stmt
+	getDnsProvidersByTcpRouterStmt    *sql.Stmt
 	getEntryPointStmt                 *sql.Stmt
 	getErrorsByProfileStmt            *sql.Stmt
 	getHttpMiddlewareStmt             *sql.Stmt
 	getHttpRouterStmt                 *sql.Stmt
-	getHttpRouterDNSProviderStmt      *sql.Stmt
 	getHttpRouterDomainsStmt          *sql.Stmt
 	getHttpServiceStmt                *sql.Stmt
 	getHttpServiceByNameStmt          *sql.Stmt
@@ -1380,7 +1365,6 @@ type Queries struct {
 	getSettingStmt                    *sql.Stmt
 	getTcpMiddlewareStmt              *sql.Stmt
 	getTcpRouterStmt                  *sql.Stmt
-	getTcpRouterDNSProviderStmt       *sql.Stmt
 	getTcpRouterDomainsStmt           *sql.Stmt
 	getTcpServiceStmt                 *sql.Stmt
 	getTcpServiceByNameStmt           *sql.Stmt
@@ -1398,7 +1382,6 @@ type Queries struct {
 	listErrorsStmt                    *sql.Stmt
 	listHttpMiddlewaresStmt           *sql.Stmt
 	listHttpMiddlewaresByAgentStmt    *sql.Stmt
-	listHttpRouterDNSProvidersStmt    *sql.Stmt
 	listHttpRoutersStmt               *sql.Stmt
 	listHttpRoutersByAgentStmt        *sql.Stmt
 	listHttpServicesStmt              *sql.Stmt
@@ -1413,7 +1396,6 @@ type Queries struct {
 	listSettingsStmt                  *sql.Stmt
 	listTcpMiddlewaresStmt            *sql.Stmt
 	listTcpMiddlewaresByAgentStmt     *sql.Stmt
-	listTcpRouterDNSProvidersStmt     *sql.Stmt
 	listTcpRoutersStmt                *sql.Stmt
 	listTcpRoutersByAgentStmt         *sql.Stmt
 	listTcpServicesStmt               *sql.Stmt
@@ -1526,11 +1508,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getAgentStmt:                      q.getAgentStmt,
 		getDnsProviderStmt:                q.getDnsProviderStmt,
 		getDnsProviderByNameStmt:          q.getDnsProviderByNameStmt,
+		getDnsProvidersByHttpRouterStmt:   q.getDnsProvidersByHttpRouterStmt,
+		getDnsProvidersByTcpRouterStmt:    q.getDnsProvidersByTcpRouterStmt,
 		getEntryPointStmt:                 q.getEntryPointStmt,
 		getErrorsByProfileStmt:            q.getErrorsByProfileStmt,
 		getHttpMiddlewareStmt:             q.getHttpMiddlewareStmt,
 		getHttpRouterStmt:                 q.getHttpRouterStmt,
-		getHttpRouterDNSProviderStmt:      q.getHttpRouterDNSProviderStmt,
 		getHttpRouterDomainsStmt:          q.getHttpRouterDomainsStmt,
 		getHttpServiceStmt:                q.getHttpServiceStmt,
 		getHttpServiceByNameStmt:          q.getHttpServiceByNameStmt,
@@ -1539,7 +1522,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getSettingStmt:                    q.getSettingStmt,
 		getTcpMiddlewareStmt:              q.getTcpMiddlewareStmt,
 		getTcpRouterStmt:                  q.getTcpRouterStmt,
-		getTcpRouterDNSProviderStmt:       q.getTcpRouterDNSProviderStmt,
 		getTcpRouterDomainsStmt:           q.getTcpRouterDomainsStmt,
 		getTcpServiceStmt:                 q.getTcpServiceStmt,
 		getTcpServiceByNameStmt:           q.getTcpServiceByNameStmt,
@@ -1557,7 +1539,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listErrorsStmt:                    q.listErrorsStmt,
 		listHttpMiddlewaresStmt:           q.listHttpMiddlewaresStmt,
 		listHttpMiddlewaresByAgentStmt:    q.listHttpMiddlewaresByAgentStmt,
-		listHttpRouterDNSProvidersStmt:    q.listHttpRouterDNSProvidersStmt,
 		listHttpRoutersStmt:               q.listHttpRoutersStmt,
 		listHttpRoutersByAgentStmt:        q.listHttpRoutersByAgentStmt,
 		listHttpServicesStmt:              q.listHttpServicesStmt,
@@ -1572,7 +1553,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listSettingsStmt:                  q.listSettingsStmt,
 		listTcpMiddlewaresStmt:            q.listTcpMiddlewaresStmt,
 		listTcpMiddlewaresByAgentStmt:     q.listTcpMiddlewaresByAgentStmt,
-		listTcpRouterDNSProvidersStmt:     q.listTcpRouterDNSProvidersStmt,
 		listTcpRoutersStmt:                q.listTcpRoutersStmt,
 		listTcpRoutersByAgentStmt:         q.listTcpRoutersByAgentStmt,
 		listTcpServicesStmt:               q.listTcpServicesStmt,

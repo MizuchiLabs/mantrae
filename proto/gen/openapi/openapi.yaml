@@ -13,10 +13,8 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
-  - url: https://api.example.com/v1
+  - url: https://localhost:3000
     description: Production
-  - url: https://staging-api.example.com/v1
-    description: Staging
 components:
   securitySchemes:
     BearerAuth:
@@ -38,9 +36,6 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
-      examples:
-        - 1s
-        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -378,9 +373,9 @@ components:
     mantrae.v1.RotateAgentTokenResponse:
       type: object
       properties:
-        token:
-          type: string
-          title: token
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
       title: RotateAgentTokenResponse
       additionalProperties: false
     mantrae.v1.UpdateAgentIPRequest:
@@ -1681,6 +1676,11 @@ components:
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
+        dnsProviders:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_providers
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -2027,11 +2027,9 @@ components:
         value:
           type: string
           title: value
-          minLength: 1
       title: UpdateSettingRequest
       required:
         - key
-        - value
       additionalProperties: false
     mantrae.v1.UpdateSettingResponse:
       type: object
@@ -2087,33 +2085,54 @@ components:
       type: object
       title: DeleteUserResponse
       additionalProperties: false
+    mantrae.v1.GetOIDCStatusRequest:
+      type: object
+      title: GetOIDCStatusRequest
+      additionalProperties: false
+    mantrae.v1.GetOIDCStatusResponse:
+      type: object
+      properties:
+        oidcEnabled:
+          type: boolean
+          title: oidc_enabled
+        loginEnabled:
+          type: boolean
+          title: login_enabled
+        provider:
+          type: string
+          title: provider
+      title: GetOIDCStatusResponse
+      additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            id:
-              type: string
-              title: id
-              minLength: 1
-          title: id
-          required:
+        - required:
             - id
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - id
+              - required:
+                  - username
+      properties:
+        id:
+          type: string
+          title: id
+          minLength: 1
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -2167,24 +2186,26 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         password:
           type: string
           title: password
@@ -2206,23 +2227,26 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
+      properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2321,24 +2345,26 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         otp:
           type: string
           title: otp
@@ -5482,6 +5508,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListUsersResponse'
+  /mantrae.v1.UserService/GetOIDCStatus:
+    post:
+      tags:
+        - mantrae.v1.UserService
+      summary: GetOIDCStatus
+      operationId: mantrae.v1.UserService.GetOIDCStatus
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetOIDCStatusRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetOIDCStatusResponse'
   /mantrae.v1.UtilService/GetVersion:
     post:
       tags:
