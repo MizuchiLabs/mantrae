@@ -14,10 +14,8 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.example.com/v1
+  - url: https://localhost:3000
     description: Production
-  - url: https://staging-api.example.com/v1
-    description: Staging
 
 components:
   securitySchemes:

@@ -38,6 +38,9 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
+      examples:
+        - 1s
+        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -2086,34 +2089,31 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - id
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - id
-              - required:
-                  - username
-      properties:
-        id:
-          type: string
-          title: id
-          minLength: 1
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            id:
+              type: string
+              title: id
+              minLength: 1
+          title: id
+          required:
+            - id
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -2167,26 +2167,24 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         password:
           type: string
           title: password
@@ -2208,26 +2206,23 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2326,26 +2321,24 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         otp:
           type: string
           title: otp
