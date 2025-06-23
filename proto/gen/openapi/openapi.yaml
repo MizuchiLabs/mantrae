@@ -1703,15 +1703,20 @@ components:
           type: string
           title: name
           minLength: 1
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.RouterType'
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
         enabled:
           type: boolean
           title: enabled
-        type:
-          title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+        dnsProviders:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_providers
       title: UpdateRouterRequest
       required:
         - id

@@ -83,12 +83,13 @@ message UpdateRouterRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string.min_len = 1
   ];
-  google.protobuf.Struct config = 3;
-  bool enabled = 4;
-  RouterType type = 5 [
+  RouterType type = 3 [
     (buf.validate.field).required = true,
     (buf.validate.field).enum.defined_only = true
   ];
+  google.protobuf.Struct config = 4;
+  bool enabled = 5;
+  repeated DnsProvider dns_providers = 6;
 }
 message UpdateRouterResponse {
   Router router = 1;

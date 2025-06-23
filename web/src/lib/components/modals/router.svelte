@@ -83,7 +83,8 @@
 					name: item.name,
 					config: item.config,
 					enabled: item.enabled,
-					type: item.type
+					type: item.type,
+					dnsProviders: item.dnsProviders
 				});
 				toast.success(`Router ${item.name} updated successfully`);
 			} else {
@@ -156,7 +157,12 @@
 	let selectDNSOpen = $state(false);
 
 	async function handleDNSProviderChange(value: string[]) {
-		// TODO
+		if (value.length === 0) {
+			item.dnsProviders = [];
+			return;
+		}
+		const result = await dnsClient.listDnsProviders({ limit: -1n, offset: 0n });
+		item.dnsProviders = result.dnsProviders.filter((p) => value.includes(p.id.toString()));
 	}
 </script>
 
@@ -190,11 +196,11 @@
 												onclick={() => (selectDNSOpen = true)}
 											>
 												<Globe size={16} />
-												<Badge
-													>{value.dnsProviders.length
-														? value.dnsProviders.join(', ')
-														: 'None'}</Badge
-												>
+												<Badge>
+													{item.dnsProviders.length > 0
+														? item.dnsProviders.map((p) => p.name).join(', ')
+														: 'None'}
+												</Badge>
 											</Button>
 										</div>
 									</Tooltip.Trigger>
@@ -206,7 +212,7 @@
 
 							<Select.Root
 								type="multiple"
-								value={value.dnsProviders.map((item) => item.id.toString())}
+								value={item.dnsProviders.map((item) => item.id.toString())}
 								onValueChange={handleDNSProviderChange}
 								bind:open={selectDNSOpen}
 							>
@@ -282,14 +288,13 @@
 							<HTTPServiceForm bind:service />
 						{/if}
 						{#if item.type === RouterType.TCP}
-							<TCPServiceForm bind:service bind:router={item} />
+							<TCPServiceForm bind:service />
 						{/if}
 						{#if item.type === RouterType.UDP}
-							<UDPServiceForm bind:service bind:router={item} />
+							<UDPServiceForm bind:service />
 						{/if}
 					</Card.Content>
 				</Card.Root>
-				<!-- <ServiceForm bind:service bind:router /> -->
 			</Tabs.Content>
 		</Tabs.Root>
 

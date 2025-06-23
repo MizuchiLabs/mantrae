@@ -169,6 +169,50 @@ func (s *RouterService) UpdateRouter(
 		}
 		params.Config.Service = params.Name
 
+		// Update DNS Providers
+		existing, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, params.ID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		existingMap := make(map[int64]bool)
+		for _, provider := range existing {
+			existingMap[provider.ID] = true
+		}
+
+		desiredMap := make(map[int64]bool)
+		var desiredIDs []int64
+		for _, protoProvider := range req.Msg.DnsProviders {
+			desiredMap[protoProvider.Id] = true
+			desiredIDs = append(desiredIDs, protoProvider.Id)
+		}
+		// Identify inserts
+		for _, id := range desiredIDs {
+			if !existingMap[id] {
+				err := s.app.Conn.GetQuery().
+					CreateHttpRouterDNSProvider(ctx, db.CreateHttpRouterDNSProviderParams{
+						HttpRouterID:  params.ID,
+						DnsProviderID: id,
+					})
+				if err != nil {
+					return nil, connect.NewError(connect.CodeInternal, err)
+				}
+			}
+		}
+
+		// Identify deletes
+		for id := range existingMap {
+			if !desiredMap[id] {
+				err := s.app.Conn.GetQuery().
+					DeleteHttpRouterDNSProvider(ctx, db.DeleteHttpRouterDNSProviderParams{
+						HttpRouterID:  params.ID,
+						DnsProviderID: id,
+					})
+				if err != nil {
+					return nil, connect.NewError(connect.CodeInternal, err)
+				}
+			}
+		}
+
 		result, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -189,6 +233,51 @@ func (s *RouterService) UpdateRouter(
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 		params.Config.Service = params.Name
+
+		// Update DNS Providers
+		existing, err := s.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, params.ID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		existingMap := make(map[int64]bool)
+		for _, provider := range existing {
+			existingMap[provider.ID] = true
+		}
+
+		desiredMap := make(map[int64]bool)
+		var desiredIDs []int64
+		for _, protoProvider := range req.Msg.DnsProviders {
+			desiredMap[protoProvider.Id] = true
+			desiredIDs = append(desiredIDs, protoProvider.Id)
+		}
+
+		// Identify inserts
+		for _, id := range desiredIDs {
+			if !existingMap[id] {
+				err := s.app.Conn.GetQuery().
+					CreateTcpRouterDNSProvider(ctx, db.CreateTcpRouterDNSProviderParams{
+						TcpRouterID:   params.ID,
+						DnsProviderID: id,
+					})
+				if err != nil {
+					return nil, connect.NewError(connect.CodeInternal, err)
+				}
+			}
+		}
+
+		// Identify deletes
+		for id := range existingMap {
+			if !desiredMap[id] {
+				err := s.app.Conn.GetQuery().
+					DeleteTcpRouterDNSProvider(ctx, db.DeleteTcpRouterDNSProviderParams{
+						TcpRouterID:   params.ID,
+						DnsProviderID: id,
+					})
+				if err != nil {
+					return nil, connect.NewError(connect.CodeInternal, err)
+				}
+			}
+		}
 
 		result, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, params)
 		if err != nil {
