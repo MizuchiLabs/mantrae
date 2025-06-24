@@ -8,13 +8,12 @@
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores/user';
-	import { token } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
+	import { handleOIDCLogin } from '$lib/api';
 
 	let username = $state('');
 	let password = $state('');
-	let remember = $state(false);
 
 	const handleReset = async () => {
 		if (username.length > 0) {
@@ -42,20 +41,15 @@
 		const isEmail = username.includes('@');
 
 		try {
-			const response = await userClient.loginUser({
+			await userClient.loginUser({
 				identifier: {
 					case: isEmail ? 'email' : 'username',
 					value: username
 				},
-				password: password,
-				remember: remember
+				password: password
 			});
-			token.value = response.token ?? null;
-			if (!token.value) {
-				throw new Error('No token received');
-			}
 
-			const verified = await userClient.verifyJWT({ token: token.value });
+			const verified = await userClient.verifyJWT({});
 			if (verified.user) {
 				user.value = verified.user;
 				if (!profile.id) {
@@ -71,9 +65,9 @@
 		}
 	};
 
-	const handleOIDCLogin = () => {
-		window.location.href = '/api/oidc/login';
-	};
+	// const handleOIDCLogin = () => {
+	// 	window.location.href = '/oidc/login';
+	// };
 </script>
 
 {#if !user.isLoggedIn()}
@@ -86,7 +80,7 @@
 			<form onsubmit={handleSubmit} class="p-4">
 				{#await userClient.getOIDCStatus({}) then value}
 					{#if value.loginEnabled}
-						<div class="flex flex-col gap-6">
+						<div class="flex flex-col gap-4">
 							<div class="grid gap-3">
 								<Label for="username">Username</Label>
 								<Input id="username" bind:value={username} />
@@ -121,7 +115,7 @@
 					{/if}
 
 					{#if value.oidcEnabled}
-						<Button variant="outline" class="w-full" onclick={handleOIDCLogin}>
+						<Button variant="outline" class="mt-3 w-full" onclick={handleOIDCLogin}>
 							Login with {value.provider || 'OIDC'}
 						</Button>
 					{/if}

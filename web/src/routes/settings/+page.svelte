@@ -43,6 +43,12 @@
 					type: 'text',
 					description:
 						'The base URL of your backend server, including protocol (e.g., https://example.com).'
+				},
+				{
+					key: 'storage_select',
+					label: 'Storage Type',
+					type: 'select',
+					description: 'Select the storage backend for backups (e.g., local, S3).'
 				}
 			]
 		},
@@ -67,18 +73,6 @@
 					label: 'Backups to Keep',
 					type: 'number',
 					description: 'The number of recent backups to retain.'
-				},
-				{
-					key: 'backup_path',
-					label: 'Backup Path',
-					type: 'text',
-					description: 'Local filesystem path where backups will be stored.'
-				},
-				{
-					key: 'backup_storage_select',
-					label: 'Storage Type',
-					type: 'select',
-					description: 'Select the storage backend for backups (e.g., local, S3).'
 				}
 			]
 		},
@@ -593,7 +587,7 @@
 												{settingsMap[setting.key] || 'Select...'}
 											</Select.Trigger>
 											<Select.Content>
-												{#if setting.key === 'backup_storage_select'}
+												{#if setting.key === 'storage_select'}
 													{#each storageTypes as option (option.value)}
 														<Select.Item value={option.value}>{option.label}</Select.Item>
 													{/each}

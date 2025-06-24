@@ -19,11 +19,10 @@ import (
 // Settings defines all application settings
 type Settings struct {
 	ServerURL            string        `setting:"server_url"             default:""`
+	Storage              string        `setting:"storage_select"         default:"local"`
 	BackupEnabled        bool          `setting:"backup_enabled"         default:"true"`
 	BackupInterval       time.Duration `setting:"backup_interval"        default:"24h"`
 	BackupKeep           int           `setting:"backup_keep"            default:"3"`
-	BackupStorage        string        `setting:"backup_storage_select"  default:"local"`
-	BackupPath           string        `setting:"backup_path"            default:"backups"`
 	S3Endpoint           string        `setting:"s3_endpoint"            default:""`
 	S3Bucket             string        `setting:"s3_bucket"              default:"mantrae"`
 	S3Region             string        `setting:"s3_region"              default:"us-east-1"`

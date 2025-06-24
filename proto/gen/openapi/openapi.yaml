@@ -2215,9 +2215,6 @@ components:
           type: string
           title: password
           minLength: 8
-        remember:
-          type: boolean
-          title: remember
       title: LoginUserRequest
       required:
         - password
@@ -2229,6 +2226,14 @@ components:
           type: string
           title: token
       title: LoginUserResponse
+      additionalProperties: false
+    mantrae.v1.LogoutUserRequest:
+      type: object
+      title: LogoutUserRequest
+      additionalProperties: false
+    mantrae.v1.LogoutUserResponse:
+      type: object
+      title: LogoutUserResponse
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
@@ -2331,14 +2336,7 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyJWTRequest:
       type: object
-      properties:
-        token:
-          type: string
-          title: token
-          minLength: 1
       title: VerifyJWTRequest
-      required:
-        - token
       additionalProperties: false
     mantrae.v1.VerifyJWTResponse:
       type: object
@@ -5131,6 +5129,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.LoginUserResponse'
+  /mantrae.v1.UserService/LogoutUser:
+    post:
+      tags:
+        - mantrae.v1.UserService
+      summary: LogoutUser
+      operationId: mantrae.v1.UserService.LogoutUser
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.LogoutUserRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.LogoutUserResponse'
   /mantrae.v1.UserService/VerifyJWT:
     post:
       tags:

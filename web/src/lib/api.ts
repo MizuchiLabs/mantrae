@@ -23,39 +23,31 @@ export const BASE_URL = import.meta.env.PROD
 	? ""
 	: `http://127.0.0.1:${BACKEND_PORT}`;
 
-export function useClient<T extends DescService>(
-	service: T,
-	fetch?: typeof window.fetch,
-): Client<T> {
-	// Custom fetch function that adds the Authorization header
-	const customFetch: typeof window.fetch = async (url, options) => {
-		const headers = new Headers(options?.headers); // Get existing headers
-		if (token.value) {
-			headers.set("Authorization", "Bearer " + token.value); // Add the Authorization header
-		}
-		const customOptions = {
-			...options,
-			headers,
-		};
-		return fetch ? fetch(url, customOptions) : window.fetch(url, customOptions); // Use custom fetch or default
-	};
+export function useClient<T extends DescService>(service: T): Client<T> {
+	const headers = new Headers();
+	headers.set("Content-Type", "application/json");
+	// if (token.value) {
+	// 	headers.set("Authorization", "Bearer " + token.value);
+	// }
 
 	const transport = createConnectTransport({
 		baseUrl: BASE_URL,
-		fetch: customFetch,
+		fetch: (input, init) =>
+			fetch(input, {
+				...init,
+				headers,
+				credentials: "include",
+			}),
 	});
 	return createClient(service, transport);
 }
 
-export function logout() {
-	token.value = null;
-	user.clear();
-	goto("/login");
+export function handleOIDCLogin() {
+	window.location.href = `${BASE_URL}/oidc/login`;
 }
 
-export async function upload(event: Event, endpoint: string) {
-	const input = event.target as HTMLInputElement;
-	if (!input.files?.length) return;
+export async function upload(input: HTMLInputElement | null, endpoint: string) {
+	if (!input?.files?.length) return;
 
 	const body = new FormData();
 	body.append("file", input.files[0]);

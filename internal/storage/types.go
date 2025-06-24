@@ -2,8 +2,11 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
 	"time"
+
+	"github.com/mizuchilabs/mantrae/internal/settings"
 )
 
 type BackendType string
@@ -11,7 +14,6 @@ type BackendType string
 const (
 	BackendTypeLocal BackendType = "local"
 	BackendTypeS3    BackendType = "s3"
-	// BackendTypeGit   BackendType = "git" //TODO: For future implementation
 )
 
 // Backend defines interface for different storage solutions
@@ -28,11 +30,22 @@ type StoredFile struct {
 	Timestamp time.Time `json:"timestamp,omitempty"`
 }
 
-func (t BackendType) Valid() bool {
-	switch t {
-	case BackendTypeLocal, BackendTypeS3:
-		return true
+func GetBackend(
+	ctx context.Context,
+	sm *settings.SettingsManager,
+	path string,
+) (Backend, error) {
+	backendSetting, ok := sm.Get(settings.KeyStorage)
+	if !ok {
+		return nil, errors.New("failed to get storage backend")
+	}
+
+	switch BackendType(backendSetting) {
+	case BackendTypeLocal:
+		return NewLocalStorage(path)
+	case BackendTypeS3:
+		return NewS3Storage(ctx, sm)
 	default:
-		return false
+		return nil, errors.New("invalid storage backend")
 	}
 }

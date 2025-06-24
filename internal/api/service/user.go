@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"net/http"
 	"time"
 
 	"connectrpc.com/connect"
@@ -16,6 +17,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
@@ -50,10 +52,7 @@ func (s *UserService) LoginUser(
 	}
 
 	expirationTime := time.Now().Add(24 * time.Hour)
-	if req.Msg.Remember {
-		expirationTime = time.Now().Add(30 * 24 * time.Hour)
-	}
-	token, err := util.EncodeUserJWT(user.ID, s.app.Secret, expirationTime)
+	token, err := meta.EncodeUserToken(user.ID, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -62,7 +61,36 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.LoginUserResponse{Token: token}), nil
+	cookie := http.Cookie{
+		Name:     meta.CookieName,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
+		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		SameSite: http.SameSiteLaxMode,
+	}
+	res := connect.NewResponse(&mantraev1.LoginUserResponse{Token: token})
+	res.Header().Set("Set-Cookie", cookie.String())
+	return res, nil
+}
+
+func (s *UserService) LogoutUser(
+	ctx context.Context,
+	req *connect.Request[mantraev1.LogoutUserRequest],
+) (*connect.Response[mantraev1.LogoutUserResponse], error) {
+	cookie := http.Cookie{
+		Name:     meta.CookieName,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   -1,
+		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		SameSite: http.SameSiteLaxMode,
+	}
+	res := connect.NewResponse(&mantraev1.LogoutUserResponse{})
+	res.Header().Set("Set-Cookie", cookie.String())
+	return res, nil
 }
 
 func (s *UserService) VerifyJWT(
@@ -115,7 +143,7 @@ func (s *UserService) VerifyOTP(
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
-	token, err := util.EncodeUserJWT(user.ID, s.app.Secret, expirationTime)
+	token, err := meta.EncodeUserToken(user.ID, s.app.Secret, expirationTime)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

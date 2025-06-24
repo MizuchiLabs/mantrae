@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/user.proto.
  */
 export const file_mantrae_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChVtYW50cmFlL3YxL3VzZXIucHJvdG8SCm1hbnRyYWUudjEipAIKBFVzZXISCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSEAoIcGFzc3dvcmQYAyABKAkSDQoFZW1haWwYBCABKAkSEAoIaXNfYWRtaW4YBSABKAgSCwoDb3RwGAYgASgJEi4KCm90cF9leHBpcnkYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmxhc3RfbG9naW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIo4BChBMb2dpblVzZXJSZXF1ZXN0EhsKCHVzZXJuYW1lGAEgASgJQge6SARyAhADSAASGAoFZW1haWwYAiABKAlCB7pIBHICYAFIABIcCghwYXNzd29yZBgDIAEoCUIKukgHyAEBcgIQCBIQCghyZW1lbWJlchgEIAEoCEITCgppZGVudGlmaWVyEgW6SAIIASIiChFMb2dpblVzZXJSZXNwb25zZRINCgV0b2tlbhgBIAEoCSItChBWZXJpZnlKV1RSZXF1ZXN0EhkKBXRva2VuGAEgASgJQgq6SAfIAQFyAhABIjMKEVZlcmlmeUpXVFJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIidwoQVmVyaWZ5T1RQUmVxdWVzdBIbCgh1c2VybmFtZRgBIAEoCUIHukgEcgIQA0gAEhgKBWVtYWlsGAIgASgJQge6SARyAmABSAASFwoDb3RwGAMgASgJQgq6SAfIAQFyAhAGQhMKCmlkZW50aWZpZXISBbpIAggBIiIKEVZlcmlmeU9UUFJlc3BvbnNlEg0KBXRva2VuGAEgASgJIlwKDlNlbmRPVFBSZXF1ZXN0EhsKCHVzZXJuYW1lGAEgASgJQge6SARyAhADSAASGAoFZW1haWwYAiABKAlCB7pIBHICYAFIAEITCgppZGVudGlmaWVyEgW6SAIIASIRCg9TZW5kT1RQUmVzcG9uc2UicwoOR2V0VXNlclJlcXVlc3QSFQoCaWQYASABKAlCB7pIBHICEAFIABIbCgh1c2VybmFtZRgCIAEoCUIHukgEcgIQA0gAEhgKBWVtYWlsGAMgASgJQge6SARyAmABSABCEwoKaWRlbnRpZmllchIFukgCCAEiMQoPR2V0VXNlclJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIieQoRQ3JlYXRlVXNlclJlcXVlc3QSHAoIdXNlcm5hbWUYASABKAlCCrpIB8gBAXICEAMSHAoIcGFzc3dvcmQYAiABKAlCCrpIB8gBAXICEAgSFgoFZW1haWwYAyABKAlCB7pIBHICYAESEAoIaXNfYWRtaW4YBCABKAgiNAoSQ3JlYXRlVXNlclJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIioAEKEVVwZGF0ZVVzZXJSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABEhwKCHVzZXJuYW1lGAIgASgJQgq6SAfIAQFyAhADEhYKBWVtYWlsGAMgASgJQge6SARyAmABEhAKCGlzX2FkbWluGAQgASgIEh4KCHBhc3N3b3JkGAUgASgJQge6SARyAhAISACIAQFCCwoJX3Bhc3N3b3JkIjQKElVwZGF0ZVVzZXJSZXNwb25zZRIeCgR1c2VyGAEgASgLMhAubWFudHJhZS52MS5Vc2VyIisKEURlbGV0ZVVzZXJSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABIhQKEkRlbGV0ZVVzZXJSZXNwb25zZSKxAQoQTGlzdFVzZXJzUmVxdWVzdBJqCgVsaW1pdBgBIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAIgBARIcCgZvZmZzZXQYAiABKANCB7pIBCICKABIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJJChFMaXN0VXNlcnNSZXNwb25zZRIfCgV1c2VycxgBIAMoCzIQLm1hbnRyYWUudjEuVXNlchITCgt0b3RhbF9jb3VudBgCIAEoAyIWChRHZXRPSURDU3RhdHVzUmVxdWVzdCJWChVHZXRPSURDU3RhdHVzUmVzcG9uc2USFAoMb2lkY19lbmFibGVkGAEgASgIEhUKDWxvZ2luX2VuYWJsZWQYAiABKAgSEAoIcHJvdmlkZXIYAyABKAkyhAYKC1VzZXJTZXJ2aWNlEkgKCUxvZ2luVXNlchIcLm1hbnRyYWUudjEuTG9naW5Vc2VyUmVxdWVzdBodLm1hbnRyYWUudjEuTG9naW5Vc2VyUmVzcG9uc2USSAoJVmVyaWZ5SldUEhwubWFudHJhZS52MS5WZXJpZnlKV1RSZXF1ZXN0Gh0ubWFudHJhZS52MS5WZXJpZnlKV1RSZXNwb25zZRJICglWZXJpZnlPVFASHC5tYW50cmFlLnYxLlZlcmlmeU9UUFJlcXVlc3QaHS5tYW50cmFlLnYxLlZlcmlmeU9UUFJlc3BvbnNlEkIKB1NlbmRPVFASGi5tYW50cmFlLnYxLlNlbmRPVFBSZXF1ZXN0GhsubWFudHJhZS52MS5TZW5kT1RQUmVzcG9uc2USRwoHR2V0VXNlchIaLm1hbnRyYWUudjEuR2V0VXNlclJlcXVlc3QaGy5tYW50cmFlLnYxLkdldFVzZXJSZXNwb25zZSIDkAIBEksKCkNyZWF0ZVVzZXISHS5tYW50cmFlLnYxLkNyZWF0ZVVzZXJSZXF1ZXN0Gh4ubWFudHJhZS52MS5DcmVhdGVVc2VyUmVzcG9uc2USSwoKVXBkYXRlVXNlchIdLm1hbnRyYWUudjEuVXBkYXRlVXNlclJlcXVlc3QaHi5tYW50cmFlLnYxLlVwZGF0ZVVzZXJSZXNwb25zZRJLCgpEZWxldGVVc2VyEh0ubWFudHJhZS52MS5EZWxldGVVc2VyUmVxdWVzdBoeLm1hbnRyYWUudjEuRGVsZXRlVXNlclJlc3BvbnNlEk0KCUxpc3RVc2VycxIcLm1hbnRyYWUudjEuTGlzdFVzZXJzUmVxdWVzdBodLm1hbnRyYWUudjEuTGlzdFVzZXJzUmVzcG9uc2UiA5ACARJUCg1HZXRPSURDU3RhdHVzEiAubWFudHJhZS52MS5HZXRPSURDU3RhdHVzUmVxdWVzdBohLm1hbnRyYWUudjEuR2V0T0lEQ1N0YXR1c1Jlc3BvbnNlQqMBCg5jb20ubWFudHJhZS52MUIJVXNlclByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("ChVtYW50cmFlL3YxL3VzZXIucHJvdG8SCm1hbnRyYWUudjEipAIKBFVzZXISCgoCaWQYASABKAkSEAoIdXNlcm5hbWUYAiABKAkSEAoIcGFzc3dvcmQYAyABKAkSDQoFZW1haWwYBCABKAkSEAoIaXNfYWRtaW4YBSABKAgSCwoDb3RwGAYgASgJEi4KCm90cF9leHBpcnkYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmxhc3RfbG9naW4YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wInwKEExvZ2luVXNlclJlcXVlc3QSGwoIdXNlcm5hbWUYASABKAlCB7pIBHICEANIABIYCgVlbWFpbBgCIAEoCUIHukgEcgJgAUgAEhwKCHBhc3N3b3JkGAMgASgJQgq6SAfIAQFyAhAIQhMKCmlkZW50aWZpZXISBbpIAggBIiIKEUxvZ2luVXNlclJlc3BvbnNlEg0KBXRva2VuGAEgASgJIhMKEUxvZ291dFVzZXJSZXF1ZXN0IhQKEkxvZ291dFVzZXJSZXNwb25zZSISChBWZXJpZnlKV1RSZXF1ZXN0IjMKEVZlcmlmeUpXVFJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIidwoQVmVyaWZ5T1RQUmVxdWVzdBIbCgh1c2VybmFtZRgBIAEoCUIHukgEcgIQA0gAEhgKBWVtYWlsGAIgASgJQge6SARyAmABSAASFwoDb3RwGAMgASgJQgq6SAfIAQFyAhAGQhMKCmlkZW50aWZpZXISBbpIAggBIiIKEVZlcmlmeU9UUFJlc3BvbnNlEg0KBXRva2VuGAEgASgJIlwKDlNlbmRPVFBSZXF1ZXN0EhsKCHVzZXJuYW1lGAEgASgJQge6SARyAhADSAASGAoFZW1haWwYAiABKAlCB7pIBHICYAFIAEITCgppZGVudGlmaWVyEgW6SAIIASIRCg9TZW5kT1RQUmVzcG9uc2UicwoOR2V0VXNlclJlcXVlc3QSFQoCaWQYASABKAlCB7pIBHICEAFIABIbCgh1c2VybmFtZRgCIAEoCUIHukgEcgIQA0gAEhgKBWVtYWlsGAMgASgJQge6SARyAmABSABCEwoKaWRlbnRpZmllchIFukgCCAEiMQoPR2V0VXNlclJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIieQoRQ3JlYXRlVXNlclJlcXVlc3QSHAoIdXNlcm5hbWUYASABKAlCCrpIB8gBAXICEAMSHAoIcGFzc3dvcmQYAiABKAlCCrpIB8gBAXICEAgSFgoFZW1haWwYAyABKAlCB7pIBHICYAESEAoIaXNfYWRtaW4YBCABKAgiNAoSQ3JlYXRlVXNlclJlc3BvbnNlEh4KBHVzZXIYASABKAsyEC5tYW50cmFlLnYxLlVzZXIioAEKEVVwZGF0ZVVzZXJSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABEhwKCHVzZXJuYW1lGAIgASgJQgq6SAfIAQFyAhADEhYKBWVtYWlsGAMgASgJQge6SARyAmABEhAKCGlzX2FkbWluGAQgASgIEh4KCHBhc3N3b3JkGAUgASgJQge6SARyAhAISACIAQFCCwoJX3Bhc3N3b3JkIjQKElVwZGF0ZVVzZXJSZXNwb25zZRIeCgR1c2VyGAEgASgLMhAubWFudHJhZS52MS5Vc2VyIisKEURlbGV0ZVVzZXJSZXF1ZXN0EhYKAmlkGAEgASgJQgq6SAfIAQFyAhABIhQKEkRlbGV0ZVVzZXJSZXNwb25zZSKxAQoQTGlzdFVzZXJzUmVxdWVzdBJqCgVsaW1pdBgBIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAIgBARIcCgZvZmZzZXQYAiABKANCB7pIBCICKABIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJJChFMaXN0VXNlcnNSZXNwb25zZRIfCgV1c2VycxgBIAMoCzIQLm1hbnRyYWUudjEuVXNlchITCgt0b3RhbF9jb3VudBgCIAEoAyIWChRHZXRPSURDU3RhdHVzUmVxdWVzdCJWChVHZXRPSURDU3RhdHVzUmVzcG9uc2USFAoMb2lkY19lbmFibGVkGAEgASgIEhUKDWxvZ2luX2VuYWJsZWQYAiABKAgSEAoIcHJvdmlkZXIYAyABKAky0QYKC1VzZXJTZXJ2aWNlEkgKCUxvZ2luVXNlchIcLm1hbnRyYWUudjEuTG9naW5Vc2VyUmVxdWVzdBodLm1hbnRyYWUudjEuTG9naW5Vc2VyUmVzcG9uc2USSwoKTG9nb3V0VXNlchIdLm1hbnRyYWUudjEuTG9nb3V0VXNlclJlcXVlc3QaHi5tYW50cmFlLnYxLkxvZ291dFVzZXJSZXNwb25zZRJICglWZXJpZnlKV1QSHC5tYW50cmFlLnYxLlZlcmlmeUpXVFJlcXVlc3QaHS5tYW50cmFlLnYxLlZlcmlmeUpXVFJlc3BvbnNlEkgKCVZlcmlmeU9UUBIcLm1hbnRyYWUudjEuVmVyaWZ5T1RQUmVxdWVzdBodLm1hbnRyYWUudjEuVmVyaWZ5T1RQUmVzcG9uc2USQgoHU2VuZE9UUBIaLm1hbnRyYWUudjEuU2VuZE9UUFJlcXVlc3QaGy5tYW50cmFlLnYxLlNlbmRPVFBSZXNwb25zZRJHCgdHZXRVc2VyEhoubWFudHJhZS52MS5HZXRVc2VyUmVxdWVzdBobLm1hbnRyYWUudjEuR2V0VXNlclJlc3BvbnNlIgOQAgESSwoKQ3JlYXRlVXNlchIdLm1hbnRyYWUudjEuQ3JlYXRlVXNlclJlcXVlc3QaHi5tYW50cmFlLnYxLkNyZWF0ZVVzZXJSZXNwb25zZRJLCgpVcGRhdGVVc2VyEh0ubWFudHJhZS52MS5VcGRhdGVVc2VyUmVxdWVzdBoeLm1hbnRyYWUudjEuVXBkYXRlVXNlclJlc3BvbnNlEksKCkRlbGV0ZVVzZXISHS5tYW50cmFlLnYxLkRlbGV0ZVVzZXJSZXF1ZXN0Gh4ubWFudHJhZS52MS5EZWxldGVVc2VyUmVzcG9uc2USTQoJTGlzdFVzZXJzEhwubWFudHJhZS52MS5MaXN0VXNlcnNSZXF1ZXN0Gh0ubWFudHJhZS52MS5MaXN0VXNlcnNSZXNwb25zZSIDkAIBElQKDUdldE9JRENTdGF0dXMSIC5tYW50cmFlLnYxLkdldE9JRENTdGF0dXNSZXF1ZXN0GiEubWFudHJhZS52MS5HZXRPSURDU3RhdHVzUmVzcG9uc2VCowEKDmNvbS5tYW50cmFlLnYxQglVc2VyUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.User
@@ -102,11 +102,6 @@ export type LoginUserRequest = Message<"mantrae.v1.LoginUserRequest"> & {
    * @generated from field: string password = 3;
    */
   password: string;
-
-  /**
-   * @generated from field: bool remember = 4;
-   */
-  remember: boolean;
 };
 
 /**
@@ -134,13 +129,35 @@ export const LoginUserResponseSchema: GenMessage<LoginUserResponse> = /*@__PURE_
   messageDesc(file_mantrae_v1_user, 2);
 
 /**
+ * @generated from message mantrae.v1.LogoutUserRequest
+ */
+export type LogoutUserRequest = Message<"mantrae.v1.LogoutUserRequest"> & {
+};
+
+/**
+ * Describes the message mantrae.v1.LogoutUserRequest.
+ * Use `create(LogoutUserRequestSchema)` to create a new message.
+ */
+export const LogoutUserRequestSchema: GenMessage<LogoutUserRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_user, 3);
+
+/**
+ * @generated from message mantrae.v1.LogoutUserResponse
+ */
+export type LogoutUserResponse = Message<"mantrae.v1.LogoutUserResponse"> & {
+};
+
+/**
+ * Describes the message mantrae.v1.LogoutUserResponse.
+ * Use `create(LogoutUserResponseSchema)` to create a new message.
+ */
+export const LogoutUserResponseSchema: GenMessage<LogoutUserResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_user, 4);
+
+/**
  * @generated from message mantrae.v1.VerifyJWTRequest
  */
 export type VerifyJWTRequest = Message<"mantrae.v1.VerifyJWTRequest"> & {
-  /**
-   * @generated from field: string token = 1;
-   */
-  token: string;
 };
 
 /**
@@ -148,7 +165,7 @@ export type VerifyJWTRequest = Message<"mantrae.v1.VerifyJWTRequest"> & {
  * Use `create(VerifyJWTRequestSchema)` to create a new message.
  */
 export const VerifyJWTRequestSchema: GenMessage<VerifyJWTRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 3);
+  messageDesc(file_mantrae_v1_user, 5);
 
 /**
  * @generated from message mantrae.v1.VerifyJWTResponse
@@ -165,7 +182,7 @@ export type VerifyJWTResponse = Message<"mantrae.v1.VerifyJWTResponse"> & {
  * Use `create(VerifyJWTResponseSchema)` to create a new message.
  */
 export const VerifyJWTResponseSchema: GenMessage<VerifyJWTResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 4);
+  messageDesc(file_mantrae_v1_user, 6);
 
 /**
  * @generated from message mantrae.v1.VerifyOTPRequest
@@ -199,7 +216,7 @@ export type VerifyOTPRequest = Message<"mantrae.v1.VerifyOTPRequest"> & {
  * Use `create(VerifyOTPRequestSchema)` to create a new message.
  */
 export const VerifyOTPRequestSchema: GenMessage<VerifyOTPRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 5);
+  messageDesc(file_mantrae_v1_user, 7);
 
 /**
  * @generated from message mantrae.v1.VerifyOTPResponse
@@ -216,7 +233,7 @@ export type VerifyOTPResponse = Message<"mantrae.v1.VerifyOTPResponse"> & {
  * Use `create(VerifyOTPResponseSchema)` to create a new message.
  */
 export const VerifyOTPResponseSchema: GenMessage<VerifyOTPResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 6);
+  messageDesc(file_mantrae_v1_user, 8);
 
 /**
  * @generated from message mantrae.v1.SendOTPRequest
@@ -245,7 +262,7 @@ export type SendOTPRequest = Message<"mantrae.v1.SendOTPRequest"> & {
  * Use `create(SendOTPRequestSchema)` to create a new message.
  */
 export const SendOTPRequestSchema: GenMessage<SendOTPRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 7);
+  messageDesc(file_mantrae_v1_user, 9);
 
 /**
  * @generated from message mantrae.v1.SendOTPResponse
@@ -258,7 +275,7 @@ export type SendOTPResponse = Message<"mantrae.v1.SendOTPResponse"> & {
  * Use `create(SendOTPResponseSchema)` to create a new message.
  */
 export const SendOTPResponseSchema: GenMessage<SendOTPResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 8);
+  messageDesc(file_mantrae_v1_user, 10);
 
 /**
  * @generated from message mantrae.v1.GetUserRequest
@@ -293,7 +310,7 @@ export type GetUserRequest = Message<"mantrae.v1.GetUserRequest"> & {
  * Use `create(GetUserRequestSchema)` to create a new message.
  */
 export const GetUserRequestSchema: GenMessage<GetUserRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 9);
+  messageDesc(file_mantrae_v1_user, 11);
 
 /**
  * @generated from message mantrae.v1.GetUserResponse
@@ -310,7 +327,7 @@ export type GetUserResponse = Message<"mantrae.v1.GetUserResponse"> & {
  * Use `create(GetUserResponseSchema)` to create a new message.
  */
 export const GetUserResponseSchema: GenMessage<GetUserResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 10);
+  messageDesc(file_mantrae_v1_user, 12);
 
 /**
  * @generated from message mantrae.v1.CreateUserRequest
@@ -342,7 +359,7 @@ export type CreateUserRequest = Message<"mantrae.v1.CreateUserRequest"> & {
  * Use `create(CreateUserRequestSchema)` to create a new message.
  */
 export const CreateUserRequestSchema: GenMessage<CreateUserRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 11);
+  messageDesc(file_mantrae_v1_user, 13);
 
 /**
  * @generated from message mantrae.v1.CreateUserResponse
@@ -359,7 +376,7 @@ export type CreateUserResponse = Message<"mantrae.v1.CreateUserResponse"> & {
  * Use `create(CreateUserResponseSchema)` to create a new message.
  */
 export const CreateUserResponseSchema: GenMessage<CreateUserResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 12);
+  messageDesc(file_mantrae_v1_user, 14);
 
 /**
  * @generated from message mantrae.v1.UpdateUserRequest
@@ -396,7 +413,7 @@ export type UpdateUserRequest = Message<"mantrae.v1.UpdateUserRequest"> & {
  * Use `create(UpdateUserRequestSchema)` to create a new message.
  */
 export const UpdateUserRequestSchema: GenMessage<UpdateUserRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 13);
+  messageDesc(file_mantrae_v1_user, 15);
 
 /**
  * @generated from message mantrae.v1.UpdateUserResponse
@@ -413,7 +430,7 @@ export type UpdateUserResponse = Message<"mantrae.v1.UpdateUserResponse"> & {
  * Use `create(UpdateUserResponseSchema)` to create a new message.
  */
 export const UpdateUserResponseSchema: GenMessage<UpdateUserResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 14);
+  messageDesc(file_mantrae_v1_user, 16);
 
 /**
  * @generated from message mantrae.v1.DeleteUserRequest
@@ -430,7 +447,7 @@ export type DeleteUserRequest = Message<"mantrae.v1.DeleteUserRequest"> & {
  * Use `create(DeleteUserRequestSchema)` to create a new message.
  */
 export const DeleteUserRequestSchema: GenMessage<DeleteUserRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 15);
+  messageDesc(file_mantrae_v1_user, 17);
 
 /**
  * @generated from message mantrae.v1.DeleteUserResponse
@@ -443,7 +460,7 @@ export type DeleteUserResponse = Message<"mantrae.v1.DeleteUserResponse"> & {
  * Use `create(DeleteUserResponseSchema)` to create a new message.
  */
 export const DeleteUserResponseSchema: GenMessage<DeleteUserResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 16);
+  messageDesc(file_mantrae_v1_user, 18);
 
 /**
  * @generated from message mantrae.v1.ListUsersRequest
@@ -465,7 +482,7 @@ export type ListUsersRequest = Message<"mantrae.v1.ListUsersRequest"> & {
  * Use `create(ListUsersRequestSchema)` to create a new message.
  */
 export const ListUsersRequestSchema: GenMessage<ListUsersRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 17);
+  messageDesc(file_mantrae_v1_user, 19);
 
 /**
  * @generated from message mantrae.v1.ListUsersResponse
@@ -487,7 +504,7 @@ export type ListUsersResponse = Message<"mantrae.v1.ListUsersResponse"> & {
  * Use `create(ListUsersResponseSchema)` to create a new message.
  */
 export const ListUsersResponseSchema: GenMessage<ListUsersResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 18);
+  messageDesc(file_mantrae_v1_user, 20);
 
 /**
  * @generated from message mantrae.v1.GetOIDCStatusRequest
@@ -500,7 +517,7 @@ export type GetOIDCStatusRequest = Message<"mantrae.v1.GetOIDCStatusRequest"> & 
  * Use `create(GetOIDCStatusRequestSchema)` to create a new message.
  */
 export const GetOIDCStatusRequestSchema: GenMessage<GetOIDCStatusRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 19);
+  messageDesc(file_mantrae_v1_user, 21);
 
 /**
  * @generated from message mantrae.v1.GetOIDCStatusResponse
@@ -527,7 +544,7 @@ export type GetOIDCStatusResponse = Message<"mantrae.v1.GetOIDCStatusResponse"> 
  * Use `create(GetOIDCStatusResponseSchema)` to create a new message.
  */
 export const GetOIDCStatusResponseSchema: GenMessage<GetOIDCStatusResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_user, 20);
+  messageDesc(file_mantrae_v1_user, 22);
 
 /**
  * @generated from service mantrae.v1.UserService
@@ -540,6 +557,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof LoginUserRequestSchema;
     output: typeof LoginUserResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.UserService.LogoutUser
+   */
+  logoutUser: {
+    methodKind: "unary";
+    input: typeof LogoutUserRequestSchema;
+    output: typeof LogoutUserResponseSchema;
   },
   /**
    * @generated from rpc mantrae.v1.UserService.VerifyJWT

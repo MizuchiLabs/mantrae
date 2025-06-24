@@ -9,7 +9,6 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"golang.org/x/crypto/bcrypt"
@@ -61,7 +60,7 @@ func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 		}
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		claims, err := util.DecodeUserJWT(token, h.app.Secret)
+		claims, err := meta.DecodeUserToken(token, h.app.Secret)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
@@ -93,6 +92,34 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 			// Skip authentication for certain endpoints (like login)
 			if isPublicEndpoint(req.Spec().Procedure) {
 				return next(ctx, req)
+			}
+
+			if cookieHeader := req.Header().Get("Cookie"); cookieHeader != "" {
+				cookies, err := http.ParseCookie(cookieHeader)
+				if err != nil {
+					return nil, connect.NewError(
+						connect.CodeUnauthenticated,
+						errors.New("invalid cookie"),
+					)
+				}
+				var sessionID string
+				for _, cookie := range cookies {
+					if cookie.Name == meta.CookieName {
+						sessionID = cookie.Value
+					}
+				}
+				// Validate sessionID as needed and inject into context
+				if sessionID != "" {
+					claims, err := meta.DecodeUserToken(sessionID, app.Secret)
+					if err != nil {
+						return nil, connect.NewError(
+							connect.CodeUnauthenticated,
+							errors.New("invalid token"),
+						)
+					}
+					ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
+					return next(ctx, req)
+				}
 			}
 
 			authHeader := req.Header().Get("Authorization")
@@ -132,7 +159,7 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 			}
 
 			// Parse and validate the token
-			claims, err := util.DecodeUserJWT(tokenString, app.Secret)
+			claims, err := meta.DecodeUserToken(tokenString, app.Secret)
 			if err != nil {
 				return nil, connect.NewError(
 					connect.CodeUnauthenticated,

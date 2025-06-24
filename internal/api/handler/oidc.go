@@ -4,11 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -16,7 +14,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"golang.org/x/oauth2"
 )
 
@@ -41,14 +39,9 @@ type OIDCUserInfo struct {
 
 func OIDCLogin(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		oidcConfig, oauth2Config, _, err := setupOIDCConfig(r.Context(), a)
+		oauth2Config, _, err := getOIDCConfig(r.Context(), r, a)
 		if err != nil {
 			http.Error(w, "OIDC not configured: "+err.Error(), http.StatusServiceUnavailable)
-			return
-		}
-
-		if !oidcConfig.Enabled {
-			http.Error(w, "OIDC disabled", http.StatusServiceUnavailable)
 			return
 		}
 
@@ -73,7 +66,7 @@ func OIDCLogin(a *config.App) http.HandlerFunc {
 		opts := []oauth2.AuthCodeOption{oauth2.AccessTypeOffline}
 
 		// Add PKCE if enabled
-		if oidcConfig.UsePKCE {
+		if oauth2Config.ClientSecret == "" {
 			verifier := oauth2.GenerateVerifier()
 			http.SetCookie(w, &http.Cookie{
 				Name:     "pkce_verifier",
@@ -94,7 +87,7 @@ func OIDCLogin(a *config.App) http.HandlerFunc {
 
 func OIDCCallback(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		oidcConfig, oauth2Config, verifier, err := setupOIDCConfig(r.Context(), a)
+		oauth2Config, verifier, err := getOIDCConfig(r.Context(), r, a)
 		if err != nil {
 			http.Error(w, "OIDC not configured: "+err.Error(), http.StatusServiceUnavailable)
 			return
@@ -125,7 +118,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 		opts := []oauth2.AuthCodeOption{}
 
 		// Handle PKCE
-		if oidcConfig.UsePKCE {
+		if oauth2Config.ClientSecret == "" {
 			verifierCookie, err := r.Cookie("pkce_verifier")
 			if err != nil {
 				http.Error(w, "PKCE verifier not found", http.StatusBadRequest)
@@ -194,9 +187,9 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		// Generate JWT and set cookie
+		// Generate JWT
 		expirationTime := time.Now().Add(24 * time.Hour)
-		jwtToken, err := util.EncodeUserJWT(user.Username, a.Secret, expirationTime)
+		jwtToken, err := meta.EncodeUserToken(user.ID, a.Secret, expirationTime)
 		if err != nil {
 			http.Error(w, "Failed to generate JWT", http.StatusInternalServerError)
 			return
@@ -207,7 +200,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     util.CookieName,
+			Name:     meta.CookieName,
 			Value:    jwtToken,
 			Path:     "/",
 			MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
@@ -215,106 +208,49 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 			Secure:   r.TLS != nil,
 			SameSite: http.SameSiteLaxMode,
 		})
-
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 	}
 }
 
-func OIDCStatus(a *config.App) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		oidcConfig, _, _, err := setupOIDCConfig(r.Context(), a)
-		if err != nil {
-			slog.Error("Failed to get OIDC config", "error", err)
-		}
-
-		response := map[string]interface{}{
-			"enabled":       false,
-			"provider":      "",
-			"loginDisabled": false,
-		}
-
-		if err == nil && oidcConfig != nil {
-			providerName, _ := a.SM.Get(settings.KeyOIDCProviderName)
-			pwLogin, _ := a.SM.Get(settings.KeyPasswordLoginEnabled)
-			response["enabled"] = oidcConfig.Enabled
-			response["provider"] = providerName
-			response["loginDisabled"] = settings.AsBool(pwLogin)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	}
-}
-
-// Helper function that handles both config and OIDC setup
-func setupOIDCConfig(
+func getOIDCConfig(
 	ctx context.Context,
+	r *http.Request,
 	a *config.App,
-) (*OIDCConfig, *oauth2.Config, *oidc.IDTokenVerifier, error) {
-	config, err := getOIDCConfig(ctx, a)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	// Create OIDC provider
-	provider, err := oidc.NewProvider(ctx, strings.TrimSuffix(config.IssuerURL, "/"))
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to create OIDC provider: %w", err)
-	}
-
-	// Create OAuth2 config
-	oauth2Config := &oauth2.Config{
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
-		RedirectURL:  config.RedirectURL,
-		Endpoint:     provider.Endpoint(),
-		Scopes:       config.Scopes,
-	}
-
-	// For PKCE, don't include client secret
-	if config.UsePKCE {
-		oauth2Config.ClientSecret = ""
-	}
-
-	// Create ID token verifier
-	verifier := provider.Verifier(&oidc.Config{
-		ClientID: config.ClientID,
-	})
-
-	return config, oauth2Config, verifier, nil
-}
-
-func getOIDCConfig(ctx context.Context, a *config.App) (*OIDCConfig, error) {
-	config := &OIDCConfig{Scopes: []string{"openid", "email", "profile"}}
+) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
 	sets := a.SM.GetAll()
 
 	// Parse settings (same as before but simplified validation)
-	if enabled, exists := sets[settings.KeyOIDCEnabled]; exists {
-		config.Enabled = settings.AsBool(enabled)
+	if enabled, ok := sets[settings.KeyOIDCEnabled]; ok {
+		if !settings.AsBool(enabled) {
+			return nil, nil, errors.New("oidc disabled")
+		}
 	}
-	// Return early if disabled
-	if !config.Enabled {
-		return config, nil
-	}
-	if pkce, exists := sets[settings.KeyOIDCPKCE]; exists {
-		config.UsePKCE = settings.AsBool(pkce)
-	}
-	if clientID, exists := sets[settings.KeyOIDCClientID]; exists {
+
+	config := &oauth2.Config{}
+	if clientID, ok := sets[settings.KeyOIDCClientID]; ok {
 		config.ClientID = clientID
 	}
-	if !config.UsePKCE {
-		if clientSecret, exists := sets[settings.KeyOIDCClientSecret]; exists {
-			config.ClientSecret = clientSecret
+	if clientSecret, ok := sets[settings.KeyOIDCClientSecret]; ok {
+		config.ClientSecret = clientSecret
+	}
+	if pkce, ok := sets[settings.KeyOIDCPKCE]; ok {
+		if settings.AsBool(pkce) {
+			config.ClientSecret = ""
 		}
 	}
-	if serverURL, exists := sets[settings.KeyServerURL]; exists {
-		if parsed, err := url.Parse(serverURL); err == nil {
-			config.RedirectURL = strings.TrimSuffix(parsed.String(), "/") + "/api/oidc/callback"
-		}
+
+	config.RedirectURL = getRedirectURL(r)
+	issuerURL, ok := sets[settings.KeyOIDCIssuerURL]
+	if !ok {
+		return nil, nil, errors.New("oidc issuer url not set")
 	}
-	if issuerURL, exists := sets[settings.KeyOIDCIssuerURL]; exists {
-		config.IssuerURL = issuerURL
+	provider, err := oidc.NewProvider(ctx, strings.TrimSuffix(issuerURL, "/"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create OIDC provider: %w", err)
 	}
+	config.Endpoint = provider.Endpoint()
+
+	config.Scopes = []string{"openid", "email", "profile"}
 	if scopes, exists := sets["oauth_scopes"]; exists && scopes != "" {
 		config.Scopes = strings.Split(scopes, ",")
 		for i := range config.Scopes {
@@ -322,7 +258,32 @@ func getOIDCConfig(ctx context.Context, a *config.App) (*OIDCConfig, error) {
 		}
 	}
 
-	return config, nil
+	// Create ID token verifier
+	verifier := provider.Verifier(&oidc.Config{
+		ClientID: config.ClientID,
+	})
+
+	return config, verifier, nil
+}
+
+func getRedirectURL(r *http.Request) string {
+	proto := "http"
+	if r.TLS != nil {
+		proto = "https"
+	} else if forwarded := r.Header.Get("X-Forwarded-Proto"); forwarded != "" {
+		proto = forwarded
+	}
+
+	// check url for redirect url
+	if redirectURL := r.URL.Query().Get("redirect"); redirectURL != "" {
+		return redirectURL
+	}
+
+	host := r.Host
+	if forwardedHost := r.Header.Get("X-Forwarded-Host"); forwardedHost != "" {
+		host = forwardedHost
+	}
+	return fmt.Sprintf("%s://%s/oidc/callback", proto, host)
 }
 
 func findOrCreateOIDCUser(

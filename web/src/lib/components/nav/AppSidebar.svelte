@@ -27,11 +27,12 @@
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
-	import { logout, profileClient } from '$lib/api';
+	import { profileClient, userClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import ProfileModal from '$lib/components/modals/profile.svelte';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { toggleMode, mode } from 'mode-watcher';
+	import { goto } from '$app/navigation';
 
 	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -278,7 +279,13 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item onSelect={() => logout()}>
+						<DropdownMenu.Item
+							onSelect={() => {
+								userClient.logoutUser({});
+								user.clear();
+								goto('/login');
+							}}
+						>
 							<LogOut />
 							Log out
 						</DropdownMenu.Item>

@@ -238,7 +238,11 @@ func (s *Server) registerServices() {
 	}
 
 	// Upload handler (HTTP) --------------------------------------------------
-	s.mux.Handle("POST /api/backup", jwtChain(handler.UploadBackup(s.app)))
+	s.mux.Handle("POST /upload/avatar", jwtChain(handler.UploadAvatar(s.app)))
+	s.mux.Handle("POST /upload/backup", jwtChain(handler.UploadBackup(s.app)))
+	// s.mux.Handle("POST /upload/dynamic", jwtChain(handler.UploadBackup(s.app)))
 
-	// TODO: OIDC
+	// OIDC handlers (HTTP) ---------------------------------------------------
+	s.mux.Handle("GET /oidc/login", logChain(handler.OIDCLogin(s.app)))
+	s.mux.Handle("GET /oidc/callback", logChain(handler.OIDCCallback(s.app)))
 }

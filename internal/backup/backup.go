@@ -18,6 +18,8 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
+const BackupPath = "backups"
+
 type BackupManager struct {
 	Conn      *store.Connection
 	SM        *settings.SettingsManager
@@ -58,42 +60,11 @@ func (m *BackupManager) Stop() {
 }
 
 func (m *BackupManager) SetStorage(ctx context.Context) error {
-	backupStorage, ok := m.SM.Get(settings.KeyBackupStorage)
-	if !ok {
-		return fmt.Errorf("failed to get backup storage setting")
-	}
-	storageType := storage.BackendType(backupStorage)
-	if !storageType.Valid() {
-		return fmt.Errorf("storage backend not configured")
-	}
-
 	var err error
-	var newStorage storage.Backend
-	switch storageType {
-	case storage.BackendTypeLocal:
-		path, ok := m.SM.Get(settings.KeyBackupPath)
-		if !ok {
-			return fmt.Errorf("failed to get backup path")
-		}
-
-		newStorage, err = storage.NewLocalStorage(path)
-		if err != nil {
-			return fmt.Errorf("failed to create local storage: %w", err)
-		}
-		slog.Debug("backup storage set to local", "path", path)
-
-	case storage.BackendTypeS3:
-		newStorage, err = storage.NewS3Storage(ctx, m.SM)
-		if err != nil {
-			return fmt.Errorf("failed to create s3 storage: %w", err)
-		}
-		slog.Debug("backup storage set to S3")
-
-	default:
-		return fmt.Errorf("unsupported backend type: %s", storageType)
+	m.Storage, err = storage.GetBackend(ctx, m.SM, BackupPath)
+	if err != nil {
+		return fmt.Errorf("failed to get storage backend: %w", err)
 	}
-
-	m.Storage = newStorage
 	return nil
 }
 

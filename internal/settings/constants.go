@@ -4,13 +4,12 @@ package settings
 const (
 	// General settings
 	KeyServerURL = "server_url"
+	KeyStorage   = "storage_select"
 
 	// Backup settings
 	KeyBackupEnabled  = "backup_enabled"
 	KeyBackupInterval = "backup_interval"
 	KeyBackupKeep     = "backup_keep"
-	KeyBackupStorage  = "backup_storage_select"
-	KeyBackupPath     = "backup_path"
 
 	// S3 settings
 	KeyS3Endpoint     = "s3_endpoint"

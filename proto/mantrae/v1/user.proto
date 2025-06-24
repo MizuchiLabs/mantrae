@@ -7,6 +7,7 @@ import "google/protobuf/timestamp.proto";
 
 service UserService {
   rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
   rpc VerifyJWT(VerifyJWTRequest) returns (VerifyJWTResponse);
   rpc VerifyOTP(VerifyOTPRequest) returns (VerifyOTPResponse);
   rpc SendOTP(SendOTPRequest) returns (SendOTPResponse);
@@ -45,18 +46,15 @@ message LoginUserRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string.min_len = 8
   ];
-  bool remember = 4;
 }
 message LoginUserResponse {
   string token = 1;
 }
 
-message VerifyJWTRequest {
-  string token = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-}
+message LogoutUserRequest {}
+message LogoutUserResponse {}
+
+message VerifyJWTRequest {}
 message VerifyJWTResponse {
   User user = 1;
 }

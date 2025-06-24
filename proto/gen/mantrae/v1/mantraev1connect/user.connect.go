@@ -35,6 +35,8 @@ const (
 const (
 	// UserServiceLoginUserProcedure is the fully-qualified name of the UserService's LoginUser RPC.
 	UserServiceLoginUserProcedure = "/mantrae.v1.UserService/LoginUser"
+	// UserServiceLogoutUserProcedure is the fully-qualified name of the UserService's LogoutUser RPC.
+	UserServiceLogoutUserProcedure = "/mantrae.v1.UserService/LogoutUser"
 	// UserServiceVerifyJWTProcedure is the fully-qualified name of the UserService's VerifyJWT RPC.
 	UserServiceVerifyJWTProcedure = "/mantrae.v1.UserService/VerifyJWT"
 	// UserServiceVerifyOTPProcedure is the fully-qualified name of the UserService's VerifyOTP RPC.
@@ -59,6 +61,7 @@ const (
 // UserServiceClient is a client for the mantrae.v1.UserService service.
 type UserServiceClient interface {
 	LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error)
+	LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error)
 	VerifyJWT(context.Context, *connect.Request[v1.VerifyJWTRequest]) (*connect.Response[v1.VerifyJWTResponse], error)
 	VerifyOTP(context.Context, *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error)
 	SendOTP(context.Context, *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error)
@@ -85,6 +88,12 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+UserServiceLoginUserProcedure,
 			connect.WithSchema(userServiceMethods.ByName("LoginUser")),
+			connect.WithClientOptions(opts...),
+		),
+		logoutUser: connect.NewClient[v1.LogoutUserRequest, v1.LogoutUserResponse](
+			httpClient,
+			baseURL+UserServiceLogoutUserProcedure,
+			connect.WithSchema(userServiceMethods.ByName("LogoutUser")),
 			connect.WithClientOptions(opts...),
 		),
 		verifyJWT: connect.NewClient[v1.VerifyJWTRequest, v1.VerifyJWTResponse](
@@ -149,6 +158,7 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
 	loginUser     *connect.Client[v1.LoginUserRequest, v1.LoginUserResponse]
+	logoutUser    *connect.Client[v1.LogoutUserRequest, v1.LogoutUserResponse]
 	verifyJWT     *connect.Client[v1.VerifyJWTRequest, v1.VerifyJWTResponse]
 	verifyOTP     *connect.Client[v1.VerifyOTPRequest, v1.VerifyOTPResponse]
 	sendOTP       *connect.Client[v1.SendOTPRequest, v1.SendOTPResponse]
@@ -163,6 +173,11 @@ type userServiceClient struct {
 // LoginUser calls mantrae.v1.UserService.LoginUser.
 func (c *userServiceClient) LoginUser(ctx context.Context, req *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error) {
 	return c.loginUser.CallUnary(ctx, req)
+}
+
+// LogoutUser calls mantrae.v1.UserService.LogoutUser.
+func (c *userServiceClient) LogoutUser(ctx context.Context, req *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error) {
+	return c.logoutUser.CallUnary(ctx, req)
 }
 
 // VerifyJWT calls mantrae.v1.UserService.VerifyJWT.
@@ -213,6 +228,7 @@ func (c *userServiceClient) GetOIDCStatus(ctx context.Context, req *connect.Requ
 // UserServiceHandler is an implementation of the mantrae.v1.UserService service.
 type UserServiceHandler interface {
 	LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error)
+	LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error)
 	VerifyJWT(context.Context, *connect.Request[v1.VerifyJWTRequest]) (*connect.Response[v1.VerifyJWTResponse], error)
 	VerifyOTP(context.Context, *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error)
 	SendOTP(context.Context, *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error)
@@ -235,6 +251,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		UserServiceLoginUserProcedure,
 		svc.LoginUser,
 		connect.WithSchema(userServiceMethods.ByName("LoginUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceLogoutUserHandler := connect.NewUnaryHandler(
+		UserServiceLogoutUserProcedure,
+		svc.LogoutUser,
+		connect.WithSchema(userServiceMethods.ByName("LogoutUser")),
 		connect.WithHandlerOptions(opts...),
 	)
 	userServiceVerifyJWTHandler := connect.NewUnaryHandler(
@@ -297,6 +319,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		switch r.URL.Path {
 		case UserServiceLoginUserProcedure:
 			userServiceLoginUserHandler.ServeHTTP(w, r)
+		case UserServiceLogoutUserProcedure:
+			userServiceLogoutUserHandler.ServeHTTP(w, r)
 		case UserServiceVerifyJWTProcedure:
 			userServiceVerifyJWTHandler.ServeHTTP(w, r)
 		case UserServiceVerifyOTPProcedure:
@@ -326,6 +350,10 @@ type UnimplementedUserServiceHandler struct{}
 
 func (UnimplementedUserServiceHandler) LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.LoginUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.LogoutUser is not implemented"))
 }
 
 func (UnimplementedUserServiceHandler) VerifyJWT(context.Context, *connect.Request[v1.VerifyJWTRequest]) (*connect.Response[v1.VerifyJWTResponse], error) {
