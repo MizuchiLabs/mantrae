@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,23 +20,24 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type OIDCConfig struct {
-	Enabled      bool     `json:"enabled"`
-	ClientID     string   `json:"client_id"`
-	ClientSecret string   `json:"client_secret"`
-	RedirectURL  string   `json:"redirect_url"`
-	IssuerURL    string   `json:"issuer_url"`
-	Scopes       []string `json:"scopes"`
-	Provider     string   `json:"provider"`
-	UsePKCE      bool     `json:"use_pkce"`
-}
-
 type OIDCUserInfo struct {
 	Sub               string `json:"sub"`
 	Email             string `json:"email"`
 	EmailVerified     bool   `json:"email_verified"`
 	Name              string `json:"name"`
 	PreferredUsername string `json:"preferred_username"`
+}
+
+// Validate ensures the user info contains required fields
+func (u *OIDCUserInfo) Validate() error {
+	if u.Sub == "" {
+		return errors.New("missing subject claim")
+	}
+	isValidEmail := strings.Contains(u.Email, "@") && len(u.Email) > 3 && len(u.Email) < 255
+	if u.Email != "" && isValidEmail {
+		return errors.New("invalid email format")
+	}
+	return nil
 }
 
 func OIDCLogin(a *config.App) http.HandlerFunc {
@@ -174,6 +177,14 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 			)
 			return
 		}
+		if err := userInfo.Validate(); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Invalid user info: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 
 		// Find or create user
 		q := a.Conn.GetQuery()
@@ -226,29 +237,33 @@ func getOIDCConfig(
 		}
 	}
 
-	config := &oauth2.Config{}
-	if clientID, ok := sets[settings.KeyOIDCClientID]; ok {
-		config.ClientID = clientID
-	}
-	if clientSecret, ok := sets[settings.KeyOIDCClientSecret]; ok {
-		config.ClientSecret = clientSecret
-	}
-	if pkce, ok := sets[settings.KeyOIDCPKCE]; ok {
-		if settings.AsBool(pkce) {
-			config.ClientSecret = ""
-		}
+	clientID, ok := sets[settings.KeyOIDCClientID]
+	if !ok || clientID == "" {
+		return nil, nil, errors.New("OIDC client ID not configured")
 	}
 
-	config.RedirectURL = getRedirectURL(r)
 	issuerURL, ok := sets[settings.KeyOIDCIssuerURL]
-	if !ok {
-		return nil, nil, errors.New("oidc issuer url not set")
+	if !ok || issuerURL == "" {
+		return nil, nil, errors.New("OIDC issuer URL not configured")
 	}
+
 	provider, err := oidc.NewProvider(ctx, strings.TrimSuffix(issuerURL, "/"))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create OIDC provider: %w", err)
 	}
-	config.Endpoint = provider.Endpoint()
+
+	config := &oauth2.Config{
+		ClientID:    clientID,
+		RedirectURL: getRedirectURL(r),
+		Endpoint:    provider.Endpoint(),
+	}
+
+	// Handle client secret vs PKCE
+	if clientSecret, exists := sets[settings.KeyOIDCClientSecret]; exists && clientSecret != "" {
+		if pkceEnabled, _ := sets[settings.KeyOIDCPKCE]; !settings.AsBool(pkceEnabled) {
+			config.ClientSecret = clientSecret
+		}
+	}
 
 	config.Scopes = []string{"openid", "email", "profile"}
 	if scopes, exists := sets["oauth_scopes"]; exists && scopes != "" {
@@ -259,24 +274,20 @@ func getOIDCConfig(
 	}
 
 	// Create ID token verifier
-	verifier := provider.Verifier(&oidc.Config{
-		ClientID: config.ClientID,
-	})
-
+	verifier := provider.Verifier(&oidc.Config{ClientID: config.ClientID})
 	return config, verifier, nil
 }
 
 func getRedirectURL(r *http.Request) string {
-	proto := "http"
-	if r.TLS != nil {
-		proto = "https"
-	} else if forwarded := r.Header.Get("X-Forwarded-Proto"); forwarded != "" {
-		proto = forwarded
+	if redirectURL := r.URL.Query().Get("redirect"); redirectURL != "" {
+		if u, err := url.Parse(redirectURL); err == nil && u.IsAbs() {
+			return redirectURL
+		}
 	}
 
-	// check url for redirect url
-	if redirectURL := r.URL.Query().Get("redirect"); redirectURL != "" {
-		return redirectURL
+	proto := "https"
+	if r.TLS == nil && r.Header.Get("X-Forwarded-Proto") != "https" {
+		proto = "http"
 	}
 
 	host := r.Host
@@ -319,30 +330,9 @@ func findOrCreateOIDCUser(
 	}
 
 	if user == nil {
-		// Create new user
-		username := userInfo.PreferredUsername
-		if username == "" {
-			// Fallback to email prefix if no preferred username
-			if userInfo.Email != "" {
-				username = strings.Split(userInfo.Email, "@")[0]
-			} else {
-				username = fmt.Sprintf("oidc_user_%s", userInfo.Sub)
-			}
-		}
-
 		// Ensure username is unique
-		originalUsername := username
-		counter := 1
-		for {
-			if _, err := q.GetUserByUsername(ctx, username); err != nil {
-				break // Username is available
-			}
-			username = fmt.Sprintf("%s_%d", originalUsername, counter)
-			counter++
-		}
-
 		params := db.CreateUserParams{
-			Username: username,
+			Username: generateUniqueUsername(ctx, q, userInfo),
 			Email:    &userInfo.Email,
 			IsAdmin:  false,
 		}
@@ -353,9 +343,9 @@ func findOrCreateOIDCUser(
 		}
 		user = &db.User{
 			ID:       newUser.ID,
-			Username: username,
-			Email:    &userInfo.Email,
-			IsAdmin:  false,
+			Username: newUser.Username,
+			Email:    newUser.Email,
+			IsAdmin:  newUser.IsAdmin,
 		}
 	} else {
 		// Update existing user's email if verified
@@ -373,6 +363,53 @@ func findOrCreateOIDCUser(
 	}
 
 	return user, nil
+}
+
+func generateUniqueUsername(ctx context.Context, q *db.Queries, userInfo *OIDCUserInfo) string {
+	username := sanitizeUsername(userInfo.PreferredUsername)
+	if username == "" {
+		if userInfo.Email != "" {
+			username = sanitizeUsername(strings.Split(userInfo.Email, "@")[0])
+		} else {
+			username = fmt.Sprintf("user_%s", userInfo.Sub[:8])
+		}
+	}
+
+	// Ensure minimum length
+	if len(username) < 3 {
+		username = fmt.Sprintf("user_%s", userInfo.Sub[:8])
+	}
+
+	// Find unique username
+	originalUsername := username
+	for i := 1; i <= 100; i++ {
+		if _, err := q.GetUserByUsername(ctx, username); err != nil {
+			return username
+		}
+		username = fmt.Sprintf("%s_%d", originalUsername, i)
+	}
+
+	// Fallback to UUID-based username
+	return fmt.Sprintf("user_%s", userInfo.Sub[:12])
+}
+
+func sanitizeUsername(username string) string {
+	username = strings.TrimSpace(strings.ToLower(username))
+	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	if !usernameRegex.MatchString(username) {
+		// Remove invalid characters
+		result := ""
+		for _, r := range username {
+			if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' || r == '-' {
+				result += string(r)
+			}
+		}
+		username = result
+	}
+	if len(username) > 50 {
+		username = username[:50]
+	}
+	return username
 }
 
 func generateRandomState() (string, error) {
