@@ -2,6 +2,7 @@
 	import { routerClient } from '$lib/api';
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
+	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
@@ -145,6 +146,15 @@
 			}
 		},
 		{
+			header: 'Enabled',
+			accessorKey: 'enabled',
+			enableSorting: true,
+			cell: ({ row }) => {
+				let checked = row.getValue('enabled') as boolean;
+				return renderComponent(ColumnCheck, { checked: checked });
+			}
+		},
+		{
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
@@ -235,7 +245,7 @@
 <div class="flex flex-col gap-4">
 	<div class="flex items-center justify-start gap-2">
 		<Route />
-		<h1 class="text-2xl font-bold">Router Management</h1>
+		<h1 class="text-2xl font-bold">Routers</h1>
 	</div>
 	<DataTable
 		{data}

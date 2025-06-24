@@ -182,7 +182,7 @@
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-start gap-2">
 		<Bot />
-		<h1 class="text-2xl font-bold">Agent Management</h1>
+		<h1 class="text-2xl font-bold">Agents</h1>
 	</div>
 	<DataTable
 		{data}

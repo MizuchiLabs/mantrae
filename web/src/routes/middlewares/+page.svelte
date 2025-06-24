@@ -14,8 +14,6 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import type { TCPMiddleware } from '$lib/gen/tygo/dynamic';
-	import type { Middleware as HTTPMiddleware } from '$lib/gen/tygo/dynamic';
 	import type { JsonObject } from '@bufbuild/protobuf';
 
 	let item = $state({} as Middleware);
@@ -161,7 +159,7 @@
 <div class="flex flex-col gap-4">
 	<div class="flex items-center justify-start gap-2">
 		<Layers />
-		<h1 class="text-2xl font-bold">Middleware Management</h1>
+		<h1 class="text-2xl font-bold">Middlewares</h1>
 	</div>
 	<DataTable
 		{data}

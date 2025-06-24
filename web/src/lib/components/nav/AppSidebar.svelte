@@ -29,16 +29,11 @@
 	import { user } from '$lib/stores/user';
 	import { logout, profileClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import ProfileModal from '$lib/components/modals/profile.svelte';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 
-	let {
-		ref = $bindable(null),
-		collapsible = 'icon',
-		...restProps
-	}: ComponentProps<typeof Sidebar.Root> = $props();
+	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -80,7 +75,7 @@
 	<UserModal bind:open={modalUserOpen} bind:item={user.value} data={undefined} />
 {/if}
 
-<Sidebar.Root bind:ref {collapsible} {...restProps}>
+<Sidebar.Root collapsible="offcanvas" {...restProps}>
 	<!-- Profile Selection -->
 	<Sidebar.Header>
 		<Sidebar.Menu>

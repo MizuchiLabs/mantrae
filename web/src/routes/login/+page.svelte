@@ -83,9 +83,8 @@
 			<Card.Description>Login to your account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			{#await userClient.getOIDCStatus({}) then value}
-				<!-- promise was fulfilled -->
-				<form onsubmit={handleSubmit} class="p-4 md:p-6">
+			<form onsubmit={handleSubmit} class="p-4">
+				{#await userClient.getOIDCStatus({}) then value}
 					{#if value.loginEnabled}
 						<div class="flex flex-col gap-6">
 							<div class="grid gap-3">
@@ -126,8 +125,8 @@
 							Login with {value.provider || 'OIDC'}
 						</Button>
 					{/if}
-				</form>
-			{/await}
+				{/await}
+			</form>
 		</Card.Content>
 	</Card.Root>
 {/if}

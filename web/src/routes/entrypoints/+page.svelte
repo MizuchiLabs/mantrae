@@ -145,7 +145,7 @@
 <div class="flex flex-col gap-4">
 	<div class="flex items-center justify-start gap-2">
 		<EthernetPort />
-		<h1 class="text-2xl font-bold">EntryPoint Management</h1>
+		<h1 class="text-2xl font-bold">Entry Points</h1>
 	</div>
 	<DataTable
 		{data}
