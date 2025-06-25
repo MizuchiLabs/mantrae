@@ -1,8 +1,8 @@
+import type { LayoutLoad } from "./$types";
 import { goto } from "$app/navigation";
 import { profileClient, userClient } from "$lib/api";
 import { profile } from "$lib/stores/profile";
 import { user } from "$lib/stores/user";
-import type { LayoutLoad } from "./$types";
 
 export const ssr = false;
 export const prerender = true;
@@ -45,45 +45,3 @@ export const load: LayoutLoad = async ({ url }) => {
 		return;
 	}
 };
-
-// export const load: LayoutLoad = async ({ url }) => {
-// 	// Case 1: No token and accessing protected route
-// 	if (!token.value && !isPublicRoute(url.pathname)) {
-// 		await goto("/login/");
-// 		user.clear();
-// 		return;
-// 	}
-//
-// 	// If we have a token, verify it
-// 	if (token.value) {
-// 		try {
-// 			const verified = await userClient.verifyJWT({});
-// 			if (!verified.user) {
-// 				throw new Error("Invalid token");
-// 			}
-// 			user.value = verified.user;
-// 			if (!profile.id) {
-// 				const response = await profileClient.listProfiles({});
-// 				profile.value = response.profiles[0];
-// 			}
-//
-// 			// Redirect to home if trying to access login page while authenticated
-// 			if (isPublicRoute(url.pathname) && user.isLoggedIn()) {
-// 				await goto("/");
-// 			}
-// 			return;
-// 		} catch (error) {
-// 			// Token verification failed, clean up
-// 			logout();
-// 			user.clear();
-// 			throw new Error("Token verification failed: " + error);
-// 		}
-// 	}
-//
-// 	// No token and trying to access protected route
-// 	if (!isPublicRoute) {
-// 		await goto("/login");
-// 	}
-//
-// 	return;
-// };

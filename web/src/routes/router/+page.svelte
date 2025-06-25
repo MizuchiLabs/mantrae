@@ -216,8 +216,8 @@
 
 	async function bulkDelete(rows: Router[], action: string) {
 		try {
-			// const confirmed = confirm(`Are you sure you want to ${action} ${rows.length} routers?`);
-			// if (!confirmed) return;
+			const confirmed = confirm(`Are you sure you want to ${action} ${rows.length} routers?`);
+			if (!confirmed) return;
 
 			switch (action) {
 				case 'delete':

@@ -6,7 +6,6 @@
 	import { toast } from 'svelte-sonner';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { token } from '$lib/stores/common';
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores/user';
 
@@ -20,15 +19,14 @@
 		const isEmail = username.includes('@');
 
 		try {
-			const response = await userClient.verifyOTP({
+			await userClient.verifyOTP({
 				identifier: {
 					case: isEmail ? 'email' : 'username',
 					value: username
 				},
 				otp
 			});
-			token.value = response.token ?? null;
-			const verified = await userClient.verifyJWT({ token: token.value });
+			const verified = await userClient.verifyJWT({});
 			if (verified.user) {
 				user.value = verified.user;
 				await goto('/');

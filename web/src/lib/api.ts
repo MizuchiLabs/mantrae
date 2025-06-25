@@ -1,9 +1,6 @@
 import type { DescService } from "@bufbuild/protobuf";
 import { createClient, type Client } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { goto } from "$app/navigation";
-import { token } from "./stores/common";
-import { user } from "./stores/user";
 import { ProfileService } from "./gen/mantrae/v1/profile_pb";
 import { UserService } from "./gen/mantrae/v1/user_pb";
 import { RouterService } from "./gen/mantrae/v1/router_pb";
@@ -26,9 +23,6 @@ export const BASE_URL = import.meta.env.PROD
 export function useClient<T extends DescService>(service: T): Client<T> {
 	const headers = new Headers();
 	headers.set("Content-Type", "application/json");
-	// if (token.value) {
-	// 	headers.set("Authorization", "Bearer " + token.value);
-	// }
 
 	const transport = createConnectTransport({
 		baseUrl: BASE_URL,
@@ -53,12 +47,13 @@ export async function upload(input: HTMLInputElement | null, endpoint: string) {
 	body.append("file", input.files[0]);
 
 	const headers = new Headers();
-	headers.set("Authorization", "Bearer " + token.value);
+	headers.set("Content-Type", "multipart/form-data");
 
 	const response = await fetch(`${BASE_URL}/api/${endpoint}`, {
 		method: "POST",
 		headers,
 		body,
+		credentials: "include",
 	});
 	if (!response.ok) {
 		throw new Error("Failed to upload");
