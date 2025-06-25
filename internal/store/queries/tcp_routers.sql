@@ -74,6 +74,7 @@ UPDATE tcp_routers
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

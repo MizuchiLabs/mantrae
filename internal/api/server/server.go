@@ -1,3 +1,4 @@
+// Package server initializes and runs the Mantrae server.
 package server
 
 import (
@@ -240,7 +241,6 @@ func (s *Server) registerServices() {
 	// Upload handler (HTTP) --------------------------------------------------
 	s.mux.Handle("POST /upload/avatar", jwtChain(handler.UploadAvatar(s.app)))
 	s.mux.Handle("POST /upload/backup", jwtChain(handler.UploadBackup(s.app)))
-	// s.mux.Handle("POST /upload/dynamic", jwtChain(handler.UploadBackup(s.app)))
 
 	// OIDC handlers (HTTP) ---------------------------------------------------
 	s.mux.Handle("GET /oidc/login", logChain(handler.OIDCLogin(s.app)))

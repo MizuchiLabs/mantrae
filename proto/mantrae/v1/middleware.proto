@@ -86,11 +86,11 @@ message CreateMiddlewareRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string.min_len = 1
   ];
-  google.protobuf.Struct config = 4;
-  MiddlewareType type = 5 [
+  MiddlewareType type = 4 [
     (buf.validate.field).required = true,
     (buf.validate.field).enum.defined_only = true
   ];
+  google.protobuf.Struct config = 5;
 }
 message CreateMiddlewareResponse {
   Middleware middleware = 1;
@@ -105,11 +105,12 @@ message UpdateMiddlewareRequest {
     (buf.validate.field).required = true,
     (buf.validate.field).string.min_len = 1
   ];
-  google.protobuf.Struct config = 3;
-  MiddlewareType type = 4 [
+  MiddlewareType type = 3 [
     (buf.validate.field).required = true,
     (buf.validate.field).enum.defined_only = true
   ];
+  google.protobuf.Struct config = 4;
+  bool enabled = 5;
 }
 message UpdateMiddlewareResponse {
   Middleware middleware = 1;

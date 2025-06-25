@@ -246,19 +246,26 @@ UPDATE udp_routers
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type UpdateUdpRouterParams struct {
-	Name   string            `json:"name"`
-	Config *schema.UDPRouter `json:"config"`
-	ID     int64             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *schema.UDPRouter `json:"config"`
+	Enabled bool              `json:"enabled"`
+	ID      int64             `json:"id"`
 }
 
 func (q *Queries) UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams) (UdpRouter, error) {
-	row := q.queryRow(ctx, q.updateUdpRouterStmt, updateUdpRouter, arg.Name, arg.Config, arg.ID)
+	row := q.queryRow(ctx, q.updateUdpRouterStmt, updateUdpRouter,
+		arg.Name,
+		arg.Config,
+		arg.Enabled,
+		arg.ID,
+	)
 	var i UdpRouter
 	err := row.Scan(
 		&i.ID,

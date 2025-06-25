@@ -246,19 +246,26 @@ UPDATE http_routers
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type UpdateHttpRouterParams struct {
-	Name   string         `json:"name"`
-	Config *schema.Router `json:"config"`
-	ID     int64          `json:"id"`
+	Name    string         `json:"name"`
+	Config  *schema.Router `json:"config"`
+	Enabled bool           `json:"enabled"`
+	ID      int64          `json:"id"`
 }
 
 func (q *Queries) UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterParams) (HttpRouter, error) {
-	row := q.queryRow(ctx, q.updateHttpRouterStmt, updateHttpRouter, arg.Name, arg.Config, arg.ID)
+	row := q.queryRow(ctx, q.updateHttpRouterStmt, updateHttpRouter,
+		arg.Name,
+		arg.Config,
+		arg.Enabled,
+		arg.ID,
+	)
 	var i HttpRouter
 	err := row.Scan(
 		&i.ID,

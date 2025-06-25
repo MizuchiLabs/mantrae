@@ -360,10 +360,11 @@ func (t *TokenSource) upsertMiddlewares(
 				continue
 			}
 			params := &mantraev1.UpdateMiddlewareRequest{
-				Id:     m.Id,
-				Name:   name,
-				Config: newConfig,
-				Type:   typ,
+				Id:      m.Id,
+				Name:    name,
+				Config:  newConfig,
+				Type:    typ,
+				Enabled: true,
 			}
 			if _, err := client.UpdateMiddleware(ctx, connect.NewRequest(params)); err != nil {
 				return err

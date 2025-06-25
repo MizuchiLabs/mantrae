@@ -13,7 +13,7 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, Pencil, Route, Trash } from '@lucide/svelte';
+	import { Bot, CircleSlash, Pencil, Route, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -185,10 +185,17 @@
 	const bulkActions: BulkAction<Router>[] = [
 		{
 			type: 'button',
+			label: 'Disable',
+			icon: CircleSlash,
+			variant: 'outline',
+			onClick: (e) => bulkDelete(e, 'disable')
+		},
+		{
+			type: 'button',
 			label: 'Delete',
 			icon: Trash,
 			variant: 'destructive',
-			onClick: bulkDelete
+			onClick: (e) => bulkDelete(e, 'delete')
 		}
 	];
 
@@ -207,20 +214,36 @@
 		}
 	};
 
-	async function bulkDelete(selectedRows: Router[]) {
+	async function bulkDelete(rows: Router[], action: string) {
 		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
-			if (!confirmed) return;
+			// const confirmed = confirm(`Are you sure you want to ${action} ${rows.length} routers?`);
+			// if (!confirmed) return;
 
-			const rows = selectedRows.map((row) => ({ id: row.id, type: row.type }));
-			for (const row of rows) {
-				await routerClient.deleteRouter({ id: row.id, type: row.type });
+			switch (action) {
+				case 'delete':
+					for (const row of rows) {
+						await routerClient.deleteRouter({ id: row.id, type: row.type });
+					}
+					break;
+				case 'disable':
+					for (const row of rows) {
+						await routerClient.updateRouter({
+							id: row.id,
+							name: row.name,
+							type: row.type,
+							config: row.config,
+							dnsProviders: row.dnsProviders,
+							enabled: false
+						});
+					}
+					break;
 			}
+
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success(`Successfully deleted ${selectedRows.length} routers`);
+			toast.success(`Successfully ${action}d ${rows.length} routers`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete routers', { description: e.message });
+			toast.error(`Failed to ${action}d routers`, { description: e.message });
 		}
 	}
 	async function refreshData(pageSize: number, pageIndex: number) {
@@ -254,8 +277,8 @@
 		{onPaginationChange}
 		{bulkActions}
 		rowClassModifiers={{
-			'bg-red-50': (r) => !r.enabled,
-			'bg-green-50': (r) => r.agentId !== ''
+			'bg-red-300/25 dark:bg-red-700/25': (r) => !r.enabled,
+			'bg-green-300/25 dark:bg-green-700/25': (r) => r.agentId !== ''
 		}}
 		createButton={{
 			label: 'Create Router',

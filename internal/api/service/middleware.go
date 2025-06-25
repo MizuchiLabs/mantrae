@@ -120,6 +120,7 @@ func (s *MiddlewareService) UpdateMiddleware(
 		var params db.UpdateHttpMiddlewareParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.Middleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -135,6 +136,7 @@ func (s *MiddlewareService) UpdateMiddleware(
 		var params db.UpdateTcpMiddlewareParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -186,7 +188,6 @@ func (s *MiddlewareService) ListMiddlewares(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		var err error
 		if req.Msg.AgentId == nil {
 			result, err := s.app.Conn.GetQuery().
 				ListMiddlewaresByProfile(ctx, db.ListMiddlewaresByProfileParams{
@@ -227,9 +228,6 @@ func (s *MiddlewareService) ListMiddlewares(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 			middlewares = convert.MiddlewaresByAgentToProto(result)
-		}
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	} else {
 		var err error

@@ -163,6 +163,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateHttpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.Router](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -188,12 +189,11 @@ func (s *RouterService) UpdateRouter(
 		// Identify inserts
 		for _, id := range desiredIDs {
 			if !existingMap[id] {
-				err := s.app.Conn.GetQuery().
+				if err = s.app.Conn.GetQuery().
 					CreateHttpRouterDNSProvider(ctx, db.CreateHttpRouterDNSProviderParams{
 						HttpRouterID:  params.ID,
 						DnsProviderID: id,
-					})
-				if err != nil {
+					}); err != nil {
 					return nil, connect.NewError(connect.CodeInternal, err)
 				}
 			}
@@ -202,12 +202,11 @@ func (s *RouterService) UpdateRouter(
 		// Identify deletes
 		for id := range existingMap {
 			if !desiredMap[id] {
-				err := s.app.Conn.GetQuery().
+				if err = s.app.Conn.GetQuery().
 					DeleteHttpRouterDNSProvider(ctx, db.DeleteHttpRouterDNSProviderParams{
 						HttpRouterID:  params.ID,
 						DnsProviderID: id,
-					})
-				if err != nil {
+					}); err != nil {
 					return nil, connect.NewError(connect.CodeInternal, err)
 				}
 			}
@@ -228,6 +227,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateTcpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.TCPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -254,12 +254,11 @@ func (s *RouterService) UpdateRouter(
 		// Identify inserts
 		for _, id := range desiredIDs {
 			if !existingMap[id] {
-				err := s.app.Conn.GetQuery().
+				if err = s.app.Conn.GetQuery().
 					CreateTcpRouterDNSProvider(ctx, db.CreateTcpRouterDNSProviderParams{
 						TcpRouterID:   params.ID,
 						DnsProviderID: id,
-					})
-				if err != nil {
+					}); err != nil {
 					return nil, connect.NewError(connect.CodeInternal, err)
 				}
 			}
@@ -268,12 +267,11 @@ func (s *RouterService) UpdateRouter(
 		// Identify deletes
 		for id := range existingMap {
 			if !desiredMap[id] {
-				err := s.app.Conn.GetQuery().
+				if err = s.app.Conn.GetQuery().
 					DeleteTcpRouterDNSProvider(ctx, db.DeleteTcpRouterDNSProviderParams{
 						TcpRouterID:   params.ID,
 						DnsProviderID: id,
-					})
-				if err != nil {
+					}); err != nil {
 					return nil, connect.NewError(connect.CodeInternal, err)
 				}
 			}
@@ -294,6 +292,7 @@ func (s *RouterService) UpdateRouter(
 		var params db.UpdateUdpRouterParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.UDPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)

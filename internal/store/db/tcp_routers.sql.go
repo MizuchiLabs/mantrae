@@ -246,19 +246,26 @@ UPDATE tcp_routers
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type UpdateTcpRouterParams struct {
-	Name   string            `json:"name"`
-	Config *schema.TCPRouter `json:"config"`
-	ID     int64             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *schema.TCPRouter `json:"config"`
+	Enabled bool              `json:"enabled"`
+	ID      int64             `json:"id"`
 }
 
 func (q *Queries) UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams) (TcpRouter, error) {
-	row := q.queryRow(ctx, q.updateTcpRouterStmt, updateTcpRouter, arg.Name, arg.Config, arg.ID)
+	row := q.queryRow(ctx, q.updateTcpRouterStmt, updateTcpRouter,
+		arg.Name,
+		arg.Config,
+		arg.Enabled,
+		arg.ID,
+	)
 	var i TcpRouter
 	err := row.Scan(
 		&i.ID,

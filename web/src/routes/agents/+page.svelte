@@ -191,8 +191,8 @@
 		{onPaginationChange}
 		{bulkActions}
 		rowClassModifiers={{
-			'bg-red-50': (r) => !getAgentStatus(r),
-			'bg-green-50': (r) => getAgentStatus(r)
+			'bg-red-300/25 dark:bg-red-700/25': (r) => !getAgentStatus(r),
+			'bg-green-300/25 dark:bg-green-700/25': (r) => getAgentStatus(r)
 		}}
 		createButton={{
 			label: 'Add Agent',

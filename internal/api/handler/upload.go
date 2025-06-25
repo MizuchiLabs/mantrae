@@ -3,13 +3,19 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 	"slices"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/storage"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"sigs.k8s.io/yaml"
 )
 
 func UploadAvatar(a *config.App) http.HandlerFunc {
@@ -60,12 +66,7 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		response := map[string]string{"message": "Avatar updated successfully"}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
@@ -88,31 +89,78 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 		defer file.Close()
 
 		extension := filepath.Ext(header.Filename)
-		if extension != ".db" {
+		allowedExtensions := []string{".db", ".json", ".yaml", ".yml"}
+		if !slices.Contains(allowedExtensions, extension) {
 			http.Error(w, "Invalid file type", http.StatusBadRequest)
 			return
 		}
 
-		// Generate unique filename
-		filename := fmt.Sprintf("upload_%s%s",
-			time.Now().UTC().Format("20060102_150405"),
-			filepath.Ext(header.Filename))
+		// Handle sqlite db backups
+		if extension == ".db" {
+			filename := fmt.Sprintf("upload_%s%s",
+				time.Now().UTC().Format("20060102_150405"),
+				filepath.Ext(header.Filename))
 
-		// Store the uploaded backup using the backend
-		if err = a.BM.Storage.Store(r.Context(), filename, file); err != nil {
-			http.Error(
-				w,
-				fmt.Sprintf("Failed to store backup file: %v", err),
-				http.StatusInternalServerError,
-			)
-			return
+			if err = a.BM.Storage.Store(r.Context(), filename, file); err != nil {
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to store backup file: %v", err),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+		} else { // Handle dynamic configuration
+			profileID := strings.TrimSpace(r.URL.Query().Get("profile_id"))
+			if profileID == "" {
+				http.Error(
+					w,
+					fmt.Sprintf("Missing profile_id query parameter: %v", err),
+					http.StatusBadRequest,
+				)
+				return
+			}
+			profileIDValue, err := strconv.ParseInt(profileID, 10, 64)
+			if err != nil {
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to parse profile_id: %v", err),
+					http.StatusBadRequest,
+				)
+				return
+			}
+
+			dynamic := &dynamic.Configuration{}
+			content, err := io.ReadAll(file)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to read file: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			if extension == ".yaml" || extension == ".yml" {
+				if err = yaml.Unmarshal(content, &dynamic); err != nil {
+					http.Error(
+						w,
+						fmt.Sprintf("Failed to decode YAML file: %v", err),
+						http.StatusInternalServerError,
+					)
+					return
+				}
+			} else if extension == ".json" {
+				if err = json.Unmarshal(content, &dynamic); err != nil {
+					http.Error(
+						w,
+						fmt.Sprintf("Failed to decode JSON file: %v", err),
+						http.StatusInternalServerError,
+					)
+					return
+				}
+			}
+			if err = convert.DynamicToDB(r.Context(), *a.Conn.GetQuery(), profileIDValue, dynamic); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
-		response := map[string]string{"message": "Backup restored successfully"}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
+		w.WriteHeader(http.StatusNoContent)
 	}
 }

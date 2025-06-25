@@ -30,6 +30,7 @@ require (
 	golang.org/x/oauth2 v0.30.0
 	google.golang.org/protobuf v1.36.6
 	modernc.org/sqlite v1.38.0
+	sigs.k8s.io/yaml v1.4.0
 )
 
 require (

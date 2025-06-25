@@ -1054,12 +1054,12 @@ components:
           type: string
           title: name
           minLength: 1
-        config:
-          title: config
-          $ref: '#/components/schemas/google.protobuf.Struct'
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
       title: CreateMiddlewareRequest
       required:
         - profileId
@@ -1313,12 +1313,15 @@ components:
           type: string
           title: name
           minLength: 1
-        config:
-          title: config
-          $ref: '#/components/schemas/google.protobuf.Struct'
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
       title: UpdateMiddlewareRequest
       required:
         - id
