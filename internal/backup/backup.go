@@ -194,8 +194,12 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	}
 
 	// Remove WAL and SHM files if they exist
-	os.Remove(walPath)
-	os.Remove(shmPath)
+	if err = os.Remove(walPath); err != nil {
+		return fmt.Errorf("failed to remove wal file: %w", err)
+	}
+	if err = os.Remove(shmPath); err != nil {
+		return fmt.Errorf("failed to remove shm file: %w", err)
+	}
 
 	// Copy the temp file to the database location instead of rename (invalid cross-device link)
 	srcFile, err := os.Open(tmpFile.Name())

@@ -104,7 +104,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 
 	if len(profiles) == 0 {
 		description := "Default profile"
-		if _, err := q.CreateProfile(ctx, db.CreateProfileParams{
+		if _, err = q.CreateProfile(ctx, db.CreateProfileParams{
 			Name:        "default",
 			Description: &description,
 		}); err != nil {
@@ -115,14 +115,18 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	// Check default server url
 	serverURL, ok := a.SM.Get("server_url")
 	if !ok || serverURL == "" {
-		a.SM.Set(ctx, "server_url", util.GetLocalIP())
+		if err = a.SM.Set(ctx, "server_url", util.GetLocalIP()); err != nil {
+			return fmt.Errorf("failed to set server url: %w", err)
+		}
 	}
 	u, err := url.Parse(serverURL)
 	if err != nil {
 		return fmt.Errorf("failed to parse server url: %w", err)
 	}
 	if u.Hostname() == "127.0.0.1" || u.Hostname() == "localhost" {
-		a.SM.Set(ctx, "server_url", util.GetLocalIP())
+		if err := a.SM.Set(ctx, "server_url", util.GetLocalIP()); err != nil {
+			return fmt.Errorf("failed to set server url: %w", err)
+		}
 	}
 
 	return nil

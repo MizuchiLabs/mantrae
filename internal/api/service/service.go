@@ -213,7 +213,6 @@ func (s *Service) ListServices(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		var err error
 		if req.Msg.AgentId == nil {
 			result, err := s.app.Conn.GetQuery().
 				ListServicesByProfile(ctx, db.ListServicesByProfileParams{
@@ -258,9 +257,6 @@ func (s *Service) ListServices(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 			services = convert.ServicesByAgentToProto(result)
-		}
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	} else {
 		var err error

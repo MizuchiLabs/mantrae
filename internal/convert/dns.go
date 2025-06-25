@@ -10,13 +10,10 @@ func DNSProviderToProto(p *db.DnsProvider) *mantraev1.DnsProvider {
 	switch p.Type {
 	case "cloudflare":
 		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
-		break
 	case "powerdns":
 		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
-		break
 	case "technitium":
 		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
-		break
 	default:
 		return nil
 	}

@@ -34,7 +34,9 @@ func Client(ctx context.Context) {
 		case <-healthTicker.C:
 			t.Refresh(ctx)
 		case <-containerTicker.C:
-			t.Update(ctx)
+			if err := t.Update(ctx); err != nil {
+				slog.Error("Failed to send update", "error", err)
+			}
 		case <-ctx.Done():
 			return
 		}
@@ -43,6 +45,7 @@ func Client(ctx context.Context) {
 
 func (t *TokenSource) Update(ctx context.Context) error {
 	if t.activeIP == "" {
+		slog.Warn("No active IP, skipping update")
 		return nil
 	}
 
@@ -404,7 +407,7 @@ func (t *TokenSource) cleanup(
 	}
 	for _, r := range routers.Msg.Routers {
 		if _, ok := syncedRouters[r.Name]; !ok {
-			if _, err := routerClient.DeleteRouter(
+			if _, err = routerClient.DeleteRouter(
 				ctx,
 				connect.NewRequest(&mantraev1.DeleteRouterRequest{Id: r.Id, Type: r.Type}),
 			); err != nil {
@@ -429,7 +432,7 @@ func (t *TokenSource) cleanup(
 
 	for _, s := range services.Msg.Services {
 		if _, ok := syncedServices[s.Name]; !ok {
-			if _, err := serviceClient.DeleteService(
+			if _, err = serviceClient.DeleteService(
 				ctx,
 				connect.NewRequest(&mantraev1.DeleteServiceRequest{Id: s.Id, Type: s.Type}),
 			); err != nil {
@@ -484,7 +487,7 @@ func ToProtoStruct(v any) (*structpb.Struct, error) {
 		return nil, err
 	}
 
-	var mapData map[string]interface{}
+	var mapData map[string]any
 	if err := json.Unmarshal(data, &mapData); err != nil {
 		return nil, err
 	}

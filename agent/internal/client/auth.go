@@ -1,3 +1,4 @@
+// Package client for authentication and connection to the mantrae server.
 package client
 
 import (
@@ -39,7 +40,9 @@ func (t *TokenSource) prepare() error {
 	defer t.mu.Unlock()
 
 	// Create token file if it doesn't exist
-	os.MkdirAll("data", 0o755)
+	if err := os.MkdirAll("data", 0o755); err != nil {
+		return err
+	}
 
 	token, ok := os.LookupEnv("TOKEN")
 	if !ok {
@@ -53,7 +56,7 @@ func (t *TokenSource) prepare() error {
 }
 
 // ensure loads token from disk, writes it back, decodes claims and initializes client.
-func (t *TokenSource) ensure(ctx context.Context) error {
+func (t *TokenSource) ensure() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -90,7 +93,7 @@ func (t *TokenSource) ensure(ctx context.Context) error {
 
 // Refresh does a health‐check, rotates token or falls back on unauthenticated.
 func (t *TokenSource) Refresh(ctx context.Context) {
-	if err := t.ensure(ctx); err != nil {
+	if err := t.ensure(); err != nil {
 		slog.Error("Failed to connect to server", "error", err)
 		return
 	}
@@ -108,11 +111,13 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 	resp, err := t.client.HealthCheck(ctx, req)
 	if connect.CodeOf(err) == connect.CodeUnauthenticated {
 		// remove stored token and retry once from env
-		os.Remove(tokenFile)
+		if err = os.Remove(tokenFile); err != nil {
+			slog.Warn("Could not remove token file", "err", err)
+		}
 		t.mu.Lock()
 		t.token, t.client = "", nil
 		t.mu.Unlock()
-		if err := t.ensure(ctx); err != nil {
+		if err = t.ensure(); err != nil {
 			slog.Error("Failed to connect to server", "error", err)
 			return
 		}
@@ -131,7 +136,9 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 	if nt := resp.Msg.Agent.Token; nt != "" && nt != t.token {
 		t.mu.Lock()
 		t.token = nt
-		os.WriteFile(tokenFile, []byte(nt), 0o600)
+		if err = os.WriteFile(tokenFile, []byte(nt), 0o600); err != nil {
+			slog.Warn("Could not write token file", "err", err)
+		}
 		t.mu.Unlock()
 	}
 	// rotate active IP
@@ -146,7 +153,7 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 func (t *TokenSource) Interceptor() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			if err := t.ensure(ctx); err != nil {
+			if err := t.ensure(); err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, err)
 			}
 			req.Header().Set("Authorization", "Bearer "+t.token)
@@ -154,7 +161,9 @@ func (t *TokenSource) Interceptor() connect.UnaryInterceptorFunc {
 
 			resp, err := next(ctx, req)
 			if connect.CodeOf(err) == connect.CodeUnauthenticated {
-				os.Remove(tokenFile)
+				if err = os.Remove(tokenFile); err != nil {
+					slog.Warn("Could not remove token file", "err", err)
+				}
 				t.mu.Lock()
 				t.token, t.client = "", nil
 				t.mu.Unlock()

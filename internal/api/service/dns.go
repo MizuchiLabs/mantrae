@@ -43,13 +43,10 @@ func (s *DnsProviderService) CreateDnsProvider(
 	switch req.Msg.Type {
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
 		dnsType = "cloudflare"
-		break
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
 		dnsType = "powerdns"
-		break
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
 		dnsType = "technitium"
-		break
 	default:
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -88,13 +85,10 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	switch req.Msg.Type {
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
 		dnsType = "cloudflare"
-		break
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
 		dnsType = "powerdns"
-		break
 	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
 		dnsType = "technitium"
-		break
 	default:
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,

@@ -259,8 +259,8 @@ func getOIDCConfig(
 	}
 
 	// Handle client secret vs PKCE
-	if clientSecret, exists := sets[settings.KeyOIDCClientSecret]; exists && clientSecret != "" {
-		if pkceEnabled, _ := sets[settings.KeyOIDCPKCE]; !settings.AsBool(pkceEnabled) {
+	if clientSecret, ok := sets[settings.KeyOIDCClientSecret]; ok && clientSecret != "" {
+		if pkceEnabled, ok := sets[settings.KeyOIDCPKCE]; ok && !settings.AsBool(pkceEnabled) {
 			config.ClientSecret = clientSecret
 		}
 	}

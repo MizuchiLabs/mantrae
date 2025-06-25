@@ -6,7 +6,7 @@ DATE=$(shell date -u +%Y-%m-%d)
 COMMIT=$(shell git rev-parse --short HEAD)
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-ldflags "-s -w -X github.com/MizuchiLabs/mantrae/pkg/build.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/pkg/build.Date=${DATE} -X github.com/MizuchiLabs/mantrae/pkg/build.Commit=${COMMIT}"
+LDFLAGS=-ldflags "-s -w -X github.com/mizuchilabs/mantrae/pkg/build.Version=${VERSION} -X github.com/MizuchiLabs/mantrae/pkg/build.Date=${DATE} -X github.com/MizuchiLabs/mantrae/pkg/build.Commit=${COMMIT}"
 
 all: clean build
 
@@ -39,6 +39,9 @@ docker-local:
 	go generate ./...
 	KO_DOCKER_REPO=ko.local/mantrae ko build . --bare
 	KO_DOCKER_REPO=ko.local/mantrae-agent ko build ./agent/cmd --bare
+	# Check for vulnerabilities
+	grype --scope all-layers ko.local/mantrae:latest
+	grype --scope all-layers ko.local/mantrae-agent:latest
 
 docker-release:
 	go generate ./...

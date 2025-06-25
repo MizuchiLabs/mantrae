@@ -149,7 +149,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 					continue
 				}
 
-				if time.Now().Sub(*agent.UpdatedAt) > settings.AsDuration(timeout) {
+				if time.Since(*agent.UpdatedAt) > settings.AsDuration(timeout) {
 					if err := a.Conn.GetQuery().DeleteAgent(ctx, agent.ID); err != nil {
 						slog.Error(
 							"failed to delete disconnected agent",

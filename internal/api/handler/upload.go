@@ -55,7 +55,10 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			http.Error(w, "Failed to get storage backend", http.StatusInternalServerError)
 			return
 		}
-		storePath.Store(r.Context(), filename, file)
+		if err := storePath.Store(r.Context(), filename, file); err != nil {
+			http.Error(w, "Failed to store file", http.StatusInternalServerError)
+			return
+		}
 
 		response := map[string]string{"message": "Avatar updated successfully"}
 		w.Header().Set("Content-Type", "application/json")
