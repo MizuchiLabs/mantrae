@@ -29,6 +29,12 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 		}
 		defer r.MultipartForm.RemoveAll()
 
+		userID := r.URL.Query().Get("user_id")
+		if userID == "" {
+			http.Error(w, "Missing user_id query parameter", http.StatusBadRequest)
+			return
+		}
+
 		file, header, err := r.FormFile("file")
 		if err != nil {
 			http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
@@ -43,18 +49,12 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		username := r.URL.Query().Get("username")
-		if username == "" {
-			http.Error(w, "Username not provided", http.StatusBadRequest)
+		filename := fmt.Sprintf("avatar_%s%s", userID, filepath.Ext(header.Filename))
+		_, err = a.Conn.GetQuery().GetUserByID(r.Context(), userID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// Generate unique filename
-		filename := fmt.Sprintf(
-			"avatar_%s_%s%s",
-			username,
-			time.Now().UTC().Format("20060102_150405"),
-			filepath.Ext(header.Filename),
-		)
 
 		storePath, err := storage.GetBackend(r.Context(), a.SM, "uploads")
 		if err != nil {

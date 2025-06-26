@@ -3,7 +3,6 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -94,53 +93,8 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 				return next(ctx, req)
 			}
 
-			if cookieHeader := req.Header().Get("Cookie"); cookieHeader != "" {
-				cookies, err := http.ParseCookie(cookieHeader)
-				if err != nil {
-					return nil, connect.NewError(
-						connect.CodeUnauthenticated,
-						errors.New("invalid cookie"),
-					)
-				}
-				var sessionID string
-				for _, cookie := range cookies {
-					if cookie.Name == meta.CookieName {
-						sessionID = cookie.Value
-					}
-				}
-				// Validate sessionID as needed and inject into context
-				if sessionID != "" {
-					claims, err := meta.DecodeUserToken(sessionID, app.Secret)
-					if err != nil {
-						return nil, connect.NewError(
-							connect.CodeUnauthenticated,
-							errors.New("invalid token"),
-						)
-					}
-					ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
-					return next(ctx, req)
-				}
-			}
-
-			authHeader := req.Header().Get("Authorization")
-			if authHeader == "" {
-				return nil, connect.NewError(
-					connect.CodeUnauthenticated,
-					fmt.Errorf("missing authorization header"),
-				)
-			}
-
-			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-			if tokenString == authHeader {
-				return nil, connect.NewError(
-					connect.CodeUnauthenticated,
-					fmt.Errorf("invalid authorization header"),
-				)
-			}
-
-			// Check if it's an agent request
-			agentID := req.Header().Get(meta.HeaderAgentID)
-			if agentID != "" {
+			// Agent request (Bearer) -----------------------------------------
+			if agentID := req.Header().Get(meta.HeaderAgentID); agentID != "" {
 				agent, err := app.Conn.GetQuery().GetAgent(ctx, agentID)
 				if err != nil {
 					return nil, connect.NewError(
@@ -148,7 +102,7 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 						errors.New("agent not found"),
 					)
 				}
-				if agent.Token != tokenString {
+				if agent.Token != getBearerToken(req.Header()) {
 					return nil, connect.NewError(
 						connect.CodeUnauthenticated,
 						errors.New("token mismatch"),
@@ -158,18 +112,32 @@ func Authentication(app *config.App) connect.UnaryInterceptorFunc {
 				return next(ctx, req)
 			}
 
-			// Parse and validate the token
-			claims, err := meta.DecodeUserToken(tokenString, app.Secret)
-			if err != nil {
-				return nil, connect.NewError(
-					connect.CodeUnauthenticated,
-					fmt.Errorf("invalid token: %w", err),
-				)
+			// User request (Cookie/Bearer) -----------------------------------
+			if token := getCookieToken(req.Header()); token != "" {
+				claims, err := meta.DecodeUserToken(token, app.Secret)
+				if err != nil {
+					return nil, connect.NewError(
+						connect.CodeUnauthenticated,
+						errors.New("invalid token"),
+					)
+				}
+				ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
+				return next(ctx, req)
+			}
+			if token := getBearerToken(req.Header()); token != "" {
+				claims, err := meta.DecodeUserToken(token, app.Secret)
+				if err != nil {
+					return nil, connect.NewError(
+						connect.CodeUnauthenticated,
+						errors.New("invalid token"),
+					)
+				}
+				ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
+				return next(ctx, req)
 			}
 
-			// Add claims to context
-			ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
-			return next(ctx, req)
+			// Unauthorized ---------------------------------------------------
+			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthorized"))
 		}
 	})
 }
@@ -183,6 +151,32 @@ func isPublicEndpoint(procedure string) bool {
 		mantraev1connect.UserServiceGetOIDCStatusProcedure: true,
 	}
 	return publicEndpoints[procedure]
+}
+
+func getBearerToken(header http.Header) string {
+	authHeader := header.Get("Authorization")
+	if authHeader == "" {
+		return ""
+	}
+	return strings.TrimPrefix(authHeader, "Bearer ")
+}
+
+func getCookieToken(header http.Header) string {
+	cookieHeader := header.Get("Cookie")
+	if cookieHeader == "" {
+		return ""
+	}
+	cookies, err := http.ParseCookie(cookieHeader)
+	if err != nil {
+		return ""
+	}
+	var token string
+	for _, cookie := range cookies {
+		if cookie.Name == meta.CookieName {
+			token = cookie.Value
+		}
+	}
+	return token
 }
 
 func GetUserIDFromContext(ctx context.Context) (string, bool) {

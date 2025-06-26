@@ -13,7 +13,7 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, CircleSlash, Pencil, Route, Trash } from '@lucide/svelte';
+	import { Bot, CircleCheck, CircleSlash, Pencil, Route, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -185,17 +185,24 @@
 	const bulkActions: BulkAction<Router>[] = [
 		{
 			type: 'button',
+			label: 'Enable',
+			icon: CircleCheck,
+			variant: 'outline',
+			onClick: (e) => bulk(e, 'enable')
+		},
+		{
+			type: 'button',
 			label: 'Disable',
 			icon: CircleSlash,
 			variant: 'outline',
-			onClick: (e) => bulkDelete(e, 'disable')
+			onClick: (e) => bulk(e, 'disable')
 		},
 		{
 			type: 'button',
 			label: 'Delete',
 			icon: Trash,
 			variant: 'destructive',
-			onClick: (e) => bulkDelete(e, 'delete')
+			onClick: (e) => bulk(e, 'delete')
 		}
 	];
 
@@ -214,7 +221,7 @@
 		}
 	};
 
-	async function bulkDelete(rows: Router[], action: string) {
+	async function bulk(rows: Router[], action: string) {
 		try {
 			const confirmed = confirm(`Are you sure you want to ${action} ${rows.length} routers?`);
 			if (!confirmed) return;
@@ -234,6 +241,18 @@
 							config: row.config,
 							dnsProviders: row.dnsProviders,
 							enabled: false
+						});
+					}
+					break;
+				case 'enable':
+					for (const row of rows) {
+						await routerClient.updateRouter({
+							id: row.id,
+							name: row.name,
+							type: row.type,
+							config: row.config,
+							dnsProviders: row.dnsProviders,
+							enabled: true
 						});
 					}
 					break;

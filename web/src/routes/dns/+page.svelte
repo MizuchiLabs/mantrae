@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dnsClient } from '$lib/api';
+	import { dnsClient, utilClient } from '$lib/api';
 	import DNSModal from '$lib/components/modals/dns.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
@@ -8,8 +8,7 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { DnsProviderType, type DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
-	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
-	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
 	import { Globe, Pencil, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
@@ -57,6 +56,29 @@
 			}
 		},
 		{
+			header: 'IP Address',
+			accessorKey: 'config.ip',
+			id: 'ip',
+			enableSorting: true,
+			cell: ({ row }) => {
+				if (row.original.config?.autoUpdate) {
+					// utilClient.getPublicIP({}).then((res) => {
+					return renderComponent(ColumnBadge, {
+						label: 'auto',
+						variant: 'secondary',
+						class: 'hover:cursor-pointer'
+					});
+					// });
+				} else {
+					let ip = row.getValue('ip') as string;
+					return renderComponent(ColumnBadge, {
+						label: ip,
+						class: 'hover:cursor-pointer'
+					});
+				}
+			}
+		},
+		{
 			header: 'Default',
 			accessorKey: 'isActive',
 			enableSorting: true,
@@ -66,21 +88,13 @@
 			}
 		},
 		{
-			header: 'Created',
-			accessorKey: 'createdAt',
+			header: 'Proxied',
+			accessorKey: 'config.proxied',
+			id: 'proxied',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as Timestamp;
-				return DateFormat.format(timestampDate(date));
-			}
-		},
-		{
-			header: 'Updated',
-			accessorKey: 'updatedAt',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const date = row.getValue('updatedAt') as Timestamp;
-				return DateFormat.format(timestampDate(date));
+				let checked = row.getValue('proxied') as boolean;
+				return renderComponent(ColumnCheck, { checked: checked });
 			}
 		},
 		{

@@ -5,7 +5,7 @@ import { profile } from "$lib/stores/profile";
 import { user } from "$lib/stores/user";
 
 export const ssr = false;
-export const prerender = true;
+export const prerender = false;
 export const trailingSlash = "always";
 
 const isPublicRoute = (path: string) => {
@@ -15,17 +15,18 @@ const isPublicRoute = (path: string) => {
 export const load: LayoutLoad = async ({ url }) => {
 	const currentPath = url.pathname;
 	const isPublic = isPublicRoute(currentPath);
+	// Check if cookie is set
 
 	try {
-		const verified = await userClient.verifyJWT({});
+		const resUser = await userClient.verifyJWT({});
 
-		if (verified.user) {
-			user.value = verified.user;
+		if (resUser.user) {
+			user.value = resUser.user;
 
 			// Update profile if not set
 			if (!profile.id) {
-				const response = await profileClient.listProfiles({});
-				profile.value = response.profiles[0];
+				const resProfile = await profileClient.listProfiles({});
+				profile.value = resProfile.profiles[0];
 			}
 
 			if (isPublic) {

@@ -107,12 +107,22 @@ func (h *Handler) handleJSON(r slog.Record) error {
 	clear(attrs)
 	defer h.attrsPool.Put(attrs)
 
+	// Apply baseAttrs first
+	for _, a := range h.baseAttrs {
+		val := a.Value.Any()
+		if errVal, ok := val.(error); ok {
+			attrs[a.Key] = errVal.Error()
+		} else {
+			attrs[a.Key] = val
+		}
+	}
+
 	// Add standard fields
 	attrs["time"] = r.Time.Format(time.RFC3339)
 	attrs["level"] = r.Level.String()
 	attrs["msg"] = r.Message
 
-	// Add custom attributes
+	// Add record attrs
 	r.Attrs(func(a slog.Attr) bool {
 		val := a.Value.Any()
 		if errVal, ok := val.(error); ok {
@@ -170,6 +180,15 @@ func (h *Handler) handleText(r slog.Record) error {
 	attrs := h.attrsPool.Get().(map[string]any)
 	clear(attrs)
 	defer h.attrsPool.Put(attrs)
+
+	for _, a := range h.baseAttrs {
+		val := a.Value.Any()
+		if errVal, ok := val.(error); ok {
+			attrs[a.Key] = errVal.Error()
+		} else {
+			attrs[a.Key] = val
+		}
+	}
 
 	r.Attrs(func(a slog.Attr) bool {
 		if a.Key == slog.TimeKey || a.Key == slog.LevelKey || a.Key == slog.MessageKey {

@@ -64,10 +64,6 @@
 			toast.error('Failed to login', { description: e.message });
 		}
 	};
-
-	// const handleOIDCLogin = () => {
-	// 	window.location.href = '/oidc/login';
-	// };
 </script>
 
 {#if !user.isLoggedIn()}

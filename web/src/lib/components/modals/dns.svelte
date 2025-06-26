@@ -90,20 +90,10 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
-		<Dialog.Header class="flex flex-row items-center justify-between">
-			<div>
-				<Dialog.Title>{item?.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
-				<Dialog.Description>Setup dns provider for automated dns records</Dialog.Description>
-			</div>
-			<div class="mr-4 flex items-center gap-2">
-				<Label for="default">Default</Label>
-				<Switch
-					id="default"
-					checked={item.isActive}
-					onCheckedChange={(value) => (item.isActive = value)}
-				/>
-			</div>
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
+		<Dialog.Header>
+			<Dialog.Title>{item?.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
+			<Dialog.Description>Setup dns provider for automated dns records</Dialog.Description>
 		</Dialog.Header>
 
 		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
@@ -135,7 +125,64 @@
 				</div>
 			</div>
 
-			<div class="flex items-center justify-between gap-2 py-2">
+			<div class="flex items-center justify-between gap-2">
+				<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
+					Set as default
+					<Tooltip.Provider>
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								<CircleHelp size={16} />
+							</Tooltip.Trigger>
+							<Tooltip.Content align="start" class="w-64">
+								<p>
+									If enabled, this DNS provider will be used as the default DNS provider for all
+									newly created routers.
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</Tooltip.Provider>
+				</Label>
+				<Tabs.Root
+					class="flex flex-col gap-2"
+					value={item.isActive ? 'on' : 'off'}
+					onValueChange={(value) => {
+						if (item.isActive === undefined) item.isActive = value === 'on';
+						else item.isActive = value === 'on';
+					}}
+				>
+					<div class="flex justify-end" transition:slide={{ duration: 200 }}>
+						<Tabs.List class="h-8">
+							<Tabs.Trigger value="on" class="px-2 py-0.5 font-bold">On</Tabs.Trigger>
+							<Tabs.Trigger value="off" class="px-2 py-0.5 font-bold">Off</Tabs.Trigger>
+						</Tabs.List>
+					</div>
+				</Tabs.Root>
+			</div>
+
+			{#if item.type === DnsProviderType.CLOUDFLARE}
+				<div class="flex items-center justify-between gap-2">
+					<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
+						Cloudflare Proxy
+					</Label>
+					<Tabs.Root
+						class="flex flex-col gap-2"
+						value={item.config?.proxied ? 'on' : 'off'}
+						onValueChange={(value) => {
+							if (item.config === undefined) item.config = {} as DnsProviderConfig;
+							item.config.proxied = value === 'on';
+						}}
+					>
+						<div class="flex justify-end" transition:slide={{ duration: 200 }}>
+							<Tabs.List class="h-8">
+								<Tabs.Trigger value="on" class="px-2 py-0.5 font-bold">On</Tabs.Trigger>
+								<Tabs.Trigger value="off" class="px-2 py-0.5 font-bold">Off</Tabs.Trigger>
+							</Tabs.List>
+						</div>
+					</Tabs.Root>
+				</div>
+			{/if}
+
+			<div class="flex items-center justify-between gap-2">
 				<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
 					Auto Update IP
 					<Tooltip.Provider>
@@ -245,19 +292,6 @@
 						}}
 						placeholder="Endpoint for {dnsProviderTypes.find((t) => t.value === item.type)?.label}"
 						required
-					/>
-				</div>
-			{/if}
-
-			{#if item.type === DnsProviderType.CLOUDFLARE}
-				<div class="flex items-center gap-2">
-					<Label for="proxied">Proxied?</Label>
-					<Switch
-						checked={item.config?.proxied}
-						onCheckedChange={(value) => {
-							if (item.config === undefined) item.config = {} as DnsProviderConfig;
-							item.config.proxied = value;
-						}}
 					/>
 				</div>
 			{/if}

@@ -33,8 +33,11 @@ func (u *OIDCUserInfo) Validate() error {
 	if u.Sub == "" {
 		return errors.New("missing subject claim")
 	}
+	if !u.EmailVerified {
+		return errors.New("email not verified")
+	}
 	isValidEmail := strings.Contains(u.Email, "@") && len(u.Email) > 3 && len(u.Email) < 255
-	if u.Email != "" && isValidEmail {
+	if u.Email != "" && !isValidEmail {
 		return errors.New("invalid email format")
 	}
 	return nil

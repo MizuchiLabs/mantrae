@@ -139,13 +139,6 @@ func (s *Server) registerServices() {
 		),
 	}
 
-	// Static files
-	staticContent, err := fs.Sub(web.StaticFS, "build")
-	if err != nil {
-		log.Fatal(err)
-	}
-	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
-
 	serviceNames := []string{
 		mantraev1connect.ProfileServiceName,
 		mantraev1connect.UserServiceName,
@@ -166,6 +159,15 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpchealth.NewHandler(checker))
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	// Static files
+	staticContent, err := fs.Sub(web.StaticFS, "build")
+	if err != nil {
+		log.Fatal(err)
+	}
+	uploadsContent := http.FileServer(http.Dir("./data/uploads"))
+	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
+	s.mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadsContent))
 
 	// Serve OpenAPI specs file
 	s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {

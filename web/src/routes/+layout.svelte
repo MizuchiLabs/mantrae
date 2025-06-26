@@ -10,21 +10,11 @@
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import { user } from '$lib/stores/user';
-	import { onMount } from 'svelte';
-	import { profile } from '$lib/stores/profile';
-	import { profileClient } from '$lib/api';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 	let { children }: Props = $props();
-
-	onMount(async () => {
-		if (user.isLoggedIn() && !profile.id) {
-			const response = await profileClient.listProfiles({});
-			profile.value = response.profiles[0];
-		}
-	});
 </script>
 
 <ModeWatcher />
