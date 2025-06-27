@@ -1,3 +1,4 @@
+// Package service provides the gRPC service implementations.
 package service
 
 import (

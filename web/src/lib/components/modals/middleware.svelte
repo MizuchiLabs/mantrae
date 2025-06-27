@@ -12,7 +12,8 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
 	import { pageIndex, pageSize } from '$lib/stores/common';
-	import HttpMiddleware from '../forms/httpMiddleware.svelte';
+	import HTTPMiddlewareForm from '../forms/httpMiddleware.svelte';
+	import TCPMiddlewareForm from '../forms/tcpMiddleware.svelte';
 
 	interface Props {
 		data: Middleware[];
@@ -28,7 +29,8 @@
 					id: item.id,
 					name: item.name,
 					config: item.config,
-					type: item.type
+					type: item.type,
+					enabled: item.enabled
 				});
 				toast.success('Middleware updated successfully');
 			} else {
@@ -84,7 +86,7 @@
 			<Dialog.Description>Configure your Traefik middleware</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
+		<form class="flex flex-col gap-4">
 			<div class="grid w-full grid-cols-3 gap-2">
 				<div class="col-span-2 flex flex-col gap-2">
 					<Label for="name">Name</Label>
@@ -117,7 +119,10 @@
 			</div>
 
 			{#if item.type === MiddlewareType.HTTP}
-				<HttpMiddleware bind:middleware={item} />
+				<HTTPMiddlewareForm bind:middleware={item} />
+			{/if}
+			{#if item.type === MiddlewareType.TCP}
+				<TCPMiddlewareForm bind:middleware={item} />
 			{/if}
 
 			<Separator />

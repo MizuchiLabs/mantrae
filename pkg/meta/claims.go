@@ -1,3 +1,4 @@
+// Package meta provides functionality for handling JWT claims.
 package meta
 
 import (

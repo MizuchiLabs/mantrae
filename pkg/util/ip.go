@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -123,7 +124,11 @@ func getIP(services []string, validationFunc func(string) bool) (string, error) 
 		if err != nil {
 			continue
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				slog.Error("failed to close response body", "error", err)
+			}
+		}()
 
 		if resp.StatusCode != http.StatusOK {
 			continue

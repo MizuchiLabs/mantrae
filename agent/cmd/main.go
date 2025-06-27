@@ -1,3 +1,4 @@
+// Package main is the entrypoint for the mantrae agent.
 package main
 
 import (

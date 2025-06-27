@@ -1,3 +1,4 @@
+// Package middlewares provides authentication and logging middleware.
 package middlewares
 
 import (

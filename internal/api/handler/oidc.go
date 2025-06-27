@@ -1,3 +1,4 @@
+// Package handler provides HTTP handlers for the API.
 package handler
 
 import (
@@ -172,7 +173,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 
 		// Extract user info from verified token
 		var userInfo OIDCUserInfo
-		if err := verifiedToken.Claims(&userInfo); err != nil {
+		if err = verifiedToken.Claims(&userInfo); err != nil {
 			http.Error(
 				w,
 				fmt.Sprintf("Failed to parse claims: %v", err),
@@ -180,7 +181,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 			)
 			return
 		}
-		if err := userInfo.Validate(); err != nil {
+		if err = userInfo.Validate(); err != nil {
 			http.Error(
 				w,
 				fmt.Sprintf("Invalid user info: %v", err),

@@ -64,20 +64,11 @@ INSERT INTO
     agent_id,
     name,
     config,
-    enabled,
     created_at,
     updated_at
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateTcpMiddlewareParams struct {
@@ -85,7 +76,6 @@ type CreateTcpMiddlewareParams struct {
 	AgentID   *string               `json:"agentId"`
 	Name      string                `json:"name"`
 	Config    *schema.TCPMiddleware `json:"config"`
-	Enabled   bool                  `json:"enabled"`
 }
 
 func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewareParams) (TcpMiddleware, error) {
@@ -94,7 +84,6 @@ func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewa
 		arg.AgentID,
 		arg.Name,
 		arg.Config,
-		arg.Enabled,
 	)
 	var i TcpMiddleware
 	err := row.Scan(

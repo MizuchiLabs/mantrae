@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -27,7 +28,11 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
 			return
 		}
-		defer r.MultipartForm.RemoveAll()
+		defer func() {
+			if err := r.MultipartForm.RemoveAll(); err != nil {
+				slog.Error("failed to close request body", "error", err)
+			}
+		}()
 
 		userID := r.URL.Query().Get("user_id")
 		if userID == "" {
@@ -40,7 +45,11 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			if err = file.Close(); err != nil {
+				slog.Error("failed to close uploaded file", "error", err)
+			}
+		}()
 
 		extension := filepath.Ext(header.Filename)
 		allowedExtensions := []string{".png", ".jpg", ".jpeg"}
@@ -79,14 +88,22 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
 			return
 		}
-		defer r.MultipartForm.RemoveAll()
+		defer func() {
+			if err := r.MultipartForm.RemoveAll(); err != nil {
+				slog.Error("failed to close request body", "error", err)
+			}
+		}()
 
 		file, header, err := r.FormFile("file")
 		if err != nil {
 			http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			if err = file.Close(); err != nil {
+				slog.Error("failed to close uploaded file", "error", err)
+			}
+		}()
 
 		extension := filepath.Ext(header.Filename)
 		allowedExtensions := []string{".db", ".json", ".yaml", ".yml"}
@@ -136,25 +153,22 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				return
 			}
 
-			if extension == ".yaml" || extension == ".yml" {
-				if err = yaml.Unmarshal(content, &dynamic); err != nil {
-					http.Error(
-						w,
-						fmt.Sprintf("Failed to decode YAML file: %v", err),
-						http.StatusInternalServerError,
-					)
+			switch extension {
+			case ".yaml", ".yml":
+				if err = yaml.Unmarshal(content, dynamic); err != nil {
+					http.Error(w, fmt.Sprintf("Failed to decode YAML file: %v", err), http.StatusInternalServerError)
 					return
 				}
-			} else if extension == ".json" {
-				if err = json.Unmarshal(content, &dynamic); err != nil {
-					http.Error(
-						w,
-						fmt.Sprintf("Failed to decode JSON file: %v", err),
-						http.StatusInternalServerError,
-					)
+			case ".json":
+				if err = json.Unmarshal(content, dynamic); err != nil {
+					http.Error(w, fmt.Sprintf("Failed to decode JSON file: %v", err), http.StatusInternalServerError)
 					return
 				}
+			default:
+				http.Error(w, "Invalid file type", http.StatusBadRequest)
+				return
 			}
+
 			if err = convert.DynamicToDB(r.Context(), *a.Conn.GetQuery(), profileIDValue, dynamic); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

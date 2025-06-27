@@ -2,7 +2,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { UDPRouter } from '$lib/gen/tygo/dynamic';
+	import type { UDPRouter } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
 	import { entryPointClient } from '$lib/api';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';

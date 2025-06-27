@@ -11,7 +11,11 @@ func Squash() {
 	conn.Migrate()
 
 	db := conn.db
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			slog.Error("failed to close database", "error", err)
+		}
+	}()
 
 	var currentVersion int64
 	err := db.QueryRow("SELECT version_id FROM goose_db_version ORDER BY id DESC LIMIT 1").
@@ -31,7 +35,11 @@ func Squash() {
 	if err != nil {
 		panic(err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err = rows.Close(); err != nil {
+			slog.Error("failed to close rows", "error", err)
+		}
+	}()
 
 	// Create new base migration
 	baseFile := "-- +goose Up\n"

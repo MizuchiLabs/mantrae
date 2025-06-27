@@ -1,3 +1,4 @@
+// Package collector provides functions for collecting data from the host system.
 package collector
 
 import (

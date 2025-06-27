@@ -67,7 +67,11 @@ func NewServer(app *config.App) *Server {
 
 func (s *Server) Start(ctx context.Context) error {
 	s.registerServices()
-	defer s.app.Conn.Close()
+	defer func() {
+		if err := s.app.Conn.Close(); err != nil {
+			slog.Error("failed to close database connection", "error", err)
+		}
+	}()
 
 	server := &http.Server{
 		Addr:              s.Host + ":" + s.Port,
@@ -83,12 +87,12 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start server in a goroutine
 	go func() {
-		serverUrl, _ := s.app.SM.Get("server_url")
-		if serverUrl == "" {
-			serverUrl = s.Host + ":" + s.Port
+		serverURL, ok := s.app.SM.Get("server_url")
+		if ok && serverURL == "" {
+			serverURL = s.Host + ":" + s.Port
 		}
 		slog.Info("Server listening on", "address", "127.0.0.1:"+s.Port)
-		slog.Info("Agents can connect to", "address", serverUrl)
+		slog.Info("Agents can connect to", "address", serverURL)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
 		}

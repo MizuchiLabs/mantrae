@@ -18,6 +18,7 @@ func HTTPMiddlewareToProto(m *db.HttpMiddleware) *mantraev1.Middleware {
 		Name:      m.Name,
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
+		Enabled:   m.Enabled,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
@@ -36,6 +37,7 @@ func TCPMiddlewareToProto(m *db.TcpMiddleware) *mantraev1.Middleware {
 		Name:      m.Name,
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
+		Enabled:   m.Enabled,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
@@ -58,6 +60,7 @@ func TCPMiddlewaresToProto(middlewares []db.TcpMiddleware) []*mantraev1.Middlewa
 }
 
 // Specialized batch conversion functions
+
 func MiddlewaresByProfileToProto(
 	middlewares []db.ListMiddlewaresByProfileRow,
 ) []*mantraev1.Middleware {
@@ -76,6 +79,7 @@ func MiddlewaresByProfileToProto(
 				Name:      m.Name,
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
+				Enabled:   m.Enabled,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -91,6 +95,7 @@ func MiddlewaresByProfileToProto(
 				Name:      m.Name,
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
+				Enabled:   m.Enabled,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -117,6 +122,7 @@ func MiddlewaresByAgentToProto(middlewares []db.ListMiddlewaresByAgentRow) []*ma
 				Name:      m.Name,
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
+				Enabled:   m.Enabled,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -132,6 +138,7 @@ func MiddlewaresByAgentToProto(middlewares []db.ListMiddlewaresByAgentRow) []*ma
 				Name:      m.Name,
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
+				Enabled:   m.Enabled,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})

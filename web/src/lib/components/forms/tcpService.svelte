@@ -5,7 +5,7 @@
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { Plus, Trash } from '@lucide/svelte';
 	import { marshalConfig } from '$lib/types';
-	import type { TCPService } from '$lib/gen/tygo/dynamic';
+	import type { TCPService } from '$lib/gen/zen/traefik-schemas';
 
 	interface Props {
 		service: Service;

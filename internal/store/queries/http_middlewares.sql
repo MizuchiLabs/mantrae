@@ -5,20 +5,11 @@ INSERT INTO
     agent_id,
     name,
     config,
-    enabled,
     created_at,
     updated_at
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetHttpMiddleware :one
 SELECT

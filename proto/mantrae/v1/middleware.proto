@@ -33,9 +33,10 @@ message Middleware {
   string agent_id = 3;
   string name = 4;
   google.protobuf.Struct config = 5;
-  MiddlewareType type = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  bool enabled = 6;
+  MiddlewareType type = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
 message Plugin {

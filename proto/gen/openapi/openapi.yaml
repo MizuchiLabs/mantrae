@@ -1219,6 +1219,9 @@ components:
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'

@@ -5,7 +5,7 @@
 	import { AlertTriangle, Eye, Globe, Key, type IconProps } from '@lucide/svelte';
 	import { type Component } from 'svelte';
 	import type { Column } from '@tanstack/table-core';
-	import type { RouterTCPTLSConfig } from '$lib/gen/tygo/dynamic';
+	import type { RouterTCPTLSConfig } from '$lib/gen/zen/traefik-schemas';
 
 	type IconComponent = Component<IconProps, Record<string, never>, ''>;
 	type Props = ComponentProps<typeof Badge> & {

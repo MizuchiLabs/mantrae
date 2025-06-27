@@ -4,7 +4,7 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
-	import type { Service as HTTPService } from '$lib/gen/tygo/dynamic';
+	import type { Service as HTTPService } from '$lib/gen/zen/traefik-schemas';
 	import { Plus, Trash } from '@lucide/svelte';
 	import { marshalConfig } from '$lib/types';
 
@@ -19,7 +19,7 @@
 		if (service.config) {
 			config = service.config as HTTPService;
 		}
-		if (!config.loadBalancer) config.loadBalancer = {};
+		if (!config.loadBalancer) config.loadBalancer = { passHostHeader: true };
 		if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
 		if (config.loadBalancer.servers.length === 0) {
 			config.loadBalancer.servers = [{ url: '' }];
@@ -35,7 +35,7 @@
 			class="col-span-3"
 			checked={config.loadBalancer?.passHostHeader ?? true}
 			onCheckedChange={(value) => {
-				if (!config.loadBalancer) config.loadBalancer = {};
+				if (!config.loadBalancer) config.loadBalancer = { passHostHeader: true };
 				config.loadBalancer.passHostHeader = value;
 				service.config = marshalConfig(config);
 			}}
@@ -65,7 +65,7 @@
 					class="text-red-500"
 					onclick={() => {
 						if (i === 0) return;
-						if (!config.loadBalancer) config.loadBalancer = {};
+						if (!config.loadBalancer) config.loadBalancer = { passHostHeader: true };
 						if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
 						config.loadBalancer.servers = config.loadBalancer.servers.filter((_, j) => j !== i);
 						service.config = marshalConfig(config);
@@ -81,7 +81,7 @@
 		variant="outline"
 		class="w-full"
 		onclick={() => {
-			if (!config.loadBalancer) config.loadBalancer = {};
+			if (!config.loadBalancer) config.loadBalancer = { passHostHeader: true };
 			if (!config.loadBalancer.servers) config.loadBalancer.servers = [];
 			config.loadBalancer.servers = [...config.loadBalancer.servers, { url: '' }];
 			service.config = marshalConfig(config);

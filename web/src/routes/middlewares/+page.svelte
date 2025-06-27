@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
+	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
@@ -69,6 +70,15 @@
 			}
 		},
 		{
+			header: 'Enabled',
+			accessorKey: 'enabled',
+			enableSorting: true,
+			cell: ({ row }) => {
+				let checked = row.getValue('enabled') as boolean;
+				return renderComponent(ColumnCheck, { checked: checked });
+			}
+		},
+		{
 			id: 'actions',
 			enableHiding: false,
 			cell: ({ row }) => {
@@ -117,13 +127,15 @@
 			toast.success('Router deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
+			toast.error('Failed to delete middleware', { description: e.message });
 		}
 	};
 
 	async function bulkDelete(selectedRows: Middleware[]) {
 		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			const confirmed = confirm(
+				`Are you sure you want to delete ${selectedRows.length} middlewares?`
+			);
 			if (!confirmed) return;
 
 			const rows = selectedRows.map((row) => ({ id: row.id, type: row.type }));
@@ -131,10 +143,10 @@
 				await middlewareClient.deleteMiddleware({ id: row.id, type: row.type });
 			}
 			await refreshData(pageSize.value ?? 10, 0);
-			toast.success(`Successfully deleted ${selectedRows.length} routers`);
+			toast.success(`Successfully deleted ${selectedRows.length} middlewares`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete routers', { description: e.message });
+			toast.error('Failed to delete middlewares', { description: e.message });
 		}
 	}
 	async function refreshData(pageSize: number, pageIndex: number) {

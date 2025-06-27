@@ -1,3 +1,4 @@
+// Package backup provides functionality for creating and restoring backups.
 package backup
 
 import (

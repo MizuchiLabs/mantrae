@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/tygo/dynamic';
+	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
 	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
 	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';

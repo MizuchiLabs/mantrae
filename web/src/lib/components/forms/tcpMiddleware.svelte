@@ -3,22 +3,19 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
-	import {
-		MiddlewareSchema,
-		type Middleware as HTTPMiddleware
-	} from '$lib/gen/zen/traefik-schemas';
+	import { TCPMiddlewareSchema, type TCPMiddleware } from '$lib/gen/zen/traefik-schemas';
 	import DynamicForm from './DynamicForm.svelte';
 
 	let { middleware = $bindable() }: { middleware: Middleware } = $props();
 
-	let config = $state(unmarshalConfig(middleware.config) as HTTPMiddleware);
+	let config = $state(unmarshalConfig(middleware.config) as TCPMiddleware);
 	let selectedType = $derived(config ? Object.keys(config)[0] : '');
 
 	$effect(() => {
 		if (config) middleware.config = marshalConfig(config);
 	});
 
-	const middlewareTypes = Object.keys(MiddlewareSchema.shape).map((key) => ({
+	const middlewareTypes = Object.keys(TCPMiddlewareSchema.shape).map((key) => ({
 		value: key,
 		label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()) // dumb prettifier
 	}));
@@ -44,10 +41,10 @@
 
 	{#if selectedType}
 		<DynamicForm
-			schema={MiddlewareSchema.shape[selectedType as keyof typeof MiddlewareSchema.shape]}
-			data={(config[selectedType as keyof HTTPMiddleware] as Record<string, unknown>) || {}}
+			schema={TCPMiddlewareSchema.shape[selectedType as keyof typeof TCPMiddlewareSchema.shape]}
+			data={(config[selectedType as keyof TCPMiddleware] as Record<string, unknown>) || {}}
 			onUpdate={(updatedData) => {
-				config = { [selectedType]: updatedData } as HTTPMiddleware;
+				config = { [selectedType]: updatedData } as TCPMiddleware;
 			}}
 		/>
 	{/if}

@@ -1,3 +1,4 @@
+// Package dns provides functionality for managing DNS records.
 package dns
 
 import (

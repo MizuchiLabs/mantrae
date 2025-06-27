@@ -185,48 +185,50 @@
 
 						<!-- DNS Providers -->
 						{#await dnsClient.listDnsProviders({ limit: -1n, offset: 0n }) then value}
-							<Tooltip.Provider>
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										<div bind:this={dnsAnchor}>
-											<Button
-												variant="ghost"
-												size="sm"
-												class="flex items-center gap-2"
-												onclick={() => (selectDNSOpen = true)}
-											>
-												<Globe size={16} />
-												<Badge>
-													{item.dnsProviders.length > 0
-														? item.dnsProviders.map((p) => p.name).join(', ')
-														: 'None'}
-												</Badge>
-											</Button>
-										</div>
-									</Tooltip.Trigger>
-									<Tooltip.Content side="left" align="center">
-										<p>Select DNS Provider</p>
-									</Tooltip.Content>
-								</Tooltip.Root>
-							</Tooltip.Provider>
+							{#if value.dnsProviders.length > 0}
+								<Tooltip.Provider>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<div bind:this={dnsAnchor}>
+												<Button
+													variant="ghost"
+													size="sm"
+													class="flex items-center gap-2"
+													onclick={() => (selectDNSOpen = true)}
+												>
+													<Globe size={16} />
+													<Badge>
+														{item.dnsProviders?.length > 0
+															? item.dnsProviders?.map((p) => p.name).join(', ')
+															: 'None'}
+													</Badge>
+												</Button>
+											</div>
+										</Tooltip.Trigger>
+										<Tooltip.Content side="left" align="center">
+											<p>Select DNS Provider</p>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</Tooltip.Provider>
 
-							<Select.Root
-								type="multiple"
-								value={item.dnsProviders.map((item) => item.id.toString())}
-								onValueChange={handleDNSProviderChange}
-								bind:open={selectDNSOpen}
-							>
-								<Select.Content customAnchor={dnsAnchor} align="end">
-									{#each value.dnsProviders as dns (dns.id)}
-										<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
-											{dns.name}
-											{#if dns.isActive}
-												<CircleCheck size="1rem" class="text-green-400" />
-											{/if}
-										</Select.Item>
-									{/each}
-								</Select.Content>
-							</Select.Root>
+								<Select.Root
+									type="multiple"
+									value={item.dnsProviders?.map((item) => item.id.toString())}
+									onValueChange={handleDNSProviderChange}
+									bind:open={selectDNSOpen}
+								>
+									<Select.Content customAnchor={dnsAnchor} align="end">
+										{#each value.dnsProviders as dns (dns.id)}
+											<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
+												{dns.name}
+												{#if dns.isActive}
+													<CircleCheck size="1rem" class="text-green-400" />
+												{/if}
+											</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							{/if}
 						{/await}
 					</Card.Header>
 					<Card.Content class="flex flex-col gap-3">

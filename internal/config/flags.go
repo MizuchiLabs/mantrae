@@ -15,6 +15,7 @@ type Flags struct {
 	Version bool
 	Update  bool
 	Squash  bool
+	Zod     bool
 }
 
 func ParseFlags() {
@@ -22,6 +23,7 @@ func ParseFlags() {
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
 	flag.BoolVar(&f.Squash, "squash", false, "Squash the database")
+	flag.BoolVar(&f.Zod, "zod", false, "Generate zod schemas (only for dev)")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -33,6 +35,11 @@ func ParseFlags() {
 
 	if f.Squash {
 		store.Squash()
+		os.Exit(1)
+	}
+
+	if f.Zod {
+		StructToZodSchema()
 		os.Exit(1)
 	}
 	build.Update(f.Update)

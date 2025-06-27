@@ -5,7 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { Router as HttpRouter, RouterTLSConfig } from '$lib/gen/tygo/dynamic';
+	import type { Router as HTTPRouter, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
 	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
 	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
@@ -16,7 +16,7 @@
 	let { router = $bindable() }: { router: Router } = $props();
 
 	let certResolvers: string[] = $state([]);
-	let config = $state(unmarshalConfig(router.config) as HttpRouter);
+	let config = $state(unmarshalConfig(router.config) as HTTPRouter);
 
 	$effect(() => {
 		if (config) router.config = marshalConfig(config);
@@ -33,12 +33,12 @@
 		const resolverSet = new Set(
 			response.routers
 				.filter((r) => {
-					let tmp = unmarshalConfig(r.config) as HttpRouter;
+					let tmp = unmarshalConfig(r.config) as HTTPRouter;
 					if (!tmp?.tls?.certResolver) return false;
 					return true;
 				})
 				.map((r) => {
-					let tmp = unmarshalConfig(r.config) as HttpRouter;
+					let tmp = unmarshalConfig(r.config) as HTTPRouter;
 					return tmp.tls?.certResolver ?? '';
 				})
 		);

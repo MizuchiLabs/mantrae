@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"slices"
 
@@ -320,7 +321,11 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	var allPlugins []schema.Plugin
 	if err := json.NewDecoder(resp.Body).Decode(&allPlugins); err != nil {

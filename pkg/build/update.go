@@ -107,7 +107,11 @@ func fetchLatestRelease() (*release, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err = res.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("(%d) failed to send latest release request", res.StatusCode)
@@ -139,7 +143,11 @@ func downloadFile(url string, dest string) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err = res.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("(%d) failed to send download file request", res.StatusCode)
@@ -149,7 +157,11 @@ func downloadFile(url string, dest string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		if err = out.Close(); err != nil {
+			slog.Error("failed to close output file", "error", err)
+		}
+	}()
 
 	if _, err := io.Copy(out, res.Body); err != nil {
 		return err
@@ -207,12 +219,9 @@ func compareVersions(a, b string) int {
 	bSplit := strings.Split(b, ".")
 	bTotal := len(bSplit)
 
-	limit := aTotal
-	if bTotal > aTotal {
-		limit = bTotal
-	}
+	limit := max(aTotal, bTotal)
 
-	for i := 0; i < limit; i++ {
+	for i := range limit {
 		var x, y int
 
 		if i < aTotal {

@@ -1,3 +1,4 @@
+// Package build provides build information.
 package build
 
 var (

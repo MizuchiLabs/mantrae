@@ -1,3 +1,4 @@
+// Package storage provides a generic interface for storage backends.
 package storage
 
 import (

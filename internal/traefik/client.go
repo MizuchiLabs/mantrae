@@ -1,3 +1,4 @@
+// Package traefik provides functionality for interacting with the Traefik API.
 package traefik
 
 import (
@@ -7,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -32,7 +34,11 @@ func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch %s: %w", instance.Url+RawAPI, err)
 	}
-	defer rawResp.Close()
+	defer func() {
+		if err = rawResp.Close(); err != nil {
+			slog.Error("failed to close raw response", "error", err)
+		}
+	}()
 
 	var config schema.Configuration
 	if err = json.NewDecoder(rawResp).Decode(&config); err != nil {
@@ -43,7 +49,11 @@ func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch %s: %w", instance.Url+EntrypointsAPI, err)
 	}
-	defer entrypointsResp.Close()
+	defer func() {
+		if err = entrypointsResp.Close(); err != nil {
+			slog.Error("failed to close entrypoints response", "error", err)
+		}
+	}()
 
 	var entrypoints schema.EntryPoints
 	if err = json.NewDecoder(entrypointsResp).Decode(&entrypoints); err != nil {
@@ -54,7 +64,11 @@ func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch %s: %w", instance.Url+OverviewAPI, err)
 	}
-	defer overviewResp.Close()
+	defer func() {
+		if err = overviewResp.Close(); err != nil {
+			slog.Error("failed to close overview response", "error", err)
+		}
+	}()
 
 	var overview schema.Overview
 	if err = json.NewDecoder(overviewResp).Decode(&overview); err != nil {
@@ -65,7 +79,11 @@ func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch %s: %w", instance.Url+VersionAPI, err)
 	}
-	defer versionResp.Close()
+	defer func() {
+		if err = versionResp.Close(); err != nil {
+			slog.Error("failed to close version response", "error", err)
+		}
+	}()
 
 	var version schema.Version
 	if err := json.NewDecoder(versionResp).Decode(&version); err != nil {

@@ -1,3 +1,4 @@
+// Package client provides the agent's main gRPC client logic.
 package client
 
 import (

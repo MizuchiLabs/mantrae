@@ -9,7 +9,7 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { RouterTLSConfig } from '$lib/gen/tygo/dynamic';
+	import type { RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';

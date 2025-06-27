@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/internal/config"
@@ -95,7 +96,11 @@ func (s *BackupService) DownloadBackup(
 	if err != nil {
 		return connect.NewError(connect.CodeInternal, err)
 	}
-	defer reader.Close()
+	defer func() {
+		if err = reader.Close(); err != nil {
+			slog.Error("failed to close backup reader", "error", err)
+		}
+	}()
 
 	buf := make([]byte, 32*1024)
 	for {

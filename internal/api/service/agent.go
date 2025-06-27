@@ -48,11 +48,11 @@ func (s *AgentService) CreateAgent(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	serverUrl, err := s.app.Conn.GetQuery().GetSetting(ctx, settings.KeyServerURL)
+	serverURL, err := s.app.Conn.GetQuery().GetSetting(ctx, settings.KeyServerURL)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if serverUrl.Value == "" {
+	if serverURL.Value == "" {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("server url is required, check your settings"),
@@ -157,7 +157,7 @@ func (s *AgentService) HealthCheck(
 	}
 
 	// Rotate Token if it's close to expiring
-	if _, err := s.updateToken(ctx, &agent); err != nil {
+	if _, err = s.updateToken(ctx, &agent); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -235,7 +235,7 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 }
 
 func (s *AgentService) createToken(agentID string, profileID int64) (*string, error) {
-	serverUrl, ok := s.app.SM.Get(settings.KeyServerURL)
+	serverURL, ok := s.app.SM.Get(settings.KeyServerURL)
 	if !ok {
 		return nil, errors.New("failed to get server url setting")
 	}
@@ -248,7 +248,7 @@ func (s *AgentService) createToken(agentID string, profileID int64) (*string, er
 	token, err := meta.EncodeAgentToken(
 		profileID,
 		agentID,
-		serverUrl,
+		serverURL,
 		s.app.Secret,
 		time.Now().Add(settings.AsDuration(agentInterval)),
 	)

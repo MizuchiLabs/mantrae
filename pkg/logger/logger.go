@@ -1,3 +1,4 @@
+// Package logger provides logging setup and configuration for the application.
 package logger
 
 import (
