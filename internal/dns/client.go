@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 type DNSProvider interface {
@@ -47,7 +47,7 @@ func getProvider(id int64, q *db.Queries) (DNSProvider, error) {
 		return nil, fmt.Errorf("invalid provider config")
 	}
 	if provider.Config.AutoUpdate {
-		machineIPs, err := util.GetPublicIPsCached()
+		machineIPs, err := util.GetPublicIPs()
 		if err != nil {
 			return nil, err
 		}

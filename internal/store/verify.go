@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 

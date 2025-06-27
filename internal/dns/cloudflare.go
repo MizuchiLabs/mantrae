@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 type CloudflareProvider struct {

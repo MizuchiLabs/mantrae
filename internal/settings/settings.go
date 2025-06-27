@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"maps"
 	"os"
 	"reflect"
 	"strconv"
@@ -170,9 +171,7 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 func (sm *SettingsManager) GetAll() map[string]string {
 	sm.mu.RLock()
 	result := make(map[string]string, len(sm.cache))
-	for k, v := range sm.cache {
-		result[k] = v
-	}
+	maps.Copy(result, sm.cache)
 	sm.mu.RUnlock()
 	return result
 }

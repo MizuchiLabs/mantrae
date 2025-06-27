@@ -6,8 +6,8 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/build"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
@@ -32,7 +32,7 @@ func (s *UtilService) GetPublicIP(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetPublicIPRequest],
 ) (*connect.Response[mantraev1.GetPublicIPResponse], error) {
-	ips, err := util.GetPublicIPsCached()
+	ips, err := util.GetPublicIPs()
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

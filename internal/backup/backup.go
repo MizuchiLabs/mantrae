@@ -15,7 +15,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 const BackupPath = "backups"
@@ -118,8 +118,14 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
-	defer tmpFile.Close()
+	defer func() {
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			slog.Error("failed to remove temp file", "error", err)
+		}
+		if err := tmpFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	db := m.Conn.Get()
 
@@ -170,14 +176,25 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to retrieve backup: %w", err)
 	}
-	defer reader.Close()
+	defer func() {
+		if err = reader.Close(); err != nil {
+			slog.Error("failed to close backup reader", "error", err)
+		}
+	}()
 
 	// Create a temporary file for the backup
 	tmpFile, err := os.CreateTemp("", "restore_*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err = os.Remove(tmpFile.Name()); err != nil {
+			slog.Error("failed to remove temp file", "error", err)
+		}
+		if err = tmpFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	// Copy backup to temp file
 	if _, err = io.Copy(tmpFile, reader); err != nil {
@@ -206,14 +223,22 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open temp file for copying: %w", err)
 	}
-	defer srcFile.Close()
+	defer func() {
+		if err = srcFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	// Create new database file
 	dstFile, err := os.Create(dbPath)
 	if err != nil {
 		return fmt.Errorf("failed to create new database file: %w", err)
 	}
-	defer dstFile.Close()
+	defer func() {
+		if err = dstFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	// Copy the contents
 	if _, err = io.Copy(dstFile, srcFile); err != nil {

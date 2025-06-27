@@ -7,7 +7,7 @@ import (
 
 	"github.com/joeig/go-powerdns/v3"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 type PowerDNSProvider struct {

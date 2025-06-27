@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )

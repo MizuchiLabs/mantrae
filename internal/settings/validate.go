@@ -17,22 +17,22 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 
 	switch params.Key {
 	case KeyServerURL:
-		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
 			return errors.New("server url cannot be empty")
 		}
+		params.Value = cleanURL(params.Value)
 
 	case KeyS3Endpoint:
-		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
 			return errors.New("S3 endpoint cannot be empty")
 		}
+		params.Value = cleanURL(params.Value)
 
 	case KeyOIDCIssuerURL:
-		params.Value = cleanURL(params.Value)
 		if params.Value == "" {
 			return errors.New("OIDC issuer URL cannot be empty")
 		}
+		params.Value = cleanURL(params.Value)
 
 	case KeyEmailPort:
 		port, err := strconv.Atoi(params.Value)

@@ -16,8 +16,8 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/mail"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 

@@ -13,8 +13,8 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/mizuchilabs/mantrae/pkg/logger"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 type App struct {
@@ -113,9 +113,13 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	}
 
 	// Check default server url
+	ips, err := util.GetPrivateIPs()
+	if err != nil {
+		return fmt.Errorf("failed to get private IPs: %w", err)
+	}
 	serverURL, ok := a.SM.Get("server_url")
 	if !ok || serverURL == "" {
-		if err = a.SM.Set(ctx, "server_url", util.GetLocalIP()); err != nil {
+		if err = a.SM.Set(ctx, "server_url", ips.IPv4); err != nil {
 			return fmt.Errorf("failed to set server url: %w", err)
 		}
 	}
@@ -124,7 +128,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 		return fmt.Errorf("failed to parse server url: %w", err)
 	}
 	if u.Hostname() == "127.0.0.1" || u.Hostname() == "localhost" {
-		if err := a.SM.Set(ctx, "server_url", util.GetLocalIP()); err != nil {
+		if err := a.SM.Set(ctx, "server_url", ips.IPv4); err != nil {
 			return fmt.Errorf("failed to set server url: %w", err)
 		}
 	}

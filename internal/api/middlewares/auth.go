@@ -49,7 +49,7 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	})
 }
 
-// JWT authentication middleware for http endpoints
+// JWTAuth middleware for http endpoints
 func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
@@ -154,11 +154,13 @@ func isPublicEndpoint(procedure string) bool {
 }
 
 func getBearerToken(header http.Header) string {
-	authHeader := header.Get("Authorization")
-	if authHeader == "" {
+	const prefix = "Bearer "
+	auth := header.Get("Authorization")
+	// Case insensitive prefix match. See RFC 9110 Section 11.1.
+	if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
 		return ""
 	}
-	return strings.TrimPrefix(authHeader, "Bearer ")
+	return auth[len(prefix):]
 }
 
 func getCookieToken(header http.Header) string {

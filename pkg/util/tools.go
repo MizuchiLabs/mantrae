@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // GetEnv returns the value of the environment variable `key` or `fallback`
@@ -39,6 +40,11 @@ func GetEnv[T any](key string, fallback T) T {
 		return result
 	}
 	return fallback
+}
+
+// IsTest returns true if the current program is running in a test environment
+func IsTest() bool {
+	return strings.HasSuffix(os.Args[0], ".test")
 }
 
 func ResolvePath(path string) string {

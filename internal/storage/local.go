@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
 
-	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 // LocalStorage implements StorageBackend for local filesystem
@@ -30,7 +31,11 @@ func (ls *LocalStorage) Store(ctx context.Context, name string, data io.Reader) 
 	if err != nil {
 		return fmt.Errorf("failed to create backup file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("failed to close backup file", "error", err)
+		}
+	}()
 
 	if _, err := io.Copy(f, data); err != nil {
 		return fmt.Errorf("failed to write backup data: %w", err)
