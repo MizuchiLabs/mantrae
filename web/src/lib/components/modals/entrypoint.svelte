@@ -93,7 +93,7 @@
 			</div>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
+		<form class="flex flex-col gap-4">
 			<div class="flex flex-col gap-2">
 				<Label for="name">Name</Label>
 				<Input id="name" bind:value={item.name} required placeholder="web" />

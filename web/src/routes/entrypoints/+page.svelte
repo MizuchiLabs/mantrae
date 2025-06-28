@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { entryPointClient, routerClient } from '$lib/api';
 	import EntryPointModal from '$lib/components/modals/entrypoint.svelte';
-	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
@@ -10,7 +9,7 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { EthernetPort, Pencil, Trash } from '@lucide/svelte';
+	import { CircleCheck, CircleSlash, EthernetPort, Pencil, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -26,31 +25,32 @@
 		{
 			header: 'Name',
 			accessorKey: 'name',
-			id: 'name',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const name = row.getValue('name') as string;
-				return name?.split('@')[0];
-			}
+			enableSorting: true
 		},
 		{
 			header: 'Address',
 			accessorKey: 'address',
-			id: 'address',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const address = row.getValue('address') as string;
-				return address;
-			}
+			enableSorting: true
 		},
 		{
 			header: 'Default',
 			accessorKey: 'isDefault',
-			id: 'isDefault',
 			enableHiding: false,
 			cell: ({ row }) => {
-				let isDefault = row.getValue('isDefault') as boolean;
-				return renderComponent(ColumnCheck, { checked: isDefault });
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.isDefault ? 'Disable' : 'Enable',
+							icon: row.original.isDefault ? CircleCheck : CircleSlash,
+							iconProps: {
+								class: row.original.isDefault ? 'text-green-500' : 'text-red-500',
+								size: 20
+							},
+							onClick: () => toggleItem(row.original, !row.original.isDefault)
+						}
+					]
+				});
 			}
 		},
 		{
@@ -103,6 +103,24 @@
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete router', { description: e.message });
+		}
+	}
+
+	async function toggleItem(item: EntryPoint, isDefault: boolean) {
+		try {
+			await entryPointClient.updateEntryPoint({
+				id: item.id,
+				name: item.name,
+				address: item.address,
+				isDefault: isDefault
+			});
+			await refreshData(pageSize.value ?? 10, 0);
+			toast.success(
+				`EntryPoint ${item.name} ${isDefault ? 'set as default' : 'removed as default'}`
+			);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to update router', { description: e.message });
 		}
 	}
 

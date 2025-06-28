@@ -79,7 +79,7 @@
 				{config.middlewares?.join(', ') || 'Select middlewares'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: MiddlewareType.HTTP, limit: -1n, offset: 0n } ) then value}
+				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: MiddlewareType.TCP, limit: -1n, offset: 0n } ) then value}
 					{#each value.middlewares as middleware (middleware.name)}
 						<Select.Item value={middleware.name}>
 							{middleware.name}

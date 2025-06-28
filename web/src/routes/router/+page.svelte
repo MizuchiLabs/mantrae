@@ -4,16 +4,31 @@
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
+	import ColumnText from '$lib/components/tables/ColumnText.svelte';
+	import ColumnTls from '$lib/components/tables/ColumnTLS.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import type { RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
+	import type { RouterTCPTLSConfig, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, CircleCheck, CircleSlash, Pencil, Route, Trash } from '@lucide/svelte';
+	import {
+		Bot,
+		CircleCheck,
+		CircleSlash,
+		ClipboardCopy,
+		Globe,
+		Network,
+		Pencil,
+		Power,
+		PowerOff,
+		Route,
+		Trash,
+		Waves
+	} from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -31,17 +46,11 @@
 			accessorKey: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const name = row.getValue('name') as string;
-				if (row.original.agentId) {
-					return renderComponent(ColumnBadge<Router>, {
-						label: name?.split('@')[0],
-						variant: 'outline',
-						icon: Bot
-					});
-				}
-				return renderComponent(ColumnBadge<Router>, {
-					label: name?.split('@')[0],
-					variant: 'outline'
+				return renderComponent(ColumnText, {
+					label: row.getValue('name') as string,
+					icon: row.original.agentId ? Bot : undefined,
+					iconProps: { class: 'text-green-500', size: 20 },
+					class: 'text-sm'
 				});
 			}
 		},
@@ -53,16 +62,22 @@
 				let protocol = row.getValue('type') as RouterType.HTTP | RouterType.TCP | RouterType.UDP;
 
 				let label = 'Unspecified';
+				let icon = undefined;
 				if (protocol === RouterType.HTTP) {
 					label = 'HTTP';
+					icon = Globe;
 				} else if (protocol === RouterType.TCP) {
 					label = 'TCP';
+					icon = Network;
 				} else if (protocol === RouterType.UDP) {
 					label = 'UDP';
+					icon = Waves;
 				}
 				return renderComponent(ColumnBadge<Router>, {
-					label: label,
-					class: 'hover:cursor-pointer italic',
+					label,
+					icon,
+					variant: 'outline',
+					class: 'hover:cursor-pointer',
 					column: column
 				});
 			}
@@ -81,7 +96,6 @@
 				return renderComponent(ColumnBadge<Router>, {
 					label: entrypoints?.length ? entrypoints : 'None',
 					variant: entrypoints?.length ? 'secondary' : 'outline',
-					class: 'hover:cursor-pointer',
 					column: entrypoints?.length ? column : undefined
 				});
 			}
@@ -100,7 +114,6 @@
 				return renderComponent(ColumnBadge<Router>, {
 					label: middlewares?.length ? middlewares : 'None',
 					variant: middlewares?.length ? 'secondary' : 'outline',
-					class: 'hover:cursor-pointer',
 					column: middlewares?.length ? column : undefined
 				});
 			}
@@ -131,18 +144,8 @@
 				return tls?.certResolver === filterValue;
 			},
 			cell: ({ row, column }) => {
-				let tls = undefined;
-				if (row.original.config?.tls !== undefined) {
-					tls = row.getValue('tls') as RouterTLSConfig;
-				}
-
-				return renderComponent(ColumnBadge<Router>, {
-					label: tls?.certResolver ? tls.certResolver : 'Disabled',
-					variant: tls?.certResolver ? 'secondary' : 'outline',
-					class: tls?.certResolver ? 'bg-slate-300 dark:bg-slate-700' : '',
-					tls,
-					column: tls?.certResolver ? column : undefined
-				});
+				let tls = row.getValue('tls') as RouterTLSConfig | RouterTCPTLSConfig;
+				return renderComponent(ColumnTls<Router>, { tls, column });
 			}
 		},
 		{
@@ -150,8 +153,17 @@
 			accessorKey: 'enabled',
 			enableSorting: true,
 			cell: ({ row }) => {
-				let checked = row.getValue('enabled') as boolean;
-				return renderComponent(ColumnCheck, { checked: checked });
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.enabled ? 'Disable' : 'Enable',
+							icon: row.original.enabled ? Power : PowerOff,
+							iconProps: { class: row.original.enabled ? 'text-green-500' : 'text-red-500' },
+							onClick: () => toggleItem(row.original, !row.original.enabled)
+						}
+					]
+				});
 			}
 		},
 		{
@@ -174,7 +186,21 @@
 							label: 'Delete Router',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id, row.original.type)
+							onClick: () => deleteItem(row.original)
+						},
+						{
+							type: 'dropdown',
+							label: 'Copy Rule',
+							icon: ClipboardCopy,
+							iconProps: { class: 'text-blue-500' },
+							onClick: () => copyToClipboard(row.original.config?.rule)
+						},
+						{
+							type: 'dropdown',
+							label: 'Delete',
+							icon: Trash,
+							variant: 'destructive',
+							onClick: () => deleteItem(row.original)
 						}
 					]
 				});
@@ -210,14 +236,32 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint, type: RouterType) => {
+	const deleteItem = async (item: Router) => {
 		try {
-			await routerClient.deleteRouter({ id: id, type: type });
+			await routerClient.deleteRouter({ id: item.id, type: item.type });
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success('Router deleted');
+			toast.success(`Router ${item.name} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete router', { description: e.message });
+		}
+	};
+
+	const toggleItem = async (item: Router, enabled: boolean) => {
+		try {
+			await routerClient.updateRouter({
+				id: item.id,
+				name: item.name,
+				type: item.type,
+				config: item.config,
+				enabled: enabled,
+				dnsProviders: item.dnsProviders
+			});
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`Router ${item.name} ${enabled ? 'enabled' : 'disabled'}`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to update router', { description: e.message });
 		}
 	};
 
@@ -295,10 +339,7 @@
 		{rowCount}
 		{onPaginationChange}
 		{bulkActions}
-		rowClassModifiers={{
-			'bg-red-300/25 dark:bg-red-700/25': (r) => !r.enabled,
-			'bg-green-300/25 dark:bg-green-700/25': (r) => r.agentId !== ''
-		}}
+		rowClassModifiers={{}}
 		createButton={{
 			label: 'Create Router',
 			onClick: () => {

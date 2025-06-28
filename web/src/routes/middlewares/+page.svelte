@@ -1,11 +1,10 @@
 <script lang="ts">
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
-	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { Layers, Pencil, Trash } from '@lucide/svelte';
+	import { Bot, Globe, Layers, Network, Pencil, Power, PowerOff, Trash } from '@lucide/svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { profile } from '$lib/stores/profile';
@@ -16,6 +15,7 @@
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import type { JsonObject } from '@bufbuild/protobuf';
+	import ColumnText from '$lib/components/tables/ColumnText.svelte';
 
 	let item = $state({} as Middleware);
 	let open = $state(false);
@@ -30,8 +30,12 @@
 			accessorKey: 'name',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const name = row.getValue('name') as string;
-				return name?.split('@')[0];
+				return renderComponent(ColumnText, {
+					label: row.getValue('name') as string,
+					icon: row.original.agentId ? Bot : undefined,
+					iconProps: { class: 'text-green-500', size: 20 },
+					class: 'text-sm'
+				});
 			}
 		},
 		{
@@ -42,14 +46,19 @@
 				let protocol = row.getValue('type') as MiddlewareType.HTTP | MiddlewareType.TCP;
 
 				let label = 'Unspecified';
+				let icon = undefined;
 				if (protocol === MiddlewareType.HTTP) {
 					label = 'HTTP';
+					icon = Globe;
 				} else if (protocol === MiddlewareType.TCP) {
 					label = 'TCP';
+					icon = Network;
 				}
 				return renderComponent(ColumnBadge<Middleware>, {
-					label: label,
-					class: 'hover:cursor-pointer italic',
+					label,
+					icon,
+					variant: 'outline',
+					class: 'hover:cursor-pointer',
 					column: column
 				});
 			}
@@ -74,8 +83,17 @@
 			accessorKey: 'enabled',
 			enableSorting: true,
 			cell: ({ row }) => {
-				let checked = row.getValue('enabled') as boolean;
-				return renderComponent(ColumnCheck, { checked: checked });
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.enabled ? 'Disable' : 'Enable',
+							icon: row.original.enabled ? Power : PowerOff,
+							iconProps: { class: row.original.enabled ? 'text-green-500' : 'text-red-500' },
+							onClick: () => toggleItem(row.original, !row.original.enabled)
+						}
+					]
+				});
 			}
 		},
 		{
@@ -128,6 +146,23 @@
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete middleware', { description: e.message });
+		}
+	};
+
+	const toggleItem = async (item: Middleware, enabled: boolean) => {
+		try {
+			await middlewareClient.updateMiddleware({
+				id: item.id,
+				name: item.name,
+				type: item.type,
+				config: item.config,
+				enabled: enabled
+			});
+			await refreshData(pageSize.value ?? 10, 0);
+			toast.success(`Middleware ${item.name} ${enabled ? 'enabled' : 'disabled'}`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to update middleware', { description: e.message });
 		}
 	};
 

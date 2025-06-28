@@ -2,7 +2,7 @@
 	import * as HoverCard from '$lib/components/ui/hover-card';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
-	import { Link, ListTree } from '@lucide/svelte';
+	import { Link, List } from '@lucide/svelte';
 
 	interface Props {
 		rule: string;
@@ -109,8 +109,8 @@
 	<HoverCard.Root openDelay={100}>
 		<HoverCard.Trigger>
 			<button class="inline-flex items-center gap-1.5 text-sm">
-				<ListTree class="h-4 w-4" />
-				<span>Display</span>
+				<List class="h-4 w-4" />
+				<Badge variant="outline" class="text-xs">Multiple</Badge>
 			</button>
 		</HoverCard.Trigger>
 		<HoverCard.Content class="w-auto">

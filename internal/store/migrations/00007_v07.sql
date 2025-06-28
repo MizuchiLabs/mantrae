@@ -8,7 +8,8 @@ CREATE TABLE entry_points (
   is_default BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
 );
 
 CREATE TABLE http_routers (
