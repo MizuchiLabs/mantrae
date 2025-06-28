@@ -125,7 +125,7 @@ func getIP(services []string, validationFunc func(string) bool) (string, error) 
 			continue
 		}
 		defer func() {
-			if err := resp.Body.Close(); err != nil {
+			if err = resp.Body.Close(); err != nil {
 				slog.Error("failed to close response body", "error", err)
 			}
 		}()
@@ -160,4 +160,13 @@ func IsValidIPv6(ip string) bool {
 		return false
 	}
 	return parsedIP.To4() == nil && parsedIP.To16() != nil
+}
+
+func CleanURL(url string) string {
+	url = strings.TrimSuffix(url, "/")
+	if !strings.HasPrefix(url, "http://") &&
+		!strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
+	return url
 }
