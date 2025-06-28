@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dnsClient, utilClient } from '$lib/api';
+	import { dnsClient } from '$lib/api';
 	import DNSModal from '$lib/components/modals/dns.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
@@ -10,7 +10,7 @@
 	import { DnsProviderType, type DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Globe, Pencil, Trash } from '@lucide/svelte';
+	import { CircleCheck, CircleSlash, Globe, Pencil, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -70,9 +70,8 @@
 					});
 					// });
 				} else {
-					let ip = row.getValue('ip') as string;
 					return renderComponent(ColumnBadge, {
-						label: ip,
+						label: row.getValue('ip') as string,
 						class: 'hover:cursor-pointer'
 					});
 				}
@@ -83,8 +82,20 @@
 			accessorKey: 'isActive',
 			enableSorting: true,
 			cell: ({ row }) => {
-				let checked = row.getValue('isActive') as boolean;
-				return renderComponent(ColumnCheck, { checked: checked });
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.isActive ? 'Disable' : 'Enable',
+							icon: row.original.isActive ? CircleCheck : CircleSlash,
+							iconProps: {
+								class: row.original.isActive ? 'text-green-500 size-5' : 'text-red-500 size-5',
+								size: 20
+							},
+							onClick: () => toggleItem(row.original, !row.original.isActive)
+						}
+					]
+				});
 			}
 		},
 		{
@@ -117,7 +128,7 @@
 							label: 'Delete Provider',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original)
 						}
 					]
 				});
@@ -139,30 +150,46 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint) => {
+	const deleteItem = async (item: DnsProvider) => {
 		try {
-			await dnsClient.deleteDnsProvider({ id: id });
-			await refreshData(pageSize.value ?? 10, 0);
-			toast.success('Router deleted');
+			await dnsClient.deleteDnsProvider({ id: item.id });
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`DNS Provider ${item.name} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
+			toast.error('Failed to delete DNS Provider', { description: e.message });
 		}
 	};
 
-	async function bulkDelete(selectedRows: DnsProvider[]) {
+	async function toggleItem(item: DnsProvider, isActive: boolean) {
 		try {
-			const confirmed = confirm(
-				`Are you sure you want to delete ${selectedRows.length} DNS Providers?`
+			await dnsClient.updateDnsProvider({
+				id: item.id,
+				name: item.name,
+				type: item.type,
+				config: item.config,
+				isActive: isActive
+			});
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(
+				`DNS Provider ${item.name} ${isActive ? 'set as default' : 'removed as default'}`
 			);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to update DNS Provider', { description: e.message });
+		}
+	}
+
+	async function bulkDelete(rows: DnsProvider[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${rows.length} DNS Providers?`);
 			if (!confirmed) return;
 
-			const ids = selectedRows.map((row) => ({ id: row.id }));
-			for (const row of ids) {
+			for (const row of rows) {
 				await dnsClient.deleteDnsProvider({ id: row.id });
 			}
-			await refreshData(pageSize.value ?? 10, 0);
-			toast.success(`Successfully deleted ${selectedRows.length} DNS Providers`);
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`Successfully deleted ${rows.length} DNS Providers`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete DNS Providers', { description: e.message });
@@ -188,10 +215,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<Globe />
-		<h1 class="text-2xl font-bold">DNS Management</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<Globe class="text-primary h-6 w-6" />
+				</div>
+				DNS Management
+			</h1>
+			<p class="text-muted-foreground mt-1">Manage your DNS providers</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}

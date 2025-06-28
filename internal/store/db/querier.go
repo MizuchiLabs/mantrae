@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CountAgents(ctx context.Context) (int64, error)
+	CountAuditLogs(ctx context.Context, profileID int64) (int64, error)
 	CountDnsProviders(ctx context.Context) (int64, error)
 	CountEntryPoints(ctx context.Context) (int64, error)
 	CountHttpMiddlewares(ctx context.Context) (int64, error)
@@ -46,6 +47,7 @@ type Querier interface {
 	CountUdpServicesByProfile(ctx context.Context, profileID int64) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error)
+	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) error
 	CreateDnsProvider(ctx context.Context, arg CreateDnsProviderParams) (DnsProvider, error)
 	CreateEntryPoint(ctx context.Context, arg CreateEntryPointParams) (EntryPoint, error)
 	CreateHttpMiddleware(ctx context.Context, arg CreateHttpMiddlewareParams) (HttpMiddleware, error)
@@ -71,6 +73,7 @@ type Querier interface {
 	DeleteHttpRouter(ctx context.Context, id int64) error
 	DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHttpRouterDNSProviderParams) error
 	DeleteHttpService(ctx context.Context, id int64) error
+	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteSetting(ctx context.Context, key string) error
 	DeleteTcpMiddleware(ctx context.Context, id int64) error
@@ -110,6 +113,7 @@ type Querier interface {
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAdminUsers(ctx context.Context, arg ListAdminUsersParams) ([]User, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent, error)
+	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]AuditLog, error)
 	ListDnsProviders(ctx context.Context, arg ListDnsProvidersParams) ([]DnsProvider, error)
 	ListEntryPoints(ctx context.Context, arg ListEntryPointsParams) ([]EntryPoint, error)
 	ListErrors(ctx context.Context) ([]Error, error)

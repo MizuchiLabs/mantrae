@@ -137,6 +137,17 @@ CREATE TABLE traefik_instances (
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
+CREATE TABLE audit_logs (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  user_id TEXT,
+  agent_id TEXT,
+  event TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
 -- Migrate data from old traefik table to new traefik_instances
 INSERT INTO
   traefik_instances (

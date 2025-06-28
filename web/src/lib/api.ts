@@ -13,6 +13,7 @@ import { DnsProviderService } from "./gen/mantrae/v1/dns_provider_pb";
 import { UtilService } from "./gen/mantrae/v1/util_pb";
 import { AgentService } from "./gen/mantrae/v1/agent_pb";
 import { toast } from "svelte-sonner";
+import { AuditLogService } from "./gen/mantrae/v1/auditlog_pb";
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -20,18 +21,30 @@ export const BASE_URL = import.meta.env.PROD
 	? ""
 	: `http://127.0.0.1:${BACKEND_PORT}`;
 
-export function useClient<T extends DescService>(service: T): Client<T> {
+export function useClient<T extends DescService>(
+	service: T,
+	customFetch?: typeof fetch,
+): Client<T> {
 	const headers = new Headers();
 	headers.set("Content-Type", "application/json");
 
+	// Wrap the fetch to always append headers & credentials
+	const wrappedFetch: typeof fetch = (input, init = {}) => {
+		const newHeaders = new Headers(init.headers || {});
+		headers.forEach((value, key) => {
+			newHeaders.set(key, value);
+		});
+
+		return (customFetch || fetch)(input, {
+			...init,
+			headers: newHeaders,
+			credentials: "include",
+		});
+	};
+
 	const transport = createConnectTransport({
 		baseUrl: BASE_URL,
-		fetch: (input, init) =>
-			fetch(input, {
-				...init,
-				headers,
-				credentials: "include",
-			}),
+		fetch: wrappedFetch,
 	});
 	return createClient(service, transport);
 }
@@ -73,3 +86,4 @@ export const middlewareClient = useClient(MiddlewareService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
 export const utilClient = useClient(UtilService);
+export const auditLogClient = useClient(AuditLogService);

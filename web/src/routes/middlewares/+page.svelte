@@ -89,7 +89,9 @@
 							type: 'button',
 							label: row.original.enabled ? 'Disable' : 'Enable',
 							icon: row.original.enabled ? Power : PowerOff,
-							iconProps: { class: row.original.enabled ? 'text-green-500' : 'text-red-500' },
+							iconProps: {
+								class: row.original.enabled ? 'text-green-500 size-5' : 'text-red-500 size-5'
+							},
 							onClick: () => toggleItem(row.original, !row.original.enabled)
 						}
 					]
@@ -204,10 +206,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<Layers />
-		<h1 class="text-2xl font-bold">Middlewares</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<Layers class="text-primary h-6 w-6" />
+				</div>
+				Middlewares
+			</h1>
+			<p class="text-muted-foreground mt-1">Configure your middlewares</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}

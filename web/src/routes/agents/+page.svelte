@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { agentClient } from '$lib/api';
 	import AgentModal from '$lib/components/modals/agent.svelte';
+	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
@@ -39,23 +40,27 @@
 		{
 			header: 'Endpoint',
 			accessorKey: 'activeIp',
-			enableSorting: true
+			enableSorting: true,
+			cell: ({ row }) => {
+				let ip = row.getValue('activeIp') as string;
+				return renderComponent(ColumnBadge, {
+					label: ip || 'Unknown',
+					class: 'hover:cursor-pointer'
+				});
+			}
 		},
 		{
 			header: 'Last Seen',
 			accessorKey: 'updatedAt',
 			enableSorting: true,
 			cell: ({ row }) => {
+				if (!row.original.hostname) {
+					return renderComponent(ColumnBadge, {
+						label: 'Never',
+						class: 'hover:cursor-pointer'
+					});
+				}
 				const date = row.getValue('updatedAt') as Timestamp;
-				return DateFormat.format(timestampDate(date));
-			}
-		},
-		{
-			header: 'Created',
-			accessorKey: 'createdAt',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as Timestamp;
 				return DateFormat.format(timestampDate(date));
 			}
 		},
@@ -81,7 +86,7 @@
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original)
 						}
 					]
 				});
@@ -99,7 +104,6 @@
 		if (!agent.updatedAt) return false;
 		const lastSeen = new Date(timestampDate(agent.updatedAt));
 		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
-		// return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
 		return lastSeenInSeconds <= 30 ? true : false;
 	}
 
@@ -117,28 +121,27 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: string) => {
+	const deleteItem = async (item: Agent) => {
 		try {
-			await agentClient.deleteAgent({ id: id });
+			await agentClient.deleteAgent({ id: item.id });
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success('Agent deleted');
+			toast.success(`Agent ${item.hostname ?? item.id} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
+			toast.error('Failed to delete agent', { description: e.message });
 		}
 	};
 
-	async function bulkDelete(selectedRows: Agent[]) {
+	async function bulkDelete(rows: Agent[]) {
 		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			const confirmed = confirm(`Are you sure you want to delete ${rows.length} agents?`);
 			if (!confirmed) return;
 
-			const rows = selectedRows.map((row) => ({ id: row.id }));
 			for (const row of rows) {
 				await agentClient.deleteAgent({ id: row.id });
 			}
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success(`Successfully deleted ${selectedRows.length} agents`);
+			toast.success(`Successfully deleted ${rows.length} agents`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete agents', { description: e.message });
@@ -180,10 +183,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-2">
-	<div class="flex items-center justify-start gap-2">
-		<Bot />
-		<h1 class="text-2xl font-bold">Agents</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<Bot class="text-primary h-6 w-6" />
+				</div>
+				Agents
+			</h1>
+			<p class="text-muted-foreground mt-1">Connect your agents</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}
@@ -191,8 +202,7 @@
 		{onPaginationChange}
 		{bulkActions}
 		rowClassModifiers={{
-			'bg-red-300/25 dark:bg-red-700/25': (r) => !getAgentStatus(r),
-			'bg-green-300/25 dark:bg-green-700/25': (r) => getAgentStatus(r)
+			'bg-red-300/25 dark:bg-red-700/25': (r) => !getAgentStatus(r)
 		}}
 		createButton={{
 			label: 'Add Agent',

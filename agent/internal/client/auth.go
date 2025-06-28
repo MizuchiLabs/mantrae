@@ -13,6 +13,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/agent/internal/collector"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 )
@@ -85,7 +86,7 @@ func (t *TokenSource) ensure() error {
 	t.claims = claims
 	t.client = mantraev1connect.NewAgentServiceClient(
 		http.DefaultClient,
-		claims.ServerURL,
+		util.CleanURL(claims.ServerURL),
 		connect.WithInterceptors(t.Interceptor()),
 	)
 	return nil
@@ -105,8 +106,6 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 		PublicIp:  info.PublicIPs.IPv4,
 		PrivateIp: info.PrivateIPs.IPv4,
 	})
-	req.Header().Set("Authorization", "Bearer "+t.token)
-	req.Header().Set(meta.HeaderAgentID, t.claims.AgentID)
 
 	resp, err := t.client.HealthCheck(ctx, req)
 	if connect.CodeOf(err) == connect.CodeUnauthenticated {

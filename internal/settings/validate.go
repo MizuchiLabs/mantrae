@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettingParams) error {
@@ -20,19 +21,19 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 		if params.Value == "" {
 			return errors.New("server url cannot be empty")
 		}
-		params.Value = cleanURL(params.Value)
+		params.Value = util.CleanURL(params.Value)
 
 	case KeyS3Endpoint:
 		if params.Value == "" {
 			return errors.New("S3 endpoint cannot be empty")
 		}
-		params.Value = cleanURL(params.Value)
+		params.Value = util.CleanURL(params.Value)
 
 	case KeyOIDCIssuerURL:
 		if params.Value == "" {
 			return errors.New("OIDC issuer URL cannot be empty")
 		}
-		params.Value = cleanURL(params.Value)
+		params.Value = util.CleanURL(params.Value)
 
 	case KeyEmailPort:
 		port, err := strconv.Atoi(params.Value)
@@ -71,14 +72,4 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 	}
 
 	return nil
-}
-
-// Ensure trimmed and valid URL format
-func cleanURL(url string) string {
-	url = strings.TrimSuffix(url, "/")
-	if !strings.HasPrefix(url, "http://") &&
-		!strings.HasPrefix(url, "https://") {
-		url = "http://" + url
-	}
-	return url
 }

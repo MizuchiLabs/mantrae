@@ -27,6 +27,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countAgentsStmt, err = db.PrepareContext(ctx, countAgents); err != nil {
 		return nil, fmt.Errorf("error preparing query CountAgents: %w", err)
 	}
+	if q.countAuditLogsStmt, err = db.PrepareContext(ctx, countAuditLogs); err != nil {
+		return nil, fmt.Errorf("error preparing query CountAuditLogs: %w", err)
+	}
 	if q.countDnsProvidersStmt, err = db.PrepareContext(ctx, countDnsProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query CountDnsProviders: %w", err)
 	}
@@ -135,6 +138,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createAgentStmt, err = db.PrepareContext(ctx, createAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateAgent: %w", err)
 	}
+	if q.createAuditLogStmt, err = db.PrepareContext(ctx, createAuditLog); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateAuditLog: %w", err)
+	}
 	if q.createDnsProviderStmt, err = db.PrepareContext(ctx, createDnsProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateDnsProvider: %w", err)
 	}
@@ -209,6 +215,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteHttpServiceStmt, err = db.PrepareContext(ctx, deleteHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteHttpService: %w", err)
+	}
+	if q.deleteOldAuditLogsStmt, err = db.PrepareContext(ctx, deleteOldAuditLogs); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteOldAuditLogs: %w", err)
 	}
 	if q.deleteProfileStmt, err = db.PrepareContext(ctx, deleteProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteProfile: %w", err)
@@ -326,6 +335,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listAgentsStmt, err = db.PrepareContext(ctx, listAgents); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgents: %w", err)
+	}
+	if q.listAuditLogsStmt, err = db.PrepareContext(ctx, listAuditLogs); err != nil {
+		return nil, fmt.Errorf("error preparing query ListAuditLogs: %w", err)
 	}
 	if q.listDnsProvidersStmt, err = db.PrepareContext(ctx, listDnsProviders); err != nil {
 		return nil, fmt.Errorf("error preparing query ListDnsProviders: %w", err)
@@ -485,6 +497,11 @@ func (q *Queries) Close() error {
 	if q.countAgentsStmt != nil {
 		if cerr := q.countAgentsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countAgentsStmt: %w", cerr)
+		}
+	}
+	if q.countAuditLogsStmt != nil {
+		if cerr := q.countAuditLogsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countAuditLogsStmt: %w", cerr)
 		}
 	}
 	if q.countDnsProvidersStmt != nil {
@@ -667,6 +684,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createAgentStmt: %w", cerr)
 		}
 	}
+	if q.createAuditLogStmt != nil {
+		if cerr := q.createAuditLogStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createAuditLogStmt: %w", cerr)
+		}
+	}
 	if q.createDnsProviderStmt != nil {
 		if cerr := q.createDnsProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createDnsProviderStmt: %w", cerr)
@@ -790,6 +812,11 @@ func (q *Queries) Close() error {
 	if q.deleteHttpServiceStmt != nil {
 		if cerr := q.deleteHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteHttpServiceStmt: %w", cerr)
+		}
+	}
+	if q.deleteOldAuditLogsStmt != nil {
+		if cerr := q.deleteOldAuditLogsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteOldAuditLogsStmt: %w", cerr)
 		}
 	}
 	if q.deleteProfileStmt != nil {
@@ -985,6 +1012,11 @@ func (q *Queries) Close() error {
 	if q.listAgentsStmt != nil {
 		if cerr := q.listAgentsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listAgentsStmt: %w", cerr)
+		}
+	}
+	if q.listAuditLogsStmt != nil {
+		if cerr := q.listAuditLogsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listAuditLogsStmt: %w", cerr)
 		}
 	}
 	if q.listDnsProvidersStmt != nil {
@@ -1277,6 +1309,7 @@ type Queries struct {
 	db                                DBTX
 	tx                                *sql.Tx
 	countAgentsStmt                   *sql.Stmt
+	countAuditLogsStmt                *sql.Stmt
 	countDnsProvidersStmt             *sql.Stmt
 	countEntryPointsStmt              *sql.Stmt
 	countHttpMiddlewaresStmt          *sql.Stmt
@@ -1313,6 +1346,7 @@ type Queries struct {
 	countUdpServicesByProfileStmt     *sql.Stmt
 	countUsersStmt                    *sql.Stmt
 	createAgentStmt                   *sql.Stmt
+	createAuditLogStmt                *sql.Stmt
 	createDnsProviderStmt             *sql.Stmt
 	createEntryPointStmt              *sql.Stmt
 	createHttpMiddlewareStmt          *sql.Stmt
@@ -1338,6 +1372,7 @@ type Queries struct {
 	deleteHttpRouterStmt              *sql.Stmt
 	deleteHttpRouterDNSProviderStmt   *sql.Stmt
 	deleteHttpServiceStmt             *sql.Stmt
+	deleteOldAuditLogsStmt            *sql.Stmt
 	deleteProfileStmt                 *sql.Stmt
 	deleteSettingStmt                 *sql.Stmt
 	deleteTcpMiddlewareStmt           *sql.Stmt
@@ -1377,6 +1412,7 @@ type Queries struct {
 	getUserByUsernameStmt             *sql.Stmt
 	listAdminUsersStmt                *sql.Stmt
 	listAgentsStmt                    *sql.Stmt
+	listAuditLogsStmt                 *sql.Stmt
 	listDnsProvidersStmt              *sql.Stmt
 	listEntryPointsStmt               *sql.Stmt
 	listErrorsStmt                    *sql.Stmt
@@ -1434,6 +1470,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db:                                tx,
 		tx:                                tx,
 		countAgentsStmt:                   q.countAgentsStmt,
+		countAuditLogsStmt:                q.countAuditLogsStmt,
 		countDnsProvidersStmt:             q.countDnsProvidersStmt,
 		countEntryPointsStmt:              q.countEntryPointsStmt,
 		countHttpMiddlewaresStmt:          q.countHttpMiddlewaresStmt,
@@ -1470,6 +1507,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countUdpServicesByProfileStmt:     q.countUdpServicesByProfileStmt,
 		countUsersStmt:                    q.countUsersStmt,
 		createAgentStmt:                   q.createAgentStmt,
+		createAuditLogStmt:                q.createAuditLogStmt,
 		createDnsProviderStmt:             q.createDnsProviderStmt,
 		createEntryPointStmt:              q.createEntryPointStmt,
 		createHttpMiddlewareStmt:          q.createHttpMiddlewareStmt,
@@ -1495,6 +1533,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteHttpRouterStmt:              q.deleteHttpRouterStmt,
 		deleteHttpRouterDNSProviderStmt:   q.deleteHttpRouterDNSProviderStmt,
 		deleteHttpServiceStmt:             q.deleteHttpServiceStmt,
+		deleteOldAuditLogsStmt:            q.deleteOldAuditLogsStmt,
 		deleteProfileStmt:                 q.deleteProfileStmt,
 		deleteSettingStmt:                 q.deleteSettingStmt,
 		deleteTcpMiddlewareStmt:           q.deleteTcpMiddlewareStmt,
@@ -1534,6 +1573,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByUsernameStmt:             q.getUserByUsernameStmt,
 		listAdminUsersStmt:                q.listAdminUsersStmt,
 		listAgentsStmt:                    q.listAgentsStmt,
+		listAuditLogsStmt:                 q.listAuditLogsStmt,
 		listDnsProvidersStmt:              q.listDnsProvidersStmt,
 		listEntryPointsStmt:               q.listEntryPointsStmt,
 		listErrorsStmt:                    q.listErrorsStmt,

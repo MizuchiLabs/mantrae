@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"connectrpc.com/connect"
 
@@ -146,6 +147,11 @@ func (s *RouterService) CreateRouter(
 
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+	}
+
+	details := fmt.Sprintf("Router created with name %s", req.Msg.Name)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), req.Msg.ProfileId, "router.create", details); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return connect.NewResponse(&mantraev1.CreateRouterResponse{Router: router}), nil
@@ -309,6 +315,11 @@ func (s *RouterService) UpdateRouter(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
 	}
 
+	details := fmt.Sprintf("Router updated with name %s", req.Msg.Name)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), router.ProfileId, "router.update", details); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	return connect.NewResponse(&mantraev1.UpdateRouterResponse{Router: router}), nil
 }
 
@@ -316,6 +327,9 @@ func (s *RouterService) DeleteRouter(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteRouterRequest],
 ) (*connect.Response[mantraev1.DeleteRouterResponse], error) {
+	var details string
+	var profileID int64
+
 	switch req.Msg.Type {
 	case mantraev1.RouterType_ROUTER_TYPE_HTTP:
 		router, err := s.app.Conn.GetQuery().GetHttpRouter(ctx, req.Msg.Id)
@@ -325,7 +339,6 @@ func (s *RouterService) DeleteRouter(
 		if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Msg.Id); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-
 		if router.Config.Service != "" {
 			service, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, router.Config.Service)
 			if err != nil {
@@ -335,6 +348,8 @@ func (s *RouterService) DeleteRouter(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 		}
+		details = fmt.Sprintf("Router deleted with name %s", router.Name)
+		profileID = router.ProfileID
 
 	case mantraev1.RouterType_ROUTER_TYPE_TCP:
 		router, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Msg.Id)
@@ -353,6 +368,8 @@ func (s *RouterService) DeleteRouter(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 		}
+		details = fmt.Sprintf("Router deleted with name %s", router.Name)
+		profileID = router.ProfileID
 
 	case mantraev1.RouterType_ROUTER_TYPE_UDP:
 		router, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Msg.Id)
@@ -371,9 +388,15 @@ func (s *RouterService) DeleteRouter(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 		}
+		details = fmt.Sprintf("Router deleted with name %s", router.Name)
+		profileID = router.ProfileID
 
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid router type"))
+	}
+
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), profileID, "router.delete", details); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	return connect.NewResponse(&mantraev1.DeleteRouterResponse{}), nil

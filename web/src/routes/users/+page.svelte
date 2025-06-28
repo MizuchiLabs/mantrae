@@ -2,7 +2,7 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { Pencil, Trash, Users } from '@lucide/svelte';
+	import { CircleCheck, CircleSlash, Pencil, Trash, Users } from '@lucide/svelte';
 	import UserModal from '$lib/components/modals/user.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
@@ -12,8 +12,8 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { onMount } from 'svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
-	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import { user } from '$lib/stores/user';
 
 	let item = $state({} as User);
 	let open = $state(false);
@@ -38,8 +38,20 @@
 			accessorKey: 'isAdmin',
 			enableSorting: true,
 			cell: ({ row }) => {
-				const checked = row.getValue('isAdmin') as boolean;
-				return renderComponent(ColumnCheck, { checked });
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.isAdmin ? 'Disable' : 'Enable',
+							icon: row.original.isAdmin ? CircleCheck : CircleSlash,
+							iconProps: {
+								class: row.original.isAdmin ? 'text-green-500 size-5' : 'text-red-500 size-5',
+								size: 20
+							},
+							onClick: () => toggleItem(row.original, !row.original.isAdmin)
+						}
+					]
+				});
 			}
 		},
 		{
@@ -48,15 +60,6 @@
 			enableSorting: true,
 			cell: ({ row }) => {
 				const date = row.getValue('lastLogin') as Timestamp;
-				return DateFormat.format(timestampDate(date));
-			}
-		},
-		{
-			header: 'Created',
-			accessorKey: 'createdAt',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as Timestamp;
 				return DateFormat.format(timestampDate(date));
 			}
 		},
@@ -80,7 +83,7 @@
 							label: 'Delete User',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original)
 						}
 					]
 				});
@@ -102,28 +105,47 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: string) => {
+	const deleteItem = async (item: User) => {
 		try {
-			await userClient.deleteUser({ id: id });
-			await refreshData(pageSize.value ?? 10, 0);
-			toast.success('Router deleted');
+			await userClient.deleteUser({ id: item.id });
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`User ${item.username} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
+			toast.error('Failed to delete user', { description: e.message });
 		}
 	};
 
-	async function bulkDelete(selectedRows: User[]) {
+	async function toggleItem(item: User, isAdmin: boolean) {
 		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} Users?`);
+			if (user.id === item.id) {
+				toast.error('You cannot change your own role!');
+				return;
+			}
+			await userClient.updateUser({
+				id: item.id,
+				username: item.username,
+				email: item.email,
+				isAdmin: isAdmin
+			});
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`User ${item.username} ${isAdmin ? 'set as admin' : 'removed as admin'}`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to update user', { description: e.message });
+		}
+	}
+
+	async function bulkDelete(rows: User[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${rows.length} Users?`);
 			if (!confirmed) return;
 
-			const ids = selectedRows.map((row) => ({ id: row.id }));
-			for (const row of ids) {
+			for (const row of rows) {
 				await userClient.deleteUser({ id: row.id });
 			}
-			await refreshData(pageSize.value ?? 10, 0);
-			toast.success(`Successfully deleted ${selectedRows.length} Users`);
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`Successfully deleted ${rows.length} Users`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete DNS Providers', { description: e.message });
@@ -149,10 +171,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<Users />
-		<h1 class="text-2xl font-bold">User Management</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<Users class="text-primary h-6 w-6" />
+				</div>
+				User Management
+			</h1>
+			<p class="text-muted-foreground mt-1">Manage your users and access management</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}

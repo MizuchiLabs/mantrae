@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -73,6 +74,11 @@ func (s *AgentService) CreateAgent(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	details := fmt.Sprintf("Agent created with ID %s", result.ID)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), req.Msg.ProfileId, "agent.create", details); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	return connect.NewResponse(&mantraev1.CreateAgentResponse{
 		Agent: convert.AgentToProto(&result),
 	}), nil
@@ -93,6 +99,11 @@ func (s *AgentService) UpdateAgentIP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	details := fmt.Sprintf("IP address changed from %s to %s", *result.ActiveIp, req.Msg.Ip)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), result.ProfileID, "agent.update", details); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
 	return connect.NewResponse(&mantraev1.UpdateAgentIPResponse{
 		Agent: convert.AgentToProto(&result),
 	}), nil
@@ -102,7 +113,16 @@ func (s *AgentService) DeleteAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteAgentRequest],
 ) (*connect.Response[mantraev1.DeleteAgentResponse], error) {
+	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, errors.New("agent not found"))
+	}
 	if err := s.app.Conn.GetQuery().DeleteAgent(ctx, req.Msg.Id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	details := fmt.Sprintf("Agent deleted with ID %s", req.Msg.Id)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), agent.ProfileID, "agent.delete", details); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.DeleteAgentResponse{}), nil
@@ -196,7 +216,19 @@ func (s *AgentService) RotateAgentToken(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if _, err = s.updateToken(ctx, &agent); err != nil {
+	token, err := s.createToken(agent.ID, agent.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	if err = s.app.Conn.GetQuery().UpdateAgentToken(ctx, db.UpdateAgentTokenParams{
+		ID:    agent.ID,
+		Token: *token,
+	}); err != nil {
+		return nil, err
+	}
+
+	details := fmt.Sprintf("Agent token rotated for agent ID %s", req.Msg.Id)
+	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), agent.ProfileID, "agent.rotate", details); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 

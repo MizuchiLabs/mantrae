@@ -6,7 +6,6 @@
 	import type { Component, ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
-		Blocks,
 		ChevronsUpDown,
 		Globe,
 		Layers,
@@ -23,7 +22,8 @@
 		Moon,
 		type IconProps,
 		EthernetPort,
-		Gauge
+		Gauge,
+		Layers2
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
@@ -118,20 +118,20 @@
 									class="flex justify-between gap-2"
 								>
 									<div class="flex items-center gap-2">
-										<div class="flex size-6 items-center justify-center rounded-sm border">
-											<Tag class="size-4 shrink-0" />
-										</div>
+										<Layers2 class="size-4 shrink-0" />
 										{p.name}
 									</div>
 									<Button
-										variant="secondary"
-										class="h-8 w-4 rounded-full"
+										variant="outline"
+										class="rounded-full"
+										size="sm"
 										onclick={() => {
 											modalProfile = p;
 											modalProfileOpen = true;
 										}}
 									>
 										<Pencil />
+										Edit
 									</Button>
 								</DropdownMenu.Item>
 							{/each}

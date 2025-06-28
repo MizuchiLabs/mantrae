@@ -23,6 +23,16 @@ type Agent struct {
 	PrivateIp  *string                 `json:"privateIp"`
 }
 
+type AuditLog struct {
+	ID        int64      `json:"id"`
+	ProfileID int64      `json:"profileId"`
+	UserID    *string    `json:"userId"`
+	AgentID   *string    `json:"agentId"`
+	Event     string     `json:"event"`
+	Details   *string    `json:"details"`
+	CreatedAt *time.Time `json:"createdAt"`
+}
+
 type DnsProvider struct {
 	ID        int64                     `json:"id"`
 	Name      string                    `json:"name"`

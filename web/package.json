@@ -23,7 +23,7 @@
 		"@tailwindcss/vite": "^4.1.11",
 		"@types/eslint": "^9.6.1",
 		"@types/node": "^22.15.33",
-		"bits-ui": "2.8.2",
+		"bits-ui": "2.8.10",
 		"clsx": "^2.1.1",
 		"eslint": "^9.29.0",
 		"eslint-config-prettier": "^10.1.5",

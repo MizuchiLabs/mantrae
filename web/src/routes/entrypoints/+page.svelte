@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { entryPointClient, routerClient } from '$lib/api';
 	import EntryPointModal from '$lib/components/modals/entrypoint.svelte';
+	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
@@ -30,7 +31,13 @@
 		{
 			header: 'Address',
 			accessorKey: 'address',
-			enableSorting: true
+			enableSorting: true,
+			cell: ({ row }) => {
+				return renderComponent(ColumnBadge, {
+					label: row.getValue('address') as string,
+					class: 'hover:cursor-pointer'
+				});
+			}
 		},
 		{
 			header: 'Default',
@@ -44,7 +51,7 @@
 							label: row.original.isDefault ? 'Disable' : 'Enable',
 							icon: row.original.isDefault ? CircleCheck : CircleSlash,
 							iconProps: {
-								class: row.original.isDefault ? 'text-green-500' : 'text-red-500',
+								class: row.original.isDefault ? 'text-green-500 size-5' : 'text-red-500 size-5',
 								size: 20
 							},
 							onClick: () => toggleItem(row.original, !row.original.isDefault)
@@ -161,10 +168,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<EthernetPort />
-		<h1 class="text-2xl font-bold">Entry Points</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<EthernetPort class="text-primary h-6 w-6" />
+				</div>
+				Entry Points
+			</h1>
+			<p class="text-muted-foreground mt-1">Manage your entry points</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}

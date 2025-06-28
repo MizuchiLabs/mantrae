@@ -33,12 +33,12 @@
 						variant={action.variant ?? 'ghost'}
 						onclick={action.onClick}
 						class={`rounded-full ${action.classProps ?? ''}`}
-						size="icon"
+						size={action.icon ? 'icon' : 'sm'}
 						disabled={action.disabled}
 					>
 						{#if action.icon}
 							{@const Icon = action.icon}
-							<Icon {...action.iconProps} />
+							<Icon {...action.iconProps} class={`${action.iconProps?.class ?? ''}`} />
 						{:else}
 							{action.label}
 						{/if}

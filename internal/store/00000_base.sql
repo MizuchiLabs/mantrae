@@ -229,6 +229,17 @@ CREATE TABLE tcp_router_dns_providers (
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
 );
 
+CREATE TABLE audit_logs (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  user_id TEXT,
+  agent_id TEXT,
+  event TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
 -- +goose StatementBegin
 CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
 UPDATE dns_providers

@@ -155,6 +155,7 @@ func (s *Server) registerServices() {
 		mantraev1connect.MiddlewareServiceName,
 		mantraev1connect.BackupServiceName,
 		mantraev1connect.UtilServiceName,
+		mantraev1connect.AuditLogServiceName,
 	}
 
 	checker := grpchealth.NewStaticChecker(serviceNames...)
@@ -229,6 +230,10 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewUtilServiceHandler(
 		service.NewUtilService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewAuditLogServiceHandler(
+		service.NewAuditLogService(s.app),
 		opts...,
 	))
 

@@ -2,7 +2,6 @@
 	import { routerClient } from '$lib/api';
 	import RouterModal from '$lib/components/modals/router.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
-	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 	import ColumnText from '$lib/components/tables/ColumnText.svelte';
 	import ColumnTls from '$lib/components/tables/ColumnTLS.svelte';
@@ -19,7 +18,6 @@
 		Bot,
 		CircleCheck,
 		CircleSlash,
-		ClipboardCopy,
 		Globe,
 		Network,
 		Pencil,
@@ -159,7 +157,9 @@
 							type: 'button',
 							label: row.original.enabled ? 'Disable' : 'Enable',
 							icon: row.original.enabled ? Power : PowerOff,
-							iconProps: { class: row.original.enabled ? 'text-green-500' : 'text-red-500' },
+							iconProps: {
+								class: row.original.enabled ? 'text-green-500 size-5' : 'text-red-500 size-5'
+							},
 							onClick: () => toggleItem(row.original, !row.original.enabled)
 						}
 					]
@@ -186,20 +186,6 @@
 							label: 'Delete Router',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original)
-						},
-						{
-							type: 'dropdown',
-							label: 'Copy Rule',
-							icon: ClipboardCopy,
-							iconProps: { class: 'text-blue-500' },
-							onClick: () => copyToClipboard(row.original.config?.rule)
-						},
-						{
-							type: 'dropdown',
-							label: 'Delete',
-							icon: Trash,
-							variant: 'destructive',
 							onClick: () => deleteItem(row.original)
 						}
 					]
@@ -329,10 +315,18 @@
 </svelte:head>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<Route />
-		<h1 class="text-2xl font-bold">Routers</h1>
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="bg-primary/10 rounded-lg p-2">
+					<Route class="text-primary h-6 w-6" />
+				</div>
+				Routers
+			</h1>
+			<p class="text-muted-foreground mt-1">Manage your routers and services</p>
+		</div>
 	</div>
+
 	<DataTable
 		{data}
 		{columns}

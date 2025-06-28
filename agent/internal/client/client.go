@@ -256,10 +256,11 @@ func (t *TokenSource) upsertRouters(
 				Enabled:   true,
 				Type:      typ,
 			}
-			if _, err := client.CreateRouter(ctx, connect.NewRequest(params)); err != nil {
+			res, err := client.CreateRouter(ctx, connect.NewRequest(params))
+			if err != nil {
 				return err
 			}
-			slog.Debug("Created router", "name", name, "id", r.Id)
+			slog.Debug("Created router", "name", res.Msg.Router.Name, "id", res.Msg.Router.Id)
 		}
 	}
 
@@ -317,10 +318,11 @@ func (t *TokenSource) upsertServices(
 				Config:    newConfig,
 				Type:      typ,
 			}
-			if _, err := client.CreateService(ctx, connect.NewRequest(params)); err != nil {
+			res, err := client.CreateService(ctx, connect.NewRequest(params))
+			if err != nil {
 				return err
 			}
-			slog.Debug("Created service", "name", name, "id", s.Id)
+			slog.Debug("Created service", "name", res.Msg.Service.Name, "id", res.Msg.Service.Id)
 		}
 	}
 
@@ -379,10 +381,11 @@ func (t *TokenSource) upsertMiddlewares(
 				Config:    newConfig,
 				Type:      typ,
 			}
-			if _, err := client.CreateMiddleware(ctx, connect.NewRequest(params)); err != nil {
+			res, err := client.CreateMiddleware(ctx, connect.NewRequest(params))
+			if err != nil {
 				return err
 			}
-			slog.Debug("Created middleware", "name", name, "id", m.Id)
+			slog.Debug("Created middleware", "name", res.Msg.Middleware.Name, "id", res.Msg.Middleware.Id)
 		}
 	}
 
