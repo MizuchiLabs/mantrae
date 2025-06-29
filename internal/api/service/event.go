@@ -17,10 +17,10 @@ func NewEventService(app *config.App) *EventService {
 	return &EventService{app: app}
 }
 
-func (s *EventService) StreamProfileEvents(
+func (s *EventService) ProfileEvents(
 	ctx context.Context,
-	req *connect.Request[mantraev1.StreamProfileEventsRequest],
-	stream *connect.ServerStream[mantraev1.ProfileEvent],
+	req *connect.Request[mantraev1.ProfileEventsRequest],
+	stream *connect.ServerStream[mantraev1.ProfileEventsResponse],
 ) error {
 	// Create filtered event channel
 	eventChan := make(chan *mantraev1.ProfileEvent, 100)
@@ -39,24 +39,19 @@ func (s *EventService) StreamProfileEvents(
 		case <-ctx.Done():
 			return ctx.Err()
 		case event := <-eventChan:
-			if err := stream.Send(event); err != nil {
+			res := &mantraev1.ProfileEventsResponse{Event: event}
+			if err := stream.Send(res); err != nil {
 				return err
 			}
 		}
 	}
 }
 
-func (s *EventService) StreamGlobalEvents(
+func (s *EventService) GlobalEvents(
 	ctx context.Context,
-	req *connect.Request[mantraev1.StreamGlobalEventsRequest],
-	stream *connect.ServerStream[mantraev1.GlobalEvent],
+	req *connect.Request[mantraev1.GlobalEventsRequest],
+	stream *connect.ServerStream[mantraev1.GlobalEventsResponse],
 ) error {
-	// Verify admin permissions
-	// user := s.app.GetUserFromContext(ctx)
-	// if !user.IsAdmin {
-	// 	return connect.NewError(connect.CodePermissionDenied, nil)
-	// }
-
 	eventChan := make(chan *mantraev1.GlobalEvent, 100)
 	filter := &events.GlobalEventFilter{ResourceTypes: req.Msg.ResourceTypes}
 
@@ -68,7 +63,8 @@ func (s *EventService) StreamGlobalEvents(
 		case <-ctx.Done():
 			return ctx.Err()
 		case event := <-eventChan:
-			if err := stream.Send(event); err != nil {
+			res := &mantraev1.GlobalEventsResponse{Event: event}
+			if err := stream.Send(res); err != nil {
 				return err
 			}
 		}

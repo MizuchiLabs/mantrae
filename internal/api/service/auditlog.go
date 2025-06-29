@@ -5,7 +5,6 @@ import (
 
 	"connectrpc.com/connect"
 
-	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -50,35 +49,4 @@ func (s *AuditLogService) ListAuditLogs(
 		AuditLogs:  convert.AuditLogsToProto(result),
 		TotalCount: totalCount,
 	}), nil
-}
-
-// AppendAuditLogs appends audit logs to the database
-func AppendAuditLogs(
-	ctx context.Context,
-	q *db.Queries,
-	profileID int64,
-	event, details string,
-) error {
-	var params db.CreateAuditLogParams
-	params.ProfileID = profileID
-	params.Event = event
-	if details != "" {
-		params.Details = &details
-	}
-
-	valUserID := ctx.Value(middlewares.AuthUserIDKey)
-	userID, ok := valUserID.(string)
-	if ok && userID != "" {
-		params.UserID = &userID
-	}
-	valAgentID := ctx.Value(middlewares.AuthAgentIDKey)
-	agentID, ok := valAgentID.(string)
-	if ok && agentID != "" {
-		params.AgentID = &agentID
-	}
-
-	if err := q.CreateAuditLog(ctx, params); err != nil {
-		return err
-	}
-	return nil
 }

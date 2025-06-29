@@ -12,8 +12,8 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
 	import { pageIndex, pageSize } from '$lib/stores/common';
-	import HTTPMiddlewareForm from '../forms/httpMiddleware.svelte';
-	import TCPMiddlewareForm from '../forms/tcpMiddleware.svelte';
+	import HTTPMiddlewareForm from '../forms/HTTPMiddlewareForm.svelte';
+	import TCPMiddlewareForm from '../forms/TCPMiddlewareForm.svelte';
 
 	interface Props {
 		data: Middleware[];

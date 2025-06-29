@@ -33,20 +33,20 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// EventServiceStreamProfileEventsProcedure is the fully-qualified name of the EventService's
-	// StreamProfileEvents RPC.
-	EventServiceStreamProfileEventsProcedure = "/mantrae.v1.EventService/StreamProfileEvents"
-	// EventServiceStreamGlobalEventsProcedure is the fully-qualified name of the EventService's
-	// StreamGlobalEvents RPC.
-	EventServiceStreamGlobalEventsProcedure = "/mantrae.v1.EventService/StreamGlobalEvents"
+	// EventServiceProfileEventsProcedure is the fully-qualified name of the EventService's
+	// ProfileEvents RPC.
+	EventServiceProfileEventsProcedure = "/mantrae.v1.EventService/ProfileEvents"
+	// EventServiceGlobalEventsProcedure is the fully-qualified name of the EventService's GlobalEvents
+	// RPC.
+	EventServiceGlobalEventsProcedure = "/mantrae.v1.EventService/GlobalEvents"
 )
 
 // EventServiceClient is a client for the mantrae.v1.EventService service.
 type EventServiceClient interface {
 	// Profile-scoped events (routers, services, middlewares, entry points)
-	StreamProfileEvents(context.Context, *connect.Request[v1.StreamProfileEventsRequest]) (*connect.ServerStreamForClient[v1.ProfileEvent], error)
-	// Global events (users, DNS providers) - admin only
-	StreamGlobalEvents(context.Context, *connect.Request[v1.StreamGlobalEventsRequest]) (*connect.ServerStreamForClient[v1.GlobalEvent], error)
+	ProfileEvents(context.Context, *connect.Request[v1.ProfileEventsRequest]) (*connect.ServerStreamForClient[v1.ProfileEventsResponse], error)
+	// Global events (users, dns providers)
+	GlobalEvents(context.Context, *connect.Request[v1.GlobalEventsRequest]) (*connect.ServerStreamForClient[v1.GlobalEventsResponse], error)
 }
 
 // NewEventServiceClient constructs a client for the mantrae.v1.EventService service. By default, it
@@ -60,16 +60,16 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 	baseURL = strings.TrimRight(baseURL, "/")
 	eventServiceMethods := v1.File_mantrae_v1_event_proto.Services().ByName("EventService").Methods()
 	return &eventServiceClient{
-		streamProfileEvents: connect.NewClient[v1.StreamProfileEventsRequest, v1.ProfileEvent](
+		profileEvents: connect.NewClient[v1.ProfileEventsRequest, v1.ProfileEventsResponse](
 			httpClient,
-			baseURL+EventServiceStreamProfileEventsProcedure,
-			connect.WithSchema(eventServiceMethods.ByName("StreamProfileEvents")),
+			baseURL+EventServiceProfileEventsProcedure,
+			connect.WithSchema(eventServiceMethods.ByName("ProfileEvents")),
 			connect.WithClientOptions(opts...),
 		),
-		streamGlobalEvents: connect.NewClient[v1.StreamGlobalEventsRequest, v1.GlobalEvent](
+		globalEvents: connect.NewClient[v1.GlobalEventsRequest, v1.GlobalEventsResponse](
 			httpClient,
-			baseURL+EventServiceStreamGlobalEventsProcedure,
-			connect.WithSchema(eventServiceMethods.ByName("StreamGlobalEvents")),
+			baseURL+EventServiceGlobalEventsProcedure,
+			connect.WithSchema(eventServiceMethods.ByName("GlobalEvents")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -77,26 +77,26 @@ func NewEventServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 
 // eventServiceClient implements EventServiceClient.
 type eventServiceClient struct {
-	streamProfileEvents *connect.Client[v1.StreamProfileEventsRequest, v1.ProfileEvent]
-	streamGlobalEvents  *connect.Client[v1.StreamGlobalEventsRequest, v1.GlobalEvent]
+	profileEvents *connect.Client[v1.ProfileEventsRequest, v1.ProfileEventsResponse]
+	globalEvents  *connect.Client[v1.GlobalEventsRequest, v1.GlobalEventsResponse]
 }
 
-// StreamProfileEvents calls mantrae.v1.EventService.StreamProfileEvents.
-func (c *eventServiceClient) StreamProfileEvents(ctx context.Context, req *connect.Request[v1.StreamProfileEventsRequest]) (*connect.ServerStreamForClient[v1.ProfileEvent], error) {
-	return c.streamProfileEvents.CallServerStream(ctx, req)
+// ProfileEvents calls mantrae.v1.EventService.ProfileEvents.
+func (c *eventServiceClient) ProfileEvents(ctx context.Context, req *connect.Request[v1.ProfileEventsRequest]) (*connect.ServerStreamForClient[v1.ProfileEventsResponse], error) {
+	return c.profileEvents.CallServerStream(ctx, req)
 }
 
-// StreamGlobalEvents calls mantrae.v1.EventService.StreamGlobalEvents.
-func (c *eventServiceClient) StreamGlobalEvents(ctx context.Context, req *connect.Request[v1.StreamGlobalEventsRequest]) (*connect.ServerStreamForClient[v1.GlobalEvent], error) {
-	return c.streamGlobalEvents.CallServerStream(ctx, req)
+// GlobalEvents calls mantrae.v1.EventService.GlobalEvents.
+func (c *eventServiceClient) GlobalEvents(ctx context.Context, req *connect.Request[v1.GlobalEventsRequest]) (*connect.ServerStreamForClient[v1.GlobalEventsResponse], error) {
+	return c.globalEvents.CallServerStream(ctx, req)
 }
 
 // EventServiceHandler is an implementation of the mantrae.v1.EventService service.
 type EventServiceHandler interface {
 	// Profile-scoped events (routers, services, middlewares, entry points)
-	StreamProfileEvents(context.Context, *connect.Request[v1.StreamProfileEventsRequest], *connect.ServerStream[v1.ProfileEvent]) error
-	// Global events (users, DNS providers) - admin only
-	StreamGlobalEvents(context.Context, *connect.Request[v1.StreamGlobalEventsRequest], *connect.ServerStream[v1.GlobalEvent]) error
+	ProfileEvents(context.Context, *connect.Request[v1.ProfileEventsRequest], *connect.ServerStream[v1.ProfileEventsResponse]) error
+	// Global events (users, dns providers)
+	GlobalEvents(context.Context, *connect.Request[v1.GlobalEventsRequest], *connect.ServerStream[v1.GlobalEventsResponse]) error
 }
 
 // NewEventServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -106,24 +106,24 @@ type EventServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	eventServiceMethods := v1.File_mantrae_v1_event_proto.Services().ByName("EventService").Methods()
-	eventServiceStreamProfileEventsHandler := connect.NewServerStreamHandler(
-		EventServiceStreamProfileEventsProcedure,
-		svc.StreamProfileEvents,
-		connect.WithSchema(eventServiceMethods.ByName("StreamProfileEvents")),
+	eventServiceProfileEventsHandler := connect.NewServerStreamHandler(
+		EventServiceProfileEventsProcedure,
+		svc.ProfileEvents,
+		connect.WithSchema(eventServiceMethods.ByName("ProfileEvents")),
 		connect.WithHandlerOptions(opts...),
 	)
-	eventServiceStreamGlobalEventsHandler := connect.NewServerStreamHandler(
-		EventServiceStreamGlobalEventsProcedure,
-		svc.StreamGlobalEvents,
-		connect.WithSchema(eventServiceMethods.ByName("StreamGlobalEvents")),
+	eventServiceGlobalEventsHandler := connect.NewServerStreamHandler(
+		EventServiceGlobalEventsProcedure,
+		svc.GlobalEvents,
+		connect.WithSchema(eventServiceMethods.ByName("GlobalEvents")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/mantrae.v1.EventService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case EventServiceStreamProfileEventsProcedure:
-			eventServiceStreamProfileEventsHandler.ServeHTTP(w, r)
-		case EventServiceStreamGlobalEventsProcedure:
-			eventServiceStreamGlobalEventsHandler.ServeHTTP(w, r)
+		case EventServiceProfileEventsProcedure:
+			eventServiceProfileEventsHandler.ServeHTTP(w, r)
+		case EventServiceGlobalEventsProcedure:
+			eventServiceGlobalEventsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -133,10 +133,10 @@ func NewEventServiceHandler(svc EventServiceHandler, opts ...connect.HandlerOpti
 // UnimplementedEventServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedEventServiceHandler struct{}
 
-func (UnimplementedEventServiceHandler) StreamProfileEvents(context.Context, *connect.Request[v1.StreamProfileEventsRequest], *connect.ServerStream[v1.ProfileEvent]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EventService.StreamProfileEvents is not implemented"))
+func (UnimplementedEventServiceHandler) ProfileEvents(context.Context, *connect.Request[v1.ProfileEventsRequest], *connect.ServerStream[v1.ProfileEventsResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EventService.ProfileEvents is not implemented"))
 }
 
-func (UnimplementedEventServiceHandler) StreamGlobalEvents(context.Context, *connect.Request[v1.StreamGlobalEventsRequest], *connect.ServerStream[v1.GlobalEvent]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EventService.StreamGlobalEvents is not implemented"))
+func (UnimplementedEventServiceHandler) GlobalEvents(context.Context, *connect.Request[v1.GlobalEventsRequest], *connect.ServerStream[v1.GlobalEventsResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EventService.GlobalEvents is not implemented"))
 }

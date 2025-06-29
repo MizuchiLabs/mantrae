@@ -29,7 +29,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/event.proto.
  */
 export const file_mantrae_v1_event: GenFile = /*@__PURE__*/
-  fileDesc("ChZtYW50cmFlL3YxL2V2ZW50LnByb3RvEgptYW50cmFlLnYxIrMDCgxQcm9maWxlRXZlbnQSKQoKZXZlbnRfdHlwZRgBIAEoDjIVLm1hbnRyYWUudjEuRXZlbnRUeXBlEi8KDXJlc291cmNlX3R5cGUYAiABKA4yGC5tYW50cmFlLnYxLlJlc291cmNlVHlwZRISCgpwcm9maWxlX2lkGAMgASgDEi0KCXRpbWVzdGFtcBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJAoGcm91dGVyGAogASgLMhIubWFudHJhZS52MS5Sb3V0ZXJIABImCgdzZXJ2aWNlGAsgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlSAASLAoKbWlkZGxld2FyZRgMIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZUgAEi0KC2VudHJ5X3BvaW50GA0gASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50SAASIgoFYWdlbnQYDiABKAsyES5tYW50cmFlLnYxLkFnZW50SAASKQoJYXVkaXRfbG9nGA8gASgLMhQubWFudHJhZS52MS5BdWRpdExvZ0gAQgoKCHJlc291cmNlIvcBCgtHbG9iYWxFdmVudBIpCgpldmVudF90eXBlGAEgASgOMhUubWFudHJhZS52MS5FdmVudFR5cGUSLwoNcmVzb3VyY2VfdHlwZRgCIAEoDjIYLm1hbnRyYWUudjEuUmVzb3VyY2VUeXBlEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIAoEdXNlchgKIAEoCzIQLm1hbnRyYWUudjEuVXNlckgAEi8KDGRuc19wcm92aWRlchgLIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXJIAEIKCghyZXNvdXJjZSJuChpTdHJlYW1Qcm9maWxlRXZlbnRzUmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAEjAKDnJlc291cmNlX3R5cGVzGAIgAygOMhgubWFudHJhZS52MS5SZXNvdXJjZVR5cGUiTQoZU3RyZWFtR2xvYmFsRXZlbnRzUmVxdWVzdBIwCg5yZXNvdXJjZV90eXBlcxgBIAMoDjIYLm1hbnRyYWUudjEuUmVzb3VyY2VUeXBlKm8KCUV2ZW50VHlwZRIaChZFVkVOVF9UWVBFX1VOU1BFQ0lGSUVEEAASFgoSRVZFTlRfVFlQRV9DUkVBVEVEEAESFgoSRVZFTlRfVFlQRV9VUERBVEVEEAISFgoSRVZFTlRfVFlQRV9ERUxFVEVEEAMqjQIKDFJlc291cmNlVHlwZRIdChlSRVNPVVJDRV9UWVBFX1VOU1BFQ0lGSUVEEAASGAoUUkVTT1VSQ0VfVFlQRV9ST1VURVIQARIZChVSRVNPVVJDRV9UWVBFX1NFUlZJQ0UQAhIcChhSRVNPVVJDRV9UWVBFX01JRERMRVdBUkUQAxIdChlSRVNPVVJDRV9UWVBFX0VOVFJZX1BPSU5UEAQSGwoXUkVTT1VSQ0VfVFlQRV9BVURJVF9MT0cQBRIXChNSRVNPVVJDRV9UWVBFX0FHRU5UEAYSFgoSUkVTT1VSQ0VfVFlQRV9VU0VSEAcSHgoaUkVTT1VSQ0VfVFlQRV9ETlNfUFJPVklERVIQCDLBAQoMRXZlbnRTZXJ2aWNlElkKE1N0cmVhbVByb2ZpbGVFdmVudHMSJi5tYW50cmFlLnYxLlN0cmVhbVByb2ZpbGVFdmVudHNSZXF1ZXN0GhgubWFudHJhZS52MS5Qcm9maWxlRXZlbnQwARJWChJTdHJlYW1HbG9iYWxFdmVudHMSJS5tYW50cmFlLnYxLlN0cmVhbUdsb2JhbEV2ZW50c1JlcXVlc3QaFy5tYW50cmFlLnYxLkdsb2JhbEV2ZW50MAFCpAEKDmNvbS5tYW50cmFlLnYxQgpFdmVudFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp, file_mantrae_v1_agent, file_mantrae_v1_auditlog, file_mantrae_v1_dns_provider, file_mantrae_v1_entry_point, file_mantrae_v1_middleware, file_mantrae_v1_router, file_mantrae_v1_service, file_mantrae_v1_user]);
+  fileDesc("ChZtYW50cmFlL3YxL2V2ZW50LnByb3RvEgptYW50cmFlLnYxIrMDCgxQcm9maWxlRXZlbnQSKQoKZXZlbnRfdHlwZRgBIAEoDjIVLm1hbnRyYWUudjEuRXZlbnRUeXBlEi8KDXJlc291cmNlX3R5cGUYAiABKA4yGC5tYW50cmFlLnYxLlJlc291cmNlVHlwZRISCgpwcm9maWxlX2lkGAMgASgDEi0KCXRpbWVzdGFtcBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASJAoGcm91dGVyGAogASgLMhIubWFudHJhZS52MS5Sb3V0ZXJIABImCgdzZXJ2aWNlGAsgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlSAASLAoKbWlkZGxld2FyZRgMIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZUgAEi0KC2VudHJ5X3BvaW50GA0gASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50SAASIgoFYWdlbnQYDiABKAsyES5tYW50cmFlLnYxLkFnZW50SAASKQoJYXVkaXRfbG9nGA8gASgLMhQubWFudHJhZS52MS5BdWRpdExvZ0gAQgoKCHJlc291cmNlIvcBCgtHbG9iYWxFdmVudBIpCgpldmVudF90eXBlGAEgASgOMhUubWFudHJhZS52MS5FdmVudFR5cGUSLwoNcmVzb3VyY2VfdHlwZRgCIAEoDjIYLm1hbnRyYWUudjEuUmVzb3VyY2VUeXBlEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASIAoEdXNlchgKIAEoCzIQLm1hbnRyYWUudjEuVXNlckgAEi8KDGRuc19wcm92aWRlchgLIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXJIAEIKCghyZXNvdXJjZSJoChRQcm9maWxlRXZlbnRzUmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAEjAKDnJlc291cmNlX3R5cGVzGAIgAygOMhgubWFudHJhZS52MS5SZXNvdXJjZVR5cGUiQAoVUHJvZmlsZUV2ZW50c1Jlc3BvbnNlEicKBWV2ZW50GAEgASgLMhgubWFudHJhZS52MS5Qcm9maWxlRXZlbnQiRwoTR2xvYmFsRXZlbnRzUmVxdWVzdBIwCg5yZXNvdXJjZV90eXBlcxgBIAMoDjIYLm1hbnRyYWUudjEuUmVzb3VyY2VUeXBlIj4KFEdsb2JhbEV2ZW50c1Jlc3BvbnNlEiYKBWV2ZW50GAEgASgLMhcubWFudHJhZS52MS5HbG9iYWxFdmVudCpvCglFdmVudFR5cGUSGgoWRVZFTlRfVFlQRV9VTlNQRUNJRklFRBAAEhYKEkVWRU5UX1RZUEVfQ1JFQVRFRBABEhYKEkVWRU5UX1RZUEVfVVBEQVRFRBACEhYKEkVWRU5UX1RZUEVfREVMRVRFRBADKo0CCgxSZXNvdXJjZVR5cGUSHQoZUkVTT1VSQ0VfVFlQRV9VTlNQRUNJRklFRBAAEhgKFFJFU09VUkNFX1RZUEVfUk9VVEVSEAESGQoVUkVTT1VSQ0VfVFlQRV9TRVJWSUNFEAISHAoYUkVTT1VSQ0VfVFlQRV9NSURETEVXQVJFEAMSHQoZUkVTT1VSQ0VfVFlQRV9FTlRSWV9QT0lOVBAEEhsKF1JFU09VUkNFX1RZUEVfQVVESVRfTE9HEAUSFwoTUkVTT1VSQ0VfVFlQRV9BR0VOVBAGEhYKElJFU09VUkNFX1RZUEVfVVNFUhAHEh4KGlJFU09VUkNFX1RZUEVfRE5TX1BST1ZJREVSEAgyuwEKDEV2ZW50U2VydmljZRJWCg1Qcm9maWxlRXZlbnRzEiAubWFudHJhZS52MS5Qcm9maWxlRXZlbnRzUmVxdWVzdBohLm1hbnRyYWUudjEuUHJvZmlsZUV2ZW50c1Jlc3BvbnNlMAESUwoMR2xvYmFsRXZlbnRzEh8ubWFudHJhZS52MS5HbG9iYWxFdmVudHNSZXF1ZXN0GiAubWFudHJhZS52MS5HbG9iYWxFdmVudHNSZXNwb25zZTABQqQBCg5jb20ubWFudHJhZS52MUIKRXZlbnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp, file_mantrae_v1_agent, file_mantrae_v1_auditlog, file_mantrae_v1_dns_provider, file_mantrae_v1_entry_point, file_mantrae_v1_middleware, file_mantrae_v1_router, file_mantrae_v1_service, file_mantrae_v1_user]);
 
 /**
  * @generated from message mantrae.v1.ProfileEvent
@@ -149,9 +149,9 @@ export const GlobalEventSchema: GenMessage<GlobalEvent> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_event, 1);
 
 /**
- * @generated from message mantrae.v1.StreamProfileEventsRequest
+ * @generated from message mantrae.v1.ProfileEventsRequest
  */
-export type StreamProfileEventsRequest = Message<"mantrae.v1.StreamProfileEventsRequest"> & {
+export type ProfileEventsRequest = Message<"mantrae.v1.ProfileEventsRequest"> & {
   /**
    * @generated from field: int64 profile_id = 1;
    */
@@ -166,16 +166,33 @@ export type StreamProfileEventsRequest = Message<"mantrae.v1.StreamProfileEvents
 };
 
 /**
- * Describes the message mantrae.v1.StreamProfileEventsRequest.
- * Use `create(StreamProfileEventsRequestSchema)` to create a new message.
+ * Describes the message mantrae.v1.ProfileEventsRequest.
+ * Use `create(ProfileEventsRequestSchema)` to create a new message.
  */
-export const StreamProfileEventsRequestSchema: GenMessage<StreamProfileEventsRequest> = /*@__PURE__*/
+export const ProfileEventsRequestSchema: GenMessage<ProfileEventsRequest> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_event, 2);
 
 /**
- * @generated from message mantrae.v1.StreamGlobalEventsRequest
+ * @generated from message mantrae.v1.ProfileEventsResponse
  */
-export type StreamGlobalEventsRequest = Message<"mantrae.v1.StreamGlobalEventsRequest"> & {
+export type ProfileEventsResponse = Message<"mantrae.v1.ProfileEventsResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.ProfileEvent event = 1;
+   */
+  event?: ProfileEvent;
+};
+
+/**
+ * Describes the message mantrae.v1.ProfileEventsResponse.
+ * Use `create(ProfileEventsResponseSchema)` to create a new message.
+ */
+export const ProfileEventsResponseSchema: GenMessage<ProfileEventsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_event, 3);
+
+/**
+ * @generated from message mantrae.v1.GlobalEventsRequest
+ */
+export type GlobalEventsRequest = Message<"mantrae.v1.GlobalEventsRequest"> & {
   /**
    * Filter by specific resource types
    *
@@ -185,11 +202,28 @@ export type StreamGlobalEventsRequest = Message<"mantrae.v1.StreamGlobalEventsRe
 };
 
 /**
- * Describes the message mantrae.v1.StreamGlobalEventsRequest.
- * Use `create(StreamGlobalEventsRequestSchema)` to create a new message.
+ * Describes the message mantrae.v1.GlobalEventsRequest.
+ * Use `create(GlobalEventsRequestSchema)` to create a new message.
  */
-export const StreamGlobalEventsRequestSchema: GenMessage<StreamGlobalEventsRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_event, 3);
+export const GlobalEventsRequestSchema: GenMessage<GlobalEventsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_event, 4);
+
+/**
+ * @generated from message mantrae.v1.GlobalEventsResponse
+ */
+export type GlobalEventsResponse = Message<"mantrae.v1.GlobalEventsResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.GlobalEvent event = 1;
+   */
+  event?: GlobalEvent;
+};
+
+/**
+ * Describes the message mantrae.v1.GlobalEventsResponse.
+ * Use `create(GlobalEventsResponseSchema)` to create a new message.
+ */
+export const GlobalEventsResponseSchema: GenMessage<GlobalEventsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_event, 5);
 
 /**
  * @generated from enum mantrae.v1.EventType
@@ -285,22 +319,22 @@ export const EventService: GenService<{
   /**
    * Profile-scoped events (routers, services, middlewares, entry points)
    *
-   * @generated from rpc mantrae.v1.EventService.StreamProfileEvents
+   * @generated from rpc mantrae.v1.EventService.ProfileEvents
    */
-  streamProfileEvents: {
+  profileEvents: {
     methodKind: "server_streaming";
-    input: typeof StreamProfileEventsRequestSchema;
-    output: typeof ProfileEventSchema;
+    input: typeof ProfileEventsRequestSchema;
+    output: typeof ProfileEventsResponseSchema;
   },
   /**
-   * Global events (users, DNS providers) - admin only
+   * Global events (users, dns providers)
    *
-   * @generated from rpc mantrae.v1.EventService.StreamGlobalEvents
+   * @generated from rpc mantrae.v1.EventService.GlobalEvents
    */
-  streamGlobalEvents: {
+  globalEvents: {
     methodKind: "server_streaming";
-    input: typeof StreamGlobalEventsRequestSchema;
-    output: typeof GlobalEventSchema;
+    input: typeof GlobalEventsRequestSchema;
+    output: typeof GlobalEventsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_mantrae_v1_event, 0);

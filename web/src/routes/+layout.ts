@@ -32,7 +32,6 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 				const resProfile = await profileClient.listProfiles({});
 				profile.value = resProfile.profiles[0];
 			}
-
 			if (isPublic) {
 				// Authenticated user trying to access login page - redirect to home
 				await goto("/");

@@ -21,6 +21,14 @@ const (
 	AuthAgentIDKey ctxKey = "agent_id"
 )
 
+type AuthInterceptor struct {
+	app *config.App
+}
+
+func NewAuthInterceptor(app *config.App) *AuthInterceptor {
+	return &AuthInterceptor{app: app}
+}
+
 // BasicAuth middleware for http endpoints
 func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,62 +93,101 @@ func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 	})
 }
 
-// Authentication middleware for gRPC endpoints
-func Authentication(app *config.App) connect.UnaryInterceptorFunc {
-	return connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
-		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			// Skip authentication for certain endpoints (like login)
+func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
+	return connect.UnaryFunc(
+		func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			// Skip authentication for public endpoints
 			if isPublicEndpoint(req.Spec().Procedure) {
 				return next(ctx, req)
 			}
 
-			// Agent request (Bearer) -----------------------------------------
-			if agentID := req.Header().Get(meta.HeaderAgentID); agentID != "" {
-				agent, err := app.Conn.GetQuery().GetAgent(ctx, agentID)
-				if err != nil {
-					return nil, connect.NewError(
-						connect.CodeNotFound,
-						errors.New("agent not found"),
-					)
-				}
-				if agent.Token != getBearerToken(req.Header()) {
-					return nil, connect.NewError(
-						connect.CodeUnauthenticated,
-						errors.New("token mismatch"),
-					)
-				}
-				ctx = context.WithValue(ctx, AuthAgentIDKey, agent.ID)
-				return next(ctx, req)
+			authedCtx, err := i.authenticateRequest(ctx, req.Header())
+			if err != nil {
+				return nil, err
 			}
 
-			// User request (Cookie/Bearer) -----------------------------------
-			if token := getCookieToken(req.Header()); token != "" {
-				claims, err := meta.DecodeUserToken(token, app.Secret)
-				if err != nil {
-					return nil, connect.NewError(
-						connect.CodeUnauthenticated,
-						errors.New("invalid token"),
-					)
-				}
-				ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
-				return next(ctx, req)
-			}
-			if token := getBearerToken(req.Header()); token != "" {
-				claims, err := meta.DecodeUserToken(token, app.Secret)
-				if err != nil {
-					return nil, connect.NewError(
-						connect.CodeUnauthenticated,
-						errors.New("invalid token"),
-					)
-				}
-				ctx = context.WithValue(ctx, AuthUserIDKey, claims.UserID)
-				return next(ctx, req)
+			return next(authedCtx, req)
+		},
+	)
+}
+
+func (i *AuthInterceptor) WrapStreamingClient(
+	next connect.StreamingClientFunc,
+) connect.StreamingClientFunc {
+	return connect.StreamingClientFunc(
+		func(ctx context.Context, spec connect.Spec) connect.StreamingClientConn {
+			return next(ctx, spec)
+		},
+	)
+}
+
+func (i *AuthInterceptor) WrapStreamingHandler(
+	next connect.StreamingHandlerFunc,
+) connect.StreamingHandlerFunc {
+	return connect.StreamingHandlerFunc(
+		func(ctx context.Context, conn connect.StreamingHandlerConn) error {
+			// Skip authentication for public endpoints (if any streaming endpoints are public)
+			if isPublicEndpoint(conn.Spec().Procedure) {
+				return next(ctx, conn)
 			}
 
-			// Unauthorized ---------------------------------------------------
-			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthorized"))
+			authedCtx, err := i.authenticateRequest(ctx, conn.RequestHeader())
+			if err != nil {
+				return err
+			}
+
+			return next(authedCtx, conn)
+		},
+	)
+}
+
+// Authentication middleware for gRPC endpoints
+func (i *AuthInterceptor) authenticateRequest(
+	ctx context.Context,
+	header http.Header,
+) (context.Context, error) {
+	// Agent request (Bearer) -------------------------------------------------
+	if agentID := header.Get(meta.HeaderAgentID); agentID != "" {
+		agent, err := i.app.Conn.GetQuery().GetAgent(ctx, agentID)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeNotFound,
+				errors.New("agent not found"),
+			)
 		}
-	})
+		if agent.Token != getBearerToken(header) {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("token mismatch"),
+			)
+		}
+		return context.WithValue(ctx, AuthAgentIDKey, agent.ID), nil
+	}
+
+	// User request (Cookie/Bearer) -------------------------------------------
+	if token := getCookieToken(header); token != "" {
+		claims, err := meta.DecodeUserToken(token, i.app.Secret)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("invalid token"),
+			)
+		}
+		return context.WithValue(ctx, AuthUserIDKey, claims.UserID), nil
+	}
+	if token := getBearerToken(header); token != "" {
+		claims, err := meta.DecodeUserToken(token, i.app.Secret)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("invalid token"),
+			)
+		}
+		return context.WithValue(ctx, AuthUserIDKey, claims.UserID), nil
+	}
+
+	// Unauthorized -----------------------------------------------------------
+	return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthorized"))
 }
 
 // Helper

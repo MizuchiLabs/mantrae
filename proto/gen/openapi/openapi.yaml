@@ -36,9 +36,6 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
-      examples:
-        - 1s
-        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -1974,31 +1971,34 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            id:
-              type: string
-              title: id
-              minLength: 1
-          title: id
-          required:
+        - required:
             - id
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - id
+              - required:
+                  - username
+      properties:
+        id:
+          type: string
+          title: id
+          minLength: 1
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -2052,24 +2052,26 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         password:
           type: string
           title: password
@@ -2096,23 +2098,26 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
+      properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2204,24 +2209,26 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      oneOf:
-        - properties:
-            email:
-              type: string
-              title: email
-              format: email
-          title: email
-          required:
+      anyOf:
+        - required:
             - email
-        - properties:
-            username:
-              type: string
-              title: username
-              minLength: 3
-          title: username
-          required:
+        - required:
             - username
+        - not:
+            anyOf:
+              - required:
+                  - email
+              - required:
+                  - username
       properties:
+        username:
+          type: string
+          title: username
+          minLength: 3
+        email:
+          type: string
+          title: email
+          format: email
         otp:
           type: string
           title: otp
@@ -2261,21 +2268,17 @@ components:
         - RESOURCE_TYPE_DNS_PROVIDER
     mantrae.v1.GlobalEvent:
       type: object
-      oneOf:
-        - properties:
-            dnsProvider:
-              title: dns_provider
-              $ref: '#/components/schemas/mantrae.v1.DnsProvider'
-          title: dns_provider
-          required:
+      anyOf:
+        - required:
             - dnsProvider
-        - properties:
-            user:
-              title: user
-              $ref: '#/components/schemas/mantrae.v1.User'
-          title: user
-          required:
+        - required:
             - user
+        - not:
+            anyOf:
+              - required:
+                  - dnsProvider
+              - required:
+                  - user
       properties:
         eventType:
           title: event_type
@@ -2286,53 +2289,62 @@ components:
         timestamp:
           title: timestamp
           $ref: '#/components/schemas/google.protobuf.Timestamp'
+        user:
+          title: user
+          $ref: '#/components/schemas/mantrae.v1.User'
+        dnsProvider:
+          title: dns_provider
+          $ref: '#/components/schemas/mantrae.v1.DnsProvider'
       title: GlobalEvent
+      additionalProperties: false
+    mantrae.v1.GlobalEventsRequest:
+      type: object
+      properties:
+        resourceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.ResourceType'
+          title: resource_types
+          description: Filter by specific resource types
+      title: GlobalEventsRequest
+      additionalProperties: false
+    mantrae.v1.GlobalEventsResponse:
+      type: object
+      properties:
+        event:
+          title: event
+          $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+      title: GlobalEventsResponse
       additionalProperties: false
     mantrae.v1.ProfileEvent:
       type: object
-      oneOf:
-        - properties:
-            agent:
-              title: agent
-              $ref: '#/components/schemas/mantrae.v1.Agent'
-          title: agent
-          required:
+      anyOf:
+        - required:
             - agent
-        - properties:
-            auditLog:
-              title: audit_log
-              $ref: '#/components/schemas/mantrae.v1.AuditLog'
-          title: audit_log
-          required:
+        - required:
             - auditLog
-        - properties:
-            entryPoint:
-              title: entry_point
-              $ref: '#/components/schemas/mantrae.v1.EntryPoint'
-          title: entry_point
-          required:
+        - required:
             - entryPoint
-        - properties:
-            middleware:
-              title: middleware
-              $ref: '#/components/schemas/mantrae.v1.Middleware'
-          title: middleware
-          required:
+        - required:
             - middleware
-        - properties:
-            router:
-              title: router
-              $ref: '#/components/schemas/mantrae.v1.Router'
-          title: router
-          required:
+        - required:
             - router
-        - properties:
-            service:
-              title: service
-              $ref: '#/components/schemas/mantrae.v1.Service'
-          title: service
-          required:
+        - required:
             - service
+        - not:
+            anyOf:
+              - required:
+                  - agent
+              - required:
+                  - auditLog
+              - required:
+                  - entryPoint
+              - required:
+                  - middleware
+              - required:
+                  - router
+              - required:
+                  - service
       properties:
         eventType:
           title: event_type
@@ -2349,20 +2361,27 @@ components:
         timestamp:
           title: timestamp
           $ref: '#/components/schemas/google.protobuf.Timestamp'
+        router:
+          title: router
+          $ref: '#/components/schemas/mantrae.v1.Router'
+        service:
+          title: service
+          $ref: '#/components/schemas/mantrae.v1.Service'
+        middleware:
+          title: middleware
+          $ref: '#/components/schemas/mantrae.v1.Middleware'
+        entryPoint:
+          title: entry_point
+          $ref: '#/components/schemas/mantrae.v1.EntryPoint'
+        agent:
+          title: agent
+          $ref: '#/components/schemas/mantrae.v1.Agent'
+        auditLog:
+          title: audit_log
+          $ref: '#/components/schemas/mantrae.v1.AuditLog'
       title: ProfileEvent
       additionalProperties: false
-    mantrae.v1.StreamGlobalEventsRequest:
-      type: object
-      properties:
-        resourceTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/mantrae.v1.ResourceType'
-          title: resource_types
-          description: Filter by specific resource types
-      title: StreamGlobalEventsRequest
-      additionalProperties: false
-    mantrae.v1.StreamProfileEventsRequest:
+    mantrae.v1.ProfileEventsRequest:
       type: object
       properties:
         profileId:
@@ -2378,9 +2397,17 @@ components:
             $ref: '#/components/schemas/mantrae.v1.ResourceType'
           title: resource_types
           description: Filter by specific resource types
-      title: StreamProfileEventsRequest
+      title: ProfileEventsRequest
       required:
         - profileId
+      additionalProperties: false
+    mantrae.v1.ProfileEventsResponse:
+      type: object
+      properties:
+        event:
+          title: event
+          $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+      title: ProfileEventsResponse
       additionalProperties: false
     mantrae.v1.CreateProfileRequest:
       type: object
@@ -5408,13 +5435,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetOIDCStatusResponse'
-  /mantrae.v1.EventService/StreamProfileEvents:
+  /mantrae.v1.EventService/ProfileEvents:
     post:
       tags:
         - mantrae.v1.EventService
-      summary: StreamProfileEvents
+      summary: ProfileEvents
       description: Profile-scoped events (routers, services, middlewares, entry points)
-      operationId: mantrae.v1.EventService.StreamProfileEvents
+      operationId: mantrae.v1.EventService.ProfileEvents
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -5429,28 +5456,28 @@ paths:
         content:
           application/connect+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/connect+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc-web:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc-web+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
           application/grpc-web+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.ProfileEventsRequest'
         required: true
       responses:
         default:
@@ -5485,35 +5512,35 @@ paths:
           content:
             application/connect+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/connect+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc-web:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc-web+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
             application/grpc-web+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
-  /mantrae.v1.EventService/StreamGlobalEvents:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEventsResponse'
+  /mantrae.v1.EventService/GlobalEvents:
     post:
       tags:
         - mantrae.v1.EventService
-      summary: StreamGlobalEvents
-      description: Global events (users, DNS providers) - admin only
-      operationId: mantrae.v1.EventService.StreamGlobalEvents
+      summary: GlobalEvents
+      description: Global events (users, dns providers)
+      operationId: mantrae.v1.EventService.GlobalEvents
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -5528,28 +5555,28 @@ paths:
         content:
           application/connect+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/connect+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc-web:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc-web+proto:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
           application/grpc-web+json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+              $ref: '#/components/schemas/mantrae.v1.GlobalEventsRequest'
         required: true
       responses:
         default:
@@ -5584,28 +5611,28 @@ paths:
           content:
             application/connect+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/connect+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc-web:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc-web+proto:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
             application/grpc-web+json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+                $ref: '#/components/schemas/mantrae.v1.GlobalEventsResponse'
   /mantrae.v1.ProfileService/GetProfile:
     get:
       tags:

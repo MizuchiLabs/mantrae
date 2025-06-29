@@ -6,6 +6,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -17,13 +18,12 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { CircleCheck, Globe } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-	import HTTPRouterForm from '../forms/httpRouter.svelte';
-	import TCPRouterForm from '../forms/tcpRouter.svelte';
-	import UDPRouterForm from '../forms/udpRouter.svelte';
-	import HTTPServiceForm from '../forms/httpService.svelte';
-	import TCPServiceForm from '../forms/tcpService.svelte';
-	import UDPServiceForm from '../forms/udpService.svelte';
-	import Separator from '../ui/separator/separator.svelte';
+	import HTTPRouterForm from '../forms/HTTPRouterForm.svelte';
+	import TCPRouterForm from '../forms/TCPRouterForm.svelte';
+	import UDPRouterForm from '../forms/UDPRouterForm.svelte';
+	import HTTPServiceForm from '../forms/HTTPServiceForm.svelte';
+	import TCPServiceForm from '../forms/TCPServiceForm.svelte';
+	import UDPServiceForm from '../forms/UDPServiceForm.svelte';
 
 	interface Props {
 		data: Router[];

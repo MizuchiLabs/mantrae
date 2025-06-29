@@ -75,7 +75,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	server := &http.Server{
 		Addr:              s.Host + ":" + s.Port,
-		Handler:           middlewares.WithCORS(s.mux, s.app, s.Port),
+		Handler:           s.WithCORS(s.mux),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
 		WriteTimeout:      5 * time.Minute,
@@ -116,6 +116,7 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) registerServices() {
+	// Protovalidator
 	validator, err := validate.NewInterceptor()
 	if err != nil {
 		log.Fatal(err)
@@ -126,7 +127,8 @@ func (s *Server) registerServices() {
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
 			middlewares.Logging(),
-			middlewares.Authentication(s.app),
+			middlewares.NewAuthInterceptor(s.app),
+			middlewares.NewAuditInterceptor(s.app),
 			validator,
 		),
 		connect.WithRecover(
@@ -138,9 +140,11 @@ func (s *Server) registerServices() {
 					"trace", string(debug.Stack()),
 				)
 				header.Set("X-Error-Type", "panic")
+				header.Set("Content-Type", "application/json")
 				return connect.NewError(connect.CodeInternal, fmt.Errorf("internal server error"))
 			},
 		),
+		connect.WithHandlerOptions(),
 	}
 
 	serviceNames := []string{
@@ -156,7 +160,7 @@ func (s *Server) registerServices() {
 		mantraev1connect.BackupServiceName,
 		mantraev1connect.UtilServiceName,
 		mantraev1connect.AuditLogServiceName,
-		mantraev1connect.EventServiceName,
+		// mantraev1connect.EventServiceName,
 	}
 
 	checker := grpchealth.NewStaticChecker(serviceNames...)
@@ -237,10 +241,10 @@ func (s *Server) registerServices() {
 		service.NewAuditLogService(s.app),
 		opts...,
 	))
-	s.mux.Handle(mantraev1connect.NewEventServiceHandler(
-		service.NewEventService(s.app),
-		opts...,
-	))
+	// s.mux.Handle(mantraev1connect.NewEventServiceHandler(
+	// 	service.NewEventService(s.app),
+	// 	opts...,
+	// ))
 
 	// Traefik endpoint (HTTP) ------------------------------------------------
 	mw := middlewares.NewMiddlewareHandler(s.app)

@@ -40,8 +40,8 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
+	// app.Event = events.NewEventBroadcaster()
 	app.Conn = store.NewConnection("")
-	app.Event = events.NewEventBroadcaster()
 	app.SM = settings.NewManager(app.Conn)
 	app.SM.Start(ctx)
 

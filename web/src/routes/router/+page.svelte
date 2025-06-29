@@ -142,7 +142,10 @@
 				return tls?.certResolver === filterValue;
 			},
 			cell: ({ row, column }) => {
-				let tls = row.getValue('tls') as RouterTLSConfig | RouterTCPTLSConfig;
+				let tls: RouterTLSConfig | RouterTCPTLSConfig = {};
+				if (row.original.config?.tls !== undefined) {
+					tls = row.getValue('tls') as RouterTLSConfig | RouterTCPTLSConfig;
+				}
 				return renderComponent(ColumnTls<Router>, { tls, column });
 			}
 		},

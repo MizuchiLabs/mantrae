@@ -14,11 +14,11 @@ import "mantrae/v1/service.proto";
 import "mantrae/v1/user.proto";
 
 service EventService {
-  // Profile-scoped events (routers, services, middlewares, entry points)
-  rpc StreamProfileEvents(StreamProfileEventsRequest) returns (stream ProfileEvent);
+  // Profile-scoped events (routers, services, middlewares, entrypoints)
+  rpc ProfileEvents(ProfileEventsRequest) returns (stream ProfileEventsResponse);
 
-  // Global events (users, DNS providers) - admin only
-  rpc StreamGlobalEvents(StreamGlobalEventsRequest) returns (stream GlobalEvent);
+  // Global events (users, dns)
+  rpc GlobalEvents(GlobalEventsRequest) returns (stream GlobalEventsResponse);
 }
 
 enum EventType {
@@ -67,14 +67,20 @@ message GlobalEvent {
   }
 }
 
-message StreamProfileEventsRequest {
+message ProfileEventsRequest {
   int64 profile_id = 1 [
     (buf.validate.field).required = true,
     (buf.validate.field).int64.gt = 0
   ];
   repeated ResourceType resource_types = 2; // Filter by specific resource types
 }
+message ProfileEventsResponse {
+  ProfileEvent event = 1;
+}
 
-message StreamGlobalEventsRequest {
+message GlobalEventsRequest {
   repeated ResourceType resource_types = 1; // Filter by specific resource types
+}
+message GlobalEventsResponse {
+  GlobalEvent event = 1;
 }

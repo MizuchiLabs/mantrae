@@ -10,23 +10,11 @@
 	import { fade } from 'svelte/transition';
 	import '../app.css';
 	import { user } from '$lib/stores/user';
-	import { eventStore } from '$lib/stores/events';
-	import { profile } from '$lib/stores/profile';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 	let { children }: Props = $props();
-
-	onMount(async () => {
-		if (!profile.id) return;
-
-		// Subscribe to all profile events
-		eventStore.startProfileEvents(profile.id);
-		// Subscribe to specific resource types only
-		// eventStore.startProfileEvents(profile.id, [ResourceType.ROUTER, ResourceType.SERVICE]);
-	});
 </script>
 
 <ModeWatcher />
