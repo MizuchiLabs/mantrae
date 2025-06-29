@@ -26,12 +26,14 @@
 		{
 			header: 'Name',
 			accessorKey: 'name',
-			enableSorting: true
+			enableSorting: true,
+			enableHiding: false
 		},
 		{
 			header: 'Provider',
 			accessorKey: 'type',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				let type = row.getValue('type') as
 					| DnsProviderType.CLOUDFLARE
@@ -60,6 +62,7 @@
 			accessorKey: 'config.ip',
 			id: 'ip',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				if (row.original.config?.autoUpdate) {
 					// utilClient.getPublicIP({}).then((res) => {
@@ -81,6 +84,7 @@
 			header: 'Default',
 			accessorKey: 'isActive',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -103,6 +107,7 @@
 			accessorKey: 'config.proxied',
 			id: 'proxied',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				let checked = row.getValue('proxied') as boolean;
 				return renderComponent(ColumnCheck, { checked: checked });
@@ -111,6 +116,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [

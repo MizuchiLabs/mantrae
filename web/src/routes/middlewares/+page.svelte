@@ -29,6 +29,7 @@
 			header: 'Name',
 			accessorKey: 'name',
 			enableSorting: true,
+			enableHiding: false,
 			cell: ({ row }) => {
 				return renderComponent(ColumnText, {
 					label: row.getValue('name') as string,
@@ -42,6 +43,22 @@
 			header: 'Protocol',
 			accessorKey: 'type',
 			enableSorting: true,
+			enableGlobalFilter: false,
+			filterFn: (row, columnId, filterValue) => {
+				const protocol = row.getValue(columnId) as MiddlewareType;
+
+				// Handle both enum value and display label filtering
+				if (typeof filterValue === 'string') {
+					const displayLabel = getProtocolLabel(protocol);
+					return (
+						displayLabel.toLowerCase().includes(filterValue.toLowerCase()) ||
+						protocol.toString().toLowerCase().includes(filterValue.toLowerCase())
+					);
+				}
+
+				// Direct enum comparison for badge clicking
+				return protocol === filterValue;
+			},
 			cell: ({ row, column }) => {
 				let protocol = row.getValue('type') as MiddlewareType.HTTP | MiddlewareType.TCP;
 
@@ -67,6 +84,12 @@
 			header: 'Type',
 			accessorKey: 'config',
 			enableSorting: true,
+			enableGlobalFilter: false,
+			filterFn: (row, columnId, filterValue) => {
+				const config = row.getValue(columnId) as JsonObject;
+				const label = config ? Object.keys(config)[0] : 'unknown';
+				return label.toLowerCase().includes(filterValue.toLowerCase());
+			},
 			cell: ({ row, column }) => {
 				let config = row.getValue('config') as JsonObject;
 				let label = config ? Object.keys(config)[0] : 'unknown';
@@ -82,6 +105,7 @@
 			header: 'Enabled',
 			accessorKey: 'enabled',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -101,6 +125,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -125,7 +150,11 @@
 			}
 		}
 	];
-
+	function getProtocolLabel(protocol: MiddlewareType): string {
+		if (protocol === MiddlewareType.HTTP) return 'HTTP';
+		if (protocol === MiddlewareType.TCP) return 'TCP';
+		return 'Unspecified';
+	}
 	const bulkActions: BulkAction<Middleware>[] = [
 		{
 			type: 'button',

@@ -103,7 +103,8 @@
 						'aria-label': 'Select row'
 					}),
 				enableSorting: false,
-				enableHiding: false
+				enableHiding: false,
+				enableGlobalFilter: false
 			},
 			...columns
 		],
@@ -114,13 +115,14 @@
 				const itemRank = rankItem(row.getValue(columnId), value);
 				addMeta({ itemRank });
 				return itemRank.passed;
+			},
+			arrIncludes: (row, columnId, value) => {
+				const cellValue = row.getValue(columnId) as string[];
+				if (!Array.isArray(cellValue)) return false;
+				return cellValue.some((item) => item.toLowerCase().includes(value.toLowerCase()));
 			}
 		},
-		globalFilterFn: (row, columnId, value, addMeta) => {
-			const itemRank = rankItem(row.getValue(columnId), value);
-			addMeta({ itemRank });
-			return itemRank.passed;
-		},
+		globalFilterFn: 'includesString',
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),

@@ -53,6 +53,7 @@
 			header: 'Last Seen',
 			accessorKey: 'updatedAt',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				if (!row.original.hostname) {
 					return renderComponent(ColumnBadge, {
@@ -67,6 +68,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				let editText = row.original.hostname ? 'Edit Agent' : 'Connect Agent';
 				let editIcon = row.original.hostname ? Pencil : KeyRound;

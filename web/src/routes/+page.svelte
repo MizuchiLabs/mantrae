@@ -496,11 +496,23 @@
 										{/if}
 										<div>
 											<p class="text-sm">{log.details}</p>
-											{#if log.createdAt}
-												<span class="text-muted-foreground text-xs">
-													{timeAgo(log.createdAt)}
-												</span>
-											{/if}
+
+											<div class="text-muted-foreground flex items-center gap-2 text-xs">
+												{#if log.createdAt}
+													<span class="text-muted-foreground text-xs">
+														{timeAgo(log.createdAt)}
+													</span>
+												{/if}
+												{#if log.agentId}
+													<span class="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">
+														Agent: {log.agentId}
+													</span>
+												{:else if log.userId}
+													<span class="rounded bg-green-100 px-1.5 py-0.5 text-green-700">
+														User: {log.userId}
+													</span>
+												{/if}
+											</div>
 										</div>
 									</div>
 								{/each}

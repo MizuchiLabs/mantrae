@@ -56,7 +56,22 @@
 			header: 'Protocol',
 			accessorKey: 'type',
 			enableSorting: true,
-			filterFn: 'includesString',
+			enableGlobalFilter: false,
+			filterFn: (row, columnId, filterValue) => {
+				const protocol = row.getValue(columnId) as RouterType;
+
+				// Handle both enum value and display label filtering
+				if (typeof filterValue === 'string') {
+					const displayLabel = getProtocolLabel(protocol);
+					return (
+						displayLabel.toLowerCase().includes(filterValue.toLowerCase()) ||
+						protocol.toString().toLowerCase().includes(filterValue.toLowerCase())
+					);
+				}
+
+				// Direct enum comparison for badge clicking
+				return protocol === filterValue;
+			},
 			cell: ({ row, column }) => {
 				let protocol = row.getValue('type') as RouterType.HTTP | RouterType.TCP | RouterType.UDP;
 
@@ -86,6 +101,7 @@
 			accessorKey: 'config.entryPoints',
 			id: 'entrypoints',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
 				let entrypoints: string[] = [];
@@ -104,6 +120,7 @@
 			accessorKey: 'config.middlewares',
 			id: 'middlewares',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
 				let middlewares: string[] = [];
@@ -138,6 +155,7 @@
 			accessorKey: 'config.tls',
 			id: 'tls',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
 				const tls = row.getValue(columnId) as RouterTLSConfig;
 				return tls?.certResolver === filterValue;
@@ -154,6 +172,7 @@
 			header: 'Enabled',
 			accessorKey: 'enabled',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -173,6 +192,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -197,6 +217,14 @@
 			}
 		}
 	];
+
+	// Helper functions to avoid repetition
+	function getProtocolLabel(protocol: RouterType): string {
+		if (protocol === RouterType.HTTP) return 'HTTP';
+		if (protocol === RouterType.TCP) return 'TCP';
+		if (protocol === RouterType.UDP) return 'UDP';
+		return 'Unspecified';
+	}
 
 	const bulkActions: BulkAction<Router>[] = [
 		{

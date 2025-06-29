@@ -26,12 +26,14 @@
 		{
 			header: 'Name',
 			accessorKey: 'name',
-			enableSorting: true
+			enableSorting: true,
+			enableHiding: false
 		},
 		{
 			header: 'Address',
 			accessorKey: 'address',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(ColumnBadge, {
 					label: row.getValue('address') as string,
@@ -42,7 +44,7 @@
 		{
 			header: 'Default',
 			accessorKey: 'isDefault',
-			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -63,6 +65,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [

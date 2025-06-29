@@ -37,6 +37,7 @@
 			header: 'Admin',
 			accessorKey: 'isAdmin',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
@@ -58,6 +59,7 @@
 			header: 'Last Login',
 			accessorKey: 'lastLogin',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				const date = row.getValue('lastLogin') as Timestamp;
 				return DateFormat.format(timestampDate(date));
@@ -66,6 +68,7 @@
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [

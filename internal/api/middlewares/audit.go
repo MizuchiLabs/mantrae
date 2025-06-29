@@ -30,11 +30,11 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 			if err == nil {
 				if auditEvent := extractAuditEvent(req, resp); auditEvent != nil {
 					// Log audit event asynchronously to avoid blocking the response
-					go func() {
-						if auditErr := createAuditLog(context.Background(), app.Conn.GetQuery(), *auditEvent); auditErr != nil {
+					go func(auditCtx context.Context) {
+						if auditErr := createAuditLog(auditCtx, app.Conn.GetQuery(), *auditEvent); auditErr != nil {
 							slog.Error("failed to create audit log", "error", auditErr)
 						}
-					}()
+					}(ctx)
 				}
 			}
 
