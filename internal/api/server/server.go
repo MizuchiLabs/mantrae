@@ -144,7 +144,6 @@ func (s *Server) registerServices() {
 				return connect.NewError(connect.CodeInternal, fmt.Errorf("internal server error"))
 			},
 		),
-		connect.WithHandlerOptions(),
 	}
 
 	serviceNames := []string{

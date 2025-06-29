@@ -22,8 +22,8 @@ func ParseFlags() {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
-	flag.BoolVar(&f.Squash, "squash", false, "Squash the database")
-	flag.BoolVar(&f.Zod, "zod", false, "Generate zod schemas (only for dev)")
+	// flag.BoolVar(&f.Squash, "squash", false, "Squash the database (only for dev)")
+	// flag.BoolVar(&f.Zod, "zod", false, "Generate zod schemas (only for dev)")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
