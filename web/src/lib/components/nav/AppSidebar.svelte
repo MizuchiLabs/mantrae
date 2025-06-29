@@ -49,7 +49,7 @@
 	};
 	const mainRoutes: Route[] = [
 		{ title: 'Dashboard', url: '/', icon: Gauge },
-		{ title: 'Router', url: '/router/', icon: Route },
+		{ title: 'Routers', url: '/router/', icon: Route },
 		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
 		{ title: 'EntryPoints', url: '/entrypoints/', icon: EthernetPort }
 	];

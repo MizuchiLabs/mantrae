@@ -24,7 +24,6 @@ func (s *AuditLogService) ListAuditLogs(
 	req *connect.Request[mantraev1.ListAuditLogsRequest],
 ) (*connect.Response[mantraev1.ListAuditLogsResponse], error) {
 	var params db.ListAuditLogsParams
-	params.ProfileID = req.Msg.ProfileId
 	if req.Msg.Limit == nil {
 		params.Limit = 100
 	} else {
@@ -40,7 +39,7 @@ func (s *AuditLogService) ListAuditLogs(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountAuditLogs(ctx, params.ProfileID)
+	totalCount, err := s.app.Conn.GetQuery().CountAuditLogs(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

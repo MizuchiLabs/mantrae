@@ -3,8 +3,6 @@ SELECT
   *
 FROM
   audit_logs
-WHERE
-  profile_id = ?
 ORDER BY
   created_at DESC
 LIMIT
@@ -16,9 +14,7 @@ OFFSET
 SELECT
   COUNT(*)
 FROM
-  audit_logs
-WHERE
-  profile_id = ?;
+  audit_logs;
 
 -- name: CreateAuditLog :exec
 INSERT INTO

@@ -14,12 +14,10 @@ SELECT
   COUNT(*)
 FROM
   audit_logs
-WHERE
-  profile_id = ?
 `
 
-func (q *Queries) CountAuditLogs(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countAuditLogsStmt, countAuditLogs, profileID)
+func (q *Queries) CountAuditLogs(ctx context.Context) (int64, error) {
+	row := q.queryRow(ctx, q.countAuditLogsStmt, countAuditLogs)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -40,7 +38,7 @@ VALUES
 `
 
 type CreateAuditLogParams struct {
-	ProfileID int64   `json:"profileId"`
+	ProfileID *int64  `json:"profileId"`
 	UserID    *string `json:"userId"`
 	AgentID   *string `json:"agentId"`
 	Event     string  `json:"event"`
@@ -74,8 +72,6 @@ SELECT
   id, profile_id, user_id, agent_id, event, details, created_at
 FROM
   audit_logs
-WHERE
-  profile_id = ?
 ORDER BY
   created_at DESC
 LIMIT
@@ -85,13 +81,12 @@ OFFSET
 `
 
 type ListAuditLogsParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
 }
 
 func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]AuditLog, error) {
-	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.ProfileID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

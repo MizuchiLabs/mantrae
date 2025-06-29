@@ -231,7 +231,7 @@ CREATE TABLE tcp_router_dns_providers (
 
 CREATE TABLE audit_logs (
   id INTEGER PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
+  profile_id INTEGER,
   user_id TEXT,
   agent_id TEXT,
   event TEXT NOT NULL,

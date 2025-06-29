@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	CountAgents(ctx context.Context) (int64, error)
-	CountAuditLogs(ctx context.Context, profileID int64) (int64, error)
+	CountAuditLogs(ctx context.Context) (int64, error)
 	CountDnsProviders(ctx context.Context) (int64, error)
 	CountEntryPoints(ctx context.Context) (int64, error)
 	CountHttpMiddlewares(ctx context.Context) (int64, error)

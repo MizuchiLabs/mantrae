@@ -447,32 +447,32 @@
 				</Card.Root>
 
 				<!-- Quick Actions -->
-				<Card.Root>
-					<Card.Header>
-						<Card.Title class="flex items-center gap-2">
-							<Plus class="h-5 w-5" />
-							Quick Actions
-						</Card.Title>
-					</Card.Header>
-					<Card.Content class="space-y-2">
-						<Button variant="outline" size="sm" class="w-full justify-start gap-2">
-							<Route class="h-4 w-4" />
-							New Router
-						</Button>
-						<Button variant="outline" size="sm" class="w-full justify-start gap-2">
-							<Server class="h-4 w-4" />
-							New Service
-						</Button>
-						<Button variant="outline" size="sm" class="w-full justify-start gap-2">
-							<Bot class="h-4 w-4" />
-							Connect Agent
-						</Button>
-						<Button variant="outline" size="sm" class="w-full justify-start gap-2">
-							<Globe class="h-4 w-4" />
-							DNS Settings
-						</Button>
-					</Card.Content>
-				</Card.Root>
+				<!-- <Card.Root> -->
+				<!-- 	<Card.Header> -->
+				<!-- 		<Card.Title class="flex items-center gap-2"> -->
+				<!-- 			<Plus class="h-5 w-5" /> -->
+				<!-- 			Quick Actions -->
+				<!-- 		</Card.Title> -->
+				<!-- 	</Card.Header> -->
+				<!-- 	<Card.Content class="space-y-2"> -->
+				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
+				<!-- 			<Route class="h-4 w-4" /> -->
+				<!-- 			New Router -->
+				<!-- 		</Button> -->
+				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
+				<!-- 			<Server class="h-4 w-4" /> -->
+				<!-- 			New Service -->
+				<!-- 		</Button> -->
+				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
+				<!-- 			<Bot class="h-4 w-4" /> -->
+				<!-- 			Connect Agent -->
+				<!-- 		</Button> -->
+				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
+				<!-- 			<Globe class="h-4 w-4" /> -->
+				<!-- 			DNS Settings -->
+				<!-- 		</Button> -->
+				<!-- 	</Card.Content> -->
+				<!-- </Card.Root> -->
 
 				<!-- Recent Activity -->
 				<Card.Root>
@@ -484,7 +484,7 @@
 					</Card.Header>
 					<Card.Content class="space-y-3">
 						<div class="space-y-3 text-sm">
-							{#await auditLogClient.listAuditLogs( { profileId: profile.id, limit: 3n, offset: 0n } ) then result}
+							{#await auditLogClient.listAuditLogs({ limit: 8n, offset: 0n }) then result}
 								{#each result.auditLogs || [] as log (log.id)}
 									<div class="flex items-start gap-3">
 										{#if log.agentId}

@@ -516,13 +516,6 @@ components:
     mantrae.v1.ListAuditLogsRequest:
       type: object
       properties:
-        profileId:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
-          title: profile_id
-          format: int64
         limit:
           type:
             - integer
@@ -544,8 +537,6 @@ components:
           format: int64
           nullable: true
       title: ListAuditLogsRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListAuditLogsResponse:
       type: object
@@ -5440,7 +5431,7 @@ paths:
       tags:
         - mantrae.v1.EventService
       summary: ProfileEvents
-      description: Profile-scoped events (routers, services, middlewares, entry points)
+      description: Profile-scoped events (routers, services, middlewares, entrypoints)
       operationId: mantrae.v1.EventService.ProfileEvents
       parameters:
         - name: Connect-Protocol-Version
@@ -5539,7 +5530,7 @@ paths:
       tags:
         - mantrae.v1.EventService
       summary: GlobalEvents
-      description: Global events (users, dns providers)
+      description: Global events (users, dns)
       operationId: mantrae.v1.EventService.GlobalEvents
       parameters:
         - name: Connect-Protocol-Version

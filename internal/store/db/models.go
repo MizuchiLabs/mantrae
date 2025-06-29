@@ -25,7 +25,7 @@ type Agent struct {
 
 type AuditLog struct {
 	ID        int64      `json:"id"`
-	ProfileID int64      `json:"profileId"`
+	ProfileID *int64     `json:"profileId"`
 	UserID    *string    `json:"userId"`
 	AgentID   *string    `json:"agentId"`
 	Event     string     `json:"event"`

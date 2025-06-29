@@ -174,9 +174,9 @@
 				<div class="bg-primary/10 rounded-lg p-2">
 					<EthernetPort class="text-primary h-6 w-6" />
 				</div>
-				Entry Points
+				EntryPoints
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your entry points</p>
+			<p class="text-muted-foreground mt-1">Manage your entrypoints</p>
 		</div>
 	</div>
 

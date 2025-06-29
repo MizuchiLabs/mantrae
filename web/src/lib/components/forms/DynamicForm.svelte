@@ -8,6 +8,7 @@
 	import type { ZodSchema } from 'zod';
 	import DynamicForm from './DynamicForm.svelte';
 	import YAML from 'yaml';
+	import { Plus, Trash } from '@lucide/svelte';
 
 	interface Props {
 		schema: ZodSchema;
@@ -177,13 +178,19 @@
 										/>
 									</div>
 								{/if}
-								<Button variant="outline" size="sm" onclick={() => removeArrayItem(key, index)}>
-									Remove
+								<Button
+									variant="ghost"
+									size="icon"
+									class="text-red-500"
+									onclick={() => removeArrayItem(key, index)}
+								>
+									<Trash />
 								</Button>
 							</div>
 						{/each}
 					{/if}
 					<Button variant="outline" size="sm" onclick={() => addArrayItem(key)}>
+						<Plus />
 						Add {field.label}
 					</Button>
 				</div>

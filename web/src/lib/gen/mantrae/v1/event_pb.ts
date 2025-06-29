@@ -317,7 +317,7 @@ export const ResourceTypeSchema: GenEnum<ResourceType> = /*@__PURE__*/
  */
 export const EventService: GenService<{
   /**
-   * Profile-scoped events (routers, services, middlewares, entry points)
+   * Profile-scoped events (routers, services, middlewares, entrypoints)
    *
    * @generated from rpc mantrae.v1.EventService.ProfileEvents
    */
@@ -327,7 +327,7 @@ export const EventService: GenService<{
     output: typeof ProfileEventsResponseSchema;
   },
   /**
-   * Global events (users, dns providers)
+   * Global events (users, dns)
    *
    * @generated from rpc mantrae.v1.EventService.GlobalEvents
    */

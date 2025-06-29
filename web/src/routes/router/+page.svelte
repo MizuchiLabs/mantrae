@@ -56,6 +56,7 @@
 			header: 'Protocol',
 			accessorKey: 'type',
 			enableSorting: true,
+			filterFn: 'includesString',
 			cell: ({ row, column }) => {
 				let protocol = row.getValue('type') as RouterType.HTTP | RouterType.TCP | RouterType.UDP;
 

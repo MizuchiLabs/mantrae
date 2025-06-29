@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/auditlog.proto.
  */
 export const file_mantrae_v1_auditlog: GenFile = /*@__PURE__*/
-  fileDesc("ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxIp0BCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEg8KB3VzZXJfaWQYAyABKAkSEAoIYWdlbnRfaWQYBCABKAkSDQoFZXZlbnQYBSABKAkSDwoHZGV0YWlscxgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLVAQoUTGlzdEF1ZGl0TG9nc1JlcXVlc3QSHgoKcHJvZmlsZV9pZBgBIAEoA0IKukgHyAEBIgIgABJqCgVsaW1pdBgCIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAIgBARIcCgZvZmZzZXQYAyABKANCB7pIBCICKABIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJWChVMaXN0QXVkaXRMb2dzUmVzcG9uc2USKAoKYXVkaXRfbG9ncxgBIAMoCzIULm1hbnRyYWUudjEuQXVkaXRMb2cSEwoLdG90YWxfY291bnQYAiABKAMybAoPQXVkaXRMb2dTZXJ2aWNlElkKDUxpc3RBdWRpdExvZ3MSIC5tYW50cmFlLnYxLkxpc3RBdWRpdExvZ3NSZXF1ZXN0GiEubWFudHJhZS52MS5MaXN0QXVkaXRMb2dzUmVzcG9uc2UiA5ACAUKnAQoOY29tLm1hbnRyYWUudjFCDUF1ZGl0bG9nUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxIp0BCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEg8KB3VzZXJfaWQYAyABKAkSEAoIYWdlbnRfaWQYBCABKAkSDQoFZXZlbnQYBSABKAkSDwoHZGV0YWlscxgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK1AQoUTGlzdEF1ZGl0TG9nc1JlcXVlc3QSagoFbGltaXQYASABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAIgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiVgoVTGlzdEF1ZGl0TG9nc1Jlc3BvbnNlEigKCmF1ZGl0X2xvZ3MYASADKAsyFC5tYW50cmFlLnYxLkF1ZGl0TG9nEhMKC3RvdGFsX2NvdW50GAIgASgDMmwKD0F1ZGl0TG9nU2VydmljZRJZCg1MaXN0QXVkaXRMb2dzEiAubWFudHJhZS52MS5MaXN0QXVkaXRMb2dzUmVxdWVzdBohLm1hbnRyYWUudjEuTGlzdEF1ZGl0TG9nc1Jlc3BvbnNlIgOQAgFCpwEKDmNvbS5tYW50cmFlLnYxQg1BdWRpdGxvZ1Byb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.AuditLog
@@ -67,17 +67,12 @@ export const AuditLogSchema: GenMessage<AuditLog> = /*@__PURE__*/
  */
 export type ListAuditLogsRequest = Message<"mantrae.v1.ListAuditLogsRequest"> & {
   /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
-
-  /**
-   * @generated from field: optional int64 limit = 2;
+   * @generated from field: optional int64 limit = 1;
    */
   limit?: bigint;
 
   /**
-   * @generated from field: optional int64 offset = 3;
+   * @generated from field: optional int64 offset = 2;
    */
   offset?: bigint;
 };

@@ -139,7 +139,7 @@ CREATE TABLE traefik_instances (
 
 CREATE TABLE audit_logs (
   id INTEGER PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
+  profile_id INTEGER,
   user_id TEXT,
   agent_id TEXT,
   event TEXT NOT NULL,

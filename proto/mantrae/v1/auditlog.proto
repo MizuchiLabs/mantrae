@@ -22,16 +22,12 @@ message AuditLog {
 }
 
 message ListAuditLogsRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  optional int64 limit = 2 [(buf.validate.field).cel = {
+  optional int64 limit = 1 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"
     expression: "this == -1 || this > 0"
   }];
-  optional int64 offset = 3 [(buf.validate.field).int64.gte = 0];
+  optional int64 offset = 2 [(buf.validate.field).int64.gte = 0];
 }
 message ListAuditLogsResponse {
   repeated AuditLog audit_logs = 1;

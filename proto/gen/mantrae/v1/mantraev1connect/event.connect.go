@@ -43,9 +43,9 @@ const (
 
 // EventServiceClient is a client for the mantrae.v1.EventService service.
 type EventServiceClient interface {
-	// Profile-scoped events (routers, services, middlewares, entry points)
+	// Profile-scoped events (routers, services, middlewares, entrypoints)
 	ProfileEvents(context.Context, *connect.Request[v1.ProfileEventsRequest]) (*connect.ServerStreamForClient[v1.ProfileEventsResponse], error)
-	// Global events (users, dns providers)
+	// Global events (users, dns)
 	GlobalEvents(context.Context, *connect.Request[v1.GlobalEventsRequest]) (*connect.ServerStreamForClient[v1.GlobalEventsResponse], error)
 }
 
@@ -93,9 +93,9 @@ func (c *eventServiceClient) GlobalEvents(ctx context.Context, req *connect.Requ
 
 // EventServiceHandler is an implementation of the mantrae.v1.EventService service.
 type EventServiceHandler interface {
-	// Profile-scoped events (routers, services, middlewares, entry points)
+	// Profile-scoped events (routers, services, middlewares, entrypoints)
 	ProfileEvents(context.Context, *connect.Request[v1.ProfileEventsRequest], *connect.ServerStream[v1.ProfileEventsResponse]) error
-	// Global events (users, dns providers)
+	// Global events (users, dns)
 	GlobalEvents(context.Context, *connect.Request[v1.GlobalEventsRequest], *connect.ServerStream[v1.GlobalEventsResponse]) error
 }
 

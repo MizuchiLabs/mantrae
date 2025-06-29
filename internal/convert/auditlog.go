@@ -10,7 +10,7 @@ func AuditLogsToProto(logs []db.AuditLog) []*mantraev1.AuditLog {
 	for _, l := range logs {
 		auditLogs = append(auditLogs, &mantraev1.AuditLog{
 			Id:        l.ID,
-			ProfileId: l.ProfileID,
+			ProfileId: SafeInt64(l.ProfileID),
 			UserId:    SafeString(l.UserID),
 			AgentId:   SafeString(l.AgentID),
 			Event:     l.Event,
