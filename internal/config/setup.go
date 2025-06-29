@@ -11,6 +11,7 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/backup"
+	"github.com/mizuchilabs/mantrae/internal/events"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -21,6 +22,7 @@ import (
 type App struct {
 	Secret string `env:"SECRET"`
 	Conn   *store.Connection
+	Event  *events.EventBroadcaster
 	BM     *backup.BackupManager
 	SM     *settings.SettingsManager
 }
@@ -39,6 +41,7 @@ func Setup(ctx context.Context) (*App, error) {
 	}
 
 	app.Conn = store.NewConnection("")
+	app.Event = events.NewEventBroadcaster()
 	app.SM = settings.NewManager(app.Conn)
 	app.SM.Start(ctx)
 

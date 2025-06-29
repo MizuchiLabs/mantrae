@@ -36,6 +36,9 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
+      examples:
+        - 1s
+        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -1421,164 +1424,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.Middleware'
       title: UpdateMiddlewareResponse
       additionalProperties: false
-    mantrae.v1.CreateProfileRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          title: name
-          minLength: 1
-        description:
-          type: string
-          title: description
-          nullable: true
-      title: CreateProfileRequest
-      required:
-        - name
-      additionalProperties: false
-    mantrae.v1.CreateProfileResponse:
-      type: object
-      properties:
-        profile:
-          title: profile
-          $ref: '#/components/schemas/mantrae.v1.Profile'
-      title: CreateProfileResponse
-      additionalProperties: false
-    mantrae.v1.DeleteProfileRequest:
-      type: object
-      properties:
-        id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
-          title: id
-          format: int64
-      title: DeleteProfileRequest
-      required:
-        - id
-      additionalProperties: false
-    mantrae.v1.DeleteProfileResponse:
-      type: object
-      title: DeleteProfileResponse
-      additionalProperties: false
-    mantrae.v1.GetProfileRequest:
-      type: object
-      properties:
-        id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
-          title: id
-          format: int64
-      title: GetProfileRequest
-      required:
-        - id
-      additionalProperties: false
-    mantrae.v1.GetProfileResponse:
-      type: object
-      properties:
-        profile:
-          title: profile
-          $ref: '#/components/schemas/mantrae.v1.Profile'
-      title: GetProfileResponse
-      additionalProperties: false
-    mantrae.v1.ListProfilesRequest:
-      type: object
-      properties:
-        limit:
-          type:
-            - integer
-            - string
-          title: limit
-          format: int64
-          description: |+
-            limit must be either -1 or greater than 0:
-            ```
-            this == -1 || this > 0
-            ```
-
-          nullable: true
-        offset:
-          type:
-            - integer
-            - string
-          title: offset
-          format: int64
-          nullable: true
-      title: ListProfilesRequest
-      additionalProperties: false
-    mantrae.v1.ListProfilesResponse:
-      type: object
-      properties:
-        profiles:
-          type: array
-          items:
-            $ref: '#/components/schemas/mantrae.v1.Profile'
-          title: profiles
-        totalCount:
-          type:
-            - integer
-            - string
-          title: total_count
-          format: int64
-      title: ListProfilesResponse
-      additionalProperties: false
-    mantrae.v1.Profile:
-      type: object
-      properties:
-        id:
-          type:
-            - integer
-            - string
-          title: id
-          format: int64
-        name:
-          type: string
-          title: name
-        description:
-          type: string
-          title: description
-        createdAt:
-          title: created_at
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-        updatedAt:
-          title: updated_at
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-      title: Profile
-      additionalProperties: false
-    mantrae.v1.UpdateProfileRequest:
-      type: object
-      properties:
-        id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
-          title: id
-          format: int64
-        name:
-          type: string
-          title: name
-          minLength: 1
-        description:
-          type: string
-          title: description
-          nullable: true
-      title: UpdateProfileRequest
-      required:
-        - id
-        - name
-      additionalProperties: false
-    mantrae.v1.UpdateProfileResponse:
-      type: object
-      properties:
-        profile:
-          title: profile
-          $ref: '#/components/schemas/mantrae.v1.Profile'
-      title: UpdateProfileResponse
-      additionalProperties: false
     mantrae.v1.RouterType:
       type: string
       title: RouterType
@@ -2063,75 +1908,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.Service'
       title: UpdateServiceResponse
       additionalProperties: false
-    mantrae.v1.GetSettingRequest:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-          minLength: 1
-      title: GetSettingRequest
-      required:
-        - key
-      additionalProperties: false
-    mantrae.v1.GetSettingResponse:
-      type: object
-      properties:
-        value:
-          type: string
-          title: value
-      title: GetSettingResponse
-      additionalProperties: false
-    mantrae.v1.ListSettingsRequest:
-      type: object
-      title: ListSettingsRequest
-      additionalProperties: false
-    mantrae.v1.ListSettingsResponse:
-      type: object
-      properties:
-        settings:
-          type: array
-          items:
-            $ref: '#/components/schemas/mantrae.v1.Setting'
-          title: settings
-      title: ListSettingsResponse
-      additionalProperties: false
-    mantrae.v1.Setting:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-        value:
-          type: string
-          title: value
-        updatedAt:
-          title: updated_at
-          $ref: '#/components/schemas/google.protobuf.Timestamp'
-      title: Setting
-      additionalProperties: false
-    mantrae.v1.UpdateSettingRequest:
-      type: object
-      properties:
-        key:
-          type: string
-          title: key
-          minLength: 1
-        value:
-          type: string
-          title: value
-      title: UpdateSettingRequest
-      required:
-        - key
-      additionalProperties: false
-    mantrae.v1.UpdateSettingResponse:
-      type: object
-      properties:
-        setting:
-          title: setting
-          $ref: '#/components/schemas/mantrae.v1.Setting'
-      title: UpdateSettingResponse
-      additionalProperties: false
     mantrae.v1.CreateUserRequest:
       type: object
       properties:
@@ -2198,34 +1974,31 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - id
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - id
-              - required:
-                  - username
-      properties:
-        id:
-          type: string
-          title: id
-          minLength: 1
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            id:
+              type: string
+              title: id
+              minLength: 1
+          title: id
+          required:
+            - id
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -2279,26 +2052,24 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         password:
           type: string
           title: password
@@ -2325,26 +2096,23 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2436,26 +2204,24 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         otp:
           type: string
           title: otp
@@ -2471,6 +2237,377 @@ components:
           type: string
           title: token
       title: VerifyOTPResponse
+      additionalProperties: false
+    mantrae.v1.EventType:
+      type: string
+      title: EventType
+      enum:
+        - EVENT_TYPE_UNSPECIFIED
+        - EVENT_TYPE_CREATED
+        - EVENT_TYPE_UPDATED
+        - EVENT_TYPE_DELETED
+    mantrae.v1.ResourceType:
+      type: string
+      title: ResourceType
+      enum:
+        - RESOURCE_TYPE_UNSPECIFIED
+        - RESOURCE_TYPE_ROUTER
+        - RESOURCE_TYPE_SERVICE
+        - RESOURCE_TYPE_MIDDLEWARE
+        - RESOURCE_TYPE_ENTRY_POINT
+        - RESOURCE_TYPE_AUDIT_LOG
+        - RESOURCE_TYPE_AGENT
+        - RESOURCE_TYPE_USER
+        - RESOURCE_TYPE_DNS_PROVIDER
+    mantrae.v1.GlobalEvent:
+      type: object
+      oneOf:
+        - properties:
+            dnsProvider:
+              title: dns_provider
+              $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_provider
+          required:
+            - dnsProvider
+        - properties:
+            user:
+              title: user
+              $ref: '#/components/schemas/mantrae.v1.User'
+          title: user
+          required:
+            - user
+      properties:
+        eventType:
+          title: event_type
+          $ref: '#/components/schemas/mantrae.v1.EventType'
+        resourceType:
+          title: resource_type
+          $ref: '#/components/schemas/mantrae.v1.ResourceType'
+        timestamp:
+          title: timestamp
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: GlobalEvent
+      additionalProperties: false
+    mantrae.v1.ProfileEvent:
+      type: object
+      oneOf:
+        - properties:
+            agent:
+              title: agent
+              $ref: '#/components/schemas/mantrae.v1.Agent'
+          title: agent
+          required:
+            - agent
+        - properties:
+            auditLog:
+              title: audit_log
+              $ref: '#/components/schemas/mantrae.v1.AuditLog'
+          title: audit_log
+          required:
+            - auditLog
+        - properties:
+            entryPoint:
+              title: entry_point
+              $ref: '#/components/schemas/mantrae.v1.EntryPoint'
+          title: entry_point
+          required:
+            - entryPoint
+        - properties:
+            middleware:
+              title: middleware
+              $ref: '#/components/schemas/mantrae.v1.Middleware'
+          title: middleware
+          required:
+            - middleware
+        - properties:
+            router:
+              title: router
+              $ref: '#/components/schemas/mantrae.v1.Router'
+          title: router
+          required:
+            - router
+        - properties:
+            service:
+              title: service
+              $ref: '#/components/schemas/mantrae.v1.Service'
+          title: service
+          required:
+            - service
+      properties:
+        eventType:
+          title: event_type
+          $ref: '#/components/schemas/mantrae.v1.EventType'
+        resourceType:
+          title: resource_type
+          $ref: '#/components/schemas/mantrae.v1.ResourceType'
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        timestamp:
+          title: timestamp
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: ProfileEvent
+      additionalProperties: false
+    mantrae.v1.StreamGlobalEventsRequest:
+      type: object
+      properties:
+        resourceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.ResourceType'
+          title: resource_types
+          description: Filter by specific resource types
+      title: StreamGlobalEventsRequest
+      additionalProperties: false
+    mantrae.v1.StreamProfileEventsRequest:
+      type: object
+      properties:
+        profileId:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        resourceTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.ResourceType'
+          title: resource_types
+          description: Filter by specific resource types
+      title: StreamProfileEventsRequest
+      required:
+        - profileId
+      additionalProperties: false
+    mantrae.v1.CreateProfileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          title: name
+          minLength: 1
+        description:
+          type: string
+          title: description
+          nullable: true
+      title: CreateProfileRequest
+      required:
+        - name
+      additionalProperties: false
+    mantrae.v1.CreateProfileResponse:
+      type: object
+      properties:
+        profile:
+          title: profile
+          $ref: '#/components/schemas/mantrae.v1.Profile'
+      title: CreateProfileResponse
+      additionalProperties: false
+    mantrae.v1.DeleteProfileRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: DeleteProfileRequest
+      required:
+        - id
+      additionalProperties: false
+    mantrae.v1.DeleteProfileResponse:
+      type: object
+      title: DeleteProfileResponse
+      additionalProperties: false
+    mantrae.v1.GetProfileRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: GetProfileRequest
+      required:
+        - id
+      additionalProperties: false
+    mantrae.v1.GetProfileResponse:
+      type: object
+      properties:
+        profile:
+          title: profile
+          $ref: '#/components/schemas/mantrae.v1.Profile'
+      title: GetProfileResponse
+      additionalProperties: false
+    mantrae.v1.ListProfilesRequest:
+      type: object
+      properties:
+        limit:
+          type:
+            - integer
+            - string
+          title: limit
+          format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
+          nullable: true
+        offset:
+          type:
+            - integer
+            - string
+          title: offset
+          format: int64
+          nullable: true
+      title: ListProfilesRequest
+      additionalProperties: false
+    mantrae.v1.ListProfilesResponse:
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Profile'
+          title: profiles
+        totalCount:
+          type:
+            - integer
+            - string
+          title: total_count
+          format: int64
+      title: ListProfilesResponse
+      additionalProperties: false
+    mantrae.v1.Profile:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        name:
+          type: string
+          title: name
+        description:
+          type: string
+          title: description
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: Profile
+      additionalProperties: false
+    mantrae.v1.UpdateProfileRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        name:
+          type: string
+          title: name
+          minLength: 1
+        description:
+          type: string
+          title: description
+          nullable: true
+      title: UpdateProfileRequest
+      required:
+        - id
+        - name
+      additionalProperties: false
+    mantrae.v1.UpdateProfileResponse:
+      type: object
+      properties:
+        profile:
+          title: profile
+          $ref: '#/components/schemas/mantrae.v1.Profile'
+      title: UpdateProfileResponse
+      additionalProperties: false
+    mantrae.v1.GetSettingRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+          minLength: 1
+      title: GetSettingRequest
+      required:
+        - key
+      additionalProperties: false
+    mantrae.v1.GetSettingResponse:
+      type: object
+      properties:
+        value:
+          type: string
+          title: value
+      title: GetSettingResponse
+      additionalProperties: false
+    mantrae.v1.ListSettingsRequest:
+      type: object
+      title: ListSettingsRequest
+      additionalProperties: false
+    mantrae.v1.ListSettingsResponse:
+      type: object
+      properties:
+        settings:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.Setting'
+          title: settings
+      title: ListSettingsResponse
+      additionalProperties: false
+    mantrae.v1.Setting:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+        value:
+          type: string
+          title: value
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: Setting
+      additionalProperties: false
+    mantrae.v1.UpdateSettingRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          title: key
+          minLength: 1
+        value:
+          type: string
+          title: value
+      title: UpdateSettingRequest
+      required:
+        - key
+      additionalProperties: false
+    mantrae.v1.UpdateSettingResponse:
+      type: object
+      properties:
+        setting:
+          title: setting
+          $ref: '#/components/schemas/mantrae.v1.Setting'
+      title: UpdateSettingResponse
       additionalProperties: false
     mantrae.v1.GetPublicIPRequest:
       type: object
@@ -4144,283 +4281,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetMiddlewarePluginsResponse'
-  /mantrae.v1.ProfileService/GetProfile:
-    get:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: GetProfile
-      operationId: mantrae.v1.ProfileService.GetProfile.get
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-        - name: message
-          in: query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetProfileRequest'
-        - name: encoding
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/encoding'
-        - name: base64
-          in: query
-          schema:
-            $ref: '#/components/schemas/base64'
-        - name: compression
-          in: query
-          schema:
-            $ref: '#/components/schemas/compression'
-        - name: connect
-          in: query
-          schema:
-            $ref: '#/components/schemas/connect'
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetProfileResponse'
-    post:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: GetProfile
-      operationId: mantrae.v1.ProfileService.GetProfile
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.GetProfileRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetProfileResponse'
-  /mantrae.v1.ProfileService/CreateProfile:
-    post:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: CreateProfile
-      operationId: mantrae.v1.ProfileService.CreateProfile
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.CreateProfileRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.CreateProfileResponse'
-  /mantrae.v1.ProfileService/UpdateProfile:
-    post:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: UpdateProfile
-      operationId: mantrae.v1.ProfileService.UpdateProfile
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UpdateProfileRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UpdateProfileResponse'
-  /mantrae.v1.ProfileService/DeleteProfile:
-    post:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: DeleteProfile
-      operationId: mantrae.v1.ProfileService.DeleteProfile
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.DeleteProfileRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.DeleteProfileResponse'
-  /mantrae.v1.ProfileService/ListProfiles:
-    get:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: ListProfiles
-      operationId: mantrae.v1.ProfileService.ListProfiles.get
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-        - name: message
-          in: query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListProfilesRequest'
-        - name: encoding
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/encoding'
-        - name: base64
-          in: query
-          schema:
-            $ref: '#/components/schemas/base64'
-        - name: compression
-          in: query
-          schema:
-            $ref: '#/components/schemas/compression'
-        - name: connect
-          in: query
-          schema:
-            $ref: '#/components/schemas/connect'
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListProfilesResponse'
-    post:
-      tags:
-        - mantrae.v1.ProfileService
-      summary: ListProfiles
-      operationId: mantrae.v1.ProfileService.ListProfiles
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.ListProfilesRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListProfilesResponse'
   /mantrae.v1.RouterService/GetRouter:
     get:
       tags:
@@ -5061,213 +4921,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterResponse'
-  /mantrae.v1.SettingService/GetSetting:
-    get:
-      tags:
-        - mantrae.v1.SettingService
-      summary: GetSetting
-      operationId: mantrae.v1.SettingService.GetSetting.get
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-        - name: message
-          in: query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetSettingRequest'
-        - name: encoding
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/encoding'
-        - name: base64
-          in: query
-          schema:
-            $ref: '#/components/schemas/base64'
-        - name: compression
-          in: query
-          schema:
-            $ref: '#/components/schemas/compression'
-        - name: connect
-          in: query
-          schema:
-            $ref: '#/components/schemas/connect'
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetSettingResponse'
-    post:
-      tags:
-        - mantrae.v1.SettingService
-      summary: GetSetting
-      operationId: mantrae.v1.SettingService.GetSetting
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.GetSettingRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetSettingResponse'
-  /mantrae.v1.SettingService/UpdateSetting:
-    post:
-      tags:
-        - mantrae.v1.SettingService
-      summary: UpdateSetting
-      operationId: mantrae.v1.SettingService.UpdateSetting
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.UpdateSettingRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.UpdateSettingResponse'
-  /mantrae.v1.SettingService/ListSettings:
-    get:
-      tags:
-        - mantrae.v1.SettingService
-      summary: ListSettings
-      operationId: mantrae.v1.SettingService.ListSettings.get
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-        - name: message
-          in: query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListSettingsRequest'
-        - name: encoding
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/encoding'
-        - name: base64
-          in: query
-          schema:
-            $ref: '#/components/schemas/base64'
-        - name: compression
-          in: query
-          schema:
-            $ref: '#/components/schemas/compression'
-        - name: connect
-          in: query
-          schema:
-            $ref: '#/components/schemas/connect'
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListSettingsResponse'
-    post:
-      tags:
-        - mantrae.v1.SettingService
-      summary: ListSettings
-      operationId: mantrae.v1.SettingService.ListSettings
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.ListSettingsRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.ListSettingsResponse'
   /mantrae.v1.UserService/LoginUser:
     post:
       tags:
@@ -5755,6 +5408,688 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetOIDCStatusResponse'
+  /mantrae.v1.EventService/StreamProfileEvents:
+    post:
+      tags:
+        - mantrae.v1.EventService
+      summary: StreamProfileEvents
+      description: Profile-scoped events (routers, services, middlewares, entry points)
+      operationId: mantrae.v1.EventService.StreamProfileEvents
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/connect+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/connect+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc-web:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc-web+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+          application/grpc-web+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamProfileEventsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ProfileEvent'
+  /mantrae.v1.EventService/StreamGlobalEvents:
+    post:
+      tags:
+        - mantrae.v1.EventService
+      summary: StreamGlobalEvents
+      description: Global events (users, DNS providers) - admin only
+      operationId: mantrae.v1.EventService.StreamGlobalEvents
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/connect+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/connect+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc-web:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc-web+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+          application/grpc-web+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.StreamGlobalEventsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GlobalEvent'
+  /mantrae.v1.ProfileService/GetProfile:
+    get:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: GetProfile
+      operationId: mantrae.v1.ProfileService.GetProfile.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetProfileRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetProfileResponse'
+    post:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: GetProfile
+      operationId: mantrae.v1.ProfileService.GetProfile
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetProfileRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetProfileResponse'
+  /mantrae.v1.ProfileService/CreateProfile:
+    post:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: CreateProfile
+      operationId: mantrae.v1.ProfileService.CreateProfile
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.CreateProfileRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.CreateProfileResponse'
+  /mantrae.v1.ProfileService/UpdateProfile:
+    post:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: UpdateProfile
+      operationId: mantrae.v1.ProfileService.UpdateProfile
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UpdateProfileRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UpdateProfileResponse'
+  /mantrae.v1.ProfileService/DeleteProfile:
+    post:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: DeleteProfile
+      operationId: mantrae.v1.ProfileService.DeleteProfile
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteProfileRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteProfileResponse'
+  /mantrae.v1.ProfileService/ListProfiles:
+    get:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: ListProfiles
+      operationId: mantrae.v1.ProfileService.ListProfiles.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListProfilesRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListProfilesResponse'
+    post:
+      tags:
+        - mantrae.v1.ProfileService
+      summary: ListProfiles
+      operationId: mantrae.v1.ProfileService.ListProfiles
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListProfilesRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListProfilesResponse'
+  /mantrae.v1.SettingService/GetSetting:
+    get:
+      tags:
+        - mantrae.v1.SettingService
+      summary: GetSetting
+      operationId: mantrae.v1.SettingService.GetSetting.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetSettingRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetSettingResponse'
+    post:
+      tags:
+        - mantrae.v1.SettingService
+      summary: GetSetting
+      operationId: mantrae.v1.SettingService.GetSetting
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetSettingRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetSettingResponse'
+  /mantrae.v1.SettingService/UpdateSetting:
+    post:
+      tags:
+        - mantrae.v1.SettingService
+      summary: UpdateSetting
+      operationId: mantrae.v1.SettingService.UpdateSetting
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UpdateSettingRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UpdateSettingResponse'
+  /mantrae.v1.SettingService/ListSettings:
+    get:
+      tags:
+        - mantrae.v1.SettingService
+      summary: ListSettings
+      operationId: mantrae.v1.SettingService.ListSettings.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListSettingsRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListSettingsResponse'
+    post:
+      tags:
+        - mantrae.v1.SettingService
+      summary: ListSettings
+      operationId: mantrae.v1.SettingService.ListSettings
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListSettingsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListSettingsResponse'
   /mantrae.v1.UtilService/GetVersion:
     post:
       tags:
@@ -5832,9 +6167,10 @@ tags:
   - name: mantrae.v1.DnsProviderService
   - name: mantrae.v1.EntryPointService
   - name: mantrae.v1.MiddlewareService
-  - name: mantrae.v1.ProfileService
   - name: mantrae.v1.RouterService
   - name: mantrae.v1.ServiceService
-  - name: mantrae.v1.SettingService
   - name: mantrae.v1.UserService
+  - name: mantrae.v1.EventService
+  - name: mantrae.v1.ProfileService
+  - name: mantrae.v1.SettingService
   - name: mantrae.v1.UtilService

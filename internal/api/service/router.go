@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/convert"
@@ -153,6 +154,16 @@ func (s *RouterService) CreateRouter(
 	if err := AppendAuditLogs(ctx, s.app.Conn.GetQuery(), req.Msg.ProfileId, "router.create", details); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// Broadcast event
+	s.app.Event.BroadcastProfileEvent(&mantraev1.ProfileEvent{
+		EventType:    mantraev1.EventType_EVENT_TYPE_CREATED,
+		ResourceType: mantraev1.ResourceType_RESOURCE_TYPE_ROUTER,
+		ProfileId:    req.Msg.ProfileId,
+		Timestamp:    timestamppb.Now(),
+		Resource: &mantraev1.ProfileEvent_Router{
+			Router: router,
+		},
+	})
 
 	return connect.NewResponse(&mantraev1.CreateRouterResponse{Router: router}), nil
 }
@@ -423,7 +434,6 @@ func (s *RouterService) ListRouters(
 	var totalCount int64
 
 	if req.Msg.Type == nil {
-		var err error
 		if req.Msg.AgentId == nil {
 			result, err := s.app.Conn.GetQuery().
 				ListRoutersByProfile(ctx, db.ListRoutersByProfileParams{
@@ -468,9 +478,6 @@ func (s *RouterService) ListRouters(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 			routers = convert.RoutersByAgentToProto(result, s.app.Conn.GetQuery())
-		}
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	} else {
 		var err error

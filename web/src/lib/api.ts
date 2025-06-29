@@ -14,6 +14,7 @@ import { UtilService } from "./gen/mantrae/v1/util_pb";
 import { AgentService } from "./gen/mantrae/v1/agent_pb";
 import { toast } from "svelte-sonner";
 import { AuditLogService } from "./gen/mantrae/v1/auditlog_pb";
+import { EventService } from "./gen/mantrae/v1/event_pb";
 
 // Global state variables
 export const BACKEND_PORT = import.meta.env.PORT || 3000;
@@ -86,4 +87,5 @@ export const middlewareClient = useClient(MiddlewareService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
 export const utilClient = useClient(UtilService);
+export const eventClient = useClient(EventService);
 export const auditLogClient = useClient(AuditLogService);
