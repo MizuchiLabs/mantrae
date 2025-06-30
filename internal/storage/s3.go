@@ -131,7 +131,7 @@ func (s *S3Storage) List(ctx context.Context) ([]StoredFile, error) {
 			}
 			files = append(files, StoredFile{
 				Name:      key,
-				Timestamp: ts,
+				Timestamp: &ts,
 				Size:      *object.Size,
 			})
 		}
@@ -144,7 +144,7 @@ func (s *S3Storage) List(ctx context.Context) ([]StoredFile, error) {
 	}
 
 	sort.Slice(files, func(i, j int) bool {
-		return files[i].Timestamp.After(files[j].Timestamp)
+		return files[i].Timestamp.After(*files[j].Timestamp)
 	})
 
 	return files, nil

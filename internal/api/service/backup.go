@@ -45,7 +45,7 @@ func (s *BackupService) ListBackups(
 		backups = append(backups, &mantraev1.Backup{
 			Name:      file.Name,
 			Size:      file.Size,
-			CreatedAt: convert.SafeTimestamp(&file.Timestamp),
+			CreatedAt: convert.SafeTimestamp(file.Timestamp),
 		})
 	}
 	return connect.NewResponse(&mantraev1.ListBackupsResponse{Backups: backups}), nil
@@ -88,6 +88,16 @@ func (s *BackupService) DownloadBackup(
 		files, err := s.app.BM.Storage.List(ctx)
 		if err != nil {
 			return connect.NewError(connect.CodeInternal, err)
+		}
+		if len(files) == 0 {
+			// Create a new backup if none exist
+			if err = s.app.BM.Create(ctx); err != nil {
+				return connect.NewError(connect.CodeInternal, err)
+			}
+			files, err = s.app.BM.Storage.List(ctx)
+			if err != nil {
+				return connect.NewError(connect.CodeInternal, err)
+			}
 		}
 		filename = files[0].Name // Use latest backup
 	}

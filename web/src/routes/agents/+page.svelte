@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { agentClient } from '$lib/api';
-	import AgentModal from '$lib/components/modals/agent.svelte';
+	import AgentModal from '$lib/components/modals/AgentModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';

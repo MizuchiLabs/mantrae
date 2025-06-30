@@ -2,321 +2,333 @@
 // @generated from file mantrae/v1/entry_point.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
+import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
+import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file mantrae/v1/entry_point.proto.
  */
-export const file_mantrae_v1_entry_point: GenFile = /*@__PURE__*/
-  fileDesc("ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIr8BCgpFbnRyeVBvaW50EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSDAoEbmFtZRgDIAEoCRIPCgdhZGRyZXNzGAQgASgJEhIKCmlzX2RlZmF1bHQYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiLgoUR2V0RW50cnlQb2ludFJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiRAoVR2V0RW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IoEBChdDcmVhdGVFbnRyeVBvaW50UmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAEhgKBG5hbWUYAiABKAlCCrpIB8gBAXICEAESGAoHYWRkcmVzcxgDIAEoCUIHukgEcgIQARISCgppc19kZWZhdWx0GAQgASgIIkcKGENyZWF0ZUVudHJ5UG9pbnRSZXNwb25zZRIrCgtlbnRyeV9wb2ludBgBIAEoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludCJ5ChdVcGRhdGVFbnRyeVBvaW50UmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABIYCgRuYW1lGAIgASgJQgq6SAfIAQFyAhABEhgKB2FkZHJlc3MYAyABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgEIAEoCCJHChhVcGRhdGVFbnRyeVBvaW50UmVzcG9uc2USKwoLZW50cnlfcG9pbnQYASABKAsyFi5tYW50cmFlLnYxLkVudHJ5UG9pbnQiMQoXRGVsZXRlRW50cnlQb2ludFJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiGgoYRGVsZXRlRW50cnlQb2ludFJlc3BvbnNlItcBChZMaXN0RW50cnlQb2ludHNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASagoFbGltaXQYAiABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAMgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiXAoXTGlzdEVudHJ5UG9pbnRzUmVzcG9uc2USLAoMZW50cnlfcG9pbnRzGAEgAygLMhYubWFudHJhZS52MS5FbnRyeVBvaW50EhMKC3RvdGFsX2NvdW50GAIgASgDMuwDChFFbnRyeVBvaW50U2VydmljZRJZCg1HZXRFbnRyeVBvaW50EiAubWFudHJhZS52MS5HZXRFbnRyeVBvaW50UmVxdWVzdBohLm1hbnRyYWUudjEuR2V0RW50cnlQb2ludFJlc3BvbnNlIgOQAgESXQoQQ3JlYXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuQ3JlYXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLkNyZWF0ZUVudHJ5UG9pbnRSZXNwb25zZRJdChBVcGRhdGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5VcGRhdGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEl0KEERlbGV0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLkRlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5EZWxldGVFbnRyeVBvaW50UmVzcG9uc2USXwoPTGlzdEVudHJ5UG9pbnRzEiIubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXF1ZXN0GiMubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIPRW50cnlQb2ludFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+export const file_mantrae_v1_entry_point: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		'ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIr8BCgpFbnRyeVBvaW50EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSDAoEbmFtZRgDIAEoCRIPCgdhZGRyZXNzGAQgASgJEhIKCmlzX2RlZmF1bHQYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiLgoUR2V0RW50cnlQb2ludFJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiRAoVR2V0RW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IoEBChdDcmVhdGVFbnRyeVBvaW50UmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAEhgKBG5hbWUYAiABKAlCCrpIB8gBAXICEAESGAoHYWRkcmVzcxgDIAEoCUIHukgEcgIQARISCgppc19kZWZhdWx0GAQgASgIIkcKGENyZWF0ZUVudHJ5UG9pbnRSZXNwb25zZRIrCgtlbnRyeV9wb2ludBgBIAEoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludCJ5ChdVcGRhdGVFbnRyeVBvaW50UmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABIYCgRuYW1lGAIgASgJQgq6SAfIAQFyAhABEhgKB2FkZHJlc3MYAyABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgEIAEoCCJHChhVcGRhdGVFbnRyeVBvaW50UmVzcG9uc2USKwoLZW50cnlfcG9pbnQYASABKAsyFi5tYW50cmFlLnYxLkVudHJ5UG9pbnQiMQoXRGVsZXRlRW50cnlQb2ludFJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiGgoYRGVsZXRlRW50cnlQb2ludFJlc3BvbnNlItcBChZMaXN0RW50cnlQb2ludHNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASagoFbGltaXQYAiABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAMgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiXAoXTGlzdEVudHJ5UG9pbnRzUmVzcG9uc2USLAoMZW50cnlfcG9pbnRzGAEgAygLMhYubWFudHJhZS52MS5FbnRyeVBvaW50EhMKC3RvdGFsX2NvdW50GAIgASgDMuwDChFFbnRyeVBvaW50U2VydmljZRJZCg1HZXRFbnRyeVBvaW50EiAubWFudHJhZS52MS5HZXRFbnRyeVBvaW50UmVxdWVzdBohLm1hbnRyYWUudjEuR2V0RW50cnlQb2ludFJlc3BvbnNlIgOQAgESXQoQQ3JlYXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuQ3JlYXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLkNyZWF0ZUVudHJ5UG9pbnRSZXNwb25zZRJdChBVcGRhdGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5VcGRhdGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEl0KEERlbGV0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLkRlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5EZWxldGVFbnRyeVBvaW50UmVzcG9uc2USXwoPTGlzdEVudHJ5UG9pbnRzEiIubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXF1ZXN0GiMubWFudHJhZS52MS5MaXN0RW50cnlQb2ludHNSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIPRW50cnlQb2ludFByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z',
+		[file_buf_validate_validate, file_google_protobuf_timestamp]
+	);
 
 /**
  * @generated from message mantrae.v1.EntryPoint
  */
-export type EntryPoint = Message<"mantrae.v1.EntryPoint"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type EntryPoint = Message<'mantrae.v1.EntryPoint'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: int64 profile_id = 2;
-   */
-  profileId: bigint;
+	/**
+	 * @generated from field: int64 profile_id = 2;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: string name = 3;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 3;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string address = 4;
-   */
-  address: string;
+	/**
+	 * @generated from field: string address = 4;
+	 */
+	address: string;
 
-  /**
-   * @generated from field: bool is_default = 5;
-   */
-  isDefault: boolean;
+	/**
+	 * @generated from field: bool is_default = 5;
+	 */
+	isDefault: boolean;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 6;
-   */
-  createdAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 6;
+	 */
+	createdAt?: Timestamp;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 7;
-   */
-  updatedAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 7;
+	 */
+	updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.EntryPoint.
  * Use `create(EntryPointSchema)` to create a new message.
  */
-export const EntryPointSchema: GenMessage<EntryPoint> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 0);
+export const EntryPointSchema: GenMessage<EntryPoint> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 0);
 
 /**
  * @generated from message mantrae.v1.GetEntryPointRequest
  */
-export type GetEntryPointRequest = Message<"mantrae.v1.GetEntryPointRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type GetEntryPointRequest = Message<'mantrae.v1.GetEntryPointRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.GetEntryPointRequest.
  * Use `create(GetEntryPointRequestSchema)` to create a new message.
  */
-export const GetEntryPointRequestSchema: GenMessage<GetEntryPointRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 1);
+export const GetEntryPointRequestSchema: GenMessage<GetEntryPointRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 1);
 
 /**
  * @generated from message mantrae.v1.GetEntryPointResponse
  */
-export type GetEntryPointResponse = Message<"mantrae.v1.GetEntryPointResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
-   */
-  entryPoint?: EntryPoint;
+export type GetEntryPointResponse = Message<'mantrae.v1.GetEntryPointResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
+	 */
+	entryPoint?: EntryPoint;
 };
 
 /**
  * Describes the message mantrae.v1.GetEntryPointResponse.
  * Use `create(GetEntryPointResponseSchema)` to create a new message.
  */
-export const GetEntryPointResponseSchema: GenMessage<GetEntryPointResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 2);
+export const GetEntryPointResponseSchema: GenMessage<GetEntryPointResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 2);
 
 /**
  * @generated from message mantrae.v1.CreateEntryPointRequest
  */
-export type CreateEntryPointRequest = Message<"mantrae.v1.CreateEntryPointRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
+export type CreateEntryPointRequest = Message<'mantrae.v1.CreateEntryPointRequest'> & {
+	/**
+	 * @generated from field: int64 profile_id = 1;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string address = 3;
-   */
-  address: string;
+	/**
+	 * @generated from field: string address = 3;
+	 */
+	address: string;
 
-  /**
-   * @generated from field: bool is_default = 4;
-   */
-  isDefault: boolean;
+	/**
+	 * @generated from field: bool is_default = 4;
+	 */
+	isDefault: boolean;
 };
 
 /**
  * Describes the message mantrae.v1.CreateEntryPointRequest.
  * Use `create(CreateEntryPointRequestSchema)` to create a new message.
  */
-export const CreateEntryPointRequestSchema: GenMessage<CreateEntryPointRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 3);
+export const CreateEntryPointRequestSchema: GenMessage<CreateEntryPointRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 3);
 
 /**
  * @generated from message mantrae.v1.CreateEntryPointResponse
  */
-export type CreateEntryPointResponse = Message<"mantrae.v1.CreateEntryPointResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
-   */
-  entryPoint?: EntryPoint;
+export type CreateEntryPointResponse = Message<'mantrae.v1.CreateEntryPointResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
+	 */
+	entryPoint?: EntryPoint;
 };
 
 /**
  * Describes the message mantrae.v1.CreateEntryPointResponse.
  * Use `create(CreateEntryPointResponseSchema)` to create a new message.
  */
-export const CreateEntryPointResponseSchema: GenMessage<CreateEntryPointResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 4);
+export const CreateEntryPointResponseSchema: GenMessage<CreateEntryPointResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 4);
 
 /**
  * @generated from message mantrae.v1.UpdateEntryPointRequest
  */
-export type UpdateEntryPointRequest = Message<"mantrae.v1.UpdateEntryPointRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type UpdateEntryPointRequest = Message<'mantrae.v1.UpdateEntryPointRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string address = 3;
-   */
-  address: string;
+	/**
+	 * @generated from field: string address = 3;
+	 */
+	address: string;
 
-  /**
-   * @generated from field: bool is_default = 4;
-   */
-  isDefault: boolean;
+	/**
+	 * @generated from field: bool is_default = 4;
+	 */
+	isDefault: boolean;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateEntryPointRequest.
  * Use `create(UpdateEntryPointRequestSchema)` to create a new message.
  */
-export const UpdateEntryPointRequestSchema: GenMessage<UpdateEntryPointRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 5);
+export const UpdateEntryPointRequestSchema: GenMessage<UpdateEntryPointRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 5);
 
 /**
  * @generated from message mantrae.v1.UpdateEntryPointResponse
  */
-export type UpdateEntryPointResponse = Message<"mantrae.v1.UpdateEntryPointResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
-   */
-  entryPoint?: EntryPoint;
+export type UpdateEntryPointResponse = Message<'mantrae.v1.UpdateEntryPointResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.EntryPoint entry_point = 1;
+	 */
+	entryPoint?: EntryPoint;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateEntryPointResponse.
  * Use `create(UpdateEntryPointResponseSchema)` to create a new message.
  */
-export const UpdateEntryPointResponseSchema: GenMessage<UpdateEntryPointResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 6);
+export const UpdateEntryPointResponseSchema: GenMessage<UpdateEntryPointResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 6);
 
 /**
  * @generated from message mantrae.v1.DeleteEntryPointRequest
  */
-export type DeleteEntryPointRequest = Message<"mantrae.v1.DeleteEntryPointRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type DeleteEntryPointRequest = Message<'mantrae.v1.DeleteEntryPointRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteEntryPointRequest.
  * Use `create(DeleteEntryPointRequestSchema)` to create a new message.
  */
-export const DeleteEntryPointRequestSchema: GenMessage<DeleteEntryPointRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 7);
+export const DeleteEntryPointRequestSchema: GenMessage<DeleteEntryPointRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 7);
 
 /**
  * @generated from message mantrae.v1.DeleteEntryPointResponse
  */
-export type DeleteEntryPointResponse = Message<"mantrae.v1.DeleteEntryPointResponse"> & {
-};
+export type DeleteEntryPointResponse = Message<'mantrae.v1.DeleteEntryPointResponse'> & {};
 
 /**
  * Describes the message mantrae.v1.DeleteEntryPointResponse.
  * Use `create(DeleteEntryPointResponseSchema)` to create a new message.
  */
-export const DeleteEntryPointResponseSchema: GenMessage<DeleteEntryPointResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 8);
+export const DeleteEntryPointResponseSchema: GenMessage<DeleteEntryPointResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 8);
 
 /**
  * @generated from message mantrae.v1.ListEntryPointsRequest
  */
-export type ListEntryPointsRequest = Message<"mantrae.v1.ListEntryPointsRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
+export type ListEntryPointsRequest = Message<'mantrae.v1.ListEntryPointsRequest'> & {
+	/**
+	 * @generated from field: int64 profile_id = 1;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: optional int64 limit = 2;
-   */
-  limit?: bigint;
+	/**
+	 * @generated from field: optional int64 limit = 2;
+	 */
+	limit?: bigint;
 
-  /**
-   * @generated from field: optional int64 offset = 3;
-   */
-  offset?: bigint;
+	/**
+	 * @generated from field: optional int64 offset = 3;
+	 */
+	offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListEntryPointsRequest.
  * Use `create(ListEntryPointsRequestSchema)` to create a new message.
  */
-export const ListEntryPointsRequestSchema: GenMessage<ListEntryPointsRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 9);
+export const ListEntryPointsRequestSchema: GenMessage<ListEntryPointsRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 9);
 
 /**
  * @generated from message mantrae.v1.ListEntryPointsResponse
  */
-export type ListEntryPointsResponse = Message<"mantrae.v1.ListEntryPointsResponse"> & {
-  /**
-   * @generated from field: repeated mantrae.v1.EntryPoint entry_points = 1;
-   */
-  entryPoints: EntryPoint[];
+export type ListEntryPointsResponse = Message<'mantrae.v1.ListEntryPointsResponse'> & {
+	/**
+	 * @generated from field: repeated mantrae.v1.EntryPoint entry_points = 1;
+	 */
+	entryPoints: EntryPoint[];
 
-  /**
-   * @generated from field: int64 total_count = 2;
-   */
-  totalCount: bigint;
+	/**
+	 * @generated from field: int64 total_count = 2;
+	 */
+	totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListEntryPointsResponse.
  * Use `create(ListEntryPointsResponseSchema)` to create a new message.
  */
-export const ListEntryPointsResponseSchema: GenMessage<ListEntryPointsResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_entry_point, 10);
+export const ListEntryPointsResponseSchema: GenMessage<ListEntryPointsResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_entry_point, 10);
 
 /**
  * @generated from service mantrae.v1.EntryPointService
  */
 export const EntryPointService: GenService<{
-  /**
-   * @generated from rpc mantrae.v1.EntryPointService.GetEntryPoint
-   */
-  getEntryPoint: {
-    methodKind: "unary";
-    input: typeof GetEntryPointRequestSchema;
-    output: typeof GetEntryPointResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.EntryPointService.CreateEntryPoint
-   */
-  createEntryPoint: {
-    methodKind: "unary";
-    input: typeof CreateEntryPointRequestSchema;
-    output: typeof CreateEntryPointResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.EntryPointService.UpdateEntryPoint
-   */
-  updateEntryPoint: {
-    methodKind: "unary";
-    input: typeof UpdateEntryPointRequestSchema;
-    output: typeof UpdateEntryPointResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.EntryPointService.DeleteEntryPoint
-   */
-  deleteEntryPoint: {
-    methodKind: "unary";
-    input: typeof DeleteEntryPointRequestSchema;
-    output: typeof DeleteEntryPointResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.EntryPointService.ListEntryPoints
-   */
-  listEntryPoints: {
-    methodKind: "unary";
-    input: typeof ListEntryPointsRequestSchema;
-    output: typeof ListEntryPointsResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_mantrae_v1_entry_point, 0);
-
+	/**
+	 * @generated from rpc mantrae.v1.EntryPointService.GetEntryPoint
+	 */
+	getEntryPoint: {
+		methodKind: 'unary';
+		input: typeof GetEntryPointRequestSchema;
+		output: typeof GetEntryPointResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.EntryPointService.CreateEntryPoint
+	 */
+	createEntryPoint: {
+		methodKind: 'unary';
+		input: typeof CreateEntryPointRequestSchema;
+		output: typeof CreateEntryPointResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.EntryPointService.UpdateEntryPoint
+	 */
+	updateEntryPoint: {
+		methodKind: 'unary';
+		input: typeof UpdateEntryPointRequestSchema;
+		output: typeof UpdateEntryPointResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.EntryPointService.DeleteEntryPoint
+	 */
+	deleteEntryPoint: {
+		methodKind: 'unary';
+		input: typeof DeleteEntryPointRequestSchema;
+		output: typeof DeleteEntryPointResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.EntryPointService.ListEntryPoints
+	 */
+	listEntryPoints: {
+		methodKind: 'unary';
+		input: typeof ListEntryPointsRequestSchema;
+		output: typeof ListEntryPointsResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_entry_point, 0);

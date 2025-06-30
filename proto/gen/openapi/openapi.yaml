@@ -600,7 +600,6 @@ components:
         name:
           type: string
           title: name
-          minLength: 1
       title: DownloadBackupRequest
       additionalProperties: false
     mantrae.v1.DownloadBackupResponse:

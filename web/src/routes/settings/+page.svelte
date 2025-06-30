@@ -10,7 +10,6 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
 	import {
-		Braces,
 		CalendarDays,
 		DatabaseBackup,
 		Download,
@@ -28,7 +27,6 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Backup } from '$lib/gen/mantrae/v1/backup_pb';
-	import { profile } from '$lib/stores/profile';
 	import { settingGroups, storageTypes } from './settings';
 
 	let settingsMap = $state<Record<string, string>>({});
@@ -107,7 +105,6 @@
 	let backups = $state<Backup[]>([]);
 	let showBackupList = $state(false);
 	let uploadBackupFile: HTMLInputElement | null = $state(null);
-	let uploadDynamicFile: HTMLInputElement | null = $state(null);
 
 	async function deleteBackup(name: string) {
 		await backupClient.deleteBackup({ name });
@@ -120,25 +117,29 @@
 		backups = response.backups;
 	}
 	async function downloadBackup(name?: string) {
-		if (!name) name = backups[0].name;
-		const stream = backupClient.downloadBackup({ name });
+		try {
+			const stream = backupClient.downloadBackup({ name });
 
-		const chunks: Uint8Array[] = [];
-		for await (const chunk of stream) {
-			if (chunk.data.length > 0) {
-				chunks.push(chunk.data);
+			const chunks: Uint8Array[] = [];
+			for await (const chunk of stream) {
+				if (chunk.data.length > 0) {
+					chunks.push(chunk.data);
+				}
 			}
+
+			const blob = new Blob(chunks, { type: 'application/octet-stream' });
+			const url = URL.createObjectURL(blob);
+
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = name || 'backup.db';
+			a.click();
+
+			URL.revokeObjectURL(url);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to download backup', { description: e.message });
 		}
-
-		const blob = new Blob(chunks, { type: 'application/octet-stream' });
-		const url = URL.createObjectURL(blob);
-
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = name || 'backup.db';
-		a.click();
-
-		URL.revokeObjectURL(url);
 	}
 
 	onMount(async () => {
@@ -167,17 +168,10 @@
 				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 					<input
 						type="file"
-						accept=".db"
+						accept=".db,.yaml,.yml,.json"
 						class="hidden"
 						bind:this={uploadBackupFile}
 						onchange={() => upload(uploadBackupFile, 'backup')}
-					/>
-					<input
-						type="file"
-						accept=".yaml,.yml,.json"
-						class="hidden"
-						bind:this={uploadDynamicFile}
-						onchange={() => upload(uploadDynamicFile, `backup?profile_id=${profile.id}`)}
 					/>
 
 					<div class="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -186,14 +180,28 @@
 							Download Backup
 						</Button>
 
-						<Button
-							variant="outline"
-							onclick={() => uploadBackupFile?.click()}
-							class="flex-1 sm:flex-none"
-						>
-							<Upload class="mr-2 size-4" />
-							Upload Backup
-						</Button>
+						<Tooltip.Provider>
+							<Tooltip.Root delayDuration={500}>
+								<Tooltip.Trigger class="flex-1 sm:flex-none">
+									<Button
+										variant="outline"
+										onclick={() => uploadBackupFile?.click()}
+										class="flex-1 sm:flex-none"
+									>
+										<Upload class="mr-2 size-4" />
+										Upload Backup
+									</Button>
+								</Tooltip.Trigger>
+								<Tooltip.Content side="bottom" align="end" class="max-w-md">
+									<p>
+										Upload a SQLite <code>.db</code> file to fully replace the current database, or
+										upload a Traefik dynamic config file in <code>.yaml</code> or <code>.json</code>
+										format. Dynamic configs will be merged with the existing routers, services, and middlewares—overwriting
+										any entries with matching names.
+									</p>
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</Tooltip.Provider>
 
 						<Button
 							variant="outline"
@@ -203,27 +211,6 @@
 							<List class="mr-2 size-4" />
 							View Backups
 						</Button>
-
-						<Tooltip.Provider>
-							<Tooltip.Root delayDuration={100}>
-								<Tooltip.Trigger class="flex-1 sm:flex-none">
-									<Button
-										variant="outline"
-										onclick={() => uploadDynamicFile?.click()}
-										class="flex-1 sm:flex-none"
-									>
-										<Braces class="mr-2 size-4" />
-										Upload Configuration
-									</Button>
-								</Tooltip.Trigger>
-								<Tooltip.Content side="bottom" align="end" class="max-w-md">
-									<p>
-										Restore using the dynamic Traefik config in yaml or json format. It will merge
-										current routers/middlewares with the provided dynamic config.
-									</p>
-								</Tooltip.Content>
-							</Tooltip.Root>
-						</Tooltip.Provider>
 					</div>
 				</div>
 			</Card.Content>

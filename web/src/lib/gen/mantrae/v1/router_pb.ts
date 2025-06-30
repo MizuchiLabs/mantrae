@@ -2,409 +2,430 @@
 // @generated from file mantrae/v1/router.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { DnsProvider } from "./dns_provider_pb";
-import { file_mantrae_v1_dns_provider } from "./dns_provider_pb";
-import type { JsonObject, Message } from "@bufbuild/protobuf";
+import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
+import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
+import {
+	file_google_protobuf_struct,
+	file_google_protobuf_timestamp
+} from '@bufbuild/protobuf/wkt';
+import type { DnsProvider } from './dns_provider_pb';
+import { file_mantrae_v1_dns_provider } from './dns_provider_pb';
+import type { JsonObject, Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file mantrae/v1/router.proto.
  */
-export const file_mantrae_v1_router: GenFile = /*@__PURE__*/
-  fileDesc("ChdtYW50cmFlL3YxL3JvdXRlci5wcm90bxIKbWFudHJhZS52MSK4AgoGUm91dGVyEgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSJAoEdHlwZRgHIAEoDjIWLm1hbnRyYWUudjEuUm91dGVyVHlwZRIuCg1kbnNfcHJvdmlkZXJzGAggAygLMhcubWFudHJhZS52MS5EbnNQcm92aWRlchIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJdChBHZXRSb3V0ZXJSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAEjEKBHR5cGUYAiABKA4yFi5tYW50cmFlLnYxLlJvdXRlclR5cGVCC7pICMgBAYIBAhABIjcKEUdldFJvdXRlclJlc3BvbnNlEiIKBnJvdXRlchgBIAEoCzISLm1hbnRyYWUudjEuUm91dGVyIs4BChNDcmVhdGVSb3V0ZXJSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASEAoIYWdlbnRfaWQYAiABKAkSGAoEbmFtZRgDIAEoCUIKukgHyAEBcgIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSMQoEdHlwZRgGIAEoDjIWLm1hbnRyYWUudjEuUm91dGVyVHlwZUILukgIyAEBggECEAEiOgoUQ3JlYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIi5AEKE1VwZGF0ZVJvdXRlclJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAASGAoEbmFtZRgCIAEoCUIKukgHyAEBcgIQARIxCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgu6SAjIAQGCAQIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSLgoNZG5zX3Byb3ZpZGVycxgGIAMoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIiOgoUVXBkYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIiYAoTRGVsZXRlUm91dGVyUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABIxCgR0eXBlGAIgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgu6SAjIAQGCAQIQASIWChREZWxldGVSb3V0ZXJSZXNwb25zZSK+AgoSTGlzdFJvdXRlcnNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARIzCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgi6SAWCAQIQAUgBiAEBEmoKBWxpbWl0GAQgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgCiAEBEhwKBm9mZnNldBgFIAEoA0IHukgEIgIoAEgDiAEBQgsKCV9hZ2VudF9pZEIHCgVfdHlwZUIICgZfbGltaXRCCQoHX29mZnNldCJPChNMaXN0Um91dGVyc1Jlc3BvbnNlEiMKB3JvdXRlcnMYASADKAsyEi5tYW50cmFlLnYxLlJvdXRlchITCgt0b3RhbF9jb3VudBgCIAEoAyppCgpSb3V0ZXJUeXBlEhsKF1JPVVRFUl9UWVBFX1VOU1BFQ0lGSUVEEAASFAoQUk9VVEVSX1RZUEVfSFRUUBABEhMKD1JPVVRFUl9UWVBFX1RDUBACEhMKD1JPVVRFUl9UWVBFX1VEUBADMqwDCg1Sb3V0ZXJTZXJ2aWNlEk0KCUdldFJvdXRlchIcLm1hbnRyYWUudjEuR2V0Um91dGVyUmVxdWVzdBodLm1hbnRyYWUudjEuR2V0Um91dGVyUmVzcG9uc2UiA5ACARJRCgxDcmVhdGVSb3V0ZXISHy5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlcXVlc3QaIC5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlc3BvbnNlElEKDFVwZGF0ZVJvdXRlchIfLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVxdWVzdBogLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVzcG9uc2USUQoMRGVsZXRlUm91dGVyEh8ubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXF1ZXN0GiAubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXNwb25zZRJTCgtMaXN0Um91dGVycxIeLm1hbnRyYWUudjEuTGlzdFJvdXRlcnNSZXF1ZXN0Gh8ubWFudHJhZS52MS5MaXN0Um91dGVyc1Jlc3BvbnNlIgOQAgFCpQEKDmNvbS5tYW50cmFlLnYxQgtSb3V0ZXJQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_dns_provider]);
+export const file_mantrae_v1_router: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		'ChdtYW50cmFlL3YxL3JvdXRlci5wcm90bxIKbWFudHJhZS52MSK4AgoGUm91dGVyEgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSJAoEdHlwZRgHIAEoDjIWLm1hbnRyYWUudjEuUm91dGVyVHlwZRIuCg1kbnNfcHJvdmlkZXJzGAggAygLMhcubWFudHJhZS52MS5EbnNQcm92aWRlchIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJdChBHZXRSb3V0ZXJSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAEjEKBHR5cGUYAiABKA4yFi5tYW50cmFlLnYxLlJvdXRlclR5cGVCC7pICMgBAYIBAhABIjcKEUdldFJvdXRlclJlc3BvbnNlEiIKBnJvdXRlchgBIAEoCzISLm1hbnRyYWUudjEuUm91dGVyIs4BChNDcmVhdGVSb3V0ZXJSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASEAoIYWdlbnRfaWQYAiABKAkSGAoEbmFtZRgDIAEoCUIKukgHyAEBcgIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSMQoEdHlwZRgGIAEoDjIWLm1hbnRyYWUudjEuUm91dGVyVHlwZUILukgIyAEBggECEAEiOgoUQ3JlYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIi5AEKE1VwZGF0ZVJvdXRlclJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAASGAoEbmFtZRgCIAEoCUIKukgHyAEBcgIQARIxCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgu6SAjIAQGCAQIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSLgoNZG5zX3Byb3ZpZGVycxgGIAMoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIiOgoUVXBkYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIiYAoTRGVsZXRlUm91dGVyUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABIxCgR0eXBlGAIgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgu6SAjIAQGCAQIQASIWChREZWxldGVSb3V0ZXJSZXNwb25zZSK+AgoSTGlzdFJvdXRlcnNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARIzCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgi6SAWCAQIQAUgBiAEBEmoKBWxpbWl0GAQgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgCiAEBEhwKBm9mZnNldBgFIAEoA0IHukgEIgIoAEgDiAEBQgsKCV9hZ2VudF9pZEIHCgVfdHlwZUIICgZfbGltaXRCCQoHX29mZnNldCJPChNMaXN0Um91dGVyc1Jlc3BvbnNlEiMKB3JvdXRlcnMYASADKAsyEi5tYW50cmFlLnYxLlJvdXRlchITCgt0b3RhbF9jb3VudBgCIAEoAyppCgpSb3V0ZXJUeXBlEhsKF1JPVVRFUl9UWVBFX1VOU1BFQ0lGSUVEEAASFAoQUk9VVEVSX1RZUEVfSFRUUBABEhMKD1JPVVRFUl9UWVBFX1RDUBACEhMKD1JPVVRFUl9UWVBFX1VEUBADMqwDCg1Sb3V0ZXJTZXJ2aWNlEk0KCUdldFJvdXRlchIcLm1hbnRyYWUudjEuR2V0Um91dGVyUmVxdWVzdBodLm1hbnRyYWUudjEuR2V0Um91dGVyUmVzcG9uc2UiA5ACARJRCgxDcmVhdGVSb3V0ZXISHy5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlcXVlc3QaIC5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlc3BvbnNlElEKDFVwZGF0ZVJvdXRlchIfLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVxdWVzdBogLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVzcG9uc2USUQoMRGVsZXRlUm91dGVyEh8ubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXF1ZXN0GiAubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXNwb25zZRJTCgtMaXN0Um91dGVycxIeLm1hbnRyYWUudjEuTGlzdFJvdXRlcnNSZXF1ZXN0Gh8ubWFudHJhZS52MS5MaXN0Um91dGVyc1Jlc3BvbnNlIgOQAgFCpQEKDmNvbS5tYW50cmFlLnYxQgtSb3V0ZXJQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
+		[
+			file_buf_validate_validate,
+			file_google_protobuf_struct,
+			file_google_protobuf_timestamp,
+			file_mantrae_v1_dns_provider
+		]
+	);
 
 /**
  * @generated from message mantrae.v1.Router
  */
-export type Router = Message<"mantrae.v1.Router"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type Router = Message<'mantrae.v1.Router'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: int64 profile_id = 2;
-   */
-  profileId: bigint;
+	/**
+	 * @generated from field: int64 profile_id = 2;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: string agent_id = 3;
-   */
-  agentId: string;
+	/**
+	 * @generated from field: string agent_id = 3;
+	 */
+	agentId: string;
 
-  /**
-   * @generated from field: string name = 4;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 4;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: google.protobuf.Struct config = 5;
-   */
-  config?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct config = 5;
+	 */
+	config?: JsonObject;
 
-  /**
-   * @generated from field: bool enabled = 6;
-   */
-  enabled: boolean;
+	/**
+	 * @generated from field: bool enabled = 6;
+	 */
+	enabled: boolean;
 
-  /**
-   * @generated from field: mantrae.v1.RouterType type = 7;
-   */
-  type: RouterType;
+	/**
+	 * @generated from field: mantrae.v1.RouterType type = 7;
+	 */
+	type: RouterType;
 
-  /**
-   * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 8;
-   */
-  dnsProviders: DnsProvider[];
+	/**
+	 * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 8;
+	 */
+	dnsProviders: DnsProvider[];
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 9;
-   */
-  createdAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 9;
+	 */
+	createdAt?: Timestamp;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 10;
-   */
-  updatedAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 10;
+	 */
+	updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.Router.
  * Use `create(RouterSchema)` to create a new message.
  */
-export const RouterSchema: GenMessage<Router> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 0);
+export const RouterSchema: GenMessage<Router> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 0);
 
 /**
  * @generated from message mantrae.v1.GetRouterRequest
  */
-export type GetRouterRequest = Message<"mantrae.v1.GetRouterRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type GetRouterRequest = Message<'mantrae.v1.GetRouterRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: mantrae.v1.RouterType type = 2;
-   */
-  type: RouterType;
+	/**
+	 * @generated from field: mantrae.v1.RouterType type = 2;
+	 */
+	type: RouterType;
 };
 
 /**
  * Describes the message mantrae.v1.GetRouterRequest.
  * Use `create(GetRouterRequestSchema)` to create a new message.
  */
-export const GetRouterRequestSchema: GenMessage<GetRouterRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 1);
+export const GetRouterRequestSchema: GenMessage<GetRouterRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 1);
 
 /**
  * @generated from message mantrae.v1.GetRouterResponse
  */
-export type GetRouterResponse = Message<"mantrae.v1.GetRouterResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Router router = 1;
-   */
-  router?: Router;
+export type GetRouterResponse = Message<'mantrae.v1.GetRouterResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Router router = 1;
+	 */
+	router?: Router;
 };
 
 /**
  * Describes the message mantrae.v1.GetRouterResponse.
  * Use `create(GetRouterResponseSchema)` to create a new message.
  */
-export const GetRouterResponseSchema: GenMessage<GetRouterResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 2);
+export const GetRouterResponseSchema: GenMessage<GetRouterResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 2);
 
 /**
  * @generated from message mantrae.v1.CreateRouterRequest
  */
-export type CreateRouterRequest = Message<"mantrae.v1.CreateRouterRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
+export type CreateRouterRequest = Message<'mantrae.v1.CreateRouterRequest'> & {
+	/**
+	 * @generated from field: int64 profile_id = 1;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: string agent_id = 2;
-   */
-  agentId: string;
+	/**
+	 * @generated from field: string agent_id = 2;
+	 */
+	agentId: string;
 
-  /**
-   * @generated from field: string name = 3;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 3;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: google.protobuf.Struct config = 4;
-   */
-  config?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct config = 4;
+	 */
+	config?: JsonObject;
 
-  /**
-   * @generated from field: bool enabled = 5;
-   */
-  enabled: boolean;
+	/**
+	 * @generated from field: bool enabled = 5;
+	 */
+	enabled: boolean;
 
-  /**
-   * @generated from field: mantrae.v1.RouterType type = 6;
-   */
-  type: RouterType;
+	/**
+	 * @generated from field: mantrae.v1.RouterType type = 6;
+	 */
+	type: RouterType;
 };
 
 /**
  * Describes the message mantrae.v1.CreateRouterRequest.
  * Use `create(CreateRouterRequestSchema)` to create a new message.
  */
-export const CreateRouterRequestSchema: GenMessage<CreateRouterRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 3);
+export const CreateRouterRequestSchema: GenMessage<CreateRouterRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 3);
 
 /**
  * @generated from message mantrae.v1.CreateRouterResponse
  */
-export type CreateRouterResponse = Message<"mantrae.v1.CreateRouterResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Router router = 1;
-   */
-  router?: Router;
+export type CreateRouterResponse = Message<'mantrae.v1.CreateRouterResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Router router = 1;
+	 */
+	router?: Router;
 };
 
 /**
  * Describes the message mantrae.v1.CreateRouterResponse.
  * Use `create(CreateRouterResponseSchema)` to create a new message.
  */
-export const CreateRouterResponseSchema: GenMessage<CreateRouterResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 4);
+export const CreateRouterResponseSchema: GenMessage<CreateRouterResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 4);
 
 /**
  * @generated from message mantrae.v1.UpdateRouterRequest
  */
-export type UpdateRouterRequest = Message<"mantrae.v1.UpdateRouterRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type UpdateRouterRequest = Message<'mantrae.v1.UpdateRouterRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: mantrae.v1.RouterType type = 3;
-   */
-  type: RouterType;
+	/**
+	 * @generated from field: mantrae.v1.RouterType type = 3;
+	 */
+	type: RouterType;
 
-  /**
-   * @generated from field: google.protobuf.Struct config = 4;
-   */
-  config?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct config = 4;
+	 */
+	config?: JsonObject;
 
-  /**
-   * @generated from field: bool enabled = 5;
-   */
-  enabled: boolean;
+	/**
+	 * @generated from field: bool enabled = 5;
+	 */
+	enabled: boolean;
 
-  /**
-   * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 6;
-   */
-  dnsProviders: DnsProvider[];
+	/**
+	 * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 6;
+	 */
+	dnsProviders: DnsProvider[];
 };
 
 /**
  * Describes the message mantrae.v1.UpdateRouterRequest.
  * Use `create(UpdateRouterRequestSchema)` to create a new message.
  */
-export const UpdateRouterRequestSchema: GenMessage<UpdateRouterRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 5);
+export const UpdateRouterRequestSchema: GenMessage<UpdateRouterRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 5);
 
 /**
  * @generated from message mantrae.v1.UpdateRouterResponse
  */
-export type UpdateRouterResponse = Message<"mantrae.v1.UpdateRouterResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Router router = 1;
-   */
-  router?: Router;
+export type UpdateRouterResponse = Message<'mantrae.v1.UpdateRouterResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Router router = 1;
+	 */
+	router?: Router;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateRouterResponse.
  * Use `create(UpdateRouterResponseSchema)` to create a new message.
  */
-export const UpdateRouterResponseSchema: GenMessage<UpdateRouterResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 6);
+export const UpdateRouterResponseSchema: GenMessage<UpdateRouterResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 6);
 
 /**
  * @generated from message mantrae.v1.DeleteRouterRequest
  */
-export type DeleteRouterRequest = Message<"mantrae.v1.DeleteRouterRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type DeleteRouterRequest = Message<'mantrae.v1.DeleteRouterRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: mantrae.v1.RouterType type = 2;
-   */
-  type: RouterType;
+	/**
+	 * @generated from field: mantrae.v1.RouterType type = 2;
+	 */
+	type: RouterType;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteRouterRequest.
  * Use `create(DeleteRouterRequestSchema)` to create a new message.
  */
-export const DeleteRouterRequestSchema: GenMessage<DeleteRouterRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 7);
+export const DeleteRouterRequestSchema: GenMessage<DeleteRouterRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 7);
 
 /**
  * @generated from message mantrae.v1.DeleteRouterResponse
  */
-export type DeleteRouterResponse = Message<"mantrae.v1.DeleteRouterResponse"> & {
-};
+export type DeleteRouterResponse = Message<'mantrae.v1.DeleteRouterResponse'> & {};
 
 /**
  * Describes the message mantrae.v1.DeleteRouterResponse.
  * Use `create(DeleteRouterResponseSchema)` to create a new message.
  */
-export const DeleteRouterResponseSchema: GenMessage<DeleteRouterResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 8);
+export const DeleteRouterResponseSchema: GenMessage<DeleteRouterResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 8);
 
 /**
  * @generated from message mantrae.v1.ListRoutersRequest
  */
-export type ListRoutersRequest = Message<"mantrae.v1.ListRoutersRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
+export type ListRoutersRequest = Message<'mantrae.v1.ListRoutersRequest'> & {
+	/**
+	 * @generated from field: int64 profile_id = 1;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: optional string agent_id = 2;
-   */
-  agentId?: string;
+	/**
+	 * @generated from field: optional string agent_id = 2;
+	 */
+	agentId?: string;
 
-  /**
-   * @generated from field: optional mantrae.v1.RouterType type = 3;
-   */
-  type?: RouterType;
+	/**
+	 * @generated from field: optional mantrae.v1.RouterType type = 3;
+	 */
+	type?: RouterType;
 
-  /**
-   * @generated from field: optional int64 limit = 4;
-   */
-  limit?: bigint;
+	/**
+	 * @generated from field: optional int64 limit = 4;
+	 */
+	limit?: bigint;
 
-  /**
-   * @generated from field: optional int64 offset = 5;
-   */
-  offset?: bigint;
+	/**
+	 * @generated from field: optional int64 offset = 5;
+	 */
+	offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListRoutersRequest.
  * Use `create(ListRoutersRequestSchema)` to create a new message.
  */
-export const ListRoutersRequestSchema: GenMessage<ListRoutersRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 9);
+export const ListRoutersRequestSchema: GenMessage<ListRoutersRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 9);
 
 /**
  * @generated from message mantrae.v1.ListRoutersResponse
  */
-export type ListRoutersResponse = Message<"mantrae.v1.ListRoutersResponse"> & {
-  /**
-   * @generated from field: repeated mantrae.v1.Router routers = 1;
-   */
-  routers: Router[];
+export type ListRoutersResponse = Message<'mantrae.v1.ListRoutersResponse'> & {
+	/**
+	 * @generated from field: repeated mantrae.v1.Router routers = 1;
+	 */
+	routers: Router[];
 
-  /**
-   * @generated from field: int64 total_count = 2;
-   */
-  totalCount: bigint;
+	/**
+	 * @generated from field: int64 total_count = 2;
+	 */
+	totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListRoutersResponse.
  * Use `create(ListRoutersResponseSchema)` to create a new message.
  */
-export const ListRoutersResponseSchema: GenMessage<ListRoutersResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_router, 10);
+export const ListRoutersResponseSchema: GenMessage<ListRoutersResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_router, 10);
 
 /**
  * @generated from enum mantrae.v1.RouterType
  */
 export enum RouterType {
-  /**
-   * @generated from enum value: ROUTER_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
+	/**
+	 * @generated from enum value: ROUTER_TYPE_UNSPECIFIED = 0;
+	 */
+	UNSPECIFIED = 0,
 
-  /**
-   * @generated from enum value: ROUTER_TYPE_HTTP = 1;
-   */
-  HTTP = 1,
+	/**
+	 * @generated from enum value: ROUTER_TYPE_HTTP = 1;
+	 */
+	HTTP = 1,
 
-  /**
-   * @generated from enum value: ROUTER_TYPE_TCP = 2;
-   */
-  TCP = 2,
+	/**
+	 * @generated from enum value: ROUTER_TYPE_TCP = 2;
+	 */
+	TCP = 2,
 
-  /**
-   * @generated from enum value: ROUTER_TYPE_UDP = 3;
-   */
-  UDP = 3,
+	/**
+	 * @generated from enum value: ROUTER_TYPE_UDP = 3;
+	 */
+	UDP = 3
 }
 
 /**
  * Describes the enum mantrae.v1.RouterType.
  */
-export const RouterTypeSchema: GenEnum<RouterType> = /*@__PURE__*/
-  enumDesc(file_mantrae_v1_router, 0);
+export const RouterTypeSchema: GenEnum<RouterType> =
+	/*@__PURE__*/
+	enumDesc(file_mantrae_v1_router, 0);
 
 /**
  * @generated from service mantrae.v1.RouterService
  */
 export const RouterService: GenService<{
-  /**
-   * @generated from rpc mantrae.v1.RouterService.GetRouter
-   */
-  getRouter: {
-    methodKind: "unary";
-    input: typeof GetRouterRequestSchema;
-    output: typeof GetRouterResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.RouterService.CreateRouter
-   */
-  createRouter: {
-    methodKind: "unary";
-    input: typeof CreateRouterRequestSchema;
-    output: typeof CreateRouterResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.RouterService.UpdateRouter
-   */
-  updateRouter: {
-    methodKind: "unary";
-    input: typeof UpdateRouterRequestSchema;
-    output: typeof UpdateRouterResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.RouterService.DeleteRouter
-   */
-  deleteRouter: {
-    methodKind: "unary";
-    input: typeof DeleteRouterRequestSchema;
-    output: typeof DeleteRouterResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.RouterService.ListRouters
-   */
-  listRouters: {
-    methodKind: "unary";
-    input: typeof ListRoutersRequestSchema;
-    output: typeof ListRoutersResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_mantrae_v1_router, 0);
-
+	/**
+	 * @generated from rpc mantrae.v1.RouterService.GetRouter
+	 */
+	getRouter: {
+		methodKind: 'unary';
+		input: typeof GetRouterRequestSchema;
+		output: typeof GetRouterResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.RouterService.CreateRouter
+	 */
+	createRouter: {
+		methodKind: 'unary';
+		input: typeof CreateRouterRequestSchema;
+		output: typeof CreateRouterResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.RouterService.UpdateRouter
+	 */
+	updateRouter: {
+		methodKind: 'unary';
+		input: typeof UpdateRouterRequestSchema;
+		output: typeof UpdateRouterResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.RouterService.DeleteRouter
+	 */
+	deleteRouter: {
+		methodKind: 'unary';
+		input: typeof DeleteRouterRequestSchema;
+		output: typeof DeleteRouterResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.RouterService.ListRouters
+	 */
+	listRouters: {
+		methodKind: 'unary';
+		input: typeof ListRoutersRequestSchema;
+		output: typeof ListRoutersResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_router, 0);

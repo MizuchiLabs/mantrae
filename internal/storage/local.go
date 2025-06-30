@@ -61,15 +61,16 @@ func (ls *LocalStorage) List(ctx context.Context) ([]StoredFile, error) {
 		if err != nil {
 			continue
 		}
+		ts := info.ModTime()
 		files = append(files, StoredFile{
 			Name:      entry.Name(),
-			Timestamp: info.ModTime(),
 			Size:      info.Size(),
+			Timestamp: &ts,
 		})
 	}
 
 	sort.Slice(files, func(i, j int) bool {
-		return files[i].Timestamp.After(files[j].Timestamp)
+		return files[i].Timestamp.After(*files[j].Timestamp)
 	})
 
 	return files, nil

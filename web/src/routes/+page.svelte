@@ -19,7 +19,6 @@
 		CheckCircle,
 		AlertCircle,
 		Clock,
-		Plus,
 		TrendingUp,
 		Wifi,
 		Database
@@ -39,6 +38,9 @@
 	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { DateFormat } from '$lib/stores/common';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
+	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
+	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 
 	let totalAgents = $derived.by(async () => {
 		const response = await agentClient.listAgents({
@@ -93,7 +95,14 @@
 			}
 		}
 	}
+
+	let modalProfile = $state({} as Profile);
+	let modalProfileOpen = $state(false);
+	let modalConfigOpen = $state(false);
 </script>
+
+<ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
+<ConfigModal bind:open={modalConfigOpen} />
 
 <div class="container mx-auto space-y-6 p-6">
 	<!-- Header -->
@@ -392,13 +401,26 @@
 									</div>
 
 									<div class="flex items-center gap-2 pt-2">
-										<Button size="sm" variant="outline" class="gap-1">
+										<Button
+											size="sm"
+											variant="outline"
+											class="gap-1"
+											onclick={() => {
+												modalProfile = profile;
+												modalProfileOpen = true;
+											}}
+										>
 											<Settings class="h-3 w-3" />
 											Configure
 										</Button>
-										<Button size="sm" variant="outline" class="gap-1">
+										<Button
+											size="sm"
+											variant="outline"
+											class="gap-1"
+											onclick={() => (modalConfigOpen = true)}
+										>
 											<Activity class="h-3 w-3" />
-											Monitor
+											View Config
 										</Button>
 									</div>
 								</div>
@@ -445,34 +467,6 @@
 						</div>
 					</Card.Content>
 				</Card.Root>
-
-				<!-- Quick Actions -->
-				<!-- <Card.Root> -->
-				<!-- 	<Card.Header> -->
-				<!-- 		<Card.Title class="flex items-center gap-2"> -->
-				<!-- 			<Plus class="h-5 w-5" /> -->
-				<!-- 			Quick Actions -->
-				<!-- 		</Card.Title> -->
-				<!-- 	</Card.Header> -->
-				<!-- 	<Card.Content class="space-y-2"> -->
-				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
-				<!-- 			<Route class="h-4 w-4" /> -->
-				<!-- 			New Router -->
-				<!-- 		</Button> -->
-				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
-				<!-- 			<Server class="h-4 w-4" /> -->
-				<!-- 			New Service -->
-				<!-- 		</Button> -->
-				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
-				<!-- 			<Bot class="h-4 w-4" /> -->
-				<!-- 			Connect Agent -->
-				<!-- 		</Button> -->
-				<!-- 		<Button variant="outline" size="sm" class="w-full justify-start gap-2"> -->
-				<!-- 			<Globe class="h-4 w-4" /> -->
-				<!-- 			DNS Settings -->
-				<!-- 		</Button> -->
-				<!-- 	</Card.Content> -->
-				<!-- </Card.Root> -->
 
 				<!-- Recent Activity -->
 				<Card.Root>

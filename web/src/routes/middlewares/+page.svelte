@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
-	import MiddlewareModal from '$lib/components/modals/middleware.svelte';
+	import MiddlewareModal from '$lib/components/modals/MiddlewareModal.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { Bot, Globe, Layers, Network, Pencil, Power, PowerOff, Trash } from '@lucide/svelte';
@@ -234,7 +234,7 @@
 	<title>Middlewares</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">

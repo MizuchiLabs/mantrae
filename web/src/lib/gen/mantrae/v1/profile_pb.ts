@@ -2,291 +2,303 @@
 // @generated from file mantrae/v1/profile.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
+import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
+import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
+import type { Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file mantrae/v1/profile.proto.
  */
-export const file_mantrae_v1_profile: GenFile = /*@__PURE__*/
-  fileDesc("ChhtYW50cmFlL3YxL3Byb2ZpbGUucHJvdG8SCm1hbnRyYWUudjEimAEKB1Byb2ZpbGUSCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIrChFHZXRQcm9maWxlUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgACI6ChJHZXRQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLm1hbnRyYWUudjEuUHJvZmlsZSJaChRDcmVhdGVQcm9maWxlUmVxdWVzdBIYCgRuYW1lGAEgASgJQgq6SAfIAQFyAhABEhgKC2Rlc2NyaXB0aW9uGAIgASgJSACIAQFCDgoMX2Rlc2NyaXB0aW9uIj0KFUNyZWF0ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMubWFudHJhZS52MS5Qcm9maWxlInIKFFVwZGF0ZVByb2ZpbGVSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAEhgKBG5hbWUYAiABKAlCCrpIB8gBAXICEAESGAoLZGVzY3JpcHRpb24YAyABKAlIAIgBAUIOCgxfZGVzY3JpcHRpb24iPQoVVXBkYXRlUHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5tYW50cmFlLnYxLlByb2ZpbGUiLgoURGVsZXRlUHJvZmlsZVJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiFwoVRGVsZXRlUHJvZmlsZVJlc3BvbnNlIrQBChNMaXN0UHJvZmlsZXNSZXF1ZXN0EmoKBWxpbWl0GAEgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgCIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlIKFExpc3RQcm9maWxlc1Jlc3BvbnNlEiUKCHByb2ZpbGVzGAEgAygLMhMubWFudHJhZS52MS5Qcm9maWxlEhMKC3RvdGFsX2NvdW50GAIgASgDMrwDCg5Qcm9maWxlU2VydmljZRJQCgpHZXRQcm9maWxlEh0ubWFudHJhZS52MS5HZXRQcm9maWxlUmVxdWVzdBoeLm1hbnRyYWUudjEuR2V0UHJvZmlsZVJlc3BvbnNlIgOQAgESVAoNQ3JlYXRlUHJvZmlsZRIgLm1hbnRyYWUudjEuQ3JlYXRlUHJvZmlsZVJlcXVlc3QaIS5tYW50cmFlLnYxLkNyZWF0ZVByb2ZpbGVSZXNwb25zZRJUCg1VcGRhdGVQcm9maWxlEiAubWFudHJhZS52MS5VcGRhdGVQcm9maWxlUmVxdWVzdBohLm1hbnRyYWUudjEuVXBkYXRlUHJvZmlsZVJlc3BvbnNlElQKDURlbGV0ZVByb2ZpbGUSIC5tYW50cmFlLnYxLkRlbGV0ZVByb2ZpbGVSZXF1ZXN0GiEubWFudHJhZS52MS5EZWxldGVQcm9maWxlUmVzcG9uc2USVgoMTGlzdFByb2ZpbGVzEh8ubWFudHJhZS52MS5MaXN0UHJvZmlsZXNSZXF1ZXN0GiAubWFudHJhZS52MS5MaXN0UHJvZmlsZXNSZXNwb25zZSIDkAIBQqYBCg5jb20ubWFudHJhZS52MUIMUHJvZmlsZVByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+export const file_mantrae_v1_profile: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		'ChhtYW50cmFlL3YxL3Byb2ZpbGUucHJvdG8SCm1hbnRyYWUudjEimAEKB1Byb2ZpbGUSCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRITCgtkZXNjcmlwdGlvbhgDIAEoCRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIrChFHZXRQcm9maWxlUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgACI6ChJHZXRQcm9maWxlUmVzcG9uc2USJAoHcHJvZmlsZRgBIAEoCzITLm1hbnRyYWUudjEuUHJvZmlsZSJaChRDcmVhdGVQcm9maWxlUmVxdWVzdBIYCgRuYW1lGAEgASgJQgq6SAfIAQFyAhABEhgKC2Rlc2NyaXB0aW9uGAIgASgJSACIAQFCDgoMX2Rlc2NyaXB0aW9uIj0KFUNyZWF0ZVByb2ZpbGVSZXNwb25zZRIkCgdwcm9maWxlGAEgASgLMhMubWFudHJhZS52MS5Qcm9maWxlInIKFFVwZGF0ZVByb2ZpbGVSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAEhgKBG5hbWUYAiABKAlCCrpIB8gBAXICEAESGAoLZGVzY3JpcHRpb24YAyABKAlIAIgBAUIOCgxfZGVzY3JpcHRpb24iPQoVVXBkYXRlUHJvZmlsZVJlc3BvbnNlEiQKB3Byb2ZpbGUYASABKAsyEy5tYW50cmFlLnYxLlByb2ZpbGUiLgoURGVsZXRlUHJvZmlsZVJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiFwoVRGVsZXRlUHJvZmlsZVJlc3BvbnNlIrQBChNMaXN0UHJvZmlsZXNSZXF1ZXN0EmoKBWxpbWl0GAEgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgCIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlIKFExpc3RQcm9maWxlc1Jlc3BvbnNlEiUKCHByb2ZpbGVzGAEgAygLMhMubWFudHJhZS52MS5Qcm9maWxlEhMKC3RvdGFsX2NvdW50GAIgASgDMrwDCg5Qcm9maWxlU2VydmljZRJQCgpHZXRQcm9maWxlEh0ubWFudHJhZS52MS5HZXRQcm9maWxlUmVxdWVzdBoeLm1hbnRyYWUudjEuR2V0UHJvZmlsZVJlc3BvbnNlIgOQAgESVAoNQ3JlYXRlUHJvZmlsZRIgLm1hbnRyYWUudjEuQ3JlYXRlUHJvZmlsZVJlcXVlc3QaIS5tYW50cmFlLnYxLkNyZWF0ZVByb2ZpbGVSZXNwb25zZRJUCg1VcGRhdGVQcm9maWxlEiAubWFudHJhZS52MS5VcGRhdGVQcm9maWxlUmVxdWVzdBohLm1hbnRyYWUudjEuVXBkYXRlUHJvZmlsZVJlc3BvbnNlElQKDURlbGV0ZVByb2ZpbGUSIC5tYW50cmFlLnYxLkRlbGV0ZVByb2ZpbGVSZXF1ZXN0GiEubWFudHJhZS52MS5EZWxldGVQcm9maWxlUmVzcG9uc2USVgoMTGlzdFByb2ZpbGVzEh8ubWFudHJhZS52MS5MaXN0UHJvZmlsZXNSZXF1ZXN0GiAubWFudHJhZS52MS5MaXN0UHJvZmlsZXNSZXNwb25zZSIDkAIBQqYBCg5jb20ubWFudHJhZS52MUIMUHJvZmlsZVByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z',
+		[file_buf_validate_validate, file_google_protobuf_timestamp]
+	);
 
 /**
  * @generated from message mantrae.v1.Profile
  */
-export type Profile = Message<"mantrae.v1.Profile"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type Profile = Message<'mantrae.v1.Profile'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string description = 3;
-   */
-  description: string;
+	/**
+	 * @generated from field: string description = 3;
+	 */
+	description: string;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 4;
-   */
-  createdAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 4;
+	 */
+	createdAt?: Timestamp;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 5;
-   */
-  updatedAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 5;
+	 */
+	updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.Profile.
  * Use `create(ProfileSchema)` to create a new message.
  */
-export const ProfileSchema: GenMessage<Profile> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 0);
+export const ProfileSchema: GenMessage<Profile> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 0);
 
 /**
  * @generated from message mantrae.v1.GetProfileRequest
  */
-export type GetProfileRequest = Message<"mantrae.v1.GetProfileRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type GetProfileRequest = Message<'mantrae.v1.GetProfileRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.GetProfileRequest.
  * Use `create(GetProfileRequestSchema)` to create a new message.
  */
-export const GetProfileRequestSchema: GenMessage<GetProfileRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 1);
+export const GetProfileRequestSchema: GenMessage<GetProfileRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 1);
 
 /**
  * @generated from message mantrae.v1.GetProfileResponse
  */
-export type GetProfileResponse = Message<"mantrae.v1.GetProfileResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Profile profile = 1;
-   */
-  profile?: Profile;
+export type GetProfileResponse = Message<'mantrae.v1.GetProfileResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Profile profile = 1;
+	 */
+	profile?: Profile;
 };
 
 /**
  * Describes the message mantrae.v1.GetProfileResponse.
  * Use `create(GetProfileResponseSchema)` to create a new message.
  */
-export const GetProfileResponseSchema: GenMessage<GetProfileResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 2);
+export const GetProfileResponseSchema: GenMessage<GetProfileResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 2);
 
 /**
  * @generated from message mantrae.v1.CreateProfileRequest
  */
-export type CreateProfileRequest = Message<"mantrae.v1.CreateProfileRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
+export type CreateProfileRequest = Message<'mantrae.v1.CreateProfileRequest'> & {
+	/**
+	 * @generated from field: string name = 1;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: optional string description = 2;
-   */
-  description?: string;
+	/**
+	 * @generated from field: optional string description = 2;
+	 */
+	description?: string;
 };
 
 /**
  * Describes the message mantrae.v1.CreateProfileRequest.
  * Use `create(CreateProfileRequestSchema)` to create a new message.
  */
-export const CreateProfileRequestSchema: GenMessage<CreateProfileRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 3);
+export const CreateProfileRequestSchema: GenMessage<CreateProfileRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 3);
 
 /**
  * @generated from message mantrae.v1.CreateProfileResponse
  */
-export type CreateProfileResponse = Message<"mantrae.v1.CreateProfileResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Profile profile = 1;
-   */
-  profile?: Profile;
+export type CreateProfileResponse = Message<'mantrae.v1.CreateProfileResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Profile profile = 1;
+	 */
+	profile?: Profile;
 };
 
 /**
  * Describes the message mantrae.v1.CreateProfileResponse.
  * Use `create(CreateProfileResponseSchema)` to create a new message.
  */
-export const CreateProfileResponseSchema: GenMessage<CreateProfileResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 4);
+export const CreateProfileResponseSchema: GenMessage<CreateProfileResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 4);
 
 /**
  * @generated from message mantrae.v1.UpdateProfileRequest
  */
-export type UpdateProfileRequest = Message<"mantrae.v1.UpdateProfileRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type UpdateProfileRequest = Message<'mantrae.v1.UpdateProfileRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: string name = 2;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: optional string description = 3;
-   */
-  description?: string;
+	/**
+	 * @generated from field: optional string description = 3;
+	 */
+	description?: string;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateProfileRequest.
  * Use `create(UpdateProfileRequestSchema)` to create a new message.
  */
-export const UpdateProfileRequestSchema: GenMessage<UpdateProfileRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 5);
+export const UpdateProfileRequestSchema: GenMessage<UpdateProfileRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 5);
 
 /**
  * @generated from message mantrae.v1.UpdateProfileResponse
  */
-export type UpdateProfileResponse = Message<"mantrae.v1.UpdateProfileResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Profile profile = 1;
-   */
-  profile?: Profile;
+export type UpdateProfileResponse = Message<'mantrae.v1.UpdateProfileResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.Profile profile = 1;
+	 */
+	profile?: Profile;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateProfileResponse.
  * Use `create(UpdateProfileResponseSchema)` to create a new message.
  */
-export const UpdateProfileResponseSchema: GenMessage<UpdateProfileResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 6);
+export const UpdateProfileResponseSchema: GenMessage<UpdateProfileResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 6);
 
 /**
  * @generated from message mantrae.v1.DeleteProfileRequest
  */
-export type DeleteProfileRequest = Message<"mantrae.v1.DeleteProfileRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type DeleteProfileRequest = Message<'mantrae.v1.DeleteProfileRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteProfileRequest.
  * Use `create(DeleteProfileRequestSchema)` to create a new message.
  */
-export const DeleteProfileRequestSchema: GenMessage<DeleteProfileRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 7);
+export const DeleteProfileRequestSchema: GenMessage<DeleteProfileRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 7);
 
 /**
  * @generated from message mantrae.v1.DeleteProfileResponse
  */
-export type DeleteProfileResponse = Message<"mantrae.v1.DeleteProfileResponse"> & {
-};
+export type DeleteProfileResponse = Message<'mantrae.v1.DeleteProfileResponse'> & {};
 
 /**
  * Describes the message mantrae.v1.DeleteProfileResponse.
  * Use `create(DeleteProfileResponseSchema)` to create a new message.
  */
-export const DeleteProfileResponseSchema: GenMessage<DeleteProfileResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 8);
+export const DeleteProfileResponseSchema: GenMessage<DeleteProfileResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 8);
 
 /**
  * @generated from message mantrae.v1.ListProfilesRequest
  */
-export type ListProfilesRequest = Message<"mantrae.v1.ListProfilesRequest"> & {
-  /**
-   * @generated from field: optional int64 limit = 1;
-   */
-  limit?: bigint;
+export type ListProfilesRequest = Message<'mantrae.v1.ListProfilesRequest'> & {
+	/**
+	 * @generated from field: optional int64 limit = 1;
+	 */
+	limit?: bigint;
 
-  /**
-   * @generated from field: optional int64 offset = 2;
-   */
-  offset?: bigint;
+	/**
+	 * @generated from field: optional int64 offset = 2;
+	 */
+	offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListProfilesRequest.
  * Use `create(ListProfilesRequestSchema)` to create a new message.
  */
-export const ListProfilesRequestSchema: GenMessage<ListProfilesRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 9);
+export const ListProfilesRequestSchema: GenMessage<ListProfilesRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 9);
 
 /**
  * @generated from message mantrae.v1.ListProfilesResponse
  */
-export type ListProfilesResponse = Message<"mantrae.v1.ListProfilesResponse"> & {
-  /**
-   * @generated from field: repeated mantrae.v1.Profile profiles = 1;
-   */
-  profiles: Profile[];
+export type ListProfilesResponse = Message<'mantrae.v1.ListProfilesResponse'> & {
+	/**
+	 * @generated from field: repeated mantrae.v1.Profile profiles = 1;
+	 */
+	profiles: Profile[];
 
-  /**
-   * @generated from field: int64 total_count = 2;
-   */
-  totalCount: bigint;
+	/**
+	 * @generated from field: int64 total_count = 2;
+	 */
+	totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListProfilesResponse.
  * Use `create(ListProfilesResponseSchema)` to create a new message.
  */
-export const ListProfilesResponseSchema: GenMessage<ListProfilesResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_profile, 10);
+export const ListProfilesResponseSchema: GenMessage<ListProfilesResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_profile, 10);
 
 /**
  * @generated from service mantrae.v1.ProfileService
  */
 export const ProfileService: GenService<{
-  /**
-   * @generated from rpc mantrae.v1.ProfileService.GetProfile
-   */
-  getProfile: {
-    methodKind: "unary";
-    input: typeof GetProfileRequestSchema;
-    output: typeof GetProfileResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.ProfileService.CreateProfile
-   */
-  createProfile: {
-    methodKind: "unary";
-    input: typeof CreateProfileRequestSchema;
-    output: typeof CreateProfileResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.ProfileService.UpdateProfile
-   */
-  updateProfile: {
-    methodKind: "unary";
-    input: typeof UpdateProfileRequestSchema;
-    output: typeof UpdateProfileResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.ProfileService.DeleteProfile
-   */
-  deleteProfile: {
-    methodKind: "unary";
-    input: typeof DeleteProfileRequestSchema;
-    output: typeof DeleteProfileResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.ProfileService.ListProfiles
-   */
-  listProfiles: {
-    methodKind: "unary";
-    input: typeof ListProfilesRequestSchema;
-    output: typeof ListProfilesResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_mantrae_v1_profile, 0);
-
+	/**
+	 * @generated from rpc mantrae.v1.ProfileService.GetProfile
+	 */
+	getProfile: {
+		methodKind: 'unary';
+		input: typeof GetProfileRequestSchema;
+		output: typeof GetProfileResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.ProfileService.CreateProfile
+	 */
+	createProfile: {
+		methodKind: 'unary';
+		input: typeof CreateProfileRequestSchema;
+		output: typeof CreateProfileResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.ProfileService.UpdateProfile
+	 */
+	updateProfile: {
+		methodKind: 'unary';
+		input: typeof UpdateProfileRequestSchema;
+		output: typeof UpdateProfileResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.ProfileService.DeleteProfile
+	 */
+	deleteProfile: {
+		methodKind: 'unary';
+		input: typeof DeleteProfileRequestSchema;
+		output: typeof DeleteProfileResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.ProfileService.ListProfiles
+	 */
+	listProfiles: {
+		methodKind: 'unary';
+		input: typeof ListProfilesRequestSchema;
+		output: typeof ListProfilesResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_profile, 0);

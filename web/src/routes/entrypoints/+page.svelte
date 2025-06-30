@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { entryPointClient, routerClient } from '$lib/api';
-	import EntryPointModal from '$lib/components/modals/entrypoint.svelte';
+	import EntryPointModal from '$lib/components/modals/EntryPointModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
@@ -170,7 +170,7 @@
 	<title>EntryPoints</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">

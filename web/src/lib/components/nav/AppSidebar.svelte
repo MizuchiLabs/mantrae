@@ -15,7 +15,6 @@
 		Settings,
 		Users,
 		Bot,
-		Tag,
 		Pencil,
 		CircleUserRound,
 		Sun,
@@ -29,8 +28,8 @@
 	import { user } from '$lib/stores/user';
 	import { profileClient, userClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import ProfileModal from '$lib/components/modals/profile.svelte';
-	import UserModal from '$lib/components/modals/user.svelte';
+	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
+	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
 
@@ -64,13 +63,9 @@
 	let modalProfileOpen = $state(false);
 
 	let modalUserOpen = $state(false);
-
-	// let modalInfo = $state({} as TraefikInfo);
-	let modalInfoOpen = $state(false);
 </script>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
-<!-- <InfoModal bind:open={infoModalOpen} /> -->
 
 {#if user.isLoggedIn() && user.value}
 	<UserModal bind:open={modalUserOpen} bind:item={user.value} data={undefined} />
@@ -194,26 +189,26 @@
 			</Sidebar.Menu>
 		</Sidebar.Group>
 
-		<!-- Extra buttons (Traefik, etc.) -->
-		<!-- <Sidebar.Group class="mt-auto"> -->
-		<!-- 	<Sidebar.GroupContent> -->
-		<!-- 		<Sidebar.GroupLabel>Status</Sidebar.GroupLabel> -->
-		<!-- 		<Sidebar.Menu> -->
-		<!-- 			{#if $profiles} -->
+		<!-- Bottom buttons -->
+		<!-- {#if profile.isValid()} -->
+		<!-- 	<Sidebar.Group class="mt-auto"> -->
+		<!-- 		<Sidebar.GroupContent> -->
+		<!-- 			<Sidebar.GroupLabel>Status</Sidebar.GroupLabel> -->
+		<!-- 			<Sidebar.Menu> -->
 		<!-- 				<Sidebar.MenuItem> -->
 		<!-- 					<Sidebar.MenuButton> -->
 		<!-- 						{#snippet child({ props })} -->
-		<!-- 							<button {...props} onclick={() => (infoModalOpen = true)}> -->
-		<!-- 								<Zap /> -->
-		<!-- 								<span>Traefik Status</span> -->
+		<!-- 							<button {...props} onclick={() => (modalInfoOpen = true)}> -->
+		<!-- 								<Radio /> -->
+		<!-- 								<span>View Config</span> -->
 		<!-- 							</button> -->
 		<!-- 						{/snippet} -->
 		<!-- 					</Sidebar.MenuButton> -->
 		<!-- 				</Sidebar.MenuItem> -->
-		<!-- 			{/if} -->
-		<!-- 		</Sidebar.Menu> -->
-		<!-- 	</Sidebar.GroupContent> -->
-		<!-- </Sidebar.Group> -->
+		<!-- 			</Sidebar.Menu> -->
+		<!-- 		</Sidebar.GroupContent> -->
+		<!-- 	</Sidebar.Group> -->
+		<!-- {/if} -->
 	</Sidebar.Content>
 
 	<!-- User Profile -->

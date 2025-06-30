@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { dnsClient } from '$lib/api';
-	import DNSModal from '$lib/components/modals/dns.svelte';
+	import DNSModal from '$lib/components/modals/DNSModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnCheck from '$lib/components/tables/ColumnCheck.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
@@ -220,7 +220,7 @@
 	<title>DNS Providers</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">

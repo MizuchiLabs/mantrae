@@ -24,7 +24,9 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		// Determine response format: prefer query param over header
 		if format == "yaml" || (format == "" && strings.Contains(accept, "yaml")) {
 			w.Header().Set("Content-Type", "application/x-yaml")
-			if err := yaml.NewEncoder(w).Encode(cfg); err != nil {
+			enc := yaml.NewEncoder(w)
+			enc.SetIndent(2)
+			if err := enc.Encode(cfg); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -33,7 +35,9 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 
 		// Default to JSON
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(cfg); err != nil {
+		enc := json.NewEncoder(w)
+		enc.SetIndent("", "  ") // Indent the output with two spaces
+		if err := enc.Encode(cfg); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

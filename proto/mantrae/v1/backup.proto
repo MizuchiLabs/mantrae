@@ -48,7 +48,7 @@ message DeleteBackupRequest {
 message DeleteBackupResponse {}
 
 message DownloadBackupRequest {
-  string name = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 1;
 }
 message DownloadBackupResponse {
   bytes data = 1;

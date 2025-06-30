@@ -21,10 +21,8 @@ import (
 
 func UploadAvatar(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Limit request size to prevent memory issues
-		r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // 10MB limit
-
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
+		// 25MB limit
+		if err := r.ParseMultipartForm(25 << 20); err != nil {
 			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
 			return
 		}
@@ -81,10 +79,8 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 
 func UploadBackup(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Limit request size to prevent memory issues
-		r.Body = http.MaxBytesReader(w, r.Body, 100<<20) // 100MB limit
-
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
+		// 100MB limit
+		if err := r.ParseMultipartForm(100 << 20); err != nil {
 			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
 			return
 		}
@@ -122,6 +118,14 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				http.Error(
 					w,
 					fmt.Sprintf("Failed to store backup file: %v", err),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+			if err = a.BM.Restore(r.Context(), filename); err != nil {
+				http.Error(
+					w,
+					fmt.Sprintf("Failed to restore from backup: %v", err),
 					http.StatusInternalServerError,
 				)
 				return

@@ -3,7 +3,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { CircleCheck, CircleSlash, Pencil, Trash, Users } from '@lucide/svelte';
-	import UserModal from '$lib/components/modals/user.svelte';
+	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
@@ -173,7 +173,7 @@
 	<title>Users</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">

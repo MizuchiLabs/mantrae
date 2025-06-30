@@ -1,18 +1,18 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
 import {
 	ResourceType,
 	EventType,
 	type ProfileEvent,
 	type ProfileEventsResponse,
-	EventService,
-} from "$lib/gen/mantrae/v1/event_pb";
-import { profile } from "./profile";
-import { ConnectError, createClient } from "@connectrpc/connect";
-import type { Router } from "$lib/gen/mantrae/v1/router_pb";
-import type { Service } from "$lib/gen/mantrae/v1/service_pb";
-import type { Middleware } from "$lib/gen/mantrae/v1/middleware_pb";
-import { createConnectTransport } from "@connectrpc/connect-web";
-import { BASE_URL } from "$lib/api";
+	EventService
+} from '$lib/gen/mantrae/v1/event_pb';
+import { profile } from './profile';
+import { ConnectError, createClient } from '@connectrpc/connect';
+import type { Router } from '$lib/gen/mantrae/v1/router_pb';
+import type { Service } from '$lib/gen/mantrae/v1/service_pb';
+import type { Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
+import { createConnectTransport } from '@connectrpc/connect-web';
+import { BASE_URL } from '$lib/api';
 
 type ResourceUnion = Router | Service | Middleware;
 
@@ -36,23 +36,23 @@ const eventClient = createClient(
 		interceptors: [
 			(next) => async (req) => {
 				// Debug the request
-				console.log("Request headers:", req.header);
-				console.log("Request method:", req.method);
+				console.log('Request headers:', req.header);
+				console.log('Request method:', req.method);
 				return await next(req);
-			},
-		],
-	}),
+			}
+		]
+	})
 );
 
 export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 	resourceType: ResourceType,
-	fetchFn: (pageSize: number, pageIndex: number) => Promise<FetchResult<T>>,
+	fetchFn: (pageSize: number, pageIndex: number) => Promise<FetchResult<T>>
 ) {
 	const { subscribe, set, update } = writable<RealtimeState<T>>({
 		data: [],
 		rowCount: 0,
 		loading: false,
-		error: null,
+		error: null
 	});
 
 	let eventStream: AsyncIterable<ProfileEventsResponse> | null = null;
@@ -63,17 +63,11 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 
 		switch (resourceType) {
 			case ResourceType.ROUTER:
-				return event.resource.case === "router"
-					? (event.resource.value as T)
-					: null;
+				return event.resource.case === 'router' ? (event.resource.value as T) : null;
 			case ResourceType.SERVICE:
-				return event.resource.case === "service"
-					? (event.resource.value as T)
-					: null;
+				return event.resource.case === 'service' ? (event.resource.value as T) : null;
 			case ResourceType.MIDDLEWARE:
-				return event.resource.case === "middleware"
-					? (event.resource.value as T)
-					: null;
+				return event.resource.case === 'middleware' ? (event.resource.value as T) : null;
 			default:
 				return null;
 		}
@@ -86,11 +80,11 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 
 		switch (resourceType) {
 			case ResourceType.ROUTER:
-				return event.resource.case === "router";
+				return event.resource.case === 'router';
 			case ResourceType.SERVICE:
-				return event.resource.case === "service";
+				return event.resource.case === 'service';
 			case ResourceType.MIDDLEWARE:
-				return event.resource.case === "middleware";
+				return event.resource.case === 'middleware';
 			default:
 				return false;
 		}
@@ -103,7 +97,7 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 		try {
 			eventStream = eventClient.profileEvents({
 				profileId: profile.id,
-				resourceTypes: [resourceType],
+				resourceTypes: [resourceType]
 			});
 			if (!eventStream) return;
 
@@ -126,16 +120,14 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 								return {
 									...state,
 									data: newData,
-									rowCount: state.rowCount + 1,
+									rowCount: state.rowCount + 1
 								};
 							}
 							return state;
 						}
 
 						case EventType.UPDATED: {
-							const updateIndex = newData.findIndex(
-								(item) => item.id === resource.id,
-							);
+							const updateIndex = newData.findIndex((item) => item.id === resource.id);
 							if (updateIndex !== -1) {
 								newData[updateIndex] = resource;
 								return { ...state, data: newData };
@@ -144,14 +136,12 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 						}
 
 						case EventType.DELETED: {
-							const filteredData = newData.filter(
-								(item) => item.id !== resource.id,
-							);
+							const filteredData = newData.filter((item) => item.id !== resource.id);
 							const rowCountDelta = newData.length - filteredData.length;
 							return {
 								...state,
 								data: filteredData,
-								rowCount: Math.max(0, state.rowCount - rowCountDelta),
+								rowCount: Math.max(0, state.rowCount - rowCountDelta)
 							};
 						}
 
@@ -162,7 +152,7 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 			}
 		} catch (error) {
 			const e = ConnectError.from(error);
-			console.error("Event stream error:", e.message);
+			console.error('Event stream error:', e.message);
 			update((state) => ({ ...state, error: e.message }));
 		} finally {
 			isStreaming = false;
@@ -178,14 +168,14 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 				data: result.data,
 				rowCount: result.rowCount,
 				loading: false,
-				error: null,
+				error: null
 			});
 		} catch (error) {
 			const e = ConnectError.from(error);
 			update((state) => ({
 				...state,
 				loading: false,
-				error: e.message,
+				error: e.message
 			}));
 		}
 	}
@@ -204,38 +194,27 @@ export function createRealtimeStore<T extends ResourceUnion & { id: bigint }>(
 		optimisticUpdate: (id: bigint, updates: Partial<T>) => {
 			update((state) => ({
 				...state,
-				data: state.data.map((item) =>
-					item.id === id ? { ...item, ...updates } : item,
-				),
+				data: state.data.map((item) => (item.id === id ? { ...item, ...updates } : item))
 			}));
-		},
+		}
 	};
 }
 
 // Type-safe factory functions for each resource type
 export function createRouterStore(
-	fetchFn: (
-		pageSize: number,
-		pageIndex: number,
-	) => Promise<FetchResult<Router>>,
+	fetchFn: (pageSize: number, pageIndex: number) => Promise<FetchResult<Router>>
 ) {
 	return createRealtimeStore<Router>(ResourceType.ROUTER, fetchFn);
 }
 
 export function createServiceStore(
-	fetchFn: (
-		pageSize: number,
-		pageIndex: number,
-	) => Promise<FetchResult<Service>>,
+	fetchFn: (pageSize: number, pageIndex: number) => Promise<FetchResult<Service>>
 ) {
 	return createRealtimeStore<Service>(ResourceType.SERVICE, fetchFn);
 }
 
 export function createMiddlewareStore(
-	fetchFn: (
-		pageSize: number,
-		pageIndex: number,
-	) => Promise<FetchResult<Middleware>>,
+	fetchFn: (pageSize: number, pageIndex: number) => Promise<FetchResult<Middleware>>
 ) {
 	return createRealtimeStore<Middleware>(ResourceType.MIDDLEWARE, fetchFn);
 }

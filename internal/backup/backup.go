@@ -16,7 +16,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store"
-	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 const BackupPath = "backups"
@@ -168,10 +167,6 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("invalid backup file name")
 	}
 
-	dbPath := util.ResolvePath("mantrae.db")
-	walPath := dbPath + "-wal"
-	shmPath := dbPath + "-shm"
-
 	// Get the backup from storage
 	reader, err := m.Storage.Retrieve(ctx, backupName)
 	if err != nil {
@@ -202,57 +197,8 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("failed to copy backup to temp file: %w", err)
 	}
 
-	// Close the temp file to ensure all data is written
-	if err = tmpFile.Close(); err != nil {
-		return fmt.Errorf("failed to close temp file: %w", err)
-	}
-	// Close current database connections
-	if err = m.Conn.Close(); err != nil {
-		return fmt.Errorf("failed to close database: %w", err)
-	}
-
-	// Remove WAL and SHM files if they exist
-	if err = os.Remove(walPath); err != nil {
-		return fmt.Errorf("failed to remove wal file: %w", err)
-	}
-	if err = os.Remove(shmPath); err != nil {
-		return fmt.Errorf("failed to remove shm file: %w", err)
-	}
-
-	// Copy the temp file to the database location instead of rename (invalid cross-device link)
-	srcFile, err := os.Open(tmpFile.Name())
-	if err != nil {
-		return fmt.Errorf("failed to open temp file for copying: %w", err)
-	}
-	defer func() {
-		if err = srcFile.Close(); err != nil {
-			slog.Error("failed to close temp file", "error", err)
-		}
-	}()
-
-	// Create new database file
-	dstFile, err := os.Create(dbPath)
-	if err != nil {
-		return fmt.Errorf("failed to create new database file: %w", err)
-	}
-	defer func() {
-		if err = dstFile.Close(); err != nil {
-			slog.Error("failed to close temp file", "error", err)
-		}
-	}()
-
-	// Copy the contents
-	if _, err = io.Copy(dstFile, srcFile); err != nil {
-		return fmt.Errorf("failed to copy database contents: %w", err)
-	}
-
-	// Ensure all data is written to disk
-	if err = dstFile.Sync(); err != nil {
-		return fmt.Errorf("failed to sync database file: %w", err)
-	}
-
 	// Reinitialize the database
-	if err = m.Conn.Replace(); err != nil {
+	if err = m.Conn.Replace(tmpFile.Name()); err != nil {
 		return err
 	}
 

@@ -25,9 +25,9 @@ type Backend interface {
 }
 
 type StoredFile struct {
-	Name      string    `json:"name,omitempty"`
-	Size      int64     `json:"size,omitempty"`
-	Timestamp time.Time `json:"timestamp,omitempty"`
+	Name      string     `json:"name,omitempty"`
+	Size      int64      `json:"size,omitempty"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
 func GetBackend(

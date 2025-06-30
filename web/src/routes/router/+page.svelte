@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { routerClient } from '$lib/api';
-	import RouterModal from '$lib/components/modals/router.svelte';
+	import RouterModal from '$lib/components/modals/RouterModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
 	import ColumnText from '$lib/components/tables/ColumnText.svelte';
@@ -346,7 +346,7 @@
 	<title>Routers</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">

@@ -39,8 +39,7 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		q := h.app.Conn.GetQuery()
-		user, err := q.GetUserByUsername(r.Context(), username)
+		user, err := h.app.Conn.GetQuery().GetUserByUsername(r.Context(), username)
 		if err != nil {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -61,35 +60,41 @@ func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
 // JWTAuth middleware for http endpoints
 func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		if token := getCookieToken(r.Header); token != "" {
+			claims, err := meta.DecodeUserToken(token, h.app.Secret)
+			if err != nil {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusUnauthorized)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
-		token = strings.TrimPrefix(token, "Bearer ")
+		if token := getBearerToken(r.Header); token != "" {
+			claims, err := meta.DecodeUserToken(token, h.app.Secret)
+			if err != nil {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
+			if err != nil {
+				http.Error(w, "User not found", http.StatusUnauthorized)
+				return
+			}
 
-		claims, err := meta.DecodeUserToken(token, h.app.Secret)
-		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
+			next.ServeHTTP(w, r.WithContext(ctx))
 			return
 		}
 
-		if claims.UserID == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		// Verify user exists in database
-		q := h.app.Conn.GetQuery()
-		user, err := q.GetUserByID(r.Context(), claims.UserID)
-		if err != nil {
-			http.Error(w, "User not found", http.StatusUnauthorized)
-			return
-		}
-
-		// Add user to context
-		ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 	})
 }
 
@@ -173,7 +178,14 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("invalid token"),
 			)
 		}
-		return context.WithValue(ctx, AuthUserIDKey, claims.UserID), nil
+		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("invalid token"),
+			)
+		}
+		return context.WithValue(ctx, AuthUserIDKey, user.ID), nil
 	}
 	if token := getBearerToken(header); token != "" {
 		claims, err := meta.DecodeUserToken(token, i.app.Secret)
@@ -183,7 +195,14 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("invalid token"),
 			)
 		}
-		return context.WithValue(ctx, AuthUserIDKey, claims.UserID), nil
+		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("invalid token"),
+			)
+		}
+		return context.WithValue(ctx, AuthUserIDKey, user.ID), nil
 	}
 
 	// Unauthorized -----------------------------------------------------------
