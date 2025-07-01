@@ -41,23 +41,21 @@
 		const isEmail = username.includes('@');
 
 		try {
-			await userClient.loginUser({
+			const response = await userClient.loginUser({
 				identifier: {
 					case: isEmail ? 'email' : 'username',
 					value: username
 				},
 				password: password
 			});
+			if (!response.user) throw new Error('Authentication failed');
+			user.value = response.user;
 
-			const verified = await userClient.verifyJWT({});
-			if (verified.user) {
-				user.value = verified.user;
-				if (!profile.id) {
-					const response = await profileClient.listProfiles({});
-					profile.value = response.profiles[0];
-				}
-				await goto('/');
+			if (!profile.id) {
+				const response = await profileClient.listProfiles({});
+				profile.value = response.profiles[0];
 			}
+			await goto('/');
 			toast.success('Logged in successfully!');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -73,7 +71,7 @@
 			<Card.Description>Login to your account</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<form onsubmit={handleSubmit} class="p-4">
+			<form onsubmit={handleSubmit} class="px-4">
 				{#await userClient.getOIDCStatus({}) then value}
 					{#if value.loginEnabled}
 						<div class="flex flex-col gap-4">

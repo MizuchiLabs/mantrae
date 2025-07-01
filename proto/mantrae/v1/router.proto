@@ -40,29 +40,17 @@ message Router {
 }
 
 message GetRouterRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  RouterType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  RouterType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetRouterResponse {
   Router router = 1;
 }
 
 message CreateRouterRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   string agent_id = 2;
-  string name = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
   RouterType type = 6 [
@@ -75,18 +63,9 @@ message CreateRouterResponse {
 }
 
 message UpdateRouterRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  string name = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  RouterType type = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  RouterType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
   repeated DnsProvider dns_providers = 6;
@@ -96,22 +75,13 @@ message UpdateRouterResponse {
 }
 
 message DeleteRouterRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  RouterType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  RouterType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteRouterResponse {}
 
 message ListRoutersRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
   optional RouterType type = 3 [(buf.validate.field).enum.defined_only = true];
   optional int64 limit = 4 [(buf.validate.field).cel = {

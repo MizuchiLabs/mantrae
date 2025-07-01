@@ -2,104 +2,101 @@
 // @generated from file mantrae/v1/util.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/util.proto.
  */
-export const file_mantrae_v1_util: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		'ChVtYW50cmFlL3YxL3V0aWwucHJvdG8SCm1hbnRyYWUudjEiEwoRR2V0VmVyc2lvblJlcXVlc3QiJQoSR2V0VmVyc2lvblJlc3BvbnNlEg8KB3ZlcnNpb24YASABKAkiFAoSR2V0UHVibGljSVBSZXF1ZXN0IjEKE0dldFB1YmxpY0lQUmVzcG9uc2USDAoEaXB2NBgBIAEoCRIMCgRpcHY2GAIgASgJMqoBCgtVdGlsU2VydmljZRJLCgpHZXRWZXJzaW9uEh0ubWFudHJhZS52MS5HZXRWZXJzaW9uUmVxdWVzdBoeLm1hbnRyYWUudjEuR2V0VmVyc2lvblJlc3BvbnNlEk4KC0dldFB1YmxpY0lQEh4ubWFudHJhZS52MS5HZXRQdWJsaWNJUFJlcXVlc3QaHy5tYW50cmFlLnYxLkdldFB1YmxpY0lQUmVzcG9uc2VCowEKDmNvbS5tYW50cmFlLnYxQglVdGlsUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM'
-	);
+export const file_mantrae_v1_util: GenFile = /*@__PURE__*/
+  fileDesc("ChVtYW50cmFlL3YxL3V0aWwucHJvdG8SCm1hbnRyYWUudjEiEwoRR2V0VmVyc2lvblJlcXVlc3QiJQoSR2V0VmVyc2lvblJlc3BvbnNlEg8KB3ZlcnNpb24YASABKAkiFAoSR2V0UHVibGljSVBSZXF1ZXN0IjEKE0dldFB1YmxpY0lQUmVzcG9uc2USDAoEaXB2NBgBIAEoCRIMCgRpcHY2GAIgASgJMqoBCgtVdGlsU2VydmljZRJLCgpHZXRWZXJzaW9uEh0ubWFudHJhZS52MS5HZXRWZXJzaW9uUmVxdWVzdBoeLm1hbnRyYWUudjEuR2V0VmVyc2lvblJlc3BvbnNlEk4KC0dldFB1YmxpY0lQEh4ubWFudHJhZS52MS5HZXRQdWJsaWNJUFJlcXVlc3QaHy5tYW50cmFlLnYxLkdldFB1YmxpY0lQUmVzcG9uc2VCowEKDmNvbS5tYW50cmFlLnYxQglVdGlsUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM");
 
 /**
  * @generated from message mantrae.v1.GetVersionRequest
  */
-export type GetVersionRequest = Message<'mantrae.v1.GetVersionRequest'> & {};
+export type GetVersionRequest = Message<"mantrae.v1.GetVersionRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.GetVersionRequest.
  * Use `create(GetVersionRequestSchema)` to create a new message.
  */
-export const GetVersionRequestSchema: GenMessage<GetVersionRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_util, 0);
+export const GetVersionRequestSchema: GenMessage<GetVersionRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 0);
 
 /**
  * @generated from message mantrae.v1.GetVersionResponse
  */
-export type GetVersionResponse = Message<'mantrae.v1.GetVersionResponse'> & {
-	/**
-	 * @generated from field: string version = 1;
-	 */
-	version: string;
+export type GetVersionResponse = Message<"mantrae.v1.GetVersionResponse"> & {
+  /**
+   * @generated from field: string version = 1;
+   */
+  version: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetVersionResponse.
  * Use `create(GetVersionResponseSchema)` to create a new message.
  */
-export const GetVersionResponseSchema: GenMessage<GetVersionResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_util, 1);
+export const GetVersionResponseSchema: GenMessage<GetVersionResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 1);
 
 /**
  * @generated from message mantrae.v1.GetPublicIPRequest
  */
-export type GetPublicIPRequest = Message<'mantrae.v1.GetPublicIPRequest'> & {};
+export type GetPublicIPRequest = Message<"mantrae.v1.GetPublicIPRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.GetPublicIPRequest.
  * Use `create(GetPublicIPRequestSchema)` to create a new message.
  */
-export const GetPublicIPRequestSchema: GenMessage<GetPublicIPRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_util, 2);
+export const GetPublicIPRequestSchema: GenMessage<GetPublicIPRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 2);
 
 /**
  * @generated from message mantrae.v1.GetPublicIPResponse
  */
-export type GetPublicIPResponse = Message<'mantrae.v1.GetPublicIPResponse'> & {
-	/**
-	 * @generated from field: string ipv4 = 1;
-	 */
-	ipv4: string;
+export type GetPublicIPResponse = Message<"mantrae.v1.GetPublicIPResponse"> & {
+  /**
+   * @generated from field: string ipv4 = 1;
+   */
+  ipv4: string;
 
-	/**
-	 * @generated from field: string ipv6 = 2;
-	 */
-	ipv6: string;
+  /**
+   * @generated from field: string ipv6 = 2;
+   */
+  ipv6: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetPublicIPResponse.
  * Use `create(GetPublicIPResponseSchema)` to create a new message.
  */
-export const GetPublicIPResponseSchema: GenMessage<GetPublicIPResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_util, 3);
+export const GetPublicIPResponseSchema: GenMessage<GetPublicIPResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 3);
 
 /**
  * @generated from service mantrae.v1.UtilService
  */
 export const UtilService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.GetVersion
-	 */
-	getVersion: {
-		methodKind: 'unary';
-		input: typeof GetVersionRequestSchema;
-		output: typeof GetVersionResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.GetPublicIP
-	 */
-	getPublicIP: {
-		methodKind: 'unary';
-		input: typeof GetPublicIPRequestSchema;
-		output: typeof GetPublicIPResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_util, 0);
+  /**
+   * @generated from rpc mantrae.v1.UtilService.GetVersion
+   */
+  getVersion: {
+    methodKind: "unary";
+    input: typeof GetVersionRequestSchema;
+    output: typeof GetVersionResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.UtilService.GetPublicIP
+   */
+  getPublicIP: {
+    methodKind: "unary";
+    input: typeof GetPublicIPRequestSchema;
+    output: typeof GetPublicIPResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_util, 0);
+

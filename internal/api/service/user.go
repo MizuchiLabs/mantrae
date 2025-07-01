@@ -41,7 +41,7 @@ func (s *UserService) LoginUser(
 	case *mantraev1.LoginUserRequest_Email:
 		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("one of username or email must be set"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -70,7 +70,7 @@ func (s *UserService) LoginUser(
 		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.LoginUserResponse{Token: token})
+	res := connect.NewResponse(&mantraev1.LoginUserResponse{User: convert.UserToProto(&user)})
 	res.Header().Set("Set-Cookie", cookie.String())
 	return res, nil
 }
@@ -93,25 +93,6 @@ func (s *UserService) LogoutUser(
 	return res, nil
 }
 
-func (s *UserService) VerifyJWT(
-	ctx context.Context,
-	req *connect.Request[mantraev1.VerifyJWTRequest],
-) (*connect.Response[mantraev1.VerifyJWTResponse], error) {
-	val := ctx.Value(middlewares.AuthUserIDKey)
-	userID, ok := val.(string)
-	if !ok || userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
-	}
-	result, err := s.app.Conn.GetQuery().GetUserByID(ctx, userID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return connect.NewResponse(&mantraev1.VerifyJWTResponse{
-		User: convert.UserToProto(&result),
-	}), nil
-}
-
 func (s *UserService) VerifyOTP(
 	ctx context.Context,
 	req *connect.Request[mantraev1.VerifyOTPRequest],
@@ -124,22 +105,20 @@ func (s *UserService) VerifyOTP(
 	case *mantraev1.VerifyOTPRequest_Email:
 		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("one of username or email must be set"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	if user.Otp == nil || user.OtpExpiry == nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("no OTP token found"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
 	}
-
 	if *user.Otp != util.HashOTP(req.Msg.Otp) {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid OTP token"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
 	}
-
 	if time.Now().After(*user.OtpExpiry) {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("OTP token expired"))
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("token expired"))
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
@@ -152,7 +131,29 @@ func (s *UserService) VerifyOTP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.VerifyOTPResponse{Token: token}), nil
+	// Delete OTP if it's set
+	if user.Otp != nil && user.OtpExpiry != nil {
+		if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, db.UpdateUserResetTokenParams{
+			ID:        user.ID,
+			Otp:       nil,
+			OtpExpiry: nil,
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
+	cookie := http.Cookie{
+		Name:     meta.CookieName,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
+		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		SameSite: http.SameSiteLaxMode,
+	}
+	res := connect.NewResponse(&mantraev1.VerifyOTPResponse{User: convert.UserToProto(&user)})
+	res.Header().Set("Set-Cookie", cookie.String())
+	return res, nil
 }
 
 func (s *UserService) SendOTP(
@@ -167,7 +168,7 @@ func (s *UserService) SendOTP(
 	case *mantraev1.SendOTPRequest_Email:
 		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("one of username or email must be set"))
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -214,7 +215,11 @@ func (s *UserService) GetUser(
 	case *mantraev1.GetUserRequest_Email:
 		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
 	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("one of id, username, or email must be set"))
+		userID := middlewares.GetUserIDFromContext(ctx)
+		if userID == nil {
+			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
+		}
+		user, err = s.app.Conn.GetQuery().GetUserByID(ctx, *userID)
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -335,30 +340,17 @@ func (s *UserService) GetOIDCStatus(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetOIDCStatusRequest],
 ) (*connect.Response[mantraev1.GetOIDCStatusResponse], error) {
-	oidcEnabled, ok := s.app.SM.Get(settings.KeyOIDCEnabled)
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInternal,
-			errors.New("failed to get oidc enabled setting"),
-		)
-	}
-	loginEnabled, ok := s.app.SM.Get(settings.KeyPasswordLoginEnabled)
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInternal,
-			errors.New("failed to get login disabled setting"),
-		)
-	}
-	provider, ok := s.app.SM.Get(settings.KeyOIDCProviderName)
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInternal,
-			errors.New("failed to get oidc provider name setting"),
-		)
-	}
+	sets := s.app.SM.GetMany(
+		ctx,
+		[]string{
+			settings.KeyOIDCEnabled,
+			settings.KeyPasswordLoginEnabled,
+			settings.KeyOIDCProviderName,
+		},
+	)
 	return connect.NewResponse(&mantraev1.GetOIDCStatusResponse{
-		OidcEnabled:  oidcEnabled == "true",
-		LoginEnabled: loginEnabled == "true",
-		Provider:     provider,
+		OidcEnabled:  sets[settings.KeyOIDCEnabled] == "true",
+		LoginEnabled: sets[settings.KeyPasswordLoginEnabled] == "true",
+		Provider:     sets[settings.KeyOIDCProviderName],
 	}), nil
 }

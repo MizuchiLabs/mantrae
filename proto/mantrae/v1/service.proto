@@ -41,75 +41,42 @@ message Service {
 }
 
 message GetServiceRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  ServiceType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetServiceResponse {
   Service service = 1;
 }
 
 message CreateServiceRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   string agent_id = 2;
-  string name = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
-  ServiceType type = 5 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  ServiceType type = 5 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateServiceResponse {
   Service service = 1;
 }
 
 message UpdateServiceRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  string name = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 3;
-  ServiceType type = 4 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  ServiceType type = 4 [(buf.validate.field).enum.defined_only = true];
 }
 message UpdateServiceResponse {
   Service service = 1;
 }
 
 message DeleteServiceRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  ServiceType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteServiceResponse {}
 
 message ListServicesRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
   optional ServiceType type = 3 [(buf.validate.field).enum.defined_only = true];
   optional int64 limit = 4 [(buf.validate.field).cel = {

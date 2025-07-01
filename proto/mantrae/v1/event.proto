@@ -68,10 +68,7 @@ message GlobalEvent {
 }
 
 message ProfileEventsRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   repeated ResourceType resource_types = 2; // Filter by specific resource types
 }
 message ProfileEventsResponse {

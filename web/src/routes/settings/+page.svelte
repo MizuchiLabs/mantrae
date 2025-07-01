@@ -33,6 +33,34 @@
 	let originalSettings: Record<string, string> = {};
 	let changedSettings = $state<Record<string, string>>({});
 
+	// Helper function to check if an entire group should be visible
+	function shouldShowGroup(groupKey: string): boolean {
+		// Hide S3 group when storage is local
+		if (groupKey === 's3' && settingsMap['storage_select'] === 'local') {
+			return false;
+		}
+		return true;
+	}
+
+	// Helper function to check if a setting should be visible
+	function shouldShowSetting(settingKey: string): boolean {
+		// Hide client secret when PKCE is enabled
+		if (settingKey === 'oidc_client_secret' && settingsMap['oidc_pkce'] === 'true') {
+			return false;
+		}
+
+		// Hide OIDC-related settings when OIDC is disabled (except the enable toggle itself)
+		if (
+			(settingKey.startsWith('oidc_') || settingKey === 'password_login_enabled') &&
+			settingKey !== 'oidc_enabled' &&
+			settingsMap['oidc_enabled'] === 'false'
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function handleKeydown(e: KeyboardEvent, key: string) {
 		if (e.key === 'Enter') {
 			let input = e.currentTarget as HTMLInputElement;
@@ -145,6 +173,7 @@
 	onMount(async () => {
 		const response = await settingClient.listSettings({});
 		settingsMap = Object.fromEntries(response.settings.map((s) => [s.key, s.value]));
+		console.log(settingsMap);
 		originalSettings = { ...settingsMap };
 		changedSettings = {};
 
@@ -304,99 +333,105 @@
 			<Card.Content class="flex flex-col gap-6">
 				<!-- Loop through each settings group -->
 				{#each Object.entries(settingGroups) as [groupKey, group] (groupKey)}
-					<div class="mt-4 first:mt-0">
-						<h2 class="mb-0.5 text-xl font-semibold" id={groupKey}>{group.title}</h2>
-						<p class="text-muted-foreground mb-2 text-sm">{group.description}</p>
-						<Separator class="mb-4" />
-
-						<!-- Loop through settings in this group -->
-						{#each group.keys as setting (setting.key)}
-							<div class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between">
-								<div class="border-muted-foreground border-l-2 pl-4">
-									<Label class="flex flex-col items-start gap-1">
-										<span class="text-sm font-medium">{setting.label}</span>
-										<p class="text-muted-foreground text-xs">{setting.description}</p>
-									</Label>
-								</div>
-
-								<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
-									{#if setting.type === 'text'}
-										<Input
-											type="text"
-											value={settingsMap[setting.key]}
-											autocomplete="off"
-											onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-											onblur={saveSettings}
-											onkeydown={(e) => handleKeydown(e, setting.key)}
-										/>
-									{/if}
-									{#if setting.type === 'number'}
-										<Input
-											type="number"
-											value={settingsMap[setting.key]}
-											autocomplete="off"
-											onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-											onblur={saveSettings}
-											onkeydown={(e) => handleKeydown(e, setting.key)}
-										/>
-									{/if}
-									{#if setting.type === 'boolean'}
-										<Switch
-											id={setting.key}
-											checked={settingsMap[setting.key] === 'true'}
-											onCheckedChange={(checked) => {
-												updateSetting(setting.key, checked ? 'true' : 'false');
-												saveSettings();
-											}}
-										/>
-									{/if}
-									{#if setting.type === 'password'}
-										<PasswordInput
-											class="sm:w-auto md:w-[380px]"
-											value={settingsMap[setting.key]}
-											autocomplete="new-password"
-											onblur={saveSettings}
-											onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-											onkeydown={(e) => handleKeydown(e, setting.key)}
-										/>
-									{/if}
-									{#if setting.type === 'duration'}
-										<Input
-											type="text"
-											value={settingsMap[setting.key]}
-											autocomplete="off"
-											onblur={saveSettings}
-											onchange={(e) =>
-												updateSetting(setting.key, parseDuration(e.currentTarget.value))}
-											onkeydown={(e) => handleKeydown(e, setting.key)}
-										/>
-									{/if}
-									{#if setting.type === 'select'}
-										<Select.Root
-											type="single"
-											value={settingsMap[setting.key]}
-											onValueChange={(value) => {
-												updateSetting(setting.key, value);
-												saveSettings();
-											}}
-										>
-											<Select.Trigger class="w-full">
-												{settingsMap[setting.key] || 'Select...'}
-											</Select.Trigger>
-											<Select.Content>
-												{#if setting.key === 'storage_select'}
-													{#each storageTypes as option (option.value)}
-														<Select.Item value={option.value}>{option.label}</Select.Item>
-													{/each}
-												{/if}
-											</Select.Content>
-										</Select.Root>
-									{/if}
-								</div>
-							</div>
+					{#if shouldShowGroup(groupKey)}
+						<div class="mt-4 first:mt-0">
+							<h2 class="mb-0.5 text-xl font-semibold" id={groupKey}>{group.title}</h2>
+							<p class="text-muted-foreground mb-2 text-sm">{group.description}</p>
 							<Separator class="mb-4" />
-						{/each}
-					</div>
+
+							<!-- Loop through settings in this group -->
+							{#each group.keys as setting (setting.key)}
+								{#if shouldShowSetting(setting.key)}
+									<div
+										class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between"
+									>
+										<div class="border-muted-foreground border-l-2 pl-4">
+											<Label class="flex flex-col items-start gap-1">
+												<span class="text-sm font-medium">{setting.label}</span>
+												<p class="text-muted-foreground text-xs">{setting.description}</p>
+											</Label>
+										</div>
+
+										<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
+											{#if setting.type === 'text'}
+												<Input
+													type="text"
+													value={settingsMap[setting.key]}
+													autocomplete="off"
+													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
+													onblur={saveSettings}
+													onkeydown={(e) => handleKeydown(e, setting.key)}
+												/>
+											{/if}
+											{#if setting.type === 'number'}
+												<Input
+													type="number"
+													value={settingsMap[setting.key]}
+													autocomplete="off"
+													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
+													onblur={saveSettings}
+													onkeydown={(e) => handleKeydown(e, setting.key)}
+												/>
+											{/if}
+											{#if setting.type === 'boolean'}
+												<Switch
+													id={setting.key}
+													checked={settingsMap[setting.key] === 'true'}
+													onCheckedChange={(checked) => {
+														updateSetting(setting.key, checked ? 'true' : 'false');
+														saveSettings();
+													}}
+												/>
+											{/if}
+											{#if setting.type === 'password'}
+												<PasswordInput
+													class="sm:w-auto md:w-[380px]"
+													value={settingsMap[setting.key]}
+													autocomplete="new-password"
+													onblur={saveSettings}
+													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
+													onkeydown={(e) => handleKeydown(e, setting.key)}
+												/>
+											{/if}
+											{#if setting.type === 'duration'}
+												<Input
+													type="text"
+													value={settingsMap[setting.key]}
+													autocomplete="off"
+													onblur={saveSettings}
+													onchange={(e) =>
+														updateSetting(setting.key, parseDuration(e.currentTarget.value))}
+													onkeydown={(e) => handleKeydown(e, setting.key)}
+												/>
+											{/if}
+											{#if setting.type === 'select'}
+												<Select.Root
+													type="single"
+													value={settingsMap[setting.key]}
+													onValueChange={(value) => {
+														updateSetting(setting.key, value);
+														saveSettings();
+													}}
+												>
+													<Select.Trigger class="w-full">
+														{settingsMap[setting.key] || 'Select...'}
+													</Select.Trigger>
+													<Select.Content>
+														{#if setting.key === 'storage_select'}
+															{#each storageTypes as option (option.value)}
+																<Select.Item value={option.value}>{option.label}</Select.Item>
+															{/each}
+														{/if}
+													</Select.Content>
+												</Select.Root>
+											{/if}
+										</div>
+									</div>
+									<Separator class="mb-4" />
+								{/if}
+							{/each}
+						</div>
+					{/if}
 				{/each}
 
 				<div class="flex justify-end">

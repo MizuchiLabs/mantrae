@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"maps"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/store"
@@ -31,7 +29,7 @@ type Settings struct {
 	S3AccessKey          string        `setting:"s3_access_key"          default:""`
 	S3SecretKey          string        `setting:"s3_secret_key"          default:""`
 	S3UsePathStyle       bool          `setting:"s3_use_path_style"      default:"false"`
-	EmailHost            string        `setting:"email_host"             default:"localhost"`
+	EmailHost            string        `setting:"email_host"             default:""`
 	EmailPort            int           `setting:"email_port"             default:"587"`
 	EmailUser            string        `setting:"email_user"             default:""`
 	EmailPassword        string        `setting:"email_password"         default:""`
@@ -52,10 +50,8 @@ type Settings struct {
 }
 
 type SettingsManager struct {
-	mu      sync.RWMutex
 	conn    *store.Connection
 	structT reflect.Type
-	cache   map[string]string
 }
 
 func NewManager(conn *store.Connection) *SettingsManager {
@@ -65,7 +61,6 @@ func NewManager(conn *store.Connection) *SettingsManager {
 	return &SettingsManager{
 		conn:    conn,
 		structT: reflect.TypeOf(Settings{}),
-		cache:   make(map[string]string),
 	}
 }
 
@@ -97,9 +92,6 @@ func (sm *SettingsManager) Start(ctx context.Context) {
 			val = def
 		}
 
-		// Set in cache and DB
-		sm.cache[key] = val
-
 		if _, exists := dbMap[key]; !exists {
 			err = q.UpsertSetting(ctx, db.UpsertSettingParams{Key: key, Value: val})
 			if err != nil {
@@ -129,11 +121,12 @@ func (sm *SettingsManager) validKeys() map[string]struct{} {
 	return keys
 }
 
-func (sm *SettingsManager) Get(key string) (string, bool) {
-	sm.mu.RLock()
-	val, ok := sm.cache[key]
-	sm.mu.RUnlock()
-	return val, ok
+func (sm *SettingsManager) Get(ctx context.Context, key string) (string, bool) {
+	setting, err := sm.conn.GetQuery().GetSetting(ctx, key)
+	if err != nil {
+		return "", false
+	}
+	return setting.Value, true
 }
 
 func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
@@ -146,50 +139,39 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 		return err
 	}
 
-	sm.mu.Lock()
-	defer sm.mu.Unlock()
-
-	// Store old value for potential rollback
-	oldVal, existed := sm.cache[key]
-
-	// Update cache first
-	sm.cache[key] = val
-
 	// Update database
 	if err := sm.conn.GetQuery().UpsertSetting(ctx, *params); err != nil {
-		// Rollback cache on database error
-		if existed {
-			sm.cache[key] = oldVal
-		} else {
-			delete(sm.cache, key)
-		}
 		return fmt.Errorf("failed to update setting in database: %w", err)
 	}
 
 	return nil
 }
 
-func (sm *SettingsManager) GetAll() map[string]string {
-	sm.mu.RLock()
-	result := make(map[string]string, len(sm.cache))
-	maps.Copy(result, sm.cache)
-	sm.mu.RUnlock()
+func (sm *SettingsManager) GetAll(ctx context.Context) map[string]string {
+	settings, err := sm.conn.GetQuery().ListSettings(ctx)
+	if err != nil {
+		return make(map[string]string)
+	}
+
+	result := make(map[string]string, len(settings))
+	for _, s := range settings {
+		result[s.Key] = s.Value
+	}
 	return result
 }
 
-func (sm *SettingsManager) GetMany(keys []string) map[string]string {
-	sm.mu.RLock()
+func (sm *SettingsManager) GetMany(ctx context.Context, keys []string) map[string]string {
 	result := make(map[string]string, len(keys))
 	for _, k := range keys {
-		if val, ok := sm.cache[k]; ok {
+		if val, ok := sm.Get(ctx, k); ok {
 			result[k] = val
 		}
 	}
-	sm.mu.RUnlock()
 	return result
 }
 
 // Helper
+
 func AsString(val *string) string {
 	if val == nil || *val == "" {
 		return ""

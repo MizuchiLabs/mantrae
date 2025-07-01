@@ -25,7 +25,6 @@ func TestNewManager(t *testing.T) {
 	sm := NewManager(conn)
 	assert.NotNil(t, sm)
 	assert.NotNil(t, sm.conn)
-	assert.NotNil(t, sm.cache)
 }
 
 func TestGetAndSet(t *testing.T) {
@@ -38,7 +37,7 @@ func TestGetAndSet(t *testing.T) {
 	err := sm.Set(ctx, KeyServerURL, "http://localhost:8080")
 	assert.NoError(t, err)
 
-	val, ok := sm.Get(KeyServerURL)
+	val, ok := sm.Get(ctx, KeyServerURL)
 	assert.True(t, ok)
 	assert.Equal(t, "http://localhost:8080", val)
 
@@ -55,7 +54,7 @@ func TestGetAll(t *testing.T) {
 	sm.Start(ctx)
 
 	// Test getting all values
-	allSettings := sm.GetAll()
+	allSettings := sm.GetAll(ctx)
 	assert.NotEmpty(t, allSettings)
 	assert.Equal(t, "local", allSettings[KeyStorage])
 }
@@ -69,7 +68,7 @@ func TestGetMany(t *testing.T) {
 
 	// Test getting many values
 	keys := []string{KeyServerURL, KeyStorage}
-	manySettings := sm.GetMany(keys)
+	manySettings := sm.GetMany(ctx, keys)
 	assert.Len(t, manySettings, 2)
 	assert.Equal(t, "", manySettings[KeyServerURL])
 	assert.Equal(t, "local", manySettings[KeyStorage])
@@ -95,17 +94,17 @@ func TestStart(t *testing.T) {
 	sm.Start(ctx)
 
 	// Check that the environment variable is used
-	val, ok := sm.Get(KeyServerURL)
+	val, ok := sm.Get(ctx, KeyServerURL)
 	assert.True(t, ok)
 	assert.Equal(t, "http://env.test", val)
 
 	// Check that the database value is used
-	val, ok = sm.Get(KeyStorage)
+	val, ok = sm.Get(ctx, KeyStorage)
 	assert.True(t, ok)
 	assert.Equal(t, "db_value", val)
 
 	// Check that the default value is used
-	val, ok = sm.Get(KeyBackupEnabled)
+	val, ok = sm.Get(ctx, KeyBackupEnabled)
 	assert.True(t, ok)
 	assert.Equal(t, "true", val)
 }

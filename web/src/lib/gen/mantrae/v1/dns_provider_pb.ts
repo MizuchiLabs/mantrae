@@ -2,408 +2,394 @@
 // @generated from file mantrae/v1/dns_provider.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/dns_provider.proto.
  */
-export const file_mantrae_v1_dns_provider: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		'Ch1tYW50cmFlL3YxL2Ruc19wcm92aWRlci5wcm90bxIKbWFudHJhZS52MSL0AQoLRG5zUHJvdmlkZXISCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIpCgR0eXBlGAMgASgOMhsubWFudHJhZS52MS5EbnNQcm92aWRlclR5cGUSLQoGY29uZmlnGAQgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiegoRRG5zUHJvdmlkZXJDb25maWcSDwoHYXBpX2tleRgBIAEoCRIPCgdhcGlfdXJsGAIgASgJEgoKAmlwGAMgASgJEg8KB3Byb3hpZWQYBCABKAgSEwoLYXV0b191cGRhdGUYBSABKAgSEQoJem9uZV90eXBlGAYgASgJIi8KFUdldERuc1Byb3ZpZGVyUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgACJHChZHZXREbnNQcm92aWRlclJlc3BvbnNlEi0KDGRuc19wcm92aWRlchgBIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIirgEKGENyZWF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIYCgRuYW1lGAEgASgJQgq6SAfIAQFyAhABEjYKBHR5cGUYAiABKA4yGy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyVHlwZUILukgIyAEBggECEAESLQoGY29uZmlnGAMgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBCABKAgiSgoZQ3JlYXRlRG5zUHJvdmlkZXJSZXNwb25zZRItCgxkbnNfcHJvdmlkZXIYASABKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyIsYBChhVcGRhdGVEbnNQcm92aWRlclJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAASGAoEbmFtZRgCIAEoCUIKukgHyAEBcgIQARI2CgR0eXBlGAMgASgOMhsubWFudHJhZS52MS5EbnNQcm92aWRlclR5cGVCC7pICMgBAYIBAhABEi0KBmNvbmZpZxgEIAEoCzIdLm1hbnRyYWUudjEuRG5zUHJvdmlkZXJDb25maWcSEQoJaXNfYWN0aXZlGAUgASgIIkoKGVVwZGF0ZURuc1Byb3ZpZGVyUmVzcG9uc2USLQoMZG5zX3Byb3ZpZGVyGAEgASgLMhcubWFudHJhZS52MS5EbnNQcm92aWRlciIyChhEZWxldGVEbnNQcm92aWRlclJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAAiGwoZRGVsZXRlRG5zUHJvdmlkZXJSZXNwb25zZSK4AQoXTGlzdERuc1Byb3ZpZGVyc1JlcXVlc3QSagoFbGltaXQYASABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAIgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiXwoYTGlzdERuc1Byb3ZpZGVyc1Jlc3BvbnNlEi4KDWRuc19wcm92aWRlcnMYASADKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyEhMKC3RvdGFsX2NvdW50GAIgASgDKpgBCg9EbnNQcm92aWRlclR5cGUSIQodRE5TX1BST1ZJREVSX1RZUEVfVU5TUEVDSUZJRUQQABIgChxETlNfUFJPVklERVJfVFlQRV9DTE9VREZMQVJFEAESHgoaRE5TX1BST1ZJREVSX1RZUEVfUE9XRVJETlMQAhIgChxETlNfUFJPVklERVJfVFlQRV9URUNITklUSVVNEAMy/AMKEkRuc1Byb3ZpZGVyU2VydmljZRJcCg5HZXREbnNQcm92aWRlchIhLm1hbnRyYWUudjEuR2V0RG5zUHJvdmlkZXJSZXF1ZXN0GiIubWFudHJhZS52MS5HZXREbnNQcm92aWRlclJlc3BvbnNlIgOQAgESYAoRQ3JlYXRlRG5zUHJvdmlkZXISJC5tYW50cmFlLnYxLkNyZWF0ZURuc1Byb3ZpZGVyUmVxdWVzdBolLm1hbnRyYWUudjEuQ3JlYXRlRG5zUHJvdmlkZXJSZXNwb25zZRJgChFVcGRhdGVEbnNQcm92aWRlchIkLm1hbnRyYWUudjEuVXBkYXRlRG5zUHJvdmlkZXJSZXF1ZXN0GiUubWFudHJhZS52MS5VcGRhdGVEbnNQcm92aWRlclJlc3BvbnNlEmAKEURlbGV0ZURuc1Byb3ZpZGVyEiQubWFudHJhZS52MS5EZWxldGVEbnNQcm92aWRlclJlcXVlc3QaJS5tYW50cmFlLnYxLkRlbGV0ZURuc1Byb3ZpZGVyUmVzcG9uc2USYgoQTGlzdERuc1Byb3ZpZGVycxIjLm1hbnRyYWUudjEuTGlzdERuc1Byb3ZpZGVyc1JlcXVlc3QaJC5tYW50cmFlLnYxLkxpc3REbnNQcm92aWRlcnNSZXNwb25zZSIDkAIBQqoBCg5jb20ubWFudHJhZS52MUIQRG5zUHJvdmlkZXJQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
-		[file_buf_validate_validate, file_google_protobuf_timestamp]
-	);
+export const file_mantrae_v1_dns_provider: GenFile = /*@__PURE__*/
+  fileDesc("Ch1tYW50cmFlL3YxL2Ruc19wcm92aWRlci5wcm90bxIKbWFudHJhZS52MSL0AQoLRG5zUHJvdmlkZXISCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIpCgR0eXBlGAMgASgOMhsubWFudHJhZS52MS5EbnNQcm92aWRlclR5cGUSLQoGY29uZmlnGAQgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAilgEKEURuc1Byb3ZpZGVyQ29uZmlnEhgKB2FwaV9rZXkYASABKAlCB7pIBHICEAESGQoHYXBpX3VybBgCIAEoCUIIukgFcgOIAQESEwoCaXAYAyABKAlCB7pIBHICcAESDwoHcHJveGllZBgEIAEoCBITCgthdXRvX3VwZGF0ZRgFIAEoCBIRCgl6b25lX3R5cGUYBiABKAkiLwoVR2V0RG5zUHJvdmlkZXJSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAIkcKFkdldERuc1Byb3ZpZGVyUmVzcG9uc2USLQoMZG5zX3Byb3ZpZGVyGAEgASgLMhcubWFudHJhZS52MS5EbnNQcm92aWRlciKuAQoYQ3JlYXRlRG5zUHJvdmlkZXJSZXF1ZXN0EhgKBG5hbWUYASABKAlCCrpIB8gBAXICEAESNgoEdHlwZRgCIAEoDjIbLm1hbnRyYWUudjEuRG5zUHJvdmlkZXJUeXBlQgu6SAjIAQGCAQIQARItCgZjb25maWcYAyABKAsyHS5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyQ29uZmlnEhEKCWlzX2FjdGl2ZRgEIAEoCCJKChlDcmVhdGVEbnNQcm92aWRlclJlc3BvbnNlEi0KDGRuc19wcm92aWRlchgBIAEoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIixgEKGFVwZGF0ZURuc1Byb3ZpZGVyUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABIYCgRuYW1lGAIgASgJQgq6SAfIAQFyAhABEjYKBHR5cGUYAyABKA4yGy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyVHlwZUILukgIyAEBggECEAESLQoGY29uZmlnGAQgASgLMh0ubWFudHJhZS52MS5EbnNQcm92aWRlckNvbmZpZxIRCglpc19hY3RpdmUYBSABKAgiSgoZVXBkYXRlRG5zUHJvdmlkZXJSZXNwb25zZRItCgxkbnNfcHJvdmlkZXIYASABKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyIjIKGERlbGV0ZURuc1Byb3ZpZGVyUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgACIbChlEZWxldGVEbnNQcm92aWRlclJlc3BvbnNlIrgBChdMaXN0RG5zUHJvdmlkZXJzUmVxdWVzdBJqCgVsaW1pdBgBIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAIgBARIcCgZvZmZzZXQYAiABKANCB7pIBCICKABIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJfChhMaXN0RG5zUHJvdmlkZXJzUmVzcG9uc2USLgoNZG5zX3Byb3ZpZGVycxgBIAMoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXISEwoLdG90YWxfY291bnQYAiABKAMqmAEKD0Ruc1Byb3ZpZGVyVHlwZRIhCh1ETlNfUFJPVklERVJfVFlQRV9VTlNQRUNJRklFRBAAEiAKHEROU19QUk9WSURFUl9UWVBFX0NMT1VERkxBUkUQARIeChpETlNfUFJPVklERVJfVFlQRV9QT1dFUkROUxACEiAKHEROU19QUk9WSURFUl9UWVBFX1RFQ0hOSVRJVU0QAzL8AwoSRG5zUHJvdmlkZXJTZXJ2aWNlElwKDkdldERuc1Byb3ZpZGVyEiEubWFudHJhZS52MS5HZXREbnNQcm92aWRlclJlcXVlc3QaIi5tYW50cmFlLnYxLkdldERuc1Byb3ZpZGVyUmVzcG9uc2UiA5ACARJgChFDcmVhdGVEbnNQcm92aWRlchIkLm1hbnRyYWUudjEuQ3JlYXRlRG5zUHJvdmlkZXJSZXF1ZXN0GiUubWFudHJhZS52MS5DcmVhdGVEbnNQcm92aWRlclJlc3BvbnNlEmAKEVVwZGF0ZURuc1Byb3ZpZGVyEiQubWFudHJhZS52MS5VcGRhdGVEbnNQcm92aWRlclJlcXVlc3QaJS5tYW50cmFlLnYxLlVwZGF0ZURuc1Byb3ZpZGVyUmVzcG9uc2USYAoRRGVsZXRlRG5zUHJvdmlkZXISJC5tYW50cmFlLnYxLkRlbGV0ZURuc1Byb3ZpZGVyUmVxdWVzdBolLm1hbnRyYWUudjEuRGVsZXRlRG5zUHJvdmlkZXJSZXNwb25zZRJiChBMaXN0RG5zUHJvdmlkZXJzEiMubWFudHJhZS52MS5MaXN0RG5zUHJvdmlkZXJzUmVxdWVzdBokLm1hbnRyYWUudjEuTGlzdERuc1Byb3ZpZGVyc1Jlc3BvbnNlIgOQAgFCqgEKDmNvbS5tYW50cmFlLnYxQhBEbnNQcm92aWRlclByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.DnsProvider
  */
-export type DnsProvider = Message<'mantrae.v1.DnsProvider'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type DnsProvider = Message<"mantrae.v1.DnsProvider"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: string name = 2;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderType type = 3;
-	 */
-	type: DnsProviderType;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderType type = 3;
+   */
+  type: DnsProviderType;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
-	 */
-	config?: DnsProviderConfig;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
+   */
+  config?: DnsProviderConfig;
 
-	/**
-	 * @generated from field: bool is_active = 5;
-	 */
-	isActive: boolean;
+  /**
+   * @generated from field: bool is_active = 5;
+   */
+  isActive: boolean;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp created_at = 6;
-	 */
-	createdAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 6;
+   */
+  createdAt?: Timestamp;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp updated_at = 7;
-	 */
-	updatedAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 7;
+   */
+  updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.DnsProvider.
  * Use `create(DnsProviderSchema)` to create a new message.
  */
-export const DnsProviderSchema: GenMessage<DnsProvider> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 0);
+export const DnsProviderSchema: GenMessage<DnsProvider> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 0);
 
 /**
  * @generated from message mantrae.v1.DnsProviderConfig
  */
-export type DnsProviderConfig = Message<'mantrae.v1.DnsProviderConfig'> & {
-	/**
-	 * @generated from field: string api_key = 1;
-	 */
-	apiKey: string;
+export type DnsProviderConfig = Message<"mantrae.v1.DnsProviderConfig"> & {
+  /**
+   * @generated from field: string api_key = 1;
+   */
+  apiKey: string;
 
-	/**
-	 * @generated from field: string api_url = 2;
-	 */
-	apiUrl: string;
+  /**
+   * @generated from field: string api_url = 2;
+   */
+  apiUrl: string;
 
-	/**
-	 * @generated from field: string ip = 3;
-	 */
-	ip: string;
+  /**
+   * @generated from field: string ip = 3;
+   */
+  ip: string;
 
-	/**
-	 * @generated from field: bool proxied = 4;
-	 */
-	proxied: boolean;
+  /**
+   * @generated from field: bool proxied = 4;
+   */
+  proxied: boolean;
 
-	/**
-	 * @generated from field: bool auto_update = 5;
-	 */
-	autoUpdate: boolean;
+  /**
+   * @generated from field: bool auto_update = 5;
+   */
+  autoUpdate: boolean;
 
-	/**
-	 * @generated from field: string zone_type = 6;
-	 */
-	zoneType: string;
+  /**
+   * @generated from field: string zone_type = 6;
+   */
+  zoneType: string;
 };
 
 /**
  * Describes the message mantrae.v1.DnsProviderConfig.
  * Use `create(DnsProviderConfigSchema)` to create a new message.
  */
-export const DnsProviderConfigSchema: GenMessage<DnsProviderConfig> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 1);
+export const DnsProviderConfigSchema: GenMessage<DnsProviderConfig> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 1);
 
 /**
  * @generated from message mantrae.v1.GetDnsProviderRequest
  */
-export type GetDnsProviderRequest = Message<'mantrae.v1.GetDnsProviderRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type GetDnsProviderRequest = Message<"mantrae.v1.GetDnsProviderRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.GetDnsProviderRequest.
  * Use `create(GetDnsProviderRequestSchema)` to create a new message.
  */
-export const GetDnsProviderRequestSchema: GenMessage<GetDnsProviderRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 2);
+export const GetDnsProviderRequestSchema: GenMessage<GetDnsProviderRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 2);
 
 /**
  * @generated from message mantrae.v1.GetDnsProviderResponse
  */
-export type GetDnsProviderResponse = Message<'mantrae.v1.GetDnsProviderResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
-	 */
-	dnsProvider?: DnsProvider;
+export type GetDnsProviderResponse = Message<"mantrae.v1.GetDnsProviderResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
+   */
+  dnsProvider?: DnsProvider;
 };
 
 /**
  * Describes the message mantrae.v1.GetDnsProviderResponse.
  * Use `create(GetDnsProviderResponseSchema)` to create a new message.
  */
-export const GetDnsProviderResponseSchema: GenMessage<GetDnsProviderResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 3);
+export const GetDnsProviderResponseSchema: GenMessage<GetDnsProviderResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 3);
 
 /**
  * @generated from message mantrae.v1.CreateDnsProviderRequest
  */
-export type CreateDnsProviderRequest = Message<'mantrae.v1.CreateDnsProviderRequest'> & {
-	/**
-	 * @generated from field: string name = 1;
-	 */
-	name: string;
+export type CreateDnsProviderRequest = Message<"mantrae.v1.CreateDnsProviderRequest"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderType type = 2;
-	 */
-	type: DnsProviderType;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderType type = 2;
+   */
+  type: DnsProviderType;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderConfig config = 3;
-	 */
-	config?: DnsProviderConfig;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderConfig config = 3;
+   */
+  config?: DnsProviderConfig;
 
-	/**
-	 * @generated from field: bool is_active = 4;
-	 */
-	isActive: boolean;
+  /**
+   * @generated from field: bool is_active = 4;
+   */
+  isActive: boolean;
 };
 
 /**
  * Describes the message mantrae.v1.CreateDnsProviderRequest.
  * Use `create(CreateDnsProviderRequestSchema)` to create a new message.
  */
-export const CreateDnsProviderRequestSchema: GenMessage<CreateDnsProviderRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 4);
+export const CreateDnsProviderRequestSchema: GenMessage<CreateDnsProviderRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 4);
 
 /**
  * @generated from message mantrae.v1.CreateDnsProviderResponse
  */
-export type CreateDnsProviderResponse = Message<'mantrae.v1.CreateDnsProviderResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
-	 */
-	dnsProvider?: DnsProvider;
+export type CreateDnsProviderResponse = Message<"mantrae.v1.CreateDnsProviderResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
+   */
+  dnsProvider?: DnsProvider;
 };
 
 /**
  * Describes the message mantrae.v1.CreateDnsProviderResponse.
  * Use `create(CreateDnsProviderResponseSchema)` to create a new message.
  */
-export const CreateDnsProviderResponseSchema: GenMessage<CreateDnsProviderResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 5);
+export const CreateDnsProviderResponseSchema: GenMessage<CreateDnsProviderResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 5);
 
 /**
  * @generated from message mantrae.v1.UpdateDnsProviderRequest
  */
-export type UpdateDnsProviderRequest = Message<'mantrae.v1.UpdateDnsProviderRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type UpdateDnsProviderRequest = Message<"mantrae.v1.UpdateDnsProviderRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: string name = 2;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderType type = 3;
-	 */
-	type: DnsProviderType;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderType type = 3;
+   */
+  type: DnsProviderType;
 
-	/**
-	 * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
-	 */
-	config?: DnsProviderConfig;
+  /**
+   * @generated from field: mantrae.v1.DnsProviderConfig config = 4;
+   */
+  config?: DnsProviderConfig;
 
-	/**
-	 * @generated from field: bool is_active = 5;
-	 */
-	isActive: boolean;
+  /**
+   * @generated from field: bool is_active = 5;
+   */
+  isActive: boolean;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateDnsProviderRequest.
  * Use `create(UpdateDnsProviderRequestSchema)` to create a new message.
  */
-export const UpdateDnsProviderRequestSchema: GenMessage<UpdateDnsProviderRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 6);
+export const UpdateDnsProviderRequestSchema: GenMessage<UpdateDnsProviderRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 6);
 
 /**
  * @generated from message mantrae.v1.UpdateDnsProviderResponse
  */
-export type UpdateDnsProviderResponse = Message<'mantrae.v1.UpdateDnsProviderResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
-	 */
-	dnsProvider?: DnsProvider;
+export type UpdateDnsProviderResponse = Message<"mantrae.v1.UpdateDnsProviderResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.DnsProvider dns_provider = 1;
+   */
+  dnsProvider?: DnsProvider;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateDnsProviderResponse.
  * Use `create(UpdateDnsProviderResponseSchema)` to create a new message.
  */
-export const UpdateDnsProviderResponseSchema: GenMessage<UpdateDnsProviderResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 7);
+export const UpdateDnsProviderResponseSchema: GenMessage<UpdateDnsProviderResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 7);
 
 /**
  * @generated from message mantrae.v1.DeleteDnsProviderRequest
  */
-export type DeleteDnsProviderRequest = Message<'mantrae.v1.DeleteDnsProviderRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type DeleteDnsProviderRequest = Message<"mantrae.v1.DeleteDnsProviderRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteDnsProviderRequest.
  * Use `create(DeleteDnsProviderRequestSchema)` to create a new message.
  */
-export const DeleteDnsProviderRequestSchema: GenMessage<DeleteDnsProviderRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 8);
+export const DeleteDnsProviderRequestSchema: GenMessage<DeleteDnsProviderRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 8);
 
 /**
  * @generated from message mantrae.v1.DeleteDnsProviderResponse
  */
-export type DeleteDnsProviderResponse = Message<'mantrae.v1.DeleteDnsProviderResponse'> & {};
+export type DeleteDnsProviderResponse = Message<"mantrae.v1.DeleteDnsProviderResponse"> & {
+};
 
 /**
  * Describes the message mantrae.v1.DeleteDnsProviderResponse.
  * Use `create(DeleteDnsProviderResponseSchema)` to create a new message.
  */
-export const DeleteDnsProviderResponseSchema: GenMessage<DeleteDnsProviderResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 9);
+export const DeleteDnsProviderResponseSchema: GenMessage<DeleteDnsProviderResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 9);
 
 /**
  * @generated from message mantrae.v1.ListDnsProvidersRequest
  */
-export type ListDnsProvidersRequest = Message<'mantrae.v1.ListDnsProvidersRequest'> & {
-	/**
-	 * @generated from field: optional int64 limit = 1;
-	 */
-	limit?: bigint;
+export type ListDnsProvidersRequest = Message<"mantrae.v1.ListDnsProvidersRequest"> & {
+  /**
+   * @generated from field: optional int64 limit = 1;
+   */
+  limit?: bigint;
 
-	/**
-	 * @generated from field: optional int64 offset = 2;
-	 */
-	offset?: bigint;
+  /**
+   * @generated from field: optional int64 offset = 2;
+   */
+  offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListDnsProvidersRequest.
  * Use `create(ListDnsProvidersRequestSchema)` to create a new message.
  */
-export const ListDnsProvidersRequestSchema: GenMessage<ListDnsProvidersRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 10);
+export const ListDnsProvidersRequestSchema: GenMessage<ListDnsProvidersRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 10);
 
 /**
  * @generated from message mantrae.v1.ListDnsProvidersResponse
  */
-export type ListDnsProvidersResponse = Message<'mantrae.v1.ListDnsProvidersResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 1;
-	 */
-	dnsProviders: DnsProvider[];
+export type ListDnsProvidersResponse = Message<"mantrae.v1.ListDnsProvidersResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 1;
+   */
+  dnsProviders: DnsProvider[];
 
-	/**
-	 * @generated from field: int64 total_count = 2;
-	 */
-	totalCount: bigint;
+  /**
+   * @generated from field: int64 total_count = 2;
+   */
+  totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListDnsProvidersResponse.
  * Use `create(ListDnsProvidersResponseSchema)` to create a new message.
  */
-export const ListDnsProvidersResponseSchema: GenMessage<ListDnsProvidersResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_dns_provider, 11);
+export const ListDnsProvidersResponseSchema: GenMessage<ListDnsProvidersResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_dns_provider, 11);
 
 /**
  * @generated from enum mantrae.v1.DnsProviderType
  */
 export enum DnsProviderType {
-	/**
-	 * @generated from enum value: DNS_PROVIDER_TYPE_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
 
-	/**
-	 * @generated from enum value: DNS_PROVIDER_TYPE_CLOUDFLARE = 1;
-	 */
-	CLOUDFLARE = 1,
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_CLOUDFLARE = 1;
+   */
+  CLOUDFLARE = 1,
 
-	/**
-	 * @generated from enum value: DNS_PROVIDER_TYPE_POWERDNS = 2;
-	 */
-	POWERDNS = 2,
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_POWERDNS = 2;
+   */
+  POWERDNS = 2,
 
-	/**
-	 * @generated from enum value: DNS_PROVIDER_TYPE_TECHNITIUM = 3;
-	 */
-	TECHNITIUM = 3
+  /**
+   * @generated from enum value: DNS_PROVIDER_TYPE_TECHNITIUM = 3;
+   */
+  TECHNITIUM = 3,
 }
 
 /**
  * Describes the enum mantrae.v1.DnsProviderType.
  */
-export const DnsProviderTypeSchema: GenEnum<DnsProviderType> =
-	/*@__PURE__*/
-	enumDesc(file_mantrae_v1_dns_provider, 0);
+export const DnsProviderTypeSchema: GenEnum<DnsProviderType> = /*@__PURE__*/
+  enumDesc(file_mantrae_v1_dns_provider, 0);
 
 /**
  * @generated from service mantrae.v1.DnsProviderService
  */
 export const DnsProviderService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.DnsProviderService.GetDnsProvider
-	 */
-	getDnsProvider: {
-		methodKind: 'unary';
-		input: typeof GetDnsProviderRequestSchema;
-		output: typeof GetDnsProviderResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.DnsProviderService.CreateDnsProvider
-	 */
-	createDnsProvider: {
-		methodKind: 'unary';
-		input: typeof CreateDnsProviderRequestSchema;
-		output: typeof CreateDnsProviderResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.DnsProviderService.UpdateDnsProvider
-	 */
-	updateDnsProvider: {
-		methodKind: 'unary';
-		input: typeof UpdateDnsProviderRequestSchema;
-		output: typeof UpdateDnsProviderResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.DnsProviderService.DeleteDnsProvider
-	 */
-	deleteDnsProvider: {
-		methodKind: 'unary';
-		input: typeof DeleteDnsProviderRequestSchema;
-		output: typeof DeleteDnsProviderResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.DnsProviderService.ListDnsProviders
-	 */
-	listDnsProviders: {
-		methodKind: 'unary';
-		input: typeof ListDnsProvidersRequestSchema;
-		output: typeof ListDnsProvidersResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_dns_provider, 0);
+  /**
+   * @generated from rpc mantrae.v1.DnsProviderService.GetDnsProvider
+   */
+  getDnsProvider: {
+    methodKind: "unary";
+    input: typeof GetDnsProviderRequestSchema;
+    output: typeof GetDnsProviderResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.DnsProviderService.CreateDnsProvider
+   */
+  createDnsProvider: {
+    methodKind: "unary";
+    input: typeof CreateDnsProviderRequestSchema;
+    output: typeof CreateDnsProviderResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.DnsProviderService.UpdateDnsProvider
+   */
+  updateDnsProvider: {
+    methodKind: "unary";
+    input: typeof UpdateDnsProviderRequestSchema;
+    output: typeof UpdateDnsProviderResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.DnsProviderService.DeleteDnsProvider
+   */
+  deleteDnsProvider: {
+    methodKind: "unary";
+    input: typeof DeleteDnsProviderRequestSchema;
+    output: typeof DeleteDnsProviderResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.DnsProviderService.ListDnsProviders
+   */
+  listDnsProviders: {
+    methodKind: "unary";
+    input: typeof ListDnsProvidersRequestSchema;
+    output: typeof ListDnsProvidersResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_dns_provider, 0);
+

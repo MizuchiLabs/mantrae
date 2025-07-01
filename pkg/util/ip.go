@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -23,20 +24,73 @@ var (
 	cacheDuration = 5 * time.Minute
 )
 
-func GetPrivateIPs() (IPAddresses, error) {
-	var ips IPAddresses
-	addrs, _ := net.InterfaceAddrs()
-	for _, addr := range addrs {
-		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				ips.IPv4 = ipnet.IP.String()
-			}
-			if ipnet.IP.To4() == nil && ipnet.IP.To16() != nil {
-				ips.IPv6 = ipnet.IP.String()
-			}
+func isVirtualInterface(name string) bool {
+	skipIfacesPrefixes := []string{
+		"docker",
+		"br-",
+		"veth",
+		"lo",
+		"tun",
+		"tap",
+		"vmnet",
+		"wg",
+		"utun",
+		"ppp",
+		"virbr",
+		"cni",
+		"flannel",
+		"weave",
+	}
+	name = strings.ToLower(name)
+	for _, prefix := range skipIfacesPrefixes {
+		if strings.HasPrefix(name, prefix) {
+			return true
 		}
 	}
-	return ips, nil
+	return false
+}
+
+func GetHostIPv4() (string, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 {
+			continue // interface down
+		}
+		if iface.Flags&net.FlagLoopback != 0 {
+			continue // loopback
+		}
+		if isVirtualInterface(iface.Name) {
+			continue // skip virtual interfaces
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+
+		for _, addr := range addrs {
+			ipNet, ok := addr.(*net.IPNet)
+			if !ok {
+				continue
+			}
+			ip := ipNet.IP
+			if ip == nil || ip.IsLoopback() {
+				continue
+			}
+			ip4 := ip.To4()
+			if ip4 == nil {
+				continue
+			}
+			// Got a good candidate
+			return ip4.String(), nil
+		}
+	}
+
+	return "", errors.New("no suitable IPv4 address found")
 }
 
 func GetPublicIPs() (IPAddresses, error) {

@@ -2,7 +2,7 @@
 package mail
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"html/template"
 	"net/smtp"
@@ -63,32 +63,19 @@ func Send(sm *settings.SettingsManager, to, templateName string, data map[string
 }
 
 func getConfig(sm *settings.SettingsManager) (*EmailConfig, error) {
-	host, ok := sm.Get(settings.KeyEmailHost)
-	if !ok {
-		return nil, errors.New("failed to get email host")
-	}
-	port, ok := sm.Get(settings.KeyEmailPort)
-	if !ok {
-		return nil, errors.New("failed to get email port")
-	}
-	username, ok := sm.Get(settings.KeyEmailUser)
-	if !ok {
-		return nil, errors.New("failed to get email username")
-	}
-	password, ok := sm.Get(settings.KeyEmailPassword)
-	if !ok {
-		return nil, errors.New("failed to get email password")
-	}
-	from, ok := sm.Get(settings.KeyEmailFrom)
-	if !ok {
-		return nil, errors.New("failed to get email from")
-	}
+	sets := sm.GetMany(context.Background(), []string{
+		settings.KeyEmailHost,
+		settings.KeyEmailPort,
+		settings.KeyEmailUser,
+		settings.KeyEmailPassword,
+		settings.KeyEmailFrom,
+	})
 
 	return &EmailConfig{
-		Host:     host,
-		Port:     port,
-		Username: username,
-		Password: password,
-		From:     from,
+		Host:     sets[settings.KeyEmailHost],
+		Port:     sets[settings.KeyEmailPort],
+		Username: sets[settings.KeyEmailUser],
+		Password: sets[settings.KeyEmailPassword],
+		From:     sets[settings.KeyEmailFrom],
 	}, nil
 }

@@ -20,7 +20,7 @@ func (a *App) setupBackgroundJobs(ctx context.Context) {
 
 // syncTraefik periodically syncs the Traefik configuration
 func (a *App) syncTraefik(ctx context.Context) {
-	duration, ok := a.SM.Get(settings.KeyTraefikSyncInterval)
+	duration, ok := a.SM.Get(ctx, settings.KeyTraefikSyncInterval)
 	if !ok {
 		slog.Error("Failed to get Traefik sync interval setting")
 		return
@@ -64,7 +64,7 @@ func (a *App) syncTraefik(ctx context.Context) {
 
 // syncDNS periodically syncs the DNS records
 func (a *App) syncDNS(ctx context.Context) {
-	duration, ok := a.SM.Get(settings.KeyDNSSyncInterval)
+	duration, ok := a.SM.Get(ctx, settings.KeyDNSSyncInterval)
 	if !ok {
 		slog.Error("Failed to get DNS sync interval setting")
 		return
@@ -89,7 +89,7 @@ func (a *App) syncDNS(ctx context.Context) {
 }
 
 func (a *App) cleanupAgents(ctx context.Context) {
-	duration, ok := a.SM.Get(settings.KeyAgentCleanupInterval)
+	duration, ok := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
 	if !ok {
 		slog.Error("failed to get agent cleanup interval setting")
 		return
@@ -103,7 +103,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			enabled, ok := a.SM.Get(settings.KeyAgentCleanupEnabled)
+			enabled, ok := a.SM.Get(ctx, settings.KeyAgentCleanupEnabled)
 			if !ok {
 				slog.Error("failed to get agent cleanup enabled setting")
 				return
@@ -114,7 +114,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 			}
 
 			// Timeout to delete old agents
-			timeout, ok := a.SM.Get(settings.KeyAgentCleanupInterval)
+			timeout, ok := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
 			if !ok {
 				slog.Error("failed to get agent cleanup interval setting")
 				return

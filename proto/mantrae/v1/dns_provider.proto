@@ -35,9 +35,9 @@ message DnsProvider {
 }
 
 message DnsProviderConfig {
-  string api_key = 1;
-  string api_url = 2;
-  string ip = 3;
+  string api_key = 1 [(buf.validate.field).string.min_len = 1];
+  string api_url = 2 [(buf.validate.field).string.uri = true];
+  string ip = 3 [(buf.validate.field).string.ip = true];
   bool proxied = 4;
   bool auto_update = 5;
   string zone_type = 6;

@@ -64,33 +64,18 @@ message PluginSnippet {
 }
 
 message GetMiddlewareRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  MiddlewareType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  MiddlewareType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetMiddlewareResponse {
   Middleware middleware = 1;
 }
 
 message CreateMiddlewareRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   string agent_id = 2;
-  string name = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  MiddlewareType type = 4 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  MiddlewareType type = 4 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 5;
 }
 message CreateMiddlewareResponse {
@@ -98,18 +83,9 @@ message CreateMiddlewareResponse {
 }
 
 message UpdateMiddlewareRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  string name = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  MiddlewareType type = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  MiddlewareType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
 }
@@ -118,22 +94,13 @@ message UpdateMiddlewareResponse {
 }
 
 message DeleteMiddlewareRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  MiddlewareType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  MiddlewareType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteMiddlewareResponse {}
 
 message ListMiddlewaresRequest {
-  int64 profile_id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
   optional MiddlewareType type = 3 [(buf.validate.field).enum.defined_only = true];
   optional int64 limit = 4 [(buf.validate.field).cel = {

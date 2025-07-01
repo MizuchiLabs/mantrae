@@ -87,7 +87,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start server in a goroutine
 	go func() {
-		serverURL, ok := s.app.SM.Get("server_url")
+		serverURL, ok := s.app.SM.Get(ctx, "server_url")
 		if ok && serverURL == "" {
 			serverURL = s.Host + ":" + s.Port
 		}

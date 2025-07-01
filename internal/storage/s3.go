@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -162,38 +161,22 @@ func (s *S3Storage) Delete(ctx context.Context, name string) error {
 }
 
 func getSettings(sm *settings.SettingsManager) (*S3Config, error) {
-	region, ok := sm.Get(settings.KeyS3Region)
-	if !ok {
-		return nil, errors.New("failed to get S3 region")
-	}
-	endpoint, ok := sm.Get(settings.KeyS3Endpoint)
-	if !ok {
-		return nil, errors.New("failed to get S3 endpoint")
-	}
-	bucket, ok := sm.Get(settings.KeyS3Bucket)
-	if !ok {
-		return nil, errors.New("failed to get S3 bucket")
-	}
-	accessKey, ok := sm.Get(settings.KeyS3AccessKey)
-	if !ok {
-		return nil, errors.New("failed to get S3 access key")
-	}
-	secretKey, ok := sm.Get(settings.KeyS3SecretKey)
-	if !ok {
-		return nil, errors.New("failed to get S3 secret key")
-	}
-	usePathStyle, ok := sm.Get(settings.KeyS3UsePathStyle)
-	if !ok {
-		return nil, errors.New("failed to get S3 use path style")
-	}
+	sets := sm.GetMany(context.Background(), []string{
+		settings.KeyS3Region,
+		settings.KeyS3Endpoint,
+		settings.KeyS3Bucket,
+		settings.KeyS3AccessKey,
+		settings.KeyS3SecretKey,
+		settings.KeyS3UsePathStyle,
+	})
 
 	cfg := S3Config{
-		Region:       region,
-		Endpoint:     endpoint,
-		Bucket:       bucket,
-		AccessKey:    accessKey,
-		SecretKey:    secretKey,
-		UsePathStyle: settings.AsBool(usePathStyle),
+		Region:       sets[settings.KeyS3Region],
+		Endpoint:     sets[settings.KeyS3Endpoint],
+		Bucket:       sets[settings.KeyS3Bucket],
+		AccessKey:    sets[settings.KeyS3AccessKey],
+		SecretKey:    sets[settings.KeyS3SecretKey],
+		UsePathStyle: settings.AsBool(sets[settings.KeyS3UsePathStyle]),
 	}
 	return &cfg, nil
 }

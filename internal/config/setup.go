@@ -117,13 +117,14 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	}
 
 	// Check default server url
-	ips, err := util.GetPrivateIPs()
+	ip, err := util.GetHostIPv4()
 	if err != nil {
 		return fmt.Errorf("failed to get private IPs: %w", err)
 	}
-	serverURL, ok := a.SM.Get("server_url")
+	serverURL, ok := a.SM.Get(ctx, "server_url")
 	if !ok || serverURL == "" {
-		if err = a.SM.Set(ctx, "server_url", ips.IPv4); err != nil {
+		url := fmt.Sprintf("http://%s:3000", ip)
+		if err = a.SM.Set(ctx, "server_url", url); err != nil {
 			return fmt.Errorf("failed to set server url: %w", err)
 		}
 	}
@@ -132,7 +133,8 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 		return fmt.Errorf("failed to parse server url: %w", err)
 	}
 	if u.Hostname() == "127.0.0.1" || u.Hostname() == "localhost" {
-		if err := a.SM.Set(ctx, "server_url", ips.IPv4); err != nil {
+		url := fmt.Sprintf("http://%s:3000", ip)
+		if err := a.SM.Set(ctx, "server_url", url); err != nil {
 			return fmt.Errorf("failed to set server url: %w", err)
 		}
 	}

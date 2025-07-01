@@ -8,10 +8,10 @@ import (
 )
 
 type Machine struct {
-	MachineID  string
-	Hostname   string
-	PrivateIPs util.IPAddresses
-	PublicIPs  util.IPAddresses
+	MachineID string
+	Hostname  string
+	PrivateIP string
+	PublicIPs util.IPAddresses
 }
 
 // GetMachineInfo retrieves information about the local machine
@@ -36,7 +36,7 @@ func GetMachineInfo() *Machine {
 		slog.Error("Failed to get hostname", "error", err)
 	}
 
-	result.PrivateIPs, err = util.GetPrivateIPs()
+	result.PrivateIP, err = util.GetHostIPv4()
 	if err != nil {
 		slog.Error("Failed to get local IP", "error", err)
 	}

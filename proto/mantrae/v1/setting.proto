@@ -22,20 +22,14 @@ message Setting {
 }
 
 message GetSettingRequest {
-  string key = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string key = 1 [(buf.validate.field).string.min_len = 1];
 }
 message GetSettingResponse {
   string value = 1;
 }
 
 message UpdateSettingRequest {
-  string key = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string key = 1 [(buf.validate.field).string.min_len = 1];
   string value = 2;
 }
 message UpdateSettingResponse {

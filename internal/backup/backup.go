@@ -72,7 +72,7 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 	defer m.waitGroup.Done()
 
 	// Get backup interval
-	interval, ok := m.SM.Get(settings.KeyBackupInterval)
+	interval, ok := m.SM.Get(ctx, settings.KeyBackupInterval)
 	if !ok {
 		slog.Error("failed to get backup interval")
 		return
@@ -254,7 +254,7 @@ func (m *BackupManager) cleanup(ctx context.Context) error {
 		return fmt.Errorf("failed to list backups: %w", err)
 	}
 
-	retention, ok := m.SM.Get(settings.KeyBackupKeep)
+	retention, ok := m.SM.Get(ctx, settings.KeyBackupKeep)
 	if !ok {
 		return fmt.Errorf("failed to get retention setting")
 	}

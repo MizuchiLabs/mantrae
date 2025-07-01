@@ -49,7 +49,7 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 
 	case KeyPasswordLoginEnabled:
 		// Don't allow disabling password login unless OIDC is oidcEnabled
-		oidcEnabled, ok := sm.Get(KeyOIDCEnabled)
+		oidcEnabled, ok := sm.Get(ctx, KeyOIDCEnabled)
 		if !ok {
 			return errors.New("failed to get OIDC setting")
 		}
@@ -59,7 +59,7 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 
 	case KeyOIDCEnabled:
 		// If Password Login is disabled ensure to enable it again if oidc gets disabled
-		pwLogin, ok := sm.Get(KeyPasswordLoginEnabled)
+		pwLogin, ok := sm.Get(ctx, KeyPasswordLoginEnabled)
 		if !ok {
 			return errors.New("failed to get password login setting")
 		}

@@ -178,6 +178,11 @@ func (s *AgentService) HealthCheck(
 		params.PrivateIp = &req.Msg.PrivateIp
 	}
 
+	// Update ActiveIp if it's not set
+	if agent.ActiveIp == nil && req.Msg.PrivateIp != "" {
+		params.ActiveIp = &req.Msg.PrivateIp
+	}
+
 	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -243,22 +248,17 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 }
 
 func (s *AgentService) createToken(agentID string, profileID int64) (*string, error) {
-	serverURL, ok := s.app.SM.Get(settings.KeyServerURL)
-	if !ok {
-		return nil, errors.New("failed to get server url setting")
-	}
-
-	agentInterval, ok := s.app.SM.Get(settings.KeyAgentCleanupInterval)
-	if !ok {
-		return nil, errors.New("failed to get agent cleanup interval setting")
-	}
+	sets := s.app.SM.GetMany(
+		context.Background(),
+		[]string{settings.KeyServerURL, settings.KeyAgentCleanupInterval},
+	)
 
 	token, err := meta.EncodeAgentToken(
 		profileID,
 		agentID,
-		serverURL,
+		sets[settings.KeyServerURL],
 		s.app.Secret,
-		time.Now().Add(settings.AsDuration(agentInterval)),
+		time.Now().Add(settings.AsDuration(sets[settings.KeyAgentCleanupInterval])),
 	)
 	if err != nil {
 		return nil, err

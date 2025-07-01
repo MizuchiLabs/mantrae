@@ -26,20 +26,14 @@ message Profile {
 }
 
 message GetProfileRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
 }
 message GetProfileResponse {
   Profile profile = 1;
 }
 
 message CreateProfileRequest {
-  string name = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string name = 1 [(buf.validate.field).string.min_len = 1];
   optional string description = 2;
 }
 message CreateProfileResponse {
@@ -47,14 +41,8 @@ message CreateProfileResponse {
 }
 
 message UpdateProfileRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  string name = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
   optional string description = 3;
 }
 message UpdateProfileResponse {
@@ -62,10 +50,7 @@ message UpdateProfileResponse {
 }
 
 message DeleteProfileRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
 }
 message DeleteProfileResponse {}
 

@@ -7,11 +7,12 @@
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
-	import type { User } from '$lib/gen/mantrae/v1/user_pb';
+	import { UpdateUserRequestSchema, type User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { user } from '$lib/stores/user';
+	import { create } from '@bufbuild/protobuf';
 
 	interface Props {
 		data?: User[];
@@ -27,13 +28,15 @@
 	const handleSubmit = async () => {
 		try {
 			if (item.id) {
-				await userClient.updateUser({
-					id: item.id,
-					username: item.username,
-					email: item.email,
-					isAdmin: item.isAdmin,
-					password: item.password
-				});
+				let payload = create(UpdateUserRequestSchema);
+				payload.id = item.id;
+				payload.username = item.username;
+				payload.email = item.email;
+				payload.isAdmin = item.isAdmin;
+				if (item.password && item.password.length > 0) {
+					payload.password = item.password;
+				}
+				await userClient.updateUser(payload);
 				toast.success(`User ${item.username} updated successfully.`);
 			} else {
 				await userClient.createUser({
@@ -138,9 +141,7 @@
 						Delete
 					</Button>
 				{/if}
-				<Button type="submit" class="flex-1" onclick={handleSubmit}>
-					{item.id ? 'Update' : 'Create'}
-				</Button>
+				<Button type="submit" class="flex-1">{item.id ? 'Update' : 'Create'}</Button>
 			</div>
 		</form>
 	</Dialog.Content>

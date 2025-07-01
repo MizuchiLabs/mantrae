@@ -2,558 +2,539 @@
 // @generated from file mantrae/v1/middleware.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import {
-	file_google_protobuf_struct,
-	file_google_protobuf_timestamp
-} from '@bufbuild/protobuf/wkt';
-import type { JsonObject, Message } from '@bufbuild/protobuf';
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/middleware.proto.
  */
-export const file_mantrae_v1_middleware: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		'ChttYW50cmFlL3YxL21pZGRsZXdhcmUucHJvdG8SCm1hbnRyYWUudjEikAIKCk1pZGRsZXdhcmUSCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgGIAEoCBIoCgR0eXBlGAcgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKmAgoGUGx1Z2luEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEg4KBmF1dGhvchgEIAEoCRIMCgR0eXBlGAUgASgJEg4KBmltcG9ydBgGIAEoCRIPCgdzdW1tYXJ5GAcgASgJEhAKCGljb25fdXJsGAggASgJEhIKCmJhbm5lcl91cmwYCSABKAkSDgoGcmVhZG1lGAogASgJEhYKDmxhdGVzdF92ZXJzaW9uGAsgASgJEhAKCHZlcnNpb25zGAwgAygJEg0KBXN0YXJzGA0gASgDEioKB3NuaXBwZXQYDiABKAsyGS5tYW50cmFlLnYxLlBsdWdpblNuaXBwZXQSEgoKY3JlYXRlZF9hdBgPIAEoCSI4Cg1QbHVnaW5TbmlwcGV0EgsKA2s4cxgBIAEoCRIMCgR5YW1sGAIgASgJEgwKBHRvbWwYAyABKAkiZQoUR2V0TWlkZGxld2FyZVJlcXVlc3QSFgoCaWQYASABKANCCrpIB8gBASICIAASNQoEdHlwZRgCIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCC7pICMgBAYIBAhABIkMKFUdldE1pZGRsZXdhcmVSZXNwb25zZRIqCgptaWRkbGV3YXJlGAEgASgLMhYubWFudHJhZS52MS5NaWRkbGV3YXJlIsUBChdDcmVhdGVNaWRkbGV3YXJlUmVxdWVzdBIeCgpwcm9maWxlX2lkGAEgASgDQgq6SAfIAQEiAiAAEhAKCGFnZW50X2lkGAIgASgJEhgKBG5hbWUYAyABKAlCCrpIB8gBAXICEAESNQoEdHlwZRgEIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCC7pICMgBAYIBAhABEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiRgoYQ3JlYXRlTWlkZGxld2FyZVJlc3BvbnNlEioKCm1pZGRsZXdhcmUYASABKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUivAEKF1VwZGF0ZU1pZGRsZXdhcmVSZXF1ZXN0EhYKAmlkGAEgASgDQgq6SAfIAQEiAiAAEhgKBG5hbWUYAiABKAlCCrpIB8gBAXICEAESNQoEdHlwZRgDIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCC7pICMgBAYIBAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCCJGChhVcGRhdGVNaWRkbGV3YXJlUmVzcG9uc2USKgoKbWlkZGxld2FyZRgBIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZSJoChdEZWxldGVNaWRkbGV3YXJlUmVxdWVzdBIWCgJpZBgBIAEoA0IKukgHyAEBIgIgABI1CgR0eXBlGAIgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUILukgIyAEBggECEAEiGgoYRGVsZXRlTWlkZGxld2FyZVJlc3BvbnNlIsYCChZMaXN0TWlkZGxld2FyZXNSZXF1ZXN0Eh4KCnByb2ZpbGVfaWQYASABKANCCrpIB8gBASICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARI3CgR0eXBlGAMgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUIIukgFggECEAFIAYgBARJqCgVsaW1pdBgEIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAogBARIcCgZvZmZzZXQYBSABKANCB7pIBCICKABIA4gBAUILCglfYWdlbnRfaWRCBwoFX3R5cGVCCAoGX2xpbWl0QgkKB19vZmZzZXQiWwoXTGlzdE1pZGRsZXdhcmVzUmVzcG9uc2USKwoLbWlkZGxld2FyZXMYASADKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUSEwoLdG90YWxfY291bnQYAiABKAMiHQobR2V0TWlkZGxld2FyZVBsdWdpbnNSZXF1ZXN0IkMKHEdldE1pZGRsZXdhcmVQbHVnaW5zUmVzcG9uc2USIwoHcGx1Z2lucxgBIAMoCzISLm1hbnRyYWUudjEuUGx1Z2luKmQKDk1pZGRsZXdhcmVUeXBlEh8KG01JRERMRVdBUkVfVFlQRV9VTlNQRUNJRklFRBAAEhgKFE1JRERMRVdBUkVfVFlQRV9IVFRQEAESFwoTTUlERExFV0FSRV9UWVBFX1RDUBACMtwEChFNaWRkbGV3YXJlU2VydmljZRJZCg1HZXRNaWRkbGV3YXJlEiAubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUmVxdWVzdBohLm1hbnRyYWUudjEuR2V0TWlkZGxld2FyZVJlc3BvbnNlIgOQAgESXQoQQ3JlYXRlTWlkZGxld2FyZRIjLm1hbnRyYWUudjEuQ3JlYXRlTWlkZGxld2FyZVJlcXVlc3QaJC5tYW50cmFlLnYxLkNyZWF0ZU1pZGRsZXdhcmVSZXNwb25zZRJdChBVcGRhdGVNaWRkbGV3YXJlEiMubWFudHJhZS52MS5VcGRhdGVNaWRkbGV3YXJlUmVxdWVzdBokLm1hbnRyYWUudjEuVXBkYXRlTWlkZGxld2FyZVJlc3BvbnNlEl0KEERlbGV0ZU1pZGRsZXdhcmUSIy5tYW50cmFlLnYxLkRlbGV0ZU1pZGRsZXdhcmVSZXF1ZXN0GiQubWFudHJhZS52MS5EZWxldGVNaWRkbGV3YXJlUmVzcG9uc2USXwoPTGlzdE1pZGRsZXdhcmVzEiIubWFudHJhZS52MS5MaXN0TWlkZGxld2FyZXNSZXF1ZXN0GiMubWFudHJhZS52MS5MaXN0TWlkZGxld2FyZXNSZXNwb25zZSIDkAIBEm4KFEdldE1pZGRsZXdhcmVQbHVnaW5zEicubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUGx1Z2luc1JlcXVlc3QaKC5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVQbHVnaW5zUmVzcG9uc2UiA5ACAUKpAQoOY29tLm1hbnRyYWUudjFCD01pZGRsZXdhcmVQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
-		[file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]
-	);
+export const file_mantrae_v1_middleware: GenFile = /*@__PURE__*/
+  fileDesc("ChttYW50cmFlL3YxL21pZGRsZXdhcmUucHJvdG8SCm1hbnRyYWUudjEikAIKCk1pZGRsZXdhcmUSCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgGIAEoCBIoCgR0eXBlGAcgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKmAgoGUGx1Z2luEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEg4KBmF1dGhvchgEIAEoCRIMCgR0eXBlGAUgASgJEg4KBmltcG9ydBgGIAEoCRIPCgdzdW1tYXJ5GAcgASgJEhAKCGljb25fdXJsGAggASgJEhIKCmJhbm5lcl91cmwYCSABKAkSDgoGcmVhZG1lGAogASgJEhYKDmxhdGVzdF92ZXJzaW9uGAsgASgJEhAKCHZlcnNpb25zGAwgAygJEg0KBXN0YXJzGA0gASgDEioKB3NuaXBwZXQYDiABKAsyGS5tYW50cmFlLnYxLlBsdWdpblNuaXBwZXQSEgoKY3JlYXRlZF9hdBgPIAEoCSI4Cg1QbHVnaW5TbmlwcGV0EgsKA2s4cxgBIAEoCRIMCgR5YW1sGAIgASgJEgwKBHRvbWwYAyABKAkiXwoUR2V0TWlkZGxld2FyZVJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASMgoEdHlwZRgCIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCCLpIBYIBAhABIkMKFUdldE1pZGRsZXdhcmVSZXNwb25zZRIqCgptaWRkbGV3YXJlGAEgASgLMhYubWFudHJhZS52MS5NaWRkbGV3YXJlIrwBChdDcmVhdGVNaWRkbGV3YXJlUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEhAKCGFnZW50X2lkGAIgASgJEhUKBG5hbWUYAyABKAlCB7pIBHICEAESMgoEdHlwZRgEIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCCLpIBYIBAhABEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QiRgoYQ3JlYXRlTWlkZGxld2FyZVJlc3BvbnNlEioKCm1pZGRsZXdhcmUYASABKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUiswEKF1VwZGF0ZU1pZGRsZXdhcmVSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEhUKBG5hbWUYAiABKAlCB7pIBHICEAESMgoEdHlwZRgDIAEoDjIaLm1hbnRyYWUudjEuTWlkZGxld2FyZVR5cGVCCLpIBYIBAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCCJGChhVcGRhdGVNaWRkbGV3YXJlUmVzcG9uc2USKgoKbWlkZGxld2FyZRgBIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZSJiChdEZWxldGVNaWRkbGV3YXJlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIyCgR0eXBlGAIgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUIIukgFggECEAEiGgoYRGVsZXRlTWlkZGxld2FyZVJlc3BvbnNlIsMCChZMaXN0TWlkZGxld2FyZXNSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARI3CgR0eXBlGAMgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUIIukgFggECEAFIAYgBARJqCgVsaW1pdBgEIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAogBARIcCgZvZmZzZXQYBSABKANCB7pIBCICKABIA4gBAUILCglfYWdlbnRfaWRCBwoFX3R5cGVCCAoGX2xpbWl0QgkKB19vZmZzZXQiWwoXTGlzdE1pZGRsZXdhcmVzUmVzcG9uc2USKwoLbWlkZGxld2FyZXMYASADKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUSEwoLdG90YWxfY291bnQYAiABKAMiHQobR2V0TWlkZGxld2FyZVBsdWdpbnNSZXF1ZXN0IkMKHEdldE1pZGRsZXdhcmVQbHVnaW5zUmVzcG9uc2USIwoHcGx1Z2lucxgBIAMoCzISLm1hbnRyYWUudjEuUGx1Z2luKmQKDk1pZGRsZXdhcmVUeXBlEh8KG01JRERMRVdBUkVfVFlQRV9VTlNQRUNJRklFRBAAEhgKFE1JRERMRVdBUkVfVFlQRV9IVFRQEAESFwoTTUlERExFV0FSRV9UWVBFX1RDUBACMtwEChFNaWRkbGV3YXJlU2VydmljZRJZCg1HZXRNaWRkbGV3YXJlEiAubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUmVxdWVzdBohLm1hbnRyYWUudjEuR2V0TWlkZGxld2FyZVJlc3BvbnNlIgOQAgESXQoQQ3JlYXRlTWlkZGxld2FyZRIjLm1hbnRyYWUudjEuQ3JlYXRlTWlkZGxld2FyZVJlcXVlc3QaJC5tYW50cmFlLnYxLkNyZWF0ZU1pZGRsZXdhcmVSZXNwb25zZRJdChBVcGRhdGVNaWRkbGV3YXJlEiMubWFudHJhZS52MS5VcGRhdGVNaWRkbGV3YXJlUmVxdWVzdBokLm1hbnRyYWUudjEuVXBkYXRlTWlkZGxld2FyZVJlc3BvbnNlEl0KEERlbGV0ZU1pZGRsZXdhcmUSIy5tYW50cmFlLnYxLkRlbGV0ZU1pZGRsZXdhcmVSZXF1ZXN0GiQubWFudHJhZS52MS5EZWxldGVNaWRkbGV3YXJlUmVzcG9uc2USXwoPTGlzdE1pZGRsZXdhcmVzEiIubWFudHJhZS52MS5MaXN0TWlkZGxld2FyZXNSZXF1ZXN0GiMubWFudHJhZS52MS5MaXN0TWlkZGxld2FyZXNSZXNwb25zZSIDkAIBEm4KFEdldE1pZGRsZXdhcmVQbHVnaW5zEicubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUGx1Z2luc1JlcXVlc3QaKC5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVQbHVnaW5zUmVzcG9uc2UiA5ACAUKpAQoOY29tLm1hbnRyYWUudjFCD01pZGRsZXdhcmVQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Middleware
  */
-export type Middleware = Message<'mantrae.v1.Middleware'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type Middleware = Message<"mantrae.v1.Middleware"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: int64 profile_id = 2;
-	 */
-	profileId: bigint;
+  /**
+   * @generated from field: int64 profile_id = 2;
+   */
+  profileId: bigint;
 
-	/**
-	 * @generated from field: string agent_id = 3;
-	 */
-	agentId: string;
+  /**
+   * @generated from field: string agent_id = 3;
+   */
+  agentId: string;
 
-	/**
-	 * @generated from field: string name = 4;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 4;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: google.protobuf.Struct config = 5;
-	 */
-	config?: JsonObject;
+  /**
+   * @generated from field: google.protobuf.Struct config = 5;
+   */
+  config?: JsonObject;
 
-	/**
-	 * @generated from field: bool enabled = 6;
-	 */
-	enabled: boolean;
+  /**
+   * @generated from field: bool enabled = 6;
+   */
+  enabled: boolean;
 
-	/**
-	 * @generated from field: mantrae.v1.MiddlewareType type = 7;
-	 */
-	type: MiddlewareType;
+  /**
+   * @generated from field: mantrae.v1.MiddlewareType type = 7;
+   */
+  type: MiddlewareType;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp created_at = 8;
-	 */
-	createdAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 8;
+   */
+  createdAt?: Timestamp;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp updated_at = 9;
-	 */
-	updatedAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 9;
+   */
+  updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.Middleware.
  * Use `create(MiddlewareSchema)` to create a new message.
  */
-export const MiddlewareSchema: GenMessage<Middleware> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 0);
+export const MiddlewareSchema: GenMessage<Middleware> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 0);
 
 /**
  * @generated from message mantrae.v1.Plugin
  */
-export type Plugin = Message<'mantrae.v1.Plugin'> & {
-	/**
-	 * @generated from field: string id = 1;
-	 */
-	id: string;
+export type Plugin = Message<"mantrae.v1.Plugin"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
 
-	/**
-	 * @generated from field: string name = 2;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: string display_name = 3;
-	 */
-	displayName: string;
+  /**
+   * @generated from field: string display_name = 3;
+   */
+  displayName: string;
 
-	/**
-	 * @generated from field: string author = 4;
-	 */
-	author: string;
+  /**
+   * @generated from field: string author = 4;
+   */
+  author: string;
 
-	/**
-	 * @generated from field: string type = 5;
-	 */
-	type: string;
+  /**
+   * @generated from field: string type = 5;
+   */
+  type: string;
 
-	/**
-	 * @generated from field: string import = 6;
-	 */
-	import: string;
+  /**
+   * @generated from field: string import = 6;
+   */
+  import: string;
 
-	/**
-	 * @generated from field: string summary = 7;
-	 */
-	summary: string;
+  /**
+   * @generated from field: string summary = 7;
+   */
+  summary: string;
 
-	/**
-	 * @generated from field: string icon_url = 8;
-	 */
-	iconUrl: string;
+  /**
+   * @generated from field: string icon_url = 8;
+   */
+  iconUrl: string;
 
-	/**
-	 * @generated from field: string banner_url = 9;
-	 */
-	bannerUrl: string;
+  /**
+   * @generated from field: string banner_url = 9;
+   */
+  bannerUrl: string;
 
-	/**
-	 * @generated from field: string readme = 10;
-	 */
-	readme: string;
+  /**
+   * @generated from field: string readme = 10;
+   */
+  readme: string;
 
-	/**
-	 * @generated from field: string latest_version = 11;
-	 */
-	latestVersion: string;
+  /**
+   * @generated from field: string latest_version = 11;
+   */
+  latestVersion: string;
 
-	/**
-	 * @generated from field: repeated string versions = 12;
-	 */
-	versions: string[];
+  /**
+   * @generated from field: repeated string versions = 12;
+   */
+  versions: string[];
 
-	/**
-	 * @generated from field: int64 stars = 13;
-	 */
-	stars: bigint;
+  /**
+   * @generated from field: int64 stars = 13;
+   */
+  stars: bigint;
 
-	/**
-	 * @generated from field: mantrae.v1.PluginSnippet snippet = 14;
-	 */
-	snippet?: PluginSnippet;
+  /**
+   * @generated from field: mantrae.v1.PluginSnippet snippet = 14;
+   */
+  snippet?: PluginSnippet;
 
-	/**
-	 * @generated from field: string created_at = 15;
-	 */
-	createdAt: string;
+  /**
+   * @generated from field: string created_at = 15;
+   */
+  createdAt: string;
 };
 
 /**
  * Describes the message mantrae.v1.Plugin.
  * Use `create(PluginSchema)` to create a new message.
  */
-export const PluginSchema: GenMessage<Plugin> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 1);
+export const PluginSchema: GenMessage<Plugin> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 1);
 
 /**
  * @generated from message mantrae.v1.PluginSnippet
  */
-export type PluginSnippet = Message<'mantrae.v1.PluginSnippet'> & {
-	/**
-	 * @generated from field: string k8s = 1;
-	 */
-	k8s: string;
+export type PluginSnippet = Message<"mantrae.v1.PluginSnippet"> & {
+  /**
+   * @generated from field: string k8s = 1;
+   */
+  k8s: string;
 
-	/**
-	 * @generated from field: string yaml = 2;
-	 */
-	yaml: string;
+  /**
+   * @generated from field: string yaml = 2;
+   */
+  yaml: string;
 
-	/**
-	 * @generated from field: string toml = 3;
-	 */
-	toml: string;
+  /**
+   * @generated from field: string toml = 3;
+   */
+  toml: string;
 };
 
 /**
  * Describes the message mantrae.v1.PluginSnippet.
  * Use `create(PluginSnippetSchema)` to create a new message.
  */
-export const PluginSnippetSchema: GenMessage<PluginSnippet> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 2);
+export const PluginSnippetSchema: GenMessage<PluginSnippet> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 2);
 
 /**
  * @generated from message mantrae.v1.GetMiddlewareRequest
  */
-export type GetMiddlewareRequest = Message<'mantrae.v1.GetMiddlewareRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type GetMiddlewareRequest = Message<"mantrae.v1.GetMiddlewareRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: mantrae.v1.MiddlewareType type = 2;
-	 */
-	type: MiddlewareType;
+  /**
+   * @generated from field: mantrae.v1.MiddlewareType type = 2;
+   */
+  type: MiddlewareType;
 };
 
 /**
  * Describes the message mantrae.v1.GetMiddlewareRequest.
  * Use `create(GetMiddlewareRequestSchema)` to create a new message.
  */
-export const GetMiddlewareRequestSchema: GenMessage<GetMiddlewareRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 3);
+export const GetMiddlewareRequestSchema: GenMessage<GetMiddlewareRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 3);
 
 /**
  * @generated from message mantrae.v1.GetMiddlewareResponse
  */
-export type GetMiddlewareResponse = Message<'mantrae.v1.GetMiddlewareResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.Middleware middleware = 1;
-	 */
-	middleware?: Middleware;
+export type GetMiddlewareResponse = Message<"mantrae.v1.GetMiddlewareResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Middleware middleware = 1;
+   */
+  middleware?: Middleware;
 };
 
 /**
  * Describes the message mantrae.v1.GetMiddlewareResponse.
  * Use `create(GetMiddlewareResponseSchema)` to create a new message.
  */
-export const GetMiddlewareResponseSchema: GenMessage<GetMiddlewareResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 4);
+export const GetMiddlewareResponseSchema: GenMessage<GetMiddlewareResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 4);
 
 /**
  * @generated from message mantrae.v1.CreateMiddlewareRequest
  */
-export type CreateMiddlewareRequest = Message<'mantrae.v1.CreateMiddlewareRequest'> & {
-	/**
-	 * @generated from field: int64 profile_id = 1;
-	 */
-	profileId: bigint;
+export type CreateMiddlewareRequest = Message<"mantrae.v1.CreateMiddlewareRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
 
-	/**
-	 * @generated from field: string agent_id = 2;
-	 */
-	agentId: string;
+  /**
+   * @generated from field: string agent_id = 2;
+   */
+  agentId: string;
 
-	/**
-	 * @generated from field: string name = 3;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: mantrae.v1.MiddlewareType type = 4;
-	 */
-	type: MiddlewareType;
+  /**
+   * @generated from field: mantrae.v1.MiddlewareType type = 4;
+   */
+  type: MiddlewareType;
 
-	/**
-	 * @generated from field: google.protobuf.Struct config = 5;
-	 */
-	config?: JsonObject;
+  /**
+   * @generated from field: google.protobuf.Struct config = 5;
+   */
+  config?: JsonObject;
 };
 
 /**
  * Describes the message mantrae.v1.CreateMiddlewareRequest.
  * Use `create(CreateMiddlewareRequestSchema)` to create a new message.
  */
-export const CreateMiddlewareRequestSchema: GenMessage<CreateMiddlewareRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 5);
+export const CreateMiddlewareRequestSchema: GenMessage<CreateMiddlewareRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 5);
 
 /**
  * @generated from message mantrae.v1.CreateMiddlewareResponse
  */
-export type CreateMiddlewareResponse = Message<'mantrae.v1.CreateMiddlewareResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.Middleware middleware = 1;
-	 */
-	middleware?: Middleware;
+export type CreateMiddlewareResponse = Message<"mantrae.v1.CreateMiddlewareResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Middleware middleware = 1;
+   */
+  middleware?: Middleware;
 };
 
 /**
  * Describes the message mantrae.v1.CreateMiddlewareResponse.
  * Use `create(CreateMiddlewareResponseSchema)` to create a new message.
  */
-export const CreateMiddlewareResponseSchema: GenMessage<CreateMiddlewareResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 6);
+export const CreateMiddlewareResponseSchema: GenMessage<CreateMiddlewareResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 6);
 
 /**
  * @generated from message mantrae.v1.UpdateMiddlewareRequest
  */
-export type UpdateMiddlewareRequest = Message<'mantrae.v1.UpdateMiddlewareRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type UpdateMiddlewareRequest = Message<"mantrae.v1.UpdateMiddlewareRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: string name = 2;
-	 */
-	name: string;
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: mantrae.v1.MiddlewareType type = 3;
-	 */
-	type: MiddlewareType;
+  /**
+   * @generated from field: mantrae.v1.MiddlewareType type = 3;
+   */
+  type: MiddlewareType;
 
-	/**
-	 * @generated from field: google.protobuf.Struct config = 4;
-	 */
-	config?: JsonObject;
+  /**
+   * @generated from field: google.protobuf.Struct config = 4;
+   */
+  config?: JsonObject;
 
-	/**
-	 * @generated from field: bool enabled = 5;
-	 */
-	enabled: boolean;
+  /**
+   * @generated from field: bool enabled = 5;
+   */
+  enabled: boolean;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateMiddlewareRequest.
  * Use `create(UpdateMiddlewareRequestSchema)` to create a new message.
  */
-export const UpdateMiddlewareRequestSchema: GenMessage<UpdateMiddlewareRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 7);
+export const UpdateMiddlewareRequestSchema: GenMessage<UpdateMiddlewareRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 7);
 
 /**
  * @generated from message mantrae.v1.UpdateMiddlewareResponse
  */
-export type UpdateMiddlewareResponse = Message<'mantrae.v1.UpdateMiddlewareResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.Middleware middleware = 1;
-	 */
-	middleware?: Middleware;
+export type UpdateMiddlewareResponse = Message<"mantrae.v1.UpdateMiddlewareResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Middleware middleware = 1;
+   */
+  middleware?: Middleware;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateMiddlewareResponse.
  * Use `create(UpdateMiddlewareResponseSchema)` to create a new message.
  */
-export const UpdateMiddlewareResponseSchema: GenMessage<UpdateMiddlewareResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 8);
+export const UpdateMiddlewareResponseSchema: GenMessage<UpdateMiddlewareResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 8);
 
 /**
  * @generated from message mantrae.v1.DeleteMiddlewareRequest
  */
-export type DeleteMiddlewareRequest = Message<'mantrae.v1.DeleteMiddlewareRequest'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type DeleteMiddlewareRequest = Message<"mantrae.v1.DeleteMiddlewareRequest"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: mantrae.v1.MiddlewareType type = 2;
-	 */
-	type: MiddlewareType;
+  /**
+   * @generated from field: mantrae.v1.MiddlewareType type = 2;
+   */
+  type: MiddlewareType;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteMiddlewareRequest.
  * Use `create(DeleteMiddlewareRequestSchema)` to create a new message.
  */
-export const DeleteMiddlewareRequestSchema: GenMessage<DeleteMiddlewareRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 9);
+export const DeleteMiddlewareRequestSchema: GenMessage<DeleteMiddlewareRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 9);
 
 /**
  * @generated from message mantrae.v1.DeleteMiddlewareResponse
  */
-export type DeleteMiddlewareResponse = Message<'mantrae.v1.DeleteMiddlewareResponse'> & {};
+export type DeleteMiddlewareResponse = Message<"mantrae.v1.DeleteMiddlewareResponse"> & {
+};
 
 /**
  * Describes the message mantrae.v1.DeleteMiddlewareResponse.
  * Use `create(DeleteMiddlewareResponseSchema)` to create a new message.
  */
-export const DeleteMiddlewareResponseSchema: GenMessage<DeleteMiddlewareResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 10);
+export const DeleteMiddlewareResponseSchema: GenMessage<DeleteMiddlewareResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 10);
 
 /**
  * @generated from message mantrae.v1.ListMiddlewaresRequest
  */
-export type ListMiddlewaresRequest = Message<'mantrae.v1.ListMiddlewaresRequest'> & {
-	/**
-	 * @generated from field: int64 profile_id = 1;
-	 */
-	profileId: bigint;
+export type ListMiddlewaresRequest = Message<"mantrae.v1.ListMiddlewaresRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
 
-	/**
-	 * @generated from field: optional string agent_id = 2;
-	 */
-	agentId?: string;
+  /**
+   * @generated from field: optional string agent_id = 2;
+   */
+  agentId?: string;
 
-	/**
-	 * @generated from field: optional mantrae.v1.MiddlewareType type = 3;
-	 */
-	type?: MiddlewareType;
+  /**
+   * @generated from field: optional mantrae.v1.MiddlewareType type = 3;
+   */
+  type?: MiddlewareType;
 
-	/**
-	 * @generated from field: optional int64 limit = 4;
-	 */
-	limit?: bigint;
+  /**
+   * @generated from field: optional int64 limit = 4;
+   */
+  limit?: bigint;
 
-	/**
-	 * @generated from field: optional int64 offset = 5;
-	 */
-	offset?: bigint;
+  /**
+   * @generated from field: optional int64 offset = 5;
+   */
+  offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListMiddlewaresRequest.
  * Use `create(ListMiddlewaresRequestSchema)` to create a new message.
  */
-export const ListMiddlewaresRequestSchema: GenMessage<ListMiddlewaresRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 11);
+export const ListMiddlewaresRequestSchema: GenMessage<ListMiddlewaresRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 11);
 
 /**
  * @generated from message mantrae.v1.ListMiddlewaresResponse
  */
-export type ListMiddlewaresResponse = Message<'mantrae.v1.ListMiddlewaresResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.Middleware middlewares = 1;
-	 */
-	middlewares: Middleware[];
+export type ListMiddlewaresResponse = Message<"mantrae.v1.ListMiddlewaresResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.Middleware middlewares = 1;
+   */
+  middlewares: Middleware[];
 
-	/**
-	 * @generated from field: int64 total_count = 2;
-	 */
-	totalCount: bigint;
+  /**
+   * @generated from field: int64 total_count = 2;
+   */
+  totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListMiddlewaresResponse.
  * Use `create(ListMiddlewaresResponseSchema)` to create a new message.
  */
-export const ListMiddlewaresResponseSchema: GenMessage<ListMiddlewaresResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 12);
+export const ListMiddlewaresResponseSchema: GenMessage<ListMiddlewaresResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 12);
 
 /**
  * @generated from message mantrae.v1.GetMiddlewarePluginsRequest
  */
-export type GetMiddlewarePluginsRequest = Message<'mantrae.v1.GetMiddlewarePluginsRequest'> & {};
+export type GetMiddlewarePluginsRequest = Message<"mantrae.v1.GetMiddlewarePluginsRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.GetMiddlewarePluginsRequest.
  * Use `create(GetMiddlewarePluginsRequestSchema)` to create a new message.
  */
-export const GetMiddlewarePluginsRequestSchema: GenMessage<GetMiddlewarePluginsRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 13);
+export const GetMiddlewarePluginsRequestSchema: GenMessage<GetMiddlewarePluginsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 13);
 
 /**
  * @generated from message mantrae.v1.GetMiddlewarePluginsResponse
  */
-export type GetMiddlewarePluginsResponse = Message<'mantrae.v1.GetMiddlewarePluginsResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.Plugin plugins = 1;
-	 */
-	plugins: Plugin[];
+export type GetMiddlewarePluginsResponse = Message<"mantrae.v1.GetMiddlewarePluginsResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.Plugin plugins = 1;
+   */
+  plugins: Plugin[];
 };
 
 /**
  * Describes the message mantrae.v1.GetMiddlewarePluginsResponse.
  * Use `create(GetMiddlewarePluginsResponseSchema)` to create a new message.
  */
-export const GetMiddlewarePluginsResponseSchema: GenMessage<GetMiddlewarePluginsResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_middleware, 14);
+export const GetMiddlewarePluginsResponseSchema: GenMessage<GetMiddlewarePluginsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_middleware, 14);
 
 /**
  * @generated from enum mantrae.v1.MiddlewareType
  */
 export enum MiddlewareType {
-	/**
-	 * @generated from enum value: MIDDLEWARE_TYPE_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
+  /**
+   * @generated from enum value: MIDDLEWARE_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
 
-	/**
-	 * @generated from enum value: MIDDLEWARE_TYPE_HTTP = 1;
-	 */
-	HTTP = 1,
+  /**
+   * @generated from enum value: MIDDLEWARE_TYPE_HTTP = 1;
+   */
+  HTTP = 1,
 
-	/**
-	 * @generated from enum value: MIDDLEWARE_TYPE_TCP = 2;
-	 */
-	TCP = 2
+  /**
+   * @generated from enum value: MIDDLEWARE_TYPE_TCP = 2;
+   */
+  TCP = 2,
 }
 
 /**
  * Describes the enum mantrae.v1.MiddlewareType.
  */
-export const MiddlewareTypeSchema: GenEnum<MiddlewareType> =
-	/*@__PURE__*/
-	enumDesc(file_mantrae_v1_middleware, 0);
+export const MiddlewareTypeSchema: GenEnum<MiddlewareType> = /*@__PURE__*/
+  enumDesc(file_mantrae_v1_middleware, 0);
 
 /**
  * @generated from service mantrae.v1.MiddlewareService
  */
 export const MiddlewareService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.GetMiddleware
-	 */
-	getMiddleware: {
-		methodKind: 'unary';
-		input: typeof GetMiddlewareRequestSchema;
-		output: typeof GetMiddlewareResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.CreateMiddleware
-	 */
-	createMiddleware: {
-		methodKind: 'unary';
-		input: typeof CreateMiddlewareRequestSchema;
-		output: typeof CreateMiddlewareResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.UpdateMiddleware
-	 */
-	updateMiddleware: {
-		methodKind: 'unary';
-		input: typeof UpdateMiddlewareRequestSchema;
-		output: typeof UpdateMiddlewareResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.DeleteMiddleware
-	 */
-	deleteMiddleware: {
-		methodKind: 'unary';
-		input: typeof DeleteMiddlewareRequestSchema;
-		output: typeof DeleteMiddlewareResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.ListMiddlewares
-	 */
-	listMiddlewares: {
-		methodKind: 'unary';
-		input: typeof ListMiddlewaresRequestSchema;
-		output: typeof ListMiddlewaresResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.MiddlewareService.GetMiddlewarePlugins
-	 */
-	getMiddlewarePlugins: {
-		methodKind: 'unary';
-		input: typeof GetMiddlewarePluginsRequestSchema;
-		output: typeof GetMiddlewarePluginsResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_middleware, 0);
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.GetMiddleware
+   */
+  getMiddleware: {
+    methodKind: "unary";
+    input: typeof GetMiddlewareRequestSchema;
+    output: typeof GetMiddlewareResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.CreateMiddleware
+   */
+  createMiddleware: {
+    methodKind: "unary";
+    input: typeof CreateMiddlewareRequestSchema;
+    output: typeof CreateMiddlewareResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.UpdateMiddleware
+   */
+  updateMiddleware: {
+    methodKind: "unary";
+    input: typeof UpdateMiddlewareRequestSchema;
+    output: typeof UpdateMiddlewareResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.DeleteMiddleware
+   */
+  deleteMiddleware: {
+    methodKind: "unary";
+    input: typeof DeleteMiddlewareRequestSchema;
+    output: typeof DeleteMiddlewareResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.ListMiddlewares
+   */
+  listMiddlewares: {
+    methodKind: "unary";
+    input: typeof ListMiddlewaresRequestSchema;
+    output: typeof ListMiddlewaresResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.MiddlewareService.GetMiddlewarePlugins
+   */
+  getMiddlewarePlugins: {
+    methodKind: "unary";
+    input: typeof GetMiddlewarePluginsRequestSchema;
+    output: typeof GetMiddlewarePluginsResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_middleware, 0);
+

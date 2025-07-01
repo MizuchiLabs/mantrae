@@ -30,7 +30,9 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="max-h-[80vh] w-fit max-w-[90vw] min-w-[40rem] overflow-y-auto px-4 py-2">
+	<Dialog.Content
+		class="max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-[40rem]"
+	>
 		<Dialog.Header class="flex justify-between gap-2 py-4">
 			<Dialog.Title>Dynamic Config</Dialog.Title>
 			<Dialog.Description>

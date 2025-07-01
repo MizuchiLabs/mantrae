@@ -35,7 +35,7 @@ func GetBackend(
 	sm *settings.SettingsManager,
 	path string,
 ) (Backend, error) {
-	backendSetting, ok := sm.Get(settings.KeyStorage)
+	backendSetting, ok := sm.Get(ctx, settings.KeyStorage)
 	if !ok {
 		return nil, errors.New("failed to get storage backend")
 	}

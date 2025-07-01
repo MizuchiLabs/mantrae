@@ -23,7 +23,7 @@ func (s *SettingService) GetSetting(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetSettingRequest],
 ) (*connect.Response[mantraev1.GetSettingResponse], error) {
-	value, ok := s.app.SM.Get(req.Msg.Key)
+	value, ok := s.app.SM.Get(ctx, req.Msg.Key)
 	if !ok {
 		return nil, connect.NewError(connect.CodeInternal, errors.New("setting not found"))
 	}
@@ -52,7 +52,7 @@ func (s *SettingService) ListSettings(
 	req *connect.Request[mantraev1.ListSettingsRequest],
 ) (*connect.Response[mantraev1.ListSettingsResponse], error) {
 	var settings []*mantraev1.Setting
-	for key, val := range s.app.SM.GetAll() {
+	for key, val := range s.app.SM.GetAll(ctx) {
 		settings = append(settings, &mantraev1.Setting{Key: key, Value: val})
 	}
 	return connect.NewResponse(&mantraev1.ListSettingsResponse{Settings: settings}), nil

@@ -232,7 +232,7 @@ func getOIDCConfig(
 	r *http.Request,
 	a *config.App,
 ) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
-	sets := a.SM.GetAll()
+	sets := a.SM.GetAll(ctx)
 
 	// Parse settings (same as before but simplified validation)
 	if enabled, ok := sets[settings.KeyOIDCEnabled]; ok {

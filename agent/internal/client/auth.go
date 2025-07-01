@@ -103,8 +103,8 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 	req := connect.NewRequest(&mantraev1.HealthCheckRequest{
 		MachineId: info.MachineID,
 		Hostname:  info.Hostname,
+		PrivateIp: info.PrivateIP,
 		PublicIp:  info.PublicIPs.IPv4,
-		PrivateIp: info.PrivateIPs.IPv4,
 	})
 
 	resp, err := t.client.HealthCheck(ctx, req)

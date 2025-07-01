@@ -19,7 +19,7 @@ type AuditEvent struct {
 	Details   string
 }
 
-// AuditInterceptor automatically logs CRUD operations
+// NewAuditInterceptor automatically logs CRUD operations
 func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
@@ -32,7 +32,7 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 					// Log audit event asynchronously to avoid blocking the response
 					go func(auditCtx context.Context) {
 						if auditErr := createAuditLog(auditCtx, app.Conn.GetQuery(), *auditEvent); auditErr != nil {
-							slog.Error("failed to create audit log", "error", auditErr)
+							slog.Warn("failed to create audit log", "error", auditErr)
 						}
 					}(ctx)
 				}
@@ -51,10 +51,9 @@ func extractAuditEvent(req connect.AnyRequest, resp connect.AnyResponse) *AuditE
 		return nil
 	}
 
-	service := parts[1] // e.g., "mantrae.v1.ProfileService"
-	method := parts[2]  // e.g., "CreateProfile"
+	service := parts[1]
+	method := parts[2]
 
-	// Map method names to audit events
 	eventType := mapMethodToEvent(method)
 	if eventType == "" {
 		return nil // Not an auditable operation
@@ -102,8 +101,6 @@ func getResourceType(service string) string {
 		return "agent"
 	case strings.Contains(service, "UserService"):
 		return "user"
-	case strings.Contains(service, "SettingService"):
-		return "setting"
 	default:
 		return "unknown"
 	}
@@ -163,10 +160,7 @@ func extractProfileServiceDetails(
 		}
 	case "DeleteProfile":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteProfileRequest); ok {
-			return &deleteReq.Id, fmt.Sprintf(
-				"Deleted profile (ID: %d)",
-				deleteReq.Id,
-			)
+			return &deleteReq.Id, fmt.Sprintf("Deleted profile (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -198,10 +192,7 @@ func extractRouterServiceDetails(
 		}
 	case "DeleteRouter":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteRouterRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted router (ID: %d)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted router (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -233,10 +224,7 @@ func extractServiceServiceDetails(
 		}
 	case "DeleteService":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteServiceRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted service (ID: %d)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted service (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -268,10 +256,7 @@ func extractMiddlewareServiceDetails(
 		}
 	case "DeleteMiddleware":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteMiddlewareRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted middleware (ID: %d)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted middleware (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -303,10 +288,7 @@ func extractEntryPointServiceDetails(
 		}
 	case "DeleteEntryPoint":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteEntryPointRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted entrypoint (ID: %d)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted entrypoint (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -320,10 +302,7 @@ func extractDNSProviderServiceDetails(
 	switch method {
 	case "CreateDnsProvider":
 		if createReq, ok := req.Any().(*mantraev1.CreateDnsProviderRequest); ok {
-			return nil, fmt.Sprintf(
-				"Created DNS provider '%s'",
-				createReq.Name,
-			)
+			return nil, fmt.Sprintf("Created DNS provider '%s'", createReq.Name)
 		}
 	case "UpdateDnsProvider":
 		if updateReq, ok := req.Any().(*mantraev1.UpdateDnsProviderRequest); ok {
@@ -337,10 +316,7 @@ func extractDNSProviderServiceDetails(
 		}
 	case "DeleteDnsProvider":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteDnsProviderRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted DNS provider (ID: %d)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted DNS provider (ID: %d)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -371,10 +347,7 @@ func extractAgentServiceDetails(
 		}
 	case "DeleteAgent":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteAgentRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted agent (ID: %s)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted agent (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -388,10 +361,7 @@ func extractUserServiceDetails(
 	switch method {
 	case "CreateUser":
 		if createReq, ok := req.Any().(*mantraev1.CreateUserRequest); ok {
-			return nil, fmt.Sprintf(
-				"Created user '%s'",
-				createReq.Username,
-			)
+			return nil, fmt.Sprintf("Created user '%s'", createReq.Username)
 		}
 	case "UpdateUser":
 		if updateReq, ok := req.Any().(*mantraev1.UpdateUserRequest); ok {
@@ -405,10 +375,7 @@ func extractUserServiceDetails(
 		}
 	case "DeleteUser":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteUserRequest); ok {
-			return nil, fmt.Sprintf(
-				"Deleted user (ID: %s)",
-				deleteReq.Id,
-			)
+			return nil, fmt.Sprintf("Deleted user (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -426,16 +393,7 @@ func createAuditLog(ctx context.Context, q *db.Queries, event AuditEvent) error 
 	}
 
 	// Extract user/agent context if available
-	if valUserID := ctx.Value(AuthUserIDKey); valUserID != nil {
-		if userID, ok := valUserID.(string); ok && userID != "" {
-			params.UserID = &userID
-		}
-	}
-	if valAgentID := ctx.Value(AuthAgentIDKey); valAgentID != nil {
-		if agentID, ok := valAgentID.(string); ok && agentID != "" {
-			params.AgentID = &agentID
-		}
-	}
-
+	params.UserID = GetUserIDFromContext(ctx)
+	params.AgentID = GetAgentIDFromContext(ctx)
 	return q.CreateAuditLog(ctx, params)
 }

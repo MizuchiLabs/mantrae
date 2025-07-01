@@ -27,10 +27,7 @@ message CreateBackupRequest {}
 message CreateBackupResponse {}
 
 message RestoreBackupRequest {
-  string name = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string name = 1 [(buf.validate.field).string.min_len = 1];
 }
 message RestoreBackupResponse {}
 
@@ -40,10 +37,7 @@ message ListBackupsResponse {
 }
 
 message DeleteBackupRequest {
-  string name = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
+  string name = 1 [(buf.validate.field).string.min_len = 1];
 }
 message DeleteBackupResponse {}
 

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -21,7 +22,7 @@ func (s *Server) WithCORS(h http.Handler) http.Handler {
 		"http://127.0.0.1:" + s.Port,
 	}
 
-	serverURL, ok := s.app.SM.Get(settings.KeyServerURL)
+	serverURL, ok := s.app.SM.Get(context.Background(), settings.KeyServerURL)
 	if ok {
 		allowedOrigins = append(allowedOrigins, serverURL)
 	}

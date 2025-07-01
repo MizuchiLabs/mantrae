@@ -66,10 +66,13 @@ func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
-
+			if claims.IsExpired() {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
 			if err != nil {
-				http.Error(w, "User not found", http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -83,9 +86,13 @@ func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
+			if claims.IsExpired() {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
 			if err != nil {
-				http.Error(w, "User not found", http.StatusUnauthorized)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
 
@@ -157,13 +164,27 @@ func (i *AuthInterceptor) authenticateRequest(
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeNotFound,
-				errors.New("agent not found"),
+				errors.New("unauthorized"),
 			)
 		}
 		if agent.Token != getBearerToken(header) {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
-				errors.New("token mismatch"),
+				errors.New("unauthorized"),
+			)
+		}
+		claims, err := meta.DecodeAgentToken(agent.Token, i.app.Secret)
+		if err != nil {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("unauthorized"),
+			)
+		}
+		// Check if token is expired
+		if claims.IsExpired() {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("unauthorized"),
 			)
 		}
 		return context.WithValue(ctx, AuthAgentIDKey, agent.ID), nil
@@ -175,14 +196,20 @@ func (i *AuthInterceptor) authenticateRequest(
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
-				errors.New("invalid token"),
+				errors.New("unauthorized"),
+			)
+		}
+		if claims.IsExpired() {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("unauthorized"),
 			)
 		}
 		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
-				errors.New("invalid token"),
+				errors.New("unauthorized"),
 			)
 		}
 		return context.WithValue(ctx, AuthUserIDKey, user.ID), nil
@@ -192,14 +219,20 @@ func (i *AuthInterceptor) authenticateRequest(
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
-				errors.New("invalid token"),
+				errors.New("unauthorized"),
+			)
+		}
+		if claims.IsExpired() {
+			return nil, connect.NewError(
+				connect.CodeUnauthenticated,
+				errors.New("unauthorized"),
 			)
 		}
 		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
-				errors.New("invalid token"),
+				errors.New("unauthorized"),
 			)
 		}
 		return context.WithValue(ctx, AuthUserIDKey, user.ID), nil
@@ -248,12 +281,20 @@ func getCookieToken(header http.Header) string {
 	return token
 }
 
-func GetUserIDFromContext(ctx context.Context) (string, bool) {
-	id, ok := ctx.Value(AuthUserIDKey).(string)
-	return id, ok
+func GetUserIDFromContext(ctx context.Context) *string {
+	if id := ctx.Value(AuthUserIDKey); id != nil {
+		if userID, ok := id.(string); ok && userID != "" {
+			return &userID
+		}
+	}
+	return nil
 }
 
-func GetAgentIDFromContext(ctx context.Context) (string, bool) {
-	agent, ok := ctx.Value(AuthAgentIDKey).(string)
-	return agent, ok
+func GetAgentIDFromContext(ctx context.Context) *string {
+	if agent := ctx.Value(AuthAgentIDKey); agent != nil {
+		if agentID, ok := agent.(string); ok && agentID != "" {
+			return &agentID
+		}
+	}
+	return nil
 }

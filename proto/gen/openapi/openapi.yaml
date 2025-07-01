@@ -235,8 +235,6 @@ components:
           title: profile_id
           format: int64
       title: CreateAgentRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.CreateAgentResponse:
       type: object
@@ -254,8 +252,6 @@ components:
           title: id
           minLength: 1
       title: DeleteAgentRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.DeleteAgentResponse:
       type: object
@@ -269,8 +265,6 @@ components:
           title: id
           minLength: 1
       title: GetAgentRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.GetAgentResponse:
       type: object
@@ -340,8 +334,6 @@ components:
           format: int64
           nullable: true
       title: ListAgentsRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListAgentsResponse:
       type: object
@@ -367,8 +359,6 @@ components:
           title: id
           minLength: 1
       title: RotateAgentTokenRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.RotateAgentTokenResponse:
       type: object
@@ -388,11 +378,8 @@ components:
         ip:
           type: string
           title: ip
-          minLength: 1
+          format: ip
       title: UpdateAgentIPRequest
-      required:
-        - id
-        - ip
       additionalProperties: false
     mantrae.v1.UpdateAgentIPResponse:
       type: object
@@ -587,8 +574,6 @@ components:
           title: name
           minLength: 1
       title: DeleteBackupRequest
-      required:
-        - name
       additionalProperties: false
     mantrae.v1.DeleteBackupResponse:
       type: object
@@ -633,8 +618,6 @@ components:
           title: name
           minLength: 1
       title: RestoreBackupRequest
-      required:
-        - name
       additionalProperties: false
     mantrae.v1.RestoreBackupResponse:
       type: object
@@ -730,12 +713,15 @@ components:
         apiKey:
           type: string
           title: api_key
+          minLength: 1
         apiUrl:
           type: string
           title: api_url
+          format: uri
         ip:
           type: string
           title: ip
+          format: ip
         proxied:
           type: boolean
           title: proxied
@@ -869,9 +855,6 @@ components:
           type: boolean
           title: is_default
       title: CreateEntryPointRequest
-      required:
-        - profileId
-        - name
       additionalProperties: false
     mantrae.v1.CreateEntryPointResponse:
       type: object
@@ -942,8 +925,6 @@ components:
           title: id
           format: int64
       title: GetEntryPointRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.GetEntryPointResponse:
       type: object
@@ -984,8 +965,6 @@ components:
           format: int64
           nullable: true
       title: ListEntryPointsRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListEntryPointsResponse:
       type: object
@@ -1025,9 +1004,6 @@ components:
           type: boolean
           title: is_default
       title: UpdateEntryPointRequest
-      required:
-        - id
-        - name
       additionalProperties: false
     mantrae.v1.UpdateEntryPointResponse:
       type: object
@@ -1133,10 +1109,6 @@ components:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
       title: CreateMiddlewareRequest
-      required:
-        - profileId
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.CreateMiddlewareResponse:
       type: object
@@ -1160,9 +1132,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: DeleteMiddlewareRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.DeleteMiddlewareResponse:
       type: object
@@ -1196,9 +1165,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
       title: GetMiddlewareRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.GetMiddlewareResponse:
       type: object
@@ -1248,8 +1214,6 @@ components:
           format: int64
           nullable: true
       title: ListMiddlewaresRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListMiddlewaresResponse:
       type: object
@@ -1398,10 +1362,6 @@ components:
           type: boolean
           title: enabled
       title: UpdateMiddlewareRequest
-      required:
-        - id
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.UpdateMiddlewareResponse:
       type: object
@@ -1447,8 +1407,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: CreateRouterRequest
       required:
-        - profileId
-        - name
         - type
       additionalProperties: false
     mantrae.v1.CreateRouterResponse:
@@ -1473,9 +1431,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: DeleteRouterRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.DeleteRouterResponse:
       type: object
@@ -1495,9 +1450,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: GetRouterRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.GetRouterResponse:
       type: object
@@ -1547,8 +1499,6 @@ components:
           format: int64
           nullable: true
       title: ListRoutersRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListRoutersResponse:
       type: object
@@ -1638,10 +1588,6 @@ components:
             $ref: '#/components/schemas/mantrae.v1.DnsProvider'
           title: dns_providers
       title: UpdateRouterRequest
-      required:
-        - id
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.UpdateRouterResponse:
       type: object
@@ -1683,10 +1629,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: CreateServiceRequest
-      required:
-        - profileId
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.CreateServiceResponse:
       type: object
@@ -1710,9 +1652,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: DeleteServiceRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.DeleteServiceResponse:
       type: object
@@ -1755,9 +1694,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: GetServiceRequest
-      required:
-        - id
-        - type
       additionalProperties: false
     mantrae.v1.GetServiceResponse:
       type: object
@@ -1807,8 +1743,6 @@ components:
           format: int64
           nullable: true
       title: ListServicesRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ListServicesResponse:
       type: object
@@ -1882,10 +1816,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
       title: UpdateServiceRequest
-      required:
-        - id
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.UpdateServiceResponse:
       type: object
@@ -1914,9 +1844,6 @@ components:
           type: boolean
           title: is_admin
       title: CreateUserRequest
-      required:
-        - username
-        - password
       additionalProperties: false
     mantrae.v1.CreateUserResponse:
       type: object
@@ -1934,8 +1861,6 @@ components:
           title: id
           minLength: 1
       title: DeleteUserRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.DeleteUserResponse:
       type: object
@@ -2073,9 +1998,9 @@ components:
     mantrae.v1.LoginUserResponse:
       type: object
       properties:
-        token:
-          type: string
-          title: token
+        user:
+          title: user
+          $ref: '#/components/schemas/mantrae.v1.User'
       title: LoginUserResponse
       additionalProperties: false
     mantrae.v1.LogoutUserRequest:
@@ -2138,9 +2063,6 @@ components:
           minLength: 8
           nullable: true
       title: UpdateUserRequest
-      required:
-        - id
-        - username
       additionalProperties: false
     mantrae.v1.UpdateUserResponse:
       type: object
@@ -2185,18 +2107,6 @@ components:
           $ref: '#/components/schemas/google.protobuf.Timestamp'
       title: User
       additionalProperties: false
-    mantrae.v1.VerifyJWTRequest:
-      type: object
-      title: VerifyJWTRequest
-      additionalProperties: false
-    mantrae.v1.VerifyJWTResponse:
-      type: object
-      properties:
-        user:
-          title: user
-          $ref: '#/components/schemas/mantrae.v1.User'
-      title: VerifyJWTResponse
-      additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
       anyOf:
@@ -2222,17 +2132,16 @@ components:
         otp:
           type: string
           title: otp
+          maxLength: 6
           minLength: 6
       title: VerifyOTPRequest
-      required:
-        - otp
       additionalProperties: false
     mantrae.v1.VerifyOTPResponse:
       type: object
       properties:
-        token:
-          type: string
-          title: token
+        user:
+          title: user
+          $ref: '#/components/schemas/mantrae.v1.User'
       title: VerifyOTPResponse
       additionalProperties: false
     mantrae.v1.EventType:
@@ -2388,8 +2297,6 @@ components:
           title: resource_types
           description: Filter by specific resource types
       title: ProfileEventsRequest
-      required:
-        - profileId
       additionalProperties: false
     mantrae.v1.ProfileEventsResponse:
       type: object
@@ -2411,8 +2318,6 @@ components:
           title: description
           nullable: true
       title: CreateProfileRequest
-      required:
-        - name
       additionalProperties: false
     mantrae.v1.CreateProfileResponse:
       type: object
@@ -2433,8 +2338,6 @@ components:
           title: id
           format: int64
       title: DeleteProfileRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.DeleteProfileResponse:
       type: object
@@ -2451,8 +2354,6 @@ components:
           title: id
           format: int64
       title: GetProfileRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.GetProfileResponse:
       type: object
@@ -2545,9 +2446,6 @@ components:
           title: description
           nullable: true
       title: UpdateProfileRequest
-      required:
-        - id
-        - name
       additionalProperties: false
     mantrae.v1.UpdateProfileResponse:
       type: object
@@ -2565,8 +2463,6 @@ components:
           title: key
           minLength: 1
       title: GetSettingRequest
-      required:
-        - key
       additionalProperties: false
     mantrae.v1.GetSettingResponse:
       type: object
@@ -2615,8 +2511,6 @@ components:
           type: string
           title: value
       title: UpdateSettingRequest
-      required:
-        - key
       additionalProperties: false
     mantrae.v1.UpdateSettingResponse:
       type: object
@@ -5008,41 +4902,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.LogoutUserResponse'
-  /mantrae.v1.UserService/VerifyJWT:
-    post:
-      tags:
-        - mantrae.v1.UserService
-      summary: VerifyJWT
-      operationId: mantrae.v1.UserService.VerifyJWT
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.VerifyJWTRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.VerifyJWTResponse'
   /mantrae.v1.UserService/VerifyOTP:
     post:
       tags:
