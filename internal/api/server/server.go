@@ -178,6 +178,11 @@ func (s *Server) registerServices() {
 	s.mux.Handle("/", http.FileServer(http.FS(staticContent)))
 	s.mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadsContent))
 
+	// Health check
+	s.mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	// Serve OpenAPI specs file
 	s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "proto/gen/openapi/openapi.yaml")
