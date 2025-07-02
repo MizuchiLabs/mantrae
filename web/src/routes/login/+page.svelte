@@ -65,13 +65,13 @@
 </script>
 
 {#if !user.isLoggedIn()}
-	<Card.Root class="max-w-md">
-		<Card.Header class="flex flex-col items-center text-center">
+	<Card.Root>
+		<Card.Header class="flex flex-col items-center justify-between gap-2 pt-4">
 			<Card.Title class="text-2xl font-bold">Welcome back</Card.Title>
 			<Card.Description>Login to your account</Card.Description>
 		</Card.Header>
-		<Card.Content>
-			<form onsubmit={handleSubmit} class="px-4">
+		<Card.Content class="p-0">
+			<form onsubmit={handleSubmit} class="px-6 md:px-8">
 				{#await userClient.getOIDCStatus({}) then value}
 					{#if value.loginEnabled}
 						<div class="flex flex-col gap-4">
@@ -98,7 +98,7 @@
 
 							{#if value.oidcEnabled}
 								<div
-									class="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
+									class="after:border-border relative py-2 text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t"
 								>
 									<span class="bg-background text-muted-foreground relative z-10 px-2">
 										Or continue with

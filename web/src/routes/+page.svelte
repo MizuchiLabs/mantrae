@@ -21,7 +21,8 @@
 		Clock,
 		TrendingUp,
 		Wifi,
-		Database
+		Database,
+		Pen
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import {
@@ -400,27 +401,27 @@
 										{/await}
 									</div>
 
-									<div class="flex items-center gap-2 pt-2">
+									<div class="grid grid-cols-2 gap-2 md:grid-cols-6">
 										<Button
 											size="sm"
 											variant="outline"
-											class="gap-1"
+											class="gap-2"
 											onclick={() => {
 												modalProfile = profile;
 												modalProfileOpen = true;
 											}}
 										>
-											<Settings class="h-3 w-3" />
-											Configure
+											<Pen />
+											Edit
 										</Button>
 										<Button
 											size="sm"
 											variant="outline"
-											class="gap-1"
+											class="gap-2"
 											onclick={() => (modalConfigOpen = true)}
 										>
-											<Activity class="h-3 w-3" />
-											View Config
+											<Activity />
+											Config
 										</Button>
 									</div>
 								</div>

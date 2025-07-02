@@ -1,5 +1,5 @@
 import { createLocalStorage } from "$lib/storage.svelte";
-import { PUBLIC_BACKEND_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 
 export const DEFAULT_URL = import.meta.env.PROD ? "/" : `http://127.0.0.1:3000`;
 

@@ -173,7 +173,6 @@
 	onMount(async () => {
 		const response = await settingClient.listSettings({});
 		settingsMap = Object.fromEntries(response.settings.map((s) => [s.key, s.value]));
-		console.log(settingsMap);
 		originalSettings = { ...settingsMap };
 		changedSettings = {};
 
@@ -203,28 +202,29 @@
 						onchange={() => upload(uploadBackupFile, 'backup')}
 					/>
 
-					<div class="flex flex-wrap items-center gap-2 sm:gap-4">
-						<Button onclick={() => downloadBackup()} variant="outline" class="flex-1 sm:flex-none">
-							<Download class="mr-2 size-4" />
+					<div class="grid grid-cols-1 gap-2 sm:grid-cols-6">
+						<Button onclick={() => downloadBackup()} variant="outline" class="px-1">
+							<Download />
 							Download Backup
 						</Button>
 
 						<Tooltip.Provider>
 							<Tooltip.Root delayDuration={500}>
-								<Tooltip.Trigger class="flex-1 sm:flex-none">
+								<Tooltip.Trigger class="w-full">
 									<Button
 										variant="outline"
 										onclick={() => uploadBackupFile?.click()}
-										class="flex-1 sm:flex-none"
+										class="w-full px-1"
 									>
-										<Upload class="mr-2 size-4" />
+										<Upload />
 										Upload Backup
 									</Button>
 								</Tooltip.Trigger>
 								<Tooltip.Content side="bottom" align="end" class="max-w-md">
 									<p>
 										Upload a SQLite <code>.db</code> file to fully replace the current database, or
-										upload a Traefik dynamic config file in <code>.yaml</code> or <code>.json</code>
+										upload a Traefik dynamic config file in <code>.yaml</code> or
+										<code>.json</code>
 										format. Dynamic configs will be merged with the existing routers, services, and middlewares—overwriting
 										any entries with matching names.
 									</p>
@@ -232,12 +232,8 @@
 							</Tooltip.Root>
 						</Tooltip.Provider>
 
-						<Button
-							variant="outline"
-							onclick={() => (showBackupList = true)}
-							class="flex-1 sm:flex-none"
-						>
-							<List class="mr-2 size-4" />
+						<Button variant="outline" onclick={() => (showBackupList = true)} class="px-1">
+							<List />
 							View Backups
 						</Button>
 					</div>
