@@ -9,6 +9,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { pageIndex, pageSize } from '$lib/stores/common';
@@ -19,11 +20,13 @@
 		CircleCheck,
 		CircleSlash,
 		Globe,
+		LayoutGrid,
 		Network,
 		Pencil,
 		Power,
 		PowerOff,
 		Route,
+		Table,
 		Trash,
 		Waves
 	} from '@lucide/svelte';
@@ -37,6 +40,7 @@
 	// Data state
 	let data = $state<Router[]>([]);
 	let rowCount = $state<number>(0);
+	let viewMode = $state<'table' | 'grid'>('table');
 
 	const columns: ColumnDef<Router>[] = [
 		{
@@ -357,15 +361,41 @@
 			</h1>
 			<p class="text-muted-foreground mt-1">Manage your routers and services</p>
 		</div>
+
+		<!-- View Toggle -->
+		<div class="flex items-center gap-2">
+			<Button
+				variant={viewMode === 'table' ? 'default' : 'outline'}
+				size="sm"
+				onclick={() => (viewMode = 'table')}
+			>
+				<Table class="h-4 w-4" />
+				Table
+			</Button>
+			<Button
+				variant={viewMode === 'grid' ? 'default' : 'outline'}
+				size="sm"
+				onclick={() => (viewMode = 'grid')}
+			>
+				<LayoutGrid class="h-4 w-4" />
+				Grid
+			</Button>
+		</div>
 	</div>
 
 	<DataTable
 		{data}
 		{columns}
 		{rowCount}
+		{viewMode}
 		{onPaginationChange}
 		{bulkActions}
 		rowClassModifiers={{}}
+		cardConfig={{
+			titleKey: 'name',
+			subtitleKey: 'type',
+			excludeColumns: []
+		}}
 		createButton={{
 			label: 'Create Router',
 			onClick: () => {

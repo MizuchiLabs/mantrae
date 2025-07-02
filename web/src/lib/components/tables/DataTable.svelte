@@ -19,6 +19,7 @@
 	} from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
@@ -44,6 +45,7 @@
 		data: TData[];
 		columns: ColumnDef<TData, TValue>[];
 		rowCount: number;
+		viewMode?: 'table' | 'grid';
 		onPaginationChange?: (pagination: PaginationState) => void;
 		onSortingChange?: (sorting: SortingState) => void;
 		onRowSelection?: (rowSelection: RowSelectionState) => void;
@@ -54,19 +56,26 @@
 			label: string;
 			onClick: () => void;
 		};
+		cardConfig?: {
+			titleKey?: string;
+			subtitleKey?: string;
+			excludeColumns?: string[];
+		};
 	};
 
 	let {
 		data,
 		columns,
 		rowCount,
+		viewMode = 'table',
 		onPaginationChange,
 		onSortingChange,
 		onRowSelection,
 		getRowClassName,
 		rowClassModifiers,
 		bulkActions,
-		createButton
+		createButton,
+		cardConfig = {}
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
@@ -217,6 +226,21 @@
 		const column = table.getColumn(columnId);
 		if (column) column.setFilterValue(undefined);
 	}
+	function getVisibleColumns() {
+		return table
+			.getAllColumns()
+			.filter(
+				(col) =>
+					col.getIsVisible() &&
+					col.id !== 'select' &&
+					col.id !== 'actions' &&
+					!cardConfig.excludeColumns?.includes(col.id)
+			);
+	}
+
+	function getActionsColumn() {
+		return table.getAllColumns().find((col) => col.id === 'actions');
+	}
 </script>
 
 <div>
@@ -227,7 +251,7 @@
 				placeholder="Search..."
 				bind:value={globalFilter}
 				oninput={() => table.setGlobalFilter(String(globalFilter))}
-				class="w-[200px] pl-9 lg:w-[350px]"
+				class="w-[180px] pl-9 lg:w-[350px]"
 			/>
 			<Delete
 				class="text-muted-foreground absolute right-4"
@@ -251,24 +275,26 @@
 		{/if}
 
 		<!-- Column Visibility -->
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger>
-				{#snippet child({ props })}
-					<Button {...props} variant="outline" class="ml-auto">Columns</Button>
-				{/snippet}
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end">
-				{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
-					<DropdownMenu.CheckboxItem
-						class="capitalize"
-						closeOnSelect={false}
-						bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
-					>
-						{column.columnDef.header}
-					</DropdownMenu.CheckboxItem>
-				{/each}
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+		{#if viewMode === 'table'}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger>
+					{#snippet child({ props })}
+						<Button {...props} variant="outline" class="ml-auto">Columns</Button>
+					{/snippet}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end">
+					{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
+						<DropdownMenu.CheckboxItem
+							class="capitalize"
+							closeOnSelect={false}
+							bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
+						>
+							{column.columnDef.header}
+						</DropdownMenu.CheckboxItem>
+					{/each}
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		{/if}
 
 		{#if createButton}
 			<Button variant="default" onclick={createButton.onClick}>
@@ -278,72 +304,167 @@
 		{/if}
 	</div>
 
-	<!-- Table -->
-	<div class="rounded-md border">
-		{#key table.getRowModel().rowsById}
-			<Table.Root>
-				<Table.Header>
-					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-						<Table.Row>
-							{#each headerGroup.headers as header (header.id)}
-								<Table.Head>
-									{#if !header.isPlaceholder}
-										<div class="flex items-center">
-											<Button
-												variant="ghost"
-												size="sm"
-												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-												data-sortable={header.column.getCanSort()}
-												onclick={() => header.column.toggleSorting()}
-											>
-												<FlexRender
-													content={header.column.columnDef.header}
-													context={header.getContext()}
-												/>
-												{#if header.column.getCanSort()}
-													{#if header.column.getIsSorted() === 'asc'}
-														<ArrowDown />
-													{:else if header.column.getIsSorted() === 'desc'}
-														<ArrowUp />
+	{#if viewMode === 'table'}
+		<!-- Table -->
+		<div class="rounded-md border">
+			{#key table.getRowModel().rowsById}
+				<Table.Root>
+					<Table.Header>
+						{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+							<Table.Row>
+								{#each headerGroup.headers as header (header.id)}
+									<Table.Head>
+										{#if !header.isPlaceholder}
+											<div class="flex items-center">
+												<Button
+													variant="ghost"
+													size="sm"
+													class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+													data-sortable={header.column.getCanSort()}
+													onclick={() => header.column.toggleSorting()}
+												>
+													<FlexRender
+														content={header.column.columnDef.header}
+														context={header.getContext()}
+													/>
+													{#if header.column.getCanSort()}
+														{#if header.column.getIsSorted() === 'asc'}
+															<ArrowDown />
+														{:else if header.column.getIsSorted() === 'desc'}
+															<ArrowUp />
+														{/if}
 													{/if}
-												{/if}
-											</Button>
-										</div>
-									{/if}
-								</Table.Head>
-							{/each}
+												</Button>
+											</div>
+										{/if}
+									</Table.Head>
+								{/each}
+							</Table.Row>
+						{/each}
+					</Table.Header>
+					<Table.Body>
+						{#each table.getRowModel().rows as row (row.id)}
+							<Table.Row
+								data-state={row.getIsSelected() && 'selected'}
+								class={computeRowClasses(row.original)}
+							>
+								{#each row.getVisibleCells() as cell (cell.id)}
+									<Table.Cell>
+										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+									</Table.Cell>
+								{/each}
+							</Table.Row>
+						{:else}
+							<Table.Row>
+								<Table.Cell colspan={columns.length} class="h-24 text-center"
+									>No results.</Table.Cell
+								>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+					<Table.Footer>
+						<Table.Row class="border-t">
+							<Table.Cell colspan={columns.length}>Total</Table.Cell>
+							<Table.Cell class="mr-4 text-right">
+								{table.getPaginationRowModel().rows.length}
+							</Table.Cell>
 						</Table.Row>
-					{/each}
-				</Table.Header>
-				<Table.Body>
-					{#each table.getRowModel().rows as row (row.id)}
-						<Table.Row
-							data-state={row.getIsSelected() && 'selected'}
-							class={computeRowClasses(row.original)}
-						>
-							{#each row.getVisibleCells() as cell (cell.id)}
-								<Table.Cell>
-									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-								</Table.Cell>
-							{/each}
-						</Table.Row>
-					{:else}
-						<Table.Row>
-							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-				<Table.Footer>
-					<Table.Row class="border-t">
-						<Table.Cell colspan={columns.length}>Total</Table.Cell>
-						<Table.Cell class="mr-4 text-right">
-							{table.getPaginationRowModel().rows.length}
-						</Table.Cell>
-					</Table.Row>
-				</Table.Footer>
-			</Table.Root>
-		{/key}
-	</div>
+					</Table.Footer>
+				</Table.Root>
+			{/key}
+		</div>
+	{:else}
+		<!-- Grid View -->
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+			{#each table.getRowModel().rows as row (row.id)}
+				<Card.Root
+					class="relative {computeRowClasses(row.original)} {row.getIsSelected()
+						? 'ring-primary ring-2'
+						: ''}"
+				>
+					<!-- Selection checkbox -->
+					<!-- <div class="absolute top-2 left-2 z-10"> -->
+					<!-- 	{@render renderComponent(Checkbox, { -->
+					<!-- 		checked: row.getIsSelected(), -->
+					<!-- 		onCheckedChange: (value) => row.toggleSelected(!!value), -->
+					<!-- 		'aria-label': 'Select item' -->
+					<!-- 	})} -->
+					<!-- </div> -->
+
+					<Card.Header class="pt-8 pb-2">
+						{#if cardConfig.titleKey}
+							{@const titleColumn = table.getColumn(cardConfig.titleKey)}
+							{#if titleColumn}
+								<Card.Title class="text-sm leading-tight font-medium">
+									<FlexRender
+										content={titleColumn.columnDef.cell}
+										context={{
+											row,
+											column: titleColumn,
+											cell: row.getVisibleCells().find((c) => c.column.id === cardConfig.titleKey)
+										}}
+									/>
+								</Card.Title>
+							{/if}
+						{/if}
+
+						{#if cardConfig.subtitleKey}
+							{@const subtitleColumn = table.getColumn(cardConfig.subtitleKey)}
+							{#if subtitleColumn}
+								<Card.Description class="text-xs">
+									<FlexRender
+										content={subtitleColumn.columnDef.cell}
+										context={{
+											row,
+											column: subtitleColumn,
+											cell: row
+												.getVisibleCells()
+												.find((c) => c.column.id === cardConfig.subtitleKey)
+										}}
+									/>
+								</Card.Description>
+							{/if}
+						{/if}
+					</Card.Header>
+
+					<Card.Content class="space-y-2">
+						{#each getVisibleColumns() as column (column.id)}
+							{@const cell = row.getVisibleCells().find((c) => c.column.id === column.id)}
+							{#if cell && column.id !== cardConfig.titleKey && column.id !== cardConfig.subtitleKey}
+								<div class="flex items-center justify-between text-xs">
+									<span class="text-muted-foreground font-medium">
+										{column.columnDef.header}:
+									</span>
+									<div class="text-right">
+										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+									</div>
+								</div>
+							{/if}
+						{/each}
+					</Card.Content>
+
+					{#if getActionsColumn()}
+						{@const actionsCell = row.getVisibleCells().find((c) => c.column.id === 'actions')}
+						{#if actionsCell}
+							<Card.Footer class="pt-2">
+								<FlexRender
+									content={actionsCell.column.columnDef.cell}
+									context={actionsCell.getContext()}
+								/>
+							</Card.Footer>
+						{/if}
+					{/if}
+				</Card.Root>
+			{:else}
+				<div
+					class="col-span-full flex h-24 items-center justify-center text-center text-muted-foreground"
+				>
+					No results.
+				</div>
+			{/each}
+		</div>
+	{/if}
+
 	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
 		<BulkActions
 			selectedCount={table.getFilteredSelectedRowModel().rows.length}
