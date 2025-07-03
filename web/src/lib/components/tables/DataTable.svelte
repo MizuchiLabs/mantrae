@@ -28,10 +28,13 @@
 	import {
 		ArrowDown,
 		ArrowUp,
+		Check,
 		ChevronLeft,
 		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
+		CircleCheck,
+		CircleX,
 		Delete,
 		Plus,
 		Search,
@@ -237,10 +240,6 @@
 					!cardConfig.excludeColumns?.includes(col.id)
 			);
 	}
-
-	function getActionsColumn() {
-		return table.getAllColumns().find((col) => col.id === 'actions');
-	}
 </script>
 
 <div>
@@ -356,9 +355,9 @@
 							</Table.Row>
 						{:else}
 							<Table.Row>
-								<Table.Cell colspan={columns.length} class="h-24 text-center"
-									>No results.</Table.Cell
-								>
+								<Table.Cell colspan={columns.length} class="h-24 text-center">
+									No results.
+								</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>
@@ -375,91 +374,129 @@
 		</div>
 	{:else}
 		<!-- Grid View -->
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+		<div
+			class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+		>
 			{#each table.getRowModel().rows as row (row.id)}
-				<Card.Root
-					class="relative {computeRowClasses(row.original)} {row.getIsSelected()
-						? 'ring-primary ring-2'
-						: ''}"
+				{@const isSelected = row.getIsSelected()}
+				{@const titleCell = cardConfig.titleKey
+					? row.getVisibleCells().find((c) => c.column.id === cardConfig.titleKey)
+					: null}
+				{@const subtitleCell = cardConfig.subtitleKey
+					? row.getVisibleCells().find((c) => c.column.id === cardConfig.subtitleKey)
+					: null}
+				{@const actionsCell = row.getVisibleCells().find((c) => c.column.id === 'actions')}
+				{@const visibleColumns = getVisibleColumns()}
+
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="group bg-card text-card-foreground hover:shadow-primary/5 relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {computeRowClasses(
+						row.original
+					)} {isSelected
+						? 'ring-primary bg-primary/5 border-primary/20 ring-2'
+						: 'hover:border-primary/20'}"
+					onclick={() => row.toggleSelected()}
+					ontouchstart={(e) => {
+						let touchTimer;
+						touchTimer = setTimeout(() => {
+							// Long press action - could show context menu
+							if (actionsCell) {
+								e.preventDefault();
+								// You could dispatch a custom event here for showing actions menu
+							}
+						}, 500);
+
+						// Clear timer on touch end
+						const clearTimer = () => {
+							clearTimeout(touchTimer);
+							document.removeEventListener('touchend', clearTimer);
+							document.removeEventListener('touchmove', clearTimer);
+						};
+
+						document.addEventListener('touchend', clearTimer);
+						document.addEventListener('touchmove', clearTimer);
+					}}
 				>
-					<!-- Selection checkbox -->
-					<!-- <div class="absolute top-2 left-2 z-10"> -->
-					<!-- 	{@render renderComponent(Checkbox, { -->
-					<!-- 		checked: row.getIsSelected(), -->
-					<!-- 		onCheckedChange: (value) => row.toggleSelected(!!value), -->
-					<!-- 		'aria-label': 'Select item' -->
-					<!-- 	})} -->
-					<!-- </div> -->
+					{#if isSelected}
+						<Check class="absolute bottom-3 left-3 z-10 text-green-500 " />
+					{/if}
 
-					<Card.Header class="pt-8 pb-2">
-						{#if cardConfig.titleKey}
-							{@const titleColumn = table.getColumn(cardConfig.titleKey)}
-							{#if titleColumn}
-								<Card.Title class="text-sm leading-tight font-medium">
+					<div class="space-y-3 p-4">
+						<!-- Header Section -->
+						<div class="flex items-center justify-between space-y-2">
+							{#if titleCell && cardConfig.titleKey}
+								{@const titleColumn = table.getColumn(cardConfig.titleKey)}
+								<h3 class="line-clamp-2 pr-8 text-base leading-tight font-semibold">
 									<FlexRender
-										content={titleColumn.columnDef.cell}
-										context={{
-											row,
-											column: titleColumn,
-											cell: row.getVisibleCells().find((c) => c.column.id === cardConfig.titleKey)
-										}}
+										content={titleColumn?.columnDef.cell}
+										context={titleCell.getContext()}
 									/>
-								</Card.Title>
+								</h3>
 							{/if}
-						{/if}
 
-						{#if cardConfig.subtitleKey}
-							{@const subtitleColumn = table.getColumn(cardConfig.subtitleKey)}
-							{#if subtitleColumn}
-								<Card.Description class="text-xs">
+							{#if subtitleCell && cardConfig.subtitleKey}
+								{@const subtitleColumn = table.getColumn(cardConfig.subtitleKey)}
+								<div class="text-muted-foreground text-sm">
 									<FlexRender
-										content={subtitleColumn.columnDef.cell}
-										context={{
-											row,
-											column: subtitleColumn,
-											cell: row
-												.getVisibleCells()
-												.find((c) => c.column.id === cardConfig.subtitleKey)
-										}}
+										content={subtitleColumn?.columnDef.cell}
+										context={subtitleCell.getContext()}
 									/>
-								</Card.Description>
-							{/if}
-						{/if}
-					</Card.Header>
-
-					<Card.Content class="space-y-2">
-						{#each getVisibleColumns() as column (column.id)}
-							{@const cell = row.getVisibleCells().find((c) => c.column.id === column.id)}
-							{#if cell && column.id !== cardConfig.titleKey && column.id !== cardConfig.subtitleKey}
-								<div class="flex items-center justify-between text-xs">
-									<span class="text-muted-foreground font-medium">
-										{column.columnDef.header}:
-									</span>
-									<div class="text-right">
-										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-									</div>
 								</div>
 							{/if}
-						{/each}
-					</Card.Content>
+						</div>
 
-					{#if getActionsColumn()}
-						{@const actionsCell = row.getVisibleCells().find((c) => c.column.id === 'actions')}
-						{#if actionsCell}
-							<Card.Footer class="pt-2">
-								<FlexRender
-									content={actionsCell.column.columnDef.cell}
-									context={actionsCell.getContext()}
-								/>
-							</Card.Footer>
+						<!-- Content Section - Show only most important fields -->
+						{#if visibleColumns.length > 0}
+							<div class="space-y-2.5 border-t pt-3">
+								{#each visibleColumns as column (column.id)}
+									{@const cell = row.getVisibleCells().find((c) => c.column.id === column.id)}
+									{#if cell && column.id !== cardConfig.titleKey && column.id !== cardConfig.subtitleKey}
+										<div class="flex items-center justify-between gap-2 text-xs">
+											<span
+												class="text-muted-foreground min-w-0 truncate font-medium tracking-wide uppercase"
+											>
+												{column.columnDef.header}
+											</span>
+											<div class="min-w-0 flex-1 text-right">
+												<FlexRender
+													content={cell.column.columnDef.cell}
+													context={cell.getContext()}
+												/>
+											</div>
+										</div>
+									{/if}
+								{/each}
+							</div>
 						{/if}
-					{/if}
-				</Card.Root>
+
+						<!-- Actions Section -->
+						{#if actionsCell}
+							<div
+								class="flex justify-end border-t pt-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100"
+							>
+								<div class="flex gap-1">
+									<FlexRender
+										content={actionsCell.column.columnDef.cell}
+										context={actionsCell.getContext()}
+									/>
+								</div>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Hover Overlay -->
+					<div
+						class="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+					></div>
+				</div>
 			{:else}
-				<div
-					class="col-span-full flex h-24 items-center justify-center text-center text-muted-foreground"
-				>
-					No results.
+				<div class="col-span-full flex h-32 items-center justify-center">
+					<div class="text-center space-y-2">
+						<div class="text-muted-foreground text-4xl">📋</div>
+						<p class="text-muted-foreground font-medium">No results found</p>
+						<p class="text-muted-foreground text-sm">Try adjusting your search or filters</p>
+					</div>
 				</div>
 			{/each}
 		</div>

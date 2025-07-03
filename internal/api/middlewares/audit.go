@@ -29,6 +29,10 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 			// Only audit on successful operations
 			if err == nil {
 				if auditEvent := extractAuditEvent(req, resp); auditEvent != nil {
+					if auditEvent.Details == "" || auditEvent.Event == "" {
+						slog.Warn("audit event is missing details or event", "event", auditEvent)
+						return resp, err
+					}
 					// Log audit event asynchronously to avoid blocking the response
 					go func(auditCtx context.Context) {
 						if auditErr := createAuditLog(auditCtx, app.Conn.GetQuery(), *auditEvent); auditErr != nil {

@@ -15,7 +15,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 	const isPublic =
 		currentPath.startsWith("/login") || currentPath.startsWith("/welcome");
 
-	const healthy = await checkHealth();
+	const healthy = await checkHealth(fetch);
 	if (!healthy) {
 		// No backend, force redirect to welcome screen to enter backend URL
 		if (currentPath !== "/welcome") {

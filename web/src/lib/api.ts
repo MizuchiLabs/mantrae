@@ -39,9 +39,15 @@ export function useClient<T extends DescService>(
 }
 
 // Basic health check function
-export async function checkHealth() {
+export async function checkHealth(
+	customFetch?: typeof fetch,
+): Promise<boolean> {
 	try {
-		const res = await fetch(`${baseURL.value}/healthz`, { method: "GET" });
+		if (!baseURL.value) throw new Error("Base URL not set");
+		if (!customFetch) customFetch = fetch;
+		const res = await customFetch(`${baseURL.value}/healthz`, {
+			method: "GET",
+		});
 		return res.ok;
 	} catch {
 		return false;

@@ -6,7 +6,6 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -168,17 +167,21 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
-		<Tabs.Root value="router" class="mt-4">
+		<Tabs.Root value="router" class="mt-2 sm:mt-4">
 			<Tabs.List class="grid w-full grid-cols-2">
 				<Tabs.Trigger value="router">Router</Tabs.Trigger>
 				<Tabs.Trigger value="service">Service</Tabs.Trigger>
 			</Tabs.List>
-			<Tabs.Content value="router">
+			<Tabs.Content value="router" class="space-y-4">
 				<Card.Root>
-					<Card.Header class="flex flex-row items-center justify-between">
-						<div>
-							<Card.Title>{item.id ? 'Update' : 'Create'} Router</Card.Title>
-							<Card.Description>
+					<Card.Header
+						class="space-y-2 sm:flex sm:flex-row sm:items-center sm:justify-between sm:space-y-0"
+					>
+						<div class="space-y-1">
+							<Card.Title class="text-lg sm:text-xl"
+								>{item.id ? 'Update' : 'Create'} Router</Card.Title
+							>
+							<Card.Description class="text-sm">
 								{item.id ? 'Update existing router' : 'Create a new router'}
 							</Card.Description>
 						</div>
@@ -220,7 +223,7 @@
 									<Select.Content customAnchor={dnsAnchor} align="end">
 										{#each value.dnsProviders as dns (dns.id)}
 											<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
-												{dns.name}
+												<span class="truncate">{dns.name}</span>
 												{#if dns.isActive}
 													<CircleCheck size="1rem" class="text-green-400" />
 												{/if}
@@ -231,14 +234,20 @@
 							{/if}
 						{/await}
 					</Card.Header>
-					<Card.Content class="flex flex-col gap-3">
-						<div class="grid w-full grid-cols-3 gap-2">
-							<div class="col-span-2 flex flex-col gap-2">
+					<Card.Content class="space-y-4">
+						<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
+							<div class="flex flex-col gap-2 sm:col-span-2">
 								<Label for="name">Name</Label>
-								<Input id="name" bind:value={item.name} required placeholder="Router Name" />
+								<Input
+									id="name"
+									bind:value={item.name}
+									required
+									placeholder="Router Name"
+									class="truncate"
+								/>
 							</div>
 
-							<div class="col-span-1 flex flex-col gap-2">
+							<div class="flex flex-col gap-2 sm:col-span-1">
 								<Label for="type" class="text-right">Protocol</Label>
 								<Select.Root
 									type="single"
@@ -247,7 +256,9 @@
 									onValueChange={(value) => (item.type = parseInt(value, 10))}
 								>
 									<Select.Trigger class="w-full">
-										{routerTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+										<span class="truncate">
+											{routerTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+										</span>
 									</Select.Trigger>
 									<Select.Content>
 										<Select.Group>
@@ -275,15 +286,16 @@
 					</Card.Content>
 				</Card.Root>
 			</Tabs.Content>
-			<Tabs.Content value="service">
+			<Tabs.Content value="service" class="space-y-4">
 				<Card.Root>
-					<Card.Header class="flex flex-row items-center justify-between">
-						<div>
-							<Card.Title>{item.id ? 'Update' : 'Create'} Service</Card.Title>
-							<Card.Description>
-								{item.id ? 'Update existing service' : 'Create a new service'}
-							</Card.Description>
-						</div>
+					<Card.Header>
+						<Card.Title class="text-lg sm:text-xl">
+							{item.id ? 'Update' : 'Create'}
+							Service
+						</Card.Title>
+						<Card.Description class="text-sm">
+							{item.id ? 'Update existing service' : 'Create a new service'}
+						</Card.Description>
 					</Card.Header>
 					<Card.Content class="flex flex-col gap-3">
 						{#if item.type === RouterType.HTTP}
@@ -300,15 +312,13 @@
 			</Tabs.Content>
 		</Tabs.Root>
 
-		<Separator />
-
-		<div class="flex w-full flex-row gap-2">
+		<div class="flex w-full flex-col gap-2 sm:flex-row">
 			{#if item.id}
 				<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
 					Delete
 				</Button>
 			{/if}
-			<Button type="submit" class="flex-1" onclick={handleSubmit}>
+			<Button type="submit" class="flex-1 text-sm" onclick={handleSubmit}>
 				{item.id ? 'Update' : 'Create'}
 			</Button>
 		</div>

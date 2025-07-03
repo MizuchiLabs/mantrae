@@ -28,11 +28,13 @@
 		Route,
 		Table,
 		Trash,
+		TriangleAlert,
 		Waves
 	} from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { type IconComponent } from '$lib/types';
 
 	let item = $state({} as Router);
 	let open = $state(false);
@@ -52,12 +54,13 @@
 					label: row.getValue('name') as string,
 					icon: row.original.agentId ? Bot : undefined,
 					iconProps: { class: 'text-green-500', size: 20 },
-					class: 'text-sm'
+					truncate: true,
+					maxLength: 20
 				});
 			}
 		},
 		{
-			header: 'Protocol',
+			header: 'Type',
 			accessorKey: 'type',
 			enableSorting: true,
 			enableGlobalFilter: false,
@@ -77,25 +80,19 @@
 				return protocol === filterValue;
 			},
 			cell: ({ row, column }) => {
-				let protocol = row.getValue('type') as RouterType.HTTP | RouterType.TCP | RouterType.UDP;
-
-				let label = 'Unspecified';
-				let icon = undefined;
-				if (protocol === RouterType.HTTP) {
-					label = 'HTTP';
-					icon = Globe;
-				} else if (protocol === RouterType.TCP) {
-					label = 'TCP';
-					icon = Network;
-				} else if (protocol === RouterType.UDP) {
-					label = 'UDP';
-					icon = Waves;
-				}
+				const protocol = row.getValue('type') as RouterType;
+				const label = getProtocolLabel(protocol);
+				const iconMap: Record<RouterType, IconComponent> = {
+					[RouterType.HTTP]: Globe,
+					[RouterType.TCP]: Network,
+					[RouterType.UDP]: Waves,
+					[RouterType.UNSPECIFIED]: TriangleAlert
+				};
 				return renderComponent(ColumnBadge<Router>, {
 					label,
-					icon,
+					icon: iconMap[protocol],
 					variant: 'outline',
-					class: 'hover:cursor-pointer',
+					responsive: true,
 					column: column
 				});
 			}
@@ -141,15 +138,10 @@
 		{
 			header: 'Rules',
 			accessorKey: 'config.rule',
-			id: 'rule',
 			enableSorting: true,
 			cell: ({ row }) => {
-				let rule = '';
-				if (row.original.config?.rule !== undefined) {
-					rule = row.getValue('rule') as string;
-				}
 				return renderComponent(ColumnRule, {
-					rule: rule,
+					rule: (row.original.config?.rule as string) ?? '',
 					routerType: row.original.type as RouterType.HTTP | RouterType.TCP
 				});
 			}
@@ -157,7 +149,6 @@
 		{
 			header: 'TLS',
 			accessorKey: 'config.tls',
-			id: 'tls',
 			enableSorting: true,
 			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
@@ -165,32 +156,8 @@
 				return tls?.certResolver === filterValue;
 			},
 			cell: ({ row, column }) => {
-				let tls: RouterTLSConfig | RouterTCPTLSConfig = {};
-				if (row.original.config?.tls !== undefined) {
-					tls = row.getValue('tls') as RouterTLSConfig | RouterTCPTLSConfig;
-				}
+				const tls = row.original.config?.tls as RouterTLSConfig | RouterTCPTLSConfig;
 				return renderComponent(ColumnTls<Router>, { tls, column });
-			}
-		},
-		{
-			header: 'Enabled',
-			accessorKey: 'enabled',
-			enableSorting: true,
-			enableGlobalFilter: false,
-			cell: ({ row }) => {
-				return renderComponent(TableActions, {
-					actions: [
-						{
-							type: 'button',
-							label: row.original.enabled ? 'Disable' : 'Enable',
-							icon: row.original.enabled ? Power : PowerOff,
-							iconProps: {
-								class: row.original.enabled ? 'text-green-500 size-5' : 'text-red-500 size-5'
-							},
-							onClick: () => toggleItem(row.original, !row.original.enabled)
-						}
-					]
-				});
 			}
 		},
 		{
@@ -200,6 +167,15 @@
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
 					actions: [
+						{
+							type: 'button',
+							label: row.original.enabled ? 'Disable' : 'Enable',
+							icon: row.original.enabled ? Power : PowerOff,
+							iconProps: {
+								class: row.original.enabled ? 'text-green-500' : 'text-red-500'
+							},
+							onClick: () => toggleItem(row.original, !row.original.enabled)
+						},
 						{
 							type: 'button',
 							label: 'Edit Router',
@@ -341,8 +317,14 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	const checkMobile = () => {
+		let isMobile = window.matchMedia('(max-width: 768px)').matches;
+		if (isMobile) viewMode = 'grid';
+	};
+	onMount(() => {
+		refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		window.addEventListener('resize', checkMobile);
+		return () => window.removeEventListener('resize', checkMobile);
 	});
 </script>
 
@@ -350,35 +332,37 @@
 	<title>Routers</title>
 </svelte:head>
 
-<div class="flex flex-col gap-2">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Route class="text-primary h-6 w-6" />
+<div class="flex flex-col gap-4 sm:gap-6">
+	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="space-y-2">
+			<h1 class="flex items-center gap-3 text-2xl font-bold tracking-tight sm:text-3xl">
+				<div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+					<Route class="text-primary h-5 w-5 sm:h-6 sm:w-6" />
 				</div>
-				Routers
+				<span class="truncate">Routers</span>
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your routers and services</p>
+			<p class="text-muted-foreground text-sm sm:text-base">Manage your routers and services</p>
 		</div>
 
-		<!-- View Toggle -->
-		<div class="flex items-center gap-2">
+		<!-- View Toggle (Don't show on mobile) -->
+		<div class="hidden items-center gap-2 self-start sm:self-auto md:flex">
 			<Button
 				variant={viewMode === 'table' ? 'default' : 'outline'}
 				size="sm"
 				onclick={() => (viewMode = 'table')}
+				class="flex-1 sm:flex-none"
 			>
-				<Table class="h-4 w-4" />
-				Table
+				<Table class="h-4 w-4 sm:mr-2" />
+				<span class="hidden sm:block">Table</span>
 			</Button>
 			<Button
 				variant={viewMode === 'grid' ? 'default' : 'outline'}
 				size="sm"
 				onclick={() => (viewMode = 'grid')}
+				class="flex-1 sm:flex-none"
 			>
-				<LayoutGrid class="h-4 w-4" />
-				Grid
+				<LayoutGrid class="h-4 w-4 sm:mr-2" />
+				<span class="hidden sm:block">Grid</span>
 			</Button>
 		</div>
 	</div>
