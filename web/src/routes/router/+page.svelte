@@ -92,7 +92,6 @@
 					label,
 					icon: iconMap[protocol],
 					variant: 'outline',
-					responsive: true,
 					column: column
 				});
 			}
@@ -105,10 +104,7 @@
 			enableGlobalFilter: false,
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
-				let entrypoints: string[] = [];
-				if (row.original.config?.entryPoints !== undefined) {
-					entrypoints = row.getValue('entrypoints') as string[];
-				}
+				let entrypoints = row.original.config?.entryPoints as string[];
 				return renderComponent(ColumnBadge<Router>, {
 					label: entrypoints?.length ? entrypoints : 'None',
 					variant: entrypoints?.length ? 'secondary' : 'outline',
@@ -124,10 +120,7 @@
 			enableGlobalFilter: false,
 			filterFn: 'arrIncludes',
 			cell: ({ row, column }) => {
-				let middlewares: string[] = [];
-				if (row.original.config?.middlewares !== undefined) {
-					middlewares = row.getValue('middlewares') as string[];
-				}
+				let middlewares = row.original.config?.middlewares as string[];
 				return renderComponent(ColumnBadge<Router>, {
 					label: middlewares?.length ? middlewares : 'None',
 					variant: middlewares?.length ? 'secondary' : 'outline',

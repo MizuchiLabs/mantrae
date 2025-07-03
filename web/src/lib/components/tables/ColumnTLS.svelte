@@ -10,10 +10,9 @@
 	type Props = {
 		tls?: RouterTLSConfig | RouterTCPTLSConfig;
 		column?: Column<TData, unknown>;
-		compact?: boolean;
 	};
 
-	let { tls, column, compact = false }: Props = $props();
+	let { tls, column }: Props = $props();
 
 	// Type guard to check if TLS config has passthrough (TCP only)
 	function isTCPTLSConfig(
@@ -75,14 +74,13 @@
 			<Badge
 				{variant}
 				onclick={() => column?.setFilterValue?.(tls?.certResolver ?? 'enabled')}
-				class="cursor-pointer transition-colors duration-200 hover:shadow-sm
-					   {compact ? 'px-2 text-xs' : 'text-sm'}"
+				class="cursor-pointer text-sm transition-colors duration-200 hover:shadow-sm"
 			>
 				<StatusIcon class="mr-1 h-3 w-3 shrink-0" />
 				<span class="max-w-[100px] truncate sm:max-w-none">
 					{getStatusText()}
 				</span>
-				{#if !compact && status.configCount !== undefined && status.configCount > 1}
+				{#if status.configCount !== undefined && status.configCount > 1}
 					<span class="ml-1 text-xs opacity-70">+{status.configCount - 1}</span>
 				{/if}
 			</Badge>
@@ -224,8 +222,7 @@
 			<Tooltip.Trigger>
 				<Badge
 					variant="outline"
-					class="cursor-pointer transition-colors duration-200
-						   {compact ? 'px-2 text-xs' : 'text-sm'}"
+					class="cursor-pointer text-sm transition-colors duration-200"
 					onclick={() => column?.setFilterValue?.('disabled')}
 				>
 					<Unlock class="text-muted-foreground mr-1 h-3 w-3" />

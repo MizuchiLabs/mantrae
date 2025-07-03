@@ -64,14 +64,14 @@ func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointPara
 	return i, err
 }
 
-const deleteEntryPoint = `-- name: DeleteEntryPoint :exec
+const deleteEntryPointByID = `-- name: DeleteEntryPointByID :exec
 DELETE FROM entry_points
 WHERE
   id = ?
 `
 
-func (q *Queries) DeleteEntryPoint(ctx context.Context, id int64) error {
-	_, err := q.exec(ctx, q.deleteEntryPointStmt, deleteEntryPoint, id)
+func (q *Queries) DeleteEntryPointByID(ctx context.Context, id int64) error {
+	_, err := q.exec(ctx, q.deleteEntryPointByIDStmt, deleteEntryPointByID, id)
 	return err
 }
 

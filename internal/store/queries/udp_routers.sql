@@ -19,6 +19,27 @@ FROM
 WHERE
   id = ?;
 
+-- name: GetUdpRoutersUsingEntryPoint :many
+WITH
+  ep_name AS (
+    SELECT
+      name
+    FROM
+      entry_points
+    WHERE
+      entry_points.id = ?
+      AND entry_points.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  udp_routers r
+  JOIN json_each (r.config, '$.entryPoints') je
+  JOIN ep_name ep ON je.value = ep.name;
+
 -- name: ListUdpRouters :many
 SELECT
   *

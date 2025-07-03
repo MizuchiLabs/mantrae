@@ -127,6 +127,16 @@ func (s *MiddlewareService) UpdateMiddleware(
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 
+		// Update router middlewares
+		oldMiddleware, err := s.app.Conn.GetQuery().GetHttpMiddleware(ctx, params.ID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		oldMiddlewareProto := convert.HTTPMiddlewareToProto(&oldMiddleware)
+		if err = s.updateRouterMiddlewares(ctx, oldMiddlewareProto, req.Msg.Name); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
 		result, err := s.app.Conn.GetQuery().UpdateHttpMiddleware(ctx, params)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -141,6 +151,16 @@ func (s *MiddlewareService) UpdateMiddleware(
 		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+
+		// Update router middlewares
+		oldMiddleware, err := s.app.Conn.GetQuery().GetTcpMiddleware(ctx, params.ID)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		oldMiddlewareProto := convert.TCPMiddlewareToProto(&oldMiddleware)
+		if err = s.updateRouterMiddlewares(ctx, oldMiddlewareProto, req.Msg.Name); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		result, err := s.app.Conn.GetQuery().UpdateTcpMiddleware(ctx, params)
@@ -162,9 +182,34 @@ func (s *MiddlewareService) DeleteMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteMiddlewareRequest],
 ) (*connect.Response[mantraev1.DeleteMiddlewareResponse], error) {
-	if err := s.app.Conn.GetQuery().DeleteHttpMiddleware(ctx, req.Msg.Id); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	switch req.Msg.Type {
+	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
+		middleware, err := s.app.Conn.GetQuery().GetHttpMiddleware(ctx, req.Msg.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		mwProto := convert.HTTPMiddlewareToProto(&middleware)
+		if err := s.updateRouterMiddlewares(ctx, mwProto, ""); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if err := s.app.Conn.GetQuery().DeleteHttpMiddleware(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
+		middleware, err := s.app.Conn.GetQuery().GetTcpMiddleware(ctx, req.Msg.Id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		mwProto := convert.TCPMiddlewareToProto(&middleware)
+		if err := s.updateRouterMiddlewares(ctx, mwProto, ""); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if err := s.app.Conn.GetQuery().DeleteTcpMiddleware(ctx, req.Msg.Id); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
+
 	return connect.NewResponse(&mantraev1.DeleteMiddlewareResponse{}), nil
 }
 
@@ -360,4 +405,66 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 	}
 
 	return connect.NewResponse(&mantraev1.GetMiddlewarePluginsResponse{Plugins: plugins}), nil
+}
+
+// Helper functions
+func (s *MiddlewareService) updateRouterMiddlewares(
+	ctx context.Context,
+	middleware *mantraev1.Middleware,
+	newMiddleware string,
+) error {
+	switch middleware.Type {
+	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
+		router, err := s.app.Conn.GetQuery().
+			GetHttpRoutersUsingMiddleware(ctx, db.GetHttpRoutersUsingMiddlewareParams{
+				ProfileID: middleware.ProfileId,
+				ID:        middleware.Id,
+			})
+		if err != nil {
+			return err
+		}
+		for _, r := range router {
+			if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
+				r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+			}
+			if newMiddleware != "" {
+				r.Config.Middlewares = append(r.Config.Middlewares, newMiddleware)
+			}
+			if _, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, db.UpdateHttpRouterParams{
+				ID:      r.ID,
+				Enabled: r.Enabled,
+				Config:  r.Config,
+				Name:    r.Name,
+			}); err != nil {
+				return err
+			}
+		}
+	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
+		router, err := s.app.Conn.GetQuery().
+			GetTcpRoutersUsingMiddleware(ctx, db.GetTcpRoutersUsingMiddlewareParams{
+				ProfileID: middleware.ProfileId,
+				ID:        middleware.Id,
+			})
+		if err != nil {
+			return err
+		}
+		for _, r := range router {
+			if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
+				r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+			}
+			if newMiddleware != "" {
+				r.Config.Middlewares = append(r.Config.Middlewares, newMiddleware)
+			}
+			if _, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, db.UpdateTcpRouterParams{
+				ID:      r.ID,
+				Enabled: r.Enabled,
+				Config:  r.Config,
+				Name:    r.Name,
+			}); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

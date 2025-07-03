@@ -135,6 +135,130 @@ func (q *Queries) GetHttpRouter(ctx context.Context, id int64) (HttpRouter, erro
 	return i, err
 }
 
+const getHttpRoutersUsingEntryPoint = `-- name: GetHttpRoutersUsingEntryPoint :many
+WITH
+  ep_name AS (
+    SELECT
+      name
+    FROM
+      entry_points
+    WHERE
+      entry_points.id = ?
+      AND entry_points.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  http_routers r
+  JOIN json_each (r.config, '$.entryPoints') je
+  JOIN ep_name ep ON je.value = ep.name
+`
+
+type GetHttpRoutersUsingEntryPointParams struct {
+	ID        int64 `json:"id"`
+	ProfileID int64 `json:"profileId"`
+}
+
+type GetHttpRoutersUsingEntryPointRow struct {
+	ID      int64          `json:"id"`
+	Name    string         `json:"name"`
+	Config  *schema.Router `json:"config"`
+	Enabled bool           `json:"enabled"`
+}
+
+func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error) {
+	rows, err := q.query(ctx, q.getHttpRoutersUsingEntryPointStmt, getHttpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetHttpRoutersUsingEntryPointRow
+	for rows.Next() {
+		var i GetHttpRoutersUsingEntryPointRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getHttpRoutersUsingMiddleware = `-- name: GetHttpRoutersUsingMiddleware :many
+WITH
+  mw_name AS (
+    SELECT
+      name
+    FROM
+      http_middlewares
+    WHERE
+      http_middlewares.id = ?
+      AND http_middlewares.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  http_routers r
+  JOIN json_each (r.config, '$.middlewares') je
+  JOIN mw_name mw ON je.value = mw.name
+`
+
+type GetHttpRoutersUsingMiddlewareParams struct {
+	ID        int64 `json:"id"`
+	ProfileID int64 `json:"profileId"`
+}
+
+type GetHttpRoutersUsingMiddlewareRow struct {
+	ID      int64          `json:"id"`
+	Name    string         `json:"name"`
+	Config  *schema.Router `json:"config"`
+	Enabled bool           `json:"enabled"`
+}
+
+func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error) {
+	rows, err := q.query(ctx, q.getHttpRoutersUsingMiddlewareStmt, getHttpRoutersUsingMiddleware, arg.ID, arg.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetHttpRoutersUsingMiddlewareRow
+	for rows.Next() {
+		var i GetHttpRoutersUsingMiddlewareRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listHttpRouters = `-- name: ListHttpRouters :many
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at

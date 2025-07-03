@@ -149,7 +149,7 @@
 </script>
 
 {#if parsedRules.length === 0}
-	<Badge variant="outline" class="text-xs">None</Badge>
+	<Badge variant="outline" class="text-sm transition-colors duration-200">None</Badge>
 {:else if !shouldShowMultiple && primaryRule}
 	<!-- Single rule display -->
 	{@const Icon = showIcons ? getRuleIcon(primaryRule.type) : null}

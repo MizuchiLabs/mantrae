@@ -192,8 +192,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteDnsProviderStmt, err = db.PrepareContext(ctx, deleteDnsProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteDnsProvider: %w", err)
 	}
-	if q.deleteEntryPointStmt, err = db.PrepareContext(ctx, deleteEntryPoint); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteEntryPoint: %w", err)
+	if q.deleteEntryPointByIDStmt, err = db.PrepareContext(ctx, deleteEntryPointByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteEntryPointByID: %w", err)
 	}
 	if q.deleteErrorByIdStmt, err = db.PrepareContext(ctx, deleteErrorById); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteErrorById: %w", err)
@@ -279,6 +279,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getHttpRouterDomainsStmt, err = db.PrepareContext(ctx, getHttpRouterDomains); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpRouterDomains: %w", err)
 	}
+	if q.getHttpRoutersUsingEntryPointStmt, err = db.PrepareContext(ctx, getHttpRoutersUsingEntryPoint); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpRoutersUsingEntryPoint: %w", err)
+	}
+	if q.getHttpRoutersUsingMiddlewareStmt, err = db.PrepareContext(ctx, getHttpRoutersUsingMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpRoutersUsingMiddleware: %w", err)
+	}
 	if q.getHttpServiceStmt, err = db.PrepareContext(ctx, getHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpService: %w", err)
 	}
@@ -303,6 +309,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpRouterDomainsStmt, err = db.PrepareContext(ctx, getTcpRouterDomains); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpRouterDomains: %w", err)
 	}
+	if q.getTcpRoutersUsingEntryPointStmt, err = db.PrepareContext(ctx, getTcpRoutersUsingEntryPoint); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpRoutersUsingEntryPoint: %w", err)
+	}
+	if q.getTcpRoutersUsingMiddlewareStmt, err = db.PrepareContext(ctx, getTcpRoutersUsingMiddleware); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpRoutersUsingMiddleware: %w", err)
+	}
 	if q.getTcpServiceStmt, err = db.PrepareContext(ctx, getTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpService: %w", err)
 	}
@@ -314,6 +326,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getUdpRouterStmt, err = db.PrepareContext(ctx, getUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpRouter: %w", err)
+	}
+	if q.getUdpRoutersUsingEntryPointStmt, err = db.PrepareContext(ctx, getUdpRoutersUsingEntryPoint); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUdpRoutersUsingEntryPoint: %w", err)
 	}
 	if q.getUdpServiceStmt, err = db.PrepareContext(ctx, getUdpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpService: %w", err)
@@ -774,9 +789,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteDnsProviderStmt: %w", cerr)
 		}
 	}
-	if q.deleteEntryPointStmt != nil {
-		if cerr := q.deleteEntryPointStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteEntryPointStmt: %w", cerr)
+	if q.deleteEntryPointByIDStmt != nil {
+		if cerr := q.deleteEntryPointByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteEntryPointByIDStmt: %w", cerr)
 		}
 	}
 	if q.deleteErrorByIdStmt != nil {
@@ -919,6 +934,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getHttpRouterDomainsStmt: %w", cerr)
 		}
 	}
+	if q.getHttpRoutersUsingEntryPointStmt != nil {
+		if cerr := q.getHttpRoutersUsingEntryPointStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpRoutersUsingEntryPointStmt: %w", cerr)
+		}
+	}
+	if q.getHttpRoutersUsingMiddlewareStmt != nil {
+		if cerr := q.getHttpRoutersUsingMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpRoutersUsingMiddlewareStmt: %w", cerr)
+		}
+	}
 	if q.getHttpServiceStmt != nil {
 		if cerr := q.getHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getHttpServiceStmt: %w", cerr)
@@ -959,6 +984,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpRouterDomainsStmt: %w", cerr)
 		}
 	}
+	if q.getTcpRoutersUsingEntryPointStmt != nil {
+		if cerr := q.getTcpRoutersUsingEntryPointStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpRoutersUsingEntryPointStmt: %w", cerr)
+		}
+	}
+	if q.getTcpRoutersUsingMiddlewareStmt != nil {
+		if cerr := q.getTcpRoutersUsingMiddlewareStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpRoutersUsingMiddlewareStmt: %w", cerr)
+		}
+	}
 	if q.getTcpServiceStmt != nil {
 		if cerr := q.getTcpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTcpServiceStmt: %w", cerr)
@@ -977,6 +1012,11 @@ func (q *Queries) Close() error {
 	if q.getUdpRouterStmt != nil {
 		if cerr := q.getUdpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUdpRouterStmt: %w", cerr)
+		}
+	}
+	if q.getUdpRoutersUsingEntryPointStmt != nil {
+		if cerr := q.getUdpRoutersUsingEntryPointStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUdpRoutersUsingEntryPointStmt: %w", cerr)
 		}
 	}
 	if q.getUdpServiceStmt != nil {
@@ -1364,7 +1404,7 @@ type Queries struct {
 	createUserStmt                    *sql.Stmt
 	deleteAgentStmt                   *sql.Stmt
 	deleteDnsProviderStmt             *sql.Stmt
-	deleteEntryPointStmt              *sql.Stmt
+	deleteEntryPointByIDStmt          *sql.Stmt
 	deleteErrorByIdStmt               *sql.Stmt
 	deleteErrorsByProfileStmt         *sql.Stmt
 	deleteErrorsByProfileCategoryStmt *sql.Stmt
@@ -1393,6 +1433,8 @@ type Queries struct {
 	getHttpMiddlewareStmt             *sql.Stmt
 	getHttpRouterStmt                 *sql.Stmt
 	getHttpRouterDomainsStmt          *sql.Stmt
+	getHttpRoutersUsingEntryPointStmt *sql.Stmt
+	getHttpRoutersUsingMiddlewareStmt *sql.Stmt
 	getHttpServiceStmt                *sql.Stmt
 	getHttpServiceByNameStmt          *sql.Stmt
 	getProfileStmt                    *sql.Stmt
@@ -1401,10 +1443,13 @@ type Queries struct {
 	getTcpMiddlewareStmt              *sql.Stmt
 	getTcpRouterStmt                  *sql.Stmt
 	getTcpRouterDomainsStmt           *sql.Stmt
+	getTcpRoutersUsingEntryPointStmt  *sql.Stmt
+	getTcpRoutersUsingMiddlewareStmt  *sql.Stmt
 	getTcpServiceStmt                 *sql.Stmt
 	getTcpServiceByNameStmt           *sql.Stmt
 	getTraefikInstanceStmt            *sql.Stmt
 	getUdpRouterStmt                  *sql.Stmt
+	getUdpRoutersUsingEntryPointStmt  *sql.Stmt
 	getUdpServiceStmt                 *sql.Stmt
 	getUdpServiceByNameStmt           *sql.Stmt
 	getUserByEmailStmt                *sql.Stmt
@@ -1525,7 +1570,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createUserStmt:                    q.createUserStmt,
 		deleteAgentStmt:                   q.deleteAgentStmt,
 		deleteDnsProviderStmt:             q.deleteDnsProviderStmt,
-		deleteEntryPointStmt:              q.deleteEntryPointStmt,
+		deleteEntryPointByIDStmt:          q.deleteEntryPointByIDStmt,
 		deleteErrorByIdStmt:               q.deleteErrorByIdStmt,
 		deleteErrorsByProfileStmt:         q.deleteErrorsByProfileStmt,
 		deleteErrorsByProfileCategoryStmt: q.deleteErrorsByProfileCategoryStmt,
@@ -1554,6 +1599,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHttpMiddlewareStmt:             q.getHttpMiddlewareStmt,
 		getHttpRouterStmt:                 q.getHttpRouterStmt,
 		getHttpRouterDomainsStmt:          q.getHttpRouterDomainsStmt,
+		getHttpRoutersUsingEntryPointStmt: q.getHttpRoutersUsingEntryPointStmt,
+		getHttpRoutersUsingMiddlewareStmt: q.getHttpRoutersUsingMiddlewareStmt,
 		getHttpServiceStmt:                q.getHttpServiceStmt,
 		getHttpServiceByNameStmt:          q.getHttpServiceByNameStmt,
 		getProfileStmt:                    q.getProfileStmt,
@@ -1562,10 +1609,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpMiddlewareStmt:              q.getTcpMiddlewareStmt,
 		getTcpRouterStmt:                  q.getTcpRouterStmt,
 		getTcpRouterDomainsStmt:           q.getTcpRouterDomainsStmt,
+		getTcpRoutersUsingEntryPointStmt:  q.getTcpRoutersUsingEntryPointStmt,
+		getTcpRoutersUsingMiddlewareStmt:  q.getTcpRoutersUsingMiddlewareStmt,
 		getTcpServiceStmt:                 q.getTcpServiceStmt,
 		getTcpServiceByNameStmt:           q.getTcpServiceByNameStmt,
 		getTraefikInstanceStmt:            q.getTraefikInstanceStmt,
 		getUdpRouterStmt:                  q.getUdpRouterStmt,
+		getUdpRoutersUsingEntryPointStmt:  q.getUdpRoutersUsingEntryPointStmt,
 		getUdpServiceStmt:                 q.getUdpServiceStmt,
 		getUdpServiceByNameStmt:           q.getUdpServiceByNameStmt,
 		getUserByEmailStmt:                q.getUserByEmailStmt,

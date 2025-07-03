@@ -65,7 +65,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDnsProvider(ctx context.Context, id int64) error
-	DeleteEntryPoint(ctx context.Context, id int64) error
+	DeleteEntryPointByID(ctx context.Context, id int64) error
 	DeleteErrorById(ctx context.Context, id int64) error
 	DeleteErrorsByProfile(ctx context.Context, profileID int64) error
 	DeleteErrorsByProfileCategory(ctx context.Context, arg DeleteErrorsByProfileCategoryParams) error
@@ -94,6 +94,8 @@ type Querier interface {
 	GetHttpMiddleware(ctx context.Context, id int64) (HttpMiddleware, error)
 	GetHttpRouter(ctx context.Context, id int64) (HttpRouter, error)
 	GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDomainsRow, error)
+	GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error)
+	GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error)
 	GetHttpService(ctx context.Context, id int64) (HttpService, error)
 	GetHttpServiceByName(ctx context.Context, name string) (HttpService, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
@@ -102,10 +104,13 @@ type Querier interface {
 	GetTcpMiddleware(ctx context.Context, id int64) (TcpMiddleware, error)
 	GetTcpRouter(ctx context.Context, id int64) (TcpRouter, error)
 	GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomainsRow, error)
+	GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRoutersUsingEntryPointParams) ([]GetTcpRoutersUsingEntryPointRow, error)
+	GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRoutersUsingMiddlewareParams) ([]GetTcpRoutersUsingMiddlewareRow, error)
 	GetTcpService(ctx context.Context, id int64) (TcpService, error)
 	GetTcpServiceByName(ctx context.Context, name string) (TcpService, error)
 	GetTraefikInstance(ctx context.Context, id int64) (TraefikInstance, error)
 	GetUdpRouter(ctx context.Context, id int64) (UdpRouter, error)
+	GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRoutersUsingEntryPointParams) ([]GetUdpRoutersUsingEntryPointRow, error)
 	GetUdpService(ctx context.Context, id int64) (UdpService, error)
 	GetUdpServiceByName(ctx context.Context, name string) (UdpService, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)

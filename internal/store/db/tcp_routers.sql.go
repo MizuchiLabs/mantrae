@@ -135,6 +135,130 @@ func (q *Queries) GetTcpRouter(ctx context.Context, id int64) (TcpRouter, error)
 	return i, err
 }
 
+const getTcpRoutersUsingEntryPoint = `-- name: GetTcpRoutersUsingEntryPoint :many
+WITH
+  ep_name AS (
+    SELECT
+      name
+    FROM
+      entry_points
+    WHERE
+      entry_points.id = ?
+      AND entry_points.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  tcp_routers r
+  JOIN json_each (r.config, '$.entryPoints') je
+  JOIN ep_name ep ON je.value = ep.name
+`
+
+type GetTcpRoutersUsingEntryPointParams struct {
+	ID        int64 `json:"id"`
+	ProfileID int64 `json:"profileId"`
+}
+
+type GetTcpRoutersUsingEntryPointRow struct {
+	ID      int64             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *schema.TCPRouter `json:"config"`
+	Enabled bool              `json:"enabled"`
+}
+
+func (q *Queries) GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRoutersUsingEntryPointParams) ([]GetTcpRoutersUsingEntryPointRow, error) {
+	rows, err := q.query(ctx, q.getTcpRoutersUsingEntryPointStmt, getTcpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTcpRoutersUsingEntryPointRow
+	for rows.Next() {
+		var i GetTcpRoutersUsingEntryPointRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTcpRoutersUsingMiddleware = `-- name: GetTcpRoutersUsingMiddleware :many
+WITH
+  mw_name AS (
+    SELECT
+      name
+    FROM
+      tcp_middlewares
+    WHERE
+      tcp_middlewares.id = ?
+      AND tcp_middlewares.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  tcp_routers r
+  JOIN json_each (r.config, '$.middlewares') je
+  JOIN mw_name mw ON je.value = mw.name
+`
+
+type GetTcpRoutersUsingMiddlewareParams struct {
+	ID        int64 `json:"id"`
+	ProfileID int64 `json:"profileId"`
+}
+
+type GetTcpRoutersUsingMiddlewareRow struct {
+	ID      int64             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *schema.TCPRouter `json:"config"`
+	Enabled bool              `json:"enabled"`
+}
+
+func (q *Queries) GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRoutersUsingMiddlewareParams) ([]GetTcpRoutersUsingMiddlewareRow, error) {
+	rows, err := q.query(ctx, q.getTcpRoutersUsingMiddlewareStmt, getTcpRoutersUsingMiddleware, arg.ID, arg.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTcpRoutersUsingMiddlewareRow
+	for rows.Next() {
+		var i GetTcpRoutersUsingMiddlewareRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTcpRouters = `-- name: ListTcpRouters :many
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at

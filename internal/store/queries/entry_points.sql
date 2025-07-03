@@ -49,7 +49,7 @@ SET
 WHERE
   id = ? RETURNING *;
 
--- name: DeleteEntryPoint :exec
+-- name: DeleteEntryPointByID :exec
 DELETE FROM entry_points
 WHERE
   id = ?;

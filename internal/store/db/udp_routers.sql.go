@@ -135,6 +135,68 @@ func (q *Queries) GetUdpRouter(ctx context.Context, id int64) (UdpRouter, error)
 	return i, err
 }
 
+const getUdpRoutersUsingEntryPoint = `-- name: GetUdpRoutersUsingEntryPoint :many
+WITH
+  ep_name AS (
+    SELECT
+      name
+    FROM
+      entry_points
+    WHERE
+      entry_points.id = ?
+      AND entry_points.profile_id = ?
+  )
+SELECT
+  r.id,
+  r.name,
+  r.config,
+  r.enabled
+FROM
+  udp_routers r
+  JOIN json_each (r.config, '$.entryPoints') je
+  JOIN ep_name ep ON je.value = ep.name
+`
+
+type GetUdpRoutersUsingEntryPointParams struct {
+	ID        int64 `json:"id"`
+	ProfileID int64 `json:"profileId"`
+}
+
+type GetUdpRoutersUsingEntryPointRow struct {
+	ID      int64             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *schema.UDPRouter `json:"config"`
+	Enabled bool              `json:"enabled"`
+}
+
+func (q *Queries) GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRoutersUsingEntryPointParams) ([]GetUdpRoutersUsingEntryPointRow, error) {
+	rows, err := q.query(ctx, q.getUdpRoutersUsingEntryPointStmt, getUdpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUdpRoutersUsingEntryPointRow
+	for rows.Next() {
+		var i GetUdpRoutersUsingEntryPointRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Config,
+			&i.Enabled,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUdpRouters = `-- name: ListUdpRouters :many
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at

@@ -102,9 +102,8 @@
 			}
 		},
 		{
-			header: 'Enabled',
-			accessorKey: 'enabled',
-			enableSorting: true,
+			id: 'actions',
+			enableHiding: false,
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(TableActions, {
@@ -114,21 +113,10 @@
 							label: row.original.enabled ? 'Disable' : 'Enable',
 							icon: row.original.enabled ? Power : PowerOff,
 							iconProps: {
-								class: row.original.enabled ? 'text-green-500 size-5' : 'text-red-500 size-5'
+								class: row.original.enabled ? 'text-green-500' : 'text-red-500'
 							},
 							onClick: () => toggleItem(row.original, !row.original.enabled)
-						}
-					]
-				});
-			}
-		},
-		{
-			id: 'actions',
-			enableHiding: false,
-			enableGlobalFilter: false,
-			cell: ({ row }) => {
-				return renderComponent(TableActions, {
-					actions: [
+						},
 						{
 							type: 'button',
 							label: 'Edit Middleware',
@@ -173,7 +161,7 @@
 		try {
 			await middlewareClient.deleteMiddleware({ id: id, type: type });
 			await refreshData(pageSize.value ?? 10, 0);
-			toast.success('Router deleted');
+			toast.success('Middleware deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete middleware', { description: e.message });

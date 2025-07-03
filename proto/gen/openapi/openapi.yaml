@@ -713,15 +713,12 @@ components:
         apiKey:
           type: string
           title: api_key
-          minLength: 1
         apiUrl:
           type: string
           title: api_url
-          format: uri
         ip:
           type: string
           title: ip
-          format: ip
         proxied:
           type: boolean
           title: proxied

@@ -323,7 +323,7 @@
 						Delete
 					</Button>
 				{/if}
-				<Button type="submit" class="flex-1" onclick={handleSubmit}>
+				<Button type="submit" class="flex-1">
 					{item.id ? 'Update' : 'Create'}
 				</Button>
 			</div>
