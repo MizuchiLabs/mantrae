@@ -28,11 +28,14 @@
 	const handleSubmit = async (ip: string | undefined) => {
 		try {
 			if (item.id) {
-				await agentClient.updateAgentIP({ id: item.id, ip: ip });
+				const response = await agentClient.updateAgentIP({ id: item.id, ip });
+				if (!response.agent) throw new Error('Failed to create agent');
+				item = response.agent;
 				toast.success(`Agent ${item.hostname} updated successfully`);
 			} else {
 				await agentClient.createAgent({ profileId: profile.id });
 				toast.success(`Agent ${item.hostname} created successfully`);
+				open = false;
 			}
 
 			// Refresh data
@@ -46,7 +49,7 @@
 			const e = ConnectError.from(err);
 			toast.error('Failed to save agent', { description: e.message });
 		}
-		open = false;
+		// open = false;
 	};
 	const handleDelete = async () => {
 		if (!item.id) return;
@@ -70,7 +73,8 @@
 	};
 	const handleRotate = async () => {
 		const response = await agentClient.rotateAgentToken({ id: item.id });
-		item.token = response.token;
+		if (!response.agent) throw new Error('Failed to rotate token');
+		item.token = response.agent.token;
 		toast.success('Token rotated successfully');
 
 		// Refresh data

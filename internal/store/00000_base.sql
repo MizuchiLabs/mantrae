@@ -208,7 +208,7 @@ CREATE TABLE dns_providers (
   name TEXT NOT NULL UNIQUE,
   type TEXT NOT NULL,
   config TEXT NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT FALSE,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -240,29 +240,6 @@ CREATE TABLE audit_logs (
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
--- +goose StatementBegin
-CREATE TRIGGER ensure_single_active_insert BEFORE INSERT ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE dns_providers
-SET
-  is_active = 0
-WHERE
-  is_active = 1;
-
-END;
-
--- +goose StatementEnd
--- +goose StatementBegin
-CREATE TRIGGER ensure_single_active_update BEFORE
-UPDATE ON dns_providers FOR EACH ROW WHEN NEW.is_active = 1 BEGIN
-UPDATE dns_providers
-SET
-  is_active = 0
-WHERE
-  is_active = 1;
-
-END;
-
--- +goose StatementEnd
 -- +goose Down
 DROP TABLE IF EXISTS profiles;
 

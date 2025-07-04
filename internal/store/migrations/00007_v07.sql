@@ -211,6 +211,18 @@ DROP COLUMN private_ips;
 ALTER TABLE agents
 ADD COLUMN private_ip TEXT;
 
+-- Update dns_providers table 
+-- Drop old triggers for DNS providers 
+DROP TRIGGER ensure_single_active_insert;
+
+DROP TRIGGER ensure_single_active_update;
+
+ALTER TABLE dns_providers
+DROP COLUMN is_active;
+
+ALTER TABLE dns_providers
+ADD COLUMN is_default BOOLEAN NOT NULL DEFAULT FALSE;
+
 -- Update users table - change id to TEXT and remove AUTOINCREMENT
 CREATE TABLE users_new (
   id TEXT PRIMARY KEY,
@@ -300,7 +312,5 @@ DROP TABLE router_dns_provider;
 
 DROP TABLE traefik;
 
--- Remove old triggers for DNS providers (they still apply)
--- The triggers are preserved as they're still relevant
 -- Remove old unique index on errors table
 DROP INDEX unique_dns_error;

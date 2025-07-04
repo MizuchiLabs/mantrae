@@ -38,7 +38,7 @@
 					name: item.name,
 					type: item.type,
 					config: item.config,
-					isActive: item.isActive
+					isDefault: item.isDefault
 				});
 				toast.success('DNS Provider updated successfully');
 			} else {
@@ -46,7 +46,7 @@
 					name: item.name,
 					type: item.type,
 					config: item.config,
-					isActive: item.isActive
+					isDefault: item.isDefault
 				});
 				toast.success('DNS Provider created successfully');
 			}
@@ -142,10 +142,10 @@
 				</Label>
 				<Tabs.Root
 					class="flex flex-col gap-2"
-					value={item.isActive ? 'on' : 'off'}
+					value={item.isDefault ? 'on' : 'off'}
 					onValueChange={(value) => {
-						if (item.isActive === undefined) item.isActive = value === 'on';
-						else item.isActive = value === 'on';
+						if (item.isDefault === undefined) item.isDefault = value === 'on';
+						else item.isDefault = value === 'on';
 					}}
 				>
 					<div class="flex justify-end" transition:slide={{ duration: 200 }}>

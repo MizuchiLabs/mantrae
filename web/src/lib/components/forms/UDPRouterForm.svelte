@@ -7,6 +7,7 @@
 	import { entryPointClient } from '$lib/api';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
 	import { profile } from '$lib/stores/profile';
+	import { onMount } from 'svelte';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -14,6 +15,15 @@
 
 	$effect(() => {
 		if (config) router.config = marshalConfig(config);
+	});
+
+	onMount(async () => {
+		entryPointClient
+			.listEntryPoints({ profileId: profile.id, limit: -1n, offset: 0n })
+			.then((data) => {
+				let defaultEntryPoint = data.entryPoints.find((e) => e.isDefault);
+				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
+			});
 	});
 </script>
 

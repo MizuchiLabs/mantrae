@@ -644,9 +644,9 @@ components:
         config:
           title: config
           $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
-        isActive:
+        isDefault:
           type: boolean
-          title: is_active
+          title: is_default
       title: CreateDnsProviderRequest
       required:
         - name
@@ -696,9 +696,9 @@ components:
         config:
           title: config
           $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
-        isActive:
+        isDefault:
           type: boolean
-          title: is_active
+          title: is_default
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -813,9 +813,9 @@ components:
         config:
           title: config
           $ref: '#/components/schemas/mantrae.v1.DnsProviderConfig'
-        isActive:
+        isDefault:
           type: boolean
-          title: is_active
+          title: is_default
       title: UpdateDnsProviderRequest
       required:
         - id

@@ -47,7 +47,7 @@ func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpR
 
 const getDnsProvidersByTcpRouter = `-- name: GetDnsProvidersByTcpRouter :many
 SELECT
-  dp.id, dp.name, dp.type, dp.config, dp.is_active, dp.created_at, dp.updated_at
+  dp.id, dp.name, dp.type, dp.config, dp.created_at, dp.updated_at, dp.is_default
 FROM
   dns_providers dp
   JOIN tcp_router_dns_providers trdp ON dp.id = trdp.dns_provider_id
@@ -69,9 +69,9 @@ func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID in
 			&i.Name,
 			&i.Type,
 			&i.Config,
-			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.IsDefault,
 		); err != nil {
 			return nil, err
 		}

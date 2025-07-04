@@ -43,6 +43,12 @@ func (s *EntryPointService) CreateEntryPoint(
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
 	}
+	if req.Msg.IsDefault {
+		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
 	result, err := s.app.Conn.GetQuery().CreateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -61,6 +67,11 @@ func (s *EntryPointService) UpdateEntryPoint(
 		Name:      req.Msg.Name,
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
+	}
+	if req.Msg.IsDefault {
+		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	// Remove old EntryPoint name and replace with new one (Order is important!)

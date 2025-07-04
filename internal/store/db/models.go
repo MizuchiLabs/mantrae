@@ -38,9 +38,9 @@ type DnsProvider struct {
 	Name      string                    `json:"name"`
 	Type      string                    `json:"type"`
 	Config    *schema.DNSProviderConfig `json:"config"`
-	IsActive  bool                      `json:"isActive"`
 	CreatedAt *time.Time                `json:"createdAt"`
 	UpdatedAt *time.Time                `json:"updatedAt"`
+	IsDefault bool                      `json:"isDefault"`
 }
 
 type EntryPoint struct {

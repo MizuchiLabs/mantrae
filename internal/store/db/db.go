@@ -252,6 +252,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getAgentStmt, err = db.PrepareContext(ctx, getAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAgent: %w", err)
 	}
+	if q.getDefaultDNSProviderStmt, err = db.PrepareContext(ctx, getDefaultDNSProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDefaultDNSProvider: %w", err)
+	}
+	if q.getDefaultEntryPointStmt, err = db.PrepareContext(ctx, getDefaultEntryPoint); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDefaultEntryPoint: %w", err)
+	}
 	if q.getDnsProviderStmt, err = db.PrepareContext(ctx, getDnsProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDnsProvider: %w", err)
 	}
@@ -443,6 +449,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.logErrorStmt, err = db.PrepareContext(ctx, logError); err != nil {
 		return nil, fmt.Errorf("error preparing query LogError: %w", err)
+	}
+	if q.unsetDefaultDNSProviderStmt, err = db.PrepareContext(ctx, unsetDefaultDNSProvider); err != nil {
+		return nil, fmt.Errorf("error preparing query UnsetDefaultDNSProvider: %w", err)
+	}
+	if q.unsetDefaultEntryPointStmt, err = db.PrepareContext(ctx, unsetDefaultEntryPoint); err != nil {
+		return nil, fmt.Errorf("error preparing query UnsetDefaultEntryPoint: %w", err)
 	}
 	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
@@ -889,6 +901,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getAgentStmt: %w", cerr)
 		}
 	}
+	if q.getDefaultDNSProviderStmt != nil {
+		if cerr := q.getDefaultDNSProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDefaultDNSProviderStmt: %w", cerr)
+		}
+	}
+	if q.getDefaultEntryPointStmt != nil {
+		if cerr := q.getDefaultEntryPointStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDefaultEntryPointStmt: %w", cerr)
+		}
+	}
 	if q.getDnsProviderStmt != nil {
 		if cerr := q.getDnsProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getDnsProviderStmt: %w", cerr)
@@ -1209,6 +1231,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing logErrorStmt: %w", cerr)
 		}
 	}
+	if q.unsetDefaultDNSProviderStmt != nil {
+		if cerr := q.unsetDefaultDNSProviderStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing unsetDefaultDNSProviderStmt: %w", cerr)
+		}
+	}
+	if q.unsetDefaultEntryPointStmt != nil {
+		if cerr := q.unsetDefaultEntryPointStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing unsetDefaultEntryPointStmt: %w", cerr)
+		}
+	}
 	if q.updateAgentStmt != nil {
 		if cerr := q.updateAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateAgentStmt: %w", cerr)
@@ -1424,6 +1456,8 @@ type Queries struct {
 	deleteUdpServiceStmt              *sql.Stmt
 	deleteUserStmt                    *sql.Stmt
 	getAgentStmt                      *sql.Stmt
+	getDefaultDNSProviderStmt         *sql.Stmt
+	getDefaultEntryPointStmt          *sql.Stmt
 	getDnsProviderStmt                *sql.Stmt
 	getDnsProviderByNameStmt          *sql.Stmt
 	getDnsProvidersByHttpRouterStmt   *sql.Stmt
@@ -1488,6 +1522,8 @@ type Queries struct {
 	listUdpServicesByAgentStmt        *sql.Stmt
 	listUsersStmt                     *sql.Stmt
 	logErrorStmt                      *sql.Stmt
+	unsetDefaultDNSProviderStmt       *sql.Stmt
+	unsetDefaultEntryPointStmt        *sql.Stmt
 	updateAgentStmt                   *sql.Stmt
 	updateAgentIPStmt                 *sql.Stmt
 	updateAgentTokenStmt              *sql.Stmt
@@ -1590,6 +1626,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteUdpServiceStmt:              q.deleteUdpServiceStmt,
 		deleteUserStmt:                    q.deleteUserStmt,
 		getAgentStmt:                      q.getAgentStmt,
+		getDefaultDNSProviderStmt:         q.getDefaultDNSProviderStmt,
+		getDefaultEntryPointStmt:          q.getDefaultEntryPointStmt,
 		getDnsProviderStmt:                q.getDnsProviderStmt,
 		getDnsProviderByNameStmt:          q.getDnsProviderByNameStmt,
 		getDnsProvidersByHttpRouterStmt:   q.getDnsProvidersByHttpRouterStmt,
@@ -1654,6 +1692,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listUdpServicesByAgentStmt:        q.listUdpServicesByAgentStmt,
 		listUsersStmt:                     q.listUsersStmt,
 		logErrorStmt:                      q.logErrorStmt,
+		unsetDefaultDNSProviderStmt:       q.unsetDefaultDNSProviderStmt,
+		unsetDefaultEntryPointStmt:        q.unsetDefaultEntryPointStmt,
 		updateAgentStmt:                   q.updateAgentStmt,
 		updateAgentIPStmt:                 q.updateAgentIPStmt,
 		updateAgentTokenStmt:              q.updateAgentTokenStmt,

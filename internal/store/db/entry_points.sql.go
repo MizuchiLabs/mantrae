@@ -75,6 +75,32 @@ func (q *Queries) DeleteEntryPointByID(ctx context.Context, id int64) error {
 	return err
 }
 
+const getDefaultEntryPoint = `-- name: GetDefaultEntryPoint :one
+SELECT
+  id, profile_id, name, address, is_default, created_at, updated_at
+FROM
+  entry_points
+WHERE
+  is_default = TRUE
+LIMIT
+  1
+`
+
+func (q *Queries) GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error) {
+	row := q.queryRow(ctx, q.getDefaultEntryPointStmt, getDefaultEntryPoint)
+	var i EntryPoint
+	err := row.Scan(
+		&i.ID,
+		&i.ProfileID,
+		&i.Name,
+		&i.Address,
+		&i.IsDefault,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getEntryPoint = `-- name: GetEntryPoint :one
 SELECT
   id, profile_id, name, address, is_default, created_at, updated_at
@@ -149,6 +175,19 @@ func (q *Queries) ListEntryPoints(ctx context.Context, arg ListEntryPointsParams
 		return nil, err
 	}
 	return items, nil
+}
+
+const unsetDefaultEntryPoint = `-- name: UnsetDefaultEntryPoint :exec
+UPDATE entry_points
+SET
+  is_default = FALSE
+WHERE
+  is_default = TRUE
+`
+
+func (q *Queries) UnsetDefaultEntryPoint(ctx context.Context) error {
+	_, err := q.exec(ctx, q.unsetDefaultEntryPointStmt, unsetDefaultEntryPoint)
+	return err
 }
 
 const updateEntryPoint = `-- name: UpdateEntryPoint :one

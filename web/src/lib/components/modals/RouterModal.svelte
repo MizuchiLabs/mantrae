@@ -30,6 +30,7 @@
 	import HTTPServiceForm from '../forms/HTTPServiceForm.svelte';
 	import TCPServiceForm from '../forms/TCPServiceForm.svelte';
 	import UDPServiceForm from '../forms/UDPServiceForm.svelte';
+	import DnsProviderSelect from '../forms/DNSProviderSelect.svelte';
 
 	interface Props {
 		data: Router[];
@@ -111,7 +112,6 @@
 					config: service.config,
 					type: service.type
 				});
-				toast.success(`Service ${service.name} updated successfully`);
 			} else {
 				await serviceClient.createService({
 					profileId: profile.id,
@@ -119,7 +119,6 @@
 					config: service.config,
 					type: service.type
 				});
-				toast.success(`Service ${service.name} created successfully`);
 			}
 
 			// Refresh data
@@ -135,7 +134,7 @@
 				description: e.message
 			});
 		}
-		// open = false;
+		open = false;
 	};
 
 	const handleDelete = async () => {
@@ -204,52 +203,12 @@
 											Assign DNS providers to this router for domain management
 										</Card.Description>
 									</div>
-									{#if value.dnsProviders.length > 0}
-										<Tooltip.Provider>
-											<Tooltip.Root>
-												<Tooltip.Trigger class="flex items-center gap-2">
-													<div bind:this={dnsAnchor}>
-														<Button
-															variant="outline"
-															size="sm"
-															class="flex items-center gap-2"
-															onclick={() => (selectDNSOpen = true)}
-														>
-															<Globe size={16} />
-															{#if item.dnsProviders?.length > 0}
-																<Badge variant="secondary" class="text-xs">
-																	{item.dnsProviders.length} selected
-																</Badge>
-															{:else}
-																<Badge variant="outline" class="text-xs">None selected</Badge>
-															{/if}
-														</Button>
-													</div>
-												</Tooltip.Trigger>
-												<Tooltip.Content side="left" align="center">
-													<p>Manage DNS Providers</p>
-												</Tooltip.Content>
-											</Tooltip.Root>
-										</Tooltip.Provider>
 
-										<Select.Root
-											type="multiple"
-											value={item.dnsProviders?.map((item) => item.id.toString())}
-											onValueChange={handleDNSProviderChange}
-											bind:open={selectDNSOpen}
-										>
-											<Select.Content customAnchor={dnsAnchor} align="end">
-												{#each value.dnsProviders as dns (dns.id)}
-													<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
-														<span class="truncate">{dns.name}</span>
-														{#if dns.isActive}
-															<CircleCheck size="1rem" class="text-green-400" />
-														{/if}
-													</Select.Item>
-												{/each}
-											</Select.Content>
-										</Select.Root>
-									{/if}
+									<DnsProviderSelect
+										bind:data
+										bind:item
+										disabled={item.type === RouterType.UDP || !item.id}
+									/>
 								</div>
 							</Card.Header>
 							{#if item.dnsProviders?.length > 0}
@@ -347,52 +306,11 @@
 							</div>
 
 							<!-- DNS Providers -->
-							{#await dnsClient.listDnsProviders({ limit: -1n, offset: 0n }) then value}
-								{#if value.dnsProviders.length > 0}
-									<Tooltip.Provider>
-										<Tooltip.Root>
-											<Tooltip.Trigger>
-												<div bind:this={dnsAnchor}>
-													<Button
-														variant="ghost"
-														size="sm"
-														class="flex items-center gap-2"
-														onclick={() => (selectDNSOpen = true)}
-													>
-														<Globe size={16} />
-														<Badge>
-															{item.dnsProviders?.length > 0
-																? item.dnsProviders?.map((p) => p.name).join(', ')
-																: 'None'}
-														</Badge>
-													</Button>
-												</div>
-											</Tooltip.Trigger>
-											<Tooltip.Content side="left" align="center">
-												<p>Select DNS Provider</p>
-											</Tooltip.Content>
-										</Tooltip.Root>
-									</Tooltip.Provider>
-
-									<Select.Root
-										type="multiple"
-										value={item.dnsProviders?.map((item) => item.id.toString())}
-										onValueChange={handleDNSProviderChange}
-										bind:open={selectDNSOpen}
-									>
-										<Select.Content customAnchor={dnsAnchor} align="end">
-											{#each value.dnsProviders as dns (dns.id)}
-												<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
-													<span class="truncate">{dns.name}</span>
-													{#if dns.isActive}
-														<CircleCheck size="1rem" class="text-green-400" />
-													{/if}
-												</Select.Item>
-											{/each}
-										</Select.Content>
-									</Select.Root>
-								{/if}
-							{/await}
+							<DnsProviderSelect
+								bind:data
+								bind:item
+								disabled={item.type === RouterType.UDP || !item.id}
+							/>
 						</Card.Header>
 						<Card.Content class="space-y-4">
 							<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">

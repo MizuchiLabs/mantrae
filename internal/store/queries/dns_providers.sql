@@ -4,7 +4,7 @@ INSERT INTO
     name,
     type,
     config,
-    is_active,
+    is_default,
     created_at,
     updated_at
   )
@@ -26,6 +26,23 @@ FROM
   dns_providers
 WHERE
   name = ?;
+
+-- name: GetDefaultDNSProvider :one
+SELECT
+  *
+FROM
+  dns_providers
+WHERE
+  is_default = TRUE
+LIMIT
+  1;
+
+-- name: UnsetDefaultDNSProvider :exec
+UPDATE dns_providers
+SET
+  is_default = FALSE
+WHERE
+  is_default = TRUE;
 
 -- name: ListDnsProviders :many
 SELECT
@@ -51,7 +68,7 @@ SET
   name = ?,
   type = ?,
   config = ?,
-  is_active = ?,
+  is_default = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

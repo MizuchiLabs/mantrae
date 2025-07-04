@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/agent/internal/collector"
@@ -18,18 +19,47 @@ import (
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 )
 
-const tokenFile = "data/.mantrae-token"
+const (
+	tokenFile          = "data/.mantrae-token"
+	connectionTimeout  = 10 * time.Second
+	healthCheckTimeout = 5 * time.Second
+)
+
+type ConnectionState int
+
+const (
+	StateDisconnected ConnectionState = iota
+	StateConnecting
+	StateConnected
+	StateError
+)
+
+func (s ConnectionState) String() string {
+	switch s {
+	case StateDisconnected:
+		return "disconnected"
+	case StateConnecting:
+		return "connecting"
+	case StateConnected:
+		return "connected"
+	case StateError:
+		return "error"
+	default:
+		return "unknown"
+	}
+}
 
 type TokenSource struct {
-	mu       sync.Mutex
+	mu       sync.RWMutex
 	client   mantraev1connect.AgentServiceClient
 	token    string
 	claims   *meta.AgentClaims
 	activeIP string
+	state    ConnectionState
 }
 
 func NewTokenSource() *TokenSource {
-	t := &TokenSource{}
+	t := &TokenSource{state: StateDisconnected}
 	if err := t.prepare(); err != nil {
 		slog.Error("failed to prepare token source", "error", err)
 	}
@@ -37,8 +67,7 @@ func NewTokenSource() *TokenSource {
 }
 
 func (t *TokenSource) prepare() error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.state = StateConnecting
 
 	// Create token file if it doesn't exist
 	if err := os.MkdirAll("data", 0o755); err != nil {
@@ -61,16 +90,19 @@ func (t *TokenSource) ensure() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	// already ready?
+	// already initialized?
 	if t.client != nil && t.token != "" {
 		return nil
 	}
+
+	t.state = StateConnecting
 
 	// load token if needed
 	if t.token == "" {
 		data, _ := os.ReadFile(tokenFile)
 		t.token = strings.TrimSpace(string(data))
 		if t.token == "" {
+			t.state = StateDisconnected
 			return errors.New("no token found")
 		}
 		if err := os.WriteFile(tokenFile, []byte(t.token), 0o600); err != nil {
@@ -78,15 +110,26 @@ func (t *TokenSource) ensure() error {
 		}
 	}
 
-	// parse & client
-	claims, err := meta.DecodeAgentToken(t.token, "")
+	var err error
+	t.claims, err = meta.DecodeAgentToken(t.token, "")
 	if err != nil {
 		return err
 	}
-	t.claims = claims
+
+	slog.Info("Starting agent...", "server", func() string {
+		if t.claims != nil {
+			return t.claims.ServerURL
+		}
+		return "unknown"
+	}())
+
+	httpClient := &http.Client{
+		Timeout: connectionTimeout,
+	}
+
 	t.client = mantraev1connect.NewAgentServiceClient(
-		http.DefaultClient,
-		util.CleanURL(claims.ServerURL),
+		httpClient,
+		util.CleanURL(t.claims.ServerURL),
 		connect.WithInterceptors(t.Interceptor()),
 	)
 	return nil
@@ -94,10 +137,15 @@ func (t *TokenSource) ensure() error {
 
 // Refresh does a health‐check, rotates token or falls back on unauthenticated.
 func (t *TokenSource) Refresh(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, healthCheckTimeout)
+	defer cancel()
+
 	if err := t.ensure(); err != nil {
 		slog.Error("Failed to connect to server", "error", err)
 		return
 	}
+
+	t.state = StateConnecting
 
 	info := collector.GetMachineInfo()
 	req := connect.NewRequest(&mantraev1.HealthCheckRequest{
@@ -116,20 +164,29 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 		t.mu.Lock()
 		t.token, t.client = "", nil
 		t.mu.Unlock()
+
 		if err = t.ensure(); err != nil {
-			slog.Error("Failed to connect to server", "error", err)
+			slog.Error("Failed to connect to server after token refresh", "error", err)
+			t.state = StateError
 			return
 		}
+
 		t.Refresh(ctx)
+		return
 	} else if err != nil {
-		slog.Error("Failed to connect to server", "error", err)
+		slog.Error("Health check failed", "error", err)
+		t.state = StateError
 		return
 	}
 
 	if resp.Msg.Agent == nil {
-		slog.Error("Agent deleted")
+		slog.Error("Agent deleted on server")
+		t.state = StateError
 		return
 	}
+
+	// Successfully connected
+	t.state = StateConnected
 
 	// rotate token if changed
 	if nt := resp.Msg.Agent.Token; nt != "" && nt != t.token {
@@ -166,28 +223,46 @@ func (t *TokenSource) Interceptor() connect.UnaryInterceptorFunc {
 				t.mu.Lock()
 				t.token, t.client = "", nil
 				t.mu.Unlock()
+				t.state = StateError
 			}
 			return resp, err
 		}
 	}
 }
 
+func (t *TokenSource) IsConnected() bool {
+	return t.state == StateConnected
+}
+
 func (t *TokenSource) GetToken() string {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 	return t.token
 }
 
 func (t *TokenSource) GetClient() mantraev1connect.AgentServiceClient {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 	return t.client
 }
 
 func (t *TokenSource) PrintConnection() {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	if t.client != nil {
-		slog.Info("Connected", "server", t.claims.ServerURL)
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+
+	switch t.state {
+	case StateConnected:
+		slog.Info("Agent connected", "services_ip", t.activeIP)
+	case StateConnecting:
+		slog.Info("Agent connecting", "server", func() string {
+			if t.claims != nil {
+				return t.claims.ServerURL
+			}
+			return "unknown"
+		}())
+	case StateDisconnected:
+		slog.Info("Agent disconnected")
+	case StateError:
+		slog.Error("Agent connection error")
 	}
 }

@@ -45,8 +45,8 @@ func Client(ctx context.Context) {
 }
 
 func (t *TokenSource) Update(ctx context.Context) error {
-	if t.activeIP == "" {
-		slog.Warn("No active IP, skipping update")
+	if !t.IsConnected() {
+		slog.Debug("Skipping update - not connected", "state", t.state.String())
 		return nil
 	}
 

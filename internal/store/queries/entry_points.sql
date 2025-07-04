@@ -19,6 +19,23 @@ FROM
 WHERE
   id = ?;
 
+-- name: GetDefaultEntryPoint :one
+SELECT
+  *
+FROM
+  entry_points
+WHERE
+  is_default = TRUE
+LIMIT
+  1;
+
+-- name: UnsetDefaultEntryPoint :exec
+UPDATE entry_points
+SET
+  is_default = FALSE
+WHERE
+  is_default = TRUE;
+
 -- name: ListEntryPoints :many
 SELECT
   *

@@ -31,19 +31,19 @@ INSERT INTO
     name,
     type,
     config,
-    is_active,
+    is_default,
     created_at,
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, type, config, is_active, created_at, updated_at
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, type, config, created_at, updated_at, is_default
 `
 
 type CreateDnsProviderParams struct {
-	Name     string                    `json:"name"`
-	Type     string                    `json:"type"`
-	Config   *schema.DNSProviderConfig `json:"config"`
-	IsActive bool                      `json:"isActive"`
+	Name      string                    `json:"name"`
+	Type      string                    `json:"type"`
+	Config    *schema.DNSProviderConfig `json:"config"`
+	IsDefault bool                      `json:"isDefault"`
 }
 
 func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderParams) (DnsProvider, error) {
@@ -51,7 +51,7 @@ func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderPa
 		arg.Name,
 		arg.Type,
 		arg.Config,
-		arg.IsActive,
+		arg.IsDefault,
 	)
 	var i DnsProvider
 	err := row.Scan(
@@ -59,9 +59,9 @@ func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderPa
 		&i.Name,
 		&i.Type,
 		&i.Config,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsDefault,
 	)
 	return i, err
 }
@@ -77,9 +77,35 @@ func (q *Queries) DeleteDnsProvider(ctx context.Context, id int64) error {
 	return err
 }
 
+const getDefaultDNSProvider = `-- name: GetDefaultDNSProvider :one
+SELECT
+  id, name, type, config, created_at, updated_at, is_default
+FROM
+  dns_providers
+WHERE
+  is_default = TRUE
+LIMIT
+  1
+`
+
+func (q *Queries) GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error) {
+	row := q.queryRow(ctx, q.getDefaultDNSProviderStmt, getDefaultDNSProvider)
+	var i DnsProvider
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.Config,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsDefault,
+	)
+	return i, err
+}
+
 const getDnsProvider = `-- name: GetDnsProvider :one
 SELECT
-  id, name, type, config, is_active, created_at, updated_at
+  id, name, type, config, created_at, updated_at, is_default
 FROM
   dns_providers
 WHERE
@@ -94,16 +120,16 @@ func (q *Queries) GetDnsProvider(ctx context.Context, id int64) (DnsProvider, er
 		&i.Name,
 		&i.Type,
 		&i.Config,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsDefault,
 	)
 	return i, err
 }
 
 const getDnsProviderByName = `-- name: GetDnsProviderByName :one
 SELECT
-  id, name, type, config, is_active, created_at, updated_at
+  id, name, type, config, created_at, updated_at, is_default
 FROM
   dns_providers
 WHERE
@@ -118,16 +144,16 @@ func (q *Queries) GetDnsProviderByName(ctx context.Context, name string) (DnsPro
 		&i.Name,
 		&i.Type,
 		&i.Config,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsDefault,
 	)
 	return i, err
 }
 
 const listDnsProviders = `-- name: ListDnsProviders :many
 SELECT
-  id, name, type, config, is_active, created_at, updated_at
+  id, name, type, config, created_at, updated_at, is_default
 FROM
   dns_providers
 ORDER BY
@@ -157,9 +183,9 @@ func (q *Queries) ListDnsProviders(ctx context.Context, arg ListDnsProvidersPara
 			&i.Name,
 			&i.Type,
 			&i.Config,
-			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.IsDefault,
 		); err != nil {
 			return nil, err
 		}
@@ -174,24 +200,37 @@ func (q *Queries) ListDnsProviders(ctx context.Context, arg ListDnsProvidersPara
 	return items, nil
 }
 
+const unsetDefaultDNSProvider = `-- name: UnsetDefaultDNSProvider :exec
+UPDATE dns_providers
+SET
+  is_default = FALSE
+WHERE
+  is_default = TRUE
+`
+
+func (q *Queries) UnsetDefaultDNSProvider(ctx context.Context) error {
+	_, err := q.exec(ctx, q.unsetDefaultDNSProviderStmt, unsetDefaultDNSProvider)
+	return err
+}
+
 const updateDnsProvider = `-- name: UpdateDnsProvider :one
 UPDATE dns_providers
 SET
   name = ?,
   type = ?,
   config = ?,
-  is_active = ?,
+  is_default = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, name, type, config, is_active, created_at, updated_at
+  id = ? RETURNING id, name, type, config, created_at, updated_at, is_default
 `
 
 type UpdateDnsProviderParams struct {
-	Name     string                    `json:"name"`
-	Type     string                    `json:"type"`
-	Config   *schema.DNSProviderConfig `json:"config"`
-	IsActive bool                      `json:"isActive"`
-	ID       int64                     `json:"id"`
+	Name      string                    `json:"name"`
+	Type      string                    `json:"type"`
+	Config    *schema.DNSProviderConfig `json:"config"`
+	IsDefault bool                      `json:"isDefault"`
+	ID        int64                     `json:"id"`
 }
 
 func (q *Queries) UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderParams) (DnsProvider, error) {
@@ -199,7 +238,7 @@ func (q *Queries) UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderPa
 		arg.Name,
 		arg.Type,
 		arg.Config,
-		arg.IsActive,
+		arg.IsDefault,
 		arg.ID,
 	)
 	var i DnsProvider
@@ -208,9 +247,9 @@ func (q *Queries) UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderPa
 		&i.Name,
 		&i.Type,
 		&i.Config,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.IsDefault,
 	)
 	return i, err
 }

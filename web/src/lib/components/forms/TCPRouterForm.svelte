@@ -43,6 +43,14 @@
 				})
 		);
 		certResolvers = Array.from(resolverSet);
+
+		// Set default entrypoint
+		entryPointClient
+			.listEntryPoints({ profileId: profile.id, limit: -1n, offset: 0n })
+			.then((data) => {
+				let defaultEntryPoint = data.entryPoints.find((e) => e.isDefault);
+				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
+			});
 	});
 </script>
 

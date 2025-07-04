@@ -29,7 +29,7 @@ message DnsProvider {
   string name = 2;
   DnsProviderType type = 3;
   DnsProviderConfig config = 4;
-  bool is_active = 5;
+  bool is_default = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
 }
@@ -63,7 +63,7 @@ message CreateDnsProviderRequest {
     (buf.validate.field).enum.defined_only = true
   ];
   DnsProviderConfig config = 3;
-  bool is_active = 4;
+  bool is_default = 4;
 }
 message CreateDnsProviderResponse {
   DnsProvider dns_provider = 1;
@@ -83,7 +83,7 @@ message UpdateDnsProviderRequest {
     (buf.validate.field).enum.defined_only = true
   ];
   DnsProviderConfig config = 4;
-  bool is_active = 5;
+  bool is_default = 5;
 }
 message UpdateDnsProviderResponse {
   DnsProvider dns_provider = 1;

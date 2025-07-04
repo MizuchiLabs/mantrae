@@ -30,7 +30,6 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	logger.Setup()
-	slog.Info("Starting agent...")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

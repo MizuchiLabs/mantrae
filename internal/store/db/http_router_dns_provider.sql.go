@@ -47,7 +47,7 @@ func (q *Queries) DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHtt
 
 const getDnsProvidersByHttpRouter = `-- name: GetDnsProvidersByHttpRouter :many
 SELECT
-  dp.id, dp.name, dp.type, dp.config, dp.is_active, dp.created_at, dp.updated_at
+  dp.id, dp.name, dp.type, dp.config, dp.created_at, dp.updated_at, dp.is_default
 FROM
   dns_providers dp
   JOIN http_router_dns_providers hrdp ON dp.id = hrdp.dns_provider_id
@@ -69,9 +69,9 @@ func (q *Queries) GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID 
 			&i.Name,
 			&i.Type,
 			&i.Config,
-			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.IsDefault,
 		); err != nil {
 			return nil, err
 		}

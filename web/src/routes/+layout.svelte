@@ -3,13 +3,13 @@
 	import AppHeader from '$lib/components/nav/AppHeader.svelte';
 	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
 	// import AppCenter from '$lib/components/nav/AppCenter.svelte';
-	import { page } from '$app/state';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import { fade } from 'svelte/transition';
-	import '../app.css';
 	import { user } from '$lib/stores/user';
+	import { page } from '$app/state';
+	import '../app.css';
 
 	interface Props {
 		children?: import('svelte').Snippet;

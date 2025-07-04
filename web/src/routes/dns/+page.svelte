@@ -82,7 +82,7 @@
 		},
 		{
 			header: 'Default',
-			accessorKey: 'isActive',
+			accessorKey: 'isDefault',
 			enableSorting: true,
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
@@ -90,13 +90,13 @@
 					actions: [
 						{
 							type: 'button',
-							label: row.original.isActive ? 'Disable' : 'Enable',
-							icon: row.original.isActive ? CircleCheck : CircleSlash,
+							label: row.original.isDefault ? 'Disable' : 'Enable',
+							icon: row.original.isDefault ? CircleCheck : CircleSlash,
 							iconProps: {
-								class: row.original.isActive ? 'text-green-500 size-5' : 'text-red-500 size-5',
+								class: row.original.isDefault ? 'text-green-500 size-5' : 'text-red-500 size-5',
 								size: 20
 							},
-							onClick: () => toggleItem(row.original, !row.original.isActive)
+							onClick: () => toggleItem(row.original, !row.original.isDefault)
 						}
 					]
 				});
@@ -167,18 +167,18 @@
 		}
 	};
 
-	async function toggleItem(item: DnsProvider, isActive: boolean) {
+	async function toggleItem(item: DnsProvider, isDefault: boolean) {
 		try {
 			await dnsClient.updateDnsProvider({
 				id: item.id,
 				name: item.name,
 				type: item.type,
 				config: item.config,
-				isActive: isActive
+				isDefault: isDefault
 			});
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(
-				`DNS Provider ${item.name} ${isActive ? 'set as default' : 'removed as default'}`
+				`DNS Provider ${item.name} ${isDefault ? 'set as default' : 'removed as default'}`
 			);
 		} catch (err) {
 			const e = ConnectError.from(err);

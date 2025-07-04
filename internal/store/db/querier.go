@@ -85,6 +85,8 @@ type Querier interface {
 	DeleteUdpService(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id string) error
 	GetAgent(ctx context.Context, id string) (Agent, error)
+	GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error)
+	GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error)
 	GetDnsProvider(ctx context.Context, id int64) (DnsProvider, error)
 	GetDnsProviderByName(ctx context.Context, name string) (DnsProvider, error)
 	GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID int64) ([]DnsProvider, error)
@@ -149,6 +151,8 @@ type Querier interface {
 	ListUdpServicesByAgent(ctx context.Context, arg ListUdpServicesByAgentParams) ([]UdpService, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	LogError(ctx context.Context, arg LogErrorParams) error
+	UnsetDefaultDNSProvider(ctx context.Context) error
+	UnsetDefaultEntryPoint(ctx context.Context) error
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error
 	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error

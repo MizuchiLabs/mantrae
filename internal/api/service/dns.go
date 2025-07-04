@@ -65,7 +65,12 @@ func (s *DnsProviderService) CreateDnsProvider(
 			AutoUpdate: req.Msg.Config.AutoUpdate,
 			ZoneType:   req.Msg.Config.ZoneType,
 		},
-		IsActive: req.Msg.IsActive,
+		IsDefault: req.Msg.IsDefault,
+	}
+	if req.Msg.IsDefault {
+		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	result, err := s.app.Conn.GetQuery().CreateDnsProvider(ctx, params)
@@ -108,7 +113,12 @@ func (s *DnsProviderService) UpdateDnsProvider(
 			AutoUpdate: req.Msg.Config.AutoUpdate,
 			ZoneType:   req.Msg.Config.ZoneType,
 		},
-		IsActive: req.Msg.IsActive,
+		IsDefault: req.Msg.IsDefault,
+	}
+	if req.Msg.IsDefault {
+		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateDnsProvider(ctx, params)

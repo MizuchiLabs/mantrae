@@ -30,7 +30,7 @@ func DNSProviderToProto(p *db.DnsProvider) *mantraev1.DnsProvider {
 			AutoUpdate: p.Config.AutoUpdate,
 			ZoneType:   p.Config.ZoneType,
 		},
-		IsActive:  p.IsActive,
+		IsDefault: p.IsDefault,
 		CreatedAt: SafeTimestamp(p.CreatedAt),
 		UpdatedAt: SafeTimestamp(p.UpdatedAt),
 	}
