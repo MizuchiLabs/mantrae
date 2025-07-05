@@ -129,7 +129,7 @@
 					<PasswordInput bind:value={password} />
 				{:else}
 					<Label for="Password">Password</Label>
-					<PasswordInput bind:value={password} required />
+					<PasswordInput bind:value={item.password} required />
 				{/if}
 			</div>
 

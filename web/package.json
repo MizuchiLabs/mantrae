@@ -35,7 +35,7 @@
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.6.13",
 		"shiki": "^3.7.0",
-		"svelte": "^5.34.9",
+		"svelte": "^5.35.2",
 		"svelte-check": "^4.2.2",
 		"svelte-highlight": "^7.8.3",
 		"svelte-sonner": "^1.0.5",
@@ -43,12 +43,12 @@
 		"tailwind-merge": "^3.3.1",
 		"tailwind-variants": "^1.0.0",
 		"tailwindcss": "^4.1.11",
-		"tw-animate-css": "^1.3.4",
+		"tw-animate-css": "^1.3.5",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.35.1",
 		"vite": "^6.3.5",
 		"yaml": "^2.8.0",
-		"zod": "^3.25.67"
+		"zod": "^3.25.74"
 	},
 	"type": "module",
 	"dependencies": {

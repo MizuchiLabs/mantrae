@@ -8,7 +8,7 @@ managed:
     - file_option: go_package
       module: buf.build/bufbuild/protovalidate
 plugins:
-  - local: protoc-gen-go
+  - protoc_builtin: go
     out: proto/gen
     opt: paths=source_relative
   - local: protoc-gen-connect-go

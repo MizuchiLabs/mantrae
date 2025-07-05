@@ -1,10 +1,22 @@
 -- name: ListAuditLogs :many
 SELECT
-  *
+  a.id,
+  a.profile_id,
+  p.name AS profile_name,
+  a.user_id,
+  u.username AS user_name,
+  a.agent_id,
+  ag.hostname AS agent_name,
+  a.event,
+  a.details,
+  a.created_at
 FROM
-  audit_logs
+  audit_logs a
+  LEFT JOIN profiles p ON a.profile_id = p.id
+  LEFT JOIN users u ON a.user_id = u.id
+  LEFT JOIN agents ag ON a.agent_id = ag.id
 ORDER BY
-  created_at DESC
+  a.created_at DESC
 LIMIT
   ?
 OFFSET

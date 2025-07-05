@@ -483,12 +483,21 @@ components:
             - string
           title: profile_id
           format: int64
+        profileName:
+          type: string
+          title: profile_name
         userId:
           type: string
           title: user_id
+        userName:
+          type: string
+          title: user_name
         agentId:
           type: string
           title: agent_id
+        agentName:
+          type: string
+          title: agent_name
         event:
           type: string
           title: event

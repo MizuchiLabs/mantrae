@@ -120,7 +120,7 @@ type Querier interface {
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	ListAdminUsers(ctx context.Context, arg ListAdminUsersParams) ([]User, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent, error)
-	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]AuditLog, error)
+	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error)
 	ListDnsProviders(ctx context.Context, arg ListDnsProvidersParams) ([]DnsProvider, error)
 	ListEntryPoints(ctx context.Context, arg ListEntryPointsParams) ([]EntryPoint, error)
 	ListErrors(ctx context.Context) ([]Error, error)

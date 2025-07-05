@@ -9,16 +9,14 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { routerTypes, unmarshalConfig } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, CircleCheck, Globe } from '@lucide/svelte';
+	import { Bot } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-
 	import type {
 		Service as HTTPService,
 		TCPService,
@@ -40,14 +38,20 @@
 
 	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
 	let service = $state({} as Service);
+	let hasLoadedService = $state(false);
 
+	// Reset state when modal closes
 	$effect(() => {
 		if (!open) {
 			service = {} as Service;
+			hasLoadedService = false;
 		}
 	});
+
+	// Only fetch service when modal opens with existing router (once)
 	$effect(() => {
-		if (item.id && open) {
+		if (item.id && open && !hasLoadedService) {
+			hasLoadedService = true;
 			serviceClient
 				.getServiceByRouter({
 					name: item.name,
@@ -55,6 +59,9 @@
 				})
 				.then((data) => {
 					service = data.service ?? ({} as Service);
+				})
+				.catch(() => {
+					service = {} as Service;
 				});
 		}
 	});
@@ -143,38 +150,13 @@
 		try {
 			await routerClient.deleteRouter({ id: item.id, type: item.type });
 			toast.success('Router deleted successfully');
-
-			// Refresh data
-			let response = await routerClient.listRouters({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.routers;
+			data = data.filter((r) => r.id !== item.id);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete router', { description: e.message });
 		}
 		open = false;
 	};
-
-	let dnsAnchor = $state({} as HTMLElement);
-	let selectDNSOpen = $state(false);
-
-	async function handleDNSProviderChange(value: string[]) {
-		if (value.length === 0) item.dnsProviders = [];
-		const result = await dnsClient.listDnsProviders({ limit: -1n, offset: 0n });
-		item.dnsProviders = result.dnsProviders.filter((p) => value.includes(p.id.toString()));
-		await routerClient.updateRouter({
-			id: item.id,
-			name: item.name,
-			config: item.config,
-			enabled: item.enabled,
-			type: item.type,
-			dnsProviders: item.dnsProviders
-		});
-		toast.success(`Router ${item.name} updated successfully`);
-	}
 </script>
 
 <Dialog.Root bind:open>

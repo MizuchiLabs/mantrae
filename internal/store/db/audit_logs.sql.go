@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 )
 
 const countAuditLogs = `-- name: CountAuditLogs :one
@@ -69,11 +70,23 @@ func (q *Queries) DeleteOldAuditLogs(ctx context.Context) error {
 
 const listAuditLogs = `-- name: ListAuditLogs :many
 SELECT
-  id, profile_id, user_id, agent_id, event, details, created_at
+  a.id,
+  a.profile_id,
+  p.name AS profile_name,
+  a.user_id,
+  u.username AS user_name,
+  a.agent_id,
+  ag.hostname AS agent_name,
+  a.event,
+  a.details,
+  a.created_at
 FROM
-  audit_logs
+  audit_logs a
+  LEFT JOIN profiles p ON a.profile_id = p.id
+  LEFT JOIN users u ON a.user_id = u.id
+  LEFT JOIN agents ag ON a.agent_id = ag.id
 ORDER BY
-  created_at DESC
+  a.created_at DESC
 LIMIT
   ?
 OFFSET
@@ -85,20 +98,36 @@ type ListAuditLogsParams struct {
 	Offset int64 `json:"offset"`
 }
 
-func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]AuditLog, error) {
+type ListAuditLogsRow struct {
+	ID          int64      `json:"id"`
+	ProfileID   *int64     `json:"profileId"`
+	ProfileName *string    `json:"profileName"`
+	UserID      *string    `json:"userId"`
+	UserName    *string    `json:"userName"`
+	AgentID     *string    `json:"agentId"`
+	AgentName   *string    `json:"agentName"`
+	Event       string     `json:"event"`
+	Details     *string    `json:"details"`
+	CreatedAt   *time.Time `json:"createdAt"`
+}
+
+func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error) {
 	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []AuditLog
+	var items []ListAuditLogsRow
 	for rows.Next() {
-		var i AuditLog
+		var i ListAuditLogsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProfileID,
+			&i.ProfileName,
 			&i.UserID,
+			&i.UserName,
 			&i.AgentID,
+			&i.AgentName,
 			&i.Event,
 			&i.Details,
 			&i.CreatedAt,

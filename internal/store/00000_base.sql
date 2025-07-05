@@ -236,8 +236,7 @@ CREATE TABLE audit_logs (
   agent_id TEXT,
   event TEXT NOT NULL,
   details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose Down

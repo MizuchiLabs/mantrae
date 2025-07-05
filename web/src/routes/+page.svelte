@@ -22,7 +22,9 @@
 		TrendingUp,
 		Wifi,
 		Database,
-		Pen
+		Pen,
+		List,
+		Eye
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import {
@@ -42,6 +44,7 @@
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
 	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
 
 	let totalAgents = $derived.by(async () => {
 		const response = await agentClient.listAgents({
@@ -100,10 +103,12 @@
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
 	let modalConfigOpen = $state(false);
+	let modalAuditLogOpen = $state(false);
 </script>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
 <ConfigModal bind:open={modalConfigOpen} />
+<AuditLogModal bind:open={modalAuditLogOpen} />
 
 <div class="container mx-auto space-y-6 p-6">
 	<!-- Header -->
@@ -471,11 +476,15 @@
 
 				<!-- Recent Activity -->
 				<Card.Root>
-					<Card.Header>
+					<Card.Header class="flex items-center justify-between">
 						<Card.Title class="flex items-center gap-2">
 							<Clock class="h-5 w-5" />
 							Recent Activity
 						</Card.Title>
+						<Button variant="ghost" size="sm" onclick={() => (modalAuditLogOpen = true)}>
+							<Eye />
+							Show more
+						</Button>
 					</Card.Header>
 					<Card.Content class="space-y-3">
 						<div class="space-y-3 text-sm">
@@ -499,12 +508,18 @@
 													</span>
 												{/if}
 												{#if log.agentId}
-													<span class="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700">
-														Agent: {log.agentId}
+													<span
+														class="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700"
+														title={log.agentId}
+													>
+														Agent: {log.agentName || `...${log.agentId.slice(-8)}`}
 													</span>
 												{:else if log.userId}
-													<span class="rounded bg-green-100 px-1.5 py-0.5 text-green-700">
-														User: {log.userId}
+													<span
+														class="rounded bg-green-100 px-1.5 py-0.5 text-green-700"
+														title={log.userId}
+													>
+														User: {log.userName || `...${log.userId.slice(-8)}`}
 													</span>
 												{/if}
 											</div>

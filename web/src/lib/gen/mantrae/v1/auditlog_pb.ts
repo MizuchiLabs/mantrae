@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/auditlog.proto.
  */
 export const file_mantrae_v1_auditlog: GenFile = /*@__PURE__*/
-  fileDesc("ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxIp0BCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEg8KB3VzZXJfaWQYAyABKAkSEAoIYWdlbnRfaWQYBCABKAkSDQoFZXZlbnQYBSABKAkSDwoHZGV0YWlscxgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK1AQoUTGlzdEF1ZGl0TG9nc1JlcXVlc3QSagoFbGltaXQYASABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAIgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiVgoVTGlzdEF1ZGl0TG9nc1Jlc3BvbnNlEigKCmF1ZGl0X2xvZ3MYASADKAsyFC5tYW50cmFlLnYxLkF1ZGl0TG9nEhMKC3RvdGFsX2NvdW50GAIgASgDMmwKD0F1ZGl0TG9nU2VydmljZRJZCg1MaXN0QXVkaXRMb2dzEiAubWFudHJhZS52MS5MaXN0QXVkaXRMb2dzUmVxdWVzdBohLm1hbnRyYWUudjEuTGlzdEF1ZGl0TG9nc1Jlc3BvbnNlIgOQAgFCpwEKDmNvbS5tYW50cmFlLnYxQg1BdWRpdGxvZ1Byb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxItoBCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEhQKDHByb2ZpbGVfbmFtZRgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEhEKCXVzZXJfbmFtZRgFIAEoCRIQCghhZ2VudF9pZBgGIAEoCRISCgphZ2VudF9uYW1lGAcgASgJEg0KBWV2ZW50GAggASgJEg8KB2RldGFpbHMYCSABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAitQEKFExpc3RBdWRpdExvZ3NSZXF1ZXN0EmoKBWxpbWl0GAEgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgCIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlYKFUxpc3RBdWRpdExvZ3NSZXNwb25zZRIoCgphdWRpdF9sb2dzGAEgAygLMhQubWFudHJhZS52MS5BdWRpdExvZxITCgt0b3RhbF9jb3VudBgCIAEoAzJsCg9BdWRpdExvZ1NlcnZpY2USWQoNTGlzdEF1ZGl0TG9ncxIgLm1hbnRyYWUudjEuTGlzdEF1ZGl0TG9nc1JlcXVlc3QaIS5tYW50cmFlLnYxLkxpc3RBdWRpdExvZ3NSZXNwb25zZSIDkAIBQqcBCg5jb20ubWFudHJhZS52MUINQXVkaXRsb2dQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.AuditLog
@@ -30,27 +30,42 @@ export type AuditLog = Message<"mantrae.v1.AuditLog"> & {
   profileId: bigint;
 
   /**
-   * @generated from field: string user_id = 3;
+   * @generated from field: string profile_name = 3;
+   */
+  profileName: string;
+
+  /**
+   * @generated from field: string user_id = 4;
    */
   userId: string;
 
   /**
-   * @generated from field: string agent_id = 4;
+   * @generated from field: string user_name = 5;
+   */
+  userName: string;
+
+  /**
+   * @generated from field: string agent_id = 6;
    */
   agentId: string;
 
   /**
-   * @generated from field: string event = 5;
+   * @generated from field: string agent_name = 7;
+   */
+  agentName: string;
+
+  /**
+   * @generated from field: string event = 8;
    */
   event: string;
 
   /**
-   * @generated from field: string details = 6;
+   * @generated from field: string details = 9;
    */
   details: string;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 7;
+   * @generated from field: google.protobuf.Timestamp created_at = 10;
    */
   createdAt?: Timestamp;
 };

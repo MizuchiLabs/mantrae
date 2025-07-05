@@ -14,6 +14,7 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
 	import { user } from '$lib/stores/user';
+	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 
 	let item = $state({} as User);
 	let open = $state(false);
@@ -61,8 +62,10 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
-				const date = row.getValue('lastLogin') as Timestamp;
-				return DateFormat.format(timestampDate(date));
+				if (row.original.lastLogin === undefined) {
+					return renderComponent(ColumnBadge, { label: 'Never' });
+				}
+				return DateFormat.format(timestampDate(row.original.lastLogin));
 			}
 		},
 		{

@@ -131,6 +131,7 @@
 		{
 			header: 'Rules',
 			accessorKey: 'config.rule',
+			id: 'rules',
 			enableSorting: true,
 			cell: ({ row }) => {
 				return renderComponent(ColumnRule, {
@@ -142,6 +143,7 @@
 		{
 			header: 'TLS',
 			accessorKey: 'config.tls',
+			id: 'tls',
 			enableSorting: true,
 			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
@@ -310,14 +312,18 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	const checkMobile = () => {
-		let isMobile = window.matchMedia('(max-width: 768px)').matches;
-		if (isMobile) viewMode = 'grid';
-	};
 	onMount(() => {
 		refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-		window.addEventListener('resize', checkMobile);
-		return () => window.removeEventListener('resize', checkMobile);
+
+		// Set up resize handler
+		const handleResize = () => {
+			const isMobile = window.matchMedia('(max-width: 768px)').matches;
+			if (isMobile) viewMode = 'grid';
+		};
+
+		handleResize(); // Check initial state
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
 	});
 </script>
 

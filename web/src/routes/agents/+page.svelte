@@ -9,7 +9,7 @@
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
-	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import { ConnectError } from '@connectrpc/connect';
 	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
@@ -42,9 +42,8 @@
 			accessorKey: 'activeIp',
 			enableSorting: true,
 			cell: ({ row }) => {
-				let ip = row.getValue('activeIp') as string;
 				return renderComponent(ColumnBadge, {
-					label: ip || 'Unknown',
+					label: row.original.activeIp || 'Unknown',
 					class: 'hover:cursor-pointer'
 				});
 			}
@@ -55,14 +54,10 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
-				if (!row.original.hostname) {
-					return renderComponent(ColumnBadge, {
-						label: 'Never',
-						class: 'hover:cursor-pointer'
-					});
+				if (row.original.updatedAt === undefined) {
+					return renderComponent(ColumnBadge, { label: 'Never' });
 				}
-				const date = row.getValue('updatedAt') as Timestamp;
-				return DateFormat.format(timestampDate(date));
+				return DateFormat.format(timestampDate(row.original.updatedAt));
 			}
 		},
 		{

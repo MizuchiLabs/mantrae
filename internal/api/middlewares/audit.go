@@ -17,6 +17,8 @@ type AuditEvent struct {
 	ProfileID *int64
 	Event     string
 	Details   string
+	UserID    *string
+	AgentID   *string
 }
 
 // NewAuditInterceptor automatically logs CRUD operations
@@ -28,17 +30,25 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 
 			// Only audit on successful operations
 			if err == nil {
+				var params db.CreateAuditLogParams
+				params.UserID = GetUserIDFromContext(ctx)
+				params.AgentID = GetAgentIDFromContext(ctx)
 				if auditEvent := extractAuditEvent(req, resp); auditEvent != nil {
 					if auditEvent.Details == "" || auditEvent.Event == "" {
 						slog.Warn("audit event is missing details or event", "event", auditEvent)
 						return resp, err
 					}
 					// Log audit event asynchronously to avoid blocking the response
-					go func(auditCtx context.Context) {
-						if auditErr := createAuditLog(auditCtx, app.Conn.GetQuery(), *auditEvent); auditErr != nil {
-							slog.Warn("failed to create audit log", "error", auditErr)
+					go func() {
+						params.ProfileID = auditEvent.ProfileID
+						params.Event = auditEvent.Event
+						if auditEvent.Details != "" {
+							params.Details = &auditEvent.Details
 						}
-					}(ctx)
+						if err = app.Conn.GetQuery().CreateAuditLog(context.Background(), params); err != nil {
+							slog.Error("failed to create audit log", "error", err)
+						}
+					}()
 				}
 			}
 

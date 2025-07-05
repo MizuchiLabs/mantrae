@@ -242,12 +242,16 @@ func (s *UserService) CreateUser(
 	params := db.CreateUserParams{
 		ID:       id.String(),
 		Username: req.Msg.Username,
-		Password: req.Msg.Password,
 		IsAdmin:  req.Msg.IsAdmin,
 	}
 	if req.Msg.Email != "" {
 		params.Email = &req.Msg.Email
 	}
+	hash, err := util.HashPassword(req.Msg.Password)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	params.Password = hash
 
 	result, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
 	if err != nil {

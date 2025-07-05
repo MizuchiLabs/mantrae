@@ -87,6 +87,7 @@
 		pageIndex: pageIndex.value ?? 0,
 		pageSize: pageSize.value ?? 10
 	});
+	let pageCount = $derived(Math.ceil(rowCount / pagination.pageSize));
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $derived<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
@@ -121,7 +122,12 @@
 			...columns
 		],
 		manualPagination: true,
-		rowCount: rowCount,
+		get rowCount() {
+			return rowCount;
+		},
+		get pageCount() {
+			return pageCount;
+		},
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);
@@ -243,14 +249,14 @@
 </script>
 
 <div>
-	<div class="flex items-center justify-between gap-2 py-4">
+	<div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="relative flex items-center">
 			<Search class="text-muted-foreground absolute left-3" size={16} />
 			<Input
 				placeholder="Search..."
 				bind:value={globalFilter}
 				oninput={() => table.setGlobalFilter(String(globalFilter))}
-				class="w-[180px] pl-9 lg:w-[350px]"
+				class="w-full pl-9 sm:w-[180px] lg:w-[350px]"
 			/>
 			<Delete
 				class="text-muted-foreground absolute right-4"
@@ -306,71 +312,67 @@
 	{#if viewMode === 'table'}
 		<!-- Table -->
 		<div class="rounded-md border">
-			{#key table.getRowModel().rowsById}
-				<Table.Root>
-					<Table.Header>
-						{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-							<Table.Row>
-								{#each headerGroup.headers as header (header.id)}
-									<Table.Head>
-										{#if !header.isPlaceholder}
-											<div class="flex items-center">
-												<Button
-													variant="ghost"
-													size="sm"
-													class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-													data-sortable={header.column.getCanSort()}
-													onclick={() => header.column.toggleSorting()}
-												>
-													<FlexRender
-														content={header.column.columnDef.header}
-														context={header.getContext()}
-													/>
-													{#if header.column.getCanSort()}
-														{#if header.column.getIsSorted() === 'asc'}
-															<ArrowDown />
-														{:else if header.column.getIsSorted() === 'desc'}
-															<ArrowUp />
-														{/if}
+			<Table.Root>
+				<Table.Header>
+					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+						<Table.Row>
+							{#each headerGroup.headers as header (header.id)}
+								<Table.Head>
+									{#if !header.isPlaceholder}
+										<div class="flex items-center">
+											<Button
+												variant="ghost"
+												size="sm"
+												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+												data-sortable={header.column.getCanSort()}
+												onclick={() => header.column.toggleSorting()}
+											>
+												<FlexRender
+													content={header.column.columnDef.header}
+													context={header.getContext()}
+												/>
+												{#if header.column.getCanSort()}
+													{#if header.column.getIsSorted() === 'asc'}
+														<ArrowDown />
+													{:else if header.column.getIsSorted() === 'desc'}
+														<ArrowUp />
 													{/if}
-												</Button>
-											</div>
-										{/if}
-									</Table.Head>
-								{/each}
-							</Table.Row>
-						{/each}
-					</Table.Header>
-					<Table.Body>
-						{#each table.getRowModel().rows as row (row.id)}
-							<Table.Row
-								data-state={row.getIsSelected() && 'selected'}
-								class={computeRowClasses(row.original)}
-							>
-								{#each row.getVisibleCells() as cell (cell.id)}
-									<Table.Cell>
-										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-									</Table.Cell>
-								{/each}
-							</Table.Row>
-						{:else}
-							<Table.Row>
-								<Table.Cell colspan={columns.length} class="h-24 text-center">
-									No results.
-								</Table.Cell>
-							</Table.Row>
-						{/each}
-					</Table.Body>
-					<Table.Footer>
-						<Table.Row class="border-t">
-							<Table.Cell colspan={columns.length}>Total</Table.Cell>
-							<Table.Cell class="mr-4 text-right">
-								{table.getPaginationRowModel().rows.length}
-							</Table.Cell>
+												{/if}
+											</Button>
+										</div>
+									{/if}
+								</Table.Head>
+							{/each}
 						</Table.Row>
-					</Table.Footer>
-				</Table.Root>
-			{/key}
+					{/each}
+				</Table.Header>
+				<Table.Body>
+					{#each table.getRowModel().rows as row (row.id)}
+						<Table.Row
+							data-state={row.getIsSelected() && 'selected'}
+							class={computeRowClasses(row.original)}
+						>
+							{#each row.getVisibleCells() as cell (cell.id)}
+								<Table.Cell>
+									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+								</Table.Cell>
+							{/each}
+						</Table.Row>
+					{:else}
+						<Table.Row>
+							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+				<Table.Footer>
+					<Table.Row class="border-t">
+						<Table.Cell colspan={columns.length}>Total</Table.Cell>
+						<Table.Cell class="mr-4 text-right">
+							{table.getPaginationRowModel().rows.length}
+						</Table.Cell>
+					</Table.Row>
+				</Table.Footer>
+			</Table.Root>
 		</div>
 	{:else}
 		<!-- Grid View -->
@@ -512,15 +514,16 @@
 	{/if}
 
 	<!-- Pagination -->
-	<div class="flex items-center justify-between py-4">
-		<div>
+	<div class="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+		<!-- Page size selector -->
+		<div class="flex justify-center sm:justify-start">
 			<Select.Root
 				type="single"
 				allowDeselect={false}
 				value={pagination.pageSize.toString()}
 				onValueChange={(value) => table.setPageSize(Number(value))}
 			>
-				<Select.Trigger class="w-[180px]">
+				<Select.Trigger class="w-full sm:w-[180px]">
 					{pagination.pageSize}
 				</Select.Trigger>
 				<Select.Content>
@@ -530,7 +533,9 @@
 				</Select.Content>
 			</Select.Root>
 		</div>
-		<div class="flex items-center justify-end gap-2">
+
+		<!-- Pagination controls -->
+		<div class="flex flex-wrap items-center justify-center gap-2 text-sm sm:justify-end">
 			<Button
 				variant="outline"
 				size="icon"
