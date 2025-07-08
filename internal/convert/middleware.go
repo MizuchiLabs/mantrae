@@ -19,6 +19,7 @@ func HTTPMiddlewareToProto(m *db.HttpMiddleware) *mantraev1.Middleware {
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
 		Enabled:   m.Enabled,
+		IsDefault: m.IsDefault,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
@@ -38,6 +39,7 @@ func TCPMiddlewareToProto(m *db.TcpMiddleware) *mantraev1.Middleware {
 		Config:    config,
 		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
 		Enabled:   m.Enabled,
+		IsDefault: m.IsDefault,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
@@ -80,6 +82,7 @@ func MiddlewaresByProfileToProto(
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
 				Enabled:   m.Enabled,
+				IsDefault: m.IsDefault,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -96,6 +99,7 @@ func MiddlewaresByProfileToProto(
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
 				Enabled:   m.Enabled,
+				IsDefault: m.IsDefault,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -123,6 +127,7 @@ func MiddlewaresByAgentToProto(middlewares []db.ListMiddlewaresByAgentRow) []*ma
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
 				Enabled:   m.Enabled,
+				IsDefault: m.IsDefault,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})
@@ -139,6 +144,7 @@ func MiddlewaresByAgentToProto(middlewares []db.ListMiddlewaresByAgentRow) []*ma
 				Config:    config,
 				Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
 				Enabled:   m.Enabled,
+				IsDefault: m.IsDefault,
 				CreatedAt: SafeTimestamp(m.CreatedAt),
 				UpdatedAt: SafeTimestamp(m.UpdatedAt),
 			})

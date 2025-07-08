@@ -55,6 +55,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListTcpServicesEnabled :many
+SELECT
+  *
+FROM
+  tcp_services
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountTcpServices :one
 SELECT
   COUNT(*)
@@ -82,6 +97,7 @@ UPDATE tcp_services
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

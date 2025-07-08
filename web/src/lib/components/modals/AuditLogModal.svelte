@@ -1,13 +1,21 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { auditLogClient } from '$lib/api';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
-	import Separator from '../ui/separator/separator.svelte';
+	import { auditLogClient } from '$lib/api';
+	import { Search, User, AlertTriangle, Bot } from '@lucide/svelte';
+	import type { AuditLog } from '$lib/gen/mantrae/v1/auditlog_pb';
 
 	interface Props {
 		open?: boolean;
 	}
 	let { open = $bindable(false) }: Props = $props();
+
+	let searchQuery = $state('');
 
 	function timeAgo(date: Timestamp) {
 		const dateTime = new Date(timestampDate(date));
@@ -30,53 +38,143 @@
 			}
 		}
 	}
+	function getActivityColor(log: AuditLog) {
+		if (log.agentId) return 'bg-blue-500';
+		if (log.userId) return 'bg-green-500';
+		return 'bg-orange-500';
+	}
+
+	function getActivityBadgeColor(log: AuditLog) {
+		if (log.agentId) return 'bg-blue-100 text-blue-700 border-blue-200';
+		if (log.userId) return 'bg-green-100 text-green-700 border-green-200';
+		return 'bg-orange-100 text-orange-700 border-orange-200';
+	}
+
+	function filteredLogs(logs: AuditLog[]) {
+		if (!searchQuery) return logs;
+		return logs.filter(
+			(log) =>
+				log.details?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				log.agentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				log.userName?.toLowerCase().includes(searchQuery.toLowerCase())
+		);
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content
-		class="max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-[40rem]"
+		class="no-scrollbar max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-[50rem]"
 	>
-		<Dialog.Header class="flex justify-between gap-2 py-4">
-			<Dialog.Title>Audit Logs</Dialog.Title>
-		</Dialog.Header>
-		<div class="space-y-3 text-sm">
-			{#await auditLogClient.listAuditLogs({ limit: 1000n, offset: 0n }) then result}
-				{#each result.auditLogs || [] as log (log.id)}
-					<div class="flex items-center justify-start gap-3">
-						{#if log.agentId}
-							<div class="mt-2 h-2 w-2 rounded-full bg-blue-500"></div>
-						{:else if log.userId}
-							<div class="mt-2 h-2 w-2 rounded-full bg-green-500"></div>
-						{:else}
-							<div class="mt-2 h-2 w-2 rounded-full bg-orange-500"></div>
-						{/if}
-						<div>
-							<p class="text-sm">{log.details}</p>
+		<Dialog.Header class="space-y-3 py-2">
+			<div class="flex items-center justify-between">
+				<div class="space-y-1">
+					<Dialog.Title class="text-lg font-semibold">Audit Logs</Dialog.Title>
+					<Dialog.Description>
+						System activity and security events across all users and agents
+					</Dialog.Description>
+				</div>
+			</div>
 
-							<div class="text-muted-foreground flex items-center gap-2 text-xs">
-								{#if log.createdAt}
-									<span class="text-muted-foreground text-xs">
-										{timeAgo(log.createdAt)}
-									</span>
-								{/if}
-								{#if log.agentId}
-									<span class="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700" title={log.agentId}>
-										Agent: {log.agentName || `...${log.agentId.slice(-8)}`}
-									</span>
-								{:else if log.userId}
-									<span
-										class="rounded bg-green-100 px-1.5 py-0.5 text-green-700"
-										title={log.userId}
-									>
-										User: {log.userName || `...${log.userId.slice(-8)}`}
-									</span>
-								{/if}
-							</div>
+			<!-- Search -->
+			<div class="space-y-2">
+				<Label for="search" class="text-sm font-medium">Search Logs</Label>
+				<div class="relative">
+					<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+					<Input
+						id="search"
+						bind:value={searchQuery}
+						placeholder="Search by activity, user, or agent..."
+						class="pl-10"
+					/>
+				</div>
+			</div>
+		</Dialog.Header>
+
+		<Separator />
+
+		<div class="space-y-1 py-2">
+			{#await auditLogClient.listAuditLogs({ limit: 1000n, offset: 0n }) then result}
+				{@const logs = filteredLogs(result.auditLogs || [])}
+				{#if logs.length === 0}
+					<div class="flex items-center justify-center py-12">
+						<div class="space-y-2 text-center">
+							<AlertTriangle class="text-muted-foreground mx-auto h-8 w-8" />
+							<p class="text-muted-foreground text-sm">
+								{searchQuery ? 'No logs match your search criteria' : 'No audit logs found'}
+							</p>
 						</div>
 					</div>
-					<Separator />
-				{/each}
+				{:else}
+					{#each logs as log (log.id)}
+						<div class="group hover:bg-muted/30 rounded-lg border p-4 transition-colors">
+							<div class="flex items-start gap-3">
+								<!-- Activity Indicator -->
+								<div class="flex flex-col items-center gap-1 pt-1">
+									<div class="h-2 w-2 rounded-full {getActivityColor(log)}"></div>
+									{#if log !== logs[logs.length - 1]}
+										<div class="bg-border h-8 w-px"></div>
+									{/if}
+								</div>
+
+								<div class="flex-1 space-y-2">
+									<!-- Activity Details -->
+									<div class="space-y-1">
+										<p class="text-sm leading-relaxed font-medium">{log.details}</p>
+
+										<div class="text-muted-foreground flex items-center gap-2 text-xs">
+											{#if log.createdAt}
+												<span>{timeAgo(log.createdAt)}</span>
+											{/if}
+
+											{#if log.agentId || log.userId}
+												<span>•</span>
+											{/if}
+
+											{#if log.agentId}
+												<div class="flex items-center gap-1">
+													<Bot class="h-3 w-3" />
+													<Badge
+														variant="outline"
+														class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
+														title={log.agentId}
+													>
+														{log.agentName || `...${log.agentId.slice(-8)}`}
+													</Badge>
+												</div>
+											{:else if log.userId}
+												<div class="flex items-center gap-1">
+													<User class="h-3 w-3" />
+													<Badge
+														variant="outline"
+														class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
+														title={log.userId}
+													>
+														{log.userName || `...${log.userId.slice(-8)}`}
+													</Badge>
+												</div>
+											{/if}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				{/if}
+			{:catch error}
+				<div class="flex items-center justify-center py-12">
+					<div class="space-y-2 text-center">
+						<AlertTriangle class="text-destructive mx-auto h-8 w-8" />
+						<p class="text-destructive text-sm">Failed to load audit logs</p>
+						<p class="text-muted-foreground text-xs">{error.message}</p>
+					</div>
+				</div>
 			{/await}
+		</div>
+
+		<Separator />
+
+		<div class="flex justify-end pt-4">
+			<Button variant="outline" onclick={() => (open = false)}>Close</Button>
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

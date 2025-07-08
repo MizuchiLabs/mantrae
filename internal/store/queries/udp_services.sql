@@ -55,6 +55,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListUdpServicesEnabled :many
+SELECT
+  *
+FROM
+  udp_services
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountUdpServices :one
 SELECT
   COUNT(*)
@@ -82,6 +97,7 @@ UPDATE udp_services
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

@@ -1,14 +1,12 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import { slide } from 'svelte/transition';
 	import Badge from '../ui/badge/badge.svelte';
 	import { CircleHelp } from '@lucide/svelte';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
@@ -21,6 +19,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { dnsProviderTypes } from '$lib/types';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		data: DnsProvider[];
@@ -71,14 +70,8 @@
 
 		try {
 			await dnsClient.deleteDnsProvider({ id: item.id });
+			data = data.filter((e) => e.id !== item.id);
 			toast.success('EntryPoint deleted successfully');
-
-			// Refresh data
-			let response = await dnsClient.listDnsProviders({
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.dnsProviders;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete entry point', { description: e.message });
@@ -91,229 +84,260 @@
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>{item?.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
-			<Dialog.Description>Setup dns provider for automated dns records</Dialog.Description>
+			<Dialog.Description>
+				Configure automated DNS record management for your domains
+			</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="flex flex-col gap-4">
-			<div class="grid w-full grid-cols-3 gap-2">
-				<div class="col-span-2 flex flex-col gap-2">
-					<Label for="name">Name</Label>
-					<Input id="name" bind:value={item.name} required placeholder="cloudflare" />
-				</div>
-
-				<div class="col-span-1 flex flex-col gap-2">
-					<Label for="current" class="text-right">Type</Label>
-					<Select.Root
-						type="single"
-						name="type"
-						value={item.type?.toString()}
-						onValueChange={(value) => (item.type = parseInt(value, 10))}
-					>
-						<Select.Trigger class="w-full">
-							{dnsProviderTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
-						</Select.Trigger>
-						<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
-							{#each dnsProviderTypes as t (t.value)}
-								<Select.Item value={t.value.toString()} label={t.label}>
-									{t.label}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				</div>
-			</div>
-
-			<div class="flex items-center justify-between gap-2">
-				<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
-					Set as default
-					<Tooltip.Provider>
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<CircleHelp size={16} />
-							</Tooltip.Trigger>
-							<Tooltip.Content align="start" class="w-64">
-								<p>
-									If enabled, this DNS provider will be used as the default DNS provider for all
-									newly created routers.
-								</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</Tooltip.Provider>
-				</Label>
-				<Tabs.Root
-					class="flex flex-col gap-2"
-					value={item.isDefault ? 'on' : 'off'}
-					onValueChange={(value) => {
-						if (item.isDefault === undefined) item.isDefault = value === 'on';
-						else item.isDefault = value === 'on';
-					}}
-				>
-					<div class="flex justify-end" transition:slide={{ duration: 200 }}>
-						<Tabs.List class="h-8">
-							<Tabs.Trigger value="on" class="px-2 py-0.5 font-bold">On</Tabs.Trigger>
-							<Tabs.Trigger value="off" class="px-2 py-0.5 font-bold">Off</Tabs.Trigger>
-						</Tabs.List>
+		<form onsubmit={handleSubmit} class="space-y-4">
+			<!-- Basic Configuration -->
+			<div class="space-y-4">
+				<div class="grid grid-cols-3 gap-2">
+					<div class="col-span-2 space-y-2">
+						<Label for="name" class="text-sm">Provider Name</Label>
+						<Input id="name" bind:value={item.name} required placeholder="e.g., Cloudflare" />
+						<p class="text-muted-foreground text-xs">Friendly name for this provider</p>
 					</div>
-				</Tabs.Root>
+
+					<div class="space-y-2">
+						<Label for="type" class="text-sm">Type</Label>
+						<Select.Root
+							type="single"
+							name="type"
+							value={item.type?.toString()}
+							onValueChange={(value) => (item.type = parseInt(value, 10))}
+						>
+							<Select.Trigger>
+								{dnsProviderTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+							</Select.Trigger>
+							<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
+								{#each dnsProviderTypes as t (t.value)}
+									<Select.Item value={t.value.toString()} label={t.label}>
+										{t.label}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
+				</div>
 			</div>
 
-			{#if item.type === DnsProviderType.CLOUDFLARE}
-				<div class="flex items-center justify-between gap-2">
-					<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
-						Cloudflare Proxy
-					</Label>
-					<Tabs.Root
-						class="flex flex-col gap-2"
-						value={item.config?.proxied ? 'on' : 'off'}
-						onValueChange={(value) => {
-							if (item.config === undefined) item.config = {} as DnsProviderConfig;
-							item.config.proxied = value === 'on';
-						}}
-					>
-						<div class="flex justify-end" transition:slide={{ duration: 200 }}>
-							<Tabs.List class="h-8">
-								<Tabs.Trigger value="on" class="px-2 py-0.5 font-bold">On</Tabs.Trigger>
-								<Tabs.Trigger value="off" class="px-2 py-0.5 font-bold">Off</Tabs.Trigger>
-							</Tabs.List>
+			<!-- Provider Settings -->
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label class="text-sm font-medium">Provider Settings</Label>
+					<p class="text-muted-foreground text-xs">Configure how this DNS provider should behave</p>
+				</div>
+
+				<div class="space-y-4">
+					<!-- Default Provider -->
+					<div class="flex items-center justify-between rounded-lg border p-3">
+						<div class="space-y-1">
+							<Label class="flex items-center gap-1 text-sm">
+								Default Provider
+								<Tooltip.Provider>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<CircleHelp size={14} />
+										</Tooltip.Trigger>
+										<Tooltip.Content align="start" class="w-64">
+											<p>
+												If enabled, this DNS provider will be used as the default DNS provider for
+												all newly created routers.
+											</p>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</Tooltip.Provider>
+							</Label>
+							<p class="text-muted-foreground text-xs">Use for new routers by default</p>
 						</div>
-					</Tabs.Root>
-				</div>
-			{/if}
-
-			<div class="flex items-center justify-between gap-2">
-				<Label for="autoUpdate" class="flex flex-row items-center gap-1 text-sm font-medium">
-					Auto Update IP
-					<Tooltip.Provider>
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<CircleHelp size={16} />
-							</Tooltip.Trigger>
-							<Tooltip.Content align="start" class="w-64">
-								<p>
-									When enabled, Mantrae will automatically detect and use your server's public IP
-									address. DNS records will be kept in sync as your IP changes.
-								</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</Tooltip.Provider>
-				</Label>
-				<Tabs.Root
-					class="flex flex-col gap-2"
-					value={item.config?.autoUpdate ? 'on' : 'off'}
-					onValueChange={(value) => {
-						if (item.config === undefined) item.config = {} as DnsProviderConfig;
-						item.config.autoUpdate = value === 'on';
-					}}
-				>
-					<div class="flex justify-end" transition:slide={{ duration: 200 }}>
-						<Tabs.List class="h-8">
-							<Tabs.Trigger value="on" class="px-2 py-0.5 font-bold">On</Tabs.Trigger>
-							<Tabs.Trigger value="off" class="px-2 py-0.5 font-bold">Off</Tabs.Trigger>
-						</Tabs.List>
+						<CustomSwitch bind:checked={item.isDefault} size="md" />
 					</div>
-				</Tabs.Root>
+
+					<!-- Auto Update IP -->
+					<div class="flex items-center justify-between rounded-lg border p-3">
+						<div class="space-y-1">
+							<Label class="flex items-center gap-1 text-sm">
+								Auto Update IP
+								<Tooltip.Provider>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<CircleHelp size={14} />
+										</Tooltip.Trigger>
+										<Tooltip.Content align="start" class="w-64">
+											<p>
+												When enabled, Mantrae will automatically detect and use your server's public
+												IP address. DNS records will be kept in sync as your IP changes.
+											</p>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</Tooltip.Provider>
+							</Label>
+							<p class="text-muted-foreground text-xs">Automatically sync with public IP</p>
+						</div>
+						<CustomSwitch
+							checked={item.config?.autoUpdate}
+							onCheckedChange={(value) => {
+								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								item.config.autoUpdate = value;
+							}}
+							size="md"
+						/>
+					</div>
+
+					<!-- Cloudflare Proxy -->
+					{#if item.type === DnsProviderType.CLOUDFLARE}
+						<div class="flex items-center justify-between rounded-lg border p-3">
+							<div class="space-y-1">
+								<Label class="text-sm">Cloudflare Proxy</Label>
+								<p class="text-muted-foreground text-xs">Enable Cloudflare's proxy service</p>
+							</div>
+							<CustomSwitch
+								checked={item.config?.proxied}
+								onCheckedChange={(value) => {
+									if (item.config === undefined) item.config = {} as DnsProviderConfig;
+									item.config.proxied = value;
+								}}
+								size="md"
+							/>
+						</div>
+					{/if}
+
+					<!-- Technitium Zone Type -->
+					{#if item.type === DnsProviderType.TECHNITIUM}
+						<div class="flex items-center justify-between rounded-lg border p-3">
+							<div class="space-y-1">
+								<Label class="text-sm">Zone Type</Label>
+								<p class="text-muted-foreground text-xs">DNS zone configuration type</p>
+							</div>
+							<CustomSwitch
+								variant="text"
+								textLabels={{ checked: 'Forward', unchecked: 'Primary' }}
+								checked={(item.config?.zoneType || 'primary') === 'forward'}
+								onCheckedChange={(value) => {
+									if (item.config === undefined) item.config = {} as DnsProviderConfig;
+									item.config.zoneType = value ? 'forward' : 'primary';
+								}}
+								size="md"
+							/>
+						</div>
+					{/if}
+				</div>
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<Label for="ip">
-					IP
-					<Tooltip.Provider>
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								<CircleHelp size={16} />
-							</Tooltip.Trigger>
-							<Tooltip.Content align="start" class="w-64">
-								<p>IP used for DNS records. Should be the IP of your Traefik instance.</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</Tooltip.Provider>
-				</Label>
+			<Separator />
+
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label class="flex items-center gap-1 text-sm font-medium">
+						Network Configuration
+						<Tooltip.Provider>
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									<CircleHelp size={14} />
+								</Tooltip.Trigger>
+								<Tooltip.Content align="start" class="w-64">
+									<p>IP used for DNS records. Should be the IP of your Traefik instance.</p>
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</Tooltip.Provider>
+					</Label>
+					<p class="text-muted-foreground text-xs">
+						Configure the IP address for DNS record creation
+					</p>
+				</div>
 
 				{#if item.config?.autoUpdate}
-					{#await utilClient.getPublicIP({}) then value}
-						<div class="flex items-center gap-2">
-							{#if value?.ipv4}
-								<Badge variant="secondary">{value?.ipv4}</Badge>
-							{/if}
-							{#if value?.ipv6}
-								<Badge variant="secondary">{value?.ipv6}</Badge>
-							{/if}
+					<div class="rounded-lg border p-3">
+						<div class="space-y-2">
+							<Label class="text-sm">Detected Public IP</Label>
+							{#await utilClient.getPublicIP({}) then value}
+								<div class="flex items-center gap-2">
+									{#if value?.ipv4}
+										<Badge variant="secondary">{value?.ipv4}</Badge>
+									{/if}
+									{#if value?.ipv6}
+										<Badge variant="secondary">{value?.ipv6}</Badge>
+									{/if}
+								</div>
+								<p class="text-muted-foreground text-xs">Automatically detected and updated</p>
+							{/await}
 						</div>
-					{/await}
+					</div>
 				{:else}
-					<Input
-						name="ip"
-						type="text"
-						value={item.config?.ip}
-						oninput={(e) => {
-							let input = e.target as HTMLInputElement;
-							if (!input.value) {
-								return;
-							}
-							if (item.config === undefined) item.config = {} as DnsProviderConfig;
-							item.config.ip = input.value;
-						}}
-						placeholder="IP used for DNS records"
-						required
-					/>
+					<div class="space-y-2">
+						<Label for="ip" class="text-sm">IP Address</Label>
+						<Input
+							id="ip"
+							name="ip"
+							type="text"
+							value={item.config?.ip}
+							oninput={(e) => {
+								let input = e.target as HTMLInputElement;
+								if (!input.value) return;
+								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								item.config.ip = input.value;
+							}}
+							placeholder="Enter IP address for DNS records"
+							required
+						/>
+						<p class="text-muted-foreground text-xs">Static IP address for DNS record creation</p>
+					</div>
 				{/if}
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<Label for="key">API Key</Label>
-				<PasswordInput
-					value={item.config?.apiKey}
-					oninput={(e) => {
-						let input = e.target as HTMLInputElement;
-						if (!input.value) {
-							return;
-						}
-						if (item.config === undefined) item.config = {} as DnsProviderConfig;
-						item.config.apiKey = input.value;
-					}}
-				/>
-			</div>
-			{#if item.type === DnsProviderType.POWERDNS || item.type === DnsProviderType.TECHNITIUM}
-				<div class="flex flex-col gap-2">
-					<Label for="url">Endpoint</Label>
-					<Input
-						name="url"
-						type="text"
-						value={item.config?.apiUrl}
-						oninput={(e) => {
-							let input = e.target as HTMLInputElement;
-							if (!input.value) {
-								return;
-							}
-							if (item.config === undefined) item.config = {} as DnsProviderConfig;
-							item.config.apiUrl = input.value;
-						}}
-						placeholder="Endpoint for {dnsProviderTypes.find((t) => t.value === item.type)?.label}"
-						required
-					/>
-				</div>
-			{/if}
+			<Separator />
 
-			{#if item.type === DnsProviderType.TECHNITIUM}
-				<div class="flex items-center justify-between gap-2">
-					<Label for="zoneType">Zone Type</Label>
-					<Tabs.Root
-						class="flex flex-col gap-2"
-						value={item.config?.zoneType || 'primary'}
-						onValueChange={(value) => {
-							if (item.config === undefined) item.config = {} as DnsProviderConfig;
-							item.config.zoneType = value;
-						}}
-					>
-						<div class="flex justify-end" transition:slide={{ duration: 200 }}>
-							<Tabs.List class="h-8">
-								<Tabs.Trigger value="primary" class="px-2 py-0.5 font-bold">Primary</Tabs.Trigger>
-								<Tabs.Trigger value="forward" class="px-2 py-0.5 font-bold">Forward</Tabs.Trigger>
-							</Tabs.List>
-						</div>
-					</Tabs.Root>
+			<!-- Authentication -->
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label class="text-sm font-medium">Authentication</Label>
+					<p class="text-muted-foreground text-xs">
+						Provide credentials to access your DNS provider's API
+					</p>
 				</div>
-			{/if}
+
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label for="apiKey" class="text-sm">API Key</Label>
+						<PasswordInput
+							id="apiKey"
+							value={item.config?.apiKey}
+							oninput={(e) => {
+								let input = e.target as HTMLInputElement;
+								if (!input.value) return;
+								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								item.config.apiKey = input.value;
+							}}
+							placeholder="Enter your API key"
+						/>
+						<p class="text-muted-foreground text-xs">API key from your DNS provider</p>
+					</div>
+
+					{#if item.type === DnsProviderType.POWERDNS || item.type === DnsProviderType.TECHNITIUM}
+						<div class="space-y-2">
+							<Label for="apiUrl" class="text-sm">API Endpoint</Label>
+							<Input
+								id="apiUrl"
+								name="apiUrl"
+								type="text"
+								value={item.config?.apiUrl}
+								oninput={(e) => {
+									let input = e.target as HTMLInputElement;
+									if (!input.value) return;
+									if (item.config === undefined) item.config = {} as DnsProviderConfig;
+									item.config.apiUrl = input.value;
+								}}
+								placeholder="https://dns.example.com/api"
+								required
+							/>
+							<p class="text-muted-foreground text-xs">
+								{dnsProviderTypes.find((t) => t.value === item.type)?.label} server endpoint
+							</p>
+						</div>
+					{/if}
+				</div>
+			</div>
 
 			<Separator />
 

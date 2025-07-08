@@ -136,6 +136,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateHttpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.Service](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -151,6 +152,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateTcpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.TCPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -166,6 +168,7 @@ func (s *Service) UpdateService(
 		var params db.UpdateUdpServiceParams
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
+		params.Enabled = req.Msg.Enabled
 		params.Config, err = convert.UnmarshalStruct[schema.UDPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)

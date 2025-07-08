@@ -48,7 +48,7 @@
 		"typescript-eslint": "^8.35.1",
 		"vite": "^6.3.5",
 		"yaml": "^2.8.0",
-		"zod": "^3.25.74"
+		"zod": "^3.25.75"
 	},
 	"type": "module",
 	"dependencies": {

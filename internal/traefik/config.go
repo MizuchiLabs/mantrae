@@ -36,83 +36,74 @@ func BuildDynamicConfig(
 	}
 
 	// Routers
-	httpRouters, err := q.ListHttpRouters(
+	httpRouters, err := q.ListHttpRoutersEnabled(
 		ctx,
-		db.ListHttpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListHttpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
-	tcpRouters, err := q.ListTcpRouters(
+	tcpRouters, err := q.ListTcpRoutersEnabled(
 		ctx,
-		db.ListTcpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListTcpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
-	udpRouters, err := q.ListUdpRouters(
+	udpRouters, err := q.ListUdpRoutersEnabled(
 		ctx,
-		db.ListUdpRoutersParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListUdpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	// Services
-	httpServices, err := q.ListHttpServices(
+	httpServices, err := q.ListHttpServicesEnabled(
 		ctx,
-		db.ListHttpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListHttpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
-	tcpServices, err := q.ListTcpServices(
+	tcpServices, err := q.ListTcpServicesEnabled(
 		ctx,
-		db.ListTcpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListTcpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
-	udpServices, err := q.ListUdpServices(
+	udpServices, err := q.ListUdpServicesEnabled(
 		ctx,
-		db.ListUdpServicesParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListUdpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	// Middlewares
-	httpMiddlewares, err := q.ListHttpMiddlewares(
+	httpMiddlewares, err := q.ListHttpMiddlewaresEnabled(
 		ctx,
-		db.ListHttpMiddlewaresParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListHttpMiddlewaresEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
-	tcpMiddlewares, err := q.ListTcpMiddlewares(
+	tcpMiddlewares, err := q.ListTcpMiddlewaresEnabled(
 		ctx,
-		db.ListTcpMiddlewaresParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
+		db.ListTcpMiddlewaresEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, r := range httpRouters {
-		if !r.Enabled {
-			continue
-		}
 		cfg.HTTP.Routers[r.Name] = r.Config.ToDynamic()
 	}
 	for _, r := range tcpRouters {
-		if !r.Enabled {
-			continue
-		}
 		cfg.TCP.Routers[r.Name] = r.Config.ToDynamic()
 	}
 	for _, r := range udpRouters {
-		if !r.Enabled {
-			continue
-		}
 		cfg.UDP.Routers[r.Name] = r.Config.ToDynamic()
 	}
 
@@ -127,15 +118,9 @@ func BuildDynamicConfig(
 	}
 
 	for _, m := range httpMiddlewares {
-		if !m.Enabled {
-			continue
-		}
 		cfg.HTTP.Middlewares[m.Name] = m.Config.ToDynamic()
 	}
 	for _, m := range tcpMiddlewares {
-		if !m.Enabled {
-			continue
-		}
 		cfg.TCP.Middlewares[m.Name] = m.Config.ToDynamic()
 	}
 

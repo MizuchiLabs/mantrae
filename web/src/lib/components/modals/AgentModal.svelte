@@ -49,164 +49,220 @@
 			const e = ConnectError.from(err);
 			toast.error('Failed to save agent', { description: e.message });
 		}
-		// open = false;
 	};
 	const handleDelete = async () => {
 		if (!item.id) return;
 
 		try {
 			await agentClient.deleteAgent({ id: item.id });
+			data = data.filter((e) => e.id !== item.id);
 			toast.success('Agent deleted successfully');
-
-			// Refresh data
-			let response = await agentClient.listAgents({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.agents;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete agent', { description: e.message });
 		}
 		open = false;
 	};
-	const handleRotate = async () => {
-		const response = await agentClient.rotateAgentToken({ id: item.id });
-		if (!response.agent) throw new Error('Failed to rotate token');
-		item.token = response.agent.token;
-		toast.success('Token rotated successfully');
 
-		// Refresh data
-		let response2 = await agentClient.listAgents({
-			profileId: profile.id,
-			limit: BigInt(pageSize.value ?? 10),
-			offset: BigInt(pageIndex.value ?? 0)
-		});
-		data = response2.agents;
+	const handleRotate = async () => {
+		try {
+			const response = await agentClient.rotateAgentToken({ id: item.id });
+			if (!response.agent) throw new Error('Failed to rotate token');
+			item.token = response.agent.token;
+			toast.success('Token rotated successfully');
+
+			// Refresh data
+			let response2 = await agentClient.listAgents({
+				profileId: profile.id,
+				limit: BigInt(pageSize.value ?? 10),
+				offset: BigInt(pageIndex.value ?? 0)
+			});
+			data = response2.agents;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to rotate token', { description: e.message });
+		}
 	};
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{item.hostname ? 'Update' : 'Connect your'} Agent</Dialog.Title>
+			<Dialog.Title>{item.hostname ? 'Manage' : 'Connect'} Agent</Dialog.Title>
 			<Dialog.Description>
 				{item.hostname
-					? 'Update the active IP address for your agent'
-					: 'Copy the token for your agent below'}
+					? 'Configure agent settings and manage network connections'
+					: 'Copy the token below to connect your agent'}
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<Separator />
-
-		<div class="flex flex-col gap-4">
+		<div class="space-y-4">
 			{#if item.hostname}
-				<div class="grid grid-cols-4 items-center gap-2">
-					<Label for="hostname">Hostname</Label>
-					<div class="col-span-3 space-x-2">
-						<Badge variant="secondary">{item.hostname}</Badge>
-					</div>
-				</div>
-			{/if}
-
-			{#if item.publicIp}
-				<div class="grid grid-cols-4 items-center gap-2">
-					<Label for="publicip">Public IP</Label>
-					<div class="col-span-3 space-x-2">
-						{#if item.activeIp === item.publicIp || !item.activeIp}
-							<Badge variant="default">{item.publicIp ?? 'None'}</Badge>
-						{:else}
-							<button onclick={() => handleSubmit(item.publicIp)}>
-								<Badge variant="secondary">{item.publicIp}</Badge>
-							</button>
-						{/if}
-					</div>
-				</div>
-			{/if}
-
-			{#if item.privateIp !== ''}
-				<div class="grid grid-cols-4 items-center gap-2">
-					<Label for="privateip">Private IPs</Label>
-					<div class="col-span-3 flex flex-wrap gap-2">
-						{#if item.activeIp === item.privateIp}
-							<Badge variant="default">{item.privateIp ?? 'None'}</Badge>
-						{:else}
-							<button onclick={() => handleSubmit(item.privateIp)}>
-								<Badge variant="secondary">{item.privateIp}</Badge>
-							</button>
-						{/if}
-					</div>
-				</div>
-			{/if}
-
-			{#if item.containers?.length > 0}
-				<div class="grid grid-cols-4 items-center gap-2">
-					<Label for="containers">Containers</Label>
-					<div class="col-span-3 flex flex-wrap gap-2">
-						{#each item.containers ?? [] as container (container.id)}
-							{#if container.name}
-								<Badge variant="secondary">
-									{typeof container.name === 'string' ? container.name.slice(1) : ''}
+				<!-- Agent Information -->
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label class="text-sm font-medium">Agent Information</Label>
+						<div class="flex gap-2">
+							<div class="space-y-1">
+								<p class="text-muted-foreground text-xs">Hostname</p>
+								<Badge variant="secondary" class="w-full justify-center">
+									{item.hostname}
 								</Badge>
+							</div>
+							{#if item.containers?.length > 0}
+								<div class="space-y-1">
+									<p class="text-muted-foreground text-xs">Containers</p>
+									<Badge variant="secondary" class="w-full justify-center">
+										{item.containers.length}
+									</Badge>
+								</div>
 							{/if}
-						{/each}
-					</div>
-				</div>
-			{/if}
-
-			{#if item.hostname}
-				<div class="grid grid-cols-4 items-center gap-2">
-					<Label for="lastseen">Last Seen</Label>
-					<div class="col-span-3 flex flex-wrap gap-2">
-						<Badge variant="secondary">
 							{#if item.updatedAt}
-								{DateFormat.format(timestampDate(item.updatedAt))}
+								<div class="space-y-1">
+									<p class="text-muted-foreground text-xs">Last Seen</p>
+									<Badge variant="secondary" class="justify-center text-xs">
+										{DateFormat.format(timestampDate(item.updatedAt))}
+									</Badge>
+								</div>
 							{/if}
-						</Badge>
+						</div>
+					</div>
+
+					{#if item.containers?.length > 0}
+						<div class="space-y-2">
+							<Label class="text-sm font-medium">Running Containers</Label>
+							<div class="flex flex-wrap gap-2">
+								{#each item.containers as container (container.id)}
+									{#if container.name}
+										<Badge variant="outline" class="text-xs">
+											{typeof container.name === 'string' ? container.name.slice(1) : ''}
+										</Badge>
+									{/if}
+								{/each}
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				<Separator />
+
+				<!-- Network Configuration -->
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label class="text-sm font-medium">Network Configuration</Label>
+						<p class="text-muted-foreground text-xs">
+							Choose which IP address to use for connecting to this agent
+						</p>
+					</div>
+
+					<div class="space-y-3">
+						{#if item.publicIp}
+							<div class="flex items-center justify-between rounded-lg border p-3">
+								<div class="space-y-1">
+									<Label class="text-sm">Public IP</Label>
+									<p class="text-muted-foreground text-xs">External network address</p>
+								</div>
+								<div class="flex items-center gap-2">
+									{#if item.activeIp === item.publicIp || !item.activeIp}
+										<Badge variant="default">Active</Badge>
+										<Badge variant="secondary">{item.publicIp}</Badge>
+									{:else}
+										<Button variant="outline" size="sm" onclick={() => handleSubmit(item.publicIp)}>
+											Use {item.publicIp}
+										</Button>
+									{/if}
+								</div>
+							</div>
+						{/if}
+
+						{#if item.privateIp}
+							<div class="flex items-center justify-between rounded-lg border p-3">
+								<div class="space-y-1">
+									<Label class="text-sm">Private IP</Label>
+									<p class="text-muted-foreground text-xs">Internal network address</p>
+								</div>
+								<div class="flex items-center gap-2">
+									{#if item.activeIp === item.privateIp}
+										<Badge variant="default">Active</Badge>
+										<Badge variant="secondary">{item.privateIp}</Badge>
+									{:else}
+										<Button
+											variant="outline"
+											size="sm"
+											onclick={() => handleSubmit(item.privateIp)}
+										>
+											Use {item.privateIp}
+										</Button>
+									{/if}
+								</div>
+							</div>
+						{/if}
+
+						<!-- Custom IP -->
+						<div class="space-y-2">
+							<Label for="customip" class="text-sm font-medium">Custom IP Address</Label>
+							<div class="flex gap-2">
+								<Input
+									id="customip"
+									bind:value={newIP}
+									placeholder="Enter custom IP address"
+									class="flex-1"
+								/>
+								{#if newIP}
+									<Button onclick={() => handleSubmit(newIP)} size="sm">Use</Button>
+								{/if}
+							</div>
+							<p class="text-muted-foreground text-xs">
+								Specify a custom IP address for this agent
+							</p>
+						</div>
 					</div>
 				</div>
 
 				<Separator />
-				<div class="space-y-1">
-					<Label for="ip">Custom IP</Label>
-					<Input
-						id="ip"
-						name="ip"
-						type="text"
-						bind:value={newIP}
-						placeholder="Use a custom IP address"
-					/>
-				</div>
 			{/if}
 
-			<div class="space-y-1">
-				<Label for="token">Token</Label>
-				<div class="flex w-full items-center gap-1">
-					<div class="relative flex w-full">
-						<Input id="token" name="token" type="text" value={item.token} class="pr-10" readonly />
-						<CopyButton text={item.token} class="absolute right-0" />
+			<!-- Token Management -->
+			<div class="space-y-2">
+				{#if item.hostname}
+					<div class="space-y-2">
+						<Label class="text-sm font-medium">Agent Token</Label>
+						<p class="text-muted-foreground text-xs">
+							{item.hostname
+								? 'Secure token for agent authentication'
+								: 'Copy this token to connect your agent'}
+						</p>
 					</div>
-					<Button
-						variant="ghost"
-						class="h-10 w-10 cursor-pointer hover:bg-red-300"
-						onclick={handleRotate}
-					>
-						<RotateCcw />
+				{/if}
+
+				<div class="flex gap-2">
+					<div class="relative flex-1">
+						<Input value={item.token} readonly class="pr-10" />
+						<CopyButton text={item.token} class="absolute top-1/2 right-2 -translate-y-1/2" />
+					</div>
+					<Button variant="outline" size="icon" onclick={handleRotate} title="Rotate token">
+						<RotateCcw class="h-4 w-4" />
 					</Button>
 				</div>
+
+				{#if item.hostname}
+					<div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+						<p class="text-xs text-amber-800">
+							<strong>Warning:</strong> Rotating the token will invalidate the current token and require
+							updating your agent configuration.
+						</p>
+					</div>
+				{/if}
 			</div>
 
 			<Separator />
 
-			<Button type="button" variant="destructive" class="w-full" onclick={handleDelete}>
-				Delete
-			</Button>
-			{#if item.id && newIP}
-				<Button type="submit" class="w-full cursor-pointer" onclick={() => handleSubmit(newIP)}>
-					{item.id ? 'Update' : 'Save'}
+			<!-- Actions -->
+			<div class="flex gap-2">
+				<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
+					Delete Agent
 				</Button>
-			{/if}
+			</div>
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

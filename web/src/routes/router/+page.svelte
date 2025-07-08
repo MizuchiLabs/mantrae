@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { routerClient } from '$lib/api';
+	import { routerClient, serviceClient } from '$lib/api';
 	import RouterModal from '$lib/components/modals/RouterModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import ColumnRule from '$lib/components/tables/ColumnRule.svelte';
@@ -169,7 +169,10 @@
 							iconProps: {
 								class: row.original.enabled ? 'text-green-500' : 'text-red-500'
 							},
-							onClick: () => toggleItem(row.original, !row.original.enabled)
+							onClick: () => {
+								row.original.enabled = !row.original.enabled;
+								updateItem(row.original);
+							}
 						},
 						{
 							type: 'button',
@@ -240,18 +243,32 @@
 		}
 	};
 
-	const toggleItem = async (item: Router, enabled: boolean) => {
+	const updateItem = async (item: Router) => {
 		try {
 			await routerClient.updateRouter({
 				id: item.id,
 				name: item.name,
 				type: item.type,
 				config: item.config,
-				enabled: enabled,
+				enabled: item.enabled,
 				dnsProviders: item.dnsProviders
 			});
+			const service = await serviceClient.getServiceByRouter({
+				name: item.name,
+				type: item.type
+			});
+			if (service.service) {
+				service.service.enabled = item.enabled;
+				await serviceClient.updateService({
+					id: service.service.id,
+					name: service.service.name,
+					config: service.service.config,
+					type: service.service.type,
+					enabled: service.service.enabled
+				});
+			}
 			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success(`Router ${item.name} ${enabled ? 'enabled' : 'disabled'}`);
+			toast.success(`Router ${item.name} updated`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to update router', { description: e.message });

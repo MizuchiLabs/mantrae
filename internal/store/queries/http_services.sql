@@ -41,6 +41,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListHttpServicesEnabled :many
+SELECT
+  *
+FROM
+  http_services
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: ListHttpServicesByAgent :many
 SELECT
   *
@@ -82,6 +97,7 @@ UPDATE http_services
 SET
   name = ?,
   config = ?,
+  enabled = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

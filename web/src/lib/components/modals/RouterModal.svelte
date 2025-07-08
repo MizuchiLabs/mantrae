@@ -15,11 +15,14 @@
 	import { profile } from '$lib/stores/profile';
 	import { routerTypes, unmarshalConfig } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot } from '@lucide/svelte';
+	import { Bot, Server } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import type {
 		Service as HTTPService,
+		Router as HTTPRouter,
+		TCPRouter,
 		TCPService,
+		UDPRouter,
 		UDPService
 	} from '$lib/gen/zen/traefik-schemas';
 	import HTTPRouterForm from '../forms/HTTPRouterForm.svelte';
@@ -72,6 +75,9 @@
 		if (item.name) {
 			service.name = item.name;
 		}
+		if (item.enabled) {
+			service.enabled = item.enabled;
+		}
 		if (item.type) {
 			switch (item.type) {
 				case RouterType.HTTP:
@@ -117,14 +123,16 @@
 					id: service.id,
 					name: service.name,
 					config: service.config,
-					type: service.type
+					type: service.type,
+					enabled: service.enabled
 				});
 			} else {
 				await serviceClient.createService({
 					profileId: profile.id,
 					name: service.name,
 					config: service.config,
-					type: service.type
+					type: service.type,
+					enabled: service.enabled
 				});
 			}
 
@@ -157,35 +165,56 @@
 		}
 		open = false;
 	};
+
+	// Get service preview for agent-managed router
+	const getServicePreview = () => {
+		if (!service?.config) return 'No service configured';
+
+		if (service.type === ServiceType.HTTP) {
+			const config = unmarshalConfig(service.config) as HTTPService;
+			const servers = config.loadBalancer?.servers || [];
+			return servers.length > 0 ? servers[0].url : 'No servers';
+		} else if (service.type === ServiceType.TCP) {
+			const config = unmarshalConfig(service.config) as TCPService;
+			const servers = config.loadBalancer?.servers || [];
+			return servers.length > 0 ? servers[0].address : 'No servers';
+		} else if (service.type === ServiceType.UDP) {
+			const config = unmarshalConfig(service.config) as UDPService;
+			const servers = config.loadBalancer?.servers || [];
+			return servers.length > 0 ? servers[0].address : 'No servers';
+		}
+		return 'No service configured';
+	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
 		{#if item.agentId}
 			<div class="space-y-4">
-				<Alert.Root variant="destructive" class="border-dashed">
-					<Bot class="h-4 w-4" />
-					<Alert.Title>Agent-Managed Router</Alert.Title>
-					<Alert.Description>
+				<div>
+					<h2 class="text-l font-semibold tracking-tight">Agent-Managed Router</h2>
+					<p class="text-muted-foreground text-sm">Automatically managed via Docker labels</p>
+				</div>
+
+				<Alert.Root variant="default" class="border-dashed border-blue-200 bg-blue-50">
+					<Bot class="h-4 w-4 text-blue-600" />
+					<Alert.Title class="text-blue-900">Configuration Managed by Agent</Alert.Title>
+					<Alert.Description class="text-blue-800">
 						This router is automatically managed by an agent. Configuration changes must be made
-						through Docker labels on the agent machine. Only DNS provider assignments can be
-						modified here.
+						through Docker labels. Only DNS provider assignments can be modified here.
 					</Alert.Description>
 				</Alert.Root>
 
-				<!-- DNS Providers Section (Only editable part) -->
+				<!-- DNS Providers (Editable) -->
 				{#await dnsClient.listDnsProviders({ limit: -1n, offset: 0n }) then value}
 					{#if value.dnsProviders.length > 0}
 						<Card.Root>
 							<Card.Header>
 								<div class="flex items-center justify-between">
 									<div>
-										<Card.Title class="text-base">DNS Providers</Card.Title>
-										<Card.Description class="text-muted-foreground text-sm">
-											Assign DNS providers to this router for domain management
-										</Card.Description>
+										<Card.Title class="flex items-center gap-2">DNS Providers</Card.Title>
+										<Card.Description>Manage DNS providers for this router</Card.Description>
 									</div>
-
 									<DnsProviderSelect
 										bind:data
 										bind:item
@@ -197,7 +226,7 @@
 								<Card.Content>
 									<div class="flex flex-wrap gap-2">
 										{#each item.dnsProviders as provider (provider.id)}
-											<Badge variant="secondary" class="text-xs">
+											<Badge variant="secondary">
 												{provider.name}
 											</Badge>
 										{/each}
@@ -208,48 +237,30 @@
 					{/if}
 				{/await}
 
-				<!-- Read-only Router Info -->
-				<Card.Root class="opacity-75">
+				<!-- Router Info (Read-only) -->
+				<Card.Root class="bg-muted/30">
 					<Card.Header>
-						<Card.Title class="text-muted-foreground text-base">Router Configuration</Card.Title>
-						<Card.Description class="text-sm">
-							View-only. Managed by agent via Docker labels.
-						</Card.Description>
+						<Card.Title class="text-muted-foreground flex items-center gap-2">
+							<Server class="h-4 w-4" />
+							Router Configuration
+						</Card.Title>
+						<Card.Description>View-only configuration managed by agent</Card.Description>
 					</Card.Header>
-					<Card.Content class="space-y-3">
-						<div class="grid grid-cols-2 gap-4 text-sm">
+					<Card.Content>
+						<div class="grid grid-cols-2 gap-6">
 							<div class="space-y-1">
-								<Label class="text-muted-foreground">Name</Label>
+								<Label class="text-muted-foreground">Router Name</Label>
 								<p class="font-medium">{item.name || 'Not set'}</p>
 							</div>
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Protocol</Label>
-								<Badge variant="default">
+								<Badge variant="outline">
 									{routerTypes.find((t) => t.value === item.type)?.label || 'Unknown'}
 								</Badge>
 							</div>
 							<div class="space-y-1">
-								<Label class="text-muted-foreground">Service</Label>
-								<p class="font-medium">
-									{#if service?.type === ServiceType.HTTP}
-										{@const config = unmarshalConfig(service.config) as HTTPService}
-										{#each config.loadBalancer?.servers || [] as server, i (i)}
-											{server.url}
-										{/each}
-									{:else if service?.type === ServiceType.TCP}
-										{@const config = unmarshalConfig(service.config) as TCPService}
-										{#each config.loadBalancer?.servers || [] as server, i (i)}
-											{server.address}
-										{/each}
-									{:else if service?.type === ServiceType.UDP}
-										{@const config = unmarshalConfig(service.config) as UDPService}
-										{#each config.loadBalancer?.servers || [] as server, i (i)}
-											{server.address}
-										{/each}
-									{:else}
-										Not set
-									{/if}
-								</p>
+								<Label class="text-muted-foreground">Service Endpoint</Label>
+								<p class="text-sm font-medium">{getServicePreview()}</p>
 							</div>
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Status</Label>
@@ -261,10 +272,7 @@
 					</Card.Content>
 				</Card.Root>
 
-				<!-- Action Button -->
-				<div class="flex justify-end">
-					<Button onclick={() => (open = false)} variant="outline">Close</Button>
-				</div>
+				<Button onclick={() => (open = false)} variant="outline" class="w-full">Close</Button>
 			</div>
 		{:else}
 			<Tabs.Root value="router" class="mt-2 sm:mt-4">
@@ -277,13 +285,10 @@
 						<Card.Header
 							class="space-y-2 sm:flex sm:flex-row sm:items-center sm:justify-between sm:space-y-0"
 						>
-							<div class="space-y-1">
-								<Card.Title class="text-lg sm:text-xl">
-									{item.id ? 'Update' : 'Create'}
-									Router
-								</Card.Title>
-								<Card.Description class="text-sm">
-									{item.id ? 'Update existing router' : 'Create a new router'}
+							<div>
+								<Card.Title class="flex items-center gap-2">Router Configuration</Card.Title>
+								<Card.Description class="text-muted-foreground text-sm">
+									Define how traffic is routed to your service
 								</Card.Description>
 							</div>
 
@@ -296,7 +301,7 @@
 						</Card.Header>
 						<Card.Content class="space-y-4">
 							<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
-								<div class="flex flex-col gap-2 sm:col-span-2">
+								<div class="flex flex-col gap-2 {item.id ? 'sm:col-span-3' : 'sm:col-span-2'}">
 									<Label for="name">Name</Label>
 									<Input
 										id="name"
@@ -307,31 +312,45 @@
 									/>
 								</div>
 
-								<div class="flex flex-col gap-2 sm:col-span-1">
-									<Label for="type" class="text-right">Protocol</Label>
-									<Select.Root
-										type="single"
-										name="type"
-										value={item.type?.toString()}
-										onValueChange={(value) => (item.type = parseInt(value, 10))}
-									>
-										<Select.Trigger class="w-full">
-											<span class="truncate">
-												{routerTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
-											</span>
-										</Select.Trigger>
-										<Select.Content>
-											<Select.Group>
-												<Select.Label>Router Type</Select.Label>
+								{#if !item.id}
+									<div class="flex flex-col gap-2 sm:col-span-1">
+										<Label for="type">Protocol</Label>
+										<Select.Root
+											type="single"
+											name="type"
+											value={item.type?.toString()}
+											onValueChange={(value) => {
+												// Reset config
+												item.type = parseInt(value, 10);
+												switch (item.type) {
+													case RouterType.HTTP:
+														item.config = {} as HTTPRouter;
+														break;
+													case RouterType.TCP:
+														item.config = {} as TCPRouter;
+														break;
+													case RouterType.UDP:
+														item.config = {} as UDPRouter;
+														break;
+												}
+											}}
+										>
+											<Select.Trigger class="w-full">
+												<span class="truncate">
+													{routerTypes.find((t) => t.value === item.type)?.label ??
+														'Select protocol'}
+												</span>
+											</Select.Trigger>
+											<Select.Content>
 												{#each routerTypes as t (t.value)}
-													<Select.Item value={t.value.toString()} label={t.label}>
+													<Select.Item value={t.value.toString()}>
 														{t.label}
 													</Select.Item>
 												{/each}
-											</Select.Group>
-										</Select.Content>
-									</Select.Root>
-								</div>
+											</Select.Content>
+										</Select.Root>
+									</div>
+								{/if}
 							</div>
 
 							{#if item.type === RouterType.HTTP}
@@ -349,13 +368,8 @@
 				<Tabs.Content value="service" class="space-y-4">
 					<Card.Root>
 						<Card.Header>
-							<Card.Title class="text-lg sm:text-xl">
-								{item.id ? 'Update' : 'Create'}
-								Service
-							</Card.Title>
-							<Card.Description class="text-sm">
-								{item.id ? 'Update existing service' : 'Create a new service'}
-							</Card.Description>
+							<Card.Title class="flex items-center gap-2">Service Configuration</Card.Title>
+							<Card.Description>Configure backend servers and load balancing</Card.Description>
 						</Card.Header>
 						<Card.Content class="flex flex-col gap-3">
 							{#if item.type === RouterType.HTTP}

@@ -15,7 +15,6 @@
 		Server,
 		Network,
 		Route,
-		Settings,
 		CheckCircle,
 		AlertCircle,
 		Clock,
@@ -23,7 +22,6 @@
 		Wifi,
 		Database,
 		Pen,
-		List,
 		Eye
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';

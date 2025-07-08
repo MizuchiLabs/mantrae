@@ -3,7 +3,6 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import { entryPointClient } from '$lib/api';
@@ -11,6 +10,7 @@
 	import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
 	import { profile } from '$lib/stores/profile';
 	import { pageIndex, pageSize } from '$lib/stores/common';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		data: EntryPoint[];
@@ -59,15 +59,8 @@
 
 		try {
 			await entryPointClient.deleteEntryPoint({ id: item.id });
+			data = data.filter((e) => e.id !== item.id);
 			toast.success('EntryPoint deleted successfully');
-
-			// Refresh data
-			let response = await entryPointClient.listEntryPoints({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.entryPoints;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete entry point', { description: e.message });
@@ -78,43 +71,76 @@
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
-		<Dialog.Header class="flex flex-row items-center justify-between">
-			<div>
-				<Dialog.Title>{item.id ? 'Edit' : 'Create'} EntryPoint</Dialog.Title>
-				<Dialog.Description>Configure your entry point settings</Dialog.Description>
-			</div>
-			<div class="mr-4 flex items-center gap-2">
-				<Label for="default">Default</Label>
-				<Switch
-					id="default"
-					checked={item.isDefault}
-					onCheckedChange={(value) => (item.isDefault = value)}
-				/>
-			</div>
+		<Dialog.Header>
+			<Dialog.Title>{item.id ? 'Edit' : 'Create'} EntryPoint</Dialog.Title>
+			<Dialog.Description>Configure how external traffic reaches your services</Dialog.Description>
 		</Dialog.Header>
 
-		<form class="flex flex-col gap-4">
-			<div class="flex flex-col gap-2">
-				<Label for="name">Name</Label>
-				<Input id="name" bind:value={item.name} required placeholder="web" />
-			</div>
+		<form class="space-y-6" onsubmit={handleSubmit}>
+			<!-- Main Configuration -->
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label for="name" class="flex items-center gap-2 text-sm font-medium">Name</Label>
+					<Input
+						id="name"
+						bind:value={item.name}
+						placeholder="e.g., web, api, postgres"
+						class="transition-colors"
+					/>
+					<p class="text-muted-foreground text-xs">A descriptive name for this entry point</p>
+				</div>
 
-			<div class="flex flex-col gap-2">
-				<Label for="address">Port</Label>
-				<Input id="address" bind:value={item.address} required placeholder="80" />
-			</div>
+				<div class="space-y-2">
+					<Label for="address" class="flex items-center gap-2 text-sm font-medium">Port</Label>
+					<Input
+						id="address"
+						bind:value={item.address}
+						placeholder="80, 443, 8080..."
+						min="1"
+						max="65535"
+						class="transition-colors"
+					/>
+					<div class="flex items-center justify-between">
+						<p class="text-muted-foreground text-xs">
+							Port number (1-65535) where your service listens
+						</p>
+					</div>
+				</div>
 
-			<Separator />
+				<!-- Default Setting -->
+				<div class="space-y-3">
+					<div class="flex items-center justify-between">
+						<div class="space-y-1">
+							<Label class="flex items-center gap-2 text-sm font-medium">Default Entry Point</Label>
+							<p class="text-muted-foreground text-xs">
+								Use this as the primary entry point for new routers
+							</p>
+						</div>
+						<CustomSwitch bind:checked={item.isDefault} size="md" />
+					</div>
 
-			<div class="flex w-full flex-row gap-2">
-				{#if item.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete
+					{#if item.isDefault}
+						<div class="bg-muted/50 border-primary rounded-lg border-l-2 p-3">
+							<p class="text-muted-foreground text-xs">
+								<strong>Note:</strong> Setting this as default will remove the default status from other
+								entry points.
+							</p>
+						</div>
+					{/if}
+				</div>
+
+				<Separator />
+
+				<div class="flex w-full flex-row gap-2">
+					{#if item.id}
+						<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
+							Delete
+						</Button>
+					{/if}
+					<Button type="submit" class="flex-1">
+						{item.id ? 'Update' : 'Create'}
 					</Button>
-				{/if}
-				<Button type="submit" class="flex-1" onclick={handleSubmit}>
-					{item.id ? 'Update' : 'Create'}
-				</Button>
+				</div>
 			</div>
 		</form>
 	</Dialog.Content>

@@ -89,6 +89,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListHttpRoutersEnabled :many
+SELECT
+  *
+FROM
+  http_routers
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountHttpRouters :one
 SELECT
   COUNT(*)

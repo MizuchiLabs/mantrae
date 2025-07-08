@@ -19,7 +19,6 @@
 	} from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
@@ -33,8 +32,6 @@
 		ChevronRight,
 		ChevronsLeft,
 		ChevronsRight,
-		CircleCheck,
-		CircleX,
 		Delete,
 		Plus,
 		Search,
@@ -312,67 +309,71 @@
 	{#if viewMode === 'table'}
 		<!-- Table -->
 		<div class="rounded-md border">
-			<Table.Root>
-				<Table.Header>
-					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-						<Table.Row>
-							{#each headerGroup.headers as header (header.id)}
-								<Table.Head>
-									{#if !header.isPlaceholder}
-										<div class="flex items-center">
-											<Button
-												variant="ghost"
-												size="sm"
-												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-												data-sortable={header.column.getCanSort()}
-												onclick={() => header.column.toggleSorting()}
-											>
-												<FlexRender
-													content={header.column.columnDef.header}
-													context={header.getContext()}
-												/>
-												{#if header.column.getCanSort()}
-													{#if header.column.getIsSorted() === 'asc'}
-														<ArrowDown />
-													{:else if header.column.getIsSorted() === 'desc'}
-														<ArrowUp />
+			{#key table.getRowModel().rows}
+				<Table.Root>
+					<Table.Header>
+						{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+							<Table.Row>
+								{#each headerGroup.headers as header (header.id)}
+									<Table.Head>
+										{#if !header.isPlaceholder}
+											<div class="flex items-center">
+												<Button
+													variant="ghost"
+													size="sm"
+													class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+													data-sortable={header.column.getCanSort()}
+													onclick={() => header.column.toggleSorting()}
+												>
+													<FlexRender
+														content={header.column.columnDef.header}
+														context={header.getContext()}
+													/>
+													{#if header.column.getCanSort()}
+														{#if header.column.getIsSorted() === 'asc'}
+															<ArrowDown />
+														{:else if header.column.getIsSorted() === 'desc'}
+															<ArrowUp />
+														{/if}
 													{/if}
-												{/if}
-											</Button>
-										</div>
-									{/if}
-								</Table.Head>
-							{/each}
+												</Button>
+											</div>
+										{/if}
+									</Table.Head>
+								{/each}
+							</Table.Row>
+						{/each}
+					</Table.Header>
+					<Table.Body>
+						{#each table.getRowModel().rows as row (row.id)}
+							<Table.Row
+								data-state={row.getIsSelected() && 'selected'}
+								class={computeRowClasses(row.original)}
+							>
+								{#each row.getVisibleCells() as cell (cell.id)}
+									<Table.Cell>
+										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+									</Table.Cell>
+								{/each}
+							</Table.Row>
+						{:else}
+							<Table.Row>
+								<Table.Cell colspan={columns.length} class="h-24 text-center"
+									>No results.</Table.Cell
+								>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+					<Table.Footer>
+						<Table.Row class="border-t">
+							<Table.Cell colspan={columns.length}>Total</Table.Cell>
+							<Table.Cell class="mr-4 text-right">
+								{table.getPaginationRowModel().rows.length}
+							</Table.Cell>
 						</Table.Row>
-					{/each}
-				</Table.Header>
-				<Table.Body>
-					{#each table.getRowModel().rows as row (row.id)}
-						<Table.Row
-							data-state={row.getIsSelected() && 'selected'}
-							class={computeRowClasses(row.original)}
-						>
-							{#each row.getVisibleCells() as cell (cell.id)}
-								<Table.Cell>
-									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-								</Table.Cell>
-							{/each}
-						</Table.Row>
-					{:else}
-						<Table.Row>
-							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-				<Table.Footer>
-					<Table.Row class="border-t">
-						<Table.Cell colspan={columns.length}>Total</Table.Cell>
-						<Table.Cell class="mr-4 text-right">
-							{table.getPaginationRowModel().rows.length}
-						</Table.Cell>
-					</Table.Row>
-				</Table.Footer>
-			</Table.Root>
+					</Table.Footer>
+				</Table.Root>
+			{/key}
 		</div>
 	{:else}
 		<!-- Grid View -->

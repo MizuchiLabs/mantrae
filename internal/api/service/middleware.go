@@ -64,11 +64,18 @@ func (s *MiddlewareService) CreateMiddleware(
 
 	switch req.Msg.Type {
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		var params db.CreateHttpMiddlewareParams
-		params.ProfileID = req.Msg.ProfileId
-		params.Name = req.Msg.Name
+		params := db.CreateHttpMiddlewareParams{
+			ProfileID: req.Msg.ProfileId,
+			Name:      req.Msg.Name,
+			IsDefault: req.Msg.IsDefault,
+		}
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		if req.Msg.IsDefault {
+			if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 		params.Config, err = convert.UnmarshalStruct[schema.Middleware](req.Msg.Config)
 		if err != nil {
@@ -82,11 +89,18 @@ func (s *MiddlewareService) CreateMiddleware(
 		middleware = convert.HTTPMiddlewareToProto(&result)
 
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		var params db.CreateTcpMiddlewareParams
-		params.ProfileID = req.Msg.ProfileId
-		params.Name = req.Msg.Name
+		params := db.CreateTcpMiddlewareParams{
+			ProfileID: req.Msg.ProfileId,
+			Name:      req.Msg.Name,
+			IsDefault: req.Msg.IsDefault,
+		}
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
+		}
+		if req.Msg.IsDefault {
+			if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
@@ -118,13 +132,20 @@ func (s *MiddlewareService) UpdateMiddleware(
 
 	switch req.Msg.Type {
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		var params db.UpdateHttpMiddlewareParams
-		params.ID = req.Msg.Id
-		params.Name = req.Msg.Name
-		params.Enabled = req.Msg.Enabled
+		params := db.UpdateHttpMiddlewareParams{
+			ID:        req.Msg.Id,
+			Name:      req.Msg.Name,
+			Enabled:   req.Msg.Enabled,
+			IsDefault: req.Msg.IsDefault,
+		}
 		params.Config, err = convert.UnmarshalStruct[schema.Middleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if req.Msg.IsDefault {
+			if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 
 		// Update router middlewares
@@ -144,13 +165,20 @@ func (s *MiddlewareService) UpdateMiddleware(
 		middleware = convert.HTTPMiddlewareToProto(&result)
 
 	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		var params db.UpdateTcpMiddlewareParams
-		params.ID = req.Msg.Id
-		params.Name = req.Msg.Name
-		params.Enabled = req.Msg.Enabled
+		params := db.UpdateTcpMiddlewareParams{
+			ID:        req.Msg.Id,
+			Name:      req.Msg.Name,
+			Enabled:   req.Msg.Enabled,
+			IsDefault: req.Msg.IsDefault,
+		}
 		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		if req.Msg.IsDefault {
+			if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
+				return nil, connect.NewError(connect.CodeInternal, err)
+			}
 		}
 
 		// Update router middlewares

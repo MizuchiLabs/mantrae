@@ -4,7 +4,18 @@
 	import MiddlewareModal from '$lib/components/modals/MiddlewareModal.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { Bot, Globe, Layers, Network, Pencil, Power, PowerOff, Trash } from '@lucide/svelte';
+	import {
+		Bot,
+		CircleCheck,
+		CircleSlash,
+		Globe,
+		Layers,
+		Network,
+		Pencil,
+		Power,
+		PowerOff,
+		Trash
+	} from '@lucide/svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
 	import { profile } from '$lib/stores/profile';
@@ -102,6 +113,31 @@
 			}
 		},
 		{
+			header: 'Default',
+			accessorKey: 'isDefault',
+			enableSorting: true,
+			enableGlobalFilter: false,
+			cell: ({ row }) => {
+				return renderComponent(TableActions, {
+					actions: [
+						{
+							type: 'button',
+							label: row.original.isDefault ? 'Disable' : 'Enable',
+							icon: row.original.isDefault ? CircleCheck : CircleSlash,
+							iconProps: {
+								class: row.original.isDefault ? 'text-green-500 size-5' : 'text-red-500 size-5',
+								size: 20
+							},
+							onClick: () => {
+								row.original.isDefault = !row.original.isDefault;
+								updateItem(row.original);
+							}
+						}
+					]
+				});
+			}
+		},
+		{
 			id: 'actions',
 			enableHiding: false,
 			enableGlobalFilter: false,
@@ -115,7 +151,10 @@
 							iconProps: {
 								class: row.original.enabled ? 'text-green-500' : 'text-red-500'
 							},
-							onClick: () => toggleItem(row.original, !row.original.enabled)
+							onClick: () => {
+								row.original.enabled = !row.original.enabled;
+								updateItem(row.original);
+							}
 						},
 						{
 							type: 'button',
@@ -168,17 +207,18 @@
 		}
 	};
 
-	const toggleItem = async (item: Middleware, enabled: boolean) => {
+	const updateItem = async (item: Middleware) => {
 		try {
 			await middlewareClient.updateMiddleware({
 				id: item.id,
 				name: item.name,
 				type: item.type,
 				config: item.config,
-				enabled: enabled
+				enabled: item.enabled,
+				isDefault: item.isDefault
 			});
 			await refreshData(pageSize.value ?? 10, 0);
-			toast.success(`Middleware ${item.name} ${enabled ? 'enabled' : 'disabled'}`);
+			toast.success(`Middleware ${item.name} updated`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to update middleware', { description: e.message });

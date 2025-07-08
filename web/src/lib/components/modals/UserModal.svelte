@@ -3,7 +3,6 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
@@ -13,6 +12,7 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { user } from '$lib/stores/user';
 	import { create } from '@bufbuild/protobuf';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		data?: User[];
@@ -68,15 +68,8 @@
 
 		try {
 			await userClient.deleteUser({ id: item.id });
-			toast.success('EntryPoint deleted successfully');
-
-			// Refresh data
-			if (!data) return;
-			let response = await userClient.listUsers({
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.users;
+			if (data) data = data.filter((e) => e.id !== item.id);
+			toast.success('User deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete entry point', { description: e.message });
@@ -88,60 +81,103 @@
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
 		<Dialog.Header>
-			{#if isSelf}
-				<Dialog.Title>Update Profile</Dialog.Title>
-				<Dialog.Description>Configure your profile settings</Dialog.Description>
-			{:else}
-				<div class="flex flex-row justify-between gap-2">
-					<div>
-						<Dialog.Title>{item?.id ? 'Update' : 'Add'} User</Dialog.Title>
-						<Dialog.Description>Configure your user settings</Dialog.Description>
-					</div>
-					<div class="mr-4 flex items-center gap-2">
-						<Label for="admin">Admin</Label>
-						<Switch
-							id="admin"
-							checked={item.isAdmin || false}
-							onCheckedChange={(e) => (item.isAdmin = e)}
-						/>
+			<Dialog.Title>
+				{isSelf ? 'Update Profile' : `${item?.id ? 'Edit' : 'Create'} User`}
+			</Dialog.Title>
+			<Dialog.Description>
+				{isSelf
+					? 'Update your account information and preferences'
+					: 'Configure user account details and permissions'}
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<form onsubmit={handleSubmit} class="space-y-6">
+			<!-- Basic Information -->
+			<div class="space-y-4">
+				<div class="space-y-2">
+					<Label for="username" class="flex items-center gap-2 text-sm font-medium">Username</Label>
+					<Input
+						id="username"
+						bind:value={item.username}
+						placeholder="Enter username"
+						required
+						class="transition-colors"
+					/>
+					<p class="text-muted-foreground text-xs">Display name for the user account</p>
+				</div>
+
+				<div class="space-y-2">
+					<Label for="email" class="flex items-center gap-2 text-sm font-medium">Email</Label>
+					<Input
+						id="email"
+						type="email"
+						bind:value={item.email}
+						placeholder="user@example.com"
+						class="transition-colors"
+					/>
+					<p class="text-muted-foreground text-xs">
+						Email address for notifications and account recovery
+					</p>
+				</div>
+
+				<div class="space-y-2">
+					<!-- <Label class="text-sm font-medium">Security</Label> -->
+					{#if item.id}
+						<Label for="password" class="text-muted-foreground text-sm font-normal">Password</Label>
+						<PasswordInput id="password" bind:value={password} />
+						<p class="text-muted-foreground text-xs">
+							Only enter a new password if you want to change it
+						</p>
+					{:else}
+						<Label for="password" class="text-muted-foreground text-sm font-normal">Password</Label>
+						<PasswordInput id="password" bind:value={item.password} required />
+						<p class="text-muted-foreground text-xs">Secure password for the user account</p>
+					{/if}
+				</div>
+			</div>
+
+			{#if !isSelf}
+				<Separator />
+
+				<!-- Permissions -->
+				<div class="space-y-4">
+					<div class="space-y-2">
+						<Label class="text-sm font-medium">Permissions</Label>
+						<div class="flex items-center justify-between rounded-lg border p-3">
+							<div class="space-y-1">
+								<Label for="admin" class="text-sm font-normal">Administrator Access</Label>
+								<p class="text-muted-foreground text-xs">
+									Grant full system access and user management privileges
+								</p>
+							</div>
+							<CustomSwitch bind:checked={item.isAdmin} size="md" />
+						</div>
+
+						{#if item.isAdmin}
+							<div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+								<p class="text-xs text-amber-800">
+									<strong>Note:</strong> Admin users have full access to all system features and can
+									manage other users.
+								</p>
+							</div>
+						{/if}
 					</div>
 				</div>
 			{/if}
-		</Dialog.Header>
-
-		<form onsubmit={handleSubmit} class="space-y-4">
-			<!-- Username -->
-			<div class="space-y-1">
-				<Label for="name">Name</Label>
-				<Input name="name" type="text" bind:value={item.username} placeholder="Name" required />
-			</div>
-
-			<!-- Email -->
-			<div class="space-y-1">
-				<Label for="Email">Email</Label>
-				<Input name="Email" type="email" bind:value={item.email} placeholder="Email" />
-			</div>
-
-			<!-- Password -->
-			<div class="space-y-1">
-				{#if item.id}
-					<Label for="Password">Password (leave empty to keep current)</Label>
-					<PasswordInput bind:value={password} />
-				{:else}
-					<Label for="Password">Password</Label>
-					<PasswordInput bind:value={item.password} required />
-				{/if}
-			</div>
 
 			<Separator />
 
-			<div class="flex w-full flex-row gap-2">
-				{#if item.id}
+			<!-- Actions -->
+			<div class="flex gap-2">
+				{#if item.id && !isSelf}
 					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete
+						Delete User
 					</Button>
 				{/if}
-				<Button type="submit" class="flex-1">{item.id ? 'Update' : 'Create'}</Button>
+				<Button type="submit" class="flex-1">
+					{item.id ? 'Update' : 'Create'}
+					{isSelf ? 'Profile' : 'User'}
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>

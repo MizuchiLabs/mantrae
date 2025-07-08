@@ -34,9 +34,10 @@ message Middleware {
   string name = 4;
   google.protobuf.Struct config = 5;
   bool enabled = 6;
-  MiddlewareType type = 7;
-  google.protobuf.Timestamp created_at = 8;
-  google.protobuf.Timestamp updated_at = 9;
+  bool is_default = 7;
+  MiddlewareType type = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
 }
 
 message Plugin {
@@ -76,7 +77,8 @@ message CreateMiddlewareRequest {
   string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
   MiddlewareType type = 4 [(buf.validate.field).enum.defined_only = true];
-  google.protobuf.Struct config = 5;
+  bool is_default = 5;
+  google.protobuf.Struct config = 6;
 }
 message CreateMiddlewareResponse {
   Middleware middleware = 1;
@@ -88,6 +90,7 @@ message UpdateMiddlewareRequest {
   MiddlewareType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
+  bool is_default = 6;
 }
 message UpdateMiddlewareResponse {
   Middleware middleware = 1;

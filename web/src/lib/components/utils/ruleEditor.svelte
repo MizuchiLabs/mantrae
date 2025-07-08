@@ -7,6 +7,7 @@
 	import { CircleCheck, CircleX } from '@lucide/svelte';
 	import { ruleTab } from '$lib/stores/common';
 	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		rule?: string;
@@ -214,19 +215,23 @@
 
 <Tabs.Root value={ruleTab.value} onValueChange={(value) => (ruleTab.value = value)}>
 	{#if !disabled}
-		<div class="flex justify-end">
+		<div class="flex items-center justify-between gap-2">
+			<Label for="host">Rules</Label>
 			<Tabs.List class="h-8">
-				<Tabs.Trigger value="simple" class="px-2 py-0.5 font-bold" disabled={simpleDisabled}>
+				<Tabs.Trigger
+					value="simple"
+					class="px-2 py-0.5 text-xs font-bold"
+					disabled={simpleDisabled}
+				>
 					Simple
 				</Tabs.Trigger>
-				<Tabs.Trigger value="advanced" class="px-2 py-0.5 font-bold">Advanced</Tabs.Trigger>
+				<Tabs.Trigger value="advanced" class="px-2 py-0.5 text-xs font-bold">Advanced</Tabs.Trigger>
 			</Tabs.List>
 		</div>
 	{/if}
 
 	<Tabs.Content value="simple">
 		<div class="flex flex-col gap-2">
-			<Label for="host">Domain</Label>
 			<div class="grid grid-cols-8 items-center gap-2">
 				<Input
 					id="host"
@@ -251,7 +256,6 @@
 	</Tabs.Content>
 
 	<Tabs.Content value="advanced">
-		<Label for="rule" class="mb-2">Rules</Label>
 		<div class="relative mb-4 rounded-lg border">
 			<Textarea
 				id="rulesTextarea"

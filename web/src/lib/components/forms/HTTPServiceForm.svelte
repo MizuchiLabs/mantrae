@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import type { Service as HTTPService } from '$lib/gen/zen/traefik-schemas';
 	import { Plus, Trash } from '@lucide/svelte';
 	import { marshalConfig } from '$lib/types';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		service: Service;
@@ -28,17 +28,19 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	<div class="flex flex-col gap-2">
-		<Label for="passHostHeader" class="text-right">Pass Host Header</Label>
-		<Switch
-			id="passHostHeader"
-			class="col-span-3"
+	<div class="flex items-center justify-between rounded-lg border p-3">
+		<div class="space-y-1">
+			<Label class="flex items-center gap-1 text-sm">Pass Host Header</Label>
+			<p class="text-muted-foreground text-xs">Forward client host header to server</p>
+		</div>
+		<CustomSwitch
 			checked={config.loadBalancer?.passHostHeader ?? true}
 			onCheckedChange={(value) => {
 				if (!config.loadBalancer) config.loadBalancer = { passHostHeader: true };
 				config.loadBalancer.passHostHeader = value;
 				service.config = marshalConfig(config);
 			}}
+			size="md"
 		/>
 	</div>
 

@@ -53,10 +53,7 @@ message CreateRouterRequest {
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
-  RouterType type = 6 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  RouterType type = 6 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateRouterResponse {
   Router router = 1;

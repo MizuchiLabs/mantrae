@@ -89,6 +89,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListTcpRoutersEnabled :many
+SELECT
+  *
+FROM
+  tcp_routers
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountTcpRouters :one
 SELECT
   COUNT(*)

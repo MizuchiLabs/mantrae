@@ -54,8 +54,8 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
-				if (row.original.updatedAt === undefined) {
-					return renderComponent(ColumnBadge, { label: 'Never' });
+				if (row.original.updatedAt === undefined || !row.original.hostname) {
+					return renderComponent(ColumnBadge, { label: 'Never', class: 'text-xs' });
 				}
 				return DateFormat.format(timestampDate(row.original.updatedAt));
 			}

@@ -9,10 +9,30 @@
 	import { checkHealth } from '$lib/api';
 	import { baseURL } from '$lib/stores/common';
 	import { Loader2 } from '@lucide/svelte';
+	import { onDestroy, onMount } from 'svelte';
 
 	let url = $state(baseURL.value ?? '');
 	let isChecking = $state(false);
 	let isHealthy = $state(false);
+	let reconnectTimer = $state<NodeJS.Timeout | null>(null);
+
+	const silentCheckConnection = async () => {
+		if (isChecking) return; // Don't run if already checking
+
+		try {
+			const healthy = await checkHealth();
+			isHealthy = healthy;
+
+			if (healthy && reconnectTimer) {
+				toast.success('Backend reconnected!');
+				clearInterval(reconnectTimer);
+				reconnectTimer = null;
+				goto('/login');
+			}
+		} catch (_) {
+			isHealthy = false;
+		}
+	};
 
 	const checkConnection = async (testUrl?: string) => {
 		isChecking = true;
@@ -28,7 +48,7 @@
 
 			if (healthy) {
 				toast.success('Backend connected successfully!');
-				await goto('/login');
+				goto('/login');
 			} else {
 				baseURL.value = originalUrl; // Restore if failed
 				toast.error('Unable to connect to backend');
@@ -64,6 +84,18 @@
 	$effect(() => {
 		checkConnection(baseURL.value);
 	});
+
+	onMount(() => {
+		reconnectTimer = setInterval(() => {
+			silentCheckConnection();
+		}, 5000);
+	});
+	onDestroy(() => {
+		if (reconnectTimer) {
+			clearInterval(reconnectTimer);
+			reconnectTimer = null;
+		}
+	});
 </script>
 
 <Card.Root class="max-w-md sm:min-w-[350px]">
@@ -88,16 +120,21 @@
 	</Card.Header>
 
 	<Card.Content class="space-y-4">
-		<div class="space-y-2">
-			<Label for="backend-url">Backend URL</Label>
-			<Input
-				id="backend-url"
-				type="url"
-				placeholder="http://localhost:3000"
-				bind:value={url}
-				onkeydown={handleKeydown}
-				disabled={isChecking}
-			/>
+		<div>
+			<div class="space-y-2">
+				<Label for="backend-url">Backend URL</Label>
+				<Input
+					id="backend-url"
+					type="url"
+					placeholder="http://localhost:3000"
+					bind:value={url}
+					onkeydown={handleKeydown}
+					disabled={isChecking}
+				/>
+			</div>
+			{#if !isHealthy && reconnectTimer}
+				<small class="text-muted-foreground animate-pulse">Attempting to reconnect...</small>
+			{/if}
 		</div>
 
 		<Button class="w-full" onclick={handleSave} disabled={isChecking || !url.trim()}>

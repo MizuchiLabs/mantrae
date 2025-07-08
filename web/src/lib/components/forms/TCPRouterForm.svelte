@@ -51,6 +51,12 @@
 				let defaultEntryPoint = data.entryPoints.find((e) => e.isDefault);
 				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
 			});
+		middlewareClient
+			.listMiddlewares({ profileId: profile.id, type: MiddlewareType.TCP, limit: -1n, offset: 0n })
+			.then((data) => {
+				let defaultMiddleware = data.middlewares.find((m) => m.isDefault);
+				if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
+			});
 	});
 </script>
 
@@ -98,38 +104,56 @@
 		</Select.Root>
 	</div>
 
-	<div class="flex flex-col gap-2">
-		<Label class="mr-2">Resolver</Label>
-		<div class="col-span-3">
-			<Input
-				value={config.tls?.certResolver}
-				placeholder="Certificate resolver"
-				oninput={(e) => {
-					const input = e.target as HTMLInputElement;
-					if (!input.value) {
-						delete config.tls;
-						return;
-					}
+	<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
+		<!-- TLS Configuration -->
+		<div class="flex flex-col gap-2 sm:col-span-2">
+			<Label for="certResolver" class="mr-2">Certificate Resolver</Label>
+			<div class="col-span-3">
+				<Input
+					value={config.tls?.certResolver}
+					name="certResolver"
+					placeholder="letsencrypt"
+					class="truncate"
+					oninput={(e) => {
+						const input = e.target as HTMLInputElement;
+						if (!input.value) {
+							delete config.tls;
+							return;
+						}
 
-					if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
-					config.tls.certResolver = input.value;
-				}}
-			/>
-			<div class="flex flex-wrap gap-1">
-				{#each certResolvers as resolver (resolver)}
-					{#if resolver !== config.tls?.certResolver}
-						<Badge
-							onclick={() => {
-								if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
-								config.tls.certResolver = resolver;
-							}}
-							class="mt-1 cursor-pointer"
-						>
-							{resolver}
-						</Badge>
-					{/if}
-				{/each}
+						if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
+						config.tls.certResolver = input.value;
+					}}
+				/>
+				<div class="flex flex-wrap gap-1">
+					{#each certResolvers as resolver (resolver)}
+						{#if resolver !== config.tls?.certResolver}
+							<Badge
+								onclick={() => {
+									if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
+									config.tls.certResolver = resolver;
+								}}
+								class="mt-1 cursor-pointer"
+							>
+								{resolver}
+							</Badge>
+						{/if}
+					{/each}
+				</div>
 			</div>
+		</div>
+
+		<!-- Priority -->
+		<div class="flex flex-col gap-2 sm:col-span-1">
+			<Label for="priority" class="mr-2">Priority</Label>
+			<Input
+				id="priority"
+				type="number"
+				bind:value={config.priority}
+				placeholder="0"
+				min="0"
+				max="1000"
+			/>
 		</div>
 	</div>
 

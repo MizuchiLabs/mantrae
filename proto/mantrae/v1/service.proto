@@ -34,10 +34,11 @@ message Service {
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
-  google.protobuf.Struct config = 5;
-  ServiceType type = 6;
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  bool enabled = 5;
+  google.protobuf.Struct config = 6;
+  ServiceType type = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
 }
 
 message GetServiceRequest {
@@ -53,7 +54,8 @@ message CreateServiceRequest {
   string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
-  ServiceType type = 5 [(buf.validate.field).enum.defined_only = true];
+  bool enabled = 5;
+  ServiceType type = 6 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateServiceResponse {
   Service service = 1;
@@ -62,8 +64,9 @@ message CreateServiceResponse {
 message UpdateServiceRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
   string name = 2 [(buf.validate.field).string.min_len = 1];
-  google.protobuf.Struct config = 3;
-  ServiceType type = 4 [(buf.validate.field).enum.defined_only = true];
+  bool enabled = 3;
+  google.protobuf.Struct config = 4;
+  ServiceType type = 5 [(buf.validate.field).enum.defined_only = true];
 }
 message UpdateServiceResponse {
   Service service = 1;

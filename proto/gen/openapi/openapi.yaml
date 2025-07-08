@@ -36,6 +36,9 @@ components:
             type: object
     google.protobuf.Timestamp:
       type: string
+      examples:
+        - 1s
+        - 1.000340012s
       format: date-time
       description: |-
         A Timestamp represents a point in time independent of any time zone or local
@@ -1111,6 +1114,9 @@ components:
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+        isDefault:
+          type: boolean
+          title: is_default
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1264,6 +1270,9 @@ components:
         enabled:
           type: boolean
           title: enabled
+        isDefault:
+          type: boolean
+          title: is_default
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
@@ -1367,6 +1376,9 @@ components:
         enabled:
           type: boolean
           title: enabled
+        isDefault:
+          type: boolean
+          title: is_default
       title: UpdateMiddlewareRequest
       additionalProperties: false
     mantrae.v1.UpdateMiddlewareResponse:
@@ -1412,8 +1424,6 @@ components:
           title: type
           $ref: '#/components/schemas/mantrae.v1.RouterType'
       title: CreateRouterRequest
-      required:
-        - type
       additionalProperties: false
     mantrae.v1.CreateRouterResponse:
       type: object
@@ -1631,6 +1641,9 @@ components:
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ServiceType'
@@ -1787,6 +1800,9 @@ components:
         name:
           type: string
           title: name
+        enabled:
+          type: boolean
+          title: enabled
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1815,6 +1831,9 @@ components:
           type: string
           title: name
           minLength: 1
+        enabled:
+          type: boolean
+          title: enabled
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1892,34 +1911,31 @@ components:
       additionalProperties: false
     mantrae.v1.GetUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - id
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - id
-              - required:
-                  - username
-      properties:
-        id:
-          type: string
-          title: id
-          minLength: 1
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            id:
+              type: string
+              title: id
+              minLength: 1
+          title: id
+          required:
+            - id
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: GetUserRequest
       additionalProperties: false
     mantrae.v1.GetUserResponse:
@@ -1973,26 +1989,24 @@ components:
       additionalProperties: false
     mantrae.v1.LoginUserRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         password:
           type: string
           title: password
@@ -2019,26 +2033,23 @@ components:
       additionalProperties: false
     mantrae.v1.SendOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
       title: SendOTPRequest
       additionalProperties: false
     mantrae.v1.SendOTPResponse:
@@ -2115,26 +2126,24 @@ components:
       additionalProperties: false
     mantrae.v1.VerifyOTPRequest:
       type: object
-      anyOf:
-        - required:
-            - email
-        - required:
-            - username
-        - not:
-            anyOf:
-              - required:
-                  - email
-              - required:
-                  - username
-      properties:
-        username:
-          type: string
-          title: username
-          minLength: 3
-        email:
-          type: string
+      oneOf:
+        - properties:
+            email:
+              type: string
+              title: email
+              format: email
           title: email
-          format: email
+          required:
+            - email
+        - properties:
+            username:
+              type: string
+              title: username
+              minLength: 3
+          title: username
+          required:
+            - username
+      properties:
         otp:
           type: string
           title: otp
@@ -2173,17 +2182,21 @@ components:
         - RESOURCE_TYPE_DNS_PROVIDER
     mantrae.v1.GlobalEvent:
       type: object
-      anyOf:
-        - required:
+      oneOf:
+        - properties:
+            dnsProvider:
+              title: dns_provider
+              $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_provider
+          required:
             - dnsProvider
-        - required:
+        - properties:
+            user:
+              title: user
+              $ref: '#/components/schemas/mantrae.v1.User'
+          title: user
+          required:
             - user
-        - not:
-            anyOf:
-              - required:
-                  - dnsProvider
-              - required:
-                  - user
       properties:
         eventType:
           title: event_type
@@ -2194,12 +2207,6 @@ components:
         timestamp:
           title: timestamp
           $ref: '#/components/schemas/google.protobuf.Timestamp'
-        user:
-          title: user
-          $ref: '#/components/schemas/mantrae.v1.User'
-        dnsProvider:
-          title: dns_provider
-          $ref: '#/components/schemas/mantrae.v1.DnsProvider'
       title: GlobalEvent
       additionalProperties: false
     mantrae.v1.GlobalEventsRequest:
@@ -2223,33 +2230,49 @@ components:
       additionalProperties: false
     mantrae.v1.ProfileEvent:
       type: object
-      anyOf:
-        - required:
+      oneOf:
+        - properties:
+            agent:
+              title: agent
+              $ref: '#/components/schemas/mantrae.v1.Agent'
+          title: agent
+          required:
             - agent
-        - required:
+        - properties:
+            auditLog:
+              title: audit_log
+              $ref: '#/components/schemas/mantrae.v1.AuditLog'
+          title: audit_log
+          required:
             - auditLog
-        - required:
+        - properties:
+            entryPoint:
+              title: entry_point
+              $ref: '#/components/schemas/mantrae.v1.EntryPoint'
+          title: entry_point
+          required:
             - entryPoint
-        - required:
+        - properties:
+            middleware:
+              title: middleware
+              $ref: '#/components/schemas/mantrae.v1.Middleware'
+          title: middleware
+          required:
             - middleware
-        - required:
+        - properties:
+            router:
+              title: router
+              $ref: '#/components/schemas/mantrae.v1.Router'
+          title: router
+          required:
             - router
-        - required:
+        - properties:
+            service:
+              title: service
+              $ref: '#/components/schemas/mantrae.v1.Service'
+          title: service
+          required:
             - service
-        - not:
-            anyOf:
-              - required:
-                  - agent
-              - required:
-                  - auditLog
-              - required:
-                  - entryPoint
-              - required:
-                  - middleware
-              - required:
-                  - router
-              - required:
-                  - service
       properties:
         eventType:
           title: event_type
@@ -2266,24 +2289,6 @@ components:
         timestamp:
           title: timestamp
           $ref: '#/components/schemas/google.protobuf.Timestamp'
-        router:
-          title: router
-          $ref: '#/components/schemas/mantrae.v1.Router'
-        service:
-          title: service
-          $ref: '#/components/schemas/mantrae.v1.Service'
-        middleware:
-          title: middleware
-          $ref: '#/components/schemas/mantrae.v1.Middleware'
-        entryPoint:
-          title: entry_point
-          $ref: '#/components/schemas/mantrae.v1.EntryPoint'
-        agent:
-          title: agent
-          $ref: '#/components/schemas/mantrae.v1.Agent'
-        auditLog:
-          title: audit_log
-          $ref: '#/components/schemas/mantrae.v1.AuditLog'
       title: ProfileEvent
       additionalProperties: false
     mantrae.v1.ProfileEventsRequest:

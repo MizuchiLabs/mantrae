@@ -68,6 +68,21 @@ LIMIT
 OFFSET
   ?;
 
+-- name: ListUdpRoutersEnabled :many
+SELECT
+  *
+FROM
+  udp_routers
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
 -- name: CountUdpRouters :one
 SELECT
   COUNT(*)

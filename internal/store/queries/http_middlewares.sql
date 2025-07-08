@@ -5,11 +5,20 @@ INSERT INTO
     agent_id,
     name,
     config,
+    is_default,
     created_at,
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING *;
 
 -- name: GetHttpMiddleware :one
 SELECT
@@ -18,6 +27,13 @@ FROM
   http_middlewares
 WHERE
   id = ?;
+
+-- name: UnsetDefaultHttpMiddleware :exec
+UPDATE http_middlewares
+SET
+  is_default = FALSE
+WHERE
+  is_default = TRUE;
 
 -- name: ListHttpMiddlewares :many
 SELECT
@@ -40,6 +56,21 @@ FROM
   http_middlewares
 WHERE
   agent_id = ?
+ORDER BY
+  name
+LIMIT
+  ?
+OFFSET
+  ?;
+
+-- name: ListHttpMiddlewaresEnabled :many
+SELECT
+  *
+FROM
+  http_middlewares
+WHERE
+  profile_id = ?
+  AND enabled = TRUE
 ORDER BY
   name
 LIMIT
@@ -75,6 +106,7 @@ SET
   name = ?,
   config = ?,
   enabled = ?,
+  is_default = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;
