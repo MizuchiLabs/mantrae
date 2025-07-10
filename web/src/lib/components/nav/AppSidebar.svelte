@@ -51,7 +51,7 @@
 		{ title: 'Dashboard', url: '/', icon: Gauge },
 		{ title: 'Routers', url: '/router/', icon: Route },
 		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
-		{ title: 'EntryPoints', url: '/entrypoints/', icon: EthernetPort },
+		{ title: 'Entry Points', url: '/entrypoints/', icon: EthernetPort },
 		{ title: 'Server Transports', url: '/transport/', icon: Truck }
 	];
 	const adminRoutes: Route[] = [
