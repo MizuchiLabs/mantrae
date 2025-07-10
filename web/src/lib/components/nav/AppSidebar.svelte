@@ -22,7 +22,8 @@
 		type IconProps,
 		EthernetPort,
 		Gauge,
-		Layers2
+		Layers2,
+		Truck
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
@@ -50,7 +51,8 @@
 		{ title: 'Dashboard', url: '/', icon: Gauge },
 		{ title: 'Routers', url: '/router/', icon: Route },
 		{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
-		{ title: 'EntryPoints', url: '/entrypoints/', icon: EthernetPort }
+		{ title: 'EntryPoints', url: '/entrypoints/', icon: EthernetPort },
+		{ title: 'Server Transports', url: '/transport/', icon: Truck }
 	];
 	const adminRoutes: Route[] = [
 		{ title: 'Users', url: '/users/', icon: Users },

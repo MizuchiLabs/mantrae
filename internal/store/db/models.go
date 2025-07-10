@@ -90,6 +90,17 @@ type HttpRouterDnsProvider struct {
 	DnsProviderID int64 `json:"dnsProviderId"`
 }
 
+type HttpServersTransport struct {
+	ID        int64                    `json:"id"`
+	ProfileID int64                    `json:"profileId"`
+	AgentID   *string                  `json:"agentId"`
+	Name      string                   `json:"name"`
+	Config    *schema.ServersTransport `json:"config"`
+	Enabled   bool                     `json:"enabled"`
+	CreatedAt *time.Time               `json:"createdAt"`
+	UpdatedAt *time.Time               `json:"updatedAt"`
+}
+
 type HttpService struct {
 	ID        int64           `json:"id"`
 	ProfileID int64           `json:"profileId"`
@@ -141,6 +152,17 @@ type TcpRouter struct {
 type TcpRouterDnsProvider struct {
 	TcpRouterID   int64 `json:"tcpRouterId"`
 	DnsProviderID int64 `json:"dnsProviderId"`
+}
+
+type TcpServersTransport struct {
+	ID        int64                       `json:"id"`
+	ProfileID int64                       `json:"profileId"`
+	AgentID   *string                     `json:"agentId"`
+	Name      string                      `json:"name"`
+	Config    *schema.TCPServersTransport `json:"config"`
+	Enabled   bool                        `json:"enabled"`
+	CreatedAt *time.Time                  `json:"createdAt"`
+	UpdatedAt *time.Time                  `json:"updatedAt"`
 }
 
 type TcpService struct {

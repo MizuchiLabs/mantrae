@@ -2466,6 +2466,219 @@ components:
           $ref: '#/components/schemas/mantrae.v1.Profile'
       title: UpdateProfileResponse
       additionalProperties: false
+    mantrae.v1.ServersTransportType:
+      type: string
+      title: ServersTransportType
+      enum:
+        - SERVERS_TRANSPORT_TYPE_UNSPECIFIED
+        - SERVERS_TRANSPORT_TYPE_HTTP
+        - SERVERS_TRANSPORT_TYPE_TCP
+    mantrae.v1.CreateServersTransportRequest:
+      type: object
+      properties:
+        profileId:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        agentId:
+          type: string
+          title: agent_id
+        name:
+          type: string
+          title: name
+          minLength: 1
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+      title: CreateServersTransportRequest
+      additionalProperties: false
+    mantrae.v1.CreateServersTransportResponse:
+      type: object
+      properties:
+        serversTransport:
+          title: servers_transport
+          $ref: '#/components/schemas/mantrae.v1.ServersTransport'
+      title: CreateServersTransportResponse
+      additionalProperties: false
+    mantrae.v1.DeleteServersTransportRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+      title: DeleteServersTransportRequest
+      additionalProperties: false
+    mantrae.v1.DeleteServersTransportResponse:
+      type: object
+      title: DeleteServersTransportResponse
+      additionalProperties: false
+    mantrae.v1.GetServersTransportRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+      title: GetServersTransportRequest
+      additionalProperties: false
+    mantrae.v1.GetServersTransportResponse:
+      type: object
+      properties:
+        serversTransport:
+          title: servers_transport
+          $ref: '#/components/schemas/mantrae.v1.ServersTransport'
+      title: GetServersTransportResponse
+      additionalProperties: false
+    mantrae.v1.ListServersTransportsRequest:
+      type: object
+      properties:
+        profileId:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        agentId:
+          type: string
+          title: agent_id
+          minLength: 1
+          nullable: true
+        type:
+          title: type
+          nullable: true
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+        limit:
+          type:
+            - integer
+            - string
+          title: limit
+          format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
+          nullable: true
+        offset:
+          type:
+            - integer
+            - string
+          title: offset
+          format: int64
+          nullable: true
+      title: ListServersTransportsRequest
+      additionalProperties: false
+    mantrae.v1.ListServersTransportsResponse:
+      type: object
+      properties:
+        serversTransports:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.ServersTransport'
+          title: servers_transports
+        totalCount:
+          type:
+            - integer
+            - string
+          title: total_count
+          format: int64
+      title: ListServersTransportsResponse
+      additionalProperties: false
+    mantrae.v1.ServersTransport:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        agentId:
+          type: string
+          title: agent_id
+        name:
+          type: string
+          title: name
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: ServersTransport
+      additionalProperties: false
+    mantrae.v1.UpdateServersTransportRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        name:
+          type: string
+          title: name
+          minLength: 1
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        enabled:
+          type: boolean
+          title: enabled
+        type:
+          title: type
+          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+      title: UpdateServersTransportRequest
+      additionalProperties: false
+    mantrae.v1.UpdateServersTransportResponse:
+      type: object
+      properties:
+        serversTransport:
+          title: servers_transport
+          $ref: '#/components/schemas/mantrae.v1.ServersTransport'
+      title: UpdateServersTransportResponse
+      additionalProperties: false
     mantrae.v1.GetSettingRequest:
       type: object
       properties:
@@ -5770,6 +5983,283 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListProfilesResponse'
+  /mantrae.v1.ServersTransportService/GetServersTransport:
+    get:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: GetServersTransport
+      operationId: mantrae.v1.ServersTransportService.GetServersTransport.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServersTransportRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServersTransportResponse'
+    post:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: GetServersTransport
+      operationId: mantrae.v1.ServersTransportService.GetServersTransport
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetServersTransportRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetServersTransportResponse'
+  /mantrae.v1.ServersTransportService/CreateServersTransport:
+    post:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: CreateServersTransport
+      operationId: mantrae.v1.ServersTransportService.CreateServersTransport
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.CreateServersTransportRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.CreateServersTransportResponse'
+  /mantrae.v1.ServersTransportService/UpdateServersTransport:
+    post:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: UpdateServersTransport
+      operationId: mantrae.v1.ServersTransportService.UpdateServersTransport
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.UpdateServersTransportRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.UpdateServersTransportResponse'
+  /mantrae.v1.ServersTransportService/DeleteServersTransport:
+    post:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: DeleteServersTransport
+      operationId: mantrae.v1.ServersTransportService.DeleteServersTransport
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteServersTransportRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteServersTransportResponse'
+  /mantrae.v1.ServersTransportService/ListServersTransports:
+    get:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: ListServersTransports
+      operationId: mantrae.v1.ServersTransportService.ListServersTransports.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListServersTransportsRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListServersTransportsResponse'
+    post:
+      tags:
+        - mantrae.v1.ServersTransportService
+      summary: ListServersTransports
+      operationId: mantrae.v1.ServersTransportService.ListServersTransports
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListServersTransportsRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListServersTransportsResponse'
   /mantrae.v1.SettingService/GetSetting:
     get:
       tags:
@@ -6059,5 +6549,6 @@ tags:
   - name: mantrae.v1.UserService
   - name: mantrae.v1.EventService
   - name: mantrae.v1.ProfileService
+  - name: mantrae.v1.ServersTransportService
   - name: mantrae.v1.SettingService
   - name: mantrae.v1.UtilService

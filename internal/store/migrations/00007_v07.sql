@@ -126,6 +126,34 @@ CREATE TABLE tcp_middlewares (
   UNIQUE (profile_id, name)
 );
 
+CREATE TABLE http_servers_transports (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE tcp_servers_transports (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
 CREATE TABLE traefik_instances (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
@@ -310,6 +338,10 @@ CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
 CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, name);
 
 CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
+
+CREATE INDEX idx_http_servers_transports_profile_name ON http_servers_transports (profile_id, name);
+
+CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (profile_id, name);
 
 -- Drop old tables and constraints
 DROP TABLE router_dns_provider;

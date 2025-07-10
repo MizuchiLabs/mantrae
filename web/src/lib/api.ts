@@ -16,6 +16,7 @@ import { toast } from "svelte-sonner";
 import { AuditLogService } from "./gen/mantrae/v1/auditlog_pb";
 import { profile } from "./stores/profile";
 import { baseURL } from "./stores/common";
+import { ServersTransportService } from "./gen/mantrae/v1/servers_transport_pb";
 
 export function useClient<T extends DescService>(
 	service: T,
@@ -107,6 +108,7 @@ export const agentClient = useClient(AgentService);
 export const routerClient = useClient(RouterService);
 export const serviceClient = useClient(ServiceService);
 export const middlewareClient = useClient(MiddlewareService);
+export const serversTransportClient = useClient(ServersTransportService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
 export const auditLogClient = useClient(AuditLogService);

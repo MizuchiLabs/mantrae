@@ -156,6 +156,7 @@ func (s *Server) registerServices() {
 		mantraev1connect.RouterServiceName,
 		mantraev1connect.ServiceServiceName,
 		mantraev1connect.MiddlewareServiceName,
+		mantraev1connect.ServersTransportServiceName,
 		mantraev1connect.BackupServiceName,
 		mantraev1connect.UtilServiceName,
 		mantraev1connect.AuditLogServiceName,
@@ -231,6 +232,10 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewMiddlewareServiceHandler(
 		service.NewMiddlewareService(s.app),
+		opts...,
+	))
+	s.mux.Handle(mantraev1connect.NewServersTransportServiceHandler(
+		service.NewServersTransportService(s.app),
 		opts...,
 	))
 	s.mux.Handle(mantraev1connect.NewBackupServiceHandler(

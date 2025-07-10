@@ -54,6 +54,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countHttpRoutersByProfileStmt, err = db.PrepareContext(ctx, countHttpRoutersByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CountHttpRoutersByProfile: %w", err)
 	}
+	if q.countHttpServersTransportsStmt, err = db.PrepareContext(ctx, countHttpServersTransports); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpServersTransports: %w", err)
+	}
+	if q.countHttpServersTransportsByAgentStmt, err = db.PrepareContext(ctx, countHttpServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpServersTransportsByAgent: %w", err)
+	}
+	if q.countHttpServersTransportsByProfileStmt, err = db.PrepareContext(ctx, countHttpServersTransportsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountHttpServersTransportsByProfile: %w", err)
+	}
 	if q.countHttpServicesStmt, err = db.PrepareContext(ctx, countHttpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountHttpServices: %w", err)
 	}
@@ -78,6 +87,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countRoutersByProfileStmt, err = db.PrepareContext(ctx, countRoutersByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CountRoutersByProfile: %w", err)
 	}
+	if q.countServersTransportsByAgentStmt, err = db.PrepareContext(ctx, countServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountServersTransportsByAgent: %w", err)
+	}
+	if q.countServersTransportsByProfileStmt, err = db.PrepareContext(ctx, countServersTransportsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountServersTransportsByProfile: %w", err)
+	}
 	if q.countServicesByAgentStmt, err = db.PrepareContext(ctx, countServicesByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query CountServicesByAgent: %w", err)
 	}
@@ -101,6 +116,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.countTcpRoutersByProfileStmt, err = db.PrepareContext(ctx, countTcpRoutersByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpRoutersByProfile: %w", err)
+	}
+	if q.countTcpServersTransportsStmt, err = db.PrepareContext(ctx, countTcpServersTransports); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpServersTransports: %w", err)
+	}
+	if q.countTcpServersTransportsByAgentStmt, err = db.PrepareContext(ctx, countTcpServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpServersTransportsByAgent: %w", err)
+	}
+	if q.countTcpServersTransportsByProfileStmt, err = db.PrepareContext(ctx, countTcpServersTransportsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query CountTcpServersTransportsByProfile: %w", err)
 	}
 	if q.countTcpServicesStmt, err = db.PrepareContext(ctx, countTcpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpServices: %w", err)
@@ -156,6 +180,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createHttpRouterDNSProviderStmt, err = db.PrepareContext(ctx, createHttpRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateHttpRouterDNSProvider: %w", err)
 	}
+	if q.createHttpServersTransportStmt, err = db.PrepareContext(ctx, createHttpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateHttpServersTransport: %w", err)
+	}
 	if q.createHttpServiceStmt, err = db.PrepareContext(ctx, createHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateHttpService: %w", err)
 	}
@@ -170,6 +197,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.createTcpRouterDNSProviderStmt, err = db.PrepareContext(ctx, createTcpRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateTcpRouterDNSProvider: %w", err)
+	}
+	if q.createTcpServersTransportStmt, err = db.PrepareContext(ctx, createTcpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateTcpServersTransport: %w", err)
 	}
 	if q.createTcpServiceStmt, err = db.PrepareContext(ctx, createTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateTcpService: %w", err)
@@ -213,6 +243,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteHttpRouterDNSProviderStmt, err = db.PrepareContext(ctx, deleteHttpRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteHttpRouterDNSProvider: %w", err)
 	}
+	if q.deleteHttpServersTransportStmt, err = db.PrepareContext(ctx, deleteHttpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteHttpServersTransport: %w", err)
+	}
 	if q.deleteHttpServiceStmt, err = db.PrepareContext(ctx, deleteHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteHttpService: %w", err)
 	}
@@ -233,6 +266,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.deleteTcpRouterDNSProviderStmt, err = db.PrepareContext(ctx, deleteTcpRouterDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTcpRouterDNSProvider: %w", err)
+	}
+	if q.deleteTcpServersTransportStmt, err = db.PrepareContext(ctx, deleteTcpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteTcpServersTransport: %w", err)
 	}
 	if q.deleteTcpServiceStmt, err = db.PrepareContext(ctx, deleteTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTcpService: %w", err)
@@ -291,6 +327,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getHttpRoutersUsingMiddlewareStmt, err = db.PrepareContext(ctx, getHttpRoutersUsingMiddleware); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpRoutersUsingMiddleware: %w", err)
 	}
+	if q.getHttpServersTransportStmt, err = db.PrepareContext(ctx, getHttpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpServersTransport: %w", err)
+	}
 	if q.getHttpServiceStmt, err = db.PrepareContext(ctx, getHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpService: %w", err)
 	}
@@ -320,6 +359,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getTcpRoutersUsingMiddlewareStmt, err = db.PrepareContext(ctx, getTcpRoutersUsingMiddleware); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpRoutersUsingMiddleware: %w", err)
+	}
+	if q.getTcpServersTransportStmt, err = db.PrepareContext(ctx, getTcpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpServersTransport: %w", err)
 	}
 	if q.getTcpServiceStmt, err = db.PrepareContext(ctx, getTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpService: %w", err)
@@ -387,6 +429,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listHttpRoutersEnabledStmt, err = db.PrepareContext(ctx, listHttpRoutersEnabled); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpRoutersEnabled: %w", err)
 	}
+	if q.listHttpServersTransportsStmt, err = db.PrepareContext(ctx, listHttpServersTransports); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpServersTransports: %w", err)
+	}
+	if q.listHttpServersTransportsByAgentStmt, err = db.PrepareContext(ctx, listHttpServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpServersTransportsByAgent: %w", err)
+	}
+	if q.listHttpServersTransportsEnabledStmt, err = db.PrepareContext(ctx, listHttpServersTransportsEnabled); err != nil {
+		return nil, fmt.Errorf("error preparing query ListHttpServersTransportsEnabled: %w", err)
+	}
 	if q.listHttpServicesStmt, err = db.PrepareContext(ctx, listHttpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpServices: %w", err)
 	}
@@ -410,6 +461,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listRoutersByProfileStmt, err = db.PrepareContext(ctx, listRoutersByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query ListRoutersByProfile: %w", err)
+	}
+	if q.listServersTransportsByAgentStmt, err = db.PrepareContext(ctx, listServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServersTransportsByAgent: %w", err)
+	}
+	if q.listServersTransportsByProfileStmt, err = db.PrepareContext(ctx, listServersTransportsByProfile); err != nil {
+		return nil, fmt.Errorf("error preparing query ListServersTransportsByProfile: %w", err)
 	}
 	if q.listServicesByAgentStmt, err = db.PrepareContext(ctx, listServicesByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query ListServicesByAgent: %w", err)
@@ -437,6 +494,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listTcpRoutersEnabledStmt, err = db.PrepareContext(ctx, listTcpRoutersEnabled); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpRoutersEnabled: %w", err)
+	}
+	if q.listTcpServersTransportsStmt, err = db.PrepareContext(ctx, listTcpServersTransports); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpServersTransports: %w", err)
+	}
+	if q.listTcpServersTransportsByAgentStmt, err = db.PrepareContext(ctx, listTcpServersTransportsByAgent); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpServersTransportsByAgent: %w", err)
+	}
+	if q.listTcpServersTransportsEnabledStmt, err = db.PrepareContext(ctx, listTcpServersTransportsEnabled); err != nil {
+		return nil, fmt.Errorf("error preparing query ListTcpServersTransportsEnabled: %w", err)
 	}
 	if q.listTcpServicesStmt, err = db.PrepareContext(ctx, listTcpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpServices: %w", err)
@@ -507,6 +573,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateHttpRouterStmt, err = db.PrepareContext(ctx, updateHttpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateHttpRouter: %w", err)
 	}
+	if q.updateHttpServersTransportStmt, err = db.PrepareContext(ctx, updateHttpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateHttpServersTransport: %w", err)
+	}
 	if q.updateHttpServiceStmt, err = db.PrepareContext(ctx, updateHttpService); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateHttpService: %w", err)
 	}
@@ -518,6 +587,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateTcpRouterStmt, err = db.PrepareContext(ctx, updateTcpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTcpRouter: %w", err)
+	}
+	if q.updateTcpServersTransportStmt, err = db.PrepareContext(ctx, updateTcpServersTransport); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateTcpServersTransport: %w", err)
 	}
 	if q.updateTcpServiceStmt, err = db.PrepareContext(ctx, updateTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTcpService: %w", err)
@@ -601,6 +673,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countHttpRoutersByProfileStmt: %w", cerr)
 		}
 	}
+	if q.countHttpServersTransportsStmt != nil {
+		if cerr := q.countHttpServersTransportsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpServersTransportsStmt: %w", cerr)
+		}
+	}
+	if q.countHttpServersTransportsByAgentStmt != nil {
+		if cerr := q.countHttpServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countHttpServersTransportsByProfileStmt != nil {
+		if cerr := q.countHttpServersTransportsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countHttpServersTransportsByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countHttpServicesStmt != nil {
 		if cerr := q.countHttpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countHttpServicesStmt: %w", cerr)
@@ -641,6 +728,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countRoutersByProfileStmt: %w", cerr)
 		}
 	}
+	if q.countServersTransportsByAgentStmt != nil {
+		if cerr := q.countServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countServersTransportsByProfileStmt != nil {
+		if cerr := q.countServersTransportsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countServersTransportsByProfileStmt: %w", cerr)
+		}
+	}
 	if q.countServicesByAgentStmt != nil {
 		if cerr := q.countServicesByAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countServicesByAgentStmt: %w", cerr)
@@ -679,6 +776,21 @@ func (q *Queries) Close() error {
 	if q.countTcpRoutersByProfileStmt != nil {
 		if cerr := q.countTcpRoutersByProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countTcpRoutersByProfileStmt: %w", cerr)
+		}
+	}
+	if q.countTcpServersTransportsStmt != nil {
+		if cerr := q.countTcpServersTransportsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpServersTransportsStmt: %w", cerr)
+		}
+	}
+	if q.countTcpServersTransportsByAgentStmt != nil {
+		if cerr := q.countTcpServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.countTcpServersTransportsByProfileStmt != nil {
+		if cerr := q.countTcpServersTransportsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing countTcpServersTransportsByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countTcpServicesStmt != nil {
@@ -771,6 +883,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createHttpRouterDNSProviderStmt: %w", cerr)
 		}
 	}
+	if q.createHttpServersTransportStmt != nil {
+		if cerr := q.createHttpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createHttpServersTransportStmt: %w", cerr)
+		}
+	}
 	if q.createHttpServiceStmt != nil {
 		if cerr := q.createHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createHttpServiceStmt: %w", cerr)
@@ -794,6 +911,11 @@ func (q *Queries) Close() error {
 	if q.createTcpRouterDNSProviderStmt != nil {
 		if cerr := q.createTcpRouterDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createTcpRouterDNSProviderStmt: %w", cerr)
+		}
+	}
+	if q.createTcpServersTransportStmt != nil {
+		if cerr := q.createTcpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createTcpServersTransportStmt: %w", cerr)
 		}
 	}
 	if q.createTcpServiceStmt != nil {
@@ -866,6 +988,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteHttpRouterDNSProviderStmt: %w", cerr)
 		}
 	}
+	if q.deleteHttpServersTransportStmt != nil {
+		if cerr := q.deleteHttpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteHttpServersTransportStmt: %w", cerr)
+		}
+	}
 	if q.deleteHttpServiceStmt != nil {
 		if cerr := q.deleteHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteHttpServiceStmt: %w", cerr)
@@ -899,6 +1026,11 @@ func (q *Queries) Close() error {
 	if q.deleteTcpRouterDNSProviderStmt != nil {
 		if cerr := q.deleteTcpRouterDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteTcpRouterDNSProviderStmt: %w", cerr)
+		}
+	}
+	if q.deleteTcpServersTransportStmt != nil {
+		if cerr := q.deleteTcpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteTcpServersTransportStmt: %w", cerr)
 		}
 	}
 	if q.deleteTcpServiceStmt != nil {
@@ -996,6 +1128,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getHttpRoutersUsingMiddlewareStmt: %w", cerr)
 		}
 	}
+	if q.getHttpServersTransportStmt != nil {
+		if cerr := q.getHttpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpServersTransportStmt: %w", cerr)
+		}
+	}
 	if q.getHttpServiceStmt != nil {
 		if cerr := q.getHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getHttpServiceStmt: %w", cerr)
@@ -1044,6 +1181,11 @@ func (q *Queries) Close() error {
 	if q.getTcpRoutersUsingMiddlewareStmt != nil {
 		if cerr := q.getTcpRoutersUsingMiddlewareStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getTcpRoutersUsingMiddlewareStmt: %w", cerr)
+		}
+	}
+	if q.getTcpServersTransportStmt != nil {
+		if cerr := q.getTcpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpServersTransportStmt: %w", cerr)
 		}
 	}
 	if q.getTcpServiceStmt != nil {
@@ -1156,6 +1298,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listHttpRoutersEnabledStmt: %w", cerr)
 		}
 	}
+	if q.listHttpServersTransportsStmt != nil {
+		if cerr := q.listHttpServersTransportsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpServersTransportsStmt: %w", cerr)
+		}
+	}
+	if q.listHttpServersTransportsByAgentStmt != nil {
+		if cerr := q.listHttpServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listHttpServersTransportsEnabledStmt != nil {
+		if cerr := q.listHttpServersTransportsEnabledStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listHttpServersTransportsEnabledStmt: %w", cerr)
+		}
+	}
 	if q.listHttpServicesStmt != nil {
 		if cerr := q.listHttpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listHttpServicesStmt: %w", cerr)
@@ -1194,6 +1351,16 @@ func (q *Queries) Close() error {
 	if q.listRoutersByProfileStmt != nil {
 		if cerr := q.listRoutersByProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listRoutersByProfileStmt: %w", cerr)
+		}
+	}
+	if q.listServersTransportsByAgentStmt != nil {
+		if cerr := q.listServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listServersTransportsByProfileStmt != nil {
+		if cerr := q.listServersTransportsByProfileStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listServersTransportsByProfileStmt: %w", cerr)
 		}
 	}
 	if q.listServicesByAgentStmt != nil {
@@ -1239,6 +1406,21 @@ func (q *Queries) Close() error {
 	if q.listTcpRoutersEnabledStmt != nil {
 		if cerr := q.listTcpRoutersEnabledStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listTcpRoutersEnabledStmt: %w", cerr)
+		}
+	}
+	if q.listTcpServersTransportsStmt != nil {
+		if cerr := q.listTcpServersTransportsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpServersTransportsStmt: %w", cerr)
+		}
+	}
+	if q.listTcpServersTransportsByAgentStmt != nil {
+		if cerr := q.listTcpServersTransportsByAgentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpServersTransportsByAgentStmt: %w", cerr)
+		}
+	}
+	if q.listTcpServersTransportsEnabledStmt != nil {
+		if cerr := q.listTcpServersTransportsEnabledStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listTcpServersTransportsEnabledStmt: %w", cerr)
 		}
 	}
 	if q.listTcpServicesStmt != nil {
@@ -1356,6 +1538,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateHttpRouterStmt: %w", cerr)
 		}
 	}
+	if q.updateHttpServersTransportStmt != nil {
+		if cerr := q.updateHttpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateHttpServersTransportStmt: %w", cerr)
+		}
+	}
 	if q.updateHttpServiceStmt != nil {
 		if cerr := q.updateHttpServiceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateHttpServiceStmt: %w", cerr)
@@ -1374,6 +1561,11 @@ func (q *Queries) Close() error {
 	if q.updateTcpRouterStmt != nil {
 		if cerr := q.updateTcpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateTcpRouterStmt: %w", cerr)
+		}
+	}
+	if q.updateTcpServersTransportStmt != nil {
+		if cerr := q.updateTcpServersTransportStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateTcpServersTransportStmt: %w", cerr)
 		}
 	}
 	if q.updateTcpServiceStmt != nil {
@@ -1458,361 +1650,409 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                DBTX
-	tx                                *sql.Tx
-	countAgentsStmt                   *sql.Stmt
-	countAuditLogsStmt                *sql.Stmt
-	countDnsProvidersStmt             *sql.Stmt
-	countEntryPointsStmt              *sql.Stmt
-	countHttpMiddlewaresStmt          *sql.Stmt
-	countHttpMiddlewaresByAgentStmt   *sql.Stmt
-	countHttpMiddlewaresByProfileStmt *sql.Stmt
-	countHttpRoutersStmt              *sql.Stmt
-	countHttpRoutersByAgentStmt       *sql.Stmt
-	countHttpRoutersByProfileStmt     *sql.Stmt
-	countHttpServicesStmt             *sql.Stmt
-	countHttpServicesByAgentStmt      *sql.Stmt
-	countHttpServicesByProfileStmt    *sql.Stmt
-	countMiddlewaresByAgentStmt       *sql.Stmt
-	countMiddlewaresByProfileStmt     *sql.Stmt
-	countProfilesStmt                 *sql.Stmt
-	countRoutersByAgentStmt           *sql.Stmt
-	countRoutersByProfileStmt         *sql.Stmt
-	countServicesByAgentStmt          *sql.Stmt
-	countServicesByProfileStmt        *sql.Stmt
-	countTcpMiddlewaresStmt           *sql.Stmt
-	countTcpMiddlewaresByAgentStmt    *sql.Stmt
-	countTcpMiddlewaresByProfileStmt  *sql.Stmt
-	countTcpRoutersStmt               *sql.Stmt
-	countTcpRoutersByAgentStmt        *sql.Stmt
-	countTcpRoutersByProfileStmt      *sql.Stmt
-	countTcpServicesStmt              *sql.Stmt
-	countTcpServicesByAgentStmt       *sql.Stmt
-	countTcpServicesByProfileStmt     *sql.Stmt
-	countTraefikInstancesStmt         *sql.Stmt
-	countUdpRoutersStmt               *sql.Stmt
-	countUdpRoutersByAgentStmt        *sql.Stmt
-	countUdpRoutersByProfileStmt      *sql.Stmt
-	countUdpServicesStmt              *sql.Stmt
-	countUdpServicesByAgentStmt       *sql.Stmt
-	countUdpServicesByProfileStmt     *sql.Stmt
-	countUsersStmt                    *sql.Stmt
-	createAgentStmt                   *sql.Stmt
-	createAuditLogStmt                *sql.Stmt
-	createDnsProviderStmt             *sql.Stmt
-	createEntryPointStmt              *sql.Stmt
-	createHttpMiddlewareStmt          *sql.Stmt
-	createHttpRouterStmt              *sql.Stmt
-	createHttpRouterDNSProviderStmt   *sql.Stmt
-	createHttpServiceStmt             *sql.Stmt
-	createProfileStmt                 *sql.Stmt
-	createTcpMiddlewareStmt           *sql.Stmt
-	createTcpRouterStmt               *sql.Stmt
-	createTcpRouterDNSProviderStmt    *sql.Stmt
-	createTcpServiceStmt              *sql.Stmt
-	createTraefikInstanceStmt         *sql.Stmt
-	createUdpRouterStmt               *sql.Stmt
-	createUdpServiceStmt              *sql.Stmt
-	createUserStmt                    *sql.Stmt
-	deleteAgentStmt                   *sql.Stmt
-	deleteDnsProviderStmt             *sql.Stmt
-	deleteEntryPointByIDStmt          *sql.Stmt
-	deleteErrorByIdStmt               *sql.Stmt
-	deleteErrorsByProfileStmt         *sql.Stmt
-	deleteErrorsByProfileCategoryStmt *sql.Stmt
-	deleteHttpMiddlewareStmt          *sql.Stmt
-	deleteHttpRouterStmt              *sql.Stmt
-	deleteHttpRouterDNSProviderStmt   *sql.Stmt
-	deleteHttpServiceStmt             *sql.Stmt
-	deleteOldAuditLogsStmt            *sql.Stmt
-	deleteProfileStmt                 *sql.Stmt
-	deleteSettingStmt                 *sql.Stmt
-	deleteTcpMiddlewareStmt           *sql.Stmt
-	deleteTcpRouterStmt               *sql.Stmt
-	deleteTcpRouterDNSProviderStmt    *sql.Stmt
-	deleteTcpServiceStmt              *sql.Stmt
-	deleteTraefikInstanceStmt         *sql.Stmt
-	deleteUdpRouterStmt               *sql.Stmt
-	deleteUdpServiceStmt              *sql.Stmt
-	deleteUserStmt                    *sql.Stmt
-	getAgentStmt                      *sql.Stmt
-	getDefaultDNSProviderStmt         *sql.Stmt
-	getDefaultEntryPointStmt          *sql.Stmt
-	getDnsProviderStmt                *sql.Stmt
-	getDnsProviderByNameStmt          *sql.Stmt
-	getDnsProvidersByHttpRouterStmt   *sql.Stmt
-	getDnsProvidersByTcpRouterStmt    *sql.Stmt
-	getEntryPointStmt                 *sql.Stmt
-	getErrorsByProfileStmt            *sql.Stmt
-	getHttpMiddlewareStmt             *sql.Stmt
-	getHttpRouterStmt                 *sql.Stmt
-	getHttpRouterDomainsStmt          *sql.Stmt
-	getHttpRoutersUsingEntryPointStmt *sql.Stmt
-	getHttpRoutersUsingMiddlewareStmt *sql.Stmt
-	getHttpServiceStmt                *sql.Stmt
-	getHttpServiceByNameStmt          *sql.Stmt
-	getProfileStmt                    *sql.Stmt
-	getProfileByNameStmt              *sql.Stmt
-	getSettingStmt                    *sql.Stmt
-	getTcpMiddlewareStmt              *sql.Stmt
-	getTcpRouterStmt                  *sql.Stmt
-	getTcpRouterDomainsStmt           *sql.Stmt
-	getTcpRoutersUsingEntryPointStmt  *sql.Stmt
-	getTcpRoutersUsingMiddlewareStmt  *sql.Stmt
-	getTcpServiceStmt                 *sql.Stmt
-	getTcpServiceByNameStmt           *sql.Stmt
-	getTraefikInstanceStmt            *sql.Stmt
-	getUdpRouterStmt                  *sql.Stmt
-	getUdpRoutersUsingEntryPointStmt  *sql.Stmt
-	getUdpServiceStmt                 *sql.Stmt
-	getUdpServiceByNameStmt           *sql.Stmt
-	getUserByEmailStmt                *sql.Stmt
-	getUserByIDStmt                   *sql.Stmt
-	getUserByUsernameStmt             *sql.Stmt
-	listAdminUsersStmt                *sql.Stmt
-	listAgentsStmt                    *sql.Stmt
-	listAuditLogsStmt                 *sql.Stmt
-	listDnsProvidersStmt              *sql.Stmt
-	listEntryPointsStmt               *sql.Stmt
-	listErrorsStmt                    *sql.Stmt
-	listHttpMiddlewaresStmt           *sql.Stmt
-	listHttpMiddlewaresByAgentStmt    *sql.Stmt
-	listHttpMiddlewaresEnabledStmt    *sql.Stmt
-	listHttpRoutersStmt               *sql.Stmt
-	listHttpRoutersByAgentStmt        *sql.Stmt
-	listHttpRoutersEnabledStmt        *sql.Stmt
-	listHttpServicesStmt              *sql.Stmt
-	listHttpServicesByAgentStmt       *sql.Stmt
-	listHttpServicesEnabledStmt       *sql.Stmt
-	listMiddlewaresByAgentStmt        *sql.Stmt
-	listMiddlewaresByProfileStmt      *sql.Stmt
-	listProfilesStmt                  *sql.Stmt
-	listRoutersByAgentStmt            *sql.Stmt
-	listRoutersByProfileStmt          *sql.Stmt
-	listServicesByAgentStmt           *sql.Stmt
-	listServicesByProfileStmt         *sql.Stmt
-	listSettingsStmt                  *sql.Stmt
-	listTcpMiddlewaresStmt            *sql.Stmt
-	listTcpMiddlewaresByAgentStmt     *sql.Stmt
-	listTcpMiddlewaresEnabledStmt     *sql.Stmt
-	listTcpRoutersStmt                *sql.Stmt
-	listTcpRoutersByAgentStmt         *sql.Stmt
-	listTcpRoutersEnabledStmt         *sql.Stmt
-	listTcpServicesStmt               *sql.Stmt
-	listTcpServicesByAgentStmt        *sql.Stmt
-	listTcpServicesEnabledStmt        *sql.Stmt
-	listTraefikInstancesStmt          *sql.Stmt
-	listUdpRoutersStmt                *sql.Stmt
-	listUdpRoutersByAgentStmt         *sql.Stmt
-	listUdpRoutersEnabledStmt         *sql.Stmt
-	listUdpServicesStmt               *sql.Stmt
-	listUdpServicesByAgentStmt        *sql.Stmt
-	listUdpServicesEnabledStmt        *sql.Stmt
-	listUsersStmt                     *sql.Stmt
-	logErrorStmt                      *sql.Stmt
-	unsetDefaultDNSProviderStmt       *sql.Stmt
-	unsetDefaultEntryPointStmt        *sql.Stmt
-	unsetDefaultHttpMiddlewareStmt    *sql.Stmt
-	unsetDefaultTcpMiddlewareStmt     *sql.Stmt
-	updateAgentStmt                   *sql.Stmt
-	updateAgentIPStmt                 *sql.Stmt
-	updateAgentTokenStmt              *sql.Stmt
-	updateDnsProviderStmt             *sql.Stmt
-	updateEntryPointStmt              *sql.Stmt
-	updateHttpMiddlewareStmt          *sql.Stmt
-	updateHttpRouterStmt              *sql.Stmt
-	updateHttpServiceStmt             *sql.Stmt
-	updateProfileStmt                 *sql.Stmt
-	updateTcpMiddlewareStmt           *sql.Stmt
-	updateTcpRouterStmt               *sql.Stmt
-	updateTcpServiceStmt              *sql.Stmt
-	updateTraefikInstanceStmt         *sql.Stmt
-	updateUdpRouterStmt               *sql.Stmt
-	updateUdpServiceStmt              *sql.Stmt
-	updateUserStmt                    *sql.Stmt
-	updateUserLastLoginStmt           *sql.Stmt
-	updateUserPasswordStmt            *sql.Stmt
-	updateUserResetTokenStmt          *sql.Stmt
-	upsertSettingStmt                 *sql.Stmt
+	db                                      DBTX
+	tx                                      *sql.Tx
+	countAgentsStmt                         *sql.Stmt
+	countAuditLogsStmt                      *sql.Stmt
+	countDnsProvidersStmt                   *sql.Stmt
+	countEntryPointsStmt                    *sql.Stmt
+	countHttpMiddlewaresStmt                *sql.Stmt
+	countHttpMiddlewaresByAgentStmt         *sql.Stmt
+	countHttpMiddlewaresByProfileStmt       *sql.Stmt
+	countHttpRoutersStmt                    *sql.Stmt
+	countHttpRoutersByAgentStmt             *sql.Stmt
+	countHttpRoutersByProfileStmt           *sql.Stmt
+	countHttpServersTransportsStmt          *sql.Stmt
+	countHttpServersTransportsByAgentStmt   *sql.Stmt
+	countHttpServersTransportsByProfileStmt *sql.Stmt
+	countHttpServicesStmt                   *sql.Stmt
+	countHttpServicesByAgentStmt            *sql.Stmt
+	countHttpServicesByProfileStmt          *sql.Stmt
+	countMiddlewaresByAgentStmt             *sql.Stmt
+	countMiddlewaresByProfileStmt           *sql.Stmt
+	countProfilesStmt                       *sql.Stmt
+	countRoutersByAgentStmt                 *sql.Stmt
+	countRoutersByProfileStmt               *sql.Stmt
+	countServersTransportsByAgentStmt       *sql.Stmt
+	countServersTransportsByProfileStmt     *sql.Stmt
+	countServicesByAgentStmt                *sql.Stmt
+	countServicesByProfileStmt              *sql.Stmt
+	countTcpMiddlewaresStmt                 *sql.Stmt
+	countTcpMiddlewaresByAgentStmt          *sql.Stmt
+	countTcpMiddlewaresByProfileStmt        *sql.Stmt
+	countTcpRoutersStmt                     *sql.Stmt
+	countTcpRoutersByAgentStmt              *sql.Stmt
+	countTcpRoutersByProfileStmt            *sql.Stmt
+	countTcpServersTransportsStmt           *sql.Stmt
+	countTcpServersTransportsByAgentStmt    *sql.Stmt
+	countTcpServersTransportsByProfileStmt  *sql.Stmt
+	countTcpServicesStmt                    *sql.Stmt
+	countTcpServicesByAgentStmt             *sql.Stmt
+	countTcpServicesByProfileStmt           *sql.Stmt
+	countTraefikInstancesStmt               *sql.Stmt
+	countUdpRoutersStmt                     *sql.Stmt
+	countUdpRoutersByAgentStmt              *sql.Stmt
+	countUdpRoutersByProfileStmt            *sql.Stmt
+	countUdpServicesStmt                    *sql.Stmt
+	countUdpServicesByAgentStmt             *sql.Stmt
+	countUdpServicesByProfileStmt           *sql.Stmt
+	countUsersStmt                          *sql.Stmt
+	createAgentStmt                         *sql.Stmt
+	createAuditLogStmt                      *sql.Stmt
+	createDnsProviderStmt                   *sql.Stmt
+	createEntryPointStmt                    *sql.Stmt
+	createHttpMiddlewareStmt                *sql.Stmt
+	createHttpRouterStmt                    *sql.Stmt
+	createHttpRouterDNSProviderStmt         *sql.Stmt
+	createHttpServersTransportStmt          *sql.Stmt
+	createHttpServiceStmt                   *sql.Stmt
+	createProfileStmt                       *sql.Stmt
+	createTcpMiddlewareStmt                 *sql.Stmt
+	createTcpRouterStmt                     *sql.Stmt
+	createTcpRouterDNSProviderStmt          *sql.Stmt
+	createTcpServersTransportStmt           *sql.Stmt
+	createTcpServiceStmt                    *sql.Stmt
+	createTraefikInstanceStmt               *sql.Stmt
+	createUdpRouterStmt                     *sql.Stmt
+	createUdpServiceStmt                    *sql.Stmt
+	createUserStmt                          *sql.Stmt
+	deleteAgentStmt                         *sql.Stmt
+	deleteDnsProviderStmt                   *sql.Stmt
+	deleteEntryPointByIDStmt                *sql.Stmt
+	deleteErrorByIdStmt                     *sql.Stmt
+	deleteErrorsByProfileStmt               *sql.Stmt
+	deleteErrorsByProfileCategoryStmt       *sql.Stmt
+	deleteHttpMiddlewareStmt                *sql.Stmt
+	deleteHttpRouterStmt                    *sql.Stmt
+	deleteHttpRouterDNSProviderStmt         *sql.Stmt
+	deleteHttpServersTransportStmt          *sql.Stmt
+	deleteHttpServiceStmt                   *sql.Stmt
+	deleteOldAuditLogsStmt                  *sql.Stmt
+	deleteProfileStmt                       *sql.Stmt
+	deleteSettingStmt                       *sql.Stmt
+	deleteTcpMiddlewareStmt                 *sql.Stmt
+	deleteTcpRouterStmt                     *sql.Stmt
+	deleteTcpRouterDNSProviderStmt          *sql.Stmt
+	deleteTcpServersTransportStmt           *sql.Stmt
+	deleteTcpServiceStmt                    *sql.Stmt
+	deleteTraefikInstanceStmt               *sql.Stmt
+	deleteUdpRouterStmt                     *sql.Stmt
+	deleteUdpServiceStmt                    *sql.Stmt
+	deleteUserStmt                          *sql.Stmt
+	getAgentStmt                            *sql.Stmt
+	getDefaultDNSProviderStmt               *sql.Stmt
+	getDefaultEntryPointStmt                *sql.Stmt
+	getDnsProviderStmt                      *sql.Stmt
+	getDnsProviderByNameStmt                *sql.Stmt
+	getDnsProvidersByHttpRouterStmt         *sql.Stmt
+	getDnsProvidersByTcpRouterStmt          *sql.Stmt
+	getEntryPointStmt                       *sql.Stmt
+	getErrorsByProfileStmt                  *sql.Stmt
+	getHttpMiddlewareStmt                   *sql.Stmt
+	getHttpRouterStmt                       *sql.Stmt
+	getHttpRouterDomainsStmt                *sql.Stmt
+	getHttpRoutersUsingEntryPointStmt       *sql.Stmt
+	getHttpRoutersUsingMiddlewareStmt       *sql.Stmt
+	getHttpServersTransportStmt             *sql.Stmt
+	getHttpServiceStmt                      *sql.Stmt
+	getHttpServiceByNameStmt                *sql.Stmt
+	getProfileStmt                          *sql.Stmt
+	getProfileByNameStmt                    *sql.Stmt
+	getSettingStmt                          *sql.Stmt
+	getTcpMiddlewareStmt                    *sql.Stmt
+	getTcpRouterStmt                        *sql.Stmt
+	getTcpRouterDomainsStmt                 *sql.Stmt
+	getTcpRoutersUsingEntryPointStmt        *sql.Stmt
+	getTcpRoutersUsingMiddlewareStmt        *sql.Stmt
+	getTcpServersTransportStmt              *sql.Stmt
+	getTcpServiceStmt                       *sql.Stmt
+	getTcpServiceByNameStmt                 *sql.Stmt
+	getTraefikInstanceStmt                  *sql.Stmt
+	getUdpRouterStmt                        *sql.Stmt
+	getUdpRoutersUsingEntryPointStmt        *sql.Stmt
+	getUdpServiceStmt                       *sql.Stmt
+	getUdpServiceByNameStmt                 *sql.Stmt
+	getUserByEmailStmt                      *sql.Stmt
+	getUserByIDStmt                         *sql.Stmt
+	getUserByUsernameStmt                   *sql.Stmt
+	listAdminUsersStmt                      *sql.Stmt
+	listAgentsStmt                          *sql.Stmt
+	listAuditLogsStmt                       *sql.Stmt
+	listDnsProvidersStmt                    *sql.Stmt
+	listEntryPointsStmt                     *sql.Stmt
+	listErrorsStmt                          *sql.Stmt
+	listHttpMiddlewaresStmt                 *sql.Stmt
+	listHttpMiddlewaresByAgentStmt          *sql.Stmt
+	listHttpMiddlewaresEnabledStmt          *sql.Stmt
+	listHttpRoutersStmt                     *sql.Stmt
+	listHttpRoutersByAgentStmt              *sql.Stmt
+	listHttpRoutersEnabledStmt              *sql.Stmt
+	listHttpServersTransportsStmt           *sql.Stmt
+	listHttpServersTransportsByAgentStmt    *sql.Stmt
+	listHttpServersTransportsEnabledStmt    *sql.Stmt
+	listHttpServicesStmt                    *sql.Stmt
+	listHttpServicesByAgentStmt             *sql.Stmt
+	listHttpServicesEnabledStmt             *sql.Stmt
+	listMiddlewaresByAgentStmt              *sql.Stmt
+	listMiddlewaresByProfileStmt            *sql.Stmt
+	listProfilesStmt                        *sql.Stmt
+	listRoutersByAgentStmt                  *sql.Stmt
+	listRoutersByProfileStmt                *sql.Stmt
+	listServersTransportsByAgentStmt        *sql.Stmt
+	listServersTransportsByProfileStmt      *sql.Stmt
+	listServicesByAgentStmt                 *sql.Stmt
+	listServicesByProfileStmt               *sql.Stmt
+	listSettingsStmt                        *sql.Stmt
+	listTcpMiddlewaresStmt                  *sql.Stmt
+	listTcpMiddlewaresByAgentStmt           *sql.Stmt
+	listTcpMiddlewaresEnabledStmt           *sql.Stmt
+	listTcpRoutersStmt                      *sql.Stmt
+	listTcpRoutersByAgentStmt               *sql.Stmt
+	listTcpRoutersEnabledStmt               *sql.Stmt
+	listTcpServersTransportsStmt            *sql.Stmt
+	listTcpServersTransportsByAgentStmt     *sql.Stmt
+	listTcpServersTransportsEnabledStmt     *sql.Stmt
+	listTcpServicesStmt                     *sql.Stmt
+	listTcpServicesByAgentStmt              *sql.Stmt
+	listTcpServicesEnabledStmt              *sql.Stmt
+	listTraefikInstancesStmt                *sql.Stmt
+	listUdpRoutersStmt                      *sql.Stmt
+	listUdpRoutersByAgentStmt               *sql.Stmt
+	listUdpRoutersEnabledStmt               *sql.Stmt
+	listUdpServicesStmt                     *sql.Stmt
+	listUdpServicesByAgentStmt              *sql.Stmt
+	listUdpServicesEnabledStmt              *sql.Stmt
+	listUsersStmt                           *sql.Stmt
+	logErrorStmt                            *sql.Stmt
+	unsetDefaultDNSProviderStmt             *sql.Stmt
+	unsetDefaultEntryPointStmt              *sql.Stmt
+	unsetDefaultHttpMiddlewareStmt          *sql.Stmt
+	unsetDefaultTcpMiddlewareStmt           *sql.Stmt
+	updateAgentStmt                         *sql.Stmt
+	updateAgentIPStmt                       *sql.Stmt
+	updateAgentTokenStmt                    *sql.Stmt
+	updateDnsProviderStmt                   *sql.Stmt
+	updateEntryPointStmt                    *sql.Stmt
+	updateHttpMiddlewareStmt                *sql.Stmt
+	updateHttpRouterStmt                    *sql.Stmt
+	updateHttpServersTransportStmt          *sql.Stmt
+	updateHttpServiceStmt                   *sql.Stmt
+	updateProfileStmt                       *sql.Stmt
+	updateTcpMiddlewareStmt                 *sql.Stmt
+	updateTcpRouterStmt                     *sql.Stmt
+	updateTcpServersTransportStmt           *sql.Stmt
+	updateTcpServiceStmt                    *sql.Stmt
+	updateTraefikInstanceStmt               *sql.Stmt
+	updateUdpRouterStmt                     *sql.Stmt
+	updateUdpServiceStmt                    *sql.Stmt
+	updateUserStmt                          *sql.Stmt
+	updateUserLastLoginStmt                 *sql.Stmt
+	updateUserPasswordStmt                  *sql.Stmt
+	updateUserResetTokenStmt                *sql.Stmt
+	upsertSettingStmt                       *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                                tx,
-		tx:                                tx,
-		countAgentsStmt:                   q.countAgentsStmt,
-		countAuditLogsStmt:                q.countAuditLogsStmt,
-		countDnsProvidersStmt:             q.countDnsProvidersStmt,
-		countEntryPointsStmt:              q.countEntryPointsStmt,
-		countHttpMiddlewaresStmt:          q.countHttpMiddlewaresStmt,
-		countHttpMiddlewaresByAgentStmt:   q.countHttpMiddlewaresByAgentStmt,
-		countHttpMiddlewaresByProfileStmt: q.countHttpMiddlewaresByProfileStmt,
-		countHttpRoutersStmt:              q.countHttpRoutersStmt,
-		countHttpRoutersByAgentStmt:       q.countHttpRoutersByAgentStmt,
-		countHttpRoutersByProfileStmt:     q.countHttpRoutersByProfileStmt,
-		countHttpServicesStmt:             q.countHttpServicesStmt,
-		countHttpServicesByAgentStmt:      q.countHttpServicesByAgentStmt,
-		countHttpServicesByProfileStmt:    q.countHttpServicesByProfileStmt,
-		countMiddlewaresByAgentStmt:       q.countMiddlewaresByAgentStmt,
-		countMiddlewaresByProfileStmt:     q.countMiddlewaresByProfileStmt,
-		countProfilesStmt:                 q.countProfilesStmt,
-		countRoutersByAgentStmt:           q.countRoutersByAgentStmt,
-		countRoutersByProfileStmt:         q.countRoutersByProfileStmt,
-		countServicesByAgentStmt:          q.countServicesByAgentStmt,
-		countServicesByProfileStmt:        q.countServicesByProfileStmt,
-		countTcpMiddlewaresStmt:           q.countTcpMiddlewaresStmt,
-		countTcpMiddlewaresByAgentStmt:    q.countTcpMiddlewaresByAgentStmt,
-		countTcpMiddlewaresByProfileStmt:  q.countTcpMiddlewaresByProfileStmt,
-		countTcpRoutersStmt:               q.countTcpRoutersStmt,
-		countTcpRoutersByAgentStmt:        q.countTcpRoutersByAgentStmt,
-		countTcpRoutersByProfileStmt:      q.countTcpRoutersByProfileStmt,
-		countTcpServicesStmt:              q.countTcpServicesStmt,
-		countTcpServicesByAgentStmt:       q.countTcpServicesByAgentStmt,
-		countTcpServicesByProfileStmt:     q.countTcpServicesByProfileStmt,
-		countTraefikInstancesStmt:         q.countTraefikInstancesStmt,
-		countUdpRoutersStmt:               q.countUdpRoutersStmt,
-		countUdpRoutersByAgentStmt:        q.countUdpRoutersByAgentStmt,
-		countUdpRoutersByProfileStmt:      q.countUdpRoutersByProfileStmt,
-		countUdpServicesStmt:              q.countUdpServicesStmt,
-		countUdpServicesByAgentStmt:       q.countUdpServicesByAgentStmt,
-		countUdpServicesByProfileStmt:     q.countUdpServicesByProfileStmt,
-		countUsersStmt:                    q.countUsersStmt,
-		createAgentStmt:                   q.createAgentStmt,
-		createAuditLogStmt:                q.createAuditLogStmt,
-		createDnsProviderStmt:             q.createDnsProviderStmt,
-		createEntryPointStmt:              q.createEntryPointStmt,
-		createHttpMiddlewareStmt:          q.createHttpMiddlewareStmt,
-		createHttpRouterStmt:              q.createHttpRouterStmt,
-		createHttpRouterDNSProviderStmt:   q.createHttpRouterDNSProviderStmt,
-		createHttpServiceStmt:             q.createHttpServiceStmt,
-		createProfileStmt:                 q.createProfileStmt,
-		createTcpMiddlewareStmt:           q.createTcpMiddlewareStmt,
-		createTcpRouterStmt:               q.createTcpRouterStmt,
-		createTcpRouterDNSProviderStmt:    q.createTcpRouterDNSProviderStmt,
-		createTcpServiceStmt:              q.createTcpServiceStmt,
-		createTraefikInstanceStmt:         q.createTraefikInstanceStmt,
-		createUdpRouterStmt:               q.createUdpRouterStmt,
-		createUdpServiceStmt:              q.createUdpServiceStmt,
-		createUserStmt:                    q.createUserStmt,
-		deleteAgentStmt:                   q.deleteAgentStmt,
-		deleteDnsProviderStmt:             q.deleteDnsProviderStmt,
-		deleteEntryPointByIDStmt:          q.deleteEntryPointByIDStmt,
-		deleteErrorByIdStmt:               q.deleteErrorByIdStmt,
-		deleteErrorsByProfileStmt:         q.deleteErrorsByProfileStmt,
-		deleteErrorsByProfileCategoryStmt: q.deleteErrorsByProfileCategoryStmt,
-		deleteHttpMiddlewareStmt:          q.deleteHttpMiddlewareStmt,
-		deleteHttpRouterStmt:              q.deleteHttpRouterStmt,
-		deleteHttpRouterDNSProviderStmt:   q.deleteHttpRouterDNSProviderStmt,
-		deleteHttpServiceStmt:             q.deleteHttpServiceStmt,
-		deleteOldAuditLogsStmt:            q.deleteOldAuditLogsStmt,
-		deleteProfileStmt:                 q.deleteProfileStmt,
-		deleteSettingStmt:                 q.deleteSettingStmt,
-		deleteTcpMiddlewareStmt:           q.deleteTcpMiddlewareStmt,
-		deleteTcpRouterStmt:               q.deleteTcpRouterStmt,
-		deleteTcpRouterDNSProviderStmt:    q.deleteTcpRouterDNSProviderStmt,
-		deleteTcpServiceStmt:              q.deleteTcpServiceStmt,
-		deleteTraefikInstanceStmt:         q.deleteTraefikInstanceStmt,
-		deleteUdpRouterStmt:               q.deleteUdpRouterStmt,
-		deleteUdpServiceStmt:              q.deleteUdpServiceStmt,
-		deleteUserStmt:                    q.deleteUserStmt,
-		getAgentStmt:                      q.getAgentStmt,
-		getDefaultDNSProviderStmt:         q.getDefaultDNSProviderStmt,
-		getDefaultEntryPointStmt:          q.getDefaultEntryPointStmt,
-		getDnsProviderStmt:                q.getDnsProviderStmt,
-		getDnsProviderByNameStmt:          q.getDnsProviderByNameStmt,
-		getDnsProvidersByHttpRouterStmt:   q.getDnsProvidersByHttpRouterStmt,
-		getDnsProvidersByTcpRouterStmt:    q.getDnsProvidersByTcpRouterStmt,
-		getEntryPointStmt:                 q.getEntryPointStmt,
-		getErrorsByProfileStmt:            q.getErrorsByProfileStmt,
-		getHttpMiddlewareStmt:             q.getHttpMiddlewareStmt,
-		getHttpRouterStmt:                 q.getHttpRouterStmt,
-		getHttpRouterDomainsStmt:          q.getHttpRouterDomainsStmt,
-		getHttpRoutersUsingEntryPointStmt: q.getHttpRoutersUsingEntryPointStmt,
-		getHttpRoutersUsingMiddlewareStmt: q.getHttpRoutersUsingMiddlewareStmt,
-		getHttpServiceStmt:                q.getHttpServiceStmt,
-		getHttpServiceByNameStmt:          q.getHttpServiceByNameStmt,
-		getProfileStmt:                    q.getProfileStmt,
-		getProfileByNameStmt:              q.getProfileByNameStmt,
-		getSettingStmt:                    q.getSettingStmt,
-		getTcpMiddlewareStmt:              q.getTcpMiddlewareStmt,
-		getTcpRouterStmt:                  q.getTcpRouterStmt,
-		getTcpRouterDomainsStmt:           q.getTcpRouterDomainsStmt,
-		getTcpRoutersUsingEntryPointStmt:  q.getTcpRoutersUsingEntryPointStmt,
-		getTcpRoutersUsingMiddlewareStmt:  q.getTcpRoutersUsingMiddlewareStmt,
-		getTcpServiceStmt:                 q.getTcpServiceStmt,
-		getTcpServiceByNameStmt:           q.getTcpServiceByNameStmt,
-		getTraefikInstanceStmt:            q.getTraefikInstanceStmt,
-		getUdpRouterStmt:                  q.getUdpRouterStmt,
-		getUdpRoutersUsingEntryPointStmt:  q.getUdpRoutersUsingEntryPointStmt,
-		getUdpServiceStmt:                 q.getUdpServiceStmt,
-		getUdpServiceByNameStmt:           q.getUdpServiceByNameStmt,
-		getUserByEmailStmt:                q.getUserByEmailStmt,
-		getUserByIDStmt:                   q.getUserByIDStmt,
-		getUserByUsernameStmt:             q.getUserByUsernameStmt,
-		listAdminUsersStmt:                q.listAdminUsersStmt,
-		listAgentsStmt:                    q.listAgentsStmt,
-		listAuditLogsStmt:                 q.listAuditLogsStmt,
-		listDnsProvidersStmt:              q.listDnsProvidersStmt,
-		listEntryPointsStmt:               q.listEntryPointsStmt,
-		listErrorsStmt:                    q.listErrorsStmt,
-		listHttpMiddlewaresStmt:           q.listHttpMiddlewaresStmt,
-		listHttpMiddlewaresByAgentStmt:    q.listHttpMiddlewaresByAgentStmt,
-		listHttpMiddlewaresEnabledStmt:    q.listHttpMiddlewaresEnabledStmt,
-		listHttpRoutersStmt:               q.listHttpRoutersStmt,
-		listHttpRoutersByAgentStmt:        q.listHttpRoutersByAgentStmt,
-		listHttpRoutersEnabledStmt:        q.listHttpRoutersEnabledStmt,
-		listHttpServicesStmt:              q.listHttpServicesStmt,
-		listHttpServicesByAgentStmt:       q.listHttpServicesByAgentStmt,
-		listHttpServicesEnabledStmt:       q.listHttpServicesEnabledStmt,
-		listMiddlewaresByAgentStmt:        q.listMiddlewaresByAgentStmt,
-		listMiddlewaresByProfileStmt:      q.listMiddlewaresByProfileStmt,
-		listProfilesStmt:                  q.listProfilesStmt,
-		listRoutersByAgentStmt:            q.listRoutersByAgentStmt,
-		listRoutersByProfileStmt:          q.listRoutersByProfileStmt,
-		listServicesByAgentStmt:           q.listServicesByAgentStmt,
-		listServicesByProfileStmt:         q.listServicesByProfileStmt,
-		listSettingsStmt:                  q.listSettingsStmt,
-		listTcpMiddlewaresStmt:            q.listTcpMiddlewaresStmt,
-		listTcpMiddlewaresByAgentStmt:     q.listTcpMiddlewaresByAgentStmt,
-		listTcpMiddlewaresEnabledStmt:     q.listTcpMiddlewaresEnabledStmt,
-		listTcpRoutersStmt:                q.listTcpRoutersStmt,
-		listTcpRoutersByAgentStmt:         q.listTcpRoutersByAgentStmt,
-		listTcpRoutersEnabledStmt:         q.listTcpRoutersEnabledStmt,
-		listTcpServicesStmt:               q.listTcpServicesStmt,
-		listTcpServicesByAgentStmt:        q.listTcpServicesByAgentStmt,
-		listTcpServicesEnabledStmt:        q.listTcpServicesEnabledStmt,
-		listTraefikInstancesStmt:          q.listTraefikInstancesStmt,
-		listUdpRoutersStmt:                q.listUdpRoutersStmt,
-		listUdpRoutersByAgentStmt:         q.listUdpRoutersByAgentStmt,
-		listUdpRoutersEnabledStmt:         q.listUdpRoutersEnabledStmt,
-		listUdpServicesStmt:               q.listUdpServicesStmt,
-		listUdpServicesByAgentStmt:        q.listUdpServicesByAgentStmt,
-		listUdpServicesEnabledStmt:        q.listUdpServicesEnabledStmt,
-		listUsersStmt:                     q.listUsersStmt,
-		logErrorStmt:                      q.logErrorStmt,
-		unsetDefaultDNSProviderStmt:       q.unsetDefaultDNSProviderStmt,
-		unsetDefaultEntryPointStmt:        q.unsetDefaultEntryPointStmt,
-		unsetDefaultHttpMiddlewareStmt:    q.unsetDefaultHttpMiddlewareStmt,
-		unsetDefaultTcpMiddlewareStmt:     q.unsetDefaultTcpMiddlewareStmt,
-		updateAgentStmt:                   q.updateAgentStmt,
-		updateAgentIPStmt:                 q.updateAgentIPStmt,
-		updateAgentTokenStmt:              q.updateAgentTokenStmt,
-		updateDnsProviderStmt:             q.updateDnsProviderStmt,
-		updateEntryPointStmt:              q.updateEntryPointStmt,
-		updateHttpMiddlewareStmt:          q.updateHttpMiddlewareStmt,
-		updateHttpRouterStmt:              q.updateHttpRouterStmt,
-		updateHttpServiceStmt:             q.updateHttpServiceStmt,
-		updateProfileStmt:                 q.updateProfileStmt,
-		updateTcpMiddlewareStmt:           q.updateTcpMiddlewareStmt,
-		updateTcpRouterStmt:               q.updateTcpRouterStmt,
-		updateTcpServiceStmt:              q.updateTcpServiceStmt,
-		updateTraefikInstanceStmt:         q.updateTraefikInstanceStmt,
-		updateUdpRouterStmt:               q.updateUdpRouterStmt,
-		updateUdpServiceStmt:              q.updateUdpServiceStmt,
-		updateUserStmt:                    q.updateUserStmt,
-		updateUserLastLoginStmt:           q.updateUserLastLoginStmt,
-		updateUserPasswordStmt:            q.updateUserPasswordStmt,
-		updateUserResetTokenStmt:          q.updateUserResetTokenStmt,
-		upsertSettingStmt:                 q.upsertSettingStmt,
+		db:                                      tx,
+		tx:                                      tx,
+		countAgentsStmt:                         q.countAgentsStmt,
+		countAuditLogsStmt:                      q.countAuditLogsStmt,
+		countDnsProvidersStmt:                   q.countDnsProvidersStmt,
+		countEntryPointsStmt:                    q.countEntryPointsStmt,
+		countHttpMiddlewaresStmt:                q.countHttpMiddlewaresStmt,
+		countHttpMiddlewaresByAgentStmt:         q.countHttpMiddlewaresByAgentStmt,
+		countHttpMiddlewaresByProfileStmt:       q.countHttpMiddlewaresByProfileStmt,
+		countHttpRoutersStmt:                    q.countHttpRoutersStmt,
+		countHttpRoutersByAgentStmt:             q.countHttpRoutersByAgentStmt,
+		countHttpRoutersByProfileStmt:           q.countHttpRoutersByProfileStmt,
+		countHttpServersTransportsStmt:          q.countHttpServersTransportsStmt,
+		countHttpServersTransportsByAgentStmt:   q.countHttpServersTransportsByAgentStmt,
+		countHttpServersTransportsByProfileStmt: q.countHttpServersTransportsByProfileStmt,
+		countHttpServicesStmt:                   q.countHttpServicesStmt,
+		countHttpServicesByAgentStmt:            q.countHttpServicesByAgentStmt,
+		countHttpServicesByProfileStmt:          q.countHttpServicesByProfileStmt,
+		countMiddlewaresByAgentStmt:             q.countMiddlewaresByAgentStmt,
+		countMiddlewaresByProfileStmt:           q.countMiddlewaresByProfileStmt,
+		countProfilesStmt:                       q.countProfilesStmt,
+		countRoutersByAgentStmt:                 q.countRoutersByAgentStmt,
+		countRoutersByProfileStmt:               q.countRoutersByProfileStmt,
+		countServersTransportsByAgentStmt:       q.countServersTransportsByAgentStmt,
+		countServersTransportsByProfileStmt:     q.countServersTransportsByProfileStmt,
+		countServicesByAgentStmt:                q.countServicesByAgentStmt,
+		countServicesByProfileStmt:              q.countServicesByProfileStmt,
+		countTcpMiddlewaresStmt:                 q.countTcpMiddlewaresStmt,
+		countTcpMiddlewaresByAgentStmt:          q.countTcpMiddlewaresByAgentStmt,
+		countTcpMiddlewaresByProfileStmt:        q.countTcpMiddlewaresByProfileStmt,
+		countTcpRoutersStmt:                     q.countTcpRoutersStmt,
+		countTcpRoutersByAgentStmt:              q.countTcpRoutersByAgentStmt,
+		countTcpRoutersByProfileStmt:            q.countTcpRoutersByProfileStmt,
+		countTcpServersTransportsStmt:           q.countTcpServersTransportsStmt,
+		countTcpServersTransportsByAgentStmt:    q.countTcpServersTransportsByAgentStmt,
+		countTcpServersTransportsByProfileStmt:  q.countTcpServersTransportsByProfileStmt,
+		countTcpServicesStmt:                    q.countTcpServicesStmt,
+		countTcpServicesByAgentStmt:             q.countTcpServicesByAgentStmt,
+		countTcpServicesByProfileStmt:           q.countTcpServicesByProfileStmt,
+		countTraefikInstancesStmt:               q.countTraefikInstancesStmt,
+		countUdpRoutersStmt:                     q.countUdpRoutersStmt,
+		countUdpRoutersByAgentStmt:              q.countUdpRoutersByAgentStmt,
+		countUdpRoutersByProfileStmt:            q.countUdpRoutersByProfileStmt,
+		countUdpServicesStmt:                    q.countUdpServicesStmt,
+		countUdpServicesByAgentStmt:             q.countUdpServicesByAgentStmt,
+		countUdpServicesByProfileStmt:           q.countUdpServicesByProfileStmt,
+		countUsersStmt:                          q.countUsersStmt,
+		createAgentStmt:                         q.createAgentStmt,
+		createAuditLogStmt:                      q.createAuditLogStmt,
+		createDnsProviderStmt:                   q.createDnsProviderStmt,
+		createEntryPointStmt:                    q.createEntryPointStmt,
+		createHttpMiddlewareStmt:                q.createHttpMiddlewareStmt,
+		createHttpRouterStmt:                    q.createHttpRouterStmt,
+		createHttpRouterDNSProviderStmt:         q.createHttpRouterDNSProviderStmt,
+		createHttpServersTransportStmt:          q.createHttpServersTransportStmt,
+		createHttpServiceStmt:                   q.createHttpServiceStmt,
+		createProfileStmt:                       q.createProfileStmt,
+		createTcpMiddlewareStmt:                 q.createTcpMiddlewareStmt,
+		createTcpRouterStmt:                     q.createTcpRouterStmt,
+		createTcpRouterDNSProviderStmt:          q.createTcpRouterDNSProviderStmt,
+		createTcpServersTransportStmt:           q.createTcpServersTransportStmt,
+		createTcpServiceStmt:                    q.createTcpServiceStmt,
+		createTraefikInstanceStmt:               q.createTraefikInstanceStmt,
+		createUdpRouterStmt:                     q.createUdpRouterStmt,
+		createUdpServiceStmt:                    q.createUdpServiceStmt,
+		createUserStmt:                          q.createUserStmt,
+		deleteAgentStmt:                         q.deleteAgentStmt,
+		deleteDnsProviderStmt:                   q.deleteDnsProviderStmt,
+		deleteEntryPointByIDStmt:                q.deleteEntryPointByIDStmt,
+		deleteErrorByIdStmt:                     q.deleteErrorByIdStmt,
+		deleteErrorsByProfileStmt:               q.deleteErrorsByProfileStmt,
+		deleteErrorsByProfileCategoryStmt:       q.deleteErrorsByProfileCategoryStmt,
+		deleteHttpMiddlewareStmt:                q.deleteHttpMiddlewareStmt,
+		deleteHttpRouterStmt:                    q.deleteHttpRouterStmt,
+		deleteHttpRouterDNSProviderStmt:         q.deleteHttpRouterDNSProviderStmt,
+		deleteHttpServersTransportStmt:          q.deleteHttpServersTransportStmt,
+		deleteHttpServiceStmt:                   q.deleteHttpServiceStmt,
+		deleteOldAuditLogsStmt:                  q.deleteOldAuditLogsStmt,
+		deleteProfileStmt:                       q.deleteProfileStmt,
+		deleteSettingStmt:                       q.deleteSettingStmt,
+		deleteTcpMiddlewareStmt:                 q.deleteTcpMiddlewareStmt,
+		deleteTcpRouterStmt:                     q.deleteTcpRouterStmt,
+		deleteTcpRouterDNSProviderStmt:          q.deleteTcpRouterDNSProviderStmt,
+		deleteTcpServersTransportStmt:           q.deleteTcpServersTransportStmt,
+		deleteTcpServiceStmt:                    q.deleteTcpServiceStmt,
+		deleteTraefikInstanceStmt:               q.deleteTraefikInstanceStmt,
+		deleteUdpRouterStmt:                     q.deleteUdpRouterStmt,
+		deleteUdpServiceStmt:                    q.deleteUdpServiceStmt,
+		deleteUserStmt:                          q.deleteUserStmt,
+		getAgentStmt:                            q.getAgentStmt,
+		getDefaultDNSProviderStmt:               q.getDefaultDNSProviderStmt,
+		getDefaultEntryPointStmt:                q.getDefaultEntryPointStmt,
+		getDnsProviderStmt:                      q.getDnsProviderStmt,
+		getDnsProviderByNameStmt:                q.getDnsProviderByNameStmt,
+		getDnsProvidersByHttpRouterStmt:         q.getDnsProvidersByHttpRouterStmt,
+		getDnsProvidersByTcpRouterStmt:          q.getDnsProvidersByTcpRouterStmt,
+		getEntryPointStmt:                       q.getEntryPointStmt,
+		getErrorsByProfileStmt:                  q.getErrorsByProfileStmt,
+		getHttpMiddlewareStmt:                   q.getHttpMiddlewareStmt,
+		getHttpRouterStmt:                       q.getHttpRouterStmt,
+		getHttpRouterDomainsStmt:                q.getHttpRouterDomainsStmt,
+		getHttpRoutersUsingEntryPointStmt:       q.getHttpRoutersUsingEntryPointStmt,
+		getHttpRoutersUsingMiddlewareStmt:       q.getHttpRoutersUsingMiddlewareStmt,
+		getHttpServersTransportStmt:             q.getHttpServersTransportStmt,
+		getHttpServiceStmt:                      q.getHttpServiceStmt,
+		getHttpServiceByNameStmt:                q.getHttpServiceByNameStmt,
+		getProfileStmt:                          q.getProfileStmt,
+		getProfileByNameStmt:                    q.getProfileByNameStmt,
+		getSettingStmt:                          q.getSettingStmt,
+		getTcpMiddlewareStmt:                    q.getTcpMiddlewareStmt,
+		getTcpRouterStmt:                        q.getTcpRouterStmt,
+		getTcpRouterDomainsStmt:                 q.getTcpRouterDomainsStmt,
+		getTcpRoutersUsingEntryPointStmt:        q.getTcpRoutersUsingEntryPointStmt,
+		getTcpRoutersUsingMiddlewareStmt:        q.getTcpRoutersUsingMiddlewareStmt,
+		getTcpServersTransportStmt:              q.getTcpServersTransportStmt,
+		getTcpServiceStmt:                       q.getTcpServiceStmt,
+		getTcpServiceByNameStmt:                 q.getTcpServiceByNameStmt,
+		getTraefikInstanceStmt:                  q.getTraefikInstanceStmt,
+		getUdpRouterStmt:                        q.getUdpRouterStmt,
+		getUdpRoutersUsingEntryPointStmt:        q.getUdpRoutersUsingEntryPointStmt,
+		getUdpServiceStmt:                       q.getUdpServiceStmt,
+		getUdpServiceByNameStmt:                 q.getUdpServiceByNameStmt,
+		getUserByEmailStmt:                      q.getUserByEmailStmt,
+		getUserByIDStmt:                         q.getUserByIDStmt,
+		getUserByUsernameStmt:                   q.getUserByUsernameStmt,
+		listAdminUsersStmt:                      q.listAdminUsersStmt,
+		listAgentsStmt:                          q.listAgentsStmt,
+		listAuditLogsStmt:                       q.listAuditLogsStmt,
+		listDnsProvidersStmt:                    q.listDnsProvidersStmt,
+		listEntryPointsStmt:                     q.listEntryPointsStmt,
+		listErrorsStmt:                          q.listErrorsStmt,
+		listHttpMiddlewaresStmt:                 q.listHttpMiddlewaresStmt,
+		listHttpMiddlewaresByAgentStmt:          q.listHttpMiddlewaresByAgentStmt,
+		listHttpMiddlewaresEnabledStmt:          q.listHttpMiddlewaresEnabledStmt,
+		listHttpRoutersStmt:                     q.listHttpRoutersStmt,
+		listHttpRoutersByAgentStmt:              q.listHttpRoutersByAgentStmt,
+		listHttpRoutersEnabledStmt:              q.listHttpRoutersEnabledStmt,
+		listHttpServersTransportsStmt:           q.listHttpServersTransportsStmt,
+		listHttpServersTransportsByAgentStmt:    q.listHttpServersTransportsByAgentStmt,
+		listHttpServersTransportsEnabledStmt:    q.listHttpServersTransportsEnabledStmt,
+		listHttpServicesStmt:                    q.listHttpServicesStmt,
+		listHttpServicesByAgentStmt:             q.listHttpServicesByAgentStmt,
+		listHttpServicesEnabledStmt:             q.listHttpServicesEnabledStmt,
+		listMiddlewaresByAgentStmt:              q.listMiddlewaresByAgentStmt,
+		listMiddlewaresByProfileStmt:            q.listMiddlewaresByProfileStmt,
+		listProfilesStmt:                        q.listProfilesStmt,
+		listRoutersByAgentStmt:                  q.listRoutersByAgentStmt,
+		listRoutersByProfileStmt:                q.listRoutersByProfileStmt,
+		listServersTransportsByAgentStmt:        q.listServersTransportsByAgentStmt,
+		listServersTransportsByProfileStmt:      q.listServersTransportsByProfileStmt,
+		listServicesByAgentStmt:                 q.listServicesByAgentStmt,
+		listServicesByProfileStmt:               q.listServicesByProfileStmt,
+		listSettingsStmt:                        q.listSettingsStmt,
+		listTcpMiddlewaresStmt:                  q.listTcpMiddlewaresStmt,
+		listTcpMiddlewaresByAgentStmt:           q.listTcpMiddlewaresByAgentStmt,
+		listTcpMiddlewaresEnabledStmt:           q.listTcpMiddlewaresEnabledStmt,
+		listTcpRoutersStmt:                      q.listTcpRoutersStmt,
+		listTcpRoutersByAgentStmt:               q.listTcpRoutersByAgentStmt,
+		listTcpRoutersEnabledStmt:               q.listTcpRoutersEnabledStmt,
+		listTcpServersTransportsStmt:            q.listTcpServersTransportsStmt,
+		listTcpServersTransportsByAgentStmt:     q.listTcpServersTransportsByAgentStmt,
+		listTcpServersTransportsEnabledStmt:     q.listTcpServersTransportsEnabledStmt,
+		listTcpServicesStmt:                     q.listTcpServicesStmt,
+		listTcpServicesByAgentStmt:              q.listTcpServicesByAgentStmt,
+		listTcpServicesEnabledStmt:              q.listTcpServicesEnabledStmt,
+		listTraefikInstancesStmt:                q.listTraefikInstancesStmt,
+		listUdpRoutersStmt:                      q.listUdpRoutersStmt,
+		listUdpRoutersByAgentStmt:               q.listUdpRoutersByAgentStmt,
+		listUdpRoutersEnabledStmt:               q.listUdpRoutersEnabledStmt,
+		listUdpServicesStmt:                     q.listUdpServicesStmt,
+		listUdpServicesByAgentStmt:              q.listUdpServicesByAgentStmt,
+		listUdpServicesEnabledStmt:              q.listUdpServicesEnabledStmt,
+		listUsersStmt:                           q.listUsersStmt,
+		logErrorStmt:                            q.logErrorStmt,
+		unsetDefaultDNSProviderStmt:             q.unsetDefaultDNSProviderStmt,
+		unsetDefaultEntryPointStmt:              q.unsetDefaultEntryPointStmt,
+		unsetDefaultHttpMiddlewareStmt:          q.unsetDefaultHttpMiddlewareStmt,
+		unsetDefaultTcpMiddlewareStmt:           q.unsetDefaultTcpMiddlewareStmt,
+		updateAgentStmt:                         q.updateAgentStmt,
+		updateAgentIPStmt:                       q.updateAgentIPStmt,
+		updateAgentTokenStmt:                    q.updateAgentTokenStmt,
+		updateDnsProviderStmt:                   q.updateDnsProviderStmt,
+		updateEntryPointStmt:                    q.updateEntryPointStmt,
+		updateHttpMiddlewareStmt:                q.updateHttpMiddlewareStmt,
+		updateHttpRouterStmt:                    q.updateHttpRouterStmt,
+		updateHttpServersTransportStmt:          q.updateHttpServersTransportStmt,
+		updateHttpServiceStmt:                   q.updateHttpServiceStmt,
+		updateProfileStmt:                       q.updateProfileStmt,
+		updateTcpMiddlewareStmt:                 q.updateTcpMiddlewareStmt,
+		updateTcpRouterStmt:                     q.updateTcpRouterStmt,
+		updateTcpServersTransportStmt:           q.updateTcpServersTransportStmt,
+		updateTcpServiceStmt:                    q.updateTcpServiceStmt,
+		updateTraefikInstanceStmt:               q.updateTraefikInstanceStmt,
+		updateUdpRouterStmt:                     q.updateUdpRouterStmt,
+		updateUdpServiceStmt:                    q.updateUdpServiceStmt,
+		updateUserStmt:                          q.updateUserStmt,
+		updateUserLastLoginStmt:                 q.updateUserLastLoginStmt,
+		updateUserPasswordStmt:                  q.updateUserPasswordStmt,
+		updateUserResetTokenStmt:                q.updateUserResetTokenStmt,
+		upsertSettingStmt:                       q.upsertSettingStmt,
 	}
 }

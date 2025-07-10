@@ -5,6 +5,7 @@ import { ServiceType } from "./gen/mantrae/v1/service_pb";
 import type { JsonObject } from "@bufbuild/protobuf";
 import type { Component } from "svelte";
 import type { IconProps } from "@lucide/svelte";
+import { ServersTransportType } from "./gen/mantrae/v1/servers_transport_pb";
 
 export type IconComponent = Component<IconProps, Record<string, never>, "">;
 
@@ -39,6 +40,13 @@ export const middlewareTypes = Object.keys(MiddlewareType)
 	.map((key) => ({
 		label: key.toUpperCase(),
 		value: MiddlewareType[key as keyof typeof MiddlewareType],
+	}));
+
+export const serversTransportTypes = Object.keys(ServersTransportType)
+	.filter((key) => isNaN(Number(key)) && key !== "UNSPECIFIED")
+	.map((key) => ({
+		label: key.toUpperCase(),
+		value: ServersTransportType[key as keyof typeof ServersTransportType],
 	}));
 
 export const dnsProviderTypes = Object.keys(DnsProviderType)

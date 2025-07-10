@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { entryPointClient, routerClient } from '$lib/api';
+	import { entryPointClient } from '$lib/api';
 	import EntryPointModal from '$lib/components/modals/EntryPointModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
@@ -112,7 +112,7 @@
 			toast.success('EntryPoint deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
+			toast.error('Failed to delete entrypoint', { description: e.message });
 		}
 	}
 
@@ -130,24 +130,23 @@
 			);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to update router', { description: e.message });
+			toast.error('Failed to update entrypoint', { description: e.message });
 		}
 	}
 
-	async function bulkDelete(selectedRows: EntryPoint[]) {
+	async function bulkDelete(rows: EntryPoint[]) {
 		try {
-			const confirmed = confirm(`Are you sure you want to delete ${selectedRows.length} routers?`);
+			const confirmed = confirm(`Are you sure you want to delete ${rows.length} entrypoints?`);
 			if (!confirmed) return;
 
-			const routerIds = selectedRows.map((row) => ({ id: row.id }));
-			for (const router of routerIds) {
-				await routerClient.deleteRouter(router);
+			for (const e of rows) {
+				await entryPointClient.deleteEntryPoint({ id: e.id });
 			}
-			await refreshData(pageSize.value ?? 10, 0);
-			toast.success(`Successfully deleted ${selectedRows.length} routers`);
+			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+			toast.success(`Successfully deleted ${rows.length} entrypoints`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete routers', { description: e.message });
+			toast.error('Failed to delete entrypoints', { description: e.message });
 		}
 	}
 

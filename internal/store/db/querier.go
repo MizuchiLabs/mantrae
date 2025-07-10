@@ -19,6 +19,9 @@ type Querier interface {
 	CountHttpRouters(ctx context.Context) (int64, error)
 	CountHttpRoutersByAgent(ctx context.Context, agentID *string) (int64, error)
 	CountHttpRoutersByProfile(ctx context.Context, profileID int64) (int64, error)
+	CountHttpServersTransports(ctx context.Context) (int64, error)
+	CountHttpServersTransportsByAgent(ctx context.Context, agentID *string) (int64, error)
+	CountHttpServersTransportsByProfile(ctx context.Context, profileID int64) (int64, error)
 	CountHttpServices(ctx context.Context) (int64, error)
 	CountHttpServicesByAgent(ctx context.Context, agentID *string) (int64, error)
 	CountHttpServicesByProfile(ctx context.Context, profileID int64) (int64, error)
@@ -27,6 +30,8 @@ type Querier interface {
 	CountProfiles(ctx context.Context) (int64, error)
 	CountRoutersByAgent(ctx context.Context, arg CountRoutersByAgentParams) (int64, error)
 	CountRoutersByProfile(ctx context.Context, arg CountRoutersByProfileParams) (int64, error)
+	CountServersTransportsByAgent(ctx context.Context, arg CountServersTransportsByAgentParams) (int64, error)
+	CountServersTransportsByProfile(ctx context.Context, arg CountServersTransportsByProfileParams) (int64, error)
 	CountServicesByAgent(ctx context.Context, arg CountServicesByAgentParams) (int64, error)
 	CountServicesByProfile(ctx context.Context, arg CountServicesByProfileParams) (int64, error)
 	CountTcpMiddlewares(ctx context.Context) (int64, error)
@@ -35,6 +40,9 @@ type Querier interface {
 	CountTcpRouters(ctx context.Context) (int64, error)
 	CountTcpRoutersByAgent(ctx context.Context, agentID *string) (int64, error)
 	CountTcpRoutersByProfile(ctx context.Context, profileID int64) (int64, error)
+	CountTcpServersTransports(ctx context.Context) (int64, error)
+	CountTcpServersTransportsByAgent(ctx context.Context, agentID *string) (int64, error)
+	CountTcpServersTransportsByProfile(ctx context.Context, profileID int64) (int64, error)
 	CountTcpServices(ctx context.Context) (int64, error)
 	CountTcpServicesByAgent(ctx context.Context, agentID *string) (int64, error)
 	CountTcpServicesByProfile(ctx context.Context, profileID int64) (int64, error)
@@ -53,11 +61,13 @@ type Querier interface {
 	CreateHttpMiddleware(ctx context.Context, arg CreateHttpMiddlewareParams) (HttpMiddleware, error)
 	CreateHttpRouter(ctx context.Context, arg CreateHttpRouterParams) (HttpRouter, error)
 	CreateHttpRouterDNSProvider(ctx context.Context, arg CreateHttpRouterDNSProviderParams) error
+	CreateHttpServersTransport(ctx context.Context, arg CreateHttpServersTransportParams) (HttpServersTransport, error)
 	CreateHttpService(ctx context.Context, arg CreateHttpServiceParams) (HttpService, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewareParams) (TcpMiddleware, error)
 	CreateTcpRouter(ctx context.Context, arg CreateTcpRouterParams) (TcpRouter, error)
 	CreateTcpRouterDNSProvider(ctx context.Context, arg CreateTcpRouterDNSProviderParams) error
+	CreateTcpServersTransport(ctx context.Context, arg CreateTcpServersTransportParams) (TcpServersTransport, error)
 	CreateTcpService(ctx context.Context, arg CreateTcpServiceParams) (TcpService, error)
 	CreateTraefikInstance(ctx context.Context, arg CreateTraefikInstanceParams) (TraefikInstance, error)
 	CreateUdpRouter(ctx context.Context, arg CreateUdpRouterParams) (UdpRouter, error)
@@ -72,6 +82,7 @@ type Querier interface {
 	DeleteHttpMiddleware(ctx context.Context, id int64) error
 	DeleteHttpRouter(ctx context.Context, id int64) error
 	DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHttpRouterDNSProviderParams) error
+	DeleteHttpServersTransport(ctx context.Context, id int64) error
 	DeleteHttpService(ctx context.Context, id int64) error
 	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteProfile(ctx context.Context, id int64) error
@@ -79,6 +90,7 @@ type Querier interface {
 	DeleteTcpMiddleware(ctx context.Context, id int64) error
 	DeleteTcpRouter(ctx context.Context, id int64) error
 	DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpRouterDNSProviderParams) error
+	DeleteTcpServersTransport(ctx context.Context, id int64) error
 	DeleteTcpService(ctx context.Context, id int64) error
 	DeleteTraefikInstance(ctx context.Context, id int64) error
 	DeleteUdpRouter(ctx context.Context, id int64) error
@@ -98,6 +110,7 @@ type Querier interface {
 	GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDomainsRow, error)
 	GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error)
 	GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error)
+	GetHttpServersTransport(ctx context.Context, id int64) (HttpServersTransport, error)
 	GetHttpService(ctx context.Context, id int64) (HttpService, error)
 	GetHttpServiceByName(ctx context.Context, name string) (HttpService, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
@@ -108,6 +121,7 @@ type Querier interface {
 	GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomainsRow, error)
 	GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRoutersUsingEntryPointParams) ([]GetTcpRoutersUsingEntryPointRow, error)
 	GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRoutersUsingMiddlewareParams) ([]GetTcpRoutersUsingMiddlewareRow, error)
+	GetTcpServersTransport(ctx context.Context, id int64) (TcpServersTransport, error)
 	GetTcpService(ctx context.Context, id int64) (TcpService, error)
 	GetTcpServiceByName(ctx context.Context, name string) (TcpService, error)
 	GetTraefikInstance(ctx context.Context, id int64) (TraefikInstance, error)
@@ -130,6 +144,9 @@ type Querier interface {
 	ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams) ([]HttpRouter, error)
 	ListHttpRoutersByAgent(ctx context.Context, arg ListHttpRoutersByAgentParams) ([]HttpRouter, error)
 	ListHttpRoutersEnabled(ctx context.Context, arg ListHttpRoutersEnabledParams) ([]HttpRouter, error)
+	ListHttpServersTransports(ctx context.Context, arg ListHttpServersTransportsParams) ([]HttpServersTransport, error)
+	ListHttpServersTransportsByAgent(ctx context.Context, arg ListHttpServersTransportsByAgentParams) ([]HttpServersTransport, error)
+	ListHttpServersTransportsEnabled(ctx context.Context, arg ListHttpServersTransportsEnabledParams) ([]HttpServersTransport, error)
 	ListHttpServices(ctx context.Context, arg ListHttpServicesParams) ([]HttpService, error)
 	ListHttpServicesByAgent(ctx context.Context, arg ListHttpServicesByAgentParams) ([]HttpService, error)
 	ListHttpServicesEnabled(ctx context.Context, arg ListHttpServicesEnabledParams) ([]HttpService, error)
@@ -138,6 +155,8 @@ type Querier interface {
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
 	ListRoutersByAgent(ctx context.Context, arg ListRoutersByAgentParams) ([]ListRoutersByAgentRow, error)
 	ListRoutersByProfile(ctx context.Context, arg ListRoutersByProfileParams) ([]ListRoutersByProfileRow, error)
+	ListServersTransportsByAgent(ctx context.Context, arg ListServersTransportsByAgentParams) ([]ListServersTransportsByAgentRow, error)
+	ListServersTransportsByProfile(ctx context.Context, arg ListServersTransportsByProfileParams) ([]ListServersTransportsByProfileRow, error)
 	ListServicesByAgent(ctx context.Context, arg ListServicesByAgentParams) ([]ListServicesByAgentRow, error)
 	ListServicesByProfile(ctx context.Context, arg ListServicesByProfileParams) ([]ListServicesByProfileRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
@@ -147,6 +166,9 @@ type Querier interface {
 	ListTcpRouters(ctx context.Context, arg ListTcpRoutersParams) ([]TcpRouter, error)
 	ListTcpRoutersByAgent(ctx context.Context, arg ListTcpRoutersByAgentParams) ([]TcpRouter, error)
 	ListTcpRoutersEnabled(ctx context.Context, arg ListTcpRoutersEnabledParams) ([]TcpRouter, error)
+	ListTcpServersTransports(ctx context.Context, arg ListTcpServersTransportsParams) ([]TcpServersTransport, error)
+	ListTcpServersTransportsByAgent(ctx context.Context, arg ListTcpServersTransportsByAgentParams) ([]TcpServersTransport, error)
+	ListTcpServersTransportsEnabled(ctx context.Context, arg ListTcpServersTransportsEnabledParams) ([]TcpServersTransport, error)
 	ListTcpServices(ctx context.Context, arg ListTcpServicesParams) ([]TcpService, error)
 	ListTcpServicesByAgent(ctx context.Context, arg ListTcpServicesByAgentParams) ([]TcpService, error)
 	ListTcpServicesEnabled(ctx context.Context, arg ListTcpServicesEnabledParams) ([]TcpService, error)
@@ -170,10 +192,12 @@ type Querier interface {
 	UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error)
 	UpdateHttpMiddleware(ctx context.Context, arg UpdateHttpMiddlewareParams) (HttpMiddleware, error)
 	UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterParams) (HttpRouter, error)
+	UpdateHttpServersTransport(ctx context.Context, arg UpdateHttpServersTransportParams) (HttpServersTransport, error)
 	UpdateHttpService(ctx context.Context, arg UpdateHttpServiceParams) (HttpService, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 	UpdateTcpMiddleware(ctx context.Context, arg UpdateTcpMiddlewareParams) (TcpMiddleware, error)
 	UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams) (TcpRouter, error)
+	UpdateTcpServersTransport(ctx context.Context, arg UpdateTcpServersTransportParams) (TcpServersTransport, error)
 	UpdateTcpService(ctx context.Context, arg UpdateTcpServiceParams) (TcpService, error)
 	UpdateTraefikInstance(ctx context.Context, arg UpdateTraefikInstanceParams) (TraefikInstance, error)
 	UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams) (UdpRouter, error)

@@ -1,33 +1,20 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
-	import {
-		CalendarDays,
-		DatabaseBackup,
-		Download,
-		List,
-		SaveIcon,
-		Settings,
-		Trash2,
-		Upload
-	} from '@lucide/svelte';
+	import { Download, List, SaveIcon, Settings, Upload } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { DateFormat } from '$lib/stores/common';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import { backupClient, settingClient, upload } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { timestampDate } from '@bufbuild/protobuf/wkt';
-	import type { Backup } from '$lib/gen/mantrae/v1/backup_pb';
 	import { settingGroups, storageTypes } from './settings';
+	import BackupModal from '$lib/components/modals/BackupModal.svelte';
 
 	let settingsMap = $state<Record<string, string>>({});
 	let originalSettings: Record<string, string> = {};
@@ -130,20 +117,9 @@
 	}
 
 	// Backup handling
-	let backups = $state<Backup[]>([]);
 	let showBackupList = $state(false);
 	let uploadBackupFile: HTMLInputElement | null = $state(null);
 
-	async function deleteBackup(name: string) {
-		await backupClient.deleteBackup({ name });
-		const response = await backupClient.listBackups({});
-		backups = response.backups;
-	}
-	async function createBackup() {
-		await backupClient.createBackup({});
-		const response = await backupClient.listBackups({});
-		backups = response.backups;
-	}
 	async function downloadBackup(name?: string) {
 		try {
 			const stream = backupClient.downloadBackup({ name });
@@ -175,15 +151,14 @@
 		settingsMap = Object.fromEntries(response.settings.map((s) => [s.key, s.value]));
 		originalSettings = { ...settingsMap };
 		changedSettings = {};
-
-		const response2 = await backupClient.listBackups({});
-		backups = response2.backups;
 	});
 </script>
 
 <svelte:head>
 	<title>Settings</title>
 </svelte:head>
+
+<BackupModal bind:open={showBackupList} />
 
 <div class="flex min-h-full w-full items-start justify-center">
 	<div class="w-full max-w-[100rem] space-y-6">
@@ -240,80 +215,6 @@
 				</div>
 			</Card.Content>
 		</Card.Root>
-
-		<Dialog.Root bind:open={showBackupList}>
-			<Dialog.Content class="flex max-w-[600px] flex-col gap-4">
-				<Dialog.Header>
-					<Dialog.Title>Latest Backups</Dialog.Title>
-					<Dialog.Description class="flex items-start justify-between gap-2">
-						Click on a backup to download it or use the buttons to either quickly restore a backup
-						or delete it.
-						<Button variant="default" onclick={createBackup}>Create Backup</Button>
-					</Dialog.Description>
-				</Dialog.Header>
-				<Separator />
-				<div class="flex flex-col">
-					{#each backups || [] as b (b.name)}
-						<div class="flex items-center justify-between font-mono text-sm">
-							<Button
-								variant="link"
-								class="flex items-center"
-								onclick={() => downloadBackup(b.name)}
-							>
-								<HoverCard.Root openDelay={400}>
-									<HoverCard.Trigger>
-										{b.name}
-									</HoverCard.Trigger>
-									<HoverCard.Content class="w-full">
-										<div class="flex items-center">
-											<CalendarDays class="mr-2 size-4 opacity-70" />
-											<span class="text-muted-foreground text-xs">
-												Created
-												{#if b.createdAt}
-													{DateFormat.format(timestampDate(b.createdAt))}
-												{/if}
-											</span>
-										</div>
-									</HoverCard.Content>
-								</HoverCard.Root>
-								<Download />
-							</Button>
-							<span class="flex items-center">
-								<span class="mr-2">
-									{Intl.NumberFormat('en-US', {
-										notation: 'compact',
-										style: 'unit',
-										unit: 'byte'
-									}).format(b.size)}
-								</span>
-								<Button
-									variant="ghost"
-									size="icon"
-									class="rounded-full hover:bg-green-300/50 dark:hover:bg-green-700/50"
-									onclick={() => {
-										backupClient.restoreBackup({ name: b.name });
-										showBackupList = false;
-									}}
-								>
-									<DatabaseBackup />
-								</Button>
-								<Button
-									variant="ghost"
-									size="icon"
-									class="rounded-full hover:bg-red-300/50 dark:hover:bg-red-700/50"
-									onclick={() => deleteBackup(b.name)}
-								>
-									<Trash2 />
-								</Button>
-							</span>
-						</div>
-					{/each}
-					{#if backups.length === 0}
-						<p class="text-muted-foreground text-center text-sm">No backups available</p>
-					{/if}
-				</div>
-			</Dialog.Content>
-		</Dialog.Root>
 
 		<!-- Settings -->
 		<Card.Root>

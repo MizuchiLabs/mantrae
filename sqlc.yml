@@ -53,6 +53,16 @@ sql:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "TCPMiddleware"
               pointer: true
+          - column: "http_servers_transports.config"
+            go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "ServersTransport"
+              pointer: true
+          - column: "tcp_servers_transports.config"
+            go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "TCPServersTransport"
+              pointer: true
           - column: "traefik_instances.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
@@ -83,4 +93,3 @@ sql:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "AgentContainers"
               pointer: true
-

@@ -23,11 +23,13 @@ func StructToZodSchema() {
 		"tcpService":  dynamic.TCPService{},
 		"udpService":  dynamic.UDPService{},
 
-		// HTTP Middlewares
+		// Middlewares
 		"httpMiddleware": dynamic.Middleware{},
+		"tcpMiddleware":  dynamic.TCPMiddleware{},
 
-		// TCP Middlewares
-		"tcpMiddleware": dynamic.TCPMiddleware{},
+		// Servers Transports
+		"httpServersTransport": dynamic.ServersTransport{},
+		"tcpServersTransport":  dynamic.TCPServersTransport{},
 	}
 
 	var builder strings.Builder
@@ -51,5 +53,5 @@ func StructToZodSchema() {
 		panic(err)
 	}
 
-	fmt.Printf("✅ Zod schemas written to %s\n", out)
+	fmt.Printf("Zod schemas written to %s\n", out)
 }

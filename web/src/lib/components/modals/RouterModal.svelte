@@ -5,10 +5,10 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Alert from '$lib/components/ui/alert/index.js';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';

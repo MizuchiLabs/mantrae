@@ -9,6 +9,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -16,6 +18,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
 )
 
 const BackupPath = "backups"
@@ -111,37 +114,40 @@ func (m *BackupManager) Create(ctx context.Context) error {
 		return fmt.Errorf("failed to set storage: %w", err)
 	}
 
-	backupName := fmt.Sprintf("backup_%s.db", time.Now().UTC().Format("20060102_150405"))
+	backupNameDB := fmt.Sprintf("backup_%s.db", time.Now().UTC().Format("20060102_150405"))
 
-	// Create a temporary file for the backup
+	// Create a temporary file for the db backup
 	tmpFile, err := os.CreateTemp("", "sqlite_backup_*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
 	defer func() {
-		if err := os.Remove(tmpFile.Name()); err != nil {
+		if err = os.Remove(tmpFile.Name()); err != nil {
 			slog.Error("failed to remove temp file", "error", err)
 		}
-		if err := tmpFile.Close(); err != nil {
+		if err = tmpFile.Close(); err != nil {
 			slog.Error("failed to close temp file", "error", err)
 		}
 	}()
 
-	db := m.Conn.Get()
-
 	// Perform SQLite backup
-	if _, err := db.Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
+	if _, err = m.Conn.Get().Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
 		return fmt.Errorf("failed to create backup: %w", err)
 	}
 
 	// Rewind the file for reading
-	if _, err := tmpFile.Seek(0, 0); err != nil {
+	if _, err = tmpFile.Seek(0, 0); err != nil {
 		return fmt.Errorf("failed to rewind temp file: %w", err)
 	}
 
 	// Store the backup using the backend
-	if err := m.Storage.Store(ctx, backupName, tmpFile); err != nil {
+	if err = m.Storage.Store(ctx, backupNameDB, tmpFile); err != nil {
 		return fmt.Errorf("failed to store backup: %w", err)
+	}
+
+	// Perform YAML backup
+	if err = traefik.BackupDynamicConfigs(ctx, m.Conn.GetQuery(), m.Storage); err != nil {
+		return fmt.Errorf("failed to backup dynamic configs: %w", err)
 	}
 
 	// Clean up older backups
@@ -149,7 +155,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 		return fmt.Errorf("failed to cleanup backups: %w", err)
 	}
 
-	slog.Info("Backup created successfully", "name", backupName)
+	slog.Info("Backup created successfully", "name", backupNameDB)
 	return nil
 }
 
@@ -240,15 +246,32 @@ func (m *BackupManager) IsValidBackupFile(filename string) bool {
 	if strings.Contains(filename, "..") {
 		return false
 	}
-	// Check if filename matches pattern *.db
-	matched, err := filepath.Match("*.db", filename)
+	// Check if filename matches pattern *.db or *.yaml
+	matchedDB, err := filepath.Match("*.db", filename)
 	if err != nil {
 		return false
 	}
-	return matched
+	if matchedDB {
+		return true
+	}
+
+	matchedYaml, err := filepath.Match("*.yaml", filename)
+	if err != nil {
+		return false
+	}
+	if matchedYaml {
+		return true
+	}
+	return false
 }
 
 func (m *BackupManager) cleanup(ctx context.Context) error {
+	// Regex to parse filenames like backup_20230710_101010.db
+	dbBackupRegex := regexp.MustCompile(`backup_(\d{8}_\d{6})\.db`)
+
+	// Regex to parse filenames like backup_profileName_20230710_101010.yaml
+	yamlBackupRegex := regexp.MustCompile(`backup_(.+)_(\d{8}_\d{6})\.yaml`)
+
 	files, err := m.Storage.List(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to list backups: %w", err)
@@ -258,14 +281,48 @@ func (m *BackupManager) cleanup(ctx context.Context) error {
 	if !ok {
 		return fmt.Errorf("failed to get retention setting")
 	}
-	if len(files) <= settings.AsInt(retention) {
-		return nil
+
+	// Sort descending by time (newest first)
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Timestamp.After(*files[j].Timestamp)
+	})
+
+	var dbBackups []storage.StoredFile
+	yamlBackupsByProfile := make(map[string][]storage.StoredFile)
+
+	for _, f := range files {
+		if m := dbBackupRegex.FindStringSubmatch(f.Name); m != nil {
+			dbBackups = append(dbBackups, f)
+		} else if m := yamlBackupRegex.FindStringSubmatch(f.Name); m != nil {
+			profile := m[1]
+			yamlBackupsByProfile[profile] = append(yamlBackupsByProfile[profile], f)
+		} else {
+			continue
+		}
 	}
 
 	// Delete older backups
-	for _, file := range files[settings.AsInt(retention):] {
-		if err := m.Storage.Delete(ctx, file.Name); err != nil {
-			return fmt.Errorf("failed to delete old backup %s: %w", file.Name, err)
+	if len(dbBackups) > settings.AsInt(retention) {
+		for _, f := range dbBackups[settings.AsInt(retention):] {
+			if err := m.Storage.Delete(ctx, f.Name); err != nil {
+				return fmt.Errorf("failed to delete db backup %s: %w", f.Name, err)
+			}
+		}
+	}
+	// Cleanup YAML backups per profile
+	for profile, backups := range yamlBackupsByProfile {
+		if len(backups) <= settings.AsInt(retention) {
+			continue
+		}
+		for _, f := range backups[settings.AsInt(retention):] {
+			if err := m.Storage.Delete(ctx, f.Name); err != nil {
+				return fmt.Errorf(
+					"failed to delete yaml backup %s (profile %s): %w",
+					f.Name,
+					profile,
+					err,
+				)
+			}
 		}
 	}
 
