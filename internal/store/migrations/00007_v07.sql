@@ -229,6 +229,9 @@ DROP COLUMN tls;
 ALTER TABLE profiles
 ADD COLUMN description TEXT;
 
+ALTER TABLE profiles
+ADD COLUMN token TEXT NOT NULL;
+
 -- Update agents table - change JSON columns to TEXT
 UPDATE agents
 SET

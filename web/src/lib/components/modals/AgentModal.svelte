@@ -14,6 +14,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
+	import CopyInput from '../ui/copy-input/copy-input.svelte';
 
 	interface Props {
 		data: Agent[];
@@ -236,10 +237,7 @@
 				{/if}
 
 				<div class="flex gap-2">
-					<div class="relative flex-1">
-						<Input value={item.token} readonly class="pr-10" />
-						<CopyButton text={item.token} class="absolute top-1/2 right-2 -translate-y-1/2" />
-					</div>
+					<CopyInput value={item.token} />
 					<Button variant="outline" size="icon" onclick={handleRotate} title="Rotate token">
 						<RotateCcw class="h-4 w-4" />
 					</Button>

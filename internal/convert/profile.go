@@ -10,6 +10,7 @@ func ProfileToProto(p *db.Profile) *mantraev1.Profile {
 		Id:          p.ID,
 		Name:        p.Name,
 		Description: SafeString(p.Description),
+		Token:       p.Token,
 		CreatedAt:   SafeTimestamp(p.CreatedAt),
 		UpdatedAt:   SafeTimestamp(p.UpdatedAt),
 	}

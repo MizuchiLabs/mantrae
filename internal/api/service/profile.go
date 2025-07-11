@@ -8,6 +8,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
@@ -37,10 +38,9 @@ func (s *ProfileService) CreateProfile(
 	req *connect.Request[mantraev1.CreateProfileRequest],
 ) (*connect.Response[mantraev1.CreateProfileResponse], error) {
 	params := db.CreateProfileParams{
-		Name: req.Msg.Name,
-	}
-	if req.Msg.Description != nil {
-		params.Description = req.Msg.Description
+		Name:        req.Msg.Name,
+		Description: req.Msg.Description,
+		Token:       util.GenerateToken(6),
 	}
 
 	result, err := s.app.Conn.GetQuery().CreateProfile(ctx, params)
@@ -57,11 +57,12 @@ func (s *ProfileService) UpdateProfile(
 	req *connect.Request[mantraev1.UpdateProfileRequest],
 ) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
 	params := db.UpdateProfileParams{
-		ID:   req.Msg.Id,
-		Name: req.Msg.Name,
+		ID:          req.Msg.Id,
+		Name:        req.Msg.Name,
+		Description: req.Msg.Description,
 	}
-	if req.Msg.Description != nil {
-		params.Description = req.Msg.Description
+	if req.Msg.GetRegenerateToken() {
+		params.Token = util.GenerateToken(6)
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateProfile(ctx, params)

@@ -44,11 +44,10 @@ const elementsHTML = `<!DOCTYPE html>
 `
 
 type Server struct {
-	Host          string `env:"HOST"           envDefault:"0.0.0.0"`
-	Port          string `env:"PORT"           envDefault:"3000"`
-	SecureTraefik bool   `env:"SECURE_TRAEFIK" envDefault:"false"`
-	mux           *http.ServeMux
-	app           *config.App
+	Host string `env:"HOST" envDefault:"0.0.0.0"`
+	Port string `env:"PORT" envDefault:"3000"`
+	mux  *http.ServeMux
+	app  *config.App
 }
 
 func NewServer(app *config.App) *Server {
@@ -255,17 +254,13 @@ func (s *Server) registerServices() {
 	// 	opts...,
 	// ))
 
-	// Traefik endpoint (HTTP) ------------------------------------------------
+	// HTTP middlewares -------------------------------------------------------
 	mw := middlewares.NewMiddlewareHandler(s.app)
 	logChain := middlewares.Chain(mw.Logger)
-	basicChain := middlewares.Chain(mw.Logger, mw.BasicAuth)
 	jwtChain := middlewares.Chain(mw.Logger, mw.JWTAuth)
 
-	if s.SecureTraefik {
-		s.mux.Handle("GET /api/{name}", basicChain(handler.PublishTraefikConfig(s.app)))
-	} else {
-		s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
-	}
+	// Traefik endpoint (HTTP) ------------------------------------------------
+	s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
 
 	// Upload handler (HTTP) --------------------------------------------------
 	s.mux.Handle("POST /upload/avatar", jwtChain(handler.UploadAvatar(s.app)))

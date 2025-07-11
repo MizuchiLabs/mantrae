@@ -15,6 +15,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { settingGroups, storageTypes } from './settings';
 	import BackupModal from '$lib/components/modals/BackupModal.svelte';
+	import CustomSwitch from '$lib/components/ui/custom-switch/custom-switch.svelte';
 
 	let settingsMap = $state<Record<string, string>>({});
 	let originalSettings: Record<string, string> = {};
@@ -271,8 +272,7 @@
 												/>
 											{/if}
 											{#if setting.type === 'boolean'}
-												<Switch
-													id={setting.key}
+												<CustomSwitch
 													checked={settingsMap[setting.key] === 'true'}
 													onCheckedChange={(checked) => {
 														updateSetting(setting.key, checked ? 'true' : 'false');

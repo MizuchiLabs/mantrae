@@ -1,8 +1,8 @@
 -- name: CreateProfile :one
 INSERT INTO
-  profiles (name, description, created_at, updated_at)
+  profiles (name, description, token, created_at, updated_at)
 VALUES
-  (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
+  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetProfile :one
 SELECT
@@ -43,6 +43,7 @@ UPDATE profiles
 SET
   name = ?,
   description = ?,
+  token = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

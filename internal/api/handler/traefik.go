@@ -7,19 +7,32 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"gopkg.in/yaml.v3"
 )
 
 func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), r.PathValue("name"))
+		format := r.URL.Query().Get("format")
+		urlToken := r.URL.Query().Get("token")
+		headerToken := r.Header.Get(meta.HeaderTraefikToken)
+		accept := r.Header.Get("Accept")
+
+		profile, err := a.Conn.GetQuery().GetProfileByName(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if urlToken != profile.Token && headerToken != profile.Token {
+			http.Error(w, "invalid token", http.StatusUnauthorized)
+			return
+		}
 
-		format := r.URL.Query().Get("format")
-		accept := r.Header.Get("Accept")
+		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), profile)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		// Determine response format: prefer query param over header
 		if format == "yaml" || (format == "" && strings.Contains(accept, "yaml")) {

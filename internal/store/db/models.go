@@ -118,6 +118,7 @@ type Profile struct {
 	CreatedAt   *time.Time `json:"createdAt"`
 	UpdatedAt   *time.Time `json:"updatedAt"`
 	Description *string    `json:"description"`
+	Token       string     `json:"token"`
 }
 
 type Setting struct {

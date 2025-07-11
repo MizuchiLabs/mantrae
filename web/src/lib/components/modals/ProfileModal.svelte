@@ -6,9 +6,11 @@
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import { profileClient } from '$lib/api';
+	import { buildConnectionString, profileClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile as profileStore } from '$lib/stores/profile';
+	import CopyInput from '../ui/copy-input/copy-input.svelte';
+	import { RotateCcw } from '@lucide/svelte';
 
 	interface Props {
 		item: Profile;
@@ -17,12 +19,14 @@
 
 	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
-	const handleSubmit = async () => {
+	const handleSubmit = async (regenerateToken: boolean) => {
 		try {
 			if (item.id) {
 				const response = await profileClient.updateProfile({
+					id: item.id,
 					name: item.name,
-					description: item.description
+					description: item.description,
+					regenerateToken
 				});
 				toast.success(`Profile ${response.profile?.name} updated successfully`);
 				if (response.profile) profileStore.value = response.profile;
@@ -72,9 +76,9 @@
 			<Dialog.Description>Configure your profile settings</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="space-y-6">
+		<form onsubmit={() => handleSubmit(false)} class="space-y-4">
 			<div class="space-y-2">
-				<Label for="name" class="flex items-center gap-2 text-sm font-medium">Name</Label>
+				<Label for="name" class="text-sm font-medium">Name</Label>
 				<Input
 					id="name"
 					bind:value={item.name}
@@ -85,12 +89,36 @@
 			</div>
 
 			<div class="space-y-2">
-				<Label for="description" class="flex items-center gap-2 text-sm font-medium">
-					Description
-				</Label>
+				<Label for="description" class="text-sm font-medium">Description</Label>
 				<Input id="description" bind:value={item.description} placeholder="Site description" />
 				<p class="text-muted-foreground text-xs">Optional description for this profile</p>
 			</div>
+
+			{#if item.id}
+				<div class="space-y-2">
+					<Label for="token" class="text-sm font-medium">Connection Token</Label>
+					<div class="flex gap-2">
+						<CopyInput id="token" value={item.token} readonly />
+						<Button
+							variant="outline"
+							size="icon"
+							onclick={() => handleSubmit(true)}
+							title="Regenerate token"
+						>
+							<RotateCcw class="h-4 w-4" />
+						</Button>
+					</div>
+					{#await buildConnectionString(item) then value}
+						<!-- <CopyInput id="token" {value} readonly /> -->
+						<p class="text-muted-foreground text-xs">
+							Used in the connection URL to connect to this profile with your traefik instance
+							<span class="underline">
+								{value}
+							</span>
+						</p>
+					{/await}
+				</div>
+			{/if}
 
 			<Separator />
 
@@ -100,9 +128,7 @@
 						Delete
 					</Button>
 				{/if}
-				<Button type="submit" class="flex-1">
-					{item.id ? 'Update' : 'Create'}
-				</Button>
+				<Button type="submit" class="flex-1">{item.id ? 'Update' : 'Create'}</Button>
 			</div>
 		</form>
 	</Dialog.Content>

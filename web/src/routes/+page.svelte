@@ -43,6 +43,7 @@
 	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
+	import TraefikConnection from '$lib/components/utils/TraefikConnection.svelte';
 
 	let totalAgents = $derived.by(async () => {
 		const response = await agentClient.listAgents({
@@ -264,6 +265,7 @@
 			</Card.Root>
 
 			<!-- Services Overview -->
+
 			<Card.Root>
 				<Card.Header>
 					<Card.Title class="flex items-center gap-2">
@@ -345,7 +347,7 @@
 					</div>
 				</Card.Header>
 				<Card.Content>
-					<div class="space-y-6">
+					<div class="space-y-4">
 						{#await profileClient.listProfiles({ limit: -1n, offset: 0n }) then result}
 							{#each result.profiles || [] as profile (profile.id)}
 								<div class="space-y-4 rounded-lg border p-4">
@@ -404,7 +406,7 @@
 										{/await}
 									</div>
 
-									<div class="grid grid-cols-2 gap-2 md:grid-cols-6">
+									<div class="grid grid-cols-1 gap-2 lg:grid-cols-3">
 										<Button
 											size="sm"
 											variant="outline"
@@ -426,6 +428,7 @@
 											<Activity />
 											Config
 										</Button>
+										<TraefikConnection {profile} variant="compact" />
 									</div>
 								</div>
 							{/each}
@@ -436,6 +439,11 @@
 
 			<!-- System Health & Quick Actions -->
 			<div class="space-y-6">
+				<!-- Traefik Connection -->
+				{#if profile.value}
+					<TraefikConnection profile={profile.value} variant="full" />
+				{/if}
+
 				<!-- System Health -->
 				<Card.Root>
 					<Card.Header>

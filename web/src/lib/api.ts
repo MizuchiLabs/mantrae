@@ -1,7 +1,7 @@
 import type { DescService } from "@bufbuild/protobuf";
 import { createClient, type Client } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { ProfileService } from "./gen/mantrae/v1/profile_pb";
+import { ProfileService, type Profile } from "./gen/mantrae/v1/profile_pb";
 import { UserService } from "./gen/mantrae/v1/user_pb";
 import { RouterService } from "./gen/mantrae/v1/router_pb";
 import { ServiceService } from "./gen/mantrae/v1/service_pb";
@@ -78,17 +78,21 @@ export async function upload(input: HTMLInputElement | null, endpoint: string) {
 
 // Get dynamic traefik config
 export async function getConfig(format: string) {
-	if (!profile.isValid()) return "";
+	if (!profile.isValid() || !profile.token) return "";
 
 	const headers = new Headers();
+	// headers.set("Mantrae-Traefik-Token", profile.token);
 	if (format === "yaml") {
 		headers.set("Accept", "application/x-yaml");
 	}
 
 	try {
-		const response = await fetch(`${baseURL.value}/api/${profile.name}`, {
-			headers,
-		});
+		const response = await fetch(
+			`${baseURL.value}/api/${profile.name}?token=${profile.token}`,
+			{
+				headers,
+			},
+		);
 		if (!response.ok) return "";
 
 		return await response.text();
@@ -97,6 +101,16 @@ export async function getConfig(format: string) {
 		toast.error("Failed to fetch config", { description: e.message });
 	}
 	return "";
+}
+
+// Build traefik connection string
+export async function buildConnectionString(p: Profile) {
+	const item = p ?? profile?.value;
+	if (!item) return "";
+	const serverUrl = await settingClient.getSetting({ key: "server_url" });
+	if (!serverUrl.value) return "";
+
+	return `${serverUrl.value}/api/${item.name}?token=${item.token}`;
 }
 
 // Clients

@@ -19,6 +19,8 @@
 		type ServersTransport as HTTPServersTransport
 	} from '$lib/gen/zen/traefik-schemas';
 	import { serversTransportTypes } from '$lib/types';
+	import HTTPServerTransportForm from '$lib/components/forms/HTTPServerTransportForm.svelte';
+	import TCPServerTransportForm from '$lib/components/forms/TCPServerTransportForm.svelte';
 
 	interface Props {
 		data: ServersTransport[];
@@ -79,7 +81,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>{item.id ? 'Edit' : 'Create'} ServersTransport</Dialog.Title>
 			<Dialog.Description>Configure how external traffic reaches your services</Dialog.Description>
@@ -132,14 +134,14 @@
 						</Select.Root>
 					</div>
 				{/if}
-
-				{#if item.type === ServersTransportType.HTTP}
-					<!-- <HTTPServersTransportForm bind:transport={item} /> -->
-				{/if}
-				{#if item.type === ServersTransportType.TCP}
-					<!-- <TCPServersTransportForm bind:transport={item} /> -->
-				{/if}
 			</div>
+
+			{#if item.type === ServersTransportType.HTTP}
+				<HTTPServerTransportForm bind:transport={item} />
+			{/if}
+			{#if item.type === ServersTransportType.TCP}
+				<TCPServerTransportForm bind:transport={item} />
+			{/if}
 
 			<Separator />
 

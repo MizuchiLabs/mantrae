@@ -25,18 +25,19 @@ func (q *Queries) CountProfiles(ctx context.Context) (int64, error) {
 
 const createProfile = `-- name: CreateProfile :one
 INSERT INTO
-  profiles (name, description, created_at, updated_at)
+  profiles (name, description, token, created_at, updated_at)
 VALUES
-  (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, created_at, updated_at, description
+  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, created_at, updated_at, description, token
 `
 
 type CreateProfileParams struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
+	Token       string  `json:"token"`
 }
 
 func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error) {
-	row := q.queryRow(ctx, q.createProfileStmt, createProfile, arg.Name, arg.Description)
+	row := q.queryRow(ctx, q.createProfileStmt, createProfile, arg.Name, arg.Description, arg.Token)
 	var i Profile
 	err := row.Scan(
 		&i.ID,
@@ -44,6 +45,7 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (P
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Description,
+		&i.Token,
 	)
 	return i, err
 }
@@ -61,7 +63,7 @@ func (q *Queries) DeleteProfile(ctx context.Context, id int64) error {
 
 const getProfile = `-- name: GetProfile :one
 SELECT
-  id, name, created_at, updated_at, description
+  id, name, created_at, updated_at, description, token
 FROM
   profiles
 WHERE
@@ -77,13 +79,14 @@ func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Description,
+		&i.Token,
 	)
 	return i, err
 }
 
 const getProfileByName = `-- name: GetProfileByName :one
 SELECT
-  id, name, created_at, updated_at, description
+  id, name, created_at, updated_at, description, token
 FROM
   profiles
 WHERE
@@ -99,13 +102,14 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Description,
+		&i.Token,
 	)
 	return i, err
 }
 
 const listProfiles = `-- name: ListProfiles :many
 SELECT
-  id, name, created_at, updated_at, description
+  id, name, created_at, updated_at, description, token
 FROM
   profiles
 ORDER BY
@@ -136,6 +140,7 @@ func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]P
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Description,
+			&i.Token,
 		); err != nil {
 			return nil, err
 		}
@@ -155,19 +160,26 @@ UPDATE profiles
 SET
   name = ?,
   description = ?,
+  token = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, name, created_at, updated_at, description
+  id = ? RETURNING id, name, created_at, updated_at, description, token
 `
 
 type UpdateProfileParams struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
+	Token       string  `json:"token"`
 	ID          int64   `json:"id"`
 }
 
 func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
-	row := q.queryRow(ctx, q.updateProfileStmt, updateProfile, arg.Name, arg.Description, arg.ID)
+	row := q.queryRow(ctx, q.updateProfileStmt, updateProfile,
+		arg.Name,
+		arg.Description,
+		arg.Token,
+		arg.ID,
+	)
 	var i Profile
 	err := row.Scan(
 		&i.ID,
@@ -175,6 +187,7 @@ func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (P
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Description,
+		&i.Token,
 	)
 	return i, err
 }

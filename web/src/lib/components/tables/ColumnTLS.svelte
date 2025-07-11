@@ -231,8 +231,8 @@
 			</Tooltip.Trigger>
 			<Tooltip.Content side="top">
 				<div class="text-center">
-					<div class="font-medium">TLS Disabled</div>
-					<div class="text-muted-foreground text-xs">This router does not use TLS encryption</div>
+					<div class="font-medium underline">TLS Disabled</div>
+					<div class="text-xs">This router does not use TLS encryption</div>
 				</div>
 			</Tooltip.Content>
 		</Tooltip.Root>

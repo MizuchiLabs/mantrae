@@ -80,7 +80,7 @@
 	onclick={handletoggle}
 	class="focus:ring-primary relative inline-flex items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none
 		{sizeClasses[size]}
-		{checked ? 'bg-primary' : 'bg-muted'}
+		{checked ? 'bg-primary' : 'bg-input'}
 		{disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
 	"
 	style={variant === 'text' && textLabels ? `width: ${getTextWidth()}px;` : ''}

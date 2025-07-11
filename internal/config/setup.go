@@ -111,6 +111,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 		if _, err = q.CreateProfile(ctx, db.CreateProfileParams{
 			Name:        "default",
 			Description: &description,
+			Token:       util.GenerateToken(6),
 		}); err != nil {
 			return fmt.Errorf("failed to create default profile: %w", err)
 		}

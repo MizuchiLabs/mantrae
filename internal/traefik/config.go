@@ -17,13 +17,8 @@ import (
 func BuildDynamicConfig(
 	ctx context.Context,
 	q *db.Queries,
-	profileName string,
+	profile db.Profile,
 ) (*dynamic.Configuration, error) {
-	profile, err := q.GetProfileByName(ctx, profileName)
-	if err != nil {
-		return nil, err
-	}
-
 	cfg := &dynamic.Configuration{
 		HTTP: &dynamic.HTTPConfiguration{
 			Routers:           make(map[string]*dynamic.Router),
@@ -178,7 +173,7 @@ func BackupDynamicConfigs(ctx context.Context, q *db.Queries, store storage.Back
 	}
 
 	for _, profile := range profiles {
-		cfg, err := BuildDynamicConfig(ctx, q, profile.Name)
+		cfg, err := BuildDynamicConfig(ctx, q, profile)
 		if err != nil {
 			return err
 		}

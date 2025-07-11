@@ -21,7 +21,7 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 		if (currentPath !== "/welcome") {
 			await goto("/welcome");
 			user.clear();
-			return {}; // stop loading other data
+			return {};
 		}
 	} else {
 		// Backend reachable
@@ -37,10 +37,17 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 			if (!resUser.user) throw new Error("Authentication failed");
 			user.value = resUser.user;
 
+			const profileClient = useClient(ProfileService, fetch);
 			if (!profile.id) {
-				const profileClient = useClient(ProfileService, fetch);
-				const resProfile = await profileClient.listProfiles({});
-				profile.value = resProfile.profiles[0];
+				const response = await profileClient.listProfiles({});
+				profile.value = response.profiles[0];
+			} else {
+				const response = await profileClient.getProfile({ id: profile.id });
+				if (!response.profile) {
+					profile.clear();
+					throw new Error("Profile not found");
+				}
+				profile.value = response.profile;
 			}
 
 			if (isPublic) await goto("/");
