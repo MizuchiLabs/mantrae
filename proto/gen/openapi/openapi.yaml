@@ -2430,6 +2430,9 @@ components:
         description:
           type: string
           title: description
+        token:
+          type: string
+          title: token
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -2455,6 +2458,10 @@ components:
         description:
           type: string
           title: description
+          nullable: true
+        regenerateToken:
+          type: boolean
+          title: regenerate_token
           nullable: true
       title: UpdateProfileRequest
       additionalProperties: false

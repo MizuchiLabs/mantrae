@@ -28,8 +28,9 @@ type Profile struct {
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Token         string                 `protobuf:"bytes,4,opt,name=token,proto3" json:"token,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,6 +82,13 @@ func (x *Profile) GetName() string {
 func (x *Profile) GetDescription() string {
 	if x != nil {
 		return x.Description
+	}
+	return ""
+}
+
+func (x *Profile) GetToken() string {
+	if x != nil {
+		return x.Token
 	}
 	return ""
 }
@@ -284,12 +292,13 @@ func (x *CreateProfileResponse) GetProfile() *Profile {
 }
 
 type UpdateProfileRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description     *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	RegenerateToken *bool                  `protobuf:"varint,4,opt,name=regenerate_token,json=regenerateToken,proto3,oneof" json:"regenerate_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *UpdateProfileRequest) Reset() {
@@ -341,6 +350,13 @@ func (x *UpdateProfileRequest) GetDescription() string {
 		return *x.Description
 	}
 	return ""
+}
+
+func (x *UpdateProfileRequest) GetRegenerateToken() bool {
+	if x != nil && x.RegenerateToken != nil {
+		return *x.RegenerateToken
+	}
+	return false
 }
 
 type UpdateProfileResponse struct {
@@ -576,15 +592,16 @@ var File_mantrae_v1_profile_proto protoreflect.FileDescriptor
 const file_mantrae_v1_profile_proto_rawDesc = "" +
 	"\n" +
 	"\x18mantrae/v1/profile.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x01\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdb\x01\n" +
 	"\aProfile\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x129\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
+	"\x05token\x18\x04 \x01(\tR\x05token\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\",\n" +
+	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"C\n" +
 	"\x12GetProfileResponse\x12-\n" +
@@ -594,12 +611,14 @@ const file_mantrae_v1_profile_proto_rawDesc = "" +
 	"\vdescription\x18\x02 \x01(\tH\x00R\vdescription\x88\x01\x01B\x0e\n" +
 	"\f_description\"F\n" +
 	"\x15CreateProfileResponse\x12-\n" +
-	"\aprofile\x18\x01 \x01(\v2\x13.mantrae.v1.ProfileR\aprofile\"\x83\x01\n" +
+	"\aprofile\x18\x01 \x01(\v2\x13.mantrae.v1.ProfileR\aprofile\"\xc8\x01\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12%\n" +
-	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01B\x0e\n" +
-	"\f_description\"F\n" +
+	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12.\n" +
+	"\x10regenerate_token\x18\x04 \x01(\bH\x01R\x0fregenerateToken\x88\x01\x01B\x0e\n" +
+	"\f_descriptionB\x13\n" +
+	"\x11_regenerate_token\"F\n" +
 	"\x15UpdateProfileResponse\x12-\n" +
 	"\aprofile\x18\x01 \x01(\v2\x13.mantrae.v1.ProfileR\aprofile\"/\n" +
 	"\x14DeleteProfileRequest\x12\x17\n" +

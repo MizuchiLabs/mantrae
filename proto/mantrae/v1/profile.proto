@@ -21,8 +21,9 @@ message Profile {
   int64 id = 1;
   string name = 2;
   string description = 3;
-  google.protobuf.Timestamp created_at = 4;
-  google.protobuf.Timestamp updated_at = 5;
+  string token = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
 }
 
 message GetProfileRequest {
@@ -44,6 +45,7 @@ message UpdateProfileRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
   string name = 2 [(buf.validate.field).string.min_len = 1];
   optional string description = 3;
+  optional bool regenerate_token = 4;
 }
 message UpdateProfileResponse {
   Profile profile = 1;

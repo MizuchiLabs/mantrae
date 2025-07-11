@@ -3,9 +3,11 @@ package util
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base32"
 	"encoding/hex"
 	"math/big"
 	"regexp"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,6 +45,16 @@ func IsHtpasswdFormat(s string) bool {
 	md5Regex := regexp.MustCompile(`^\$apr1\$.{30,}$`)
 
 	return bcryptRegex.MatchString(s) || md5Regex.MatchString(s)
+}
+
+// GenerateToken creates a random url safe token of the specified length
+func GenerateToken(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	token := base32.StdEncoding.EncodeToString(b)
+	return strings.ToLower(strings.TrimRight(token, "="))
 }
 
 // GenerateOTP creates a secure 6-digit token
