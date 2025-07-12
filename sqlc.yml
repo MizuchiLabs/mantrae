@@ -78,6 +78,11 @@ sql:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "Overview"
               pointer: true
+          - column: "traefik_instances.version"
+            go_type:
+              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
+              type: "Version"
+              pointer: true
           - column: "dns_providers.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"

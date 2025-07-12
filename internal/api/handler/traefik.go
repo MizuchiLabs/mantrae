@@ -4,12 +4,44 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
+	"golang.org/x/sync/singleflight"
 	"gopkg.in/yaml.v3"
 )
+
+var (
+	updateGroup    singleflight.Group
+	lastUpdateTime sync.Map // map[string]time.Time
+)
+
+func scheduleUpdate(r *http.Request, q *db.Queries, profileID int64) {
+	instanceName := r.Header.Get(meta.HeaderTraefikName)
+	if instanceName == "" {
+		return
+	}
+
+	// Check if we recently updated this instance
+	if lastUpdate, ok := lastUpdateTime.Load(instanceName); ok {
+		if time.Since(lastUpdate.(time.Time)) < 30*time.Second {
+			return // Skip if updated recently
+		}
+	}
+
+	// Use singleflight to ensure only one update per instance
+	go func() {
+		_, _, _ = updateGroup.Do(instanceName, func() (any, error) {
+			lastUpdateTime.Store(instanceName, time.Now())
+			traefik.UpdateTraefikInstance(r, q, profileID)
+			return nil, nil
+		})
+	}()
+}
 
 func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -27,6 +59,9 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
+
+		// Create or update traefik instance
+		scheduleUpdate(r, a.Conn.GetQuery(), profile.ID)
 
 		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), profile)
 		if err != nil {

@@ -182,6 +182,7 @@ CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (
 CREATE TABLE traefik_instances (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
   entrypoints TEXT,
   overview TEXT,
   config TEXT,
@@ -192,7 +193,8 @@ CREATE TABLE traefik_instances (
   tls BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
 );
 
 CREATE TABLE users (

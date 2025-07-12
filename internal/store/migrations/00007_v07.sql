@@ -157,6 +157,7 @@ CREATE TABLE tcp_servers_transports (
 CREATE TABLE traefik_instances (
   id INTEGER PRIMARY KEY,
   profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
   entrypoints TEXT,
   overview TEXT,
   config TEXT,
@@ -167,7 +168,8 @@ CREATE TABLE traefik_instances (
   tls BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
 );
 
 CREATE TABLE audit_logs (
@@ -179,37 +181,6 @@ CREATE TABLE audit_logs (
   details TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Migrate data from old traefik table to new traefik_instances
-INSERT INTO
-  traefik_instances (
-    profile_id,
-    entrypoints,
-    overview,
-    config,
-    version,
-    url,
-    username,
-    password,
-    tls,
-    created_at,
-    updated_at
-  )
-SELECT
-  t.profile_id,
-  t.entrypoints,
-  t.overview,
-  t.config,
-  t.version,
-  p.url,
-  p.username,
-  p.password,
-  p.tls,
-  t.created_at,
-  t.updated_at
-FROM
-  traefik t
-  JOIN profiles p ON t.profile_id = p.id;
 
 -- Update profiles table structure
 -- Remove columns that are now in traefik_instances

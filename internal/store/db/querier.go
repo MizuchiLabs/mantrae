@@ -69,7 +69,6 @@ type Querier interface {
 	CreateTcpRouterDNSProvider(ctx context.Context, arg CreateTcpRouterDNSProviderParams) error
 	CreateTcpServersTransport(ctx context.Context, arg CreateTcpServersTransportParams) (TcpServersTransport, error)
 	CreateTcpService(ctx context.Context, arg CreateTcpServiceParams) (TcpService, error)
-	CreateTraefikInstance(ctx context.Context, arg CreateTraefikInstanceParams) (TraefikInstance, error)
 	CreateUdpRouter(ctx context.Context, arg CreateUdpRouterParams) (UdpRouter, error)
 	CreateUdpService(ctx context.Context, arg CreateUdpServiceParams) (UdpService, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
@@ -92,7 +91,7 @@ type Querier interface {
 	DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpRouterDNSProviderParams) error
 	DeleteTcpServersTransport(ctx context.Context, id int64) error
 	DeleteTcpService(ctx context.Context, id int64) error
-	DeleteTraefikInstance(ctx context.Context, id int64) error
+	DeleteTraefikInstanceByID(ctx context.Context, id int64) error
 	DeleteUdpRouter(ctx context.Context, id int64) error
 	DeleteUdpService(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id string) error
@@ -124,7 +123,8 @@ type Querier interface {
 	GetTcpServersTransport(ctx context.Context, id int64) (TcpServersTransport, error)
 	GetTcpService(ctx context.Context, id int64) (TcpService, error)
 	GetTcpServiceByName(ctx context.Context, name string) (TcpService, error)
-	GetTraefikInstance(ctx context.Context, id int64) (TraefikInstance, error)
+	GetTraefikInstanceByID(ctx context.Context, id int64) (TraefikInstance, error)
+	GetTraefikInstanceByName(ctx context.Context, name string) (TraefikInstance, error)
 	GetUdpRouter(ctx context.Context, id int64) (UdpRouter, error)
 	GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRoutersUsingEntryPointParams) ([]GetUdpRoutersUsingEntryPointRow, error)
 	GetUdpService(ctx context.Context, id int64) (UdpService, error)
@@ -181,6 +181,7 @@ type Querier interface {
 	ListUdpServicesEnabled(ctx context.Context, arg ListUdpServicesEnabledParams) ([]UdpService, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	LogError(ctx context.Context, arg LogErrorParams) error
+	PurgeTraefikInstances(ctx context.Context) error
 	UnsetDefaultDNSProvider(ctx context.Context) error
 	UnsetDefaultEntryPoint(ctx context.Context) error
 	UnsetDefaultHttpMiddleware(ctx context.Context) error
@@ -199,7 +200,6 @@ type Querier interface {
 	UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams) (TcpRouter, error)
 	UpdateTcpServersTransport(ctx context.Context, arg UpdateTcpServersTransportParams) (TcpServersTransport, error)
 	UpdateTcpService(ctx context.Context, arg UpdateTcpServiceParams) (TcpService, error)
-	UpdateTraefikInstance(ctx context.Context, arg UpdateTraefikInstanceParams) (TraefikInstance, error)
 	UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams) (UdpRouter, error)
 	UpdateUdpService(ctx context.Context, arg UpdateUdpServiceParams) (UdpService, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
@@ -207,6 +207,7 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserResetToken(ctx context.Context, arg UpdateUserResetTokenParams) error
 	UpsertSetting(ctx context.Context, arg UpsertSettingParams) error
+	UpsertTraefikInstance(ctx context.Context, arg UpsertTraefikInstanceParams) (TraefikInstance, error)
 }
 
 var _ Querier = (*Queries)(nil)

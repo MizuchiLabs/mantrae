@@ -24,8 +24,8 @@ type EntryPoint struct {
 	HTTP             HTTPConfig            `json:"http"`
 	HTTP2            *HTTP2Config          `json:"http_2,omitempty"`
 	HTTP3            *HTTP3Config          `json:"http_3,omitempty"`
-	UDP              *UDPConfig            `json:"udp,omitempty"`
-	Observability    *ObservabilityConfig  `json:"observability,omitempty"`
+	// UDP              *UDPConfig            `json:"udp,omitempty"`
+	Observability *ObservabilityConfig `json:"observability,omitempty"`
 }
 
 type TLSConfig struct {
@@ -55,10 +55,6 @@ type HTTP2Config struct {
 
 type HTTP3Config struct {
 	AdvertisedPort int `json:"advertised_port,omitempty"`
-}
-
-type UDPConfig struct {
-	Timeout time.Duration `json:"timeout,omitempty"`
 }
 
 type ObservabilityConfig struct {

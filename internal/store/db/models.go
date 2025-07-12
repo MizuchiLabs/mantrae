@@ -180,10 +180,11 @@ type TcpService struct {
 type TraefikInstance struct {
 	ID          int64                 `json:"id"`
 	ProfileID   int64                 `json:"profileId"`
+	Name        string                `json:"name"`
 	Entrypoints *schema.EntryPoints   `json:"entrypoints"`
 	Overview    *schema.Overview      `json:"overview"`
 	Config      *schema.Configuration `json:"config"`
-	Version     *string               `json:"version"`
+	Version     *schema.Version       `json:"version"`
 	Url         string                `json:"url"`
 	Username    *string               `json:"username"`
 	Password    *string               `json:"password"`

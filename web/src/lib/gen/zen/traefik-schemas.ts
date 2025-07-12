@@ -521,11 +521,11 @@ export const CertificateSchema = z.object({
 export type Certificate = z.infer<typeof CertificateSchema>;
 
 export const ForwardingTimeoutsSchema = z.object({
-	dialTimeout: z.number().optional(),
-	responseHeaderTimeout: z.number().optional(),
-	idleConnTimeout: z.number().optional(),
-	readIdleTimeout: z.number().optional(),
-	pingTimeout: z.number().optional(),
+	dialTimeout: z.string().optional(),
+	responseHeaderTimeout: z.string().optional(),
+	idleConnTimeout: z.string().optional(),
+	readIdleTimeout: z.string().optional(),
+	pingTimeout: z.string().optional(),
 });
 export type ForwardingTimeouts = z.infer<typeof ForwardingTimeoutsSchema>;
 
@@ -632,9 +632,9 @@ export const TLSClientConfigSchema = z.object({
 export type TLSClientConfig = z.infer<typeof TLSClientConfigSchema>;
 
 export const TCPServersTransportSchema = z.object({
-	dialKeepAlive: z.number().optional(),
-	dialTimeout: z.number().optional(),
-	terminationDelay: z.number().optional(),
+	dialKeepAlive: z.string().optional(),
+	dialTimeout: z.string().optional(),
+	terminationDelay: z.string().optional(),
 	tls: TLSClientConfigSchema.optional(),
 });
 export type TCPServersTransport = z.infer<typeof TCPServersTransportSchema>;

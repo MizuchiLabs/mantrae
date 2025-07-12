@@ -4,7 +4,6 @@ package traefik
 import (
 	"context"
 	"crypto/tls"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 )
 
 const (
@@ -23,88 +23,124 @@ const (
 	VersionAPI     = "/api/version"
 )
 
-func UpdateTraefikAPI(DB *sql.DB, instanceID int64) error {
-	q := db.New(DB)
-	instance, err := q.GetTraefikInstance(context.Background(), instanceID)
-	if err != nil {
-		return fmt.Errorf("failed to get traefik instance: %w", err)
+type APIResponse struct {
+	Name string
+	Data io.ReadCloser
+	Err  error
+}
+
+func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
+	instanceName := r.Header.Get(meta.HeaderTraefikName)
+	instanceURL := r.Header.Get(meta.HeaderTraefikURL)
+	if instanceName == "" || instanceURL == "" {
+		slog.Debug("Skipping traefik update, missing headers")
+		return
 	}
 
-	rawResp, err := fetch(instance, RawAPI)
+	instance, err := q.GetTraefikInstanceByName(context.Background(), instanceName)
 	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", instance.Url+RawAPI, err)
+		// Create new temporary instance
+		instance = db.TraefikInstance{
+			ProfileID: profileID,
+			Name:      instanceName,
+			Url:       instanceURL,
+		}
 	}
+
+	endpoints := []struct {
+		name string
+		path string
+	}{
+		{"raw", RawAPI},
+		{"entrypoints", EntrypointsAPI},
+		{"overview", OverviewAPI},
+		{"version", VersionAPI},
+	}
+
+	responses := make(chan APIResponse, len(endpoints))
+
+	// Fetch all endpoints concurrently
+	for _, endpoint := range endpoints {
+		go func(name, path string) {
+			data, err := fetch(instance, path)
+			responses <- APIResponse{Name: name, Data: data, Err: err}
+		}(endpoint.name, endpoint.path)
+	}
+
+	// Collect responses
+	results := make(map[string]io.ReadCloser)
+	var fetchErrors []error
+
+	for range len(endpoints) {
+		resp := <-responses
+		if resp.Err != nil {
+			slog.Error("failed to fetch traefik data", "endpoint", resp.Name, "error", resp.Err)
+			fetchErrors = append(fetchErrors, resp.Err)
+			continue
+		}
+		results[resp.Name] = resp.Data
+	}
+
+	// Clean up all response bodies
 	defer func() {
-		if err = rawResp.Close(); err != nil {
-			slog.Error("failed to close raw response", "error", err)
+		for _, body := range results {
+			if body != nil {
+				if err := body.Close(); err != nil {
+					slog.Error("failed to close response body", "error", err)
+				}
+			}
 		}
 	}()
 
+	// If any critical fetch failed, abort
+	if len(fetchErrors) > 0 {
+		return
+	}
+
+	// Decode responses
 	var config schema.Configuration
-	if err = json.NewDecoder(rawResp).Decode(&config); err != nil {
-		return fmt.Errorf("failed to decode raw data: %w", err)
+	if err := json.NewDecoder(results["raw"]).Decode(&config); err != nil {
+		slog.Error("failed to decode raw data", "error", err)
+		return
 	}
-
-	entrypointsResp, err := fetch(instance, EntrypointsAPI)
-	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", instance.Url+EntrypointsAPI, err)
-	}
-	defer func() {
-		if err = entrypointsResp.Close(); err != nil {
-			slog.Error("failed to close entrypoints response", "error", err)
-		}
-	}()
 
 	var entrypoints schema.EntryPoints
-	if err = json.NewDecoder(entrypointsResp).Decode(&entrypoints); err != nil {
-		return fmt.Errorf("failed to decode entrypoints: %w", err)
+	if err := json.NewDecoder(results["entrypoints"]).Decode(&entrypoints); err != nil {
+		slog.Error("failed to decode entrypoints", "error", err)
+		return
 	}
-
-	overviewResp, err := fetch(instance, OverviewAPI)
-	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", instance.Url+OverviewAPI, err)
-	}
-	defer func() {
-		if err = overviewResp.Close(); err != nil {
-			slog.Error("failed to close overview response", "error", err)
-		}
-	}()
 
 	var overview schema.Overview
-	if err = json.NewDecoder(overviewResp).Decode(&overview); err != nil {
-		return fmt.Errorf("failed to decode overview: %w", err)
+	if err := json.NewDecoder(results["overview"]).Decode(&overview); err != nil {
+		slog.Error("failed to decode overview", "error", err)
+		return
 	}
-
-	versionResp, err := fetch(instance, VersionAPI)
-	if err != nil {
-		return fmt.Errorf("failed to fetch %s: %w", instance.Url+VersionAPI, err)
-	}
-	defer func() {
-		if err = versionResp.Close(); err != nil {
-			slog.Error("failed to close version response", "error", err)
-		}
-	}()
 
 	var version schema.Version
-	if err := json.NewDecoder(versionResp).Decode(&version); err != nil {
-		return fmt.Errorf("failed to decode version: %w", err)
+	if err := json.NewDecoder(results["version"]).Decode(&version); err != nil {
+		slog.Error("failed to decode version", "error", err)
+		return
 	}
 
-	if _, err := q.UpdateTraefikInstance(context.Background(), db.UpdateTraefikInstanceParams{
-		ID:          instance.ID,
+	// Upsert with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if _, err := q.UpsertTraefikInstance(ctx, db.UpsertTraefikInstanceParams{
+		Name:        instance.Name,
 		Url:         instance.Url,
 		Username:    instance.Username,
 		Password:    instance.Password,
 		Tls:         instance.Tls,
 		Entrypoints: &entrypoints,
 		Overview:    &overview,
-		Version:     &version.Version,
 		Config:      &config,
+		Version:     &version,
+		ProfileID:   profileID,
 	}); err != nil {
-		return fmt.Errorf("failed to update api data: %w", err)
+		slog.Error("failed to update traefik instance", "error", err)
+		return
 	}
-
-	return nil
 }
 
 func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) {
@@ -112,11 +148,16 @@ func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) 
 		return nil, fmt.Errorf("invalid URL or endpoint")
 	}
 
-	client := http.Client{Timeout: time.Second * 10}
-	if !instance.Tls {
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
+	client := &http.Client{
+		Timeout: time.Second * 5,
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 10,
+			IdleConnTimeout:     10 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: !instance.Tls,
+			},
+		},
 	}
 
 	req, err := http.NewRequest("GET", instance.Url+endpoint, nil)
@@ -131,10 +172,16 @@ func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) 
 
 	resp, err := client.Do(req)
 	if err != nil {
+		if err = resp.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
 		return nil, fmt.Errorf("failed to fetch %s: %w", instance.Url+endpoint, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if err = resp.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 

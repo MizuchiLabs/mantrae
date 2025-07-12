@@ -30,3 +30,27 @@ export function formatArrayDisplay(
 	if (arr.length <= maxItems) return arr.join(", ");
 	return `${arr.slice(0, maxItems).join(", ")} (+${arr.length - maxItems})`;
 }
+
+export function parseGoDuration(input: string) {
+	const normalized = input
+		.toLowerCase()
+		.replace(/minutes?|mins?/g, "m")
+		.replace(/seconds?|secs?/g, "s")
+		.replace(/hours?|hrs?/g, "h")
+		.replace(/\s+/g, "");
+
+	const regex = /(?<value>[-+]?\d+)(?<unit>ns|us|µs|ms|s|m|h)/g;
+	const parts: string[] = [];
+	let match;
+
+	while ((match = regex.exec(normalized)) !== null) {
+		const groups = match.groups as { value: string; unit: string } | undefined;
+		if (!groups) return null;
+
+		const { value, unit } = groups;
+		parts.push(`${parseInt(value)}${unit}`);
+	}
+
+	if (parts.length === 0) return null;
+	return parts.join("");
+}

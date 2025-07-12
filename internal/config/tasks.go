@@ -8,58 +8,12 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/dns"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/traefik"
 )
 
 // setupBackgroundJobs initiates essential background operations for the application.
 func (a *App) setupBackgroundJobs(ctx context.Context) {
-	go a.syncTraefik(ctx)
 	go a.syncDNS(ctx)
 	go a.cleanupAgents(ctx)
-}
-
-// syncTraefik periodically syncs the Traefik configuration
-func (a *App) syncTraefik(ctx context.Context) {
-	duration, ok := a.SM.Get(ctx, settings.KeyTraefikSyncInterval)
-	if !ok {
-		slog.Error("Failed to get Traefik sync interval setting")
-		return
-	}
-	ticker := time.NewTicker(settings.AsDuration(duration))
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			profiles, err := a.Conn.GetQuery().
-				ListProfiles(ctx, db.ListProfilesParams{Limit: -1, Offset: 0})
-			if err != nil {
-				slog.Error("failed to list profiles", "error", err)
-				continue
-			}
-			for _, profile := range profiles {
-				instances, err := a.Conn.GetQuery().
-					ListTraefikInstances(ctx, db.ListTraefikInstancesParams{
-						ProfileID: profile.ID,
-						Limit:     -1,
-						Offset:    0,
-					})
-				if err != nil {
-					slog.Error("failed to list traefik instances", "error", err)
-					continue
-				}
-
-				for _, instance := range instances {
-					if err := traefik.UpdateTraefikAPI(a.Conn.Get(), instance.ID); err != nil {
-						slog.Error("failed to update traefik api", "error", err)
-						continue
-					}
-				}
-			}
-		}
-	}
 }
 
 // syncDNS periodically syncs the DNS records

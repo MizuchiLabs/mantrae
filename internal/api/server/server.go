@@ -169,6 +169,13 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
+	// PProf debug endpoints
+	// s.mux.HandleFunc("/debug/pprof/", pprof.Index)
+	// s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	// s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	// s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	// s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
 	// Static files
 	staticContent, err := fs.Sub(web.StaticFS, "build")
 	if err != nil {

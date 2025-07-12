@@ -204,9 +204,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createTcpServiceStmt, err = db.PrepareContext(ctx, createTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateTcpService: %w", err)
 	}
-	if q.createTraefikInstanceStmt, err = db.PrepareContext(ctx, createTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateTraefikInstance: %w", err)
-	}
 	if q.createUdpRouterStmt, err = db.PrepareContext(ctx, createUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUdpRouter: %w", err)
 	}
@@ -273,8 +270,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTcpServiceStmt, err = db.PrepareContext(ctx, deleteTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTcpService: %w", err)
 	}
-	if q.deleteTraefikInstanceStmt, err = db.PrepareContext(ctx, deleteTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTraefikInstance: %w", err)
+	if q.deleteTraefikInstanceByIDStmt, err = db.PrepareContext(ctx, deleteTraefikInstanceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteTraefikInstanceByID: %w", err)
 	}
 	if q.deleteUdpRouterStmt, err = db.PrepareContext(ctx, deleteUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUdpRouter: %w", err)
@@ -369,8 +366,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpServiceByNameStmt, err = db.PrepareContext(ctx, getTcpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServiceByName: %w", err)
 	}
-	if q.getTraefikInstanceStmt, err = db.PrepareContext(ctx, getTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTraefikInstance: %w", err)
+	if q.getTraefikInstanceByIDStmt, err = db.PrepareContext(ctx, getTraefikInstanceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTraefikInstanceByID: %w", err)
+	}
+	if q.getTraefikInstanceByNameStmt, err = db.PrepareContext(ctx, getTraefikInstanceByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTraefikInstanceByName: %w", err)
 	}
 	if q.getUdpRouterStmt, err = db.PrepareContext(ctx, getUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpRouter: %w", err)
@@ -540,6 +540,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.logErrorStmt, err = db.PrepareContext(ctx, logError); err != nil {
 		return nil, fmt.Errorf("error preparing query LogError: %w", err)
 	}
+	if q.purgeTraefikInstancesStmt, err = db.PrepareContext(ctx, purgeTraefikInstances); err != nil {
+		return nil, fmt.Errorf("error preparing query PurgeTraefikInstances: %w", err)
+	}
 	if q.unsetDefaultDNSProviderStmt, err = db.PrepareContext(ctx, unsetDefaultDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UnsetDefaultDNSProvider: %w", err)
 	}
@@ -594,9 +597,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateTcpServiceStmt, err = db.PrepareContext(ctx, updateTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateTcpService: %w", err)
 	}
-	if q.updateTraefikInstanceStmt, err = db.PrepareContext(ctx, updateTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateTraefikInstance: %w", err)
-	}
 	if q.updateUdpRouterStmt, err = db.PrepareContext(ctx, updateUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUdpRouter: %w", err)
 	}
@@ -617,6 +617,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
+	}
+	if q.upsertTraefikInstanceStmt, err = db.PrepareContext(ctx, upsertTraefikInstance); err != nil {
+		return nil, fmt.Errorf("error preparing query UpsertTraefikInstance: %w", err)
 	}
 	return &q, nil
 }
@@ -923,11 +926,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createTcpServiceStmt: %w", cerr)
 		}
 	}
-	if q.createTraefikInstanceStmt != nil {
-		if cerr := q.createTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createTraefikInstanceStmt: %w", cerr)
-		}
-	}
 	if q.createUdpRouterStmt != nil {
 		if cerr := q.createUdpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createUdpRouterStmt: %w", cerr)
@@ -1038,9 +1036,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteTcpServiceStmt: %w", cerr)
 		}
 	}
-	if q.deleteTraefikInstanceStmt != nil {
-		if cerr := q.deleteTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTraefikInstanceStmt: %w", cerr)
+	if q.deleteTraefikInstanceByIDStmt != nil {
+		if cerr := q.deleteTraefikInstanceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteTraefikInstanceByIDStmt: %w", cerr)
 		}
 	}
 	if q.deleteUdpRouterStmt != nil {
@@ -1198,9 +1196,14 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpServiceByNameStmt: %w", cerr)
 		}
 	}
-	if q.getTraefikInstanceStmt != nil {
-		if cerr := q.getTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTraefikInstanceStmt: %w", cerr)
+	if q.getTraefikInstanceByIDStmt != nil {
+		if cerr := q.getTraefikInstanceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTraefikInstanceByIDStmt: %w", cerr)
+		}
+	}
+	if q.getTraefikInstanceByNameStmt != nil {
+		if cerr := q.getTraefikInstanceByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTraefikInstanceByNameStmt: %w", cerr)
 		}
 	}
 	if q.getUdpRouterStmt != nil {
@@ -1483,6 +1486,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing logErrorStmt: %w", cerr)
 		}
 	}
+	if q.purgeTraefikInstancesStmt != nil {
+		if cerr := q.purgeTraefikInstancesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing purgeTraefikInstancesStmt: %w", cerr)
+		}
+	}
 	if q.unsetDefaultDNSProviderStmt != nil {
 		if cerr := q.unsetDefaultDNSProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing unsetDefaultDNSProviderStmt: %w", cerr)
@@ -1573,11 +1581,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateTcpServiceStmt: %w", cerr)
 		}
 	}
-	if q.updateTraefikInstanceStmt != nil {
-		if cerr := q.updateTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateTraefikInstanceStmt: %w", cerr)
-		}
-	}
 	if q.updateUdpRouterStmt != nil {
 		if cerr := q.updateUdpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateUdpRouterStmt: %w", cerr)
@@ -1611,6 +1614,11 @@ func (q *Queries) Close() error {
 	if q.upsertSettingStmt != nil {
 		if cerr := q.upsertSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertSettingStmt: %w", cerr)
+		}
+	}
+	if q.upsertTraefikInstanceStmt != nil {
+		if cerr := q.upsertTraefikInstanceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing upsertTraefikInstanceStmt: %w", cerr)
 		}
 	}
 	return err
@@ -1712,7 +1720,6 @@ type Queries struct {
 	createTcpRouterDNSProviderStmt          *sql.Stmt
 	createTcpServersTransportStmt           *sql.Stmt
 	createTcpServiceStmt                    *sql.Stmt
-	createTraefikInstanceStmt               *sql.Stmt
 	createUdpRouterStmt                     *sql.Stmt
 	createUdpServiceStmt                    *sql.Stmt
 	createUserStmt                          *sql.Stmt
@@ -1735,7 +1742,7 @@ type Queries struct {
 	deleteTcpRouterDNSProviderStmt          *sql.Stmt
 	deleteTcpServersTransportStmt           *sql.Stmt
 	deleteTcpServiceStmt                    *sql.Stmt
-	deleteTraefikInstanceStmt               *sql.Stmt
+	deleteTraefikInstanceByIDStmt           *sql.Stmt
 	deleteUdpRouterStmt                     *sql.Stmt
 	deleteUdpServiceStmt                    *sql.Stmt
 	deleteUserStmt                          *sql.Stmt
@@ -1767,7 +1774,8 @@ type Queries struct {
 	getTcpServersTransportStmt              *sql.Stmt
 	getTcpServiceStmt                       *sql.Stmt
 	getTcpServiceByNameStmt                 *sql.Stmt
-	getTraefikInstanceStmt                  *sql.Stmt
+	getTraefikInstanceByIDStmt              *sql.Stmt
+	getTraefikInstanceByNameStmt            *sql.Stmt
 	getUdpRouterStmt                        *sql.Stmt
 	getUdpRoutersUsingEntryPointStmt        *sql.Stmt
 	getUdpServiceStmt                       *sql.Stmt
@@ -1824,6 +1832,7 @@ type Queries struct {
 	listUdpServicesEnabledStmt              *sql.Stmt
 	listUsersStmt                           *sql.Stmt
 	logErrorStmt                            *sql.Stmt
+	purgeTraefikInstancesStmt               *sql.Stmt
 	unsetDefaultDNSProviderStmt             *sql.Stmt
 	unsetDefaultEntryPointStmt              *sql.Stmt
 	unsetDefaultHttpMiddlewareStmt          *sql.Stmt
@@ -1842,7 +1851,6 @@ type Queries struct {
 	updateTcpRouterStmt                     *sql.Stmt
 	updateTcpServersTransportStmt           *sql.Stmt
 	updateTcpServiceStmt                    *sql.Stmt
-	updateTraefikInstanceStmt               *sql.Stmt
 	updateUdpRouterStmt                     *sql.Stmt
 	updateUdpServiceStmt                    *sql.Stmt
 	updateUserStmt                          *sql.Stmt
@@ -1850,6 +1858,7 @@ type Queries struct {
 	updateUserPasswordStmt                  *sql.Stmt
 	updateUserResetTokenStmt                *sql.Stmt
 	upsertSettingStmt                       *sql.Stmt
+	upsertTraefikInstanceStmt               *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -1916,7 +1925,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createTcpRouterDNSProviderStmt:          q.createTcpRouterDNSProviderStmt,
 		createTcpServersTransportStmt:           q.createTcpServersTransportStmt,
 		createTcpServiceStmt:                    q.createTcpServiceStmt,
-		createTraefikInstanceStmt:               q.createTraefikInstanceStmt,
 		createUdpRouterStmt:                     q.createUdpRouterStmt,
 		createUdpServiceStmt:                    q.createUdpServiceStmt,
 		createUserStmt:                          q.createUserStmt,
@@ -1939,7 +1947,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteTcpRouterDNSProviderStmt:          q.deleteTcpRouterDNSProviderStmt,
 		deleteTcpServersTransportStmt:           q.deleteTcpServersTransportStmt,
 		deleteTcpServiceStmt:                    q.deleteTcpServiceStmt,
-		deleteTraefikInstanceStmt:               q.deleteTraefikInstanceStmt,
+		deleteTraefikInstanceByIDStmt:           q.deleteTraefikInstanceByIDStmt,
 		deleteUdpRouterStmt:                     q.deleteUdpRouterStmt,
 		deleteUdpServiceStmt:                    q.deleteUdpServiceStmt,
 		deleteUserStmt:                          q.deleteUserStmt,
@@ -1971,7 +1979,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpServersTransportStmt:              q.getTcpServersTransportStmt,
 		getTcpServiceStmt:                       q.getTcpServiceStmt,
 		getTcpServiceByNameStmt:                 q.getTcpServiceByNameStmt,
-		getTraefikInstanceStmt:                  q.getTraefikInstanceStmt,
+		getTraefikInstanceByIDStmt:              q.getTraefikInstanceByIDStmt,
+		getTraefikInstanceByNameStmt:            q.getTraefikInstanceByNameStmt,
 		getUdpRouterStmt:                        q.getUdpRouterStmt,
 		getUdpRoutersUsingEntryPointStmt:        q.getUdpRoutersUsingEntryPointStmt,
 		getUdpServiceStmt:                       q.getUdpServiceStmt,
@@ -2028,6 +2037,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listUdpServicesEnabledStmt:              q.listUdpServicesEnabledStmt,
 		listUsersStmt:                           q.listUsersStmt,
 		logErrorStmt:                            q.logErrorStmt,
+		purgeTraefikInstancesStmt:               q.purgeTraefikInstancesStmt,
 		unsetDefaultDNSProviderStmt:             q.unsetDefaultDNSProviderStmt,
 		unsetDefaultEntryPointStmt:              q.unsetDefaultEntryPointStmt,
 		unsetDefaultHttpMiddlewareStmt:          q.unsetDefaultHttpMiddlewareStmt,
@@ -2046,7 +2056,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateTcpRouterStmt:                     q.updateTcpRouterStmt,
 		updateTcpServersTransportStmt:           q.updateTcpServersTransportStmt,
 		updateTcpServiceStmt:                    q.updateTcpServiceStmt,
-		updateTraefikInstanceStmt:               q.updateTraefikInstanceStmt,
 		updateUdpRouterStmt:                     q.updateUdpRouterStmt,
 		updateUdpServiceStmt:                    q.updateUdpServiceStmt,
 		updateUserStmt:                          q.updateUserStmt,
@@ -2054,5 +2063,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateUserPasswordStmt:                  q.updateUserPasswordStmt,
 		updateUserResetTokenStmt:                q.updateUserResetTokenStmt,
 		upsertSettingStmt:                       q.upsertSettingStmt,
+		upsertTraefikInstanceStmt:               q.upsertTraefikInstanceStmt,
 	}
 }

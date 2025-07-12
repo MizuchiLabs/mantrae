@@ -25,49 +25,33 @@ func (q *Queries) CountTraefikInstances(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const createTraefikInstance = `-- name: CreateTraefikInstance :one
-INSERT INTO
-  traefik_instances (
-    profile_id,
-    url,
-    username,
-    password,
-    tls,
-    created_at,
-    updated_at
-  )
-VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+const deleteTraefikInstanceByID = `-- name: DeleteTraefikInstanceByID :exec
+DELETE FROM traefik_instances
+WHERE
+  id = ?
 `
 
-type CreateTraefikInstanceParams struct {
-	ProfileID int64   `json:"profileId"`
-	Url       string  `json:"url"`
-	Username  *string `json:"username"`
-	Password  *string `json:"password"`
-	Tls       bool    `json:"tls"`
+func (q *Queries) DeleteTraefikInstanceByID(ctx context.Context, id int64) error {
+	_, err := q.exec(ctx, q.deleteTraefikInstanceByIDStmt, deleteTraefikInstanceByID, id)
+	return err
 }
 
-func (q *Queries) CreateTraefikInstance(ctx context.Context, arg CreateTraefikInstanceParams) (TraefikInstance, error) {
-	row := q.queryRow(ctx, q.createTraefikInstanceStmt, createTraefikInstance,
-		arg.ProfileID,
-		arg.Url,
-		arg.Username,
-		arg.Password,
-		arg.Tls,
-	)
+const getTraefikInstanceByID = `-- name: GetTraefikInstanceByID :one
+SELECT
+  id, profile_id, name, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+FROM
+  traefik_instances
+WHERE
+  id = ?
+`
+
+func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id int64) (TraefikInstance, error) {
+	row := q.queryRow(ctx, q.getTraefikInstanceByIDStmt, getTraefikInstanceByID, id)
 	var i TraefikInstance
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.Name,
 		&i.Entrypoints,
 		&i.Overview,
 		&i.Config,
@@ -82,32 +66,22 @@ func (q *Queries) CreateTraefikInstance(ctx context.Context, arg CreateTraefikIn
 	return i, err
 }
 
-const deleteTraefikInstance = `-- name: DeleteTraefikInstance :exec
-DELETE FROM traefik_instances
-WHERE
-  id = ?
-`
-
-func (q *Queries) DeleteTraefikInstance(ctx context.Context, id int64) error {
-	_, err := q.exec(ctx, q.deleteTraefikInstanceStmt, deleteTraefikInstance, id)
-	return err
-}
-
-const getTraefikInstance = `-- name: GetTraefikInstance :one
+const getTraefikInstanceByName = `-- name: GetTraefikInstanceByName :one
 SELECT
-  id, profile_id, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+  id, profile_id, name, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
 FROM
   traefik_instances
 WHERE
-  id = ?
+  name = ?
 `
 
-func (q *Queries) GetTraefikInstance(ctx context.Context, id int64) (TraefikInstance, error) {
-	row := q.queryRow(ctx, q.getTraefikInstanceStmt, getTraefikInstance, id)
+func (q *Queries) GetTraefikInstanceByName(ctx context.Context, name string) (TraefikInstance, error) {
+	row := q.queryRow(ctx, q.getTraefikInstanceByNameStmt, getTraefikInstanceByName, name)
 	var i TraefikInstance
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.Name,
 		&i.Entrypoints,
 		&i.Overview,
 		&i.Config,
@@ -124,7 +98,7 @@ func (q *Queries) GetTraefikInstance(ctx context.Context, id int64) (TraefikInst
 
 const listTraefikInstances = `-- name: ListTraefikInstances :many
 SELECT
-  id, profile_id, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+  id, profile_id, name, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
 FROM
   traefik_instances
 WHERE
@@ -155,6 +129,7 @@ func (q *Queries) ListTraefikInstances(ctx context.Context, arg ListTraefikInsta
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProfileID,
+			&i.Name,
 			&i.Entrypoints,
 			&i.Overview,
 			&i.Config,
@@ -179,23 +154,64 @@ func (q *Queries) ListTraefikInstances(ctx context.Context, arg ListTraefikInsta
 	return items, nil
 }
 
-const updateTraefikInstance = `-- name: UpdateTraefikInstance :one
-UPDATE traefik_instances
-SET
-  url = ?,
-  username = ?,
-  password = ?,
-  tls = ?,
-  entrypoints = ?,
-  overview = ?,
-  config = ?,
-  version = ?,
-  updated_at = CURRENT_TIMESTAMP
+const purgeTraefikInstances = `-- name: PurgeTraefikInstances :exec
+DELETE FROM traefik_instances
 WHERE
-  id = ? RETURNING id, profile_id, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+  updated_at < DATETIME ('now', '-10 minutes')
 `
 
-type UpdateTraefikInstanceParams struct {
+func (q *Queries) PurgeTraefikInstances(ctx context.Context) error {
+	_, err := q.exec(ctx, q.purgeTraefikInstancesStmt, purgeTraefikInstances)
+	return err
+}
+
+const upsertTraefikInstance = `-- name: UpsertTraefikInstance :one
+INSERT INTO
+  traefik_instances (
+    profile_id,
+    name,
+    url,
+    username,
+    password,
+    tls,
+    entrypoints,
+    overview,
+    config,
+    version,
+    created_at,
+    updated_at
+  )
+VALUES
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) ON CONFLICT (profile_id, name) DO
+UPDATE
+SET
+  url = EXCLUDED.url,
+  username = EXCLUDED.username,
+  password = EXCLUDED.password,
+  tls = EXCLUDED.tls,
+  entrypoints = EXCLUDED.entrypoints,
+  overview = EXCLUDED.overview,
+  config = EXCLUDED.config,
+  version = EXCLUDED.version,
+  updated_at = CURRENT_TIMESTAMP RETURNING id, profile_id, name, entrypoints, overview, config, version, url, username, password, tls, created_at, updated_at
+`
+
+type UpsertTraefikInstanceParams struct {
+	ProfileID   int64                 `json:"profileId"`
+	Name        string                `json:"name"`
 	Url         string                `json:"url"`
 	Username    *string               `json:"username"`
 	Password    *string               `json:"password"`
@@ -203,12 +219,13 @@ type UpdateTraefikInstanceParams struct {
 	Entrypoints *schema.EntryPoints   `json:"entrypoints"`
 	Overview    *schema.Overview      `json:"overview"`
 	Config      *schema.Configuration `json:"config"`
-	Version     *string               `json:"version"`
-	ID          int64                 `json:"id"`
+	Version     *schema.Version       `json:"version"`
 }
 
-func (q *Queries) UpdateTraefikInstance(ctx context.Context, arg UpdateTraefikInstanceParams) (TraefikInstance, error) {
-	row := q.queryRow(ctx, q.updateTraefikInstanceStmt, updateTraefikInstance,
+func (q *Queries) UpsertTraefikInstance(ctx context.Context, arg UpsertTraefikInstanceParams) (TraefikInstance, error) {
+	row := q.queryRow(ctx, q.upsertTraefikInstanceStmt, upsertTraefikInstance,
+		arg.ProfileID,
+		arg.Name,
 		arg.Url,
 		arg.Username,
 		arg.Password,
@@ -217,12 +234,12 @@ func (q *Queries) UpdateTraefikInstance(ctx context.Context, arg UpdateTraefikIn
 		arg.Overview,
 		arg.Config,
 		arg.Version,
-		arg.ID,
 	)
 	var i TraefikInstance
 	err := row.Scan(
 		&i.ID,
 		&i.ProfileID,
+		&i.Name,
 		&i.Entrypoints,
 		&i.Overview,
 		&i.Config,

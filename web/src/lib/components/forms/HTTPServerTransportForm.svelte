@@ -8,6 +8,7 @@
 	import { Trash2, Plus } from '@lucide/svelte';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 	import Separator from '../ui/separator/separator.svelte';
+	import { parseGoDuration } from '$lib/utils';
 
 	let { transport = $bindable() }: { transport: ServersTransport } = $props();
 	let config = $state<HTTPServersTransport>(
@@ -47,216 +48,264 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="grid grid-cols-2 gap-2 rounded-lg border p-3">
-		<div class="space-y-2">
-			<Label for="serverName">Server Name</Label>
-			<Input id="serverName" bind:value={config.serverName} placeholder="server.example.com" />
-		</div>
-		<div class="space-y-2">
-			<Label for="peerCertURI">Peer Certificate URI</Label>
-			<Input
-				id="peerCertURI"
-				bind:value={config.peerCertURI}
-				placeholder="spiffe://example.org/service"
-			/>
-		</div>
-	</div>
+	<Separator />
 
-	<div class="flex items-center justify-between rounded-lg border p-3">
-		<div class="space-y-1">
-			<Label class="text-sm">Skip TLS verification (insecure)</Label>
-			<!-- <p class="text-muted-foreground text-xs">Skip TLS verification</p> -->
+	<div class="space-y-4">
+		<div class="flex flex-col gap-1">
+			<Label for="serverName" class="text-sm font-medium">General</Label>
+			<p class="text-muted-foreground text-xs">Configure general settings</p>
 		</div>
 
-		<CustomSwitch
-			checked={config.insecureSkipVerify}
-			onCheckedChange={(checked) => (config.insecureSkipVerify = checked)}
-		/>
-	</div>
-
-	<div class="flex items-center justify-between rounded-lg border p-3">
-		<div class="space-y-1">
-			<Label class="text-sm">Disable HTTP/2</Label>
-			<!-- <p class="text-muted-foreground text-xs">Disable HTTP/2</p> -->
-		</div>
-		<CustomSwitch
-			checked={config.disableHTTP2}
-			onCheckedChange={(checked) => (config.disableHTTP2 = checked)}
-		/>
-	</div>
-
-	<div class="space-y-2 rounded-lg border p-3">
-		<Label for="rootCAs">Root CAs</Label>
-		{#each config.rootCAs || [] as rootCA, index (index)}
-			<div class="flex gap-2">
+		<div class="grid grid-cols-2 gap-2">
+			<div class="space-y-2">
+				<Label for="serverName">Server Name</Label>
+				<Input id="serverName" bind:value={config.serverName} placeholder="server.example.com" />
+			</div>
+			<div class="space-y-2">
+				<Label for="peerCertURI">Peer Certificate URI</Label>
 				<Input
-					value={rootCA}
-					oninput={(e) => {
-						let input = e.target as HTMLInputElement;
-						if (!config.rootCAs) config.rootCAs = [];
-						config.rootCAs[index] = input.value;
-					}}
-					placeholder="/path/to/ca.pem"
+					id="peerCertURI"
+					bind:value={config.peerCertURI}
+					placeholder="spiffe://example.org/service"
 				/>
-				<Button variant="outline" size="icon" onclick={() => removeRootCA(index)}>
-					<Trash2 class="h-4 w-4" />
-				</Button>
 			</div>
-		{/each}
-		<Button variant="outline" onclick={addRootCA} class="w-full">
-			<Plus />
-			Add Root CA
-		</Button>
-	</div>
+		</div>
 
-	<div class="space-y-2 rounded-lg border p-3">
-		<Label for="certificates">Client Certificates</Label>
-
-		{#each config.certificates || [] as cert, index (index)}
-			<div class="py-2">
-				<Separator />
+		<div class="flex items-center justify-between rounded-lg border p-3">
+			<div class="space-y-1">
+				<Label class="text-sm">Skip TLS verification (insecure)</Label>
+				<!-- <p class="text-muted-foreground text-xs">Skip TLS verification</p> -->
 			</div>
-			<div class="flex justify-between gap-2">
-				<div class="grid grid-cols-2 gap-2">
-					<div class="space-y-2">
-						<Label>Certificate File</Label>
-						<Input
-							value={cert.certFile}
-							oninput={(e) => {
-								let input = e.target as HTMLInputElement;
-								if (!config.certificates) config.certificates = [];
-								config.certificates[index].certFile = input.value;
-							}}
-							placeholder="/path/to/cert.pem"
-						/>
-					</div>
-					<div class="space-y-2">
-						<Label>Key File</Label>
-						<Input
-							value={cert.keyFile}
-							oninput={(e) => {
-								let input = e.target as HTMLInputElement;
-								if (!input.value) {
-									config.certificates = config.certificates?.filter((_, i) => i !== index);
-									return;
-								}
-								if (!config.certificates) config.certificates = [];
-								config.certificates[index].keyFile = input.value;
-							}}
-							placeholder="/path/to/key.pem"
-						/>
-					</div>
-				</div>
-				<Button
-					variant="outline"
-					size="icon"
-					onclick={() => removeCertificate(index)}
-					class="self-end"
-				>
-					<Trash2 />
-				</Button>
-			</div>
-		{/each}
-		<Button variant="outline" onclick={addCertificate} class="w-full">
-			<Plus />
-			Add Certificate
-		</Button>
-	</div>
 
-	<div class="space-y-2 rounded-lg border p-3">
-		<div class="space-y-2">
-			<Label for="maxIdleConnsPerHost">Max Idle Connections Per Host</Label>
-			<Input
-				id="maxIdleConnsPerHost"
-				type="number"
-				bind:value={config.maxIdleConnsPerHost}
-				placeholder="10"
+			<CustomSwitch
+				checked={config.insecureSkipVerify}
+				onCheckedChange={(checked) => (config.insecureSkipVerify = checked)}
 			/>
+		</div>
+
+		<div class="flex items-center justify-between rounded-lg border p-3">
+			<div class="space-y-1">
+				<Label class="text-sm">Disable HTTP/2</Label>
+				<!-- <p class="text-muted-foreground text-xs">Disable HTTP/2</p> -->
+			</div>
+			<CustomSwitch
+				checked={config.disableHTTP2}
+				onCheckedChange={(checked) => (config.disableHTTP2 = checked)}
+			/>
+		</div>
+
+		<div class="space-y-2">
+			<div class="space-y-2">
+				<Label for="maxIdleConnsPerHost">Max Idle Connections Per Host</Label>
+				<Input
+					id="maxIdleConnsPerHost"
+					type="number"
+					bind:value={config.maxIdleConnsPerHost}
+					placeholder="10"
+				/>
+			</div>
 		</div>
 	</div>
 
-	<div class="space-y-2 rounded-lg border p-3">
-		<Label for="forwardingTimeouts" class="pb-1 text-lg font-medium">Forwarding Timeouts</Label>
+	<Separator />
+
+	<div class="space-y-2">
+		<div class="flex flex-col gap-1 pb-2">
+			<Label class="text-sm font-medium">Certificates</Label>
+			<p class="text-muted-foreground text-xs">Configure TLS certificates</p>
+		</div>
+
+		<div class="space-y-2">
+			<Label for="rootCAs">Root CAs</Label>
+			{#each config.rootCAs || [] as rootCA, index (index)}
+				<div class="flex gap-2">
+					<Input
+						value={rootCA}
+						oninput={(e) => {
+							let input = e.target as HTMLInputElement;
+							if (!config.rootCAs) config.rootCAs = [];
+							config.rootCAs[index] = input.value;
+						}}
+						placeholder="/path/to/ca.pem"
+					/>
+					<Button variant="outline" size="icon" onclick={() => removeRootCA(index)}>
+						<Trash2 class="h-4 w-4" />
+					</Button>
+				</div>
+			{/each}
+			<Button variant="outline" onclick={addRootCA} class="w-full">
+				<Plus />
+				Add Root CA
+			</Button>
+		</div>
+
+		<div class="space-y-2">
+			<Label for="certificates">Client Certificates</Label>
+
+			{#each config.certificates || [] as cert, index (index)}
+				<div class="py-2">
+					<Separator />
+				</div>
+				<div class="flex justify-between gap-2">
+					<div class="grid grid-cols-2 gap-2">
+						<div class="space-y-2">
+							<Label>Certificate File</Label>
+							<Input
+								value={cert.certFile}
+								oninput={(e) => {
+									let input = e.target as HTMLInputElement;
+									if (!config.certificates) config.certificates = [];
+									config.certificates[index].certFile = input.value;
+								}}
+								placeholder="/path/to/cert.pem"
+							/>
+						</div>
+						<div class="space-y-2">
+							<Label>Key File</Label>
+							<Input
+								value={cert.keyFile}
+								oninput={(e) => {
+									let input = e.target as HTMLInputElement;
+									if (!input.value) {
+										config.certificates = config.certificates?.filter((_, i) => i !== index);
+										return;
+									}
+									if (!config.certificates) config.certificates = [];
+									config.certificates[index].keyFile = input.value;
+								}}
+								placeholder="/path/to/key.pem"
+							/>
+						</div>
+					</div>
+					<Button
+						variant="outline"
+						size="icon"
+						onclick={() => removeCertificate(index)}
+						class="self-end"
+					>
+						<Trash2 />
+					</Button>
+				</div>
+			{/each}
+			<Button variant="outline" onclick={addCertificate} class="w-full">
+				<Plus />
+				Add Certificate
+			</Button>
+		</div>
+	</div>
+
+	<Separator />
+
+	<div class="space-y-2">
+		<div class="flex flex-col gap-1 pb-2">
+			<Label for="forwardingTimeouts" class="text-sm font-medium">Forwarding Timeouts</Label>
+			<p class="text-muted-foreground text-xs">Configure timeouts for forwarding</p>
+		</div>
+
 		<div class="flex flex-col gap-4">
 			<div class="space-y-2">
-				<Label for="dialTimeout">Dial Timeout (ms)</Label>
+				<Label for="dialTimeout">Dial Timeout</Label>
 				<Input
 					id="dialTimeout"
-					type="number"
 					value={config.forwardingTimeouts?.dialTimeout}
 					oninput={(e) => {
 						let input = e.target as HTMLInputElement;
 						if (!config.forwardingTimeouts) config.forwardingTimeouts = {};
-						config.forwardingTimeouts.dialTimeout = parseInt(input.value);
+						config.forwardingTimeouts.dialTimeout = input.value;
 					}}
-					placeholder="30000"
+					onblur={(e) => {
+						let input = e.target as HTMLInputElement;
+						const parsed = parseGoDuration(input.value);
+						if (parsed) input.value = parsed;
+					}}
+					placeholder="30s"
 				/>
 			</div>
 			<div class="space-y-2">
-				<Label for="responseHeaderTimeout">Response Header Timeout (ms)</Label>
+				<Label for="responseHeaderTimeout">Response Header Timeout</Label>
 				<Input
 					id="responseHeaderTimeout"
-					type="number"
 					value={config.forwardingTimeouts?.responseHeaderTimeout}
 					oninput={(e) => {
 						let input = e.target as HTMLInputElement;
 						if (!config.forwardingTimeouts) config.forwardingTimeouts = {};
-						config.forwardingTimeouts.responseHeaderTimeout = parseInt(input.value);
+						config.forwardingTimeouts.responseHeaderTimeout = input.value;
 					}}
-					placeholder="10000"
+					onblur={(e) => {
+						let input = e.target as HTMLInputElement;
+						const parsed = parseGoDuration(input.value);
+						if (parsed) input.value = parsed;
+					}}
+					placeholder="10s"
 				/>
 			</div>
 		</div>
 		<div class="grid grid-cols-2 gap-2">
 			<div class="space-y-2">
-				<Label for="idleConnTimeout">Idle Connection Timeout (ms)</Label>
+				<Label for="idleConnTimeout">Idle Connection Timeout</Label>
 				<Input
 					id="idleConnTimeout"
-					type="number"
 					value={config.forwardingTimeouts?.idleConnTimeout}
 					oninput={(e) => {
 						let input = e.target as HTMLInputElement;
 						if (!config.forwardingTimeouts) config.forwardingTimeouts = {};
-						config.forwardingTimeouts.idleConnTimeout = input.value
-							? parseInt(input.value)
-							: undefined;
+						config.forwardingTimeouts.idleConnTimeout = input.value;
 					}}
-					placeholder="90000"
+					onblur={(e) => {
+						let input = e.target as HTMLInputElement;
+						const parsed = parseGoDuration(input.value);
+						if (parsed) input.value = parsed;
+					}}
+					placeholder="1m30s"
 				/>
 			</div>
 			<div class="space-y-2">
-				<Label for="readIdleTimeout">Read Idle Timeout (ms)</Label>
+				<Label for="readIdleTimeout">Read Idle Timeout</Label>
 				<Input
 					id="readIdleTimeout"
-					type="number"
 					value={config.forwardingTimeouts?.readIdleTimeout}
 					oninput={(e) => {
 						let input = e.target as HTMLInputElement;
 						if (!config.forwardingTimeouts) config.forwardingTimeouts = {};
-						config.forwardingTimeouts.readIdleTimeout = parseInt(input.value);
+						config.forwardingTimeouts.readIdleTimeout = input.value;
 					}}
-					placeholder="10000"
+					onblur={(e) => {
+						let input = e.target as HTMLInputElement;
+						const parsed = parseGoDuration(input.value);
+						if (parsed) input.value = parsed;
+					}}
+					placeholder="10s"
 				/>
 			</div>
 		</div>
 		<div class="space-y-2">
-			<Label for="pingTimeout">Ping Timeout (ms)</Label>
+			<Label for="pingTimeout">Ping Timeout</Label>
 			<Input
 				id="pingTimeout"
-				type="number"
 				value={config.forwardingTimeouts?.pingTimeout}
 				oninput={(e) => {
 					let input = e.target as HTMLInputElement;
 					if (!config.forwardingTimeouts) config.forwardingTimeouts = {};
-					config.forwardingTimeouts.pingTimeout = parseInt(input.value);
+					config.forwardingTimeouts.pingTimeout = input.value;
 				}}
-				placeholder="15000"
+				onblur={(e) => {
+					let input = e.target as HTMLInputElement;
+					const parsed = parseGoDuration(input.value);
+					if (parsed) input.value = parsed;
+				}}
+				placeholder="15s"
 			/>
 		</div>
 	</div>
 
-	<div class="space-y-2 rounded-lg border p-3">
-		<Label for="spiffe" class="pb-1 text-lg font-medium">SPIFFE Configuration</Label>
+	<Separator />
+
+	<div class="space-y-2">
+		<div class="flex flex-col gap-1 pb-2">
+			<Label for="spiffe" class="text-sm font-medium">SPIFFE Configuration</Label>
+			<p class="text-muted-foreground text-xs">Configure SPIFFE integration</p>
+		</div>
+
 		<div class="space-y-2">
 			<Label for="trustDomain">Trust Domain</Label>
 			<Input
