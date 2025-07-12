@@ -3,5 +3,7 @@ package meta
 const (
 	CookieName         = "auth_token"
 	HeaderAgentID      = "Mantrae-Agent-Id"
-	HeaderTraefikToken = "Mantrae-Traefik-Token"
+	HeaderTraefikName  = "Traefik-Instance-Name"
+	HeaderTraefikURL   = "Traefik-Instance-Url"
+	HeaderTraefikToken = "Traefik-Instance-Token"
 )

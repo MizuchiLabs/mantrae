@@ -200,6 +200,24 @@ func getIP(services []string, validationFunc func(string) bool) (string, error) 
 	return "", fmt.Errorf("failed to get IP from any service")
 }
 
+// GetClientIP returns the IP address of the client
+func GetClientIP(r *http.Request) string {
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		ips := strings.Split(forwarded, ",")
+		return strings.TrimSpace(ips[0])
+	}
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return ip
+}
+
 func IsValidIPv4(ip string) bool {
 	parsedIP := net.ParseIP(ip)
 	if parsedIP == nil {
