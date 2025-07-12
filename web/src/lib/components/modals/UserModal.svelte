@@ -32,7 +32,6 @@
 				payload.id = item.id;
 				payload.username = item.username;
 				payload.email = item.email;
-				payload.isAdmin = item.isAdmin;
 				if (item.password && item.password.length > 0) {
 					payload.password = item.password;
 				}
@@ -42,8 +41,7 @@
 				await userClient.createUser({
 					username: item.username,
 					password: item.password,
-					email: item.email,
-					isAdmin: item.isAdmin
+					email: item.email
 				});
 				toast.success(`User ${item.username} created successfully.`);
 			}
@@ -136,34 +134,34 @@
 				</div>
 			</div>
 
-			{#if !isSelf}
-				<Separator />
+			<!-- {#if !isSelf} -->
+			<!-- 	<Separator /> -->
 
-				<!-- Permissions -->
-				<div class="space-y-4">
-					<div class="space-y-2">
-						<Label class="text-sm font-medium">Permissions</Label>
-						<div class="flex items-center justify-between rounded-lg border p-3">
-							<div class="space-y-1">
-								<Label for="admin" class="text-sm font-normal">Administrator Access</Label>
-								<p class="text-muted-foreground text-xs">
-									Grant full system access and user management privileges
-								</p>
-							</div>
-							<CustomSwitch bind:checked={item.isAdmin} size="md" />
-						</div>
+			<!-- Permissions -->
+			<!-- 	<div class="space-y-4"> -->
+			<!-- 		<div class="space-y-2"> -->
+			<!-- 			<Label class="text-sm font-medium">Permissions</Label> -->
+			<!-- 			<div class="flex items-center justify-between rounded-lg border p-3"> -->
+			<!-- 				<div class="space-y-1"> -->
+			<!-- 					<Label for="admin" class="text-sm font-normal">Administrator Access</Label> -->
+			<!-- 					<p class="text-muted-foreground text-xs"> -->
+			<!-- 						Grant full system access and user management privileges -->
+			<!-- 					</p> -->
+			<!-- 				</div> -->
+			<!-- 				<CustomSwitch bind:checked={item.isAdmin} size="md" /> -->
+			<!-- 			</div> -->
 
-						{#if item.isAdmin}
-							<div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
-								<p class="text-xs text-amber-800">
-									<strong>Note:</strong> Admin users have full access to all system features and can
-									manage other users.
-								</p>
-							</div>
-						{/if}
-					</div>
-				</div>
-			{/if}
+			<!-- 			{#if item.isAdmin} -->
+			<!-- 				<div class="rounded-lg border border-amber-200 bg-amber-50 p-3"> -->
+			<!-- 					<p class="text-xs text-amber-800"> -->
+			<!-- 						<strong>Note:</strong> Admin users have full access to all system features and can -->
+			<!-- 						manage other users. -->
+			<!-- 					</p> -->
+			<!-- 				</div> -->
+			<!-- 			{/if} -->
+			<!-- 		</div> -->
+			<!-- 	</div> -->
+			<!-- {/if} -->
 
 			<Separator />
 

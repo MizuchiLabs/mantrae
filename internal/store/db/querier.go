@@ -132,7 +132,6 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
 	GetUserByID(ctx context.Context, id string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
-	ListAdminUsers(ctx context.Context, arg ListAdminUsersParams) ([]User, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent, error)
 	ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error)
 	ListDnsProviders(ctx context.Context, arg ListDnsProvidersParams) ([]DnsProvider, error)

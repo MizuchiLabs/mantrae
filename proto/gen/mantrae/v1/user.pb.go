@@ -29,7 +29,6 @@ type User struct {
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
 	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	IsAdmin       bool                   `protobuf:"varint,5,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
 	Otp           string                 `protobuf:"bytes,6,opt,name=otp,proto3" json:"otp,omitempty"`
 	OtpExpiry     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=otp_expiry,json=otpExpiry,proto3" json:"otp_expiry,omitempty"`
 	LastLogin     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
@@ -95,13 +94,6 @@ func (x *User) GetEmail() string {
 		return x.Email
 	}
 	return ""
-}
-
-func (x *User) GetIsAdmin() bool {
-	if x != nil {
-		return x.IsAdmin
-	}
-	return false
 }
 
 func (x *User) GetOtp() string {
@@ -744,7 +736,6 @@ type CreateUserRequest struct {
 	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	IsAdmin       bool                   `protobuf:"varint,4,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -800,13 +791,6 @@ func (x *CreateUserRequest) GetEmail() string {
 	return ""
 }
 
-func (x *CreateUserRequest) GetIsAdmin() bool {
-	if x != nil {
-		return x.IsAdmin
-	}
-	return false
-}
-
 type CreateUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -856,7 +840,6 @@ type UpdateUserRequest struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	IsAdmin       bool                   `protobuf:"varint,4,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
 	Password      *string                `protobuf:"bytes,5,opt,name=password,proto3,oneof" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -911,13 +894,6 @@ func (x *UpdateUserRequest) GetEmail() string {
 		return x.Email
 	}
 	return ""
-}
-
-func (x *UpdateUserRequest) GetIsAdmin() bool {
-	if x != nil {
-		return x.IsAdmin
-	}
-	return false
 }
 
 func (x *UpdateUserRequest) GetPassword() string {
@@ -1256,13 +1232,12 @@ var File_mantrae_v1_user_proto protoreflect.FileDescriptor
 const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"\x15mantrae/v1/user.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfd\x02\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe2\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\x12\x19\n" +
-	"\bis_admin\x18\x05 \x01(\bR\aisAdmin\x12\x10\n" +
+	"\x05email\x18\x04 \x01(\tR\x05email\x12\x10\n" +
 	"\x03otp\x18\x06 \x01(\tR\x03otp\x129\n" +
 	"\n" +
 	"otp_expiry\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\totpExpiry\x129\n" +
@@ -1305,19 +1280,17 @@ const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"identifier\"7\n" +
 	"\x0fGetUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\x97\x01\n" +
+	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"|\n" +
 	"\x11CreateUserRequest\x12#\n" +
 	"\busername\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\busername\x12#\n" +
 	"\bpassword\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\x12\x1d\n" +
-	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12\x19\n" +
-	"\bis_admin\x18\x04 \x01(\bR\aisAdmin\":\n" +
+	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\":\n" +
 	"\x12CreateUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\xc5\x01\n" +
+	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\xaa\x01\n" +
 	"\x11UpdateUserRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12#\n" +
 	"\busername\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\busername\x12\x1d\n" +
-	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12\x19\n" +
-	"\bis_admin\x18\x04 \x01(\bR\aisAdmin\x12+\n" +
+	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12+\n" +
 	"\bpassword\x18\x05 \x01(\tB\n" +
 	"\xbaH\a\xd8\x01\x01r\x02\x10\bH\x00R\bpassword\x88\x01\x01B\v\n" +
 	"\t_password\":\n" +

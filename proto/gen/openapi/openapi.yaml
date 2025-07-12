@@ -1865,9 +1865,6 @@ components:
           type: string
           title: email
           format: email
-        isAdmin:
-          type: boolean
-          title: is_admin
       title: CreateUserRequest
       additionalProperties: false
     mantrae.v1.CreateUserResponse:
@@ -2071,9 +2068,6 @@ components:
           type: string
           title: email
           format: email
-        isAdmin:
-          type: boolean
-          title: is_admin
         password:
           type: string
           title: password
@@ -2104,9 +2098,6 @@ components:
         email:
           type: string
           title: email
-        isAdmin:
-          type: boolean
-          title: is_admin
         otp:
           type: string
           title: otp

@@ -2,7 +2,7 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { CircleCheck, CircleSlash, Pencil, Trash, Users } from '@lucide/svelte';
+	import { Pencil, Trash, Users } from '@lucide/svelte';
 	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
@@ -12,7 +12,7 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { onMount } from 'svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
-	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import { user } from '$lib/stores/user';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 
@@ -33,28 +33,6 @@
 			header: 'Email',
 			accessorKey: 'email',
 			enableSorting: true
-		},
-		{
-			header: 'Admin',
-			accessorKey: 'isAdmin',
-			enableSorting: true,
-			enableGlobalFilter: false,
-			cell: ({ row }) => {
-				return renderComponent(TableActions, {
-					actions: [
-						{
-							type: 'button',
-							label: row.original.isAdmin ? 'Disable' : 'Enable',
-							icon: row.original.isAdmin ? CircleCheck : CircleSlash,
-							iconProps: {
-								class: row.original.isAdmin ? 'text-green-500 size-5' : 'text-red-500 size-5',
-								size: 20
-							},
-							onClick: () => toggleItem(row.original, !row.original.isAdmin)
-						}
-					]
-				});
-			}
 		},
 		{
 			header: 'Last Login',
@@ -121,26 +99,6 @@
 			toast.error('Failed to delete user', { description: e.message });
 		}
 	};
-
-	async function toggleItem(item: User, isAdmin: boolean) {
-		try {
-			if (user.id === item.id) {
-				toast.error('You cannot change your own role!');
-				return;
-			}
-			await userClient.updateUser({
-				id: item.id,
-				username: item.username,
-				email: item.email,
-				isAdmin: isAdmin
-			});
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			toast.success(`User ${item.username} ${isAdmin ? 'set as admin' : 'removed as admin'}`);
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to update user', { description: e.message });
-		}
-	}
 
 	async function bulkDelete(rows: User[]) {
 		try {

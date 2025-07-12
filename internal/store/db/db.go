@@ -393,9 +393,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByUsernameStmt, err = db.PrepareContext(ctx, getUserByUsername); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByUsername: %w", err)
 	}
-	if q.listAdminUsersStmt, err = db.PrepareContext(ctx, listAdminUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query ListAdminUsers: %w", err)
-	}
 	if q.listAgentsStmt, err = db.PrepareContext(ctx, listAgents); err != nil {
 		return nil, fmt.Errorf("error preparing query ListAgents: %w", err)
 	}
@@ -1241,11 +1238,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserByUsernameStmt: %w", cerr)
 		}
 	}
-	if q.listAdminUsersStmt != nil {
-		if cerr := q.listAdminUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listAdminUsersStmt: %w", cerr)
-		}
-	}
 	if q.listAgentsStmt != nil {
 		if cerr := q.listAgentsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listAgentsStmt: %w", cerr)
@@ -1783,7 +1775,6 @@ type Queries struct {
 	getUserByEmailStmt                      *sql.Stmt
 	getUserByIDStmt                         *sql.Stmt
 	getUserByUsernameStmt                   *sql.Stmt
-	listAdminUsersStmt                      *sql.Stmt
 	listAgentsStmt                          *sql.Stmt
 	listAuditLogsStmt                       *sql.Stmt
 	listDnsProvidersStmt                    *sql.Stmt
@@ -1988,7 +1979,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUserByEmailStmt:                      q.getUserByEmailStmt,
 		getUserByIDStmt:                         q.getUserByIDStmt,
 		getUserByUsernameStmt:                   q.getUserByUsernameStmt,
-		listAdminUsersStmt:                      q.listAdminUsersStmt,
 		listAgentsStmt:                          q.listAgentsStmt,
 		listAuditLogsStmt:                       q.listAuditLogsStmt,
 		listDnsProvidersStmt:                    q.listDnsProvidersStmt,

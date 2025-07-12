@@ -27,7 +27,6 @@ message User {
   string username = 2;
   string password = 3;
   string email = 4;
-  bool is_admin = 5;
   string otp = 6;
   google.protobuf.Timestamp otp_expiry = 7;
   google.protobuf.Timestamp last_login = 8;
@@ -89,7 +88,6 @@ message CreateUserRequest {
   string username = 1 [(buf.validate.field).string.min_len = 3];
   string password = 2 [(buf.validate.field).string.min_len = 8];
   string email = 3 [(buf.validate.field).string.email = true];
-  bool is_admin = 4;
 }
 message CreateUserResponse {
   User user = 1;
@@ -99,7 +97,6 @@ message UpdateUserRequest {
   string id = 1 [(buf.validate.field).string.min_len = 1];
   string username = 2 [(buf.validate.field).string.min_len = 3];
   string email = 3 [(buf.validate.field).string.email = true];
-  bool is_admin = 4;
   optional string password = 5 [
     (buf.validate.field).string.min_len = 8,
     (buf.validate.field).ignore = IGNORE_IF_UNPOPULATED

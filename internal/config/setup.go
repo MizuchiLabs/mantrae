@@ -60,13 +60,13 @@ func Setup(ctx context.Context) (*App, error) {
 func (a *App) setupDefaultData(ctx context.Context) error {
 	q := a.Conn.GetQuery()
 
-	// Ensure at least one admin user exists
-	admins, err := q.ListAdminUsers(ctx, db.ListAdminUsersParams{Limit: 1, Offset: 0})
+	// Ensure at least one user exists
+	users, err := q.ListUsers(ctx, db.ListUsersParams{Limit: 1, Offset: 0})
 	if err != nil {
 		return fmt.Errorf("failed to list admin users: %w", err)
 	}
 
-	if len(admins) == 0 {
+	if len(users) == 0 {
 		// Generate password if not provided
 		password, ok := os.LookupEnv("ADMIN_PASSWORD")
 		if !ok {
@@ -94,7 +94,6 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 			Username: "admin",
 			Password: hash,
 			Email:    &email,
-			IsAdmin:  true,
 		}); err != nil {
 			return fmt.Errorf("failed to create admin user: %w", err)
 		}

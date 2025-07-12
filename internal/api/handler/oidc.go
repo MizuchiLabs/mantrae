@@ -316,7 +316,6 @@ func findOrCreateOIDCUser(
 				ID:       existingUser.ID,
 				Username: existingUser.Username,
 				Email:    existingUser.Email,
-				IsAdmin:  existingUser.IsAdmin,
 			}
 		}
 	}
@@ -328,7 +327,6 @@ func findOrCreateOIDCUser(
 				ID:       existingUser.ID,
 				Username: existingUser.Username,
 				Email:    existingUser.Email,
-				IsAdmin:  existingUser.IsAdmin,
 			}
 		}
 	}
@@ -338,7 +336,6 @@ func findOrCreateOIDCUser(
 		params := db.CreateUserParams{
 			Username: generateUniqueUsername(ctx, q, userInfo),
 			Email:    &userInfo.Email,
-			IsAdmin:  false,
 		}
 
 		newUser, err := q.CreateUser(ctx, params)
@@ -349,7 +346,6 @@ func findOrCreateOIDCUser(
 			ID:       newUser.ID,
 			Username: newUser.Username,
 			Email:    newUser.Email,
-			IsAdmin:  newUser.IsAdmin,
 		}
 	} else {
 		// Update existing user's email if verified
@@ -358,7 +354,6 @@ func findOrCreateOIDCUser(
 				ID:       user.ID,
 				Username: user.Username,
 				Email:    &userInfo.Email,
-				IsAdmin:  user.IsAdmin,
 			}); err != nil {
 				return nil, fmt.Errorf("failed to update user email: %w", err)
 			}

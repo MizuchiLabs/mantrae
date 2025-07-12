@@ -242,7 +242,6 @@ func (s *UserService) CreateUser(
 	params := db.CreateUserParams{
 		ID:       id.String(),
 		Username: req.Msg.Username,
-		IsAdmin:  req.Msg.IsAdmin,
 	}
 	if req.Msg.Email != "" {
 		params.Email = &req.Msg.Email
@@ -269,7 +268,6 @@ func (s *UserService) UpdateUser(
 	params := db.UpdateUserParams{
 		ID:       req.Msg.Id,
 		Username: req.Msg.Username,
-		IsAdmin:  req.Msg.IsAdmin,
 	}
 	if req.Msg.Email != "" {
 		params.Email = &req.Msg.Email

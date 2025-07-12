@@ -26,9 +26,16 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO
-  users (id, username, password, email, is_admin)
+  users (
+    id,
+    username,
+    password,
+    email,
+    updated_at,
+    created_at
+  )
 VALUES
-  (?, ?, ?, ?, ?) RETURNING id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -36,7 +43,6 @@ type CreateUserParams struct {
 	Username string  `json:"username"`
 	Password string  `json:"password"`
 	Email    *string `json:"email"`
-	IsAdmin  bool    `json:"isAdmin"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -45,7 +51,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Username,
 		arg.Password,
 		arg.Email,
-		arg.IsAdmin,
 	)
 	var i User
 	err := row.Scan(
@@ -53,7 +58,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.IsAdmin,
 		&i.Otp,
 		&i.OtpExpiry,
 		&i.LastLogin,
@@ -76,7 +80,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -91,7 +95,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (User, erro
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.IsAdmin,
 		&i.Otp,
 		&i.OtpExpiry,
 		&i.LastLogin,
@@ -103,7 +106,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (User, erro
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -118,7 +121,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.IsAdmin,
 		&i.Otp,
 		&i.OtpExpiry,
 		&i.LastLogin,
@@ -130,7 +132,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -145,7 +147,6 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.IsAdmin,
 		&i.Otp,
 		&i.OtpExpiry,
 		&i.LastLogin,
@@ -155,63 +156,9 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	return i, err
 }
 
-const listAdminUsers = `-- name: ListAdminUsers :many
-SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
-FROM
-  users
-WHERE
-  is_admin = TRUE
-ORDER BY
-  username
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListAdminUsersParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
-}
-
-func (q *Queries) ListAdminUsers(ctx context.Context, arg ListAdminUsersParams) ([]User, error) {
-	rows, err := q.query(ctx, q.listAdminUsersStmt, listAdminUsers, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Username,
-			&i.Password,
-			&i.Email,
-			&i.IsAdmin,
-			&i.Otp,
-			&i.OtpExpiry,
-			&i.LastLogin,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listUsers = `-- name: ListUsers :many
 SELECT
-  id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 FROM
   users
 ORDER BY
@@ -241,7 +188,6 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 			&i.Username,
 			&i.Password,
 			&i.Email,
-			&i.IsAdmin,
 			&i.Otp,
 			&i.OtpExpiry,
 			&i.LastLogin,
@@ -266,33 +212,25 @@ UPDATE users
 SET
   username = ?,
   email = ?,
-  is_admin = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, username, password, email, is_admin, otp, otp_expiry, last_login, created_at, updated_at
+  id = ? RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	Username string  `json:"username"`
 	Email    *string `json:"email"`
-	IsAdmin  bool    `json:"isAdmin"`
 	ID       string  `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.queryRow(ctx, q.updateUserStmt, updateUser,
-		arg.Username,
-		arg.Email,
-		arg.IsAdmin,
-		arg.ID,
-	)
+	row := q.queryRow(ctx, q.updateUserStmt, updateUser, arg.Username, arg.Email, arg.ID)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.IsAdmin,
 		&i.Otp,
 		&i.OtpExpiry,
 		&i.LastLogin,

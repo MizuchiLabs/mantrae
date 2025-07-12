@@ -220,7 +220,6 @@ type User struct {
 	Username  string     `json:"username"`
 	Password  string     `json:"password"`
 	Email     *string    `json:"email"`
-	IsAdmin   bool       `json:"isAdmin"`
 	Otp       *string    `json:"otp"`
 	OtpExpiry *time.Time `json:"otpExpiry"`
 	LastLogin *time.Time `json:"lastLogin"`

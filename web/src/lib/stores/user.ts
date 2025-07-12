@@ -1,9 +1,9 @@
-import type { User } from '$lib/gen/mantrae/v1/user_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { createLocalStorage } from '$lib/storage.svelte';
+import type { User } from "$lib/gen/mantrae/v1/user_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { createLocalStorage } from "$lib/storage.svelte";
 
 class UserStore {
-	private store = createLocalStorage<User | null>('current_user', null);
+	private store = createLocalStorage<User | null>("current_user", null);
 
 	get value(): User | null {
 		return this.store.value ?? null;
@@ -19,10 +19,6 @@ class UserStore {
 
 	get username(): string | undefined {
 		return this.value?.username;
-	}
-
-	get isAdmin(): boolean {
-		return this.value?.isAdmin ?? false;
 	}
 
 	get email(): string | undefined {
@@ -43,11 +39,11 @@ class UserStore {
 
 	// Validation methods
 	hasValidId(): boolean {
-		return typeof this.id === 'string' && this.id.length > 0;
+		return typeof this.id === "string" && this.id.length > 0;
 	}
 
 	hasValidUsername(): boolean {
-		return typeof this.username === 'string' && this.username.length > 0;
+		return typeof this.username === "string" && this.username.length > 0;
 	}
 
 	isLoggedIn(): boolean {
@@ -55,12 +51,7 @@ class UserStore {
 	}
 
 	hasEmail(): boolean {
-		return typeof this.email === 'string' && this.email.length > 0;
-	}
-
-	// Authorization methods
-	canAccessAdmin(): boolean {
-		return this.isLoggedIn() && this.isAdmin;
+		return typeof this.email === "string" && this.email.length > 0;
 	}
 
 	// Clear user data (logout)

@@ -229,51 +229,20 @@ DROP COLUMN is_active;
 ALTER TABLE dns_providers
 ADD COLUMN is_default BOOLEAN NOT NULL DEFAULT FALSE;
 
--- Update users table - change id to TEXT and remove AUTOINCREMENT
-CREATE TABLE users_new (
+-- New users table
+DROP TABLE users;
+
+CREATE TABLE users (
   id TEXT PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   email TEXT,
-  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   otp VARCHAR(6),
   otp_expiry TIMESTAMP,
   last_login TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO
-  users_new (
-    id,
-    username,
-    password,
-    email,
-    is_admin,
-    otp,
-    otp_expiry,
-    last_login,
-    created_at,
-    updated_at
-  )
-SELECT
-  CAST(id AS TEXT),
-  username,
-  password,
-  email,
-  is_admin,
-  otp,
-  otp_expiry,
-  last_login,
-  created_at,
-  updated_at
-FROM
-  users;
-
-DROP TABLE users;
-
-ALTER TABLE users_new
-RENAME TO users;
 
 -- Update settings table - remove description column
 ALTER TABLE settings

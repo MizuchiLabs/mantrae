@@ -1,8 +1,15 @@
 -- name: CreateUser :one
 INSERT INTO
-  users (id, username, password, email, is_admin)
+  users (
+    id,
+    username,
+    password,
+    email,
+    updated_at,
+    created_at
+  )
 VALUES
-  (?, ?, ?, ?, ?) RETURNING *;
+  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
 -- name: GetUserByID :one
 SELECT
@@ -40,20 +47,6 @@ LIMIT
 OFFSET
   ?;
 
--- name: ListAdminUsers :many
-SELECT
-  *
-FROM
-  users
-WHERE
-  is_admin = TRUE
-ORDER BY
-  username
-LIMIT
-  ?
-OFFSET
-  ?;
-
 -- name: CountUsers :one
 SELECT
   COUNT(*)
@@ -65,7 +58,6 @@ UPDATE users
 SET
   username = ?,
   email = ?,
-  is_admin = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
   id = ? RETURNING *;

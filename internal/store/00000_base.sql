@@ -202,7 +202,6 @@ CREATE TABLE users (
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   email TEXT,
-  is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   otp VARCHAR(6),
   otp_expiry TIMESTAMP,
   last_login TIMESTAMP,
