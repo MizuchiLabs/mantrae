@@ -8,16 +8,18 @@ import (
 )
 
 type (
-	Router    dynamic.Router
-	TCPRouter dynamic.TCPRouter
-	UDPRouter dynamic.UDPRouter
+	HTTPRouter dynamic.Router
+	TCPRouter  dynamic.TCPRouter
+	UDPRouter  dynamic.UDPRouter
 )
 
-func (r *Router) Scan(data any) error {
+// Scanner --------------------------------------------------------------------
+
+func (r *HTTPRouter) Scan(data any) error {
 	return scanJSON(data, &r)
 }
 
-func (r *Router) Value() (driver.Value, error) {
+func (r *HTTPRouter) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
@@ -37,8 +39,9 @@ func (r *UDPRouter) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-// Wrappers
-func (r *Router) ToDynamic() *dynamic.Router {
+// Wrappers -------------------------------------------------------------------
+
+func (r *HTTPRouter) ToDynamic() *dynamic.Router {
 	return (*dynamic.Router)(r)
 }
 
@@ -50,8 +53,8 @@ func (r *UDPRouter) ToDynamic() *dynamic.UDPRouter {
 	return (*dynamic.UDPRouter)(r)
 }
 
-func WrapRouter(r *dynamic.Router) *Router {
-	return (*Router)(r)
+func WrapRouter(r *dynamic.Router) *HTTPRouter {
+	return (*HTTPRouter)(r)
 }
 
 func WrapTCPRouter(r *dynamic.TCPRouter) *TCPRouter {

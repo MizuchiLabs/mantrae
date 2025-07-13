@@ -10,6 +10,7 @@ import (
 )
 
 // EntryPoint -----------------------------------------------------------------
+
 type EntryPoints []EntryPoint
 
 type EntryPoint struct {
@@ -87,6 +88,7 @@ type EntryPointsTransport struct {
 }
 
 // Overview -------------------------------------------------------------------
+
 type Overview struct {
 	HTTP      SchemeOverview `json:"http"`
 	TCP       SchemeOverview `json:"tcp"`
@@ -111,6 +113,7 @@ type Features struct {
 }
 
 // Configuration --------------------------------------------------------------
+
 type Configuration struct {
 	Routers        map[string]*runtime.RouterInfo        `json:"routers,omitempty"`
 	Middlewares    map[string]*runtime.MiddlewareInfo    `json:"middlewares,omitempty"`
@@ -126,7 +129,8 @@ type serviceInfoRepresentation struct {
 	ServerStatus map[string]string `json:"serverStatus,omitempty"`
 }
 
-// Version -------------------------------------------------------------------
+// Version --------------------------------------------------------------------
+
 type Version struct {
 	Version   string `json:"version,omitempty"`
 	Codename  string `json:"codename,omitempty"`
@@ -134,6 +138,7 @@ type Version struct {
 }
 
 // JSON marshalling and unmarshalling helper
+
 func (e *EntryPoints) Scan(data any) error {
 	return scanJSON(data, &e)
 }

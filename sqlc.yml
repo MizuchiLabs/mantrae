@@ -16,7 +16,7 @@ sql:
           - column: "http_routers.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Router"
+              type: "HTTPRouter"
               pointer: true
           - column: "tcp_routers.config"
             go_type:
@@ -31,7 +31,7 @@ sql:
           - column: "http_services.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Service"
+              type: "HTTPService"
               pointer: true
           - column: "tcp_services.config"
             go_type:
@@ -46,7 +46,7 @@ sql:
           - column: "http_middlewares.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Middleware"
+              type: "HTTPMiddleware"
               pointer: true
           - column: "tcp_middlewares.config"
             go_type:
@@ -56,7 +56,7 @@ sql:
           - column: "http_servers_transports.config"
             go_type:
               import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "ServersTransport"
+              type: "HTTPServersTransport"
               pointer: true
           - column: "tcp_servers_transports.config"
             go_type:

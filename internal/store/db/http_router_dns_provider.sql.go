@@ -102,12 +102,12 @@ FROM
 `
 
 type GetHttpRouterDomainsRow struct {
-	RouterID        int64          `json:"routerId"`
-	RouterName      string         `json:"routerName"`
-	ConfigJson      *schema.Router `json:"configJson"`
-	ProfileName     string         `json:"profileName"`
-	DnsProviderID   *int64         `json:"dnsProviderId"`
-	DnsProviderName *string        `json:"dnsProviderName"`
+	RouterID        int64              `json:"routerId"`
+	RouterName      string             `json:"routerName"`
+	ConfigJson      *schema.HTTPRouter `json:"configJson"`
+	ProfileName     string             `json:"profileName"`
+	DnsProviderID   *int64             `json:"dnsProviderId"`
+	DnsProviderName *string            `json:"dnsProviderName"`
 }
 
 func (q *Queries) GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDomainsRow, error) {

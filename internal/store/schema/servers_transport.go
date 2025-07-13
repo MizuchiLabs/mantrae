@@ -8,15 +8,17 @@ import (
 )
 
 type (
-	ServersTransport    dynamic.ServersTransport
-	TCPServersTransport dynamic.TCPServersTransport
+	HTTPServersTransport dynamic.ServersTransport
+	TCPServersTransport  dynamic.TCPServersTransport
 )
 
-func (s *ServersTransport) Scan(data any) error {
+// Scanner --------------------------------------------------------------------
+
+func (s *HTTPServersTransport) Scan(data any) error {
 	return scanJSON(data, &s)
 }
 
-func (s *ServersTransport) Value() (driver.Value, error) {
+func (s *HTTPServersTransport) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
@@ -28,8 +30,9 @@ func (s *TCPServersTransport) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
-// Wrappers
-func (s *ServersTransport) ToDynamic() *dynamic.ServersTransport {
+// Wrappers -------------------------------------------------------------------
+
+func (s *HTTPServersTransport) ToDynamic() *dynamic.ServersTransport {
 	return (*dynamic.ServersTransport)(s)
 }
 
@@ -37,8 +40,8 @@ func (s *TCPServersTransport) ToDynamic() *dynamic.TCPServersTransport {
 	return (*dynamic.TCPServersTransport)(s)
 }
 
-func WrapServersTransport(s *dynamic.ServersTransport) *ServersTransport {
-	return (*ServersTransport)(s)
+func WrapServersTransport(s *dynamic.ServersTransport) *HTTPServersTransport {
+	return (*HTTPServersTransport)(s)
 }
 
 func WrapTCPServersTransport(s *dynamic.TCPServersTransport) *TCPServersTransport {

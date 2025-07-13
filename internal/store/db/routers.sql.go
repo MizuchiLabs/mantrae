@@ -125,15 +125,15 @@ type ListRoutersByAgentParams struct {
 }
 
 type ListRoutersByAgentRow struct {
-	ID        int64          `json:"id"`
-	ProfileID int64          `json:"profileId"`
-	AgentID   *string        `json:"agentId"`
-	Name      string         `json:"name"`
-	Config    *schema.Router `json:"config"`
-	Enabled   bool           `json:"enabled"`
-	CreatedAt *time.Time     `json:"createdAt"`
-	UpdatedAt *time.Time     `json:"updatedAt"`
-	Type      string         `json:"type"`
+	ID        int64              `json:"id"`
+	ProfileID int64              `json:"profileId"`
+	AgentID   *string            `json:"agentId"`
+	Name      string             `json:"name"`
+	Config    *schema.HTTPRouter `json:"config"`
+	Enabled   bool               `json:"enabled"`
+	CreatedAt *time.Time         `json:"createdAt"`
+	UpdatedAt *time.Time         `json:"updatedAt"`
+	Type      string             `json:"type"`
 }
 
 func (q *Queries) ListRoutersByAgent(ctx context.Context, arg ListRoutersByAgentParams) ([]ListRoutersByAgentRow, error) {
@@ -216,15 +216,15 @@ type ListRoutersByProfileParams struct {
 }
 
 type ListRoutersByProfileRow struct {
-	ID        int64          `json:"id"`
-	ProfileID int64          `json:"profileId"`
-	AgentID   *string        `json:"agentId"`
-	Name      string         `json:"name"`
-	Config    *schema.Router `json:"config"`
-	Enabled   bool           `json:"enabled"`
-	CreatedAt *time.Time     `json:"createdAt"`
-	UpdatedAt *time.Time     `json:"updatedAt"`
-	Type      string         `json:"type"`
+	ID        int64              `json:"id"`
+	ProfileID int64              `json:"profileId"`
+	AgentID   *string            `json:"agentId"`
+	Name      string             `json:"name"`
+	Config    *schema.HTTPRouter `json:"config"`
+	Enabled   bool               `json:"enabled"`
+	CreatedAt *time.Time         `json:"createdAt"`
+	UpdatedAt *time.Time         `json:"updatedAt"`
+	Type      string             `json:"type"`
 }
 
 func (q *Queries) ListRoutersByProfile(ctx context.Context, arg ListRoutersByProfileParams) ([]ListRoutersByProfileRow, error) {

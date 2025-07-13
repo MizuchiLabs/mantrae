@@ -77,7 +77,7 @@ func (s *MiddlewareService) CreateMiddleware(
 				return nil, connect.NewError(connect.CodeInternal, err)
 			}
 		}
-		params.Config, err = convert.UnmarshalStruct[schema.Middleware](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -138,7 +138,7 @@ func (s *MiddlewareService) UpdateMiddleware(
 			Enabled:   req.Msg.Enabled,
 			IsDefault: req.Msg.IsDefault,
 		}
-		params.Config, err = convert.UnmarshalStruct[schema.Middleware](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPMiddleware](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}

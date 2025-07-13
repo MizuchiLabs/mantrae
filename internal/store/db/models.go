@@ -63,26 +63,26 @@ type Error struct {
 }
 
 type HttpMiddleware struct {
+	ID        int64                  `json:"id"`
+	ProfileID int64                  `json:"profileId"`
+	AgentID   *string                `json:"agentId"`
+	Name      string                 `json:"name"`
+	Config    *schema.HTTPMiddleware `json:"config"`
+	Enabled   bool                   `json:"enabled"`
+	IsDefault bool                   `json:"isDefault"`
+	CreatedAt *time.Time             `json:"createdAt"`
+	UpdatedAt *time.Time             `json:"updatedAt"`
+}
+
+type HttpRouter struct {
 	ID        int64              `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
-	Config    *schema.Middleware `json:"config"`
+	Config    *schema.HTTPRouter `json:"config"`
 	Enabled   bool               `json:"enabled"`
-	IsDefault bool               `json:"isDefault"`
 	CreatedAt *time.Time         `json:"createdAt"`
 	UpdatedAt *time.Time         `json:"updatedAt"`
-}
-
-type HttpRouter struct {
-	ID        int64          `json:"id"`
-	ProfileID int64          `json:"profileId"`
-	AgentID   *string        `json:"agentId"`
-	Name      string         `json:"name"`
-	Config    *schema.Router `json:"config"`
-	Enabled   bool           `json:"enabled"`
-	CreatedAt *time.Time     `json:"createdAt"`
-	UpdatedAt *time.Time     `json:"updatedAt"`
 }
 
 type HttpRouterDnsProvider struct {
@@ -91,25 +91,25 @@ type HttpRouterDnsProvider struct {
 }
 
 type HttpServersTransport struct {
-	ID        int64                    `json:"id"`
-	ProfileID int64                    `json:"profileId"`
-	AgentID   *string                  `json:"agentId"`
-	Name      string                   `json:"name"`
-	Config    *schema.ServersTransport `json:"config"`
-	Enabled   bool                     `json:"enabled"`
-	CreatedAt *time.Time               `json:"createdAt"`
-	UpdatedAt *time.Time               `json:"updatedAt"`
+	ID        int64                        `json:"id"`
+	ProfileID int64                        `json:"profileId"`
+	AgentID   *string                      `json:"agentId"`
+	Name      string                       `json:"name"`
+	Config    *schema.HTTPServersTransport `json:"config"`
+	Enabled   bool                         `json:"enabled"`
+	CreatedAt *time.Time                   `json:"createdAt"`
+	UpdatedAt *time.Time                   `json:"updatedAt"`
 }
 
 type HttpService struct {
-	ID        int64           `json:"id"`
-	ProfileID int64           `json:"profileId"`
-	AgentID   *string         `json:"agentId"`
-	Name      string          `json:"name"`
-	Config    *schema.Service `json:"config"`
-	Enabled   bool            `json:"enabled"`
-	CreatedAt *time.Time      `json:"createdAt"`
-	UpdatedAt *time.Time      `json:"updatedAt"`
+	ID        int64               `json:"id"`
+	ProfileID int64               `json:"profileId"`
+	AgentID   *string             `json:"agentId"`
+	Name      string              `json:"name"`
+	Config    *schema.HTTPService `json:"config"`
+	Enabled   bool                `json:"enabled"`
+	CreatedAt *time.Time          `json:"createdAt"`
+	UpdatedAt *time.Time          `json:"updatedAt"`
 }
 
 type Profile struct {

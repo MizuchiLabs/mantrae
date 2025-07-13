@@ -100,16 +100,16 @@ type ListMiddlewaresByAgentParams struct {
 }
 
 type ListMiddlewaresByAgentRow struct {
-	ID        int64              `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.Middleware `json:"config"`
-	Enabled   bool               `json:"enabled"`
-	IsDefault bool               `json:"isDefault"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
-	Type      string             `json:"type"`
+	ID        int64                  `json:"id"`
+	ProfileID int64                  `json:"profileId"`
+	AgentID   *string                `json:"agentId"`
+	Name      string                 `json:"name"`
+	Config    *schema.HTTPMiddleware `json:"config"`
+	Enabled   bool                   `json:"enabled"`
+	IsDefault bool                   `json:"isDefault"`
+	CreatedAt *time.Time             `json:"createdAt"`
+	UpdatedAt *time.Time             `json:"updatedAt"`
+	Type      string                 `json:"type"`
 }
 
 func (q *Queries) ListMiddlewaresByAgent(ctx context.Context, arg ListMiddlewaresByAgentParams) ([]ListMiddlewaresByAgentRow, error) {
@@ -183,16 +183,16 @@ type ListMiddlewaresByProfileParams struct {
 }
 
 type ListMiddlewaresByProfileRow struct {
-	ID        int64              `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.Middleware `json:"config"`
-	Enabled   bool               `json:"enabled"`
-	IsDefault bool               `json:"isDefault"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
-	Type      string             `json:"type"`
+	ID        int64                  `json:"id"`
+	ProfileID int64                  `json:"profileId"`
+	AgentID   *string                `json:"agentId"`
+	Name      string                 `json:"name"`
+	Config    *schema.HTTPMiddleware `json:"config"`
+	Enabled   bool                   `json:"enabled"`
+	IsDefault bool                   `json:"isDefault"`
+	CreatedAt *time.Time             `json:"createdAt"`
+	UpdatedAt *time.Time             `json:"updatedAt"`
+	Type      string                 `json:"type"`
 }
 
 func (q *Queries) ListMiddlewaresByProfile(ctx context.Context, arg ListMiddlewaresByProfileParams) ([]ListMiddlewaresByProfileRow, error) {

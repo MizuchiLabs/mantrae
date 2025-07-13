@@ -82,7 +82,7 @@ func (s *RouterService) CreateRouter(
 			params.AgentID = &req.Msg.AgentId
 		}
 
-		params.Config, err = convert.UnmarshalStruct[schema.Router](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -175,7 +175,7 @@ func (s *RouterService) UpdateRouter(
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
 		params.Enabled = req.Msg.Enabled
-		params.Config, err = convert.UnmarshalStruct[schema.Router](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPRouter](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}

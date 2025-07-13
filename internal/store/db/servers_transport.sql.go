@@ -100,15 +100,15 @@ type ListServersTransportsByAgentParams struct {
 }
 
 type ListServersTransportsByAgentRow struct {
-	ID        int64                    `json:"id"`
-	ProfileID int64                    `json:"profileId"`
-	AgentID   *string                  `json:"agentId"`
-	Name      string                   `json:"name"`
-	Config    *schema.ServersTransport `json:"config"`
-	Enabled   bool                     `json:"enabled"`
-	CreatedAt *time.Time               `json:"createdAt"`
-	UpdatedAt *time.Time               `json:"updatedAt"`
-	Type      string                   `json:"type"`
+	ID        int64                        `json:"id"`
+	ProfileID int64                        `json:"profileId"`
+	AgentID   *string                      `json:"agentId"`
+	Name      string                       `json:"name"`
+	Config    *schema.HTTPServersTransport `json:"config"`
+	Enabled   bool                         `json:"enabled"`
+	CreatedAt *time.Time                   `json:"createdAt"`
+	UpdatedAt *time.Time                   `json:"updatedAt"`
+	Type      string                       `json:"type"`
 }
 
 func (q *Queries) ListServersTransportsByAgent(ctx context.Context, arg ListServersTransportsByAgentParams) ([]ListServersTransportsByAgentRow, error) {
@@ -181,15 +181,15 @@ type ListServersTransportsByProfileParams struct {
 }
 
 type ListServersTransportsByProfileRow struct {
-	ID        int64                    `json:"id"`
-	ProfileID int64                    `json:"profileId"`
-	AgentID   *string                  `json:"agentId"`
-	Name      string                   `json:"name"`
-	Config    *schema.ServersTransport `json:"config"`
-	Enabled   bool                     `json:"enabled"`
-	CreatedAt *time.Time               `json:"createdAt"`
-	UpdatedAt *time.Time               `json:"updatedAt"`
-	Type      string                   `json:"type"`
+	ID        int64                        `json:"id"`
+	ProfileID int64                        `json:"profileId"`
+	AgentID   *string                      `json:"agentId"`
+	Name      string                       `json:"name"`
+	Config    *schema.HTTPServersTransport `json:"config"`
+	Enabled   bool                         `json:"enabled"`
+	CreatedAt *time.Time                   `json:"createdAt"`
+	UpdatedAt *time.Time                   `json:"updatedAt"`
+	Type      string                       `json:"type"`
 }
 
 func (q *Queries) ListServersTransportsByProfile(ctx context.Context, arg ListServersTransportsByProfileParams) ([]ListServersTransportsByProfileRow, error) {

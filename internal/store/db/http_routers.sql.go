@@ -72,10 +72,10 @@ VALUES
 `
 
 type CreateHttpRouterParams struct {
-	ProfileID int64          `json:"profileId"`
-	AgentID   *string        `json:"agentId"`
-	Name      string         `json:"name"`
-	Config    *schema.Router `json:"config"`
+	ProfileID int64              `json:"profileId"`
+	AgentID   *string            `json:"agentId"`
+	Name      string             `json:"name"`
+	Config    *schema.HTTPRouter `json:"config"`
 }
 
 func (q *Queries) CreateHttpRouter(ctx context.Context, arg CreateHttpRouterParams) (HttpRouter, error) {
@@ -163,10 +163,10 @@ type GetHttpRoutersUsingEntryPointParams struct {
 }
 
 type GetHttpRoutersUsingEntryPointRow struct {
-	ID      int64          `json:"id"`
-	Name    string         `json:"name"`
-	Config  *schema.Router `json:"config"`
-	Enabled bool           `json:"enabled"`
+	ID      int64              `json:"id"`
+	Name    string             `json:"name"`
+	Config  *schema.HTTPRouter `json:"config"`
+	Enabled bool               `json:"enabled"`
 }
 
 func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error) {
@@ -225,10 +225,10 @@ type GetHttpRoutersUsingMiddlewareParams struct {
 }
 
 type GetHttpRoutersUsingMiddlewareRow struct {
-	ID      int64          `json:"id"`
-	Name    string         `json:"name"`
-	Config  *schema.Router `json:"config"`
-	Enabled bool           `json:"enabled"`
+	ID      int64              `json:"id"`
+	Name    string             `json:"name"`
+	Config  *schema.HTTPRouter `json:"config"`
+	Enabled bool               `json:"enabled"`
 }
 
 func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error) {
@@ -431,10 +431,10 @@ WHERE
 `
 
 type UpdateHttpRouterParams struct {
-	Name    string         `json:"name"`
-	Config  *schema.Router `json:"config"`
-	Enabled bool           `json:"enabled"`
-	ID      int64          `json:"id"`
+	Name    string             `json:"name"`
+	Config  *schema.HTTPRouter `json:"config"`
+	Enabled bool               `json:"enabled"`
+	ID      int64              `json:"id"`
 }
 
 func (q *Queries) UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterParams) (HttpRouter, error) {

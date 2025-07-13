@@ -72,10 +72,10 @@ VALUES
 `
 
 type CreateHttpServersTransportParams struct {
-	ProfileID int64                    `json:"profileId"`
-	AgentID   *string                  `json:"agentId"`
-	Name      string                   `json:"name"`
-	Config    *schema.ServersTransport `json:"config"`
+	ProfileID int64                        `json:"profileId"`
+	AgentID   *string                      `json:"agentId"`
+	Name      string                       `json:"name"`
+	Config    *schema.HTTPServersTransport `json:"config"`
 }
 
 func (q *Queries) CreateHttpServersTransport(ctx context.Context, arg CreateHttpServersTransportParams) (HttpServersTransport, error) {
@@ -307,10 +307,10 @@ WHERE
 `
 
 type UpdateHttpServersTransportParams struct {
-	Name    string                   `json:"name"`
-	Config  *schema.ServersTransport `json:"config"`
-	Enabled bool                     `json:"enabled"`
-	ID      int64                    `json:"id"`
+	Name    string                       `json:"name"`
+	Config  *schema.HTTPServersTransport `json:"config"`
+	Enabled bool                         `json:"enabled"`
+	ID      int64                        `json:"id"`
 }
 
 func (q *Queries) UpdateHttpServersTransport(ctx context.Context, arg UpdateHttpServersTransportParams) (HttpServersTransport, error) {

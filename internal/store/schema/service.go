@@ -8,16 +8,18 @@ import (
 )
 
 type (
-	Service    dynamic.Service
-	TCPService dynamic.TCPService
-	UDPService dynamic.UDPService
+	HTTPService dynamic.Service
+	TCPService  dynamic.TCPService
+	UDPService  dynamic.UDPService
 )
 
-func (s *Service) Scan(data any) error {
+// Scanner --------------------------------------------------------------------
+
+func (s *HTTPService) Scan(data any) error {
 	return scanJSON(data, &s)
 }
 
-func (s *Service) Value() (driver.Value, error) {
+func (s *HTTPService) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
@@ -37,8 +39,9 @@ func (s *UDPService) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
-// Wrappers
-func (s *Service) ToDynamic() *dynamic.Service {
+// Wrappers -------------------------------------------------------------------
+
+func (s *HTTPService) ToDynamic() *dynamic.Service {
 	return (*dynamic.Service)(s)
 }
 
@@ -50,8 +53,8 @@ func (s *UDPService) ToDynamic() *dynamic.UDPService {
 	return (*dynamic.UDPService)(s)
 }
 
-func WrapService(s *dynamic.Service) *Service {
-	return (*Service)(s)
+func WrapService(s *dynamic.Service) *HTTPService {
+	return (*HTTPService)(s)
 }
 
 func WrapTCPService(s *dynamic.TCPService) *TCPService {

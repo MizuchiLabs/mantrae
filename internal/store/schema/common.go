@@ -1,3 +1,4 @@
+// Package schema provides common interfaces and types for the database schema.
 package schema
 
 import (

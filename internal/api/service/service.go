@@ -71,7 +71,7 @@ func (s *Service) CreateService(
 		if req.Msg.AgentId != "" {
 			params.AgentID = &req.Msg.AgentId
 		}
-		params.Config, err = convert.UnmarshalStruct[schema.Service](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
@@ -137,7 +137,7 @@ func (s *Service) UpdateService(
 		params.ID = req.Msg.Id
 		params.Name = req.Msg.Name
 		params.Enabled = req.Msg.Enabled
-		params.Config, err = convert.UnmarshalStruct[schema.Service](req.Msg.Config)
+		params.Config, err = convert.UnmarshalStruct[schema.HTTPService](req.Msg.Config)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}

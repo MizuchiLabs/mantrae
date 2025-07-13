@@ -125,15 +125,15 @@ type ListServicesByAgentParams struct {
 }
 
 type ListServicesByAgentRow struct {
-	ID        int64           `json:"id"`
-	ProfileID int64           `json:"profileId"`
-	AgentID   *string         `json:"agentId"`
-	Name      string          `json:"name"`
-	Config    *schema.Service `json:"config"`
-	Enabled   bool            `json:"enabled"`
-	CreatedAt *time.Time      `json:"createdAt"`
-	UpdatedAt *time.Time      `json:"updatedAt"`
-	Type      string          `json:"type"`
+	ID        int64               `json:"id"`
+	ProfileID int64               `json:"profileId"`
+	AgentID   *string             `json:"agentId"`
+	Name      string              `json:"name"`
+	Config    *schema.HTTPService `json:"config"`
+	Enabled   bool                `json:"enabled"`
+	CreatedAt *time.Time          `json:"createdAt"`
+	UpdatedAt *time.Time          `json:"updatedAt"`
+	Type      string              `json:"type"`
 }
 
 func (q *Queries) ListServicesByAgent(ctx context.Context, arg ListServicesByAgentParams) ([]ListServicesByAgentRow, error) {
@@ -216,15 +216,15 @@ type ListServicesByProfileParams struct {
 }
 
 type ListServicesByProfileRow struct {
-	ID        int64           `json:"id"`
-	ProfileID int64           `json:"profileId"`
-	AgentID   *string         `json:"agentId"`
-	Name      string          `json:"name"`
-	Config    *schema.Service `json:"config"`
-	Enabled   bool            `json:"enabled"`
-	CreatedAt *time.Time      `json:"createdAt"`
-	UpdatedAt *time.Time      `json:"updatedAt"`
-	Type      string          `json:"type"`
+	ID        int64               `json:"id"`
+	ProfileID int64               `json:"profileId"`
+	AgentID   *string             `json:"agentId"`
+	Name      string              `json:"name"`
+	Config    *schema.HTTPService `json:"config"`
+	Enabled   bool                `json:"enabled"`
+	CreatedAt *time.Time          `json:"createdAt"`
+	UpdatedAt *time.Time          `json:"updatedAt"`
+	Type      string              `json:"type"`
 }
 
 func (q *Queries) ListServicesByProfile(ctx context.Context, arg ListServicesByProfileParams) ([]ListServicesByProfileRow, error) {

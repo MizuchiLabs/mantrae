@@ -8,8 +8,8 @@ import (
 )
 
 type (
-	Middleware    dynamic.Middleware
-	TCPMiddleware dynamic.TCPMiddleware
+	HTTPMiddleware dynamic.Middleware
+	TCPMiddleware  dynamic.TCPMiddleware
 )
 
 type Plugin struct {
@@ -36,11 +36,13 @@ type PluginSnippet struct {
 	Toml string `json:"toml"`
 }
 
-func (m *Middleware) Scan(data any) error {
+// Scanner --------------------------------------------------------------------
+
+func (m *HTTPMiddleware) Scan(data any) error {
 	return scanJSON(data, &m)
 }
 
-func (m *Middleware) Value() (driver.Value, error) {
+func (m *HTTPMiddleware) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
@@ -52,8 +54,9 @@ func (m *TCPMiddleware) Value() (driver.Value, error) {
 	return json.Marshal(m)
 }
 
-// Wrappers
-func (m *Middleware) ToDynamic() *dynamic.Middleware {
+// Wrappers -------------------------------------------------------------------
+
+func (m *HTTPMiddleware) ToDynamic() *dynamic.Middleware {
 	return (*dynamic.Middleware)(m)
 }
 
@@ -61,8 +64,8 @@ func (m *TCPMiddleware) ToDynamic() *dynamic.TCPMiddleware {
 	return (*dynamic.TCPMiddleware)(m)
 }
 
-func WrapMiddleware(m *dynamic.Middleware) *Middleware {
-	return (*Middleware)(m)
+func WrapMiddleware(m *dynamic.Middleware) *HTTPMiddleware {
+	return (*HTTPMiddleware)(m)
 }
 
 func WrapTCPMiddleware(m *dynamic.TCPMiddleware) *TCPMiddleware {
