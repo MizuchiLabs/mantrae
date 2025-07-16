@@ -9,7 +9,6 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { pageIndex, pageSize } from '$lib/stores/common';
@@ -20,13 +19,11 @@
 		CircleCheck,
 		CircleSlash,
 		Globe,
-		LayoutGrid,
 		Network,
 		Pencil,
 		Power,
 		PowerOff,
 		Route,
-		Table,
 		Trash,
 		TriangleAlert,
 		Waves
@@ -42,7 +39,7 @@
 	// Data state
 	let data = $state<Router[]>([]);
 	let rowCount = $state<number>(0);
-	let viewMode = $state<'table' | 'grid'>('table');
+	// let viewMode = $state<'table' | 'grid'>('table');
 
 	const columns: ColumnDef<Router>[] = [
 		{
@@ -339,14 +336,14 @@
 		refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 
 		// Set up resize handler
-		const handleResize = () => {
-			const isMobile = window.matchMedia('(max-width: 768px)').matches;
-			if (isMobile) viewMode = 'grid';
-		};
+		// const handleResize = () => {
+		// 	const isMobile = window.matchMedia('(max-width: 768px)').matches;
+		// 	if (isMobile) viewMode = 'grid';
+		// };
 
-		handleResize(); // Check initial state
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+		// handleResize(); // Check initial state
+		// window.addEventListener('resize', handleResize);
+		// return () => window.removeEventListener('resize', handleResize);
 	});
 </script>
 
@@ -367,41 +364,55 @@
 		</div>
 
 		<!-- View Toggle (Don't show on mobile) -->
-		<div class="hidden items-center gap-2 self-start sm:self-auto md:flex">
-			<Button
-				variant={viewMode === 'table' ? 'default' : 'outline'}
-				size="sm"
-				onclick={() => (viewMode = 'table')}
-				class="flex-1 sm:flex-none"
-			>
-				<Table class="h-4 w-4 sm:mr-2" />
-				<span class="hidden sm:block">Table</span>
-			</Button>
-			<Button
-				variant={viewMode === 'grid' ? 'default' : 'outline'}
-				size="sm"
-				onclick={() => (viewMode = 'grid')}
-				class="flex-1 sm:flex-none"
-			>
-				<LayoutGrid class="h-4 w-4 sm:mr-2" />
-				<span class="hidden sm:block">Grid</span>
-			</Button>
-		</div>
+		<!-- <div class="hidden items-center gap-2 self-start sm:self-auto md:flex"> -->
+		<!-- 	<Button -->
+		<!-- 		variant={viewMode === 'table' ? 'default' : 'outline'} -->
+		<!-- 		size="sm" -->
+		<!-- 		onclick={() => (viewMode = 'table')} -->
+		<!-- 		class="flex-1 sm:flex-none" -->
+		<!-- 	> -->
+		<!-- 		<Table class="h-4 w-4 sm:mr-2" /> -->
+		<!-- 		<span class="hidden sm:block">Table</span> -->
+		<!-- 	</Button> -->
+		<!-- 	<Button -->
+		<!-- 		variant={viewMode === 'grid' ? 'default' : 'outline'} -->
+		<!-- 		size="sm" -->
+		<!-- 		onclick={() => (viewMode = 'grid')} -->
+		<!-- 		class="flex-1 sm:flex-none" -->
+		<!-- 	> -->
+		<!-- 		<LayoutGrid class="h-4 w-4 sm:mr-2" /> -->
+		<!-- 		<span class="hidden sm:block">Grid</span> -->
+		<!-- 	</Button> -->
+		<!-- </div> -->
 	</div>
 
+	<!-- <DataTable -->
+	<!-- 	{data} -->
+	<!-- 	{columns} -->
+	<!-- 	{rowCount} -->
+	<!-- 	{viewMode} -->
+	<!-- 	{onPaginationChange} -->
+	<!-- 	{bulkActions} -->
+	<!-- 	rowClassModifiers={{}} -->
+	<!-- 	cardConfig={{ -->
+	<!-- 		titleKey: 'name', -->
+	<!-- 		subtitleKey: 'type', -->
+	<!-- 		excludeColumns: [] -->
+	<!-- 	}} -->
+	<!-- 	createButton={{ -->
+	<!-- 		label: 'Create Router', -->
+	<!-- 		onClick: () => { -->
+	<!-- 			item = { type: RouterType.HTTP } as Router; -->
+	<!-- 			open = true; -->
+	<!-- 		} -->
+	<!-- 	}} -->
+	<!-- /> -->
 	<DataTable
 		{data}
 		{columns}
 		{rowCount}
-		{viewMode}
 		{onPaginationChange}
 		{bulkActions}
-		rowClassModifiers={{}}
-		cardConfig={{
-			titleKey: 'name',
-			subtitleKey: 'type',
-			excludeColumns: []
-		}}
 		createButton={{
 			label: 'Create Router',
 			onClick: () => {

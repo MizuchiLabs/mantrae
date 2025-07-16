@@ -1,7 +1,8 @@
 import { createLocalStorage } from "$lib/storage.svelte";
-import { env } from "$env/dynamic/public";
 
-export const DEFAULT_URL = import.meta.env.PROD ? "/" : `http://127.0.0.1:3000`;
+export const DEFAULT_URL = import.meta.env.PROD
+	? window?.location?.origin || "/"
+	: `http://127.0.0.1:3000`;
 
 export const baseURL = createLocalStorage("base_url", DEFAULT_URL);
 export const pageIndex = createLocalStorage("page_index", 0);
