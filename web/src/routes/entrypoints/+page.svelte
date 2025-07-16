@@ -79,11 +79,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete EntryPoint',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original.id),
+							popover: {
+								title: 'Delete EntryPoint?',
+								description: 'This entry point will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});
@@ -176,9 +182,9 @@
 				<div class="bg-primary/10 rounded-lg p-2">
 					<EthernetPort class="text-primary h-6 w-6" />
 				</div>
-				EntryPoints
+				Entry Points
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your entrypoints</p>
+			<p class="text-muted-foreground mt-1">Manage your entry points</p>
 		</div>
 	</div>
 

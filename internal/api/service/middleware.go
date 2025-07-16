@@ -81,6 +81,9 @@ func (s *MiddlewareService) CreateMiddleware(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
+		if err = params.Config.Verify(); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 
 		result, err := s.app.Conn.GetQuery().CreateHttpMiddleware(ctx, params)
 		if err != nil {
@@ -417,8 +420,8 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 			Type:          p.Type,
 			Import:        p.Import,
 			Summary:       p.Summary,
-			IconUrl:       p.IconUrl,
-			BannerUrl:     p.BannerUrl,
+			IconUrl:       p.IconURL,
+			BannerUrl:     p.BannerURL,
 			Readme:        p.Readme,
 			LatestVersion: p.LatestVersion,
 			Versions:      p.Versions,

@@ -166,11 +166,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Middleware',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id, row.original.type)
+							onClick: () => deleteItem(row.original.id, row.original.type),
+							popover: {
+								title: 'Delete Middleware?',
+								description: 'This middleware and its configuration will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});

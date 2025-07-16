@@ -184,11 +184,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Router',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original)
+							onClick: () => deleteItem(row.original),
+							popover: {
+								title: 'Delete Router?',
+								description: 'This router and its configuration will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});

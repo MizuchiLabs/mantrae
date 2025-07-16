@@ -65,13 +65,11 @@
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				if (row.original.config?.autoUpdate) {
-					// utilClient.getPublicIP({}).then((res) => {
 					return renderComponent(ColumnBadge, {
 						label: 'auto',
 						variant: 'secondary',
 						class: 'hover:cursor-pointer'
 					});
-					// });
 				} else {
 					return renderComponent(ColumnBadge, {
 						label: row.getValue('ip') as string,
@@ -130,11 +128,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Provider',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original)
+							onClick: () => deleteItem(row.original),
+							popover: {
+								title: 'Delete Provider?',
+								description: 'This DNS provider will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});

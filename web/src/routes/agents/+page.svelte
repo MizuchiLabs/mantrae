@@ -79,11 +79,18 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original)
+							onClick: () => deleteItem(row.original),
+							popover: {
+								title: 'Delete Agent?',
+								description:
+									'This agent will will be permanently deleted. This will also delete all associated routers.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});

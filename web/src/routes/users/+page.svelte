@@ -63,11 +63,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete User',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original)
+							onClick: () => deleteItem(row.original),
+							popover: {
+								title: 'Delete User?',
+								description: 'This user will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});

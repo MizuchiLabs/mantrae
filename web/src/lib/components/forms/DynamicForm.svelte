@@ -9,6 +9,7 @@
 	import DynamicForm from './DynamicForm.svelte';
 	import YAML from 'yaml';
 	import { Plus, Trash } from '@lucide/svelte';
+	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		schema: ZodSchema;
@@ -108,17 +109,65 @@
 				return '';
 		}
 	}
+	function showDescription(field: FormField): boolean {
+		switch (field.type) {
+			case 'string':
+				return false;
+			case 'number':
+				return false;
+			case 'boolean':
+				return true;
+			case 'array':
+				return true;
+			case 'object':
+				return true;
+			case 'record':
+				return true;
+			case 'plugin':
+				return true;
+			default:
+				return false;
+		}
+	}
+	function handleYamlIndents(e: KeyboardEvent) {
+		const textarea = e.target as HTMLTextAreaElement;
+		if (e.key === 'Tab') {
+			e.preventDefault();
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
+
+			textarea.setRangeText('  ', start, end, 'end');
+		}
+		if (e.key === 'Backspace') {
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
+
+			// Only act if nothing selected and cursor is after two spaces
+			if (start === end && textarea.value.slice(start - 2, start) === '  ') {
+				e.preventDefault();
+				textarea.setRangeText('', start - 2, start, 'end');
+			}
+		}
+	}
 </script>
 
 <div class="flex flex-col gap-4">
 	{#each Object.entries(fields) as [key, field] (key)}
-		<div class="flex flex-col gap-2">
-			<Label class="text-sm font-medium">
-				{field.label}
-				{#if !field.optional}
-					<span class="text-red-500">*</span>
+		<div
+			class={`flex gap-2 ${field.type === 'boolean' ? 'flex-row items-center  justify-between rounded-lg border p-3' : 'flex-col'}`}
+		>
+			<!-- <div class="flex items-center justify-between rounded-lg border p-3"> -->
+			<div class="space-y-1">
+				<Label class="text-sm font-medium">
+					{field.label}
+					{#if !field.optional}
+						<span class="text-red-500">*</span>
+					{/if}
+				</Label>
+				{#if field.description && showDescription(field)}
+					<p class="text-muted-foreground text-xs">{field.description}</p>
 				{/if}
-			</Label>
+			</div>
 
 			{#if field.type === 'string'}
 				<Input
@@ -134,26 +183,25 @@
 					oninput={() => updateField(key, data[key])}
 				/>
 			{:else if field.type === 'boolean'}
-				<Checkbox
+				<CustomSwitch
 					checked={data[key] as boolean}
 					onCheckedChange={(checked) => updateField(key, checked)}
 				/>
 			{:else if field.type === 'plugin'}
-				<div class="flex flex-col gap-2">
-					<Textarea
-						value={getPluginValue()}
-						placeholder="Edit plugin configuration as YAML"
-						class="min-h-[100px] font-mono text-sm"
-						oninput={(e) => handlePluginChange(e.currentTarget.value)}
-					/>
-					{#if yamlError}
-						<p class="text-xs text-red-400 dark:text-red-700">{yamlError}</p>
-					{/if}
-				</div>
+				<Textarea
+					value={getPluginValue()}
+					placeholder="Edit plugin configuration as YAML"
+					class="min-h-[100px] font-mono text-sm"
+					oninput={(e) => handlePluginChange(e.currentTarget.value)}
+					onkeydown={handleYamlIndents}
+				/>
+				{#if yamlError}
+					<p class="text-xs text-red-400 dark:text-red-700">{yamlError}</p>
+				{/if}
 			{:else if field.type === 'array'}
 				<div class="flex flex-col gap-2 rounded-md border p-3">
 					{#if data[key] && Array.isArray(data[key])}
-						{#each data[key] as item, index (index)}
+						{#each data[key] as _, index (index)}
 							<div class="flex items-center gap-2">
 								{#if field.arrayItemType?.type === 'string'}
 									<Input
@@ -197,7 +245,7 @@
 			{:else if field.type === 'record'}
 				<div class="flex flex-col gap-2 rounded-md border p-3">
 					{#if formData[key] && typeof formData[key] === 'object'}
-						{#each Object.entries(formData[key] as Record<string, unknown>) as [recordKey, recordValue], index (recordKey)}
+						{#each Object.entries(formData[key] as Record<string, unknown>) as [recordKey, recordValue] (recordKey)}
 							<div class="flex items-center gap-2">
 								<Input
 									value={recordKey}
@@ -241,10 +289,6 @@
 						onUpdate={(nestedData) => updateField(key, nestedData)}
 					/>
 				</div>
-			{/if}
-
-			{#if field.description}
-				<p class="text-muted-foreground text-xs">{field.description}</p>
 			{/if}
 		</div>
 	{/each}

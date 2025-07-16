@@ -20,8 +20,8 @@ type Plugin struct {
 	Type          string        `json:"type"`
 	Import        string        `json:"import"`
 	Summary       string        `json:"summary"`
-	IconUrl       string        `json:"iconUrl"`
-	BannerUrl     string        `json:"bannerUrl"`
+	IconURL       string        `json:"iconUrl"`
+	BannerURL     string        `json:"bannerUrl"`
 	Readme        string        `json:"readme"`
 	LatestVersion string        `json:"latestVersion"`
 	Versions      []string      `json:"versions"`

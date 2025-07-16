@@ -158,7 +158,7 @@ export const ServiceSchema = z.object({
 export type Service = z.infer<typeof ServiceSchema>;
 
 export const AddPrefixSchema = z.object({
-	prefix: z.string().optional(),
+	prefix: z.string().optional().describe("/prefix"),
 });
 export type AddPrefix = z.infer<typeof AddPrefixSchema>;
 
@@ -308,21 +308,39 @@ export const RedirectSchemeSchema = z.object({
 export type RedirectScheme = z.infer<typeof RedirectSchemeSchema>;
 
 export const BasicAuthSchema = z.object({
-	users: z.string().array().optional(),
-	usersFile: z.string().optional(),
-	realm: z.string().optional(),
-	removeHeader: z.boolean().optional(),
-	headerField: z.string().optional(),
+	users: z
+		.string()
+		.array()
+		.optional()
+		.describe(
+			"List of users in the format `user:password` (will be encrypted)",
+		),
+
+	usersFile: z.string().optional().describe("/etc/traefik/usersfile"),
+	realm: z.string().optional().describe("Traefik Basic Auth"),
+	removeHeader: z.boolean().optional().describe("Remove Authorization header"),
+	headerField: z
+		.string()
+		.optional()
+		.describe("Custom header name (default: Authorization)"),
 });
 export type BasicAuth = z.infer<typeof BasicAuthSchema>;
 
 export const DigestAuthSchema = z.object({
-	users: z.string().array().optional(),
-	usersFile: z.string().optional(),
-	removeHeader: z.boolean().optional(),
-	realm: z.string().optional(),
-	headerField: z.string().optional(),
+	users: z
+		.string()
+		.array()
+		.optional()
+		.describe("user:realm:password (will be encrypted)"),
+	usersFile: z.string().optional().describe("/etc/traefik/users.digest"),
+	removeHeader: z.boolean().optional().describe("Remove Authorization header"),
+	realm: z.string().optional().describe("Traefik Digest Auth"),
+	headerField: z
+		.string()
+		.optional()
+		.describe("Custom header name (default: Authorization)"),
 });
+
 export type DigestAuth = z.infer<typeof DigestAuthSchema>;
 
 export const ForwardAuthSchema = z.object({

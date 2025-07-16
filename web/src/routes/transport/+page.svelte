@@ -107,11 +107,17 @@
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Transport',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id)
+							onClick: () => deleteItem(row.original.id),
+							popover: {
+								title: 'Delete Transport?',
+								description: 'This transport will be permanently deleted.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});
