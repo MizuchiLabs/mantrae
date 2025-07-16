@@ -22,7 +22,7 @@
 ## 🚧 Disclaimer 🚧
 
 This project is still early in development and is not ready for production use. Expect a lot of breaking changes in meantime until the first stable release.
-
+Also you can try out nightly builds with the `nightly` tag. But beware, these builds will break your database! 
 ### Documentation
 
 Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
