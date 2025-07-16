@@ -123,6 +123,7 @@ export const routerClient = useClient(RouterService);
 export const serviceClient = useClient(ServiceService);
 export const middlewareClient = useClient(MiddlewareService);
 export const serversTransportClient = useClient(ServersTransportService);
+// export const instanceClient = useClient(TraefikInstanceService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
 export const auditLogClient = useClient(AuditLogService);

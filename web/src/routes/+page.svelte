@@ -445,40 +445,40 @@
 				{/if}
 
 				<!-- System Health -->
-				<Card.Root>
-					<Card.Header>
-						<Card.Title class="flex items-center gap-2">
-							<CheckCircle class="h-5 w-5 text-green-500" />
-							System Health
-						</Card.Title>
-					</Card.Header>
-					<Card.Content class="space-y-4">
-						<div class="space-y-3">
-							<div class="flex items-center justify-between">
-								<span class="text-sm">Configuration Valid</span>
-								<CheckCircle class="h-4 w-4 text-green-500" />
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-sm">DNS Resolution</span>
-								<CheckCircle class="h-4 w-4 text-green-500" />
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-sm">Agent Connectivity</span>
-								{#await Promise.all([totalAgents, onlineAgents]) then [total, online]}
-									{#if total === online}
-										<CheckCircle class="h-4 w-4 text-green-500" />
-									{:else}
-										<AlertCircle class="h-4 w-4 text-yellow-500" />
-									{/if}
-								{/await}
-							</div>
-							<div class="flex items-center justify-between">
-								<span class="text-sm">SSL Certificates</span>
-								<AlertCircle class="h-4 w-4 text-yellow-500" />
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
+				<!-- <Card.Root> -->
+				<!-- 	<Card.Header> -->
+				<!-- 		<Card.Title class="flex items-center gap-2"> -->
+				<!-- 			<CheckCircle class="h-5 w-5 text-green-500" /> -->
+				<!-- 			System Health -->
+				<!-- 		</Card.Title> -->
+				<!-- 	</Card.Header> -->
+				<!-- 	<Card.Content class="space-y-4"> -->
+				<!-- 		<div class="space-y-3"> -->
+				<!-- 			<div class="flex items-center justify-between"> -->
+				<!-- 				<span class="text-sm">Configuration Valid</span> -->
+				<!-- 				<CheckCircle class="h-4 w-4 text-green-500" /> -->
+				<!-- 			</div> -->
+				<!-- 			<div class="flex items-center justify-between"> -->
+				<!-- 				<span class="text-sm">DNS Resolution</span> -->
+				<!-- 				<CheckCircle class="h-4 w-4 text-green-500" /> -->
+				<!-- 			</div> -->
+				<!-- 			<div class="flex items-center justify-between"> -->
+				<!-- 				<span class="text-sm">Agent Connectivity</span> -->
+				<!-- 				{#await Promise.all([totalAgents, onlineAgents]) then [total, online]} -->
+				<!-- 					{#if total === online} -->
+				<!-- 						<CheckCircle class="h-4 w-4 text-green-500" /> -->
+				<!-- 					{:else} -->
+				<!-- 						<AlertCircle class="h-4 w-4 text-yellow-500" /> -->
+				<!-- 					{/if} -->
+				<!-- 				{/await} -->
+				<!-- 			</div> -->
+				<!-- 			<div class="flex items-center justify-between"> -->
+				<!-- 				<span class="text-sm">SSL Certificates</span> -->
+				<!-- 				<AlertCircle class="h-4 w-4 text-yellow-500" /> -->
+				<!-- 			</div> -->
+				<!-- 		</div> -->
+				<!-- 	</Card.Content> -->
+				<!-- </Card.Root> -->
 
 				<!-- Recent Activity -->
 				<Card.Root>
