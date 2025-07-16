@@ -1,12 +1,12 @@
 when:
-  - branch: [main]
+  - branch: [main, nightly]
     event: [push, tag, deployment, manual]
     path:
       include:
-        - 'web/**'
-        - '*.go'
-        - 'go.mod'
-        - 'go.sum'
+        - "web/**"
+        - "*.go"
+        - "go.mod"
+        - "go.sum"
 
 steps:
   - name: frontend-build
@@ -31,9 +31,11 @@ steps:
         else
           TAGS="-t nightly"
         fi
-      - echo "$GITHUB_TOKEN" | ko login ghcr.io -u "$CI_REPO_OWNER" --password-stdin
+      - echo "$GITHUB_TOKEN" | ko login ghcr.io -u "$CI_REPO_OWNER"
+        --password-stdin
       - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae ko build . --bare $TAGS
-      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd --bare $TAGS
+      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd
+        --bare $TAGS
     environment:
       GITHUB_TOKEN:
         from_secret: gh_token
