@@ -90,7 +90,7 @@ func (s *Server) Start(ctx context.Context) error {
 		if ok && serverURL == "" {
 			serverURL = s.Host + ":" + s.Port
 		}
-		slog.Info("Server listening on", "address", "127.0.0.1:"+s.Port)
+		slog.Info("Server listening on", "address", "http://127.0.0.1:"+s.Port)
 		slog.Info("Agents can connect to", "address", serverURL)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
