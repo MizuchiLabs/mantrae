@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"fmt"
+	"io"
+	"log/slog"
 	"math/big"
 	"net"
 	"net/http"
@@ -134,6 +136,35 @@ func IsValidEmail(email string) bool {
 		return false
 	}
 	return matched
+}
+
+// CopyFile copies a file from src to dst safely
+func CopyFile(src, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err = srcFile.Close(); err != nil {
+			slog.Error("failed to close source file", "error", err)
+		}
+	}()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err = dstFile.Close(); err != nil {
+			slog.Error("failed to close destination file", "error", err)
+		}
+	}()
+
+	if _, err = io.Copy(dstFile, srcFile); err != nil {
+		return err
+	}
+
+	return dstFile.Sync()
 }
 
 func ValidSSLCert(domain string) error {

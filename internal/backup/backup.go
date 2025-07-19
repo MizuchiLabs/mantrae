@@ -1,38 +1,48 @@
+// Package backup provides functionality for creating and restoring backups.
 package backup
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/MizuchiLabs/mantrae/internal/app"
 	"github.com/MizuchiLabs/mantrae/internal/db"
 	"github.com/MizuchiLabs/mantrae/internal/settings"
 	"github.com/MizuchiLabs/mantrae/internal/storage"
+	"github.com/MizuchiLabs/mantrae/internal/traefik"
 )
+
+const BackupPath = "backups"
 
 type BackupManager struct {
 	Conn      *db.Connection
-	Settings  *settings.SettingsManager
+	SM        *settings.SettingsManager
 	Storage   storage.Backend
 	stopChan  chan struct{}
 	waitGroup sync.WaitGroup
 	mu        sync.Mutex
 }
 
-func NewManager(
-	conn *db.Connection,
-	settings *settings.SettingsManager,
-) *BackupManager {
+func NewManager(conn *db.Connection, sm *settings.SettingsManager) *BackupManager {
+	if conn == nil {
+		log.Fatal("No database connection provided")
+	}
+	if sm == nil {
+		log.Fatal("No settings manager provided")
+	}
+
 	return &BackupManager{
 		Conn:     conn,
-		Settings: settings,
+		SM:       sm,
 		stopChan: make(chan struct{}),
 	}
 }
@@ -53,7 +63,7 @@ func (m *BackupManager) Stop() {
 }
 
 func (m *BackupManager) SetStorage(ctx context.Context) error {
-	storageSet, _ := m.Settings.Get(ctx, settings.KeyBackupStorage)
+	storageSet, _ := m.SM.Get(ctx, settings.KeyBackupStorage)
 	storageType := storage.BackendType(storageSet.String("local"))
 	if !storageType.Valid() {
 		return fmt.Errorf("storage backend not configured")
@@ -63,7 +73,7 @@ func (m *BackupManager) SetStorage(ctx context.Context) error {
 	var newStorage storage.Backend
 	switch storageType {
 	case storage.BackendTypeLocal:
-		pathSet, err := m.Settings.Get(ctx, settings.KeyBackupPath)
+		pathSet, err := m.SM.Get(ctx, settings.KeyBackupPath)
 		if err != nil {
 			return fmt.Errorf("failed to get backup path: %w", err)
 		}
@@ -76,7 +86,7 @@ func (m *BackupManager) SetStorage(ctx context.Context) error {
 		slog.Debug("backup storage set to local", "path", path)
 
 	case storage.BackendTypeS3:
-		newStorage, err = storage.NewS3Storage(ctx, m.Settings)
+		newStorage, err = storage.NewS3Storage(ctx, m.SM)
 		if err != nil {
 			return fmt.Errorf("failed to create s3 storage: %w", err)
 		}
@@ -94,14 +104,13 @@ func (m *BackupManager) backupLoop(ctx context.Context) {
 	defer m.waitGroup.Done()
 
 	// Get backup interval
-	intervalSet, err := m.Settings.Get(ctx, settings.KeyBackupInterval)
+	intervalSet, err := m.SM.Get(ctx, settings.KeyBackupInterval)
 	if err != nil {
 		slog.Error("failed to get backup interval", "error", err)
 		return
 	}
-	interval := intervalSet.Duration(24)
 
-	ticker := time.NewTicker(interval)
+	ticker := time.NewTicker(intervalSet.Duration(24))
 	defer ticker.Stop()
 
 	for {
@@ -134,31 +143,40 @@ func (m *BackupManager) Create(ctx context.Context) error {
 		return fmt.Errorf("failed to set storage: %w", err)
 	}
 
-	backupName := fmt.Sprintf("backup_%s.db", time.Now().UTC().Format("20060102_150405"))
+	backupNameDB := fmt.Sprintf("backup_%s.db", time.Now().UTC().Format("20060102_150405"))
 
-	// Create a temporary file for the backup
+	// Create a temporary file for the db backup
 	tmpFile, err := os.CreateTemp("", "sqlite_backup_*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
-	defer tmpFile.Close()
-
-	db := m.Conn.Get()
+	defer func() {
+		if err = os.Remove(tmpFile.Name()); err != nil {
+			slog.Error("failed to remove temp file", "error", err)
+		}
+		if err = tmpFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	// Perform SQLite backup
-	if _, err := db.Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
+	if _, err = m.Conn.Get().Exec("VACUUM INTO ?", tmpFile.Name()); err != nil {
 		return fmt.Errorf("failed to create backup: %w", err)
 	}
 
 	// Rewind the file for reading
-	if _, err := tmpFile.Seek(0, 0); err != nil {
+	if _, err = tmpFile.Seek(0, 0); err != nil {
 		return fmt.Errorf("failed to rewind temp file: %w", err)
 	}
 
 	// Store the backup using the backend
-	if err := m.Storage.Store(ctx, backupName, tmpFile); err != nil {
+	if err = m.Storage.Store(ctx, backupNameDB, tmpFile); err != nil {
 		return fmt.Errorf("failed to store backup: %w", err)
+	}
+
+	// Perform YAML backup
+	if err = traefik.BackupDynamicConfigs(ctx, m.Conn.GetQuery(), m.Storage); err != nil {
+		return fmt.Errorf("failed to backup dynamic configs: %w", err)
 	}
 
 	// Clean up older backups
@@ -166,7 +184,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 		return fmt.Errorf("failed to cleanup backups: %w", err)
 	}
 
-	slog.Info("Backup created successfully", "name", backupName)
+	slog.Info("Backup created successfully", "name", backupNameDB)
 	return nil
 }
 
@@ -184,68 +202,38 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("invalid backup file name")
 	}
 
-	dbPath := app.ResolvePath("mantrae.db")
-	walPath := dbPath + "-wal"
-	shmPath := dbPath + "-shm"
-
 	// Get the backup from storage
 	reader, err := m.Storage.Retrieve(ctx, backupName)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve backup: %w", err)
 	}
-	defer reader.Close()
+	defer func() {
+		if err = reader.Close(); err != nil {
+			slog.Error("failed to close backup reader", "error", err)
+		}
+	}()
 
 	// Create a temporary file for the backup
 	tmpFile, err := os.CreateTemp("", "restore_*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() {
+		if err = os.Remove(tmpFile.Name()); err != nil {
+			slog.Error("failed to remove temp file", "error", err)
+		}
+		if err = tmpFile.Close(); err != nil {
+			slog.Error("failed to close temp file", "error", err)
+		}
+	}()
 
 	// Copy backup to temp file
 	if _, err = io.Copy(tmpFile, reader); err != nil {
 		return fmt.Errorf("failed to copy backup to temp file: %w", err)
 	}
 
-	// Close the temp file to ensure all data is written
-	if err = tmpFile.Close(); err != nil {
-		return fmt.Errorf("failed to close temp file: %w", err)
-	}
-	// Close current database connections
-	if err = m.Conn.Close(); err != nil {
-		return fmt.Errorf("failed to close database: %w", err)
-	}
-
-	// Remove WAL and SHM files if they exist
-	os.Remove(walPath)
-	os.Remove(shmPath)
-
-	// Copy the temp file to the database location instead of rename (invalid cross-device link)
-	srcFile, err := os.Open(tmpFile.Name())
-	if err != nil {
-		return fmt.Errorf("failed to open temp file for copying: %w", err)
-	}
-	defer srcFile.Close()
-
-	// Create new database file
-	dstFile, err := os.Create(dbPath)
-	if err != nil {
-		return fmt.Errorf("failed to create new database file: %w", err)
-	}
-	defer dstFile.Close()
-
-	// Copy the contents
-	if _, err = io.Copy(dstFile, srcFile); err != nil {
-		return fmt.Errorf("failed to copy database contents: %w", err)
-	}
-
-	// Ensure all data is written to disk
-	if err = dstFile.Sync(); err != nil {
-		return fmt.Errorf("failed to sync database file: %w", err)
-	}
-
 	// Reinitialize the database
-	if err = m.Conn.Replace(); err != nil {
+	if err = m.Conn.Replace(tmpFile.Name()); err != nil {
 		return err
 	}
 
@@ -253,11 +241,9 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 }
 
 func (m *BackupManager) List(ctx context.Context) ([]storage.StoredFile, error) {
-	// Set storage
 	if err := m.SetStorage(ctx); err != nil {
 		return nil, fmt.Errorf("failed to set storage: %w", err)
 	}
-
 	files, err := m.Storage.List(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list backups: %w", err)
@@ -275,16 +261,12 @@ func (m *BackupManager) List(ctx context.Context) ([]storage.StoredFile, error) 
 }
 
 func (m *BackupManager) Delete(ctx context.Context, id string) error {
-	// Set storage
 	if err := m.SetStorage(ctx); err != nil {
 		return fmt.Errorf("failed to set storage: %w", err)
 	}
-
-	// Delete backup file
 	if err := m.Storage.Delete(ctx, id); err != nil {
 		return fmt.Errorf("failed to delete backup %s: %w", id, err)
 	}
-
 	return nil
 }
 
@@ -293,33 +275,84 @@ func (m *BackupManager) IsValidBackupFile(filename string) bool {
 	if strings.Contains(filename, "..") {
 		return false
 	}
-	// Check if filename matches pattern: backup_YYYYMMDD_HHMMSS.db
-	matched, err := filepath.Match("backup_[0-9]*_[0-9]*.db", filename)
+	// Check if filename matches pattern *.db or *.yaml
+	matchedDB, err := filepath.Match("*.db", filename)
 	if err != nil {
 		return false
 	}
-	return matched
+	if matchedDB {
+		return true
+	}
+
+	matchedYaml, err := filepath.Match("*.yaml", filename)
+	if err != nil {
+		return false
+	}
+	if matchedYaml {
+		return true
+	}
+	return false
 }
 
 func (m *BackupManager) cleanup(ctx context.Context) error {
+	// Regex to parse filenames like backup_20230710_101010.db
+	dbBackupRegex := regexp.MustCompile(`backup_(\d{8}_\d{6})\.db`)
+
+	// Regex to parse filenames like backup_profileName_20230710_101010.yaml
+	yamlBackupRegex := regexp.MustCompile(`backup_(.+)_(\d{8}_\d{6})\.yaml`)
+
 	files, err := m.Storage.List(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to list backups: %w", err)
 	}
 
-	retentionSet, err := m.Settings.Get(ctx, settings.KeyBackupKeep)
+	retentionSet, err := m.SM.Get(ctx, settings.KeyBackupKeep)
 	if err != nil {
 		return fmt.Errorf("failed to get retention setting: %w", err)
 	}
-	retention := retentionSet.Int(7)
-	if len(files) <= retention {
-		return nil
+	retention := retentionSet.Int(3)
+
+	// Sort descending by time (newest first)
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].Timestamp.After(files[j].Timestamp)
+	})
+
+	var dbBackups []storage.StoredFile
+	yamlBackupsByProfile := make(map[string][]storage.StoredFile)
+
+	for _, f := range files {
+		if m := dbBackupRegex.FindStringSubmatch(f.Name); m != nil {
+			dbBackups = append(dbBackups, f)
+		} else if m := yamlBackupRegex.FindStringSubmatch(f.Name); m != nil {
+			profile := m[1]
+			yamlBackupsByProfile[profile] = append(yamlBackupsByProfile[profile], f)
+		} else {
+			continue
+		}
 	}
 
 	// Delete older backups
-	for _, file := range files[retention:] {
-		if err := m.Storage.Delete(ctx, file.Name); err != nil {
-			return fmt.Errorf("failed to delete old backup %s: %w", file.Name, err)
+	if len(dbBackups) > retention {
+		for _, f := range dbBackups[retention:] {
+			if err := m.Storage.Delete(ctx, f.Name); err != nil {
+				return fmt.Errorf("failed to delete db backup %s: %w", f.Name, err)
+			}
+		}
+	}
+	// Cleanup YAML backups per profile
+	for profile, backups := range yamlBackupsByProfile {
+		if len(backups) <= retention {
+			continue
+		}
+		for _, f := range backups[retention:] {
+			if err := m.Storage.Delete(ctx, f.Name); err != nil {
+				return fmt.Errorf(
+					"failed to delete yaml backup %s (profile %s): %w",
+					f.Name,
+					profile,
+					err,
+				)
+			}
 		}
 	}
 

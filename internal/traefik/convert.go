@@ -1,12 +1,17 @@
 package traefik
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"mime/multipart"
+	"os"
+	"time"
 
 	"github.com/MizuchiLabs/mantrae/internal/db"
+	"github.com/MizuchiLabs/mantrae/internal/storage"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"github.com/traefik/traefik/v3/pkg/config/runtime"
 	"golang.org/x/exp/maps"
@@ -192,4 +197,60 @@ func mergeMaps[K comparable, V any](base, overlay map[K]V) {
 	}
 
 	maps.Copy(base, overlay)
+}
+
+func BackupDynamicConfigs(ctx context.Context, q *db.Queries, storage storage.Backend) error {
+	profiles, err := q.ListProfiles(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get profiles: %w", err)
+	}
+
+	for _, profile := range profiles {
+		// Get local config
+		local, err := q.GetLocalTraefikConfig(ctx, profile.ID)
+		if err != nil {
+			return fmt.Errorf("failed to get local traefik config: %w", err)
+		}
+		if local.Config == nil {
+			continue
+		}
+
+		// Convert to dynamic
+		dynamic := ConvertToDynamicConfig(local.Config)
+		backupName := fmt.Sprintf(
+			"backup_%s_%s.yaml",
+			profile.Name,
+			time.Now().UTC().Format("20060102_150405"),
+		)
+		tmpFile, err := os.CreateTemp("", "traefik_backup_*")
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err = os.Remove(tmpFile.Name()); err != nil {
+				slog.Error("failed to remove temp file", "error", err)
+			}
+			if err = tmpFile.Close(); err != nil {
+				slog.Error("failed to close temp file", "error", err)
+			}
+		}()
+
+		// Convert to YAML
+		yamlBytes, err := yaml.Marshal(dynamic)
+		if err != nil {
+			return fmt.Errorf("failed to convert dynamic config to JSON: %w", err)
+		}
+		if _, err = tmpFile.Write(yamlBytes); err != nil {
+			return fmt.Errorf("failed to write YAML to temp file: %w", err)
+		}
+		if _, err = tmpFile.Seek(0, 0); err != nil {
+			return err
+		}
+
+		// Backup dynamic config
+		if err := storage.Store(ctx, backupName, tmpFile); err != nil {
+			return fmt.Errorf("failed to backup dynamic config: %w", err)
+		}
+	}
+	return nil
 }

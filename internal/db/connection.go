@@ -3,8 +3,13 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
+	"os"
 	"sync"
 	"time"
+
+	"github.com/MizuchiLabs/mantrae/internal/app"
+	"github.com/MizuchiLabs/mantrae/internal/util"
 )
 
 type Connection struct {
@@ -44,20 +49,31 @@ func (c *Connection) GetQuery() *Queries {
 	return New(c.db)
 }
 
-func (c *Connection) Replace() error {
+func (c *Connection) Replace(srcPath string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	// Close old connection if it exists
 	if c.db != nil {
+		if _, err := c.db.Exec("PRAGMA wal_checkpoint(TRUNCATE);"); err != nil {
+			slog.Warn("checkpoint old database failed", "error", err)
+		}
 		if err := c.db.Close(); err != nil {
-			// Log error but don't fail - we already have new connection
-			fmt.Printf("warning: failed to close old database connection: %v\n", err)
+			slog.Warn("close old database failed", "error", err)
 		}
 	}
 
-	// Wait a small amount of time for SQLite to release locks
-	time.Sleep(100 * time.Millisecond)
+	// Allow locks to clear
+	time.Sleep(500 * time.Millisecond)
+
+	// Copy new file into place
+	dst := app.ResolvePath("mantrae.db")
+	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove old db file: %w", err)
+	}
+	if err := util.CopyFile(srcPath, dst); err != nil {
+		return fmt.Errorf("copy new db file: %w", err)
+	}
 
 	// Create new connection before closing the old one
 	newDB, err := InitDB()
