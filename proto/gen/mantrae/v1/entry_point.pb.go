@@ -207,8 +207,8 @@ type CreateEntryPointRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Address       string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	IsDefault     bool                   `protobuf:"varint,4,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	IsDefault     bool                   `protobuf:"varint,3,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	Address       *string                `protobuf:"bytes,4,opt,name=address,proto3,oneof" json:"address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -257,18 +257,18 @@ func (x *CreateEntryPointRequest) GetName() string {
 	return ""
 }
 
-func (x *CreateEntryPointRequest) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
 func (x *CreateEntryPointRequest) GetIsDefault() bool {
 	if x != nil {
 		return x.IsDefault
 	}
 	return false
+}
+
+func (x *CreateEntryPointRequest) GetAddress() string {
+	if x != nil && x.Address != nil {
+		return *x.Address
+	}
+	return ""
 }
 
 type CreateEntryPointResponse struct {
@@ -319,8 +319,8 @@ type UpdateEntryPointRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Address       string                 `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
-	IsDefault     bool                   `protobuf:"varint,4,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	IsDefault     bool                   `protobuf:"varint,3,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	Address       *string                `protobuf:"bytes,4,opt,name=address,proto3,oneof" json:"address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -369,18 +369,18 @@ func (x *UpdateEntryPointRequest) GetName() string {
 	return ""
 }
 
-func (x *UpdateEntryPointRequest) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
 func (x *UpdateEntryPointRequest) GetIsDefault() bool {
 	if x != nil {
 		return x.IsDefault
 	}
 	return false
+}
+
+func (x *UpdateEntryPointRequest) GetAddress() string {
+	if x != nil && x.Address != nil {
+		return *x.Address
+	}
+	return ""
 }
 
 type UpdateEntryPointResponse struct {
@@ -642,23 +642,27 @@ const file_mantrae_v1_entry_point_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"P\n" +
 	"\x15GetEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
-	"entryPoint\"\xa0\x01\n" +
+	"entryPoint\"\xa8\x01\n" +
 	"\x17CreateEntryPointRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12!\n" +
-	"\aaddress\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aaddress\x12\x1d\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1d\n" +
 	"\n" +
-	"is_default\x18\x04 \x01(\bR\tisDefault\"S\n" +
+	"is_default\x18\x03 \x01(\bR\tisDefault\x12\x1d\n" +
+	"\aaddress\x18\x04 \x01(\tH\x00R\aaddress\x88\x01\x01B\n" +
+	"\n" +
+	"\b_address\"S\n" +
 	"\x18CreateEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
-	"entryPoint\"\x91\x01\n" +
+	"entryPoint\"\x99\x01\n" +
 	"\x17UpdateEntryPointRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12!\n" +
-	"\aaddress\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aaddress\x12\x1d\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1d\n" +
 	"\n" +
-	"is_default\x18\x04 \x01(\bR\tisDefault\"S\n" +
+	"is_default\x18\x03 \x01(\bR\tisDefault\x12\x1d\n" +
+	"\aaddress\x18\x04 \x01(\tH\x00R\aaddress\x88\x01\x01B\n" +
+	"\n" +
+	"\b_address\"S\n" +
 	"\x18UpdateEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
 	"entryPoint\"2\n" +
@@ -743,6 +747,8 @@ func file_mantrae_v1_entry_point_proto_init() {
 	if File_mantrae_v1_entry_point_proto != nil {
 		return
 	}
+	file_mantrae_v1_entry_point_proto_msgTypes[3].OneofWrappers = []any{}
+	file_mantrae_v1_entry_point_proto_msgTypes[5].OneofWrappers = []any{}
 	file_mantrae_v1_entry_point_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

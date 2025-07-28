@@ -856,13 +856,13 @@ components:
           type: string
           title: name
           minLength: 1
-        address:
-          type: string
-          title: address
-          minLength: 1
         isDefault:
           type: boolean
           title: is_default
+        address:
+          type: string
+          title: address
+          nullable: true
       title: CreateEntryPointRequest
       additionalProperties: false
     mantrae.v1.CreateEntryPointResponse:
@@ -1003,13 +1003,13 @@ components:
           type: string
           title: name
           minLength: 1
-        address:
-          type: string
-          title: address
-          minLength: 1
         isDefault:
           type: boolean
           title: is_default
+        address:
+          type: string
+          title: address
+          nullable: true
       title: UpdateEntryPointRequest
       additionalProperties: false
     mantrae.v1.UpdateEntryPointResponse:

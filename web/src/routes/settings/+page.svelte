@@ -4,7 +4,6 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { Switch } from '$lib/components/ui/switch';
 	import { Input } from '$lib/components/ui/input';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Download, List, SaveIcon, Settings, Upload } from '@lucide/svelte';
@@ -16,6 +15,7 @@
 	import { settingGroups, storageTypes } from './settings';
 	import BackupModal from '$lib/components/modals/BackupModal.svelte';
 	import CustomSwitch from '$lib/components/ui/custom-switch/custom-switch.svelte';
+	import { profile } from '$lib/stores/profile';
 
 	let settingsMap = $state<Record<string, string>>({});
 	let originalSettings: Record<string, string> = {};
@@ -175,7 +175,7 @@
 						accept=".db,.yaml,.yml,.json"
 						class="hidden"
 						bind:this={uploadBackupFile}
-						onchange={() => upload(uploadBackupFile, 'backup')}
+						onchange={() => upload(uploadBackupFile, `backup/${profile.id}`)}
 					/>
 
 					<div class="grid grid-cols-1 gap-2 sm:grid-cols-6">

@@ -30,7 +30,7 @@ func (e *EntryPoint) ToProto() *mantraev1.EntryPoint {
 		Id:        e.ID,
 		ProfileId: e.ProfileID,
 		Name:      e.Name,
-		Address:   e.Address,
+		Address:   SafeString(e.Address),
 		IsDefault: e.IsDefault,
 		CreatedAt: SafeTimestamp(e.CreatedAt),
 		UpdatedAt: SafeTimestamp(e.UpdatedAt),

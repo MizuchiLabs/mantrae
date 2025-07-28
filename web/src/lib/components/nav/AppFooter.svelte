@@ -1,15 +1,8 @@
 <script lang="ts">
 	import { BookText } from '@lucide/svelte';
 	import { Button } from '../ui/button';
-	import { onMount } from 'svelte';
 	import { utilClient } from '$lib/api';
 	import Separator from '../ui/separator/separator.svelte';
-
-	let version = $state('');
-	onMount(async () => {
-		const res = await utilClient.getVersion({});
-		version = res.version;
-	});
 </script>
 
 <footer
@@ -37,11 +30,13 @@
 			class="flex items-center gap-1 text-xs "
 		>
 			Mantrae
-			{#if version && version !== 'unknown'}
-				{version}
-			{:else}
-				<span class="italic">latest</span>
-			{/if}
+			{#await utilClient.getVersion({}) then result}
+				{#if result.version && result.version !== 'unknown'}
+					{result.version}
+				{:else}
+					<span class="italic">latest</span>
+				{/if}
+			{/await}
 		</Button>
 	</div>
 </footer>

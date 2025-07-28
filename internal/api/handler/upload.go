@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
@@ -32,7 +31,7 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			}
 		}()
 
-		userID := r.URL.Query().Get("user_id")
+		userID := r.PathValue("id")
 		if userID == "" {
 			http.Error(w, "Missing user_id query parameter", http.StatusBadRequest)
 			return
@@ -131,16 +130,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				return
 			}
 		} else { // Handle dynamic configuration
-			profileID := strings.TrimSpace(r.URL.Query().Get("profile_id"))
-			if profileID == "" {
-				http.Error(
-					w,
-					fmt.Sprintf("Missing profile_id query parameter: %v", err),
-					http.StatusBadRequest,
-				)
-				return
-			}
-			profileIDValue, err := strconv.ParseInt(profileID, 10, 64)
+			profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 			if err != nil {
 				http.Error(
 					w,
@@ -173,10 +163,8 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				return
 			}
 
-			if err = traefik.DynamicToDB(r.Context(), *a.Conn.GetQuery(), profileIDValue, dynamic); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			// Write to database
+			traefik.DynamicToDB(r.Context(), a.Conn.GetQuery(), profileID, dynamic)
 		}
 
 		w.WriteHeader(http.StatusNoContent)

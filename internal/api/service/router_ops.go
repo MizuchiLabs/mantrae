@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-
-	"connectrpc.com/connect"
+	"log/slog"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -66,7 +65,7 @@ func (s *HTTPRouterOps) Get(
 ) (*mantraev1.GetRouterResponse, error) {
 	result, err := s.app.Conn.GetQuery().GetHttpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.GetRouterResponse{
 		Router: result.ToProto(),
@@ -86,19 +85,19 @@ func (s *HTTPRouterOps) Create(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.HTTPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	result, err := s.app.Conn.GetQuery().CreateHttpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	router := result.ToProto()
 
 	dnsProviders, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, result.ID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	router.DnsProviders = make([]*mantraev1.DnsProvider, 0, len(dnsProviders))
 	for _, p := range dnsProviders {
@@ -123,14 +122,14 @@ func (s *HTTPRouterOps) Update(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.HTTPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, params.ID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	existingMap := make(map[int64]bool)
 	for _, provider := range existing {
@@ -151,7 +150,7 @@ func (s *HTTPRouterOps) Update(
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
 				}); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
+				return nil, err
 			}
 		}
 	}
@@ -164,20 +163,20 @@ func (s *HTTPRouterOps) Update(
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
 				}); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
+				return nil, err
 			}
 		}
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	router := result.ToProto()
 
 	dnsProviders, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, result.ID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	router.DnsProviders = make([]*mantraev1.DnsProvider, 0, len(dnsProviders))
 	for _, p := range dnsProviders {
@@ -195,20 +194,20 @@ func (s *HTTPRouterOps) Delete(
 ) (*mantraev1.DeleteRouterResponse, error) {
 	router, err := s.app.Conn.GetQuery().GetHttpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, router.Config.Service)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to get http service", "err", err)
 		}
 		if err := s.app.Conn.GetQuery().DeleteHttpService(ctx, service.ID); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to delete http service", "err", err)
 		}
 	}
 
 	if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Id); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
@@ -225,14 +224,14 @@ func (s *HTTPRouterOps) List(
 			Offset:    req.Offset,
 		})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().CountHttpRouters(ctx, db.CountHttpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 
 	routers := make([]*mantraev1.Router, 0, len(result))
@@ -253,7 +252,7 @@ func (s *TCPRouterOps) Get(
 ) (*mantraev1.GetRouterResponse, error) {
 	result, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.GetRouterResponse{
 		Router: result.ToProto(),
@@ -273,13 +272,13 @@ func (s *TCPRouterOps) Create(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.TCPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	result, err := s.app.Conn.GetQuery().CreateTcpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.CreateRouterResponse{
 		Router: result.ToProto(),
@@ -299,14 +298,14 @@ func (s *TCPRouterOps) Update(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.TCPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, params.ID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	existingMap := make(map[int64]bool)
 	for _, provider := range existing {
@@ -327,7 +326,7 @@ func (s *TCPRouterOps) Update(
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
 				}); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
+				return nil, err
 			}
 		}
 	}
@@ -340,14 +339,14 @@ func (s *TCPRouterOps) Update(
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
 				}); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
+				return nil, err
 			}
 		}
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
@@ -360,20 +359,20 @@ func (s *TCPRouterOps) Delete(
 ) (*mantraev1.DeleteRouterResponse, error) {
 	router, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, router.Config.Service)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to get tcp service", "err", err)
 		}
 		if err := s.app.Conn.GetQuery().DeleteTcpService(ctx, service.ID); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to delete tcp service", "err", err)
 		}
 	}
 
 	if err := s.app.Conn.GetQuery().DeleteTcpRouter(ctx, req.Id); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
@@ -390,14 +389,14 @@ func (s *TCPRouterOps) List(
 			Offset:    req.Offset,
 		})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().CountTcpRouters(ctx, db.CountTcpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 
 	routers := make([]*mantraev1.Router, 0, len(result))
@@ -418,7 +417,7 @@ func (s *UDPRouterOps) Get(
 ) (*mantraev1.GetRouterResponse, error) {
 	result, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.GetRouterResponse{
 		Router: result.ToProto(),
@@ -438,13 +437,13 @@ func (s *UDPRouterOps) Create(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.UDPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	result, err := s.app.Conn.GetQuery().CreateUdpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.CreateRouterResponse{
 		Router: result.ToProto(),
@@ -464,13 +463,13 @@ func (s *UDPRouterOps) Update(
 	var err error
 	params.Config, err = db.UnmarshalStruct[schema.UDPRouter](req.Config)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		return nil, err
 	}
 	params.Config.Service = params.Name
 
 	result, err := s.app.Conn.GetQuery().UpdateUdpRouter(ctx, params)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
@@ -483,20 +482,20 @@ func (s *UDPRouterOps) Delete(
 ) (*mantraev1.DeleteRouterResponse, error) {
 	router, err := s.app.Conn.GetQuery().GetUdpRouter(ctx, req.Id)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, router.Config.Service)
 		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to get udp service", "err", err)
 		}
 		if err := s.app.Conn.GetQuery().DeleteUdpService(ctx, service.ID); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
+			slog.Error("failed to delete udp service", "err", err)
 		}
 	}
 
 	if err := s.app.Conn.GetQuery().DeleteUdpRouter(ctx, req.Id); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
@@ -513,14 +512,14 @@ func (s *UDPRouterOps) List(
 			Offset:    req.Offset,
 		})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().CountUdpRouters(ctx, db.CountUdpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
 
 	routers := make([]*mantraev1.Router, 0, len(result))

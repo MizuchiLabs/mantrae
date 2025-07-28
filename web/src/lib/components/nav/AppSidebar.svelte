@@ -63,7 +63,6 @@
 
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
-
 	let modalUserOpen = $state(false);
 </script>
 
@@ -108,7 +107,7 @@
 						sideOffset={4}
 					>
 						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
-						{#await profileClient.listProfiles({ limit: -1n, offset: 0n }) then value}
+						{#await profileClient.listProfiles({}) then value}
 							{#each value.profiles || [] as p (p.id)}
 								<DropdownMenu.Item
 									onSelect={() => (profile.value = p)}

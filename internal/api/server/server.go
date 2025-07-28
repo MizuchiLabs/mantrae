@@ -265,8 +265,8 @@ func (s *Server) registerServices() {
 	s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
 
 	// Upload handler (HTTP) --------------------------------------------------
-	s.mux.Handle("POST /upload/avatar", jwtChain(handler.UploadAvatar(s.app)))
-	s.mux.Handle("POST /upload/backup", jwtChain(handler.UploadBackup(s.app)))
+	s.mux.Handle("POST /upload/avatar/{id}", jwtChain(handler.UploadAvatar(s.app)))
+	s.mux.Handle("POST /upload/backup/{id}", jwtChain(handler.UploadBackup(s.app)))
 
 	// OIDC handlers (HTTP) ---------------------------------------------------
 	s.mux.Handle("GET /oidc/login", logChain(handler.OIDCLogin(s.app)))

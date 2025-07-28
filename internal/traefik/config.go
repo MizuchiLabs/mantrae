@@ -186,93 +186,140 @@ func BackupDynamicConfigs(ctx context.Context, q *db.Queries, store storage.Back
 // DynamicToDB saves a Traefik dynamic configuration to the database
 func DynamicToDB(
 	ctx context.Context,
-	q db.Queries,
+	q *db.Queries,
 	profileID int64,
 	dynamic *dynamic.Configuration,
-) error {
-	for k, v := range dynamic.HTTP.Routers {
-		if _, err := q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapRouter(v),
-		}); err != nil {
-			slog.Error("failed to create http router", "err", err)
-			continue
-		}
+) {
+	if dynamic == nil {
+		return
 	}
-	for k, v := range dynamic.TCP.Routers {
-		if _, err := q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapTCPRouter(v),
-		}); err != nil {
-			slog.Error("failed to create tcp router", "err", err)
-			continue
-		}
-	}
-	for k, v := range dynamic.UDP.Routers {
-		if _, err := q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapUDPRouter(v),
-		}); err != nil {
-			slog.Error("failed to create udp router", "err", err)
-			continue
+
+	entryPointSet := make(map[string]db.CreateEntryPointParams)
+	addEP := func(pts []string) {
+		for _, ep := range pts {
+			if ep == "" {
+				continue
+			}
+			entryPointSet[ep] = db.CreateEntryPointParams{
+				ProfileID: profileID,
+				Name:      ep,
+				IsDefault: false,
+			}
 		}
 	}
 
-	// Services
-	for k, v := range dynamic.HTTP.Services {
-		if _, err := q.CreateHttpService(ctx, db.CreateHttpServiceParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapService(v),
-		}); err != nil {
-			slog.Error("failed to create http service", "err", err)
-			continue
+	// Routers
+	if dynamic.HTTP != nil {
+		for k, v := range dynamic.HTTP.Routers {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapRouter(v),
+			}); err != nil {
+				slog.Warn("failed to create http router", "err", err)
+			}
+			addEP(v.EntryPoints)
+		}
+		for k, v := range dynamic.HTTP.Services {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateHttpService(ctx, db.CreateHttpServiceParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapService(v),
+			}); err != nil {
+				slog.Warn("failed to create http service", "err", err)
+			}
+		}
+		for k, v := range dynamic.HTTP.Middlewares {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapMiddleware(v),
+			}); err != nil {
+				slog.Warn("failed to create http middleware", "err", err)
+			}
 		}
 	}
-	for k, v := range dynamic.TCP.Services {
-		if _, err := q.CreateTcpService(ctx, db.CreateTcpServiceParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapTCPService(v),
-		}); err != nil {
-			slog.Error("failed to create tcp service", "err", err)
-			continue
+	if dynamic.TCP != nil {
+		for k, v := range dynamic.TCP.Routers {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapTCPRouter(v),
+			}); err != nil {
+				slog.Warn("failed to create tcp router", "err", err)
+			}
+			addEP(v.EntryPoints)
+		}
+		for k, v := range dynamic.TCP.Services {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateTcpService(ctx, db.CreateTcpServiceParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapTCPService(v),
+			}); err != nil {
+				slog.Warn("failed to create tcp service", "err", err)
+			}
+		}
+		for k, v := range dynamic.TCP.Middlewares {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateTcpMiddleware(ctx, db.CreateTcpMiddlewareParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapTCPMiddleware(v),
+			}); err != nil {
+				slog.Warn("failed to create tcp middleware", "err", err)
+			}
 		}
 	}
-	for k, v := range dynamic.UDP.Services {
-		if _, err := q.CreateUdpService(ctx, db.CreateUdpServiceParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapUDPService(v),
-		}); err != nil {
-			slog.Error("failed to create udp service", "err", err)
-			continue
+	if dynamic.UDP != nil {
+		for k, v := range dynamic.UDP.Routers {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapUDPRouter(v),
+			}); err != nil {
+				slog.Warn("failed to create udp router", "err", err)
+			}
+			addEP(v.EntryPoints)
+		}
+		for k, v := range dynamic.UDP.Services {
+			if v == nil {
+				continue
+			}
+			if _, err := q.CreateUdpService(ctx, db.CreateUdpServiceParams{
+				ProfileID: profileID,
+				Name:      k,
+				Config:    schema.WrapUDPService(v),
+			}); err != nil {
+				slog.Warn("failed to create udp service", "err", err)
+			}
 		}
 	}
 
-	// Middlewares
-	for k, v := range dynamic.HTTP.Middlewares {
-		if _, err := q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapMiddleware(v),
-		}); err != nil {
-			slog.Error("failed to create http middleware", "err", err)
-			continue
+	if len(entryPointSet) > 0 {
+		for _, ep := range entryPointSet {
+			if _, err := q.CreateEntryPoint(ctx, ep); err != nil {
+				slog.Warn("failed to create entry point", "err", err)
+			}
 		}
 	}
-	for k, v := range dynamic.TCP.Middlewares {
-		if _, err := q.CreateTcpMiddleware(ctx, db.CreateTcpMiddlewareParams{
-			ProfileID: profileID,
-			Name:      k,
-			Config:    schema.WrapTCPMiddleware(v),
-		}); err != nil {
-			slog.Error("failed to create tcp middleware", "err", err)
-			continue
-		}
-	}
-	return nil
 }

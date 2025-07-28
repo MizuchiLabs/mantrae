@@ -43,16 +43,13 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 				profile.value = response.profiles[0];
 			} else {
 				const response = await profileClient.getProfile({ id: profile.id });
-				if (!response.profile) {
-					profile.clear();
-					throw new Error("Profile not found");
-				}
 				profile.value = response.profile;
 			}
 
 			if (isPublic) await goto("/");
 		} catch (_) {
 			user.clear();
+			profile.clear();
 			if (!isPublic) await goto("/login");
 		}
 	}

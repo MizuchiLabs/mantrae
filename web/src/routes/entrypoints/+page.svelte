@@ -36,7 +36,7 @@
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				return renderComponent(ColumnBadge, {
-					label: row.getValue('address') as string,
+					label: row.original.address || 'None',
 					class: 'hover:cursor-pointer'
 				});
 			}
@@ -132,11 +132,11 @@
 			});
 			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(
-				`EntryPoint ${item.name} ${isDefault ? 'set as default' : 'removed as default'}`
+				`Entry point ${item.name} ${isDefault ? 'set as default' : 'removed as default'}`
 			);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to update entrypoint', { description: e.message });
+			toast.error('Failed to update entry point', { description: e.message });
 		}
 	}
 
@@ -152,7 +152,7 @@
 			toast.success(`Successfully deleted ${rows.length} entrypoints`);
 		} catch (err) {
 			const e = ConnectError.from(err);
-			toast.error('Failed to delete entrypoints', { description: e.message });
+			toast.error('Failed to delete entry points', { description: e.message });
 		}
 	}
 

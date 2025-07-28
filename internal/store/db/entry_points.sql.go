@@ -40,10 +40,10 @@ VALUES
 `
 
 type CreateEntryPointParams struct {
-	ProfileID int64  `json:"profileId"`
-	Name      string `json:"name"`
-	Address   string `json:"address"`
-	IsDefault bool   `json:"isDefault"`
+	ProfileID int64   `json:"profileId"`
+	Name      string  `json:"name"`
+	Address   *string `json:"address"`
+	IsDefault bool    `json:"isDefault"`
 }
 
 func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointParams) (EntryPoint, error) {
@@ -204,10 +204,10 @@ WHERE
 `
 
 type UpdateEntryPointParams struct {
-	Name      string `json:"name"`
-	Address   string `json:"address"`
-	IsDefault bool   `json:"isDefault"`
-	ID        int64  `json:"id"`
+	Name      string  `json:"name"`
+	Address   *string `json:"address"`
+	IsDefault bool    `json:"isDefault"`
+	ID        int64   `json:"id"`
 }
 
 func (q *Queries) UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error) {

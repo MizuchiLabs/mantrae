@@ -47,7 +47,7 @@ type EntryPoint struct {
 	ID        int64      `json:"id"`
 	ProfileID int64      `json:"profileId"`
 	Name      string     `json:"name"`
-	Address   string     `json:"address"`
+	Address   *string    `json:"address"`
 	IsDefault bool       `json:"isDefault"`
 	CreatedAt *time.Time `json:"createdAt"`
 	UpdatedAt *time.Time `json:"updatedAt"`
