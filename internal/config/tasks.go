@@ -75,10 +75,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 			}
 
 			// List profiles
-			profiles, err := a.Conn.GetQuery().ListProfiles(ctx, db.ListProfilesParams{
-				Limit:  -1,
-				Offset: 0,
-			})
+			profiles, err := a.Conn.GetQuery().ListProfiles(ctx, db.ListProfilesParams{})
 			if err != nil {
 				slog.Error("failed to list profiles", "error", err)
 				continue
@@ -86,11 +83,8 @@ func (a *App) cleanupAgents(ctx context.Context) {
 
 			var agents []db.Agent
 			for _, profile := range profiles {
-				a, err := a.Conn.GetQuery().ListAgents(ctx, db.ListAgentsParams{
-					ProfileID: profile.ID,
-					Limit:     -1,
-					Offset:    0,
-				})
+				a, err := a.Conn.GetQuery().
+					ListAgents(ctx, db.ListAgentsParams{ProfileID: profile.ID})
 				if err != nil {
 					slog.Error("failed to list agents", "error", err)
 					continue

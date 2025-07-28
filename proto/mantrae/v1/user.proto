@@ -87,7 +87,10 @@ message GetUserResponse {
 message CreateUserRequest {
   string username = 1 [(buf.validate.field).string.min_len = 3];
   string password = 2 [(buf.validate.field).string.min_len = 8];
-  string email = 3 [(buf.validate.field).string.email = true];
+  optional string email = 3 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).ignore = IGNORE_UNSPECIFIED
+  ];
 }
 message CreateUserResponse {
   User user = 1;
@@ -96,10 +99,13 @@ message CreateUserResponse {
 message UpdateUserRequest {
   string id = 1 [(buf.validate.field).string.min_len = 1];
   string username = 2 [(buf.validate.field).string.min_len = 3];
-  string email = 3 [(buf.validate.field).string.email = true];
-  optional string password = 5 [
+  optional string email = 3 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).ignore = IGNORE_UNSPECIFIED
+  ];
+  optional string password = 4 [
     (buf.validate.field).string.min_len = 8,
-    (buf.validate.field).ignore = IGNORE_IF_UNPOPULATED
+    (buf.validate.field).ignore = IGNORE_UNSPECIFIED
   ];
 }
 message UpdateUserResponse {

@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   udp_routers
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountUdpRouters(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countUdpRoutersStmt, countUdpRouters)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountUdpRoutersParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countUdpRoutersByAgent = `-- name: CountUdpRoutersByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  udp_routers
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountUdpRoutersByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countUdpRoutersByAgentStmt, countUdpRoutersByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countUdpRoutersByProfile = `-- name: CountUdpRoutersByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  udp_routers
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountUdpRoutersByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countUdpRoutersByProfileStmt, countUdpRoutersByProfile, profileID)
+func (q *Queries) CountUdpRouters(ctx context.Context, arg CountUdpRoutersParams) (int64, error) {
+	row := q.queryRow(ctx, q.countUdpRoutersStmt, countUdpRouters, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -203,76 +182,33 @@ SELECT
 FROM
   udp_routers
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListUdpRoutersParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListUdpRouters(ctx context.Context, arg ListUdpRoutersParams) ([]UdpRouter, error) {
-	rows, err := q.query(ctx, q.listUdpRoutersStmt, listUdpRouters, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []UdpRouter
-	for rows.Next() {
-		var i UdpRouter
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listUdpRoutersByAgent = `-- name: ListUdpRoutersByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
-FROM
-  udp_routers
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListUdpRoutersByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListUdpRoutersByAgent(ctx context.Context, arg ListUdpRoutersByAgentParams) ([]UdpRouter, error) {
-	rows, err := q.query(ctx, q.listUdpRoutersByAgentStmt, listUdpRoutersByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listUdpRoutersStmt, listUdpRouters,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -311,22 +247,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListUdpRoutersEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListUdpRoutersEnabled(ctx context.Context, arg ListUdpRoutersEnabledParams) ([]UdpRouter, error) {
-	rows, err := q.query(ctx, q.listUdpRoutersEnabledStmt, listUdpRoutersEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListUdpRoutersEnabled(ctx context.Context, profileID int64) ([]UdpRouter, error) {
+	rows, err := q.query(ctx, q.listUdpRoutersEnabledStmt, listUdpRoutersEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

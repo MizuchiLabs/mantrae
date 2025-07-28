@@ -67,27 +67,17 @@ SELECT
 FROM
   http_routers
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
-
--- name: ListHttpRoutersByAgent :many
-SELECT
-  *
-FROM
-  http_routers
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: ListHttpRoutersEnabled :many
 SELECT
@@ -96,35 +86,19 @@ FROM
   http_routers
 WHERE
   profile_id = ?
-  AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  AND enabled = TRUE;
 
 -- name: CountHttpRouters :one
 SELECT
   COUNT(*)
 FROM
-  http_routers;
-
--- name: CountHttpRoutersByProfile :one
-SELECT
-  COUNT(*)
-FROM
   http_routers
 WHERE
-  profile_id = ?;
-
--- name: CountHttpRoutersByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_routers
-WHERE
-  agent_id = ?;
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  );
 
 -- name: UpdateHttpRouter :one
 UPDATE http_routers

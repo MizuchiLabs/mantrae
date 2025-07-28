@@ -183,25 +183,29 @@ CREATE TABLE audit_logs (
 );
 
 -- Update profiles table structure
--- Remove columns that are now in traefik_instances
-ALTER TABLE profiles
-DROP COLUMN url;
+CREATE TABLE new_profiles (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  token TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id) REFERENCES profiles (id) ON DELETE CASCADE
+);
 
-ALTER TABLE profiles
-DROP COLUMN username;
+INSERT INTO
+  new_profiles (id, name, token)
+SELECT
+  id,
+  name,
+  ''
+FROM
+  profiles;
 
-ALTER TABLE profiles
-DROP COLUMN password;
+DROP TABLE profiles;
 
-ALTER TABLE profiles
-DROP COLUMN tls;
-
--- Add description column to profiles
-ALTER TABLE profiles
-ADD COLUMN description TEXT;
-
-ALTER TABLE profiles
-ADD COLUMN token TEXT NOT NULL;
+ALTER TABLE new_profiles
+RENAME TO profiles;
 
 -- Update agents table - change JSON columns to TEXT
 UPDATE agents

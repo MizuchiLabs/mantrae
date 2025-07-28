@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   http_middlewares
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountHttpMiddlewares(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpMiddlewaresStmt, countHttpMiddlewares)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountHttpMiddlewaresParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countHttpMiddlewaresByAgent = `-- name: CountHttpMiddlewaresByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_middlewares
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountHttpMiddlewaresByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpMiddlewaresByAgentStmt, countHttpMiddlewaresByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countHttpMiddlewaresByProfile = `-- name: CountHttpMiddlewaresByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  http_middlewares
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountHttpMiddlewaresByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpMiddlewaresByProfileStmt, countHttpMiddlewaresByProfile, profileID)
+func (q *Queries) CountHttpMiddlewares(ctx context.Context, arg CountHttpMiddlewaresParams) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpMiddlewaresStmt, countHttpMiddlewares, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -154,77 +133,33 @@ SELECT
 FROM
   http_middlewares
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListHttpMiddlewaresParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListHttpMiddlewares(ctx context.Context, arg ListHttpMiddlewaresParams) ([]HttpMiddleware, error) {
-	rows, err := q.query(ctx, q.listHttpMiddlewaresStmt, listHttpMiddlewares, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []HttpMiddleware
-	for rows.Next() {
-		var i HttpMiddleware
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.IsDefault,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listHttpMiddlewaresByAgent = `-- name: ListHttpMiddlewaresByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
-FROM
-  http_middlewares
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListHttpMiddlewaresByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListHttpMiddlewaresByAgent(ctx context.Context, arg ListHttpMiddlewaresByAgentParams) ([]HttpMiddleware, error) {
-	rows, err := q.query(ctx, q.listHttpMiddlewaresByAgentStmt, listHttpMiddlewaresByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listHttpMiddlewaresStmt, listHttpMiddlewares,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -264,22 +199,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListHttpMiddlewaresEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListHttpMiddlewaresEnabled(ctx context.Context, arg ListHttpMiddlewaresEnabledParams) ([]HttpMiddleware, error) {
-	rows, err := q.query(ctx, q.listHttpMiddlewaresEnabledStmt, listHttpMiddlewaresEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListHttpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]HttpMiddleware, error) {
+	rows, err := q.query(ctx, q.listHttpMiddlewaresEnabledStmt, listHttpMiddlewaresEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

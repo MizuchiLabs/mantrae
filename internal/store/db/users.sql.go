@@ -162,20 +162,20 @@ SELECT
 FROM
   users
 ORDER BY
-  username
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?2 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?1 AS INTEGER), 0)
 `
 
 type ListUsersParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+	Offset *int64 `json:"offset"`
+	Limit  *int64 `json:"limit"`
 }
 
 func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

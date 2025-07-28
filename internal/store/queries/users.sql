@@ -41,11 +41,11 @@ SELECT
 FROM
   users
 ORDER BY
-  username
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: CountUsers :one
 SELECT

@@ -14,6 +14,10 @@ all: clean build
 clean:
 	rm -rf $(PWD)/$(BIN) $(PWD)/$(BIN)-agent $(PWD)/web/build $(PWD)/builds
 
+.PHONY: run
+run:
+	go run -tags=dev .
+
 .PHONY: audit
 audit-security:
 	- gosec --exclude=G104 ./...
@@ -61,6 +65,7 @@ snapshot:
 upgrade:
 	go get -u && go mod tidy
 	cd web && pnpm update
+
 
 .PHONY: db-up
 db-up:

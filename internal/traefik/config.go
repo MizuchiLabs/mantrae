@@ -9,6 +9,7 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"gopkg.in/yaml.v3"
 )
@@ -39,79 +40,49 @@ func BuildDynamicConfig(
 	}
 
 	// Routers
-	httpRouters, err := q.ListHttpRoutersEnabled(
-		ctx,
-		db.ListHttpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	httpRouters, err := q.ListHttpRoutersEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	tcpRouters, err := q.ListTcpRoutersEnabled(
-		ctx,
-		db.ListTcpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	tcpRouters, err := q.ListTcpRoutersEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	udpRouters, err := q.ListUdpRoutersEnabled(
-		ctx,
-		db.ListUdpRoutersEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	udpRouters, err := q.ListUdpRoutersEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Services
-	httpServices, err := q.ListHttpServicesEnabled(
-		ctx,
-		db.ListHttpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	httpServices, err := q.ListHttpServicesEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	tcpServices, err := q.ListTcpServicesEnabled(
-		ctx,
-		db.ListTcpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	tcpServices, err := q.ListTcpServicesEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	udpServices, err := q.ListUdpServicesEnabled(
-		ctx,
-		db.ListUdpServicesEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	udpServices, err := q.ListUdpServicesEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Middlewares
-	httpMiddlewares, err := q.ListHttpMiddlewaresEnabled(
-		ctx,
-		db.ListHttpMiddlewaresEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	httpMiddlewares, err := q.ListHttpMiddlewaresEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	tcpMiddlewares, err := q.ListTcpMiddlewaresEnabled(
-		ctx,
-		db.ListTcpMiddlewaresEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	tcpMiddlewares, err := q.ListTcpMiddlewaresEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// Servers Transports
-	httpServersTransports, err := q.ListHttpServersTransportsEnabled(
-		ctx,
-		db.ListHttpServersTransportsEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	httpServersTransports, err := q.ListHttpServersTransportsEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
-	tcpServersTransports, err := q.ListTcpServersTransportsEnabled(
-		ctx,
-		db.ListTcpServersTransportsEnabledParams{ProfileID: profile.ID, Limit: -1, Offset: 0},
-	)
+	tcpServersTransports, err := q.ListTcpServersTransportsEnabled(ctx, profile.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +138,7 @@ func BuildDynamicConfig(
 }
 
 func BackupDynamicConfigs(ctx context.Context, q *db.Queries, store storage.Backend) error {
-	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{Limit: -1, Offset: 0})
+	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{})
 	if err != nil {
 		return err
 	}
@@ -207,6 +178,100 @@ func BackupDynamicConfigs(ctx context.Context, q *db.Queries, store storage.Back
 		}
 		if err = store.Store(ctx, backupName, tmpFile); err != nil {
 			return err
+		}
+	}
+	return nil
+}
+
+// DynamicToDB saves a Traefik dynamic configuration to the database
+func DynamicToDB(
+	ctx context.Context,
+	q db.Queries,
+	profileID int64,
+	dynamic *dynamic.Configuration,
+) error {
+	for k, v := range dynamic.HTTP.Routers {
+		if _, err := q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapRouter(v),
+		}); err != nil {
+			slog.Error("failed to create http router", "err", err)
+			continue
+		}
+	}
+	for k, v := range dynamic.TCP.Routers {
+		if _, err := q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapTCPRouter(v),
+		}); err != nil {
+			slog.Error("failed to create tcp router", "err", err)
+			continue
+		}
+	}
+	for k, v := range dynamic.UDP.Routers {
+		if _, err := q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapUDPRouter(v),
+		}); err != nil {
+			slog.Error("failed to create udp router", "err", err)
+			continue
+		}
+	}
+
+	// Services
+	for k, v := range dynamic.HTTP.Services {
+		if _, err := q.CreateHttpService(ctx, db.CreateHttpServiceParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapService(v),
+		}); err != nil {
+			slog.Error("failed to create http service", "err", err)
+			continue
+		}
+	}
+	for k, v := range dynamic.TCP.Services {
+		if _, err := q.CreateTcpService(ctx, db.CreateTcpServiceParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapTCPService(v),
+		}); err != nil {
+			slog.Error("failed to create tcp service", "err", err)
+			continue
+		}
+	}
+	for k, v := range dynamic.UDP.Services {
+		if _, err := q.CreateUdpService(ctx, db.CreateUdpServiceParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapUDPService(v),
+		}); err != nil {
+			slog.Error("failed to create udp service", "err", err)
+			continue
+		}
+	}
+
+	// Middlewares
+	for k, v := range dynamic.HTTP.Middlewares {
+		if _, err := q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapMiddleware(v),
+		}); err != nil {
+			slog.Error("failed to create http middleware", "err", err)
+			continue
+		}
+	}
+	for k, v := range dynamic.TCP.Middlewares {
+		if _, err := q.CreateTcpMiddleware(ctx, db.CreateTcpMiddlewareParams{
+			ProfileID: profileID,
+			Name:      k,
+			Config:    schema.WrapTCPMiddleware(v),
+		}); err != nil {
+			slog.Error("failed to create tcp middleware", "err", err)
+			continue
 		}
 	}
 	return nil

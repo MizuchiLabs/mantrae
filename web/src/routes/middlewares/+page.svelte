@@ -25,7 +25,6 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import type { JsonObject } from '@bufbuild/protobuf';
 	import ColumnText from '$lib/components/tables/ColumnText.svelte';
 
 	let item = $state({} as Middleware);
@@ -96,15 +95,12 @@
 			accessorKey: 'config',
 			enableSorting: true,
 			enableGlobalFilter: false,
-			filterFn: (row, columnId, filterValue) => {
-				const config = row.getValue(columnId) as JsonObject;
-				const label = config ? Object.keys(config)[0] : 'unknown';
+			filterFn: (row, filterValue) => {
+				const label = Object.keys(row.original.config ?? {})[0] ?? 'unknown';
 				return label.toLowerCase().includes(filterValue.toLowerCase());
 			},
 			cell: ({ row, column }) => {
-				let config = row.getValue('config') as JsonObject;
-				let label = config ? Object.keys(config)[0] : 'unknown';
-
+				let label = Object.keys(row.original.config ?? {})[0] ?? 'unknown';
 				return renderComponent(ColumnBadge<Middleware>, {
 					label: label,
 					class: 'hover:cursor-pointer',

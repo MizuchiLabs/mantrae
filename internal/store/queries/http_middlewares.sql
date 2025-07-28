@@ -41,27 +41,17 @@ SELECT
 FROM
   http_middlewares
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
-
--- name: ListHttpMiddlewaresByAgent :many
-SELECT
-  *
-FROM
-  http_middlewares
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: ListHttpMiddlewaresEnabled :many
 SELECT
@@ -70,35 +60,19 @@ FROM
   http_middlewares
 WHERE
   profile_id = ?
-  AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  AND enabled = TRUE;
 
 -- name: CountHttpMiddlewares :one
 SELECT
   COUNT(*)
 FROM
-  http_middlewares;
-
--- name: CountHttpMiddlewaresByProfile :one
-SELECT
-  COUNT(*)
-FROM
   http_middlewares
 WHERE
-  profile_id = ?;
-
--- name: CountHttpMiddlewaresByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_middlewares
-WHERE
-  agent_id = ?;
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  );
 
 -- name: UpdateHttpMiddleware :one
 UPDATE http_middlewares

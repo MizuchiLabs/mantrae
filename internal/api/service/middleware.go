@@ -11,382 +11,143 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
-	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type MiddlewareService struct {
-	app *config.App
+	app      *config.App
+	dispatch map[mantraev1.MiddlewareType]MiddlewareOps
 }
 
 func NewMiddlewareService(app *config.App) *MiddlewareService {
-	return &MiddlewareService{app: app}
+	return &MiddlewareService{
+		app: app,
+		dispatch: map[mantraev1.MiddlewareType]MiddlewareOps{
+			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP: NewHTTPMiddlewareOps(app),
+			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:  NewTCPMiddlewareOps(app),
+		},
+	}
 }
 
 func (s *MiddlewareService) GetMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetMiddlewareRequest],
 ) (*connect.Response[mantraev1.GetMiddlewareResponse], error) {
-	var middleware *mantraev1.Middleware
-
-	switch req.Msg.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		result, err := s.app.Conn.GetQuery().GetHttpMiddleware(ctx, req.Msg.Id)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.HTTPMiddlewareToProto(&result)
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		result, err := s.app.Conn.GetQuery().GetTcpMiddleware(ctx, req.Msg.Id)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.TCPMiddlewareToProto(&result)
-
-	default:
+	ops, ok := s.dispatch[req.Msg.Type]
+	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("invalid middleware type"),
 		)
 	}
 
-	return connect.NewResponse(&mantraev1.GetMiddlewareResponse{Middleware: middleware}), nil
+	result, err := ops.Get(ctx, req.Msg)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(result), nil
 }
 
 func (s *MiddlewareService) CreateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateMiddlewareRequest],
 ) (*connect.Response[mantraev1.CreateMiddlewareResponse], error) {
-	var middleware *mantraev1.Middleware
-	var err error
-
-	switch req.Msg.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		params := db.CreateHttpMiddlewareParams{
-			ProfileID: req.Msg.ProfileId,
-			Name:      req.Msg.Name,
-			IsDefault: req.Msg.IsDefault,
-		}
-		if req.Msg.AgentId != "" {
-			params.AgentID = &req.Msg.AgentId
-		}
-		if req.Msg.IsDefault {
-			if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-		}
-		params.Config, err = convert.UnmarshalStruct[schema.HTTPMiddleware](req.Msg.Config)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
-		if err = params.Config.Verify(); err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
-
-		result, err := s.app.Conn.GetQuery().CreateHttpMiddleware(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.HTTPMiddlewareToProto(&result)
-
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		params := db.CreateTcpMiddlewareParams{
-			ProfileID: req.Msg.ProfileId,
-			Name:      req.Msg.Name,
-			IsDefault: req.Msg.IsDefault,
-		}
-		if req.Msg.AgentId != "" {
-			params.AgentID = &req.Msg.AgentId
-		}
-		if req.Msg.IsDefault {
-			if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-		}
-		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
-
-		result, err := s.app.Conn.GetQuery().CreateTcpMiddleware(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.TCPMiddlewareToProto(&result)
-
-	default:
+	ops, ok := s.dispatch[req.Msg.Type]
+	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("invalid middleware type"),
 		)
 	}
 
-	return connect.NewResponse(&mantraev1.CreateMiddlewareResponse{Middleware: middleware}), nil
+	result, err := ops.Create(ctx, req.Msg)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(result), nil
 }
 
 func (s *MiddlewareService) UpdateMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateMiddlewareRequest],
 ) (*connect.Response[mantraev1.UpdateMiddlewareResponse], error) {
-	var middleware *mantraev1.Middleware
-	var err error
-
-	switch req.Msg.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		params := db.UpdateHttpMiddlewareParams{
-			ID:        req.Msg.Id,
-			Name:      req.Msg.Name,
-			Enabled:   req.Msg.Enabled,
-			IsDefault: req.Msg.IsDefault,
-		}
-		params.Config, err = convert.UnmarshalStruct[schema.HTTPMiddleware](req.Msg.Config)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
-		if req.Msg.IsDefault {
-			if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-		}
-
-		// Update router middlewares
-		oldMiddleware, err := s.app.Conn.GetQuery().GetHttpMiddleware(ctx, params.ID)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		oldMiddlewareProto := convert.HTTPMiddlewareToProto(&oldMiddleware)
-		if err = s.updateRouterMiddlewares(ctx, oldMiddlewareProto, req.Msg.Name); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		result, err := s.app.Conn.GetQuery().UpdateHttpMiddleware(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.HTTPMiddlewareToProto(&result)
-
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		params := db.UpdateTcpMiddlewareParams{
-			ID:        req.Msg.Id,
-			Name:      req.Msg.Name,
-			Enabled:   req.Msg.Enabled,
-			IsDefault: req.Msg.IsDefault,
-		}
-		params.Config, err = convert.UnmarshalStruct[schema.TCPMiddleware](req.Msg.Config)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, err)
-		}
-		if req.Msg.IsDefault {
-			if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-		}
-
-		// Update router middlewares
-		oldMiddleware, err := s.app.Conn.GetQuery().GetTcpMiddleware(ctx, params.ID)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		oldMiddlewareProto := convert.TCPMiddlewareToProto(&oldMiddleware)
-		if err = s.updateRouterMiddlewares(ctx, oldMiddlewareProto, req.Msg.Name); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		result, err := s.app.Conn.GetQuery().UpdateTcpMiddleware(ctx, params)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		middleware = convert.TCPMiddlewareToProto(&result)
-	default:
+	ops, ok := s.dispatch[req.Msg.Type]
+	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("invalid middleware type"),
 		)
 	}
 
-	return connect.NewResponse(&mantraev1.UpdateMiddlewareResponse{Middleware: middleware}), nil
+	result, err := ops.Update(ctx, req.Msg)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(result), nil
 }
 
 func (s *MiddlewareService) DeleteMiddleware(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteMiddlewareRequest],
 ) (*connect.Response[mantraev1.DeleteMiddlewareResponse], error) {
-	switch req.Msg.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		middleware, err := s.app.Conn.GetQuery().GetHttpMiddleware(ctx, req.Msg.Id)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		mwProto := convert.HTTPMiddlewareToProto(&middleware)
-		if err := s.updateRouterMiddlewares(ctx, mwProto, ""); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		if err := s.app.Conn.GetQuery().DeleteHttpMiddleware(ctx, req.Msg.Id); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		middleware, err := s.app.Conn.GetQuery().GetTcpMiddleware(ctx, req.Msg.Id)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		mwProto := convert.TCPMiddlewareToProto(&middleware)
-		if err := s.updateRouterMiddlewares(ctx, mwProto, ""); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		if err := s.app.Conn.GetQuery().DeleteTcpMiddleware(ctx, req.Msg.Id); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
+	ops, ok := s.dispatch[req.Msg.Type]
+	if !ok {
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid middleware type"),
+		)
 	}
 
-	return connect.NewResponse(&mantraev1.DeleteMiddlewareResponse{}), nil
+	result, err := ops.Delete(ctx, req.Msg)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(result), nil
 }
 
 func (s *MiddlewareService) ListMiddlewares(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListMiddlewaresRequest],
 ) (*connect.Response[mantraev1.ListMiddlewaresResponse], error) {
-	var limit int64
-	var offset int64
-	if req.Msg.Limit == nil {
-		limit = 100
-	} else {
-		limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		offset = 0
-	} else {
-		offset = *req.Msg.Offset
-	}
-
-	var middlewares []*mantraev1.Middleware
-	var totalCount int64
-
-	if req.Msg.Type == nil {
-		if req.Msg.AgentId == nil {
-			result, err := s.app.Conn.GetQuery().
-				ListMiddlewaresByProfile(ctx, db.ListMiddlewaresByProfileParams{
-					Limit:       limit,
-					Offset:      offset,
-					ProfileID:   req.Msg.ProfileId,
-					ProfileID_2: req.Msg.ProfileId,
-				})
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-			totalCount, err = s.app.Conn.GetQuery().
-				CountMiddlewaresByProfile(ctx, db.CountMiddlewaresByProfileParams{
-					ProfileID:   req.Msg.ProfileId,
-					ProfileID_2: req.Msg.ProfileId,
-				})
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-			middlewares = convert.MiddlewaresByProfileToProto(result)
-		} else {
-			result, err := s.app.Conn.GetQuery().
-				ListMiddlewaresByAgent(ctx, db.ListMiddlewaresByAgentParams{
-					Limit:     limit,
-					Offset:    offset,
-					AgentID:   req.Msg.AgentId,
-					AgentID_2: req.Msg.AgentId,
-				})
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-			totalCount, err = s.app.Conn.GetQuery().
-				CountMiddlewaresByAgent(ctx, db.CountMiddlewaresByAgentParams{
-					AgentID:   req.Msg.AgentId,
-					AgentID_2: req.Msg.AgentId,
-				})
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, err)
-			}
-			middlewares = convert.MiddlewaresByAgentToProto(result)
-		}
-	} else {
-		var err error
-		switch *req.Msg.Type {
-		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-			if req.Msg.AgentId == nil {
-				totalCount, err = s.app.Conn.GetQuery().CountHttpMiddlewaresByProfile(ctx, req.Msg.ProfileId)
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				result, err := s.app.Conn.GetQuery().ListHttpMiddlewares(ctx, db.ListHttpMiddlewaresParams{
-					ProfileID: req.Msg.ProfileId,
-					Limit:     limit,
-					Offset:    offset,
-				})
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				middlewares = convert.HTTPMiddlewaresToProto(result)
-			} else {
-				totalCount, err = s.app.Conn.GetQuery().CountHttpMiddlewaresByAgent(ctx, req.Msg.AgentId)
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				result, err := s.app.Conn.GetQuery().ListHttpMiddlewaresByAgent(ctx, db.ListHttpMiddlewaresByAgentParams{
-					AgentID: req.Msg.AgentId,
-					Limit:   limit,
-					Offset:  offset,
-				})
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				middlewares = convert.HTTPMiddlewaresToProto(result)
-			}
-
-		case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-			if req.Msg.AgentId == nil {
-				totalCount, err = s.app.Conn.GetQuery().CountTcpMiddlewaresByProfile(ctx, req.Msg.ProfileId)
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				result, err := s.app.Conn.GetQuery().ListTcpMiddlewares(ctx, db.ListTcpMiddlewaresParams{
-					ProfileID: req.Msg.ProfileId,
-					Limit:     limit,
-					Offset:    offset,
-				})
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				middlewares = convert.TCPMiddlewaresToProto(result)
-			} else {
-				totalCount, err = s.app.Conn.GetQuery().CountTcpMiddlewaresByAgent(ctx, req.Msg.AgentId)
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				result, err := s.app.Conn.GetQuery().ListTcpMiddlewaresByAgent(ctx, db.ListTcpMiddlewaresByAgentParams{
-					AgentID: req.Msg.AgentId,
-					Limit:   limit,
-					Offset:  offset,
-				})
-				if err != nil {
-					return nil, connect.NewError(connect.CodeInternal, err)
-				}
-				middlewares = convert.TCPMiddlewaresToProto(result)
-			}
-
-		default:
+	if req.Msg.Type != nil {
+		ops, ok := s.dispatch[*req.Msg.Type]
+		if !ok {
 			return nil, connect.NewError(
 				connect.CodeInvalidArgument,
 				errors.New("invalid middleware type"),
 			)
 		}
 
+		result, err := ops.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-	}
+		return connect.NewResponse(result), nil
+	} else {
+		// Get HTTP middlewares
+		httpOps := s.dispatch[mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP]
+		httpResult, err := httpOps.List(ctx, req.Msg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 
-	return connect.NewResponse(&mantraev1.ListMiddlewaresResponse{
-		Middlewares: middlewares,
-		TotalCount:  totalCount,
-	}), nil
+		// Get TCP middlewares
+		tcpOps := s.dispatch[mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP]
+		tcpResult, err := tcpOps.List(ctx, req.Msg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+
+		// Combine results
+		allMiddlewares := append(httpResult.Middlewares, tcpResult.Middlewares...)
+		totalCount := httpResult.TotalCount + tcpResult.TotalCount
+
+		return connect.NewResponse(&mantraev1.ListMiddlewaresResponse{
+			Middlewares: allMiddlewares,
+			TotalCount:  totalCount,
+		}), nil
+	}
 }
 
 func (s *MiddlewareService) GetMiddlewarePlugins(
@@ -407,11 +168,11 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 	if err := json.NewDecoder(resp.Body).Decode(&allPlugins); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	cleanPlugins := slices.DeleteFunc(allPlugins, func(p schema.Plugin) bool {
+	filtered := slices.DeleteFunc(allPlugins, func(p schema.Plugin) bool {
 		return p.Type != "middleware"
 	})
 	var plugins []*mantraev1.Plugin
-	for _, p := range cleanPlugins {
+	for _, p := range filtered {
 		plugins = append(plugins, &mantraev1.Plugin{
 			Id:            p.ID,
 			Name:          p.Name,
@@ -436,66 +197,4 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 	}
 
 	return connect.NewResponse(&mantraev1.GetMiddlewarePluginsResponse{Plugins: plugins}), nil
-}
-
-// Helper functions
-func (s *MiddlewareService) updateRouterMiddlewares(
-	ctx context.Context,
-	middleware *mantraev1.Middleware,
-	newMiddleware string,
-) error {
-	switch middleware.Type {
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP:
-		router, err := s.app.Conn.GetQuery().
-			GetHttpRoutersUsingMiddleware(ctx, db.GetHttpRoutersUsingMiddlewareParams{
-				ProfileID: middleware.ProfileId,
-				ID:        middleware.Id,
-			})
-		if err != nil {
-			return err
-		}
-		for _, r := range router {
-			if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-				r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
-			}
-			if newMiddleware != "" {
-				r.Config.Middlewares = append(r.Config.Middlewares, newMiddleware)
-			}
-			if _, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, db.UpdateHttpRouterParams{
-				ID:      r.ID,
-				Enabled: r.Enabled,
-				Config:  r.Config,
-				Name:    r.Name,
-			}); err != nil {
-				return err
-			}
-		}
-	case mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:
-		router, err := s.app.Conn.GetQuery().
-			GetTcpRoutersUsingMiddleware(ctx, db.GetTcpRoutersUsingMiddlewareParams{
-				ProfileID: middleware.ProfileId,
-				ID:        middleware.Id,
-			})
-		if err != nil {
-			return err
-		}
-		for _, r := range router {
-			if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-				r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
-			}
-			if newMiddleware != "" {
-				r.Config.Middlewares = append(r.Config.Middlewares, newMiddleware)
-			}
-			if _, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, db.UpdateTcpRouterParams{
-				ID:      r.ID,
-				Enabled: r.Enabled,
-				Config:  r.Config,
-				Name:    r.Name,
-			}); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }

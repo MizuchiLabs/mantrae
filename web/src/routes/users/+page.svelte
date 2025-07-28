@@ -13,7 +13,6 @@
 	import { onMount } from 'svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
-	import { user } from '$lib/stores/user';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 
 	let item = $state({} as User);
@@ -32,7 +31,10 @@
 		{
 			header: 'Email',
 			accessorKey: 'email',
-			enableSorting: true
+			enableSorting: true,
+			cell: ({ row }) => {
+				return renderComponent(ColumnBadge, { label: row.original.email || 'None' });
+			}
 		},
 		{
 			header: 'Last Login',

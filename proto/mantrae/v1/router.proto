@@ -49,7 +49,7 @@ message GetRouterResponse {
 
 message CreateRouterRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
-  string agent_id = 2;
+  optional string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
@@ -80,7 +80,7 @@ message DeleteRouterResponse {}
 message ListRoutersRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional RouterType type = 3 [(buf.validate.field).enum.defined_only = true];
+  optional RouterType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"

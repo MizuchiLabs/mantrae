@@ -74,7 +74,7 @@ message GetMiddlewareResponse {
 
 message CreateMiddlewareRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
-  string agent_id = 2;
+  optional string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
   MiddlewareType type = 4 [(buf.validate.field).enum.defined_only = true];
   bool is_default = 5;
@@ -105,7 +105,7 @@ message DeleteMiddlewareResponse {}
 message ListMiddlewaresRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional MiddlewareType type = 3 [(buf.validate.field).enum.defined_only = true];
+  optional MiddlewareType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"

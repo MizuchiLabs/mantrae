@@ -291,7 +291,7 @@ func (x *GetRouterResponse) GetRouter() *Router {
 type CreateRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
@@ -338,8 +338,8 @@ func (x *CreateRouterRequest) GetProfileId() int64 {
 }
 
 func (x *CreateRouterRequest) GetAgentId() string {
-	if x != nil {
-		return x.AgentId
+	if x != nil && x.AgentId != nil {
+		return *x.AgentId
 	}
 	return ""
 }
@@ -785,15 +785,16 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x124\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"?\n" +
 	"\x11GetRouterResponse\x12*\n" +
-	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\xf6\x01\n" +
+	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x88\x02\n" +
 	"\x13CreateRouterRequest\x12&\n" +
 	"\n" +
-	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x19\n" +
-	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x1b\n" +
+	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1e\n" +
+	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x88\x01\x01\x12\x1b\n" +
 	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
 	"\aenabled\x18\x05 \x01(\bR\aenabled\x124\n" +
-	"\x04type\x18\x06 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"B\n" +
+	"\x04type\x18\x06 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04typeB\v\n" +
+	"\t_agent_id\"B\n" +
 	"\x14CreateRouterResponse\x12*\n" +
 	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8a\x02\n" +
 	"\x13UpdateRouterRequest\x12\x17\n" +
@@ -808,12 +809,12 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x13DeleteRouterRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x124\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x16\n" +
-	"\x14DeleteRouterResponse\"\xe4\x02\n" +
+	"\x14DeleteRouterResponse\"\xda\x02\n" +
 	"\x12ListRoutersRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12'\n" +
-	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x129\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01H\x01R\x04type\x88\x01\x01\x12q\n" +
+	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x12/\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x16.mantrae.v1.RouterTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
 	"\x05limit\x18\x04 \x01(\x03BV\xbaHS\xba\x01P\n" +
 	"\vlimit.valid\x12)limit must be either -1 or greater than 0\x1a\x16this == -1 || this > 0H\x02R\x05limit\x88\x01\x01\x12$\n" +
 	"\x06offset\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x03R\x06offset\x88\x01\x01B\v\n" +
@@ -913,6 +914,7 @@ func file_mantrae_v1_router_proto_init() {
 		return
 	}
 	file_mantrae_v1_dns_provider_proto_init()
+	file_mantrae_v1_router_proto_msgTypes[3].OneofWrappers = []any{}
 	file_mantrae_v1_router_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

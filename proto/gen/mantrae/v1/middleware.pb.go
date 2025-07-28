@@ -504,7 +504,7 @@ func (x *GetMiddlewareResponse) GetMiddleware() *Middleware {
 type CreateMiddlewareRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
-	AgentId       string                 `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Type          MiddlewareType         `protobuf:"varint,4,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
 	IsDefault     bool                   `protobuf:"varint,5,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
@@ -551,8 +551,8 @@ func (x *CreateMiddlewareRequest) GetProfileId() int64 {
 }
 
 func (x *CreateMiddlewareRequest) GetAgentId() string {
-	if x != nil {
-		return x.AgentId
+	if x != nil && x.AgentId != nil {
+		return *x.AgentId
 	}
 	return ""
 }
@@ -1105,16 +1105,17 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\x15GetMiddlewareResponse\x126\n" +
 	"\n" +
 	"middleware\x18\x01 \x01(\v2\x16.mantrae.v1.MiddlewareR\n" +
-	"middleware\"\x83\x02\n" +
+	"middleware\"\x95\x02\n" +
 	"\x17CreateMiddlewareRequest\x12&\n" +
 	"\n" +
-	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x19\n" +
-	"\bagent_id\x18\x02 \x01(\tR\aagentId\x12\x1b\n" +
+	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1e\n" +
+	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x88\x01\x01\x12\x1b\n" +
 	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x128\n" +
 	"\x04type\x18\x04 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12\x1d\n" +
 	"\n" +
 	"is_default\x18\x05 \x01(\bR\tisDefault\x12/\n" +
-	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06config\"R\n" +
+	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06configB\v\n" +
+	"\t_agent_id\"R\n" +
 	"\x18CreateMiddlewareResponse\x126\n" +
 	"\n" +
 	"middleware\x18\x01 \x01(\v2\x16.mantrae.v1.MiddlewareR\n" +
@@ -1134,12 +1135,12 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\x17DeleteMiddlewareRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x128\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x1a\n" +
-	"\x18DeleteMiddlewareResponse\"\xec\x02\n" +
+	"\x18DeleteMiddlewareResponse\"\xe2\x02\n" +
 	"\x16ListMiddlewaresRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12'\n" +
-	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x12=\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01H\x01R\x04type\x88\x01\x01\x12q\n" +
+	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x123\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
 	"\x05limit\x18\x04 \x01(\x03BV\xbaHS\xba\x01P\n" +
 	"\vlimit.valid\x12)limit must be either -1 or greater than 0\x1a\x16this == -1 || this > 0H\x02R\x05limit\x88\x01\x01\x12$\n" +
 	"\x06offset\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x03R\x06offset\x88\x01\x01B\v\n" +
@@ -1245,6 +1246,7 @@ func file_mantrae_v1_middleware_proto_init() {
 	if File_mantrae_v1_middleware_proto != nil {
 		return
 	}
+	file_mantrae_v1_middleware_proto_msgTypes[5].OneofWrappers = []any{}
 	file_mantrae_v1_middleware_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

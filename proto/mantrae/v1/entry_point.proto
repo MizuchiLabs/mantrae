@@ -55,10 +55,7 @@ message UpdateEntryPointResponse {
 }
 
 message DeleteEntryPointRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
 }
 message DeleteEntryPointResponse {}
 

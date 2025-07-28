@@ -7,11 +7,11 @@ sql:
       go:
         package: "db"
         out: "internal/store/db"
-        emit_json_tags: true
-        emit_prepared_queries: true
-        emit_interface: true
-        emit_pointers_for_null_types: true
         json_tags_case_style: "camel"
+        emit_json_tags: true # Adds JSON tags to generated structs
+        emit_interface: true # Output a Querier interface in the generated package
+        emit_prepared_queries: true
+        emit_pointers_for_null_types: true # Pointers for null types
         overrides:
           - column: "http_routers.config"
             go_type:

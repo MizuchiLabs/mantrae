@@ -7,7 +7,6 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
@@ -29,7 +28,7 @@ func (s *EntryPointService) GetEntryPoint(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.GetEntryPointResponse{
-		EntryPoint: convert.EntryPointToProto(&result),
+		EntryPoint: result.ToProto(),
 	}), nil
 }
 
@@ -54,7 +53,7 @@ func (s *EntryPointService) CreateEntryPoint(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateEntryPointResponse{
-		EntryPoint: convert.EntryPointToProto(&result),
+		EntryPoint: result.ToProto(),
 	}), nil
 }
 
@@ -84,7 +83,7 @@ func (s *EntryPointService) UpdateEntryPoint(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateEntryPointResponse{
-		EntryPoint: convert.EntryPointToProto(&result),
+		EntryPoint: result.ToProto(),
 	}), nil
 }
 
@@ -95,7 +94,6 @@ func (s *EntryPointService) DeleteEntryPoint(
 	if err := s.updateRouterEntrypoints(ctx, req.Msg.Id, ""); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
 	if err := s.app.Conn.GetQuery().DeleteEntryPointByID(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -106,30 +104,27 @@ func (s *EntryPointService) ListEntryPoints(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListEntryPointsRequest],
 ) (*connect.Response[mantraev1.ListEntryPointsResponse], error) {
-	var params db.ListEntryPointsParams
-	params.ProfileID = req.Msg.ProfileId
-	if req.Msg.Limit == nil {
-		params.Limit = 100
-	} else {
-		params.Limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		params.Offset = 0
-	} else {
-		params.Offset = *req.Msg.Offset
+	params := db.ListEntryPointsParams{
+		ProfileID: req.Msg.ProfileId,
+		Limit:     req.Msg.Limit,
+		Offset:    req.Msg.Offset,
 	}
 
 	result, err := s.app.Conn.GetQuery().ListEntryPoints(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountEntryPoints(ctx)
+	totalCount, err := s.app.Conn.GetQuery().CountEntryPoints(ctx, req.Msg.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	entryPoints := make([]*mantraev1.EntryPoint, 0, len(result))
+	for _, e := range result {
+		entryPoints = append(entryPoints, e.ToProto())
+	}
 	return connect.NewResponse(&mantraev1.ListEntryPointsResponse{
-		EntryPoints: convert.EntryPointsToProto(result),
+		EntryPoints: entryPoints,
 		TotalCount:  totalCount,
 	}), nil
 }

@@ -42,19 +42,21 @@ SELECT
 FROM
   entry_points
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: CountEntryPoints :one
 SELECT
   COUNT(*)
 FROM
-  entry_points;
+  entry_points
+WHERE
+  profile_id = ?;
 
 -- name: UpdateEntryPoint :one
 UPDATE entry_points

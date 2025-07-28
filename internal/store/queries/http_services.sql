@@ -33,13 +33,17 @@ SELECT
 FROM
   http_services
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: ListHttpServicesEnabled :many
 SELECT
@@ -48,49 +52,19 @@ FROM
   http_services
 WHERE
   profile_id = ?
-  AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
-
--- name: ListHttpServicesByAgent :many
-SELECT
-  *
-FROM
-  http_services
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  AND enabled = TRUE;
 
 -- name: CountHttpServices :one
 SELECT
   COUNT(*)
 FROM
-  http_services;
-
--- name: CountHttpServicesByProfile :one
-SELECT
-  COUNT(*)
-FROM
   http_services
 WHERE
-  profile_id = ?;
-
--- name: CountHttpServicesByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_services
-WHERE
-  agent_id = ?;
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  );
 
 -- name: UpdateHttpService :one
 UPDATE http_services

@@ -115,10 +115,10 @@ type HttpService struct {
 type Profile struct {
 	ID          int64      `json:"id"`
 	Name        string     `json:"name"`
-	CreatedAt   *time.Time `json:"createdAt"`
-	UpdatedAt   *time.Time `json:"updatedAt"`
 	Description *string    `json:"description"`
 	Token       string     `json:"token"`
+	CreatedAt   *time.Time `json:"createdAt"`
+	UpdatedAt   *time.Time `json:"updatedAt"`
 }
 
 type Setting struct {

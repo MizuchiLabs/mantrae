@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   http_routers
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountHttpRouters(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpRoutersStmt, countHttpRouters)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountHttpRoutersParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countHttpRoutersByAgent = `-- name: CountHttpRoutersByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_routers
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountHttpRoutersByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpRoutersByAgentStmt, countHttpRoutersByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countHttpRoutersByProfile = `-- name: CountHttpRoutersByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  http_routers
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountHttpRoutersByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpRoutersByProfileStmt, countHttpRoutersByProfile, profileID)
+func (q *Queries) CountHttpRouters(ctx context.Context, arg CountHttpRoutersParams) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpRoutersStmt, countHttpRouters, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -265,76 +244,33 @@ SELECT
 FROM
   http_routers
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListHttpRoutersParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams) ([]HttpRouter, error) {
-	rows, err := q.query(ctx, q.listHttpRoutersStmt, listHttpRouters, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []HttpRouter
-	for rows.Next() {
-		var i HttpRouter
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listHttpRoutersByAgent = `-- name: ListHttpRoutersByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
-FROM
-  http_routers
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListHttpRoutersByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListHttpRoutersByAgent(ctx context.Context, arg ListHttpRoutersByAgentParams) ([]HttpRouter, error) {
-	rows, err := q.query(ctx, q.listHttpRoutersByAgentStmt, listHttpRoutersByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listHttpRoutersStmt, listHttpRouters,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -373,22 +309,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListHttpRoutersEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListHttpRoutersEnabled(ctx context.Context, arg ListHttpRoutersEnabledParams) ([]HttpRouter, error) {
-	rows, err := q.query(ctx, q.listHttpRoutersEnabledStmt, listHttpRoutersEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListHttpRoutersEnabled(ctx context.Context, profileID int64) ([]HttpRouter, error) {
+	rows, err := q.query(ctx, q.listHttpRoutersEnabledStmt, listHttpRoutersEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

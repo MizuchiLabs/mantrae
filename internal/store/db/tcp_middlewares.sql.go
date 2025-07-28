@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   tcp_middlewares
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountTcpMiddlewares(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpMiddlewaresStmt, countTcpMiddlewares)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountTcpMiddlewaresParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countTcpMiddlewaresByAgent = `-- name: CountTcpMiddlewaresByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_middlewares
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountTcpMiddlewaresByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpMiddlewaresByAgentStmt, countTcpMiddlewaresByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countTcpMiddlewaresByProfile = `-- name: CountTcpMiddlewaresByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_middlewares
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountTcpMiddlewaresByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpMiddlewaresByProfileStmt, countTcpMiddlewaresByProfile, profileID)
+func (q *Queries) CountTcpMiddlewares(ctx context.Context, arg CountTcpMiddlewaresParams) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpMiddlewaresStmt, countTcpMiddlewares, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -154,77 +133,33 @@ SELECT
 FROM
   tcp_middlewares
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListTcpMiddlewaresParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListTcpMiddlewares(ctx context.Context, arg ListTcpMiddlewaresParams) ([]TcpMiddleware, error) {
-	rows, err := q.query(ctx, q.listTcpMiddlewaresStmt, listTcpMiddlewares, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []TcpMiddleware
-	for rows.Next() {
-		var i TcpMiddleware
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.IsDefault,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTcpMiddlewaresByAgent = `-- name: ListTcpMiddlewaresByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
-FROM
-  tcp_middlewares
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListTcpMiddlewaresByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListTcpMiddlewaresByAgent(ctx context.Context, arg ListTcpMiddlewaresByAgentParams) ([]TcpMiddleware, error) {
-	rows, err := q.query(ctx, q.listTcpMiddlewaresByAgentStmt, listTcpMiddlewaresByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listTcpMiddlewaresStmt, listTcpMiddlewares,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -264,22 +199,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListTcpMiddlewaresEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListTcpMiddlewaresEnabled(ctx context.Context, arg ListTcpMiddlewaresEnabledParams) ([]TcpMiddleware, error) {
-	rows, err := q.query(ctx, q.listTcpMiddlewaresEnabledStmt, listTcpMiddlewaresEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListTcpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]TcpMiddleware, error) {
+	rows, err := q.query(ctx, q.listTcpMiddlewaresEnabledStmt, listTcpMiddlewaresEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

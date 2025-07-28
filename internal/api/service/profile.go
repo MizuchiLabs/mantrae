@@ -6,7 +6,6 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -29,7 +28,7 @@ func (s *ProfileService) GetProfile(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.GetProfileResponse{
-		Profile: convert.ProfileToProto(&result),
+		Profile: result.ToProto(),
 	}), nil
 }
 
@@ -48,7 +47,7 @@ func (s *ProfileService) CreateProfile(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateProfileResponse{
-		Profile: convert.ProfileToProto(&result),
+		Profile: result.ToProto(),
 	}), nil
 }
 
@@ -70,7 +69,7 @@ func (s *ProfileService) UpdateProfile(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateProfileResponse{
-		Profile: convert.ProfileToProto(&result),
+		Profile: result.ToProto(),
 	}), nil
 }
 
@@ -78,8 +77,7 @@ func (s *ProfileService) DeleteProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteProfileRequest],
 ) (*connect.Response[mantraev1.DeleteProfileResponse], error) {
-	err := s.app.Conn.GetQuery().DeleteProfile(ctx, req.Msg.Id)
-	if err != nil {
+	if err := s.app.Conn.GetQuery().DeleteProfile(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.DeleteProfileResponse{}), nil
@@ -89,29 +87,27 @@ func (s *ProfileService) ListProfiles(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListProfilesRequest],
 ) (*connect.Response[mantraev1.ListProfilesResponse], error) {
-	var params db.ListProfilesParams
-	if req.Msg.Limit == nil {
-		params.Limit = 100
-	} else {
-		params.Limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		params.Offset = 0
-	} else {
-		params.Offset = *req.Msg.Offset
+	params := db.ListProfilesParams{
+		Limit:  req.Msg.Limit,
+		Offset: req.Msg.Offset,
 	}
 
 	result, err := s.app.Conn.GetQuery().ListProfiles(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
 	totalCount, err := s.app.Conn.GetQuery().CountProfiles(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	profiles := make([]*mantraev1.Profile, 0, len(result))
+	for _, p := range result {
+		profiles = append(profiles, p.ToProto())
+	}
 	return connect.NewResponse(&mantraev1.ListProfilesResponse{
-		Profiles:   convert.ProfilesToProto(result),
+		Profiles:   profiles,
 		TotalCount: totalCount,
 	}), nil
 }

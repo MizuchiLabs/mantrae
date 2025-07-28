@@ -13,10 +13,10 @@ import (
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/storage"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
-	"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 func UploadAvatar(a *config.App) http.HandlerFunc {
@@ -173,7 +173,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				return
 			}
 
-			if err = convert.DynamicToDB(r.Context(), *a.Conn.GetQuery(), profileIDValue, dynamic); err != nil {
+			if err = traefik.DynamicToDB(r.Context(), *a.Conn.GetQuery(), profileIDValue, dynamic); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}

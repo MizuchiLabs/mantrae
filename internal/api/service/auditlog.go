@@ -6,7 +6,6 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
@@ -23,16 +22,9 @@ func (s *AuditLogService) ListAuditLogs(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListAuditLogsRequest],
 ) (*connect.Response[mantraev1.ListAuditLogsResponse], error) {
-	var params db.ListAuditLogsParams
-	if req.Msg.Limit == nil {
-		params.Limit = 100
-	} else {
-		params.Limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		params.Offset = 0
-	} else {
-		params.Offset = *req.Msg.Offset
+	params := db.ListAuditLogsParams{
+		Limit:  req.Msg.Limit,
+		Offset: req.Msg.Offset,
 	}
 
 	result, err := s.app.Conn.GetQuery().ListAuditLogs(ctx, params)
@@ -44,8 +36,12 @@ func (s *AuditLogService) ListAuditLogs(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	auditLogs := make([]*mantraev1.AuditLog, 0, len(result))
+	for _, l := range result {
+		auditLogs = append(auditLogs, l.ToProto())
+	}
 	return connect.NewResponse(&mantraev1.ListAuditLogsResponse{
-		AuditLogs:  convert.AuditLogsToProto(result),
+		AuditLogs:  auditLogs,
 		TotalCount: totalCount,
 	}), nil
 }

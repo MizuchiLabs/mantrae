@@ -27,7 +27,6 @@ func (s *SettingService) GetSetting(
 	if !ok {
 		return nil, connect.NewError(connect.CodeInternal, errors.New("setting not found"))
 	}
-
 	return connect.NewResponse(&mantraev1.GetSettingResponse{Value: value}), nil
 }
 

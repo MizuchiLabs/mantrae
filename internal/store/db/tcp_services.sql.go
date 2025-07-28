@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   tcp_services
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountTcpServices(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServicesStmt, countTcpServices)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountTcpServicesParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countTcpServicesByAgent = `-- name: CountTcpServicesByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_services
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountTcpServicesByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServicesByAgentStmt, countTcpServicesByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countTcpServicesByProfile = `-- name: CountTcpServicesByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_services
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountTcpServicesByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServicesByProfileStmt, countTcpServicesByProfile, profileID)
+func (q *Queries) CountTcpServices(ctx context.Context, arg CountTcpServicesParams) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpServicesStmt, countTcpServices, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -166,76 +145,33 @@ SELECT
 FROM
   tcp_services
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListTcpServicesParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListTcpServices(ctx context.Context, arg ListTcpServicesParams) ([]TcpService, error) {
-	rows, err := q.query(ctx, q.listTcpServicesStmt, listTcpServices, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []TcpService
-	for rows.Next() {
-		var i TcpService
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTcpServicesByAgent = `-- name: ListTcpServicesByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
-FROM
-  tcp_services
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListTcpServicesByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListTcpServicesByAgent(ctx context.Context, arg ListTcpServicesByAgentParams) ([]TcpService, error) {
-	rows, err := q.query(ctx, q.listTcpServicesByAgentStmt, listTcpServicesByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listTcpServicesStmt, listTcpServices,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -274,22 +210,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListTcpServicesEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListTcpServicesEnabled(ctx context.Context, arg ListTcpServicesEnabledParams) ([]TcpService, error) {
-	rows, err := q.query(ctx, q.listTcpServicesEnabledStmt, listTcpServicesEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListTcpServicesEnabled(ctx context.Context, profileID int64) ([]TcpService, error) {
+	rows, err := q.query(ctx, q.listTcpServicesEnabledStmt, listTcpServicesEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

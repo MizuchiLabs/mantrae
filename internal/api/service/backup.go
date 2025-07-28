@@ -8,7 +8,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
+	"github.com/mizuchilabs/mantrae/internal/store/db"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
@@ -27,7 +27,6 @@ func (s *BackupService) CreateBackup(
 	if err := s.app.BM.Create(ctx); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
 	return connect.NewResponse(&mantraev1.CreateBackupResponse{}), nil
 }
 
@@ -45,7 +44,7 @@ func (s *BackupService) ListBackups(
 		backups = append(backups, &mantraev1.Backup{
 			Name:      file.Name,
 			Size:      file.Size,
-			CreatedAt: convert.SafeTimestamp(file.Timestamp),
+			CreatedAt: db.SafeTimestamp(file.Timestamp),
 		})
 	}
 	return connect.NewResponse(&mantraev1.ListBackupsResponse{Backups: backups}), nil

@@ -735,7 +735,7 @@ type CreateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Email         *string                `protobuf:"bytes,3,opt,name=email,proto3,oneof" json:"email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -785,8 +785,8 @@ func (x *CreateUserRequest) GetPassword() string {
 }
 
 func (x *CreateUserRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
+	if x != nil && x.Email != nil {
+		return *x.Email
 	}
 	return ""
 }
@@ -839,8 +839,8 @@ type UpdateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Password      *string                `protobuf:"bytes,5,opt,name=password,proto3,oneof" json:"password,omitempty"`
+	Email         *string                `protobuf:"bytes,3,opt,name=email,proto3,oneof" json:"email,omitempty"`
+	Password      *string                `protobuf:"bytes,4,opt,name=password,proto3,oneof" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -890,8 +890,8 @@ func (x *UpdateUserRequest) GetUsername() string {
 }
 
 func (x *UpdateUserRequest) GetEmail() string {
-	if x != nil {
-		return x.Email
+	if x != nil && x.Email != nil {
+		return *x.Email
 	}
 	return ""
 }
@@ -1280,19 +1280,23 @@ const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"identifier\"7\n" +
 	"\x0fGetUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"|\n" +
+	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\x8e\x01\n" +
 	"\x11CreateUserRequest\x12#\n" +
 	"\busername\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\busername\x12#\n" +
-	"\bpassword\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\x12\x1d\n" +
-	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\":\n" +
+	"\bpassword\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\bR\bpassword\x12%\n" +
+	"\x05email\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xd8\x01\x00r\x02`\x01H\x00R\x05email\x88\x01\x01B\b\n" +
+	"\x06_email\":\n" +
 	"\x12CreateUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\xaa\x01\n" +
+	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\xbc\x01\n" +
 	"\x11UpdateUserRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12#\n" +
-	"\busername\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\busername\x12\x1d\n" +
-	"\x05email\x18\x03 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12+\n" +
-	"\bpassword\x18\x05 \x01(\tB\n" +
-	"\xbaH\a\xd8\x01\x01r\x02\x10\bH\x00R\bpassword\x88\x01\x01B\v\n" +
+	"\busername\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03R\busername\x12%\n" +
+	"\x05email\x18\x03 \x01(\tB\n" +
+	"\xbaH\a\xd8\x01\x00r\x02`\x01H\x00R\x05email\x88\x01\x01\x12+\n" +
+	"\bpassword\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xd8\x01\x00r\x02\x10\bH\x01R\bpassword\x88\x01\x01B\b\n" +
+	"\x06_emailB\v\n" +
 	"\t_password\":\n" +
 	"\x12UpdateUserResponse\x12$\n" +
 	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\",\n" +
@@ -1430,6 +1434,7 @@ func file_mantrae_v1_user_proto_init() {
 		(*GetUserRequest_Username)(nil),
 		(*GetUserRequest_Email)(nil),
 	}
+	file_mantrae_v1_user_proto_msgTypes[11].OneofWrappers = []any{}
 	file_mantrae_v1_user_proto_msgTypes[13].OneofWrappers = []any{}
 	file_mantrae_v1_user_proto_msgTypes[17].OneofWrappers = []any{}
 	type x struct{}

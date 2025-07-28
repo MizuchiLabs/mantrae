@@ -661,10 +661,9 @@ const file_mantrae_v1_entry_point_proto_rawDesc = "" +
 	"is_default\x18\x04 \x01(\bR\tisDefault\"S\n" +
 	"\x18UpdateEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
-	"entryPoint\"5\n" +
-	"\x17DeleteEntryPointRequest\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\x03B\n" +
-	"\xbaH\a\xc8\x01\x01\"\x02 \x00R\x02id\"\x1a\n" +
+	"entryPoint\"2\n" +
+	"\x17DeleteEntryPointRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"\x1a\n" +
 	"\x18DeleteEntryPointResponse\"\xee\x01\n" +
 	"\x16ListEntryPointsRequest\x12&\n" +
 	"\n" +

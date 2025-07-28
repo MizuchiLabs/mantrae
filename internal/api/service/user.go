@@ -7,12 +7,10 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/mail"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -47,8 +45,8 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Msg.Password)); err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	if ok := util.VerifyPassword(req.Msg.Password, user.Password); !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid password"))
 	}
 
 	expirationTime := time.Now().Add(24 * time.Hour)
@@ -70,7 +68,7 @@ func (s *UserService) LoginUser(
 		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.LoginUserResponse{User: convert.UserToProto(&user)})
+	res := connect.NewResponse(&mantraev1.LoginUserResponse{User: user.ToProto()})
 	res.Header().Set("Set-Cookie", cookie.String())
 	return res, nil
 }
@@ -151,7 +149,7 @@ func (s *UserService) VerifyOTP(
 		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.VerifyOTPResponse{User: convert.UserToProto(&user)})
+	res := connect.NewResponse(&mantraev1.VerifyOTPResponse{User: user.ToProto()})
 	res.Header().Set("Set-Cookie", cookie.String())
 	return res, nil
 }
@@ -226,7 +224,7 @@ func (s *UserService) GetUser(
 	}
 
 	return connect.NewResponse(&mantraev1.GetUserResponse{
-		User: convert.UserToProto(&user),
+		User: user.ToProto(),
 	}), nil
 }
 
@@ -234,30 +232,24 @@ func (s *UserService) CreateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateUserRequest],
 ) (*connect.Response[mantraev1.CreateUserResponse], error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	params := db.CreateUserParams{
+		ID:       uuid.NewString(),
+		Username: req.Msg.Username,
+		Email:    req.Msg.Email,
 	}
 
-	params := db.CreateUserParams{
-		ID:       id.String(),
-		Username: req.Msg.Username,
-	}
-	if req.Msg.Email != "" {
-		params.Email = &req.Msg.Email
-	}
-	hash, err := util.HashPassword(req.Msg.Password)
+	var err error
+	params.Password, err = util.HashPassword(req.Msg.Password)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	params.Password = hash
 
 	result, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateUserResponse{
-		User: convert.UserToProto(&result),
+		User: result.ToProto(),
 	}), nil
 }
 
@@ -268,9 +260,7 @@ func (s *UserService) UpdateUser(
 	params := db.UpdateUserParams{
 		ID:       req.Msg.Id,
 		Username: req.Msg.Username,
-	}
-	if req.Msg.Email != "" {
-		params.Email = &req.Msg.Email
+		Email:    req.Msg.Email,
 	}
 	user, err := s.app.Conn.GetQuery().UpdateUser(ctx, params)
 	if err != nil {
@@ -293,7 +283,7 @@ func (s *UserService) UpdateUser(
 	}
 
 	return connect.NewResponse(&mantraev1.UpdateUserResponse{
-		User: convert.UserToProto(&user),
+		User: user.ToProto(),
 	}), nil
 }
 
@@ -311,16 +301,9 @@ func (s *UserService) ListUsers(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListUsersRequest],
 ) (*connect.Response[mantraev1.ListUsersResponse], error) {
-	var params db.ListUsersParams
-	if req.Msg.Limit == nil {
-		params.Limit = 100
-	} else {
-		params.Limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		params.Offset = 0
-	} else {
-		params.Offset = *req.Msg.Offset
+	params := db.ListUsersParams{
+		Limit:  req.Msg.Limit,
+		Offset: req.Msg.Offset,
 	}
 
 	result, err := s.app.Conn.GetQuery().ListUsers(ctx, params)
@@ -332,8 +315,12 @@ func (s *UserService) ListUsers(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	users := make([]*mantraev1.User, 0, len(result))
+	for _, u := range result {
+		users = append(users, u.ToProto())
+	}
 	return connect.NewResponse(&mantraev1.ListUsersResponse{
-		Users:      convert.UsersToProto(result),
+		Users:      users,
 		TotalCount: totalCount,
 	}), nil
 }

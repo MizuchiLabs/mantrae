@@ -7,7 +7,6 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/convert"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -29,9 +28,8 @@ func (s *DnsProviderService) GetDnsProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
 	return connect.NewResponse(&mantraev1.GetDnsProviderResponse{
-		DnsProvider: convert.DNSProviderToProto(&result),
+		DnsProvider: result.ToProto(),
 	}), nil
 }
 
@@ -78,7 +76,7 @@ func (s *DnsProviderService) CreateDnsProvider(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.CreateDnsProviderResponse{
-		DnsProvider: convert.DNSProviderToProto(&result),
+		DnsProvider: result.ToProto(),
 	}), nil
 }
 
@@ -126,7 +124,7 @@ func (s *DnsProviderService) UpdateDnsProvider(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&mantraev1.UpdateDnsProviderResponse{
-		DnsProvider: convert.DNSProviderToProto(&result),
+		DnsProvider: result.ToProto(),
 	}), nil
 }
 
@@ -144,16 +142,9 @@ func (s *DnsProviderService) ListDnsProviders(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListDnsProvidersRequest],
 ) (*connect.Response[mantraev1.ListDnsProvidersResponse], error) {
-	var params db.ListDnsProvidersParams
-	if req.Msg.Limit == nil {
-		params.Limit = 100
-	} else {
-		params.Limit = *req.Msg.Limit
-	}
-	if req.Msg.Offset == nil {
-		params.Offset = 0
-	} else {
-		params.Offset = *req.Msg.Offset
+	params := db.ListDnsProvidersParams{
+		Limit:  req.Msg.Limit,
+		Offset: req.Msg.Offset,
 	}
 
 	result, err := s.app.Conn.GetQuery().ListDnsProviders(ctx, params)
@@ -165,8 +156,12 @@ func (s *DnsProviderService) ListDnsProviders(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	dnsProviders := make([]*mantraev1.DnsProvider, 0, len(result))
+	for _, p := range result {
+		dnsProviders = append(dnsProviders, p.ToProto())
+	}
 	return connect.NewResponse(&mantraev1.ListDnsProvidersResponse{
-		DnsProviders: convert.DNSProvidersToProto(result),
+		DnsProviders: dnsProviders,
 		TotalCount:   totalCount,
 	}), nil
 }

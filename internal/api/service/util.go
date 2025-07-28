@@ -36,7 +36,6 @@ func (s *UtilService) GetPublicIP(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
 	return connect.NewResponse(&mantraev1.GetPublicIPResponse{
 		Ipv4: ips.IPv4,
 		Ipv6: ips.IPv6,

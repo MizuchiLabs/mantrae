@@ -5,7 +5,6 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
-import "mantrae/v1/router.proto";
 
 service ServiceService {
   rpc GetService(GetServiceRequest) returns (GetServiceResponse) {
@@ -51,7 +50,7 @@ message GetServiceResponse {
 
 message CreateServiceRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
-  string agent_id = 2;
+  optional string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
@@ -81,7 +80,7 @@ message DeleteServiceResponse {}
 message ListServicesRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional ServiceType type = 3 [(buf.validate.field).enum.defined_only = true];
+  optional ServiceType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"
@@ -95,14 +94,8 @@ message ListServicesResponse {
 }
 
 message GetServiceByRouterRequest {
-  string name = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  RouterType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetServiceByRouterResponse {
   Service service = 1;

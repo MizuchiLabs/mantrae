@@ -1,37 +1,47 @@
 <script lang="ts">
+	import type { JsonObject } from '@bufbuild/protobuf';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
+	import { MiddlewareSchema } from '$lib/gen/zen/traefik-schemas';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
-	import {
-		MiddlewareSchema,
-		type Middleware as HTTPMiddleware
-	} from '$lib/gen/zen/traefik-schemas';
 	import DynamicForm from './DynamicForm.svelte';
 
 	let { middleware = $bindable() }: { middleware: Middleware } = $props();
 
-	let config = $state(unmarshalConfig(middleware.config) as HTTPMiddleware);
-	let selectedType = $derived(config ? Object.keys(config)[0] : '');
-
+	let middlewareType = $state('');
 	$effect(() => {
-		if (config) middleware.config = marshalConfig(config);
+		if (middleware.config) middlewareType = Object.keys(middleware.config)[0];
+	});
+
+	const data = $derived.by(() => {
+		if (!middlewareType || !middleware.config?.[middlewareType]) {
+			return {};
+		}
+		return marshalConfig(middleware.config[middlewareType]);
 	});
 
 	const middlewareTypes = Object.keys(MiddlewareSchema.shape).map((key) => ({
 		value: key,
 		label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()) // dumb prettifier
 	}));
+
+	function onUpdate(data: JsonObject) {
+		if (!middleware.config) middleware.config = {};
+		// Clear other middleware types when switching
+		middleware.config = {};
+		middleware.config[middlewareType] = unmarshalConfig(data);
+	}
 </script>
 
 <div class="flex flex-col gap-3">
 	<!-- Middleware Type -->
 	<div class="flex flex-col gap-2">
 		<Label class="mr-2">Type</Label>
-		<Select.Root type="single" bind:value={selectedType}>
+		<Select.Root type="single" bind:value={middlewareType}>
 			<Select.Trigger class="w-full">
-				{selectedType
-					? middlewareTypes.find((t) => t.value === selectedType)?.label
+				{middlewareType
+					? middlewareTypes.find((t) => t.value === middlewareType)?.label
 					: 'Select type'}
 			</Select.Trigger>
 			<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
@@ -42,13 +52,5 @@
 		</Select.Root>
 	</div>
 
-	{#if selectedType}
-		<DynamicForm
-			schema={MiddlewareSchema.shape[selectedType as keyof typeof MiddlewareSchema.shape]}
-			data={(config[selectedType as keyof HTTPMiddleware] as Record<string, unknown>) || {}}
-			onUpdate={(updatedData) => {
-				config = { [selectedType]: updatedData } as HTTPMiddleware;
-			}}
-		/>
-	{/if}
+	<DynamicForm {middlewareType} protocol="http" {data} {onUpdate} />
 </div>

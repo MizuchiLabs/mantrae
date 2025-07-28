@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   tcp_servers_transports
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountTcpServersTransports(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServersTransportsStmt, countTcpServersTransports)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountTcpServersTransportsParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countTcpServersTransportsByAgent = `-- name: CountTcpServersTransportsByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_servers_transports
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountTcpServersTransportsByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServersTransportsByAgentStmt, countTcpServersTransportsByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countTcpServersTransportsByProfile = `-- name: CountTcpServersTransportsByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  tcp_servers_transports
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountTcpServersTransportsByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countTcpServersTransportsByProfileStmt, countTcpServersTransportsByProfile, profileID)
+func (q *Queries) CountTcpServersTransports(ctx context.Context, arg CountTcpServersTransportsParams) (int64, error) {
+	row := q.queryRow(ctx, q.countTcpServersTransportsStmt, countTcpServersTransports, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -141,76 +120,33 @@ SELECT
 FROM
   tcp_servers_transports
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListTcpServersTransportsParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListTcpServersTransports(ctx context.Context, arg ListTcpServersTransportsParams) ([]TcpServersTransport, error) {
-	rows, err := q.query(ctx, q.listTcpServersTransportsStmt, listTcpServersTransports, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []TcpServersTransport
-	for rows.Next() {
-		var i TcpServersTransport
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listTcpServersTransportsByAgent = `-- name: ListTcpServersTransportsByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
-FROM
-  tcp_servers_transports
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListTcpServersTransportsByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListTcpServersTransportsByAgent(ctx context.Context, arg ListTcpServersTransportsByAgentParams) ([]TcpServersTransport, error) {
-	rows, err := q.query(ctx, q.listTcpServersTransportsByAgentStmt, listTcpServersTransportsByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listTcpServersTransportsStmt, listTcpServersTransports,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -249,22 +185,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListTcpServersTransportsEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListTcpServersTransportsEnabled(ctx context.Context, arg ListTcpServersTransportsEnabledParams) ([]TcpServersTransport, error) {
-	rows, err := q.query(ctx, q.listTcpServersTransportsEnabledStmt, listTcpServersTransportsEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListTcpServersTransportsEnabled(ctx context.Context, profileID int64) ([]TcpServersTransport, error) {
+	rows, err := q.query(ctx, q.listTcpServersTransportsEnabledStmt, listTcpServersTransportsEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,6 @@
-//go:build !dev
-// +build !dev
+//go:build dev
+// +build dev
 
-// Package config various app setup and configuration functions.
 package config
 
 import (
@@ -9,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/pkg/build"
 )
 
@@ -23,6 +23,8 @@ func ParseFlags() {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
+	flag.BoolVar(&f.Squash, "squash", false, "Squash the database (only for dev)")
+	flag.BoolVar(&f.Zod, "zod", false, "Generate zod schemas (only for dev)")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -32,5 +34,14 @@ func ParseFlags() {
 		os.Exit(0)
 	}
 
+	if f.Squash {
+		store.Squash()
+		os.Exit(1)
+	}
+
+	if f.Zod {
+		StructToZodSchema()
+		os.Exit(1)
+	}
 	build.Update(f.Update)
 }

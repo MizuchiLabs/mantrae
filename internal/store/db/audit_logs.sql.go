@@ -88,14 +88,14 @@ FROM
 ORDER BY
   a.created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?2 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?1 AS INTEGER), 0)
 `
 
 type ListAuditLogsParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+	Offset *int64 `json:"offset"`
+	Limit  *int64 `json:"limit"`
 }
 
 type ListAuditLogsRow struct {
@@ -112,7 +112,7 @@ type ListAuditLogsRow struct {
 }
 
 func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error) {
-	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

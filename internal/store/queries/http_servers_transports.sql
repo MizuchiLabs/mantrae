@@ -25,27 +25,17 @@ SELECT
 FROM
   http_servers_transports
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
-
--- name: ListHttpServersTransportsByAgent :many
-SELECT
-  *
-FROM
-  http_servers_transports
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: ListHttpServersTransportsEnabled :many
 SELECT
@@ -54,35 +44,19 @@ FROM
   http_servers_transports
 WHERE
   profile_id = ?
-  AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?;
+  AND enabled = TRUE;
 
 -- name: CountHttpServersTransports :one
 SELECT
   COUNT(*)
 FROM
-  http_servers_transports;
-
--- name: CountHttpServersTransportsByProfile :one
-SELECT
-  COUNT(*)
-FROM
   http_servers_transports
 WHERE
-  profile_id = ?;
-
--- name: CountHttpServersTransportsByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_servers_transports
-WHERE
-  agent_id = ?;
+  profile_id = sqlc.arg ('profile_id')
+  AND (
+    CAST(sqlc.narg ('agent_id') AS TEXT) IS NULL
+    OR agent_id = CAST(sqlc.narg ('agent_id') AS TEXT)
+  );
 
 -- name: UpdateHttpServersTransport :one
 UPDATE http_servers_transports

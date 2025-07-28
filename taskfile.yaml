@@ -1,0 +1,78 @@
+version: "3"
+
+output: prefixed
+
+env:
+  IMAGE_SERVER_DEV: ko.local/mantrae
+  IMAGE_AGENT_DEV: ko.local/mantrae-agent
+  IMAGE_SERVER_PROD: ghcr.io/mizuchilabs/mantrae
+  IMAGE_AGENT_PROD: ghcr.io/mizuchilabs/mantrae-agent
+
+tasks:
+  dev:
+    desc: Run Go backend and Vite frontend concurrently
+    deps: [backend, frontend]
+
+  backend:
+    desc: Run Go backend
+    cmds:
+      - go run main.go
+    silent: false
+
+  frontend:
+    desc: Run Vite frontend
+    cmds:
+      - pnpm run dev
+    dir: web
+    silent: false
+
+  agent:
+    desc: Run Go agent
+    cmds:
+      - go run main.go
+    dir: cmd/agent
+    silent: false
+
+  # 󰚰 Update deps
+  update:
+    desc: Update dependencies
+    cmds:
+      - go get -u ./...
+      - cd web && pnpm update --latest
+
+  #   Build binary
+  build:
+    desc: Build Go binary
+    deps: [build:frontend]
+    cmds:
+      - go build -o bin/server ./cmd/server
+    sources:
+      - "**/*.go"
+    generates:
+      - bin/server
+
+  # 🏗 Build frontend
+  build:frontend:
+    desc: Build Svelte frontend
+    dir: web
+    cmds:
+      - pnpm install
+      - pnpm build
+
+  # 󱓞  Release
+  release:
+    desc: Build and release Go binary
+    deps: [build:frontend]
+    cmds:
+      - goreleaser release --clean --skip=validate
+
+  # 󰡨  Build container
+  docker:build:
+    desc: Build local test container with ko
+    deps: [build:frontend]
+    dir: cmd/server
+    cmds:
+      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build --bare .
+      - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build --bare ./agent/cmd
+      - grype $IMAGE_SERVER_DEV
+      - grype $IMAGE_AGENT_DEV

@@ -16,10 +16,12 @@ SELECT
   COUNT(*)
 FROM
   agents
+WHERE
+  profile_id = ?
 `
 
-func (q *Queries) CountAgents(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countAgentsStmt, countAgents)
+func (q *Queries) CountAgents(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countAgentsStmt, countAgents, profileID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -100,23 +102,23 @@ SELECT
 FROM
   agents
 WHERE
-  profile_id = ?
+  profile_id = ?1
 ORDER BY
   created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?3 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?2 AS INTEGER), 0)
 `
 
 type ListAgentsParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64  `json:"profileId"`
+	Offset    *int64 `json:"offset"`
+	Limit     *int64 `json:"limit"`
 }
 
 func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent, error) {
-	rows, err := q.query(ctx, q.listAgentsStmt, listAgents, arg.ProfileID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listAgentsStmt, listAgents, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

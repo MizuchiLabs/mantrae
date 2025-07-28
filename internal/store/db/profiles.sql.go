@@ -27,7 +27,7 @@ const createProfile = `-- name: CreateProfile :one
 INSERT INTO
   profiles (name, description, token, created_at, updated_at)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, created_at, updated_at, description, token
+  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, description, token, created_at, updated_at
 `
 
 type CreateProfileParams struct {
@@ -42,10 +42,10 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (P
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Token,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -63,7 +63,7 @@ func (q *Queries) DeleteProfile(ctx context.Context, id int64) error {
 
 const getProfile = `-- name: GetProfile :one
 SELECT
-  id, name, created_at, updated_at, description, token
+  id, name, description, token, created_at, updated_at
 FROM
   profiles
 WHERE
@@ -76,17 +76,17 @@ func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Token,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getProfileByName = `-- name: GetProfileByName :one
 SELECT
-  id, name, created_at, updated_at, description, token
+  id, name, description, token, created_at, updated_at
 FROM
   profiles
 WHERE
@@ -99,34 +99,34 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Token,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listProfiles = `-- name: ListProfiles :many
 SELECT
-  id, name, created_at, updated_at, description, token
+  id, name, description, token, created_at, updated_at
 FROM
   profiles
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?2 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?1 AS INTEGER), 0)
 `
 
 type ListProfilesParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+	Offset *int64 `json:"offset"`
+	Limit  *int64 `json:"limit"`
 }
 
 func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error) {
-	rows, err := q.query(ctx, q.listProfilesStmt, listProfiles, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listProfilesStmt, listProfiles, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -137,10 +137,10 @@ func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]P
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.Description,
 			&i.Token,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -163,7 +163,7 @@ SET
   token = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, name, created_at, updated_at, description, token
+  id = ? RETURNING id, name, description, token, created_at, updated_at
 `
 
 type UpdateProfileParams struct {
@@ -184,10 +184,10 @@ func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (P
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Token,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

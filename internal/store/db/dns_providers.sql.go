@@ -157,20 +157,20 @@ SELECT
 FROM
   dns_providers
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?2 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?1 AS INTEGER), 0)
 `
 
 type ListDnsProvidersParams struct {
-	Limit  int64 `json:"limit"`
-	Offset int64 `json:"offset"`
+	Offset *int64 `json:"offset"`
+	Limit  *int64 `json:"limit"`
 }
 
 func (q *Queries) ListDnsProviders(ctx context.Context, arg ListDnsProvidersParams) ([]DnsProvider, error) {
-	rows, err := q.query(ctx, q.listDnsProvidersStmt, listDnsProviders, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listDnsProvidersStmt, listDnsProviders, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

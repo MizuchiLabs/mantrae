@@ -14,10 +14,12 @@ SELECT
   COUNT(*)
 FROM
   entry_points
+WHERE
+  profile_id = ?
 `
 
-func (q *Queries) CountEntryPoints(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countEntryPointsStmt, countEntryPoints)
+func (q *Queries) CountEntryPoints(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countEntryPointsStmt, countEntryPoints, profileID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -131,23 +133,23 @@ SELECT
 FROM
   entry_points
 WHERE
-  profile_id = ?
+  profile_id = ?1
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?3 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?2 AS INTEGER), 0)
 `
 
 type ListEntryPointsParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64  `json:"profileId"`
+	Offset    *int64 `json:"offset"`
+	Limit     *int64 `json:"limit"`
 }
 
 func (q *Queries) ListEntryPoints(ctx context.Context, arg ListEntryPointsParams) ([]EntryPoint, error) {
-	rows, err := q.query(ctx, q.listEntryPointsStmt, listEntryPoints, arg.ProfileID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listEntryPointsStmt, listEntryPoints, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

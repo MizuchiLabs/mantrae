@@ -11,7 +11,6 @@ import (
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/backup"
-	"github.com/mizuchilabs/mantrae/internal/events"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -22,7 +21,6 @@ import (
 type App struct {
 	Secret string `env:"SECRET"`
 	Conn   *store.Connection
-	Event  *events.EventBroadcaster
 	BM     *backup.BackupManager
 	SM     *settings.SettingsManager
 }
@@ -61,7 +59,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	q := a.Conn.GetQuery()
 
 	// Ensure at least one user exists
-	users, err := q.ListUsers(ctx, db.ListUsersParams{Limit: 1, Offset: 0})
+	users, err := q.ListUsers(ctx, db.ListUsersParams{})
 	if err != nil {
 		return fmt.Errorf("failed to list admin users: %w", err)
 	}
@@ -100,7 +98,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	}
 
 	// Ensure default profile exists
-	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{Limit: 1, Offset: 0})
+	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{})
 	if err != nil {
 		return fmt.Errorf("failed to list profiles: %w", err)
 	}

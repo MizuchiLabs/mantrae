@@ -34,7 +34,7 @@
 	const hidden = items.slice(limit);
 
 	function truncateText(text: string, maxLength: number): string {
-		return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+		return text?.length > maxLength ? `${text?.slice(0, maxLength)}...` : text;
 	}
 </script>
 

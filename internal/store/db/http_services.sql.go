@@ -16,42 +16,21 @@ SELECT
   COUNT(*)
 FROM
   http_services
+WHERE
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 `
 
-func (q *Queries) CountHttpServices(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpServicesStmt, countHttpServices)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CountHttpServicesParams struct {
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
 }
 
-const countHttpServicesByAgent = `-- name: CountHttpServicesByAgent :one
-SELECT
-  COUNT(*)
-FROM
-  http_services
-WHERE
-  agent_id = ?
-`
-
-func (q *Queries) CountHttpServicesByAgent(ctx context.Context, agentID *string) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpServicesByAgentStmt, countHttpServicesByAgent, agentID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countHttpServicesByProfile = `-- name: CountHttpServicesByProfile :one
-SELECT
-  COUNT(*)
-FROM
-  http_services
-WHERE
-  profile_id = ?
-`
-
-func (q *Queries) CountHttpServicesByProfile(ctx context.Context, profileID int64) (int64, error) {
-	row := q.queryRow(ctx, q.countHttpServicesByProfileStmt, countHttpServicesByProfile, profileID)
+func (q *Queries) CountHttpServices(ctx context.Context, arg CountHttpServicesParams) (int64, error) {
+	row := q.queryRow(ctx, q.countHttpServicesStmt, countHttpServices, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -166,76 +145,33 @@ SELECT
 FROM
   http_services
 WHERE
-  profile_id = ?
+  profile_id = ?1
+  AND (
+    CAST(?2 AS TEXT) IS NULL
+    OR agent_id = CAST(?2 AS TEXT)
+  )
 ORDER BY
-  name
+  created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?4 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?3 AS INTEGER), 0)
 `
 
 type ListHttpServicesParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64   `json:"profileId"`
+	AgentID   *string `json:"agentId"`
+	Offset    *int64  `json:"offset"`
+	Limit     *int64  `json:"limit"`
 }
 
 func (q *Queries) ListHttpServices(ctx context.Context, arg ListHttpServicesParams) ([]HttpService, error) {
-	rows, err := q.query(ctx, q.listHttpServicesStmt, listHttpServices, arg.ProfileID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []HttpService
-	for rows.Next() {
-		var i HttpService
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProfileID,
-			&i.AgentID,
-			&i.Name,
-			&i.Config,
-			&i.Enabled,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listHttpServicesByAgent = `-- name: ListHttpServicesByAgent :many
-SELECT
-  id, profile_id, agent_id, name, config, enabled, created_at, updated_at
-FROM
-  http_services
-WHERE
-  agent_id = ?
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
-`
-
-type ListHttpServicesByAgentParams struct {
-	AgentID *string `json:"agentId"`
-	Limit   int64   `json:"limit"`
-	Offset  int64   `json:"offset"`
-}
-
-func (q *Queries) ListHttpServicesByAgent(ctx context.Context, arg ListHttpServicesByAgentParams) ([]HttpService, error) {
-	rows, err := q.query(ctx, q.listHttpServicesByAgentStmt, listHttpServicesByAgent, arg.AgentID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listHttpServicesStmt, listHttpServices,
+		arg.ProfileID,
+		arg.AgentID,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -274,22 +210,10 @@ FROM
 WHERE
   profile_id = ?
   AND enabled = TRUE
-ORDER BY
-  name
-LIMIT
-  ?
-OFFSET
-  ?
 `
 
-type ListHttpServicesEnabledParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
-}
-
-func (q *Queries) ListHttpServicesEnabled(ctx context.Context, arg ListHttpServicesEnabledParams) ([]HttpService, error) {
-	rows, err := q.query(ctx, q.listHttpServicesEnabledStmt, listHttpServicesEnabled, arg.ProfileID, arg.Limit, arg.Offset)
+func (q *Queries) ListHttpServicesEnabled(ctx context.Context, profileID int64) ([]HttpService, error) {
+	rows, err := q.query(ctx, q.listHttpServicesEnabledStmt, listHttpServicesEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
