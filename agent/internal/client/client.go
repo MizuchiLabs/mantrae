@@ -250,7 +250,7 @@ func (t *TokenSource) upsertRouters(
 		} else {
 			params := &mantraev1.CreateRouterRequest{
 				ProfileId: t.claims.ProfileID,
-				AgentId:   t.claims.AgentID,
+				AgentId:   &t.claims.AgentID,
 				Name:      name,
 				Config:    newConfig,
 				Enabled:   true,
@@ -313,7 +313,7 @@ func (t *TokenSource) upsertServices(
 		} else {
 			params := &mantraev1.CreateServiceRequest{
 				ProfileId: t.claims.ProfileID,
-				AgentId:   t.claims.AgentID,
+				AgentId:   &t.claims.AgentID,
 				Name:      name,
 				Config:    newConfig,
 				Type:      typ,
@@ -376,7 +376,7 @@ func (t *TokenSource) upsertMiddlewares(
 		} else {
 			params := &mantraev1.CreateMiddlewareRequest{
 				ProfileId: t.claims.ProfileID,
-				AgentId:   t.claims.AgentID,
+				AgentId:   &t.claims.AgentID,
 				Name:      name,
 				Config:    newConfig,
 				Type:      typ,
