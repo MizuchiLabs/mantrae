@@ -2,18 +2,20 @@
 // @generated from file mantrae/v1/middleware.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { ProtocolType } from "./protocol_pb";
+import { file_mantrae_v1_protocol } from "./protocol_pb";
 import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/middleware.proto.
  */
 export const file_mantrae_v1_middleware: GenFile = /*@__PURE__*/
-  fileDesc("ChttYW50cmFlL3YxL21pZGRsZXdhcmUucHJvdG8SCm1hbnRyYWUudjEipAIKCk1pZGRsZXdhcmUSCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgGIAEoCBISCgppc19kZWZhdWx0GAcgASgIEigKBHR5cGUYCCABKA4yGi5tYW50cmFlLnYxLk1pZGRsZXdhcmVUeXBlEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIqYCCgZQbHVnaW4SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIUCgxkaXNwbGF5X25hbWUYAyABKAkSDgoGYXV0aG9yGAQgASgJEgwKBHR5cGUYBSABKAkSDgoGaW1wb3J0GAYgASgJEg8KB3N1bW1hcnkYByABKAkSEAoIaWNvbl91cmwYCCABKAkSEgoKYmFubmVyX3VybBgJIAEoCRIOCgZyZWFkbWUYCiABKAkSFgoObGF0ZXN0X3ZlcnNpb24YCyABKAkSEAoIdmVyc2lvbnMYDCADKAkSDQoFc3RhcnMYDSABKAMSKgoHc25pcHBldBgOIAEoCzIZLm1hbnRyYWUudjEuUGx1Z2luU25pcHBldBISCgpjcmVhdGVkX2F0GA8gASgJIjgKDVBsdWdpblNuaXBwZXQSCwoDazhzGAEgASgJEgwKBHlhbWwYAiABKAkSDAoEdG9tbBgDIAEoCSJfChRHZXRNaWRkbGV3YXJlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIyCgR0eXBlGAIgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUIIukgFggECEAEiQwoVR2V0TWlkZGxld2FyZVJlc3BvbnNlEioKCm1pZGRsZXdhcmUYASABKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUi4gEKF0NyZWF0ZU1pZGRsZXdhcmVSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASFQoIYWdlbnRfaWQYAiABKAlIAIgBARIVCgRuYW1lGAMgASgJQge6SARyAhABEjIKBHR5cGUYBCABKA4yGi5tYW50cmFlLnYxLk1pZGRsZXdhcmVUeXBlQgi6SAWCAQIQARISCgppc19kZWZhdWx0GAUgASgIEicKBmNvbmZpZxgGIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3RCCwoJX2FnZW50X2lkIkYKGENyZWF0ZU1pZGRsZXdhcmVSZXNwb25zZRIqCgptaWRkbGV3YXJlGAEgASgLMhYubWFudHJhZS52MS5NaWRkbGV3YXJlIscBChdVcGRhdGVNaWRkbGV3YXJlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEjIKBHR5cGUYAyABKA4yGi5tYW50cmFlLnYxLk1pZGRsZXdhcmVUeXBlQgi6SAWCAQIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSEgoKaXNfZGVmYXVsdBgGIAEoCCJGChhVcGRhdGVNaWRkbGV3YXJlUmVzcG9uc2USKgoKbWlkZGxld2FyZRgBIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZSJiChdEZWxldGVNaWRkbGV3YXJlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIyCgR0eXBlGAIgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUIIukgFggECEAEiGgoYRGVsZXRlTWlkZGxld2FyZVJlc3BvbnNlIrkCChZMaXN0TWlkZGxld2FyZXNSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARItCgR0eXBlGAMgASgOMhoubWFudHJhZS52MS5NaWRkbGV3YXJlVHlwZUgBiAEBEmoKBWxpbWl0GAQgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgCiAEBEhwKBm9mZnNldBgFIAEoA0IHukgEIgIoAEgDiAEBQgsKCV9hZ2VudF9pZEIHCgVfdHlwZUIICgZfbGltaXRCCQoHX29mZnNldCJbChdMaXN0TWlkZGxld2FyZXNSZXNwb25zZRIrCgttaWRkbGV3YXJlcxgBIAMoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZRITCgt0b3RhbF9jb3VudBgCIAEoAyIdChtHZXRNaWRkbGV3YXJlUGx1Z2luc1JlcXVlc3QiQwocR2V0TWlkZGxld2FyZVBsdWdpbnNSZXNwb25zZRIjCgdwbHVnaW5zGAEgAygLMhIubWFudHJhZS52MS5QbHVnaW4qZAoOTWlkZGxld2FyZVR5cGUSHwobTUlERExFV0FSRV9UWVBFX1VOU1BFQ0lGSUVEEAASGAoUTUlERExFV0FSRV9UWVBFX0hUVFAQARIXChNNSURETEVXQVJFX1RZUEVfVENQEAIy3AQKEU1pZGRsZXdhcmVTZXJ2aWNlElkKDUdldE1pZGRsZXdhcmUSIC5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVSZXF1ZXN0GiEubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUmVzcG9uc2UiA5ACARJdChBDcmVhdGVNaWRkbGV3YXJlEiMubWFudHJhZS52MS5DcmVhdGVNaWRkbGV3YXJlUmVxdWVzdBokLm1hbnRyYWUudjEuQ3JlYXRlTWlkZGxld2FyZVJlc3BvbnNlEl0KEFVwZGF0ZU1pZGRsZXdhcmUSIy5tYW50cmFlLnYxLlVwZGF0ZU1pZGRsZXdhcmVSZXF1ZXN0GiQubWFudHJhZS52MS5VcGRhdGVNaWRkbGV3YXJlUmVzcG9uc2USXQoQRGVsZXRlTWlkZGxld2FyZRIjLm1hbnRyYWUudjEuRGVsZXRlTWlkZGxld2FyZVJlcXVlc3QaJC5tYW50cmFlLnYxLkRlbGV0ZU1pZGRsZXdhcmVSZXNwb25zZRJfCg9MaXN0TWlkZGxld2FyZXMSIi5tYW50cmFlLnYxLkxpc3RNaWRkbGV3YXJlc1JlcXVlc3QaIy5tYW50cmFlLnYxLkxpc3RNaWRkbGV3YXJlc1Jlc3BvbnNlIgOQAgESbgoUR2V0TWlkZGxld2FyZVBsdWdpbnMSJy5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVQbHVnaW5zUmVxdWVzdBooLm1hbnRyYWUudjEuR2V0TWlkZGxld2FyZVBsdWdpbnNSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIPTWlkZGxld2FyZVByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]);
+  fileDesc("ChttYW50cmFlL3YxL21pZGRsZXdhcmUucHJvdG8SCm1hbnRyYWUudjEiogIKCk1pZGRsZXdhcmUSCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEicKBmNvbmZpZxgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgGIAEoCBISCgppc19kZWZhdWx0GAcgASgIEiYKBHR5cGUYCCABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZRIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKmAgoGUGx1Z2luEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSFAoMZGlzcGxheV9uYW1lGAMgASgJEg4KBmF1dGhvchgEIAEoCRIMCgR0eXBlGAUgASgJEg4KBmltcG9ydBgGIAEoCRIPCgdzdW1tYXJ5GAcgASgJEhAKCGljb25fdXJsGAggASgJEhIKCmJhbm5lcl91cmwYCSABKAkSDgoGcmVhZG1lGAogASgJEhYKDmxhdGVzdF92ZXJzaW9uGAsgASgJEhAKCHZlcnNpb25zGAwgAygJEg0KBXN0YXJzGA0gASgDEioKB3NuaXBwZXQYDiABKAsyGS5tYW50cmFlLnYxLlBsdWdpblNuaXBwZXQSEgoKY3JlYXRlZF9hdBgPIAEoCSI4Cg1QbHVnaW5TbmlwcGV0EgsKA2s4cxgBIAEoCRIMCgR5YW1sGAIgASgJEgwKBHRvbWwYAyABKAkiXQoUR2V0TWlkZGxld2FyZVJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASMAoEdHlwZRgCIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQASJDChVHZXRNaWRkbGV3YXJlUmVzcG9uc2USKgoKbWlkZGxld2FyZRgBIAEoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZSLgAQoXQ3JlYXRlTWlkZGxld2FyZVJlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABIVCghhZ2VudF9pZBgCIAEoCUgAiAEBEhUKBG5hbWUYAyABKAlCB7pIBHICEAESMAoEdHlwZRgEIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQARISCgppc19kZWZhdWx0GAUgASgIEicKBmNvbmZpZxgGIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3RCCwoJX2FnZW50X2lkIkYKGENyZWF0ZU1pZGRsZXdhcmVSZXNwb25zZRIqCgptaWRkbGV3YXJlGAEgASgLMhYubWFudHJhZS52MS5NaWRkbGV3YXJlIsUBChdVcGRhdGVNaWRkbGV3YXJlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEjAKBHR5cGUYAyABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUIIukgFggECEAESJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIPCgdlbmFibGVkGAUgASgIEhIKCmlzX2RlZmF1bHQYBiABKAgiRgoYVXBkYXRlTWlkZGxld2FyZVJlc3BvbnNlEioKCm1pZGRsZXdhcmUYASABKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmUiYAoXRGVsZXRlTWlkZGxld2FyZVJlcXVlc3QSEwoCaWQYAiABKANCB7pIBCICIAASMAoEdHlwZRgDIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQASIaChhEZWxldGVNaWRkbGV3YXJlUmVzcG9uc2UitwIKFkxpc3RNaWRkbGV3YXJlc1JlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABIeCghhZ2VudF9pZBgCIAEoCUIHukgEcgIQAUgAiAEBEisKBHR5cGUYAyABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUgBiAEBEmoKBWxpbWl0GAQgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgCiAEBEhwKBm9mZnNldBgFIAEoA0IHukgEIgIoAEgDiAEBQgsKCV9hZ2VudF9pZEIHCgVfdHlwZUIICgZfbGltaXRCCQoHX29mZnNldCJbChdMaXN0TWlkZGxld2FyZXNSZXNwb25zZRIrCgttaWRkbGV3YXJlcxgBIAMoCzIWLm1hbnRyYWUudjEuTWlkZGxld2FyZRITCgt0b3RhbF9jb3VudBgCIAEoAyIdChtHZXRNaWRkbGV3YXJlUGx1Z2luc1JlcXVlc3QiQwocR2V0TWlkZGxld2FyZVBsdWdpbnNSZXNwb25zZRIjCgdwbHVnaW5zGAEgAygLMhIubWFudHJhZS52MS5QbHVnaW4y3AQKEU1pZGRsZXdhcmVTZXJ2aWNlElkKDUdldE1pZGRsZXdhcmUSIC5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVSZXF1ZXN0GiEubWFudHJhZS52MS5HZXRNaWRkbGV3YXJlUmVzcG9uc2UiA5ACARJdChBDcmVhdGVNaWRkbGV3YXJlEiMubWFudHJhZS52MS5DcmVhdGVNaWRkbGV3YXJlUmVxdWVzdBokLm1hbnRyYWUudjEuQ3JlYXRlTWlkZGxld2FyZVJlc3BvbnNlEl0KEFVwZGF0ZU1pZGRsZXdhcmUSIy5tYW50cmFlLnYxLlVwZGF0ZU1pZGRsZXdhcmVSZXF1ZXN0GiQubWFudHJhZS52MS5VcGRhdGVNaWRkbGV3YXJlUmVzcG9uc2USXQoQRGVsZXRlTWlkZGxld2FyZRIjLm1hbnRyYWUudjEuRGVsZXRlTWlkZGxld2FyZVJlcXVlc3QaJC5tYW50cmFlLnYxLkRlbGV0ZU1pZGRsZXdhcmVSZXNwb25zZRJfCg9MaXN0TWlkZGxld2FyZXMSIi5tYW50cmFlLnYxLkxpc3RNaWRkbGV3YXJlc1JlcXVlc3QaIy5tYW50cmFlLnYxLkxpc3RNaWRkbGV3YXJlc1Jlc3BvbnNlIgOQAgESbgoUR2V0TWlkZGxld2FyZVBsdWdpbnMSJy5tYW50cmFlLnYxLkdldE1pZGRsZXdhcmVQbHVnaW5zUmVxdWVzdBooLm1hbnRyYWUudjEuR2V0TWlkZGxld2FyZVBsdWdpbnNSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIPTWlkZGxld2FyZVByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_protocol]);
 
 /**
  * @generated from message mantrae.v1.Middleware
@@ -55,9 +57,9 @@ export type Middleware = Message<"mantrae.v1.Middleware"> & {
   isDefault: boolean;
 
   /**
-   * @generated from field: mantrae.v1.MiddlewareType type = 8;
+   * @generated from field: mantrae.v1.ProtocolType type = 8;
    */
-  type: MiddlewareType;
+  type: ProtocolType;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 9;
@@ -201,9 +203,9 @@ export type GetMiddlewareRequest = Message<"mantrae.v1.GetMiddlewareRequest"> & 
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.MiddlewareType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: MiddlewareType;
+  type: ProtocolType;
 };
 
 /**
@@ -250,9 +252,9 @@ export type CreateMiddlewareRequest = Message<"mantrae.v1.CreateMiddlewareReques
   name: string;
 
   /**
-   * @generated from field: mantrae.v1.MiddlewareType type = 4;
+   * @generated from field: mantrae.v1.ProtocolType type = 4;
    */
-  type: MiddlewareType;
+  type: ProtocolType;
 
   /**
    * @generated from field: bool is_default = 5;
@@ -304,9 +306,9 @@ export type UpdateMiddlewareRequest = Message<"mantrae.v1.UpdateMiddlewareReques
   name: string;
 
   /**
-   * @generated from field: mantrae.v1.MiddlewareType type = 3;
+   * @generated from field: mantrae.v1.ProtocolType type = 3;
    */
-  type: MiddlewareType;
+  type: ProtocolType;
 
   /**
    * @generated from field: google.protobuf.Struct config = 4;
@@ -353,14 +355,14 @@ export const UpdateMiddlewareResponseSchema: GenMessage<UpdateMiddlewareResponse
  */
 export type DeleteMiddlewareRequest = Message<"mantrae.v1.DeleteMiddlewareRequest"> & {
   /**
-   * @generated from field: int64 id = 1;
+   * @generated from field: int64 id = 2;
    */
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.MiddlewareType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 3;
    */
-  type: MiddlewareType;
+  type: ProtocolType;
 };
 
 /**
@@ -398,9 +400,9 @@ export type ListMiddlewaresRequest = Message<"mantrae.v1.ListMiddlewaresRequest"
   agentId?: string;
 
   /**
-   * @generated from field: optional mantrae.v1.MiddlewareType type = 3;
+   * @generated from field: optional mantrae.v1.ProtocolType type = 3;
    */
-  type?: MiddlewareType;
+  type?: ProtocolType;
 
   /**
    * @generated from field: optional int64 limit = 4;
@@ -471,32 +473,6 @@ export type GetMiddlewarePluginsResponse = Message<"mantrae.v1.GetMiddlewarePlug
  */
 export const GetMiddlewarePluginsResponseSchema: GenMessage<GetMiddlewarePluginsResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_middleware, 14);
-
-/**
- * @generated from enum mantrae.v1.MiddlewareType
- */
-export enum MiddlewareType {
-  /**
-   * @generated from enum value: MIDDLEWARE_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: MIDDLEWARE_TYPE_HTTP = 1;
-   */
-  HTTP = 1,
-
-  /**
-   * @generated from enum value: MIDDLEWARE_TYPE_TCP = 2;
-   */
-  TCP = 2,
-}
-
-/**
- * Describes the enum mantrae.v1.MiddlewareType.
- */
-export const MiddlewareTypeSchema: GenEnum<MiddlewareType> = /*@__PURE__*/
-  enumDesc(file_mantrae_v1_middleware, 0);
 
 /**
  * @generated from service mantrae.v1.MiddlewareService

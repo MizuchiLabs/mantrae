@@ -1020,6 +1020,14 @@ components:
           $ref: '#/components/schemas/mantrae.v1.EntryPoint'
       title: UpdateEntryPointResponse
       additionalProperties: false
+    mantrae.v1.ProtocolType:
+      type: string
+      title: ProtocolType
+      enum:
+        - PROTOCOL_TYPE_UNSPECIFIED
+        - PROTOCOL_TYPE_HTTP
+        - PROTOCOL_TYPE_TCP
+        - PROTOCOL_TYPE_UDP
     google.protobuf.NullValue:
       type: string
       title: NullValue
@@ -1030,13 +1038,6 @@ components:
          `Value` type union.
 
          The JSON representation for `NullValue` is JSON `null`.
-    mantrae.v1.MiddlewareType:
-      type: string
-      title: MiddlewareType
-      enum:
-        - MIDDLEWARE_TYPE_UNSPECIFIED
-        - MIDDLEWARE_TYPE_HTTP
-        - MIDDLEWARE_TYPE_TCP
     google.protobuf.ListValue:
       type: object
       properties:
@@ -1112,7 +1113,7 @@ components:
           minLength: 1
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         isDefault:
           type: boolean
           title: is_default
@@ -1141,7 +1142,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: DeleteMiddlewareRequest
       additionalProperties: false
     mantrae.v1.DeleteMiddlewareResponse:
@@ -1174,7 +1175,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: GetMiddlewareRequest
       additionalProperties: false
     mantrae.v1.GetMiddlewareResponse:
@@ -1203,7 +1204,7 @@ components:
         type:
           title: type
           nullable: true
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         limit:
           type:
             - integer
@@ -1274,7 +1275,7 @@ components:
           title: is_default
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -1368,7 +1369,7 @@ components:
           minLength: 1
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.MiddlewareType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1544,14 +1545,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.Profile'
       title: UpdateProfileResponse
       additionalProperties: false
-    mantrae.v1.RouterType:
-      type: string
-      title: RouterType
-      enum:
-        - ROUTER_TYPE_UNSPECIFIED
-        - ROUTER_TYPE_HTTP
-        - ROUTER_TYPE_TCP
-        - ROUTER_TYPE_UDP
     mantrae.v1.CreateRouterRequest:
       type: object
       properties:
@@ -1578,7 +1571,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: CreateRouterRequest
       additionalProperties: false
     mantrae.v1.CreateRouterResponse:
@@ -1601,7 +1594,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: DeleteRouterRequest
       additionalProperties: false
     mantrae.v1.DeleteRouterResponse:
@@ -1620,7 +1613,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: GetRouterRequest
       additionalProperties: false
     mantrae.v1.GetRouterResponse:
@@ -1649,7 +1642,7 @@ components:
         type:
           title: type
           nullable: true
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         limit:
           type:
             - integer
@@ -1717,7 +1710,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         dnsProviders:
           type: array
           items:
@@ -1747,7 +1740,7 @@ components:
           minLength: 1
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.RouterType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         config:
           title: config
           $ref: '#/components/schemas/google.protobuf.Struct'
@@ -1769,13 +1762,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.Router'
       title: UpdateRouterResponse
       additionalProperties: false
-    mantrae.v1.ServersTransportType:
-      type: string
-      title: ServersTransportType
-      enum:
-        - SERVERS_TRANSPORT_TYPE_UNSPECIFIED
-        - SERVERS_TRANSPORT_TYPE_HTTP
-        - SERVERS_TRANSPORT_TYPE_TCP
     mantrae.v1.CreateServersTransportRequest:
       type: object
       properties:
@@ -1802,7 +1788,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: CreateServersTransportRequest
       additionalProperties: false
     mantrae.v1.CreateServersTransportResponse:
@@ -1825,7 +1811,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: DeleteServersTransportRequest
       additionalProperties: false
     mantrae.v1.DeleteServersTransportResponse:
@@ -1844,7 +1830,7 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: GetServersTransportRequest
       additionalProperties: false
     mantrae.v1.GetServersTransportResponse:
@@ -1873,7 +1859,7 @@ components:
         type:
           title: type
           nullable: true
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         limit:
           type:
             - integer
@@ -1941,7 +1927,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -1972,7 +1958,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServersTransportType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: UpdateServersTransportRequest
       additionalProperties: false
     mantrae.v1.UpdateServersTransportResponse:
@@ -1983,14 +1969,6 @@ components:
           $ref: '#/components/schemas/mantrae.v1.ServersTransport'
       title: UpdateServersTransportResponse
       additionalProperties: false
-    mantrae.v1.ServiceType:
-      type: string
-      title: ServiceType
-      enum:
-        - SERVICE_TYPE_UNSPECIFIED
-        - SERVICE_TYPE_HTTP
-        - SERVICE_TYPE_TCP
-        - SERVICE_TYPE_UDP
     mantrae.v1.CreateServiceRequest:
       type: object
       properties:
@@ -2017,7 +1995,7 @@ components:
           title: enabled
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: CreateServiceRequest
       additionalProperties: false
     mantrae.v1.CreateServiceResponse:
@@ -2040,46 +2018,46 @@ components:
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: DeleteServiceRequest
       additionalProperties: false
     mantrae.v1.DeleteServiceResponse:
       type: object
       title: DeleteServiceResponse
       additionalProperties: false
-    mantrae.v1.GetServiceByRouterRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          title: name
-          minLength: 1
-        type:
-          title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
-      title: GetServiceByRouterRequest
-      additionalProperties: false
-    mantrae.v1.GetServiceByRouterResponse:
-      type: object
-      properties:
-        service:
-          title: service
-          $ref: '#/components/schemas/mantrae.v1.Service'
-      title: GetServiceByRouterResponse
-      additionalProperties: false
     mantrae.v1.GetServiceRequest:
       type: object
+      oneOf:
+        - properties:
+            id:
+              exclusiveMinimum: 0
+              type:
+                - integer
+                - string
+              title: id
+              format: int64
+          title: id
+          required:
+            - id
+        - properties:
+            name:
+              type: string
+              title: name
+              minLength: 1
+          title: name
+          required:
+            - name
       properties:
-        id:
+        profileId:
           exclusiveMinimum: 0
           type:
             - integer
             - string
-          title: id
+          title: profile_id
           format: int64
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: GetServiceRequest
       additionalProperties: false
     mantrae.v1.GetServiceResponse:
@@ -2108,7 +2086,7 @@ components:
         type:
           title: type
           nullable: true
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         limit:
           type:
             - integer
@@ -2176,7 +2154,7 @@ components:
           $ref: '#/components/schemas/google.protobuf.Struct'
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
         createdAt:
           title: created_at
           $ref: '#/components/schemas/google.protobuf.Timestamp'
@@ -2207,7 +2185,7 @@ components:
           $ref: '#/components/schemas/google.protobuf.Struct'
         type:
           title: type
-          $ref: '#/components/schemas/mantrae.v1.ServiceType'
+          $ref: '#/components/schemas/mantrae.v1.ProtocolType'
       title: UpdateServiceRequest
       additionalProperties: false
     mantrae.v1.UpdateServiceResponse:
@@ -2282,6 +2260,134 @@ components:
           title: setting
           $ref: '#/components/schemas/mantrae.v1.Setting'
       title: UpdateSettingResponse
+      additionalProperties: false
+    mantrae.v1.DeleteTraefikInstanceRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: DeleteTraefikInstanceRequest
+      additionalProperties: false
+    mantrae.v1.DeleteTraefikInstanceResponse:
+      type: object
+      title: DeleteTraefikInstanceResponse
+      additionalProperties: false
+    mantrae.v1.GetTraefikInstanceRequest:
+      type: object
+      properties:
+        id:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+      title: GetTraefikInstanceRequest
+      additionalProperties: false
+    mantrae.v1.GetTraefikInstanceResponse:
+      type: object
+      properties:
+        traefikInstance:
+          title: traefik_instance
+          $ref: '#/components/schemas/mantrae.v1.TraefikInstance'
+      title: GetTraefikInstanceResponse
+      additionalProperties: false
+    mantrae.v1.ListTraefikInstancesRequest:
+      type: object
+      properties:
+        profileId:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+        limit:
+          type:
+            - integer
+            - string
+          title: limit
+          format: int64
+          description: |+
+            limit must be either -1 or greater than 0:
+            ```
+            this == -1 || this > 0
+            ```
+
+          nullable: true
+        offset:
+          type:
+            - integer
+            - string
+          title: offset
+          format: int64
+          nullable: true
+      title: ListTraefikInstancesRequest
+      additionalProperties: false
+    mantrae.v1.ListTraefikInstancesResponse:
+      type: object
+      properties:
+        traefikInstances:
+          type: array
+          items:
+            $ref: '#/components/schemas/mantrae.v1.TraefikInstance'
+          title: traefik_instances
+        totalCount:
+          type:
+            - integer
+            - string
+          title: total_count
+          format: int64
+      title: ListTraefikInstancesResponse
+      additionalProperties: false
+    mantrae.v1.TraefikInstance:
+      type: object
+      properties:
+        id:
+          type:
+            - integer
+            - string
+          title: id
+          format: int64
+        name:
+          type: string
+          title: name
+        url:
+          type: string
+          title: url
+        username:
+          type: string
+          title: username
+        password:
+          type: string
+          title: password
+        tls:
+          type: boolean
+          title: tls
+        entryPoints:
+          title: entry_points
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        overview:
+          title: overview
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        config:
+          title: config
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        version:
+          title: version
+          $ref: '#/components/schemas/google.protobuf.Struct'
+        createdAt:
+          title: created_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+        updatedAt:
+          title: updated_at
+          $ref: '#/components/schemas/google.protobuf.Timestamp'
+      title: TraefikInstance
       additionalProperties: false
     mantrae.v1.CreateUserRequest:
       type: object
@@ -5365,92 +5471,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListServicesResponse'
-  /mantrae.v1.ServiceService/GetServiceByRouter:
-    get:
-      tags:
-        - mantrae.v1.ServiceService
-      summary: GetServiceByRouter
-      operationId: mantrae.v1.ServiceService.GetServiceByRouter.get
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-        - name: message
-          in: query
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterRequest'
-        - name: encoding
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/encoding'
-        - name: base64
-          in: query
-          schema:
-            $ref: '#/components/schemas/base64'
-        - name: compression
-          in: query
-          schema:
-            $ref: '#/components/schemas/compression'
-        - name: connect
-          in: query
-          schema:
-            $ref: '#/components/schemas/connect'
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterResponse'
-    post:
-      tags:
-        - mantrae.v1.ServiceService
-      summary: GetServiceByRouter
-      operationId: mantrae.v1.ServiceService.GetServiceByRouter
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.GetServiceByRouterResponse'
   /mantrae.v1.SettingService/GetSetting:
     get:
       tags:
@@ -5658,6 +5678,213 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.ListSettingsResponse'
+  /mantrae.v1.TraefikInstanceService/GetTraefikInstance:
+    get:
+      tags:
+        - mantrae.v1.TraefikInstanceService
+      summary: GetTraefikInstance
+      operationId: mantrae.v1.TraefikInstanceService.GetTraefikInstance.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetTraefikInstanceRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetTraefikInstanceResponse'
+    post:
+      tags:
+        - mantrae.v1.TraefikInstanceService
+      summary: GetTraefikInstance
+      operationId: mantrae.v1.TraefikInstanceService.GetTraefikInstance
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.GetTraefikInstanceRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.GetTraefikInstanceResponse'
+  /mantrae.v1.TraefikInstanceService/DeleteTraefikInstance:
+    post:
+      tags:
+        - mantrae.v1.TraefikInstanceService
+      summary: DeleteTraefikInstance
+      operationId: mantrae.v1.TraefikInstanceService.DeleteTraefikInstance
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.DeleteTraefikInstanceRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.DeleteTraefikInstanceResponse'
+  /mantrae.v1.TraefikInstanceService/ListTraefikInstances:
+    get:
+      tags:
+        - mantrae.v1.TraefikInstanceService
+      summary: ListTraefikInstances
+      operationId: mantrae.v1.TraefikInstanceService.ListTraefikInstances.get
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+        - name: message
+          in: query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListTraefikInstancesRequest'
+        - name: encoding
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/encoding'
+        - name: base64
+          in: query
+          schema:
+            $ref: '#/components/schemas/base64'
+        - name: compression
+          in: query
+          schema:
+            $ref: '#/components/schemas/compression'
+        - name: connect
+          in: query
+          schema:
+            $ref: '#/components/schemas/connect'
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListTraefikInstancesResponse'
+    post:
+      tags:
+        - mantrae.v1.TraefikInstanceService
+      summary: ListTraefikInstances
+      operationId: mantrae.v1.TraefikInstanceService.ListTraefikInstances
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.ListTraefikInstancesRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.ListTraefikInstancesResponse'
   /mantrae.v1.UserService/LoginUser:
     post:
       tags:
@@ -6192,5 +6419,6 @@ tags:
   - name: mantrae.v1.ServersTransportService
   - name: mantrae.v1.ServiceService
   - name: mantrae.v1.SettingService
+  - name: mantrae.v1.TraefikInstanceService
   - name: mantrae.v1.UserService
   - name: mantrae.v1.UtilService

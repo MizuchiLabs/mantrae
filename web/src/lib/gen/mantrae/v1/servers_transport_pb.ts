@@ -2,18 +2,20 @@
 // @generated from file mantrae/v1/servers_transport.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { ProtocolType } from "./protocol_pb";
+import { file_mantrae_v1_protocol } from "./protocol_pb";
 import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/servers_transport.proto.
  */
 export const file_mantrae_v1_servers_transport: GenFile = /*@__PURE__*/
-  fileDesc("CiJtYW50cmFlL3YxL3NlcnZlcnNfdHJhbnNwb3J0LnByb3RvEgptYW50cmFlLnYxIpwCChBTZXJ2ZXJzVHJhbnNwb3J0EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSLgoEdHlwZRgHIAEoDjIgLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydFR5cGUSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiawoaR2V0U2VydmVyc1RyYW5zcG9ydFJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASOAoEdHlwZRgCIAEoDjIgLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydFR5cGVCCLpIBYIBAhABIlYKG0dldFNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZRI3ChFzZXJ2ZXJzX3RyYW5zcG9ydBgBIAEoCzIcLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydCLrAQodQ3JlYXRlU2VydmVyc1RyYW5zcG9ydFJlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABIVCghhZ2VudF9pZBgCIAEoCUgAiAEBEhUKBG5hbWUYAyABKAlCB7pIBHICEAESJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIPCgdlbmFibGVkGAUgASgIEjgKBHR5cGUYBiABKA4yIC5tYW50cmFlLnYxLlNlcnZlcnNUcmFuc3BvcnRUeXBlQgi6SAWCAQIQAUILCglfYWdlbnRfaWQiWQoeQ3JlYXRlU2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEjcKEXNlcnZlcnNfdHJhbnNwb3J0GAEgASgLMhwubWFudHJhZS52MS5TZXJ2ZXJzVHJhbnNwb3J0Ir8BCh1VcGRhdGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCBI4CgR0eXBlGAYgASgOMiAubWFudHJhZS52MS5TZXJ2ZXJzVHJhbnNwb3J0VHlwZUIIukgFggECEAEiWQoeVXBkYXRlU2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEjcKEXNlcnZlcnNfdHJhbnNwb3J0GAEgASgLMhwubWFudHJhZS52MS5TZXJ2ZXJzVHJhbnNwb3J0Im4KHURlbGV0ZVNlcnZlcnNUcmFuc3BvcnRSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEjgKBHR5cGUYAiABKA4yIC5tYW50cmFlLnYxLlNlcnZlcnNUcmFuc3BvcnRUeXBlQgi6SAWCAQIQASIgCh5EZWxldGVTZXJ2ZXJzVHJhbnNwb3J0UmVzcG9uc2UixQIKHExpc3RTZXJ2ZXJzVHJhbnNwb3J0c1JlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABIeCghhZ2VudF9pZBgCIAEoCUIHukgEcgIQAUgAiAEBEjMKBHR5cGUYAyABKA4yIC5tYW50cmFlLnYxLlNlcnZlcnNUcmFuc3BvcnRUeXBlSAGIAQESagoFbGltaXQYBCABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSAKIAQESHAoGb2Zmc2V0GAUgASgDQge6SAQiAigASAOIAQFCCwoJX2FnZW50X2lkQgcKBV90eXBlQggKBl9saW1pdEIJCgdfb2Zmc2V0Im4KHUxpc3RTZXJ2ZXJzVHJhbnNwb3J0c1Jlc3BvbnNlEjgKEnNlcnZlcnNfdHJhbnNwb3J0cxgBIAMoCzIcLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydBITCgt0b3RhbF9jb3VudBgCIAEoAyp/ChRTZXJ2ZXJzVHJhbnNwb3J0VHlwZRImCiJTRVJWRVJTX1RSQU5TUE9SVF9UWVBFX1VOU1BFQ0lGSUVEEAASHwobU0VSVkVSU19UUkFOU1BPUlRfVFlQRV9IVFRQEAESHgoaU0VSVkVSU19UUkFOU1BPUlRfVFlQRV9UQ1AQAjLMBAoXU2VydmVyc1RyYW5zcG9ydFNlcnZpY2USawoTR2V0U2VydmVyc1RyYW5zcG9ydBImLm1hbnRyYWUudjEuR2V0U2VydmVyc1RyYW5zcG9ydFJlcXVlc3QaJy5tYW50cmFlLnYxLkdldFNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZSIDkAIBEm8KFkNyZWF0ZVNlcnZlcnNUcmFuc3BvcnQSKS5tYW50cmFlLnYxLkNyZWF0ZVNlcnZlcnNUcmFuc3BvcnRSZXF1ZXN0GioubWFudHJhZS52MS5DcmVhdGVTZXJ2ZXJzVHJhbnNwb3J0UmVzcG9uc2USbwoWVXBkYXRlU2VydmVyc1RyYW5zcG9ydBIpLm1hbnRyYWUudjEuVXBkYXRlU2VydmVyc1RyYW5zcG9ydFJlcXVlc3QaKi5tYW50cmFlLnYxLlVwZGF0ZVNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZRJvChZEZWxldGVTZXJ2ZXJzVHJhbnNwb3J0EikubWFudHJhZS52MS5EZWxldGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBoqLm1hbnRyYWUudjEuRGVsZXRlU2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEnEKFUxpc3RTZXJ2ZXJzVHJhbnNwb3J0cxIoLm1hbnRyYWUudjEuTGlzdFNlcnZlcnNUcmFuc3BvcnRzUmVxdWVzdBopLm1hbnRyYWUudjEuTGlzdFNlcnZlcnNUcmFuc3BvcnRzUmVzcG9uc2UiA5ACAUKvAQoOY29tLm1hbnRyYWUudjFCFVNlcnZlcnNUcmFuc3BvcnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]);
+  fileDesc("CiJtYW50cmFlL3YxL3NlcnZlcnNfdHJhbnNwb3J0LnByb3RvEgptYW50cmFlLnYxIpQCChBTZXJ2ZXJzVHJhbnNwb3J0EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSJgoEdHlwZRgHIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlEi4KCmNyZWF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wImMKGkdldFNlcnZlcnNUcmFuc3BvcnRSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEjAKBHR5cGUYAiABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUIIukgFggECEAEiVgobR2V0U2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEjcKEXNlcnZlcnNfdHJhbnNwb3J0GAEgASgLMhwubWFudHJhZS52MS5TZXJ2ZXJzVHJhbnNwb3J0IuMBCh1DcmVhdGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEhUKCGFnZW50X2lkGAIgASgJSACIAQESFQoEbmFtZRgDIAEoCUIHukgEcgIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSMAoEdHlwZRgGIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQAUILCglfYWdlbnRfaWQiWQoeQ3JlYXRlU2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEjcKEXNlcnZlcnNfdHJhbnNwb3J0GAEgASgLMhwubWFudHJhZS52MS5TZXJ2ZXJzVHJhbnNwb3J0IrcBCh1VcGRhdGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEicKBmNvbmZpZxgDIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgEIAEoCBIwCgR0eXBlGAUgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGVCCLpIBYIBAhABIlkKHlVwZGF0ZVNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZRI3ChFzZXJ2ZXJzX3RyYW5zcG9ydBgBIAEoCzIcLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydCJmCh1EZWxldGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIwCgR0eXBlGAIgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGVCCLpIBYIBAhABIiAKHkRlbGV0ZVNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZSK9AgocTGlzdFNlcnZlcnNUcmFuc3BvcnRzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEh4KCGFnZW50X2lkGAIgASgJQge6SARyAhABSACIAQESKwoEdHlwZRgDIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlSAGIAQESagoFbGltaXQYBCABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSAKIAQESHAoGb2Zmc2V0GAUgASgDQge6SAQiAigASAOIAQFCCwoJX2FnZW50X2lkQgcKBV90eXBlQggKBl9saW1pdEIJCgdfb2Zmc2V0Im4KHUxpc3RTZXJ2ZXJzVHJhbnNwb3J0c1Jlc3BvbnNlEjgKEnNlcnZlcnNfdHJhbnNwb3J0cxgBIAMoCzIcLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydBITCgt0b3RhbF9jb3VudBgCIAEoAzLMBAoXU2VydmVyc1RyYW5zcG9ydFNlcnZpY2USawoTR2V0U2VydmVyc1RyYW5zcG9ydBImLm1hbnRyYWUudjEuR2V0U2VydmVyc1RyYW5zcG9ydFJlcXVlc3QaJy5tYW50cmFlLnYxLkdldFNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZSIDkAIBEm8KFkNyZWF0ZVNlcnZlcnNUcmFuc3BvcnQSKS5tYW50cmFlLnYxLkNyZWF0ZVNlcnZlcnNUcmFuc3BvcnRSZXF1ZXN0GioubWFudHJhZS52MS5DcmVhdGVTZXJ2ZXJzVHJhbnNwb3J0UmVzcG9uc2USbwoWVXBkYXRlU2VydmVyc1RyYW5zcG9ydBIpLm1hbnRyYWUudjEuVXBkYXRlU2VydmVyc1RyYW5zcG9ydFJlcXVlc3QaKi5tYW50cmFlLnYxLlVwZGF0ZVNlcnZlcnNUcmFuc3BvcnRSZXNwb25zZRJvChZEZWxldGVTZXJ2ZXJzVHJhbnNwb3J0EikubWFudHJhZS52MS5EZWxldGVTZXJ2ZXJzVHJhbnNwb3J0UmVxdWVzdBoqLm1hbnRyYWUudjEuRGVsZXRlU2VydmVyc1RyYW5zcG9ydFJlc3BvbnNlEnEKFUxpc3RTZXJ2ZXJzVHJhbnNwb3J0cxIoLm1hbnRyYWUudjEuTGlzdFNlcnZlcnNUcmFuc3BvcnRzUmVxdWVzdBopLm1hbnRyYWUudjEuTGlzdFNlcnZlcnNUcmFuc3BvcnRzUmVzcG9uc2UiA5ACAUKvAQoOY29tLm1hbnRyYWUudjFCFVNlcnZlcnNUcmFuc3BvcnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_protocol]);
 
 /**
  * @generated from message mantrae.v1.ServersTransport
@@ -50,9 +52,9 @@ export type ServersTransport = Message<"mantrae.v1.ServersTransport"> & {
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.ServersTransportType type = 7;
+   * @generated from field: mantrae.v1.ProtocolType type = 7;
    */
-  type: ServersTransportType;
+  type: ProtocolType;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 8;
@@ -82,9 +84,9 @@ export type GetServersTransportRequest = Message<"mantrae.v1.GetServersTransport
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.ServersTransportType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: ServersTransportType;
+  type: ProtocolType;
 };
 
 /**
@@ -141,9 +143,9 @@ export type CreateServersTransportRequest = Message<"mantrae.v1.CreateServersTra
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.ServersTransportType type = 6;
+   * @generated from field: mantrae.v1.ProtocolType type = 6;
    */
-  type: ServersTransportType;
+  type: ProtocolType;
 };
 
 /**
@@ -185,19 +187,19 @@ export type UpdateServersTransportRequest = Message<"mantrae.v1.UpdateServersTra
   name: string;
 
   /**
-   * @generated from field: google.protobuf.Struct config = 4;
+   * @generated from field: google.protobuf.Struct config = 3;
    */
   config?: JsonObject;
 
   /**
-   * @generated from field: bool enabled = 5;
+   * @generated from field: bool enabled = 4;
    */
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.ServersTransportType type = 6;
+   * @generated from field: mantrae.v1.ProtocolType type = 5;
    */
-  type: ServersTransportType;
+  type: ProtocolType;
 };
 
 /**
@@ -234,9 +236,9 @@ export type DeleteServersTransportRequest = Message<"mantrae.v1.DeleteServersTra
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.ServersTransportType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: ServersTransportType;
+  type: ProtocolType;
 };
 
 /**
@@ -274,9 +276,9 @@ export type ListServersTransportsRequest = Message<"mantrae.v1.ListServersTransp
   agentId?: string;
 
   /**
-   * @generated from field: optional mantrae.v1.ServersTransportType type = 3;
+   * @generated from field: optional mantrae.v1.ProtocolType type = 3;
    */
-  type?: ServersTransportType;
+  type?: ProtocolType;
 
   /**
    * @generated from field: optional int64 limit = 4;
@@ -317,32 +319,6 @@ export type ListServersTransportsResponse = Message<"mantrae.v1.ListServersTrans
  */
 export const ListServersTransportsResponseSchema: GenMessage<ListServersTransportsResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_servers_transport, 10);
-
-/**
- * @generated from enum mantrae.v1.ServersTransportType
- */
-export enum ServersTransportType {
-  /**
-   * @generated from enum value: SERVERS_TRANSPORT_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: SERVERS_TRANSPORT_TYPE_HTTP = 1;
-   */
-  HTTP = 1,
-
-  /**
-   * @generated from enum value: SERVERS_TRANSPORT_TYPE_TCP = 2;
-   */
-  TCP = 2,
-}
-
-/**
- * Describes the enum mantrae.v1.ServersTransportType.
- */
-export const ServersTransportTypeSchema: GenEnum<ServersTransportType> = /*@__PURE__*/
-  enumDesc(file_mantrae_v1_servers_transport, 0);
 
 /**
  * @generated from service mantrae.v1.ServersTransportService

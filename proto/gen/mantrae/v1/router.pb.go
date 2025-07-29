@@ -24,58 +24,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type RouterType int32
-
-const (
-	RouterType_ROUTER_TYPE_UNSPECIFIED RouterType = 0
-	RouterType_ROUTER_TYPE_HTTP        RouterType = 1
-	RouterType_ROUTER_TYPE_TCP         RouterType = 2
-	RouterType_ROUTER_TYPE_UDP         RouterType = 3
-)
-
-// Enum value maps for RouterType.
-var (
-	RouterType_name = map[int32]string{
-		0: "ROUTER_TYPE_UNSPECIFIED",
-		1: "ROUTER_TYPE_HTTP",
-		2: "ROUTER_TYPE_TCP",
-		3: "ROUTER_TYPE_UDP",
-	}
-	RouterType_value = map[string]int32{
-		"ROUTER_TYPE_UNSPECIFIED": 0,
-		"ROUTER_TYPE_HTTP":        1,
-		"ROUTER_TYPE_TCP":         2,
-		"ROUTER_TYPE_UDP":         3,
-	}
-)
-
-func (x RouterType) Enum() *RouterType {
-	p := new(RouterType)
-	*p = x
-	return p
-}
-
-func (x RouterType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (RouterType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mantrae_v1_router_proto_enumTypes[0].Descriptor()
-}
-
-func (RouterType) Type() protoreflect.EnumType {
-	return &file_mantrae_v1_router_proto_enumTypes[0]
-}
-
-func (x RouterType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use RouterType.Descriptor instead.
-func (RouterType) EnumDescriptor() ([]byte, []int) {
-	return file_mantrae_v1_router_proto_rawDescGZIP(), []int{0}
-}
-
 type Router struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -84,7 +32,7 @@ type Router struct {
 	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,5,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,6,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Type          RouterType             `protobuf:"varint,7,opt,name=type,proto3,enum=mantrae.v1.RouterType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,7,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	DnsProviders  []*DnsProvider         `protobuf:"bytes,8,rep,name=dns_providers,json=dnsProviders,proto3" json:"dns_providers,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -164,11 +112,11 @@ func (x *Router) GetEnabled() bool {
 	return false
 }
 
-func (x *Router) GetType() RouterType {
+func (x *Router) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *Router) GetDnsProviders() []*DnsProvider {
@@ -195,7 +143,7 @@ func (x *Router) GetUpdatedAt() *timestamppb.Timestamp {
 type GetRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          RouterType             `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.RouterType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -237,11 +185,11 @@ func (x *GetRouterRequest) GetId() int64 {
 	return 0
 }
 
-func (x *GetRouterRequest) GetType() RouterType {
+func (x *GetRouterRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type GetRouterResponse struct {
@@ -295,7 +243,7 @@ type CreateRouterRequest struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Type          RouterType             `protobuf:"varint,6,opt,name=type,proto3,enum=mantrae.v1.RouterType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,6,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -365,11 +313,11 @@ func (x *CreateRouterRequest) GetEnabled() bool {
 	return false
 }
 
-func (x *CreateRouterRequest) GetType() RouterType {
+func (x *CreateRouterRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type CreateRouterResponse struct {
@@ -420,7 +368,7 @@ type UpdateRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type          RouterType             `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.RouterType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	DnsProviders  []*DnsProvider         `protobuf:"bytes,6,rep,name=dns_providers,json=dnsProviders,proto3" json:"dns_providers,omitempty"`
@@ -472,11 +420,11 @@ func (x *UpdateRouterRequest) GetName() string {
 	return ""
 }
 
-func (x *UpdateRouterRequest) GetType() RouterType {
+func (x *UpdateRouterRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *UpdateRouterRequest) GetConfig() *structpb.Struct {
@@ -547,7 +495,7 @@ func (x *UpdateRouterResponse) GetRouter() *Router {
 type DeleteRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          RouterType             `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.RouterType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -589,11 +537,11 @@ func (x *DeleteRouterRequest) GetId() int64 {
 	return 0
 }
 
-func (x *DeleteRouterRequest) GetType() RouterType {
+func (x *DeleteRouterRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type DeleteRouterResponse struct {
@@ -636,7 +584,7 @@ type ListRoutersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
-	Type          *RouterType            `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.RouterType,oneof" json:"type,omitempty"`
+	Type          *ProtocolType          `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType,oneof" json:"type,omitempty"`
 	Limit         *int64                 `protobuf:"varint,4,opt,name=limit,proto3,oneof" json:"limit,omitempty"`
 	Offset        *int64                 `protobuf:"varint,5,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -687,11 +635,11 @@ func (x *ListRoutersRequest) GetAgentId() string {
 	return ""
 }
 
-func (x *ListRoutersRequest) GetType() RouterType {
+func (x *ListRoutersRequest) GetType() ProtocolType {
 	if x != nil && x.Type != nil {
 		return *x.Type
 	}
-	return RouterType_ROUTER_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *ListRoutersRequest) GetLimit() int64 {
@@ -765,7 +713,7 @@ var File_mantrae_v1_router_proto protoreflect.FileDescriptor
 const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\n" +
 	"\x17mantrae/v1/router.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1dmantrae/v1/dns_provider.proto\"\x91\x03\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1dmantrae/v1/dns_provider.proto\x1a\x19mantrae/v1/protocol.proto\"\x93\x03\n" +
 	"\x06Router\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -773,48 +721,48 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x12\n" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12/\n" +
 	"\x06config\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
-	"\aenabled\x18\x06 \x01(\bR\aenabled\x12*\n" +
-	"\x04type\x18\a \x01(\x0e2\x16.mantrae.v1.RouterTypeR\x04type\x12<\n" +
+	"\aenabled\x18\x06 \x01(\bR\aenabled\x12,\n" +
+	"\x04type\x18\a \x01(\x0e2\x18.mantrae.v1.ProtocolTypeR\x04type\x12<\n" +
 	"\rdns_providers\x18\b \x03(\v2\x17.mantrae.v1.DnsProviderR\fdnsProviders\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"a\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"c\n" +
 	"\x10GetRouterRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x124\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"?\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"?\n" +
 	"\x11GetRouterResponse\x12*\n" +
-	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x88\x02\n" +
+	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8a\x02\n" +
 	"\x13CreateRouterRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1e\n" +
 	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x88\x01\x01\x12\x1b\n" +
 	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
-	"\aenabled\x18\x05 \x01(\bR\aenabled\x124\n" +
-	"\x04type\x18\x06 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04typeB\v\n" +
+	"\aenabled\x18\x05 \x01(\bR\aenabled\x126\n" +
+	"\x04type\x18\x06 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04typeB\v\n" +
 	"\t_agent_id\"B\n" +
 	"\x14CreateRouterResponse\x12*\n" +
-	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8a\x02\n" +
+	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8c\x02\n" +
 	"\x13UpdateRouterRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x124\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12/\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x126\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
 	"\aenabled\x18\x05 \x01(\bR\aenabled\x12<\n" +
 	"\rdns_providers\x18\x06 \x03(\v2\x17.mantrae.v1.DnsProviderR\fdnsProviders\"B\n" +
 	"\x14UpdateRouterResponse\x12*\n" +
-	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"d\n" +
+	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"f\n" +
 	"\x13DeleteRouterRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x124\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x16.mantrae.v1.RouterTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x16\n" +
-	"\x14DeleteRouterResponse\"\xda\x02\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x16\n" +
+	"\x14DeleteRouterResponse\"\xdc\x02\n" +
 	"\x12ListRoutersRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12'\n" +
-	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x12/\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x16.mantrae.v1.RouterTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
+	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x121\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
 	"\x05limit\x18\x04 \x01(\x03BV\xbaHS\xba\x01P\n" +
 	"\vlimit.valid\x12)limit must be either -1 or greater than 0\x1a\x16this == -1 || this > 0H\x02R\x05limit\x88\x01\x01\x12$\n" +
 	"\x06offset\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x03R\x06offset\x88\x01\x01B\v\n" +
@@ -825,13 +773,7 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x13ListRoutersResponse\x12,\n" +
 	"\arouters\x18\x01 \x03(\v2\x12.mantrae.v1.RouterR\arouters\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x03R\n" +
-	"totalCount*i\n" +
-	"\n" +
-	"RouterType\x12\x1b\n" +
-	"\x17ROUTER_TYPE_UNSPECIFIED\x10\x00\x12\x14\n" +
-	"\x10ROUTER_TYPE_HTTP\x10\x01\x12\x13\n" +
-	"\x0fROUTER_TYPE_TCP\x10\x02\x12\x13\n" +
-	"\x0fROUTER_TYPE_UDP\x10\x032\xac\x03\n" +
+	"totalCount2\xac\x03\n" +
 	"\rRouterService\x12M\n" +
 	"\tGetRouter\x12\x1c.mantrae.v1.GetRouterRequest\x1a\x1d.mantrae.v1.GetRouterResponse\"\x03\x90\x02\x01\x12Q\n" +
 	"\fCreateRouter\x12\x1f.mantrae.v1.CreateRouterRequest\x1a .mantrae.v1.CreateRouterResponse\x12Q\n" +
@@ -854,53 +796,52 @@ func file_mantrae_v1_router_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_router_proto_rawDescData
 }
 
-var file_mantrae_v1_router_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_mantrae_v1_router_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_mantrae_v1_router_proto_goTypes = []any{
-	(RouterType)(0),               // 0: mantrae.v1.RouterType
-	(*Router)(nil),                // 1: mantrae.v1.Router
-	(*GetRouterRequest)(nil),      // 2: mantrae.v1.GetRouterRequest
-	(*GetRouterResponse)(nil),     // 3: mantrae.v1.GetRouterResponse
-	(*CreateRouterRequest)(nil),   // 4: mantrae.v1.CreateRouterRequest
-	(*CreateRouterResponse)(nil),  // 5: mantrae.v1.CreateRouterResponse
-	(*UpdateRouterRequest)(nil),   // 6: mantrae.v1.UpdateRouterRequest
-	(*UpdateRouterResponse)(nil),  // 7: mantrae.v1.UpdateRouterResponse
-	(*DeleteRouterRequest)(nil),   // 8: mantrae.v1.DeleteRouterRequest
-	(*DeleteRouterResponse)(nil),  // 9: mantrae.v1.DeleteRouterResponse
-	(*ListRoutersRequest)(nil),    // 10: mantrae.v1.ListRoutersRequest
-	(*ListRoutersResponse)(nil),   // 11: mantrae.v1.ListRoutersResponse
-	(*structpb.Struct)(nil),       // 12: google.protobuf.Struct
+	(*Router)(nil),                // 0: mantrae.v1.Router
+	(*GetRouterRequest)(nil),      // 1: mantrae.v1.GetRouterRequest
+	(*GetRouterResponse)(nil),     // 2: mantrae.v1.GetRouterResponse
+	(*CreateRouterRequest)(nil),   // 3: mantrae.v1.CreateRouterRequest
+	(*CreateRouterResponse)(nil),  // 4: mantrae.v1.CreateRouterResponse
+	(*UpdateRouterRequest)(nil),   // 5: mantrae.v1.UpdateRouterRequest
+	(*UpdateRouterResponse)(nil),  // 6: mantrae.v1.UpdateRouterResponse
+	(*DeleteRouterRequest)(nil),   // 7: mantrae.v1.DeleteRouterRequest
+	(*DeleteRouterResponse)(nil),  // 8: mantrae.v1.DeleteRouterResponse
+	(*ListRoutersRequest)(nil),    // 9: mantrae.v1.ListRoutersRequest
+	(*ListRoutersResponse)(nil),   // 10: mantrae.v1.ListRoutersResponse
+	(*structpb.Struct)(nil),       // 11: google.protobuf.Struct
+	(ProtocolType)(0),             // 12: mantrae.v1.ProtocolType
 	(*DnsProvider)(nil),           // 13: mantrae.v1.DnsProvider
 	(*timestamppb.Timestamp)(nil), // 14: google.protobuf.Timestamp
 }
 var file_mantrae_v1_router_proto_depIdxs = []int32{
-	12, // 0: mantrae.v1.Router.config:type_name -> google.protobuf.Struct
-	0,  // 1: mantrae.v1.Router.type:type_name -> mantrae.v1.RouterType
+	11, // 0: mantrae.v1.Router.config:type_name -> google.protobuf.Struct
+	12, // 1: mantrae.v1.Router.type:type_name -> mantrae.v1.ProtocolType
 	13, // 2: mantrae.v1.Router.dns_providers:type_name -> mantrae.v1.DnsProvider
 	14, // 3: mantrae.v1.Router.created_at:type_name -> google.protobuf.Timestamp
 	14, // 4: mantrae.v1.Router.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 5: mantrae.v1.GetRouterRequest.type:type_name -> mantrae.v1.RouterType
-	1,  // 6: mantrae.v1.GetRouterResponse.router:type_name -> mantrae.v1.Router
-	12, // 7: mantrae.v1.CreateRouterRequest.config:type_name -> google.protobuf.Struct
-	0,  // 8: mantrae.v1.CreateRouterRequest.type:type_name -> mantrae.v1.RouterType
-	1,  // 9: mantrae.v1.CreateRouterResponse.router:type_name -> mantrae.v1.Router
-	0,  // 10: mantrae.v1.UpdateRouterRequest.type:type_name -> mantrae.v1.RouterType
-	12, // 11: mantrae.v1.UpdateRouterRequest.config:type_name -> google.protobuf.Struct
+	12, // 5: mantrae.v1.GetRouterRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 6: mantrae.v1.GetRouterResponse.router:type_name -> mantrae.v1.Router
+	11, // 7: mantrae.v1.CreateRouterRequest.config:type_name -> google.protobuf.Struct
+	12, // 8: mantrae.v1.CreateRouterRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 9: mantrae.v1.CreateRouterResponse.router:type_name -> mantrae.v1.Router
+	12, // 10: mantrae.v1.UpdateRouterRequest.type:type_name -> mantrae.v1.ProtocolType
+	11, // 11: mantrae.v1.UpdateRouterRequest.config:type_name -> google.protobuf.Struct
 	13, // 12: mantrae.v1.UpdateRouterRequest.dns_providers:type_name -> mantrae.v1.DnsProvider
-	1,  // 13: mantrae.v1.UpdateRouterResponse.router:type_name -> mantrae.v1.Router
-	0,  // 14: mantrae.v1.DeleteRouterRequest.type:type_name -> mantrae.v1.RouterType
-	0,  // 15: mantrae.v1.ListRoutersRequest.type:type_name -> mantrae.v1.RouterType
-	1,  // 16: mantrae.v1.ListRoutersResponse.routers:type_name -> mantrae.v1.Router
-	2,  // 17: mantrae.v1.RouterService.GetRouter:input_type -> mantrae.v1.GetRouterRequest
-	4,  // 18: mantrae.v1.RouterService.CreateRouter:input_type -> mantrae.v1.CreateRouterRequest
-	6,  // 19: mantrae.v1.RouterService.UpdateRouter:input_type -> mantrae.v1.UpdateRouterRequest
-	8,  // 20: mantrae.v1.RouterService.DeleteRouter:input_type -> mantrae.v1.DeleteRouterRequest
-	10, // 21: mantrae.v1.RouterService.ListRouters:input_type -> mantrae.v1.ListRoutersRequest
-	3,  // 22: mantrae.v1.RouterService.GetRouter:output_type -> mantrae.v1.GetRouterResponse
-	5,  // 23: mantrae.v1.RouterService.CreateRouter:output_type -> mantrae.v1.CreateRouterResponse
-	7,  // 24: mantrae.v1.RouterService.UpdateRouter:output_type -> mantrae.v1.UpdateRouterResponse
-	9,  // 25: mantrae.v1.RouterService.DeleteRouter:output_type -> mantrae.v1.DeleteRouterResponse
-	11, // 26: mantrae.v1.RouterService.ListRouters:output_type -> mantrae.v1.ListRoutersResponse
+	0,  // 13: mantrae.v1.UpdateRouterResponse.router:type_name -> mantrae.v1.Router
+	12, // 14: mantrae.v1.DeleteRouterRequest.type:type_name -> mantrae.v1.ProtocolType
+	12, // 15: mantrae.v1.ListRoutersRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 16: mantrae.v1.ListRoutersResponse.routers:type_name -> mantrae.v1.Router
+	1,  // 17: mantrae.v1.RouterService.GetRouter:input_type -> mantrae.v1.GetRouterRequest
+	3,  // 18: mantrae.v1.RouterService.CreateRouter:input_type -> mantrae.v1.CreateRouterRequest
+	5,  // 19: mantrae.v1.RouterService.UpdateRouter:input_type -> mantrae.v1.UpdateRouterRequest
+	7,  // 20: mantrae.v1.RouterService.DeleteRouter:input_type -> mantrae.v1.DeleteRouterRequest
+	9,  // 21: mantrae.v1.RouterService.ListRouters:input_type -> mantrae.v1.ListRoutersRequest
+	2,  // 22: mantrae.v1.RouterService.GetRouter:output_type -> mantrae.v1.GetRouterResponse
+	4,  // 23: mantrae.v1.RouterService.CreateRouter:output_type -> mantrae.v1.CreateRouterResponse
+	6,  // 24: mantrae.v1.RouterService.UpdateRouter:output_type -> mantrae.v1.UpdateRouterResponse
+	8,  // 25: mantrae.v1.RouterService.DeleteRouter:output_type -> mantrae.v1.DeleteRouterResponse
+	10, // 26: mantrae.v1.RouterService.ListRouters:output_type -> mantrae.v1.ListRoutersResponse
 	22, // [22:27] is the sub-list for method output_type
 	17, // [17:22] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name
@@ -914,6 +855,7 @@ func file_mantrae_v1_router_proto_init() {
 		return
 	}
 	file_mantrae_v1_dns_provider_proto_init()
+	file_mantrae_v1_protocol_proto_init()
 	file_mantrae_v1_router_proto_msgTypes[3].OneofWrappers = []any{}
 	file_mantrae_v1_router_proto_msgTypes[9].OneofWrappers = []any{}
 	type x struct{}
@@ -921,14 +863,13 @@ func file_mantrae_v1_router_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_router_proto_rawDesc), len(file_mantrae_v1_router_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      0,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_mantrae_v1_router_proto_goTypes,
 		DependencyIndexes: file_mantrae_v1_router_proto_depIdxs,
-		EnumInfos:         file_mantrae_v1_router_proto_enumTypes,
 		MessageInfos:      file_mantrae_v1_router_proto_msgTypes,
 	}.Build()
 	File_mantrae_v1_router_proto = out.File

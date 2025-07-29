@@ -2,18 +2,20 @@
 // @generated from file mantrae/v1/service.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { ProtocolType } from "./protocol_pb";
+import { file_mantrae_v1_protocol } from "./protocol_pb";
 import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/service.proto.
  */
 export const file_mantrae_v1_service: GenFile = /*@__PURE__*/
-  fileDesc("ChhtYW50cmFlL3YxL3NlcnZpY2UucHJvdG8SCm1hbnRyYWUudjEiigIKB1NlcnZpY2USCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEg8KB2VuYWJsZWQYBSABKAgSJwoGY29uZmlnGAYgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIlCgR0eXBlGAcgASgOMhcubWFudHJhZS52MS5TZXJ2aWNlVHlwZRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJZChFHZXRTZXJ2aWNlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIvCgR0eXBlGAIgASgOMhcubWFudHJhZS52MS5TZXJ2aWNlVHlwZUIIukgFggECEAEiOgoSR2V0U2VydmljZVJlc3BvbnNlEiQKB3NlcnZpY2UYASABKAsyEy5tYW50cmFlLnYxLlNlcnZpY2Ui2QEKFENyZWF0ZVNlcnZpY2VSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASFQoIYWdlbnRfaWQYAiABKAlIAIgBARIVCgRuYW1lGAMgASgJQge6SARyAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCBIvCgR0eXBlGAYgASgOMhcubWFudHJhZS52MS5TZXJ2aWNlVHlwZUIIukgFggECEAFCCwoJX2FnZW50X2lkIj0KFUNyZWF0ZVNlcnZpY2VSZXNwb25zZRIkCgdzZXJ2aWNlGAEgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlIq0BChRVcGRhdGVTZXJ2aWNlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEg8KB2VuYWJsZWQYAyABKAgSJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIvCgR0eXBlGAUgASgOMhcubWFudHJhZS52MS5TZXJ2aWNlVHlwZUIIukgFggECEAEiPQoVVXBkYXRlU2VydmljZVJlc3BvbnNlEiQKB3NlcnZpY2UYASABKAsyEy5tYW50cmFlLnYxLlNlcnZpY2UiXAoURGVsZXRlU2VydmljZVJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASLwoEdHlwZRgCIAEoDjIXLm1hbnRyYWUudjEuU2VydmljZVR5cGVCCLpIBYIBAhABIhcKFURlbGV0ZVNlcnZpY2VSZXNwb25zZSKzAgoTTGlzdFNlcnZpY2VzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEh4KCGFnZW50X2lkGAIgASgJQge6SARyAhABSACIAQESKgoEdHlwZRgDIAEoDjIXLm1hbnRyYWUudjEuU2VydmljZVR5cGVIAYgBARJqCgVsaW1pdBgEIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAogBARIcCgZvZmZzZXQYBSABKANCB7pIBCICKABIA4gBAUILCglfYWdlbnRfaWRCBwoFX3R5cGVCCAoGX2xpbWl0QgkKB19vZmZzZXQiUgoUTGlzdFNlcnZpY2VzUmVzcG9uc2USJQoIc2VydmljZXMYASADKAsyEy5tYW50cmFlLnYxLlNlcnZpY2USEwoLdG90YWxfY291bnQYAiABKAMiYwoZR2V0U2VydmljZUJ5Um91dGVyUmVxdWVzdBIVCgRuYW1lGAEgASgJQge6SARyAhABEi8KBHR5cGUYAiABKA4yFy5tYW50cmFlLnYxLlNlcnZpY2VUeXBlQgi6SAWCAQIQASJCChpHZXRTZXJ2aWNlQnlSb3V0ZXJSZXNwb25zZRIkCgdzZXJ2aWNlGAEgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlKm4KC1NlcnZpY2VUeXBlEhwKGFNFUlZJQ0VfVFlQRV9VTlNQRUNJRklFRBAAEhUKEVNFUlZJQ0VfVFlQRV9IVFRQEAESFAoQU0VSVklDRV9UWVBFX1RDUBACEhQKEFNFUlZJQ0VfVFlQRV9VRFAQAzKmBAoOU2VydmljZVNlcnZpY2USUAoKR2V0U2VydmljZRIdLm1hbnRyYWUudjEuR2V0U2VydmljZVJlcXVlc3QaHi5tYW50cmFlLnYxLkdldFNlcnZpY2VSZXNwb25zZSIDkAIBElQKDUNyZWF0ZVNlcnZpY2USIC5tYW50cmFlLnYxLkNyZWF0ZVNlcnZpY2VSZXF1ZXN0GiEubWFudHJhZS52MS5DcmVhdGVTZXJ2aWNlUmVzcG9uc2USVAoNVXBkYXRlU2VydmljZRIgLm1hbnRyYWUudjEuVXBkYXRlU2VydmljZVJlcXVlc3QaIS5tYW50cmFlLnYxLlVwZGF0ZVNlcnZpY2VSZXNwb25zZRJUCg1EZWxldGVTZXJ2aWNlEiAubWFudHJhZS52MS5EZWxldGVTZXJ2aWNlUmVxdWVzdBohLm1hbnRyYWUudjEuRGVsZXRlU2VydmljZVJlc3BvbnNlElYKDExpc3RTZXJ2aWNlcxIfLm1hbnRyYWUudjEuTGlzdFNlcnZpY2VzUmVxdWVzdBogLm1hbnRyYWUudjEuTGlzdFNlcnZpY2VzUmVzcG9uc2UiA5ACARJoChJHZXRTZXJ2aWNlQnlSb3V0ZXISJS5tYW50cmFlLnYxLkdldFNlcnZpY2VCeVJvdXRlclJlcXVlc3QaJi5tYW50cmFlLnYxLkdldFNlcnZpY2VCeVJvdXRlclJlc3BvbnNlIgOQAgFCpgEKDmNvbS5tYW50cmFlLnYxQgxTZXJ2aWNlUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]);
+  fileDesc("ChhtYW50cmFlL3YxL3NlcnZpY2UucHJvdG8SCm1hbnRyYWUudjEiiwIKB1NlcnZpY2USCgoCaWQYASABKAMSEgoKcHJvZmlsZV9pZBgCIAEoAxIQCghhZ2VudF9pZBgDIAEoCRIMCgRuYW1lGAQgASgJEg8KB2VuYWJsZWQYBSABKAgSJwoGY29uZmlnGAYgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBImCgR0eXBlGAcgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGUSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAipwEKEUdldFNlcnZpY2VSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASMAoEdHlwZRgCIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQARIVCgJpZBgDIAEoA0IHukgEIgIgAEgAEhcKBG5hbWUYBCABKAlCB7pIBHICEAFIAEITCgppZGVudGlmaWVyEgW6SAIIASI6ChJHZXRTZXJ2aWNlUmVzcG9uc2USJAoHc2VydmljZRgBIAEoCzITLm1hbnRyYWUudjEuU2VydmljZSLaAQoUQ3JlYXRlU2VydmljZVJlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABIVCghhZ2VudF9pZBgCIAEoCUgAiAEBEhUKBG5hbWUYAyABKAlCB7pIBHICEAESJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIPCgdlbmFibGVkGAUgASgIEjAKBHR5cGUYBiABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUIIukgFggECEAFCCwoJX2FnZW50X2lkIj0KFUNyZWF0ZVNlcnZpY2VSZXNwb25zZRIkCgdzZXJ2aWNlGAEgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlIq4BChRVcGRhdGVTZXJ2aWNlUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIVCgRuYW1lGAIgASgJQge6SARyAhABEg8KB2VuYWJsZWQYAyABKAgSJwoGY29uZmlnGAQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIwCgR0eXBlGAUgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGVCCLpIBYIBAhABIj0KFVVwZGF0ZVNlcnZpY2VSZXNwb25zZRIkCgdzZXJ2aWNlGAEgASgLMhMubWFudHJhZS52MS5TZXJ2aWNlIl0KFERlbGV0ZVNlcnZpY2VSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEjAKBHR5cGUYAiABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUIIukgFggECEAEiFwoVRGVsZXRlU2VydmljZVJlc3BvbnNlIrQCChNMaXN0U2VydmljZXNSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARIrCgR0eXBlGAMgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGVIAYgBARJqCgVsaW1pdBgEIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAogBARIcCgZvZmZzZXQYBSABKANCB7pIBCICKABIA4gBAUILCglfYWdlbnRfaWRCBwoFX3R5cGVCCAoGX2xpbWl0QgkKB19vZmZzZXQiUgoUTGlzdFNlcnZpY2VzUmVzcG9uc2USJQoIc2VydmljZXMYASADKAsyEy5tYW50cmFlLnYxLlNlcnZpY2USEwoLdG90YWxfY291bnQYAiABKAMyvAMKDlNlcnZpY2VTZXJ2aWNlElAKCkdldFNlcnZpY2USHS5tYW50cmFlLnYxLkdldFNlcnZpY2VSZXF1ZXN0Gh4ubWFudHJhZS52MS5HZXRTZXJ2aWNlUmVzcG9uc2UiA5ACARJUCg1DcmVhdGVTZXJ2aWNlEiAubWFudHJhZS52MS5DcmVhdGVTZXJ2aWNlUmVxdWVzdBohLm1hbnRyYWUudjEuQ3JlYXRlU2VydmljZVJlc3BvbnNlElQKDVVwZGF0ZVNlcnZpY2USIC5tYW50cmFlLnYxLlVwZGF0ZVNlcnZpY2VSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVTZXJ2aWNlUmVzcG9uc2USVAoNRGVsZXRlU2VydmljZRIgLm1hbnRyYWUudjEuRGVsZXRlU2VydmljZVJlcXVlc3QaIS5tYW50cmFlLnYxLkRlbGV0ZVNlcnZpY2VSZXNwb25zZRJWCgxMaXN0U2VydmljZXMSHy5tYW50cmFlLnYxLkxpc3RTZXJ2aWNlc1JlcXVlc3QaIC5tYW50cmFlLnYxLkxpc3RTZXJ2aWNlc1Jlc3BvbnNlIgOQAgFCpgEKDmNvbS5tYW50cmFlLnYxQgxTZXJ2aWNlUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_protocol]);
 
 /**
  * @generated from message mantrae.v1.Service
@@ -50,9 +52,9 @@ export type Service = Message<"mantrae.v1.Service"> & {
   config?: JsonObject;
 
   /**
-   * @generated from field: mantrae.v1.ServiceType type = 7;
+   * @generated from field: mantrae.v1.ProtocolType type = 7;
    */
-  type: ServiceType;
+  type: ProtocolType;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 8;
@@ -77,14 +79,31 @@ export const ServiceSchema: GenMessage<Service> = /*@__PURE__*/
  */
 export type GetServiceRequest = Message<"mantrae.v1.GetServiceRequest"> & {
   /**
-   * @generated from field: int64 id = 1;
+   * @generated from field: int64 profile_id = 1;
    */
-  id: bigint;
+  profileId: bigint;
 
   /**
-   * @generated from field: mantrae.v1.ServiceType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: ServiceType;
+  type: ProtocolType;
+
+  /**
+   * @generated from oneof mantrae.v1.GetServiceRequest.identifier
+   */
+  identifier: {
+    /**
+     * @generated from field: int64 id = 3;
+     */
+    value: bigint;
+    case: "id";
+  } | {
+    /**
+     * @generated from field: string name = 4;
+     */
+    value: string;
+    case: "name";
+  } | { case: undefined; value?: undefined };
 };
 
 /**
@@ -141,9 +160,9 @@ export type CreateServiceRequest = Message<"mantrae.v1.CreateServiceRequest"> & 
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.ServiceType type = 6;
+   * @generated from field: mantrae.v1.ProtocolType type = 6;
    */
-  type: ServiceType;
+  type: ProtocolType;
 };
 
 /**
@@ -195,9 +214,9 @@ export type UpdateServiceRequest = Message<"mantrae.v1.UpdateServiceRequest"> & 
   config?: JsonObject;
 
   /**
-   * @generated from field: mantrae.v1.ServiceType type = 5;
+   * @generated from field: mantrae.v1.ProtocolType type = 5;
    */
-  type: ServiceType;
+  type: ProtocolType;
 };
 
 /**
@@ -234,9 +253,9 @@ export type DeleteServiceRequest = Message<"mantrae.v1.DeleteServiceRequest"> & 
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.ServiceType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: ServiceType;
+  type: ProtocolType;
 };
 
 /**
@@ -274,9 +293,9 @@ export type ListServicesRequest = Message<"mantrae.v1.ListServicesRequest"> & {
   agentId?: string;
 
   /**
-   * @generated from field: optional mantrae.v1.ServiceType type = 3;
+   * @generated from field: optional mantrae.v1.ProtocolType type = 3;
    */
-  type?: ServiceType;
+  type?: ProtocolType;
 
   /**
    * @generated from field: optional int64 limit = 4;
@@ -317,76 +336,6 @@ export type ListServicesResponse = Message<"mantrae.v1.ListServicesResponse"> & 
  */
 export const ListServicesResponseSchema: GenMessage<ListServicesResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_service, 10);
-
-/**
- * @generated from message mantrae.v1.GetServiceByRouterRequest
- */
-export type GetServiceByRouterRequest = Message<"mantrae.v1.GetServiceByRouterRequest"> & {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name: string;
-
-  /**
-   * @generated from field: mantrae.v1.ServiceType type = 2;
-   */
-  type: ServiceType;
-};
-
-/**
- * Describes the message mantrae.v1.GetServiceByRouterRequest.
- * Use `create(GetServiceByRouterRequestSchema)` to create a new message.
- */
-export const GetServiceByRouterRequestSchema: GenMessage<GetServiceByRouterRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_service, 11);
-
-/**
- * @generated from message mantrae.v1.GetServiceByRouterResponse
- */
-export type GetServiceByRouterResponse = Message<"mantrae.v1.GetServiceByRouterResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Service service = 1;
-   */
-  service?: Service;
-};
-
-/**
- * Describes the message mantrae.v1.GetServiceByRouterResponse.
- * Use `create(GetServiceByRouterResponseSchema)` to create a new message.
- */
-export const GetServiceByRouterResponseSchema: GenMessage<GetServiceByRouterResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_service, 12);
-
-/**
- * @generated from enum mantrae.v1.ServiceType
- */
-export enum ServiceType {
-  /**
-   * @generated from enum value: SERVICE_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: SERVICE_TYPE_HTTP = 1;
-   */
-  HTTP = 1,
-
-  /**
-   * @generated from enum value: SERVICE_TYPE_TCP = 2;
-   */
-  TCP = 2,
-
-  /**
-   * @generated from enum value: SERVICE_TYPE_UDP = 3;
-   */
-  UDP = 3,
-}
-
-/**
- * Describes the enum mantrae.v1.ServiceType.
- */
-export const ServiceTypeSchema: GenEnum<ServiceType> = /*@__PURE__*/
-  enumDesc(file_mantrae_v1_service, 0);
 
 /**
  * @generated from service mantrae.v1.ServiceService
@@ -431,14 +380,6 @@ export const ServiceService: GenService<{
     methodKind: "unary";
     input: typeof ListServicesRequestSchema;
     output: typeof ListServicesResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.ServiceService.GetServiceByRouter
-   */
-  getServiceByRouter: {
-    methodKind: "unary";
-    input: typeof GetServiceByRouterRequestSchema;
-    output: typeof GetServiceByRouterResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_mantrae_v1_service, 0);

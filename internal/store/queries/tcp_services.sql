@@ -11,13 +11,14 @@ INSERT INTO
 VALUES
   (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
--- name: GetTcpService :one
+-- name: GetTcpServiceByID :one
 SELECT
   *
 FROM
   tcp_services
 WHERE
-  id = ?;
+  profile_id = ?
+  AND id = ?;
 
 -- name: GetTcpServiceByName :one
 SELECT
@@ -25,7 +26,8 @@ SELECT
 FROM
   tcp_services
 WHERE
-  name = ?;
+  profile_id = ?
+  AND name = ?;
 
 -- name: ListTcpServices :many
 SELECT

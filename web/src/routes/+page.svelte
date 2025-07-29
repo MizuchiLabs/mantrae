@@ -33,10 +33,9 @@
 		profileClient,
 		routerClient,
 		serviceClient,
+		traefikClient,
 		userClient
 	} from '$lib/api';
-	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
-	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { DateFormat } from '$lib/stores/common';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
@@ -44,22 +43,10 @@
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
 	import TraefikConnection from '$lib/components/utils/TraefikConnection.svelte';
-
-	let totalAgents = $derived.by(async () => {
-		const response = await agentClient.listAgents({
-			profileId: profile.id,
-			limit: -1n,
-			offset: 0n
-		});
-		return response.totalCount;
-	});
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let onlineAgents = $derived.by(async () => {
-		const response = await agentClient.listAgents({
-			profileId: profile.id,
-			limit: -1n,
-			offset: 0n
-		});
+		const response = await agentClient.listAgents({ profileId: profile.id });
 		const now = Date.now();
 
 		let activeAgents = response.agents.reduce((count, agent) => {
@@ -71,11 +58,6 @@
 		}, 0);
 		return BigInt(activeAgents);
 	});
-
-	// Helper function to calculate percentage
-	function getPercentage(value: number, total: number) {
-		return total > 0 ? Math.round((value / total) * 100) : 0;
-	}
 
 	function timeAgo(date: Timestamp) {
 		const dateTime = new Date(timestampDate(date));
@@ -133,7 +115,7 @@
 					<Layers2 class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await profileClient.listProfiles({ limit: -1n, offset: 0n }) then result}
+					{#await profileClient.listProfiles({}) then result}
 						<div class="text-3xl font-bold">{result.totalCount}</div>
 						<div class="mt-2 flex items-center text-sm">
 							<TrendingUp class="mr-1 h-3 w-3 text-green-500" />
@@ -176,7 +158,7 @@
 					<Globe class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await dnsClient.listDnsProviders({ limit: -1n, offset: 0n }) then result}
+					{#await dnsClient.listDnsProviders({}) then result}
 						<div class="text-3xl font-bold">
 							{result.totalCount}
 						</div>
@@ -230,7 +212,7 @@
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
-					{#await routerClient.listRouters( { profileId: profile.id, limit: -1n, offset: 0n } ) then result}
+					{#await routerClient.listRouters({ profileId: profile.id }) then result}
 						<div class="space-y-3">
 							<div class="flex items-center justify-between">
 								<div class="flex items-center gap-2">
@@ -238,7 +220,7 @@
 									<span class="text-sm">HTTP Routers</span>
 								</div>
 								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === RouterType.HTTP).length}
+									{result.routers.filter((r) => r.type === ProtocolType.HTTP).length}
 								</Badge>
 							</div>
 							<div class="flex items-center justify-between">
@@ -247,7 +229,7 @@
 									<span class="text-sm">TCP Routers</span>
 								</div>
 								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === RouterType.TCP).length}
+									{result.routers.filter((r) => r.type === ProtocolType.TCP).length}
 								</Badge>
 							</div>
 							<div class="flex items-center justify-between">
@@ -256,39 +238,8 @@
 									<span class="text-sm">UDP Routers</span>
 								</div>
 								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === RouterType.UDP).length}
+									{result.routers.filter((r) => r.type === ProtocolType.UDP).length}
 								</Badge>
-							</div>
-						</div>
-					{/await}
-				</Card.Content>
-			</Card.Root>
-
-			<!-- Services Overview -->
-
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="flex items-center gap-2">
-						<Server class="h-5 w-5" />
-						Services Overview
-					</Card.Title>
-				</Card.Header>
-				<Card.Content class="space-y-4">
-					{#await serviceClient.listServices({ profileId: profile.id }) then result}
-						<div class="space-y-3">
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-orange-500"></div>
-									<span class="text-sm">HTTP Services</span>
-								</div>
-								<Badge variant="secondary">{result.totalCount}</Badge>
-							</div>
-							<div class="w-full">
-								<div class="mb-1 flex items-center justify-between text-sm">
-									<span class="text-muted-foreground">Health Status</span>
-									<span>100%</span>
-								</div>
-								<Progress value={100} class="h-2" />
 							</div>
 						</div>
 					{/await}
@@ -312,7 +263,7 @@
 									<span class="text-sm">HTTP Middlewares</span>
 								</div>
 								<Badge variant="secondary">
-									{result.middlewares.filter((m) => m.type === MiddlewareType.HTTP).length}
+									{result.middlewares.filter((m) => m.type === ProtocolType.HTTP).length}
 								</Badge>
 							</div>
 							<div class="flex items-center justify-between">
@@ -321,12 +272,40 @@
 									<span class="text-sm">TCP Middlewares</span>
 								</div>
 								<Badge variant="secondary">
-									{result.middlewares.filter((m) => m.type === MiddlewareType.TCP).length}
+									{result.middlewares.filter((m) => m.type === ProtocolType.TCP).length}
 								</Badge>
 							</div>
 						</div>
 					{/await}
 				</Card.Content>
+			</Card.Root>
+
+			<!-- Instances Overview -->
+			<Card.Root>
+				{#await traefikClient.listTraefikInstances({ profileId: profile.id }) then result}
+					<Card.Header class="flex items-center justify-between">
+						<Card.Title class="flex items-center gap-2">
+							<Server class="h-5 w-5" />
+							Traefik Instances
+						</Card.Title>
+						<Badge variant="secondary">{result.totalCount}</Badge>
+					</Card.Header>
+					<Card.Content class="space-y-4">
+						<div class="max-h-64 space-y-2 overflow-y-auto pr-2">
+							{#each result.traefikInstances || [] as instance (instance.id)}
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-2">
+										<div class="h-3 w-3 rounded-full bg-green-500"></div>
+										<span class="text-sm">{instance.name}</span>
+									</div>
+									<Badge variant="secondary">
+										{instance.url}
+									</Badge>
+								</div>
+							{/each}
+						</div>
+					</Card.Content>
+				{/await}
 			</Card.Root>
 		</div>
 
@@ -348,7 +327,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-4">
-						{#await profileClient.listProfiles({ limit: -1n, offset: 0n }) then result}
+						{#await profileClient.listProfiles({}) then result}
 							{#each result.profiles || [] as profile (profile.id)}
 								<div class="space-y-4 rounded-lg border p-4">
 									<div class="flex items-start justify-between">
@@ -371,14 +350,14 @@
 									<Separator />
 
 									<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-										{#await agentClient.listAgents( { profileId: profile.id, limit: -1n, offset: 0n } ) then agentResult}
+										{#await agentClient.listAgents({ profileId: profile.id }) then agentResult}
 											<div class="text-center">
 												<div class="text-2xl font-bold text-blue-600">{agentResult.totalCount}</div>
 												<div class="text-muted-foreground text-xs">Agents</div>
 											</div>
 										{/await}
 
-										{#await routerClient.listRouters( { profileId: profile.id, limit: -1n, offset: 0n } ) then routerResult}
+										{#await routerClient.listRouters({ profileId: profile.id }) then routerResult}
 											<div class="text-center">
 												<div class="text-2xl font-bold text-green-600">
 													{routerResult.totalCount}
@@ -387,7 +366,7 @@
 											</div>
 										{/await}
 
-										{#await serviceClient.listServices( { profileId: profile.id, limit: -1n, offset: 0n } ) then serviceResult}
+										{#await serviceClient.listServices( { profileId: profile.id } ) then serviceResult}
 											<div class="text-center">
 												<div class="text-2xl font-bold text-orange-600">
 													{serviceResult.totalCount}
@@ -396,7 +375,7 @@
 											</div>
 										{/await}
 
-										{#await middlewareClient.listMiddlewares( { profileId: profile.id, limit: -1n, offset: 0n } ) then middlewareResult}
+										{#await middlewareClient.listMiddlewares( { profileId: profile.id } ) then middlewareResult}
 											<div class="text-center">
 												<div class="text-2xl font-bold text-purple-600">
 													{middlewareResult.totalCount}
@@ -494,7 +473,7 @@
 					</Card.Header>
 					<Card.Content class="space-y-3">
 						<div class="space-y-3 text-sm">
-							{#await auditLogClient.listAuditLogs({ limit: 8n, offset: 0n }) then result}
+							{#await auditLogClient.listAuditLogs({ limit: 8n }) then result}
 								{#each result.auditLogs || [] as log (log.id)}
 									<div class="flex items-start gap-3">
 										{#if log.agentId}

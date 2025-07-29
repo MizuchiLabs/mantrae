@@ -10,17 +10,15 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
 	import { pageIndex, pageSize } from '$lib/stores/common';
-	import {
-		ServersTransportType,
-		type ServersTransport
-	} from '$lib/gen/mantrae/v1/servers_transport_pb';
+	import { type ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 	import {
 		type TCPServersTransport,
 		type ServersTransport as HTTPServersTransport
 	} from '$lib/gen/zen/traefik-schemas';
-	import { serversTransportTypes } from '$lib/types';
 	import HTTPServerTransportForm from '$lib/components/forms/HTTPServerTransportForm.svelte';
 	import TCPServerTransportForm from '$lib/components/forms/TCPServerTransportForm.svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { protocolTypes } from '$lib/types';
 
 	interface Props {
 		data: ServersTransport[];
@@ -110,10 +108,10 @@
 								// Reset config
 								item.type = parseInt(value, 10);
 								switch (item.type) {
-									case ServersTransportType.HTTP:
+									case ProtocolType.HTTP:
 										item.config = {} as HTTPServersTransport;
 										break;
-									case ServersTransportType.TCP:
+									case ProtocolType.TCP:
 										item.config = {} as TCPServersTransport;
 										break;
 								}
@@ -121,14 +119,17 @@
 						>
 							<Select.Trigger class="w-full">
 								<span class="truncate">
-									{serversTransportTypes.find((t) => t.value === item.type)?.label ?? 'Select'}
+									{protocolTypes.find((t) => t.value === item.type)?.label ?? 'Select'}
 								</span>
 							</Select.Trigger>
 							<Select.Content>
-								{#each serversTransportTypes as t (t.value)}
-									<Select.Item value={t.value.toString()}>
-										{t.label}
-									</Select.Item>
+								{#each protocolTypes as t (t.value)}
+									<!-- Skip UDP -->
+									{#if t.value !== ProtocolType.UDP}
+										<Select.Item value={t.value.toString()} label={t.label}>
+											{t.label}
+										</Select.Item>
+									{/if}
 								{/each}
 							</Select.Content>
 						</Select.Root>
@@ -136,10 +137,10 @@
 				{/if}
 			</div>
 
-			{#if item.type === ServersTransportType.HTTP}
+			{#if item.type === ProtocolType.HTTP}
 				<HTTPServerTransportForm bind:transport={item} />
 			{/if}
-			{#if item.type === ServersTransportType.TCP}
+			{#if item.type === ProtocolType.TCP}
 				<TCPServerTransportForm bind:transport={item} />
 			{/if}
 

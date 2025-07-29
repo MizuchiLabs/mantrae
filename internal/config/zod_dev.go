@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/hypersequent/zen"
@@ -16,23 +17,7 @@ import (
 // StructToZodSchema converts a struct to a zod schema (for use in the frontend)
 func StructToZodSchema() {
 	types := map[string]any{
-		// Routers
-		"httpRouter": dynamic.Router{},
-		"tcpRouter":  dynamic.TCPRouter{},
-		"udpRouter":  dynamic.UDPRouter{},
-
-		// Services
-		"httpService": dynamic.Service{},
-		"tcpService":  dynamic.TCPService{},
-		"udpService":  dynamic.UDPService{},
-
-		// Middlewares
-		"httpMiddleware": dynamic.Middleware{},
-		"tcpMiddleware":  dynamic.TCPMiddleware{},
-
-		// Servers Transports
-		"httpServersTransport": dynamic.ServersTransport{},
-		"tcpServersTransport":  dynamic.TCPServersTransport{},
+		"config": dynamic.Configuration{},
 	}
 
 	var builder strings.Builder
@@ -42,8 +27,14 @@ func StructToZodSchema() {
 	builder.WriteString("// Do not edit manually.\n\n")
 	builder.WriteString("import { z } from 'zod';\n\n")
 
+	withDesc := map[string]zen.CustomFn{
+		"zodDesc": func(c *zen.Converter, t reflect.Type, desc string, indent int) string {
+			return fmt.Sprintf(".describe(%q)", desc)
+		},
+	}
+
 	for _, strct := range types {
-		schema := zen.StructToZodSchema(strct)
+		schema := zen.StructToZodSchema(strct, zen.WithCustomTags(withDesc))
 		builder.WriteString(fmt.Sprintf("%s\n", schema))
 	}
 
@@ -57,4 +48,5 @@ func StructToZodSchema() {
 	}
 
 	fmt.Printf("Zod schemas written to %s\n", out)
+	os.Exit(0)
 }

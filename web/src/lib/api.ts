@@ -12,11 +12,12 @@ import { EntryPointService } from "./gen/mantrae/v1/entry_point_pb";
 import { DnsProviderService } from "./gen/mantrae/v1/dns_provider_pb";
 import { UtilService } from "./gen/mantrae/v1/util_pb";
 import { AgentService } from "./gen/mantrae/v1/agent_pb";
-import { toast } from "svelte-sonner";
 import { AuditLogService } from "./gen/mantrae/v1/auditlog_pb";
+import { ServersTransportService } from "./gen/mantrae/v1/servers_transport_pb";
+import { TraefikInstanceService } from "./gen/mantrae/v1/traefik_instance_pb";
+import { toast } from "svelte-sonner";
 import { profile } from "./stores/profile";
 import { baseURL } from "./stores/common";
-import { ServersTransportService } from "./gen/mantrae/v1/servers_transport_pb";
 
 export function useClient<T extends DescService>(
 	service: T,
@@ -123,7 +124,7 @@ export const routerClient = useClient(RouterService);
 export const serviceClient = useClient(ServiceService);
 export const middlewareClient = useClient(MiddlewareService);
 export const serversTransportClient = useClient(ServersTransportService);
-// export const instanceClient = useClient(TraefikInstanceService);
+export const traefikClient = useClient(TraefikInstanceService);
 export const settingClient = useClient(SettingService);
 export const backupClient = useClient(BackupService);
 export const auditLogClient = useClient(AuditLogService);

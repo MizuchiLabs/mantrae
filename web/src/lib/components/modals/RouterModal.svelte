@@ -9,11 +9,11 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
-	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
+	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
+	import { type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
-	import { routerTypes, unmarshalConfig } from '$lib/types';
+	import { protocolTypes, unmarshalConfig } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
 	import { Bot, Server } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
@@ -32,6 +32,7 @@
 	import TCPServiceForm from '../forms/TCPServiceForm.svelte';
 	import UDPServiceForm from '../forms/UDPServiceForm.svelte';
 	import DnsProviderSelect from '../forms/DNSProviderSelect.svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	interface Props {
 		data: Router[];
@@ -56,9 +57,13 @@
 		if (item.id && open && !hasLoadedService) {
 			hasLoadedService = true;
 			serviceClient
-				.getServiceByRouter({
-					name: item.name,
-					type: item.type
+				.getService({
+					profileId: profile.id,
+					type: item.type,
+					identifier: {
+						value: item.name,
+						case: 'name'
+					}
 				})
 				.then((data) => {
 					service = data.service ?? ({} as Service);
@@ -79,17 +84,7 @@
 			service.enabled = item.enabled;
 		}
 		if (item.type) {
-			switch (item.type) {
-				case RouterType.HTTP:
-					service.type = ServiceType.HTTP;
-					break;
-				case RouterType.TCP:
-					service.type = ServiceType.TCP;
-					break;
-				case RouterType.UDP:
-					service.type = ServiceType.UDP;
-					break;
-			}
+			service.type = item.type;
 		}
 	});
 
@@ -170,15 +165,15 @@
 	const getServicePreview = () => {
 		if (!service?.config) return 'No service configured';
 
-		if (service.type === ServiceType.HTTP) {
+		if (service.type === ProtocolType.HTTP) {
 			const config = unmarshalConfig(service.config) as HTTPService;
 			const servers = config.loadBalancer?.servers || [];
 			return servers.length > 0 ? servers[0].url : 'No servers';
-		} else if (service.type === ServiceType.TCP) {
+		} else if (service.type === ProtocolType.TCP) {
 			const config = unmarshalConfig(service.config) as TCPService;
 			const servers = config.loadBalancer?.servers || [];
 			return servers.length > 0 ? servers[0].address : 'No servers';
-		} else if (service.type === ServiceType.UDP) {
+		} else if (service.type === ProtocolType.UDP) {
 			const config = unmarshalConfig(service.config) as UDPService;
 			const servers = config.loadBalancer?.servers || [];
 			return servers.length > 0 ? servers[0].address : 'No servers';
@@ -218,7 +213,7 @@
 									<DnsProviderSelect
 										bind:data
 										bind:item
-										disabled={item.type === RouterType.UDP || !item.id}
+										disabled={item.type === ProtocolType.UDP || !item.id}
 									/>
 								</div>
 							</Card.Header>
@@ -255,7 +250,7 @@
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Protocol</Label>
 								<Badge variant="outline">
-									{routerTypes.find((t) => t.value === item.type)?.label || 'Unknown'}
+									{protocolTypes.find((t) => t.value === item.type)?.label || 'Unknown'}
 								</Badge>
 							</div>
 							<div class="space-y-1">
@@ -296,7 +291,7 @@
 							<DnsProviderSelect
 								bind:data
 								bind:item
-								disabled={item.type === RouterType.UDP || !item.id}
+								disabled={item.type === ProtocolType.UDP || !item.id}
 							/>
 						</Card.Header>
 						<Card.Content class="space-y-4">
@@ -323,13 +318,13 @@
 												// Reset config
 												item.type = parseInt(value, 10);
 												switch (item.type) {
-													case RouterType.HTTP:
+													case ProtocolType.HTTP:
 														item.config = {} as HTTPRouter;
 														break;
-													case RouterType.TCP:
+													case ProtocolType.TCP:
 														item.config = {} as TCPRouter;
 														break;
-													case RouterType.UDP:
+													case ProtocolType.UDP:
 														item.config = {} as UDPRouter;
 														break;
 												}
@@ -337,12 +332,12 @@
 										>
 											<Select.Trigger class="w-full">
 												<span class="truncate">
-													{routerTypes.find((t) => t.value === item.type)?.label ??
+													{protocolTypes.find((t) => t.value === item.type)?.label ??
 														'Select protocol'}
 												</span>
 											</Select.Trigger>
 											<Select.Content>
-												{#each routerTypes as t (t.value)}
+												{#each protocolTypes as t (t.value)}
 													<Select.Item value={t.value.toString()}>
 														{t.label}
 													</Select.Item>
@@ -353,13 +348,13 @@
 								{/if}
 							</div>
 
-							{#if item.type === RouterType.HTTP}
+							{#if item.type === ProtocolType.HTTP}
 								<HTTPRouterForm bind:router={item} />
 							{/if}
-							{#if item.type === RouterType.TCP}
+							{#if item.type === ProtocolType.TCP}
 								<TCPRouterForm bind:router={item} />
 							{/if}
-							{#if item.type === RouterType.UDP}
+							{#if item.type === ProtocolType.UDP}
 								<UDPRouterForm bind:router={item} />
 							{/if}
 						</Card.Content>
@@ -372,13 +367,13 @@
 							<Card.Description>Configure backend servers and load balancing</Card.Description>
 						</Card.Header>
 						<Card.Content class="flex flex-col gap-3">
-							{#if item.type === RouterType.HTTP}
+							{#if item.type === ProtocolType.HTTP}
 								<HTTPServiceForm bind:service />
 							{/if}
-							{#if item.type === RouterType.TCP}
+							{#if item.type === ProtocolType.TCP}
 								<TCPServiceForm bind:service />
 							{/if}
-							{#if item.type === RouterType.UDP}
+							{#if item.type === ProtocolType.UDP}
 								<UDPServiceForm bind:service />
 							{/if}
 						</Card.Content>

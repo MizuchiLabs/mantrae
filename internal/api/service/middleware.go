@@ -17,15 +17,15 @@ import (
 
 type MiddlewareService struct {
 	app      *config.App
-	dispatch map[mantraev1.MiddlewareType]MiddlewareOps
+	dispatch map[mantraev1.ProtocolType]MiddlewareOps
 }
 
 func NewMiddlewareService(app *config.App) *MiddlewareService {
 	return &MiddlewareService{
 		app: app,
-		dispatch: map[mantraev1.MiddlewareType]MiddlewareOps{
-			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP: NewHTTPMiddlewareOps(app),
-			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP:  NewTCPMiddlewareOps(app),
+		dispatch: map[mantraev1.ProtocolType]MiddlewareOps{
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP: NewHTTPMiddlewareOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP:  NewTCPMiddlewareOps(app),
 		},
 	}
 }
@@ -126,14 +126,14 @@ func (s *MiddlewareService) ListMiddlewares(
 		return connect.NewResponse(result), nil
 	} else {
 		// Get HTTP middlewares
-		httpOps := s.dispatch[mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP]
+		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
 		httpResult, err := httpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		// Get TCP middlewares
-		tcpOps := s.dispatch[mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP]
+		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
 		tcpResult, err := tcpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)

@@ -51,23 +51,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countProfilesStmt, err = db.PrepareContext(ctx, countProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query CountProfiles: %w", err)
 	}
-	if q.countRoutersByAgentStmt, err = db.PrepareContext(ctx, countRoutersByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query CountRoutersByAgent: %w", err)
-	}
-	if q.countRoutersByProfileStmt, err = db.PrepareContext(ctx, countRoutersByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query CountRoutersByProfile: %w", err)
-	}
 	if q.countServersTransportsByAgentStmt, err = db.PrepareContext(ctx, countServersTransportsByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query CountServersTransportsByAgent: %w", err)
 	}
 	if q.countServersTransportsByProfileStmt, err = db.PrepareContext(ctx, countServersTransportsByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query CountServersTransportsByProfile: %w", err)
-	}
-	if q.countServicesByAgentStmt, err = db.PrepareContext(ctx, countServicesByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query CountServicesByAgent: %w", err)
-	}
-	if q.countServicesByProfileStmt, err = db.PrepareContext(ctx, countServicesByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query CountServicesByProfile: %w", err)
 	}
 	if q.countTcpMiddlewaresStmt, err = db.PrepareContext(ctx, countTcpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpMiddlewares: %w", err)
@@ -204,8 +192,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTcpServiceStmt, err = db.PrepareContext(ctx, deleteTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTcpService: %w", err)
 	}
-	if q.deleteTraefikInstanceByIDStmt, err = db.PrepareContext(ctx, deleteTraefikInstanceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTraefikInstanceByID: %w", err)
+	if q.deleteTraefikInstanceStmt, err = db.PrepareContext(ctx, deleteTraefikInstance); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteTraefikInstance: %w", err)
 	}
 	if q.deleteUdpRouterStmt, err = db.PrepareContext(ctx, deleteUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUdpRouter: %w", err)
@@ -261,8 +249,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getHttpServersTransportStmt, err = db.PrepareContext(ctx, getHttpServersTransport); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpServersTransport: %w", err)
 	}
-	if q.getHttpServiceStmt, err = db.PrepareContext(ctx, getHttpService); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHttpService: %w", err)
+	if q.getHttpServiceByIDStmt, err = db.PrepareContext(ctx, getHttpServiceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpServiceByID: %w", err)
 	}
 	if q.getHttpServiceByNameStmt, err = db.PrepareContext(ctx, getHttpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpServiceByName: %w", err)
@@ -294,8 +282,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpServersTransportStmt, err = db.PrepareContext(ctx, getTcpServersTransport); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServersTransport: %w", err)
 	}
-	if q.getTcpServiceStmt, err = db.PrepareContext(ctx, getTcpService); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTcpService: %w", err)
+	if q.getTcpServiceByIDStmt, err = db.PrepareContext(ctx, getTcpServiceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpServiceByID: %w", err)
 	}
 	if q.getTcpServiceByNameStmt, err = db.PrepareContext(ctx, getTcpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServiceByName: %w", err)
@@ -312,8 +300,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUdpRoutersUsingEntryPointStmt, err = db.PrepareContext(ctx, getUdpRoutersUsingEntryPoint); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpRoutersUsingEntryPoint: %w", err)
 	}
-	if q.getUdpServiceStmt, err = db.PrepareContext(ctx, getUdpService); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUdpService: %w", err)
+	if q.getUdpServiceByIDStmt, err = db.PrepareContext(ctx, getUdpServiceByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUdpServiceByID: %w", err)
 	}
 	if q.getUdpServiceByNameStmt, err = db.PrepareContext(ctx, getUdpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpServiceByName: %w", err)
@@ -369,23 +357,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
-	if q.listRoutersByAgentStmt, err = db.PrepareContext(ctx, listRoutersByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRoutersByAgent: %w", err)
-	}
-	if q.listRoutersByProfileStmt, err = db.PrepareContext(ctx, listRoutersByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query ListRoutersByProfile: %w", err)
-	}
 	if q.listServersTransportsByAgentStmt, err = db.PrepareContext(ctx, listServersTransportsByAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query ListServersTransportsByAgent: %w", err)
 	}
 	if q.listServersTransportsByProfileStmt, err = db.PrepareContext(ctx, listServersTransportsByProfile); err != nil {
 		return nil, fmt.Errorf("error preparing query ListServersTransportsByProfile: %w", err)
-	}
-	if q.listServicesByAgentStmt, err = db.PrepareContext(ctx, listServicesByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServicesByAgent: %w", err)
-	}
-	if q.listServicesByProfileStmt, err = db.PrepareContext(ctx, listServicesByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServicesByProfile: %w", err)
 	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
@@ -566,16 +542,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing countProfilesStmt: %w", cerr)
 		}
 	}
-	if q.countRoutersByAgentStmt != nil {
-		if cerr := q.countRoutersByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countRoutersByAgentStmt: %w", cerr)
-		}
-	}
-	if q.countRoutersByProfileStmt != nil {
-		if cerr := q.countRoutersByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countRoutersByProfileStmt: %w", cerr)
-		}
-	}
 	if q.countServersTransportsByAgentStmt != nil {
 		if cerr := q.countServersTransportsByAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countServersTransportsByAgentStmt: %w", cerr)
@@ -584,16 +550,6 @@ func (q *Queries) Close() error {
 	if q.countServersTransportsByProfileStmt != nil {
 		if cerr := q.countServersTransportsByProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countServersTransportsByProfileStmt: %w", cerr)
-		}
-	}
-	if q.countServicesByAgentStmt != nil {
-		if cerr := q.countServicesByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countServicesByAgentStmt: %w", cerr)
-		}
-	}
-	if q.countServicesByProfileStmt != nil {
-		if cerr := q.countServicesByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countTcpMiddlewaresStmt != nil {
@@ -821,9 +777,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteTcpServiceStmt: %w", cerr)
 		}
 	}
-	if q.deleteTraefikInstanceByIDStmt != nil {
-		if cerr := q.deleteTraefikInstanceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTraefikInstanceByIDStmt: %w", cerr)
+	if q.deleteTraefikInstanceStmt != nil {
+		if cerr := q.deleteTraefikInstanceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteTraefikInstanceStmt: %w", cerr)
 		}
 	}
 	if q.deleteUdpRouterStmt != nil {
@@ -916,9 +872,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getHttpServersTransportStmt: %w", cerr)
 		}
 	}
-	if q.getHttpServiceStmt != nil {
-		if cerr := q.getHttpServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHttpServiceStmt: %w", cerr)
+	if q.getHttpServiceByIDStmt != nil {
+		if cerr := q.getHttpServiceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpServiceByIDStmt: %w", cerr)
 		}
 	}
 	if q.getHttpServiceByNameStmt != nil {
@@ -971,9 +927,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpServersTransportStmt: %w", cerr)
 		}
 	}
-	if q.getTcpServiceStmt != nil {
-		if cerr := q.getTcpServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTcpServiceStmt: %w", cerr)
+	if q.getTcpServiceByIDStmt != nil {
+		if cerr := q.getTcpServiceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpServiceByIDStmt: %w", cerr)
 		}
 	}
 	if q.getTcpServiceByNameStmt != nil {
@@ -1001,9 +957,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUdpRoutersUsingEntryPointStmt: %w", cerr)
 		}
 	}
-	if q.getUdpServiceStmt != nil {
-		if cerr := q.getUdpServiceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUdpServiceStmt: %w", cerr)
+	if q.getUdpServiceByIDStmt != nil {
+		if cerr := q.getUdpServiceByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUdpServiceByIDStmt: %w", cerr)
 		}
 	}
 	if q.getUdpServiceByNameStmt != nil {
@@ -1096,16 +1052,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
 		}
 	}
-	if q.listRoutersByAgentStmt != nil {
-		if cerr := q.listRoutersByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersByAgentStmt: %w", cerr)
-		}
-	}
-	if q.listRoutersByProfileStmt != nil {
-		if cerr := q.listRoutersByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listRoutersByProfileStmt: %w", cerr)
-		}
-	}
 	if q.listServersTransportsByAgentStmt != nil {
 		if cerr := q.listServersTransportsByAgentStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listServersTransportsByAgentStmt: %w", cerr)
@@ -1114,16 +1060,6 @@ func (q *Queries) Close() error {
 	if q.listServersTransportsByProfileStmt != nil {
 		if cerr := q.listServersTransportsByProfileStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listServersTransportsByProfileStmt: %w", cerr)
-		}
-	}
-	if q.listServicesByAgentStmt != nil {
-		if cerr := q.listServicesByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServicesByAgentStmt: %w", cerr)
-		}
-	}
-	if q.listServicesByProfileStmt != nil {
-		if cerr := q.listServicesByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServicesByProfileStmt: %w", cerr)
 		}
 	}
 	if q.listSettingsStmt != nil {
@@ -1389,12 +1325,8 @@ type Queries struct {
 	countHttpServersTransportsStmt       *sql.Stmt
 	countHttpServicesStmt                *sql.Stmt
 	countProfilesStmt                    *sql.Stmt
-	countRoutersByAgentStmt              *sql.Stmt
-	countRoutersByProfileStmt            *sql.Stmt
 	countServersTransportsByAgentStmt    *sql.Stmt
 	countServersTransportsByProfileStmt  *sql.Stmt
-	countServicesByAgentStmt             *sql.Stmt
-	countServicesByProfileStmt           *sql.Stmt
 	countTcpMiddlewaresStmt              *sql.Stmt
 	countTcpRoutersStmt                  *sql.Stmt
 	countTcpServersTransportsStmt        *sql.Stmt
@@ -1440,7 +1372,7 @@ type Queries struct {
 	deleteTcpRouterDNSProviderStmt       *sql.Stmt
 	deleteTcpServersTransportStmt        *sql.Stmt
 	deleteTcpServiceStmt                 *sql.Stmt
-	deleteTraefikInstanceByIDStmt        *sql.Stmt
+	deleteTraefikInstanceStmt            *sql.Stmt
 	deleteUdpRouterStmt                  *sql.Stmt
 	deleteUdpServiceStmt                 *sql.Stmt
 	deleteUserStmt                       *sql.Stmt
@@ -1459,7 +1391,7 @@ type Queries struct {
 	getHttpRoutersUsingEntryPointStmt    *sql.Stmt
 	getHttpRoutersUsingMiddlewareStmt    *sql.Stmt
 	getHttpServersTransportStmt          *sql.Stmt
-	getHttpServiceStmt                   *sql.Stmt
+	getHttpServiceByIDStmt               *sql.Stmt
 	getHttpServiceByNameStmt             *sql.Stmt
 	getProfileStmt                       *sql.Stmt
 	getProfileByNameStmt                 *sql.Stmt
@@ -1470,13 +1402,13 @@ type Queries struct {
 	getTcpRoutersUsingEntryPointStmt     *sql.Stmt
 	getTcpRoutersUsingMiddlewareStmt     *sql.Stmt
 	getTcpServersTransportStmt           *sql.Stmt
-	getTcpServiceStmt                    *sql.Stmt
+	getTcpServiceByIDStmt                *sql.Stmt
 	getTcpServiceByNameStmt              *sql.Stmt
 	getTraefikInstanceByIDStmt           *sql.Stmt
 	getTraefikInstanceByNameStmt         *sql.Stmt
 	getUdpRouterStmt                     *sql.Stmt
 	getUdpRoutersUsingEntryPointStmt     *sql.Stmt
-	getUdpServiceStmt                    *sql.Stmt
+	getUdpServiceByIDStmt                *sql.Stmt
 	getUdpServiceByNameStmt              *sql.Stmt
 	getUserByEmailStmt                   *sql.Stmt
 	getUserByIDStmt                      *sql.Stmt
@@ -1495,12 +1427,8 @@ type Queries struct {
 	listHttpServicesStmt                 *sql.Stmt
 	listHttpServicesEnabledStmt          *sql.Stmt
 	listProfilesStmt                     *sql.Stmt
-	listRoutersByAgentStmt               *sql.Stmt
-	listRoutersByProfileStmt             *sql.Stmt
 	listServersTransportsByAgentStmt     *sql.Stmt
 	listServersTransportsByProfileStmt   *sql.Stmt
-	listServicesByAgentStmt              *sql.Stmt
-	listServicesByProfileStmt            *sql.Stmt
 	listSettingsStmt                     *sql.Stmt
 	listTcpMiddlewaresStmt               *sql.Stmt
 	listTcpMiddlewaresEnabledStmt        *sql.Stmt
@@ -1559,12 +1487,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countHttpServersTransportsStmt:       q.countHttpServersTransportsStmt,
 		countHttpServicesStmt:                q.countHttpServicesStmt,
 		countProfilesStmt:                    q.countProfilesStmt,
-		countRoutersByAgentStmt:              q.countRoutersByAgentStmt,
-		countRoutersByProfileStmt:            q.countRoutersByProfileStmt,
 		countServersTransportsByAgentStmt:    q.countServersTransportsByAgentStmt,
 		countServersTransportsByProfileStmt:  q.countServersTransportsByProfileStmt,
-		countServicesByAgentStmt:             q.countServicesByAgentStmt,
-		countServicesByProfileStmt:           q.countServicesByProfileStmt,
 		countTcpMiddlewaresStmt:              q.countTcpMiddlewaresStmt,
 		countTcpRoutersStmt:                  q.countTcpRoutersStmt,
 		countTcpServersTransportsStmt:        q.countTcpServersTransportsStmt,
@@ -1610,7 +1534,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteTcpRouterDNSProviderStmt:       q.deleteTcpRouterDNSProviderStmt,
 		deleteTcpServersTransportStmt:        q.deleteTcpServersTransportStmt,
 		deleteTcpServiceStmt:                 q.deleteTcpServiceStmt,
-		deleteTraefikInstanceByIDStmt:        q.deleteTraefikInstanceByIDStmt,
+		deleteTraefikInstanceStmt:            q.deleteTraefikInstanceStmt,
 		deleteUdpRouterStmt:                  q.deleteUdpRouterStmt,
 		deleteUdpServiceStmt:                 q.deleteUdpServiceStmt,
 		deleteUserStmt:                       q.deleteUserStmt,
@@ -1629,7 +1553,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHttpRoutersUsingEntryPointStmt:    q.getHttpRoutersUsingEntryPointStmt,
 		getHttpRoutersUsingMiddlewareStmt:    q.getHttpRoutersUsingMiddlewareStmt,
 		getHttpServersTransportStmt:          q.getHttpServersTransportStmt,
-		getHttpServiceStmt:                   q.getHttpServiceStmt,
+		getHttpServiceByIDStmt:               q.getHttpServiceByIDStmt,
 		getHttpServiceByNameStmt:             q.getHttpServiceByNameStmt,
 		getProfileStmt:                       q.getProfileStmt,
 		getProfileByNameStmt:                 q.getProfileByNameStmt,
@@ -1640,13 +1564,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpRoutersUsingEntryPointStmt:     q.getTcpRoutersUsingEntryPointStmt,
 		getTcpRoutersUsingMiddlewareStmt:     q.getTcpRoutersUsingMiddlewareStmt,
 		getTcpServersTransportStmt:           q.getTcpServersTransportStmt,
-		getTcpServiceStmt:                    q.getTcpServiceStmt,
+		getTcpServiceByIDStmt:                q.getTcpServiceByIDStmt,
 		getTcpServiceByNameStmt:              q.getTcpServiceByNameStmt,
 		getTraefikInstanceByIDStmt:           q.getTraefikInstanceByIDStmt,
 		getTraefikInstanceByNameStmt:         q.getTraefikInstanceByNameStmt,
 		getUdpRouterStmt:                     q.getUdpRouterStmt,
 		getUdpRoutersUsingEntryPointStmt:     q.getUdpRoutersUsingEntryPointStmt,
-		getUdpServiceStmt:                    q.getUdpServiceStmt,
+		getUdpServiceByIDStmt:                q.getUdpServiceByIDStmt,
 		getUdpServiceByNameStmt:              q.getUdpServiceByNameStmt,
 		getUserByEmailStmt:                   q.getUserByEmailStmt,
 		getUserByIDStmt:                      q.getUserByIDStmt,
@@ -1665,12 +1589,8 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listHttpServicesStmt:                 q.listHttpServicesStmt,
 		listHttpServicesEnabledStmt:          q.listHttpServicesEnabledStmt,
 		listProfilesStmt:                     q.listProfilesStmt,
-		listRoutersByAgentStmt:               q.listRoutersByAgentStmt,
-		listRoutersByProfileStmt:             q.listRoutersByProfileStmt,
 		listServersTransportsByAgentStmt:     q.listServersTransportsByAgentStmt,
 		listServersTransportsByProfileStmt:   q.listServersTransportsByProfileStmt,
-		listServicesByAgentStmt:              q.listServicesByAgentStmt,
-		listServicesByProfileStmt:            q.listServicesByProfileStmt,
 		listSettingsStmt:                     q.listSettingsStmt,
 		listTcpMiddlewaresStmt:               q.listTcpMiddlewaresStmt,
 		listTcpMiddlewaresEnabledStmt:        q.listTcpMiddlewaresEnabledStmt,

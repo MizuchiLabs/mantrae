@@ -6,15 +6,15 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
+	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { Router as HTTPRouter, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { AlertCircle, ExternalLink, Plus, Star } from '@lucide/svelte';
 	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
-	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
 	import { profile } from '$lib/stores/profile';
 	import { formatArrayDisplay } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -56,7 +56,7 @@
 				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
 			});
 		middlewareClient
-			.listMiddlewares({ profileId: profile.id, type: MiddlewareType.HTTP, limit: -1n, offset: 0n })
+			.listMiddlewares({ profileId: profile.id, type: ProtocolType.HTTP, limit: -1n, offset: 0n })
 			.then((data) => {
 				let defaultMiddleware = data.middlewares.find((m) => m.isDefault);
 				if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
@@ -112,7 +112,7 @@
 	{/await}
 
 	<!-- Middlewares -->
-	{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: MiddlewareType.HTTP, limit: -1n, offset: 0n } ) then value}
+	{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: ProtocolType.HTTP, limit: -1n, offset: 0n } ) then value}
 		{#if !value.middlewares.length}
 			<Alert.Root class="border-dashed">
 				<AlertCircle class="h-4 w-4" />
@@ -206,7 +206,7 @@
 	</div>
 
 	<!-- Rule -->
-	{#if router.type === RouterType.HTTP}
+	{#if router.type === ProtocolType.HTTP}
 		<RuleEditor bind:rule={config.rule} bind:type={router.type} />
 	{/if}
 </div>

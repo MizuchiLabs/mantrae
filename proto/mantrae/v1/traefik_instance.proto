@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+service TraefikInstanceService {
+  rpc GetTraefikInstance(GetTraefikInstanceRequest) returns (GetTraefikInstanceResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc DeleteTraefikInstance(DeleteTraefikInstanceRequest) returns (DeleteTraefikInstanceResponse);
+  rpc ListTraefikInstances(ListTraefikInstancesRequest) returns (ListTraefikInstancesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message TraefikInstance {
+  int64 id = 1;
+  string name = 2;
+  string url = 3;
+  string username = 4;
+  string password = 5;
+  bool tls = 6;
+  google.protobuf.Struct entry_points = 7;
+  google.protobuf.Struct overview = 8;
+  google.protobuf.Struct config = 9;
+  google.protobuf.Struct version = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message GetTraefikInstanceRequest {
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+}
+message GetTraefikInstanceResponse {
+  TraefikInstance traefik_instance = 1;
+}
+
+message DeleteTraefikInstanceRequest {
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+}
+message DeleteTraefikInstanceResponse {}
+
+message ListTraefikInstancesRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional int64 limit = 2 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 3 [(buf.validate.field).int64.gte = 0];
+}
+message ListTraefikInstancesResponse {
+  repeated TraefikInstance traefik_instances = 1;
+  int64 total_count = 2;
+}

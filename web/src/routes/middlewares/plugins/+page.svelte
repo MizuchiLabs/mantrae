@@ -14,11 +14,12 @@
 	import YAML from 'yaml';
 	import { slide } from 'svelte/transition';
 	import CopyButton from '$lib/components/ui/copy-button/copy-button.svelte';
-	import { MiddlewareType, type Plugin } from '$lib/gen/mantrae/v1/middleware_pb';
+	import { type Plugin } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
 	import { marshalConfig } from '$lib/types';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	// State
 	let open = $state(false);
@@ -62,7 +63,7 @@
 		try {
 			await middlewareClient.createMiddleware({
 				profileId: profile.value?.id,
-				type: MiddlewareType.HTTP,
+				type: ProtocolType.HTTP,
 				name: name,
 				config: marshalConfig(pluginContent)
 			});

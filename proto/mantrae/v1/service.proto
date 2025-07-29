@@ -5,6 +5,7 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "mantrae/v1/protocol.proto";
 
 service ServiceService {
   rpc GetService(GetServiceRequest) returns (GetServiceResponse) {
@@ -16,16 +17,6 @@ service ServiceService {
   rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
-  rpc GetServiceByRouter(GetServiceByRouterRequest) returns (GetServiceByRouterResponse) {
-    option idempotency_level = NO_SIDE_EFFECTS;
-  }
-}
-
-enum ServiceType {
-  SERVICE_TYPE_UNSPECIFIED = 0;
-  SERVICE_TYPE_HTTP = 1;
-  SERVICE_TYPE_TCP = 2;
-  SERVICE_TYPE_UDP = 3;
 }
 
 message Service {
@@ -35,14 +26,19 @@ message Service {
   string name = 4;
   bool enabled = 5;
   google.protobuf.Struct config = 6;
-  ServiceType type = 7;
+  ProtocolType type = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
 }
 
 message GetServiceRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
+  oneof identifier {
+    option (buf.validate.oneof).required = true;
+    int64 id = 3 [(buf.validate.field).int64.gt = 0];
+    string name = 4 [(buf.validate.field).string.min_len = 1];
+  }
 }
 message GetServiceResponse {
   Service service = 1;
@@ -54,7 +50,7 @@ message CreateServiceRequest {
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
-  ServiceType type = 6 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 6 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateServiceResponse {
   Service service = 1;
@@ -65,7 +61,7 @@ message UpdateServiceRequest {
   string name = 2 [(buf.validate.field).string.min_len = 1];
   bool enabled = 3;
   google.protobuf.Struct config = 4;
-  ServiceType type = 5 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 5 [(buf.validate.field).enum.defined_only = true];
 }
 message UpdateServiceResponse {
   Service service = 1;
@@ -73,14 +69,14 @@ message UpdateServiceResponse {
 
 message DeleteServiceRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteServiceResponse {}
 
 message ListServicesRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional ServiceType type = 3;
+  optional ProtocolType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"
@@ -91,12 +87,4 @@ message ListServicesRequest {
 message ListServicesResponse {
   repeated Service services = 1;
   int64 total_count = 2;
-}
-
-message GetServiceByRouterRequest {
-  string name = 1 [(buf.validate.field).string.min_len = 1];
-  ServiceType type = 2 [(buf.validate.field).enum.defined_only = true];
-}
-message GetServiceByRouterResponse {
-  Service service = 1;
 }

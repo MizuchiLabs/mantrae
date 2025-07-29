@@ -1,3 +1,3 @@
-import CustomSwitch from "./custom-switch.svelte";
+import CustomSwitch from './custom-switch.svelte';
 
 export { CustomSwitch };

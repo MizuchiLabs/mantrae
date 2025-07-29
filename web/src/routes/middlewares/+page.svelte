@@ -20,12 +20,12 @@
 	import { toast } from 'svelte-sonner';
 	import { profile } from '$lib/stores/profile';
 	import type { BulkAction } from '$lib/components/tables/types';
-	import { MiddlewareType, type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
-	import { onMount } from 'svelte';
+	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import ColumnText from '$lib/components/tables/ColumnText.svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let item = $state({} as Middleware);
 	let open = $state(false);
@@ -55,7 +55,7 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
-				const protocol = row.getValue(columnId) as MiddlewareType;
+				const protocol = row.getValue(columnId) as ProtocolType;
 
 				// Handle both enum value and display label filtering
 				if (typeof filterValue === 'string') {
@@ -70,14 +70,14 @@
 				return protocol === filterValue;
 			},
 			cell: ({ row, column }) => {
-				let protocol = row.getValue('type') as MiddlewareType.HTTP | MiddlewareType.TCP;
+				let protocol = row.getValue('type') as ProtocolType.HTTP | ProtocolType.TCP;
 
 				let label = 'Unspecified';
 				let icon = undefined;
-				if (protocol === MiddlewareType.HTTP) {
+				if (protocol === ProtocolType.HTTP) {
 					label = 'HTTP';
 					icon = Globe;
-				} else if (protocol === MiddlewareType.TCP) {
+				} else if (protocol === ProtocolType.TCP) {
 					label = 'TCP';
 					icon = Network;
 				}
@@ -179,9 +179,9 @@
 			}
 		}
 	];
-	function getProtocolLabel(protocol: MiddlewareType): string {
-		if (protocol === MiddlewareType.HTTP) return 'HTTP';
-		if (protocol === MiddlewareType.TCP) return 'TCP';
+	function getProtocolLabel(protocol: ProtocolType): string {
+		if (protocol === ProtocolType.HTTP) return 'HTTP';
+		if (protocol === ProtocolType.TCP) return 'TCP';
 		return 'Unspecified';
 	}
 	const bulkActions: BulkAction<Middleware>[] = [
@@ -198,7 +198,7 @@
 		await refreshData(p.pageSize, p.pageIndex);
 	}
 
-	const deleteItem = async (id: bigint, type: MiddlewareType) => {
+	const deleteItem = async (id: bigint, type: ProtocolType) => {
 		try {
 			await middlewareClient.deleteMiddleware({ id: id, type: type });
 			await refreshData(pageSize.value ?? 10, 0);
@@ -255,8 +255,8 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	$effect(() => {
+		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 	});
 </script>
 
@@ -286,7 +286,7 @@
 		createButton={{
 			label: 'Create Middleware',
 			onClick: () => {
-				item = { type: MiddlewareType.HTTP } as Middleware;
+				item = { type: ProtocolType.HTTP } as Middleware;
 				open = true;
 			}
 		}}

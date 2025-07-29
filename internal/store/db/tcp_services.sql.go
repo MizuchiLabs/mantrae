@@ -89,17 +89,23 @@ func (q *Queries) DeleteTcpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getTcpService = `-- name: GetTcpService :one
+const getTcpServiceByID = `-- name: GetTcpServiceByID :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   tcp_services
 WHERE
-  id = ?
+  profile_id = ?
+  AND id = ?
 `
 
-func (q *Queries) GetTcpService(ctx context.Context, id int64) (TcpService, error) {
-	row := q.queryRow(ctx, q.getTcpServiceStmt, getTcpService, id)
+type GetTcpServiceByIDParams struct {
+	ProfileID int64 `json:"profileId"`
+	ID        int64 `json:"id"`
+}
+
+func (q *Queries) GetTcpServiceByID(ctx context.Context, arg GetTcpServiceByIDParams) (TcpService, error) {
+	row := q.queryRow(ctx, q.getTcpServiceByIDStmt, getTcpServiceByID, arg.ProfileID, arg.ID)
 	var i TcpService
 	err := row.Scan(
 		&i.ID,
@@ -120,11 +126,17 @@ SELECT
 FROM
   tcp_services
 WHERE
-  name = ?
+  profile_id = ?
+  AND name = ?
 `
 
-func (q *Queries) GetTcpServiceByName(ctx context.Context, name string) (TcpService, error) {
-	row := q.queryRow(ctx, q.getTcpServiceByNameStmt, getTcpServiceByName, name)
+type GetTcpServiceByNameParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+}
+
+func (q *Queries) GetTcpServiceByName(ctx context.Context, arg GetTcpServiceByNameParams) (TcpService, error) {
+	row := q.queryRow(ctx, q.getTcpServiceByNameStmt, getTcpServiceByName, arg.ProfileID, arg.Name)
 	var i TcpService
 	err := row.Scan(
 		&i.ID,

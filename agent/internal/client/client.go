@@ -104,7 +104,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertRouters(
 			ctx,
 			routerClient,
-			mantraev1.RouterType_ROUTER_TYPE_HTTP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 			ToAnyMap(dyn.HTTP.Routers),
 			syncedRouters,
 		); err != nil {
@@ -113,7 +113,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertRouters(
 			ctx,
 			routerClient,
-			mantraev1.RouterType_ROUTER_TYPE_TCP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 			ToAnyMap(dyn.TCP.Routers),
 			syncedRouters,
 		); err != nil {
@@ -122,7 +122,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertRouters(
 			ctx,
 			routerClient,
-			mantraev1.RouterType_ROUTER_TYPE_UDP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
 			ToAnyMap(dyn.UDP.Routers),
 			syncedRouters,
 		); err != nil {
@@ -133,7 +133,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertServices(
 			ctx,
 			serviceClient,
-			mantraev1.ServiceType_SERVICE_TYPE_HTTP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 			ToAnyMap(dyn.HTTP.Services),
 			syncedServices,
 		); err != nil {
@@ -142,7 +142,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertServices(
 			ctx,
 			serviceClient,
-			mantraev1.ServiceType_SERVICE_TYPE_TCP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 			ToAnyMap(dyn.TCP.Services),
 			syncedServices,
 		); err != nil {
@@ -151,7 +151,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertServices(
 			ctx,
 			serviceClient,
-			mantraev1.ServiceType_SERVICE_TYPE_UDP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
 			ToAnyMap(dyn.UDP.Services),
 			syncedServices,
 		); err != nil {
@@ -162,7 +162,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertMiddlewares(
 			ctx,
 			middlewareClient,
-			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 			ToAnyMap(dyn.HTTP.Middlewares),
 			syncedMiddlewares,
 		); err != nil {
@@ -171,7 +171,7 @@ func (t *TokenSource) Update(ctx context.Context) error {
 		if err := t.upsertMiddlewares(
 			ctx,
 			middlewareClient,
-			mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 			ToAnyMap(dyn.TCP.Middlewares),
 			syncedMiddlewares,
 		); err != nil {
@@ -206,7 +206,7 @@ func injectServiceAddresses(d *dynamic.Configuration, ip string, port uint16) {
 func (t *TokenSource) upsertRouters(
 	ctx context.Context,
 	client mantraev1connect.RouterServiceClient,
-	typ mantraev1.RouterType,
+	typ mantraev1.ProtocolType,
 	routers map[string]any,
 	synced map[string]struct{},
 ) error {
@@ -270,7 +270,7 @@ func (t *TokenSource) upsertRouters(
 func (t *TokenSource) upsertServices(
 	ctx context.Context,
 	client mantraev1connect.ServiceServiceClient,
-	typ mantraev1.ServiceType,
+	typ mantraev1.ProtocolType,
 	services map[string]any,
 	synced map[string]struct{},
 ) error {
@@ -332,7 +332,7 @@ func (t *TokenSource) upsertServices(
 func (t *TokenSource) upsertMiddlewares(
 	ctx context.Context,
 	client mantraev1connect.MiddlewareServiceClient,
-	typ mantraev1.MiddlewareType,
+	typ mantraev1.ProtocolType,
 	middlewares map[string]any,
 	synced map[string]struct{},
 ) error {

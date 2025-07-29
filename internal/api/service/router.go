@@ -12,16 +12,16 @@ import (
 
 type RouterService struct {
 	app      *config.App
-	dispatch map[mantraev1.RouterType]RouterOps
+	dispatch map[mantraev1.ProtocolType]RouterOps
 }
 
 func NewRouterService(app *config.App) *RouterService {
 	return &RouterService{
 		app: app,
-		dispatch: map[mantraev1.RouterType]RouterOps{
-			mantraev1.RouterType_ROUTER_TYPE_HTTP: NewHTTPRouterOps(app),
-			mantraev1.RouterType_ROUTER_TYPE_TCP:  NewTCPRouterOps(app),
-			mantraev1.RouterType_ROUTER_TYPE_UDP:  NewUDPRouterOps(app),
+		dispatch: map[mantraev1.ProtocolType]RouterOps{
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP: NewHTTPRouterOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP:  NewTCPRouterOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP:  NewUDPRouterOps(app),
 		},
 	}
 }
@@ -122,21 +122,21 @@ func (s *RouterService) ListRouters(
 		return connect.NewResponse(result), nil
 	} else {
 		// Get HTTP routers
-		httpOps := s.dispatch[mantraev1.RouterType_ROUTER_TYPE_HTTP]
+		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
 		httpResult, err := httpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		// Get TCP routers
-		tcpOps := s.dispatch[mantraev1.RouterType_ROUTER_TYPE_TCP]
+		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
 		tcpResult, err := tcpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		// Get UDP routers
-		udpOps := s.dispatch[mantraev1.RouterType_ROUTER_TYPE_UDP]
+		udpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_UDP]
 		udpResult, err := udpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)

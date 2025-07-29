@@ -19,21 +19,20 @@
 		const isEmail = username.includes('@');
 
 		try {
-			await userClient.verifyOTP({
+			let response = await userClient.verifyOTP({
 				identifier: {
 					case: isEmail ? 'email' : 'username',
 					value: username
 				},
 				otp
 			});
-			const verified = await userClient.verifyJWT({});
-			if (verified.user) {
-				user.value = verified.user;
-				await goto('/');
-			}
+			if (!response.user) throw new Error('Failed to verify token');
+
+			user.value = response.user;
 			toast.success('Token verified successfully!', {
 				description: 'Please reset your password!'
 			});
+			await goto('/');
 		} catch (err) {
 			let e = ConnectError.from(err);
 			toast.error('Failed to verify Token', { description: e.message });

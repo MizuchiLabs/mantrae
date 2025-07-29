@@ -89,17 +89,23 @@ func (q *Queries) DeleteUdpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getUdpService = `-- name: GetUdpService :one
+const getUdpServiceByID = `-- name: GetUdpServiceByID :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   udp_services
 WHERE
-  id = ?
+  profile_id = ?
+  AND id = ?
 `
 
-func (q *Queries) GetUdpService(ctx context.Context, id int64) (UdpService, error) {
-	row := q.queryRow(ctx, q.getUdpServiceStmt, getUdpService, id)
+type GetUdpServiceByIDParams struct {
+	ProfileID int64 `json:"profileId"`
+	ID        int64 `json:"id"`
+}
+
+func (q *Queries) GetUdpServiceByID(ctx context.Context, arg GetUdpServiceByIDParams) (UdpService, error) {
+	row := q.queryRow(ctx, q.getUdpServiceByIDStmt, getUdpServiceByID, arg.ProfileID, arg.ID)
 	var i UdpService
 	err := row.Scan(
 		&i.ID,
@@ -120,11 +126,17 @@ SELECT
 FROM
   udp_services
 WHERE
-  name = ?
+  profile_id = ?
+  AND name = ?
 `
 
-func (q *Queries) GetUdpServiceByName(ctx context.Context, name string) (UdpService, error) {
-	row := q.queryRow(ctx, q.getUdpServiceByNameStmt, getUdpServiceByName, name)
+type GetUdpServiceByNameParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+}
+
+func (q *Queries) GetUdpServiceByName(ctx context.Context, arg GetUdpServiceByNameParams) (UdpService, error) {
+	row := q.queryRow(ctx, q.getUdpServiceByNameStmt, getUdpServiceByName, arg.ProfileID, arg.Name)
 	var i UdpService
 	err := row.Scan(
 		&i.ID,

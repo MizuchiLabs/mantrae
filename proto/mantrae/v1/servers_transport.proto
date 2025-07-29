@@ -5,6 +5,7 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "mantrae/v1/protocol.proto";
 
 service ServersTransportService {
   rpc GetServersTransport(GetServersTransportRequest) returns (GetServersTransportResponse) {
@@ -18,12 +19,6 @@ service ServersTransportService {
   }
 }
 
-enum ServersTransportType {
-  SERVERS_TRANSPORT_TYPE_UNSPECIFIED = 0;
-  SERVERS_TRANSPORT_TYPE_HTTP = 1;
-  SERVERS_TRANSPORT_TYPE_TCP = 2;
-}
-
 message ServersTransport {
   int64 id = 1;
   int64 profile_id = 2;
@@ -31,14 +26,14 @@ message ServersTransport {
   string name = 4;
   google.protobuf.Struct config = 5;
   bool enabled = 6;
-  ServersTransportType type = 7;
+  ProtocolType type = 7;
   google.protobuf.Timestamp created_at = 8;
   google.protobuf.Timestamp updated_at = 9;
 }
 
 message GetServersTransportRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  ServersTransportType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetServersTransportResponse {
   ServersTransport servers_transport = 1;
@@ -50,7 +45,7 @@ message CreateServersTransportRequest {
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
-  ServersTransportType type = 6 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 6 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateServersTransportResponse {
   ServersTransport servers_transport = 1;
@@ -59,9 +54,9 @@ message CreateServersTransportResponse {
 message UpdateServersTransportRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
   string name = 2 [(buf.validate.field).string.min_len = 1];
-  google.protobuf.Struct config = 4;
-  bool enabled = 5;
-  ServersTransportType type = 6 [(buf.validate.field).enum.defined_only = true];
+  google.protobuf.Struct config = 3;
+  bool enabled = 4;
+  ProtocolType type = 5 [(buf.validate.field).enum.defined_only = true];
 }
 message UpdateServersTransportResponse {
   ServersTransport servers_transport = 1;
@@ -69,14 +64,14 @@ message UpdateServersTransportResponse {
 
 message DeleteServersTransportRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  ServersTransportType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteServersTransportResponse {}
 
 message ListServersTransportsRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional ServersTransportType type = 3;
+  optional ProtocolType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"

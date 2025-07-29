@@ -12,7 +12,8 @@ SELECT
 FROM
   traefik_instances
 WHERE
-  name = ?;
+  profile_id = ?
+  AND name = ?;
 
 -- name: ListTraefikInstances :many
 SELECT
@@ -20,19 +21,21 @@ SELECT
 FROM
   traefik_instances
 WHERE
-  profile_id = ?
+  profile_id = sqlc.arg ('profile_id')
 ORDER BY
   created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(sqlc.narg ('limit') AS INTEGER), -1)
 OFFSET
-  ?;
+  COALESCE(CAST(sqlc.narg ('offset') AS INTEGER), 0);
 
 -- name: CountTraefikInstances :one
 SELECT
   COUNT(*)
 FROM
-  traefik_instances;
+  traefik_instances
+WHERE
+  profile_id = ?;
 
 -- name: UpsertTraefikInstance :one
 INSERT INTO
@@ -77,7 +80,7 @@ SET
   version = EXCLUDED.version,
   updated_at = CURRENT_TIMESTAMP RETURNING *;
 
--- name: DeleteTraefikInstanceByID :exec
+-- name: DeleteTraefikInstance :exec
 DELETE FROM traefik_instances
 WHERE
   id = ?;

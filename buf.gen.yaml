@@ -25,6 +25,6 @@ plugins:
       - allow-get
       - with-streaming
       - path=openapi.yaml
-      - base=proto/gen/openapi/base.yaml
+      - base=proto/base.yaml
 inputs:
   - directory: proto

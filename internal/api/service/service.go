@@ -13,16 +13,16 @@ import (
 
 type Service struct {
 	app      *config.App
-	dispatch map[mantraev1.ServiceType]ServiceOps
+	dispatch map[mantraev1.ProtocolType]ServiceOps
 }
 
 func NewServiceService(app *config.App) *Service {
 	return &Service{
 		app: app,
-		dispatch: map[mantraev1.ServiceType]ServiceOps{
-			mantraev1.ServiceType_SERVICE_TYPE_HTTP: NewHTTPServiceOps(app),
-			mantraev1.ServiceType_SERVICE_TYPE_TCP:  NewTCPServiceOps(app),
-			mantraev1.ServiceType_SERVICE_TYPE_UDP:  NewUDPServiceOps(app),
+		dispatch: map[mantraev1.ProtocolType]ServiceOps{
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP: NewHTTPServiceOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP:  NewTCPServiceOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP:  NewUDPServiceOps(app),
 		},
 	}
 }
@@ -123,21 +123,21 @@ func (s *Service) ListServices(
 		return connect.NewResponse(result), nil
 	} else {
 		// Get HTTP services
-		httpOps := s.dispatch[mantraev1.ServiceType_SERVICE_TYPE_HTTP]
+		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
 		httpResult, err := httpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		// Get TCP services
-		tcpOps := s.dispatch[mantraev1.ServiceType_SERVICE_TYPE_TCP]
+		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
 		tcpResult, err := tcpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
 		// Get UDP services
-		udpOps := s.dispatch[mantraev1.ServiceType_SERVICE_TYPE_UDP]
+		udpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_UDP]
 		udpResult, err := udpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
@@ -153,23 +153,4 @@ func (s *Service) ListServices(
 			TotalCount: totalCount,
 		}), nil
 	}
-}
-
-func (s *Service) GetServiceByRouter(
-	ctx context.Context,
-	req *connect.Request[mantraev1.GetServiceByRouterRequest],
-) (*connect.Response[mantraev1.GetServiceByRouterResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
-	if !ok {
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid service type"),
-		)
-	}
-
-	result, err := ops.GetByRouter(ctx, req.Msg)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(result), nil
 }

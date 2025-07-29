@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -14,10 +15,6 @@ type ServiceOps interface {
 		ctx context.Context,
 		req *mantraev1.GetServiceRequest,
 	) (*mantraev1.GetServiceResponse, error)
-	GetByRouter(
-		ctx context.Context,
-		req *mantraev1.GetServiceByRouterRequest,
-	) (*mantraev1.GetServiceByRouterResponse, error)
 	Create(
 		ctx context.Context,
 		req *mantraev1.CreateServiceRequest,
@@ -66,24 +63,33 @@ func (s *HTTPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetHttpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	return &mantraev1.GetServiceResponse{
-		Service: result.ToProto(),
-	}, nil
-}
+	var result db.HttpService
+	var err error
 
-func (s *HTTPServiceOps) GetByRouter(
-	ctx context.Context,
-	req *mantraev1.GetServiceByRouterRequest,
-) (*mantraev1.GetServiceByRouterResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, req.Name)
-	if err != nil {
-		return nil, err
+	switch id := req.GetIdentifier().(type) {
+	case *mantraev1.GetServiceRequest_Id:
+		result, err = s.app.Conn.GetQuery().GetHttpServiceByID(ctx, db.GetHttpServiceByIDParams{
+			ProfileID: req.ProfileId,
+			ID:        id.Id,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	case *mantraev1.GetServiceRequest_Name:
+		result, err = s.app.Conn.GetQuery().GetHttpServiceByName(ctx, db.GetHttpServiceByNameParams{
+			ProfileID: req.ProfileId,
+			Name:      id.Name,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	default:
+		return nil, errors.New("invalid service identifier")
 	}
-	return &mantraev1.GetServiceByRouterResponse{
+
+	return &mantraev1.GetServiceResponse{
 		Service: result.ToProto(),
 	}, nil
 }
@@ -186,24 +192,33 @@ func (s *TCPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetTcpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	return &mantraev1.GetServiceResponse{
-		Service: result.ToProto(),
-	}, nil
-}
+	var result db.TcpService
+	var err error
 
-func (s *TCPServiceOps) GetByRouter(
-	ctx context.Context,
-	req *mantraev1.GetServiceByRouterRequest,
-) (*mantraev1.GetServiceByRouterResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, req.Name)
-	if err != nil {
-		return nil, err
+	switch id := req.GetIdentifier().(type) {
+	case *mantraev1.GetServiceRequest_Id:
+		result, err = s.app.Conn.GetQuery().GetTcpServiceByID(ctx, db.GetTcpServiceByIDParams{
+			ProfileID: req.ProfileId,
+			ID:        id.Id,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	case *mantraev1.GetServiceRequest_Name:
+		result, err = s.app.Conn.GetQuery().GetTcpServiceByName(ctx, db.GetTcpServiceByNameParams{
+			ProfileID: req.ProfileId,
+			Name:      id.Name,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	default:
+		return nil, errors.New("invalid service identifier")
 	}
-	return &mantraev1.GetServiceByRouterResponse{
+
+	return &mantraev1.GetServiceResponse{
 		Service: result.ToProto(),
 	}, nil
 }
@@ -306,24 +321,33 @@ func (s *UDPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetUdpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-	return &mantraev1.GetServiceResponse{
-		Service: result.ToProto(),
-	}, nil
-}
+	var result db.UdpService
+	var err error
 
-func (s *UDPServiceOps) GetByRouter(
-	ctx context.Context,
-	req *mantraev1.GetServiceByRouterRequest,
-) (*mantraev1.GetServiceByRouterResponse, error) {
-	result, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, req.Name)
-	if err != nil {
-		return nil, err
+	switch id := req.GetIdentifier().(type) {
+	case *mantraev1.GetServiceRequest_Id:
+		result, err = s.app.Conn.GetQuery().GetUdpServiceByID(ctx, db.GetUdpServiceByIDParams{
+			ProfileID: req.ProfileId,
+			ID:        id.Id,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	case *mantraev1.GetServiceRequest_Name:
+		result, err = s.app.Conn.GetQuery().GetUdpServiceByName(ctx, db.GetUdpServiceByNameParams{
+			ProfileID: req.ProfileId,
+			Name:      id.Name,
+		})
+		if err != nil {
+			return nil, err
+		}
+		break
+	default:
+		return nil, errors.New("invalid service identifier")
 	}
-	return &mantraev1.GetServiceByRouterResponse{
+
+	return &mantraev1.GetServiceResponse{
 		Service: result.ToProto(),
 	}, nil
 }

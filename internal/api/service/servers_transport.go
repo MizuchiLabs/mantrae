@@ -11,19 +11,15 @@ import (
 
 type ServersTransportService struct {
 	app      *config.App
-	dispatch map[mantraev1.ServersTransportType]ServersTransportOps
+	dispatch map[mantraev1.ProtocolType]ServersTransportOps
 }
 
 func NewServersTransportService(app *config.App) *ServersTransportService {
 	return &ServersTransportService{
 		app: app,
-		dispatch: map[mantraev1.ServersTransportType]ServersTransportOps{
-			mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_HTTP: NewHTTPServersTransportOps(
-				app,
-			),
-			mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_TCP: NewTCPServersTransportOps(
-				app,
-			),
+		dispatch: map[mantraev1.ProtocolType]ServersTransportOps{
+			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP: NewHTTPServersTransportOps(app),
+			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP:  NewTCPServersTransportOps(app),
 		},
 	}
 }
@@ -124,14 +120,14 @@ func (s *ServersTransportService) ListServersTransports(
 		return connect.NewResponse(result), nil
 	} else {
 		// Get HTTP servers transports
-		httpOps := s.dispatch[mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_HTTP]
+		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
 		httpResult, err := httpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, err
 		}
 
 		// Get TCP servers transports
-		tcpOps := s.dispatch[mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_TCP]
+		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
 		tcpResult, err := tcpOps.List(ctx, req.Msg)
 		if err != nil {
 			return nil, err

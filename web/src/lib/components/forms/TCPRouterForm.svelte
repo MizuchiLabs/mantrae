@@ -4,14 +4,14 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
+	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
 	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
-	import { MiddlewareType } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { profile } from '$lib/stores/profile';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -52,7 +52,7 @@
 				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
 			});
 		middlewareClient
-			.listMiddlewares({ profileId: profile.id, type: MiddlewareType.TCP, limit: -1n, offset: 0n })
+			.listMiddlewares({ profileId: profile.id, type: ProtocolType.TCP, limit: -1n, offset: 0n })
 			.then((data) => {
 				let defaultMiddleware = data.middlewares.find((m) => m.isDefault);
 				if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
@@ -93,7 +93,7 @@
 				{config.middlewares?.join(', ') || 'Select middlewares'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: MiddlewareType.TCP, limit: -1n, offset: 0n } ) then value}
+				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: ProtocolType.TCP, limit: -1n, offset: 0n } ) then value}
 					{#each value.middlewares as middleware (middleware.name)}
 						<Select.Item value={middleware.name}>
 							{middleware.name}
@@ -158,7 +158,7 @@
 	</div>
 
 	<!-- Rule -->
-	{#if router.type === RouterType.TCP}
+	{#if router.type === ProtocolType.TCP}
 		<RuleEditor bind:rule={config.rule} bind:type={router.type} />
 	{/if}
 </div>

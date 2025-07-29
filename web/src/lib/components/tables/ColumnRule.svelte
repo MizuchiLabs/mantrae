@@ -2,18 +2,18 @@
 	import * as HoverCard from '$lib/components/ui/hover-card';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { Badge, type BadgeVariant } from '$lib/components/ui/badge/index.js';
-	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
 	import { List, Globe, Route, Shield, Eye } from '@lucide/svelte';
 	import { truncateText } from '$lib/utils';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	interface Props {
 		rule: string;
-		routerType: RouterType.HTTP | RouterType.TCP;
+		protocol: ProtocolType.HTTP | ProtocolType.TCP;
 		maxDisplayLength?: number;
 		showIcons?: boolean;
 	}
 
-	let { rule, routerType, maxDisplayLength = 40, showIcons = true }: Props = $props();
+	let { rule, protocol, maxDisplayLength = 40, showIcons = true }: Props = $props();
 
 	interface ParsedRule {
 		type: 'Host' | 'Path' | 'PathPrefix' | 'HostSNI' | 'Method' | 'Headers' | 'Query' | 'Complex';
@@ -106,7 +106,7 @@
 
 	function getUrl(domain: string): string {
 		// For HTTP routers, try HTTPS first, fallback to HTTP
-		if (routerType === RouterType.HTTP) {
+		if (protocol === ProtocolType.HTTP) {
 			return `https://${domain}`;
 		}
 		// For TCP/SNI, just show the domain

@@ -16,23 +16,25 @@ SELECT
   COUNT(*)
 FROM
   traefik_instances
+WHERE
+  profile_id = ?
 `
 
-func (q *Queries) CountTraefikInstances(ctx context.Context) (int64, error) {
-	row := q.queryRow(ctx, q.countTraefikInstancesStmt, countTraefikInstances)
+func (q *Queries) CountTraefikInstances(ctx context.Context, profileID int64) (int64, error) {
+	row := q.queryRow(ctx, q.countTraefikInstancesStmt, countTraefikInstances, profileID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const deleteTraefikInstanceByID = `-- name: DeleteTraefikInstanceByID :exec
+const deleteTraefikInstance = `-- name: DeleteTraefikInstance :exec
 DELETE FROM traefik_instances
 WHERE
   id = ?
 `
 
-func (q *Queries) DeleteTraefikInstanceByID(ctx context.Context, id int64) error {
-	_, err := q.exec(ctx, q.deleteTraefikInstanceByIDStmt, deleteTraefikInstanceByID, id)
+func (q *Queries) DeleteTraefikInstance(ctx context.Context, id int64) error {
+	_, err := q.exec(ctx, q.deleteTraefikInstanceStmt, deleteTraefikInstance, id)
 	return err
 }
 
@@ -72,11 +74,17 @@ SELECT
 FROM
   traefik_instances
 WHERE
-  name = ?
+  profile_id = ?
+  AND name = ?
 `
 
-func (q *Queries) GetTraefikInstanceByName(ctx context.Context, name string) (TraefikInstance, error) {
-	row := q.queryRow(ctx, q.getTraefikInstanceByNameStmt, getTraefikInstanceByName, name)
+type GetTraefikInstanceByNameParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+}
+
+func (q *Queries) GetTraefikInstanceByName(ctx context.Context, arg GetTraefikInstanceByNameParams) (TraefikInstance, error) {
+	row := q.queryRow(ctx, q.getTraefikInstanceByNameStmt, getTraefikInstanceByName, arg.ProfileID, arg.Name)
 	var i TraefikInstance
 	err := row.Scan(
 		&i.ID,
@@ -102,23 +110,23 @@ SELECT
 FROM
   traefik_instances
 WHERE
-  profile_id = ?
+  profile_id = ?1
 ORDER BY
   created_at DESC
 LIMIT
-  ?
+  COALESCE(CAST(?3 AS INTEGER), -1)
 OFFSET
-  ?
+  COALESCE(CAST(?2 AS INTEGER), 0)
 `
 
 type ListTraefikInstancesParams struct {
-	ProfileID int64 `json:"profileId"`
-	Limit     int64 `json:"limit"`
-	Offset    int64 `json:"offset"`
+	ProfileID int64  `json:"profileId"`
+	Offset    *int64 `json:"offset"`
+	Limit     *int64 `json:"limit"`
 }
 
 func (q *Queries) ListTraefikInstances(ctx context.Context, arg ListTraefikInstancesParams) ([]TraefikInstance, error) {
-	rows, err := q.query(ctx, q.listTraefikInstancesStmt, listTraefikInstances, arg.ProfileID, arg.Limit, arg.Offset)
+	rows, err := q.query(ctx, q.listTraefikInstancesStmt, listTraefikInstances, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

@@ -89,17 +89,23 @@ func (q *Queries) DeleteHttpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getHttpService = `-- name: GetHttpService :one
+const getHttpServiceByID = `-- name: GetHttpServiceByID :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   http_services
 WHERE
-  id = ?
+  profile_id = ?
+  AND id = ?
 `
 
-func (q *Queries) GetHttpService(ctx context.Context, id int64) (HttpService, error) {
-	row := q.queryRow(ctx, q.getHttpServiceStmt, getHttpService, id)
+type GetHttpServiceByIDParams struct {
+	ProfileID int64 `json:"profileId"`
+	ID        int64 `json:"id"`
+}
+
+func (q *Queries) GetHttpServiceByID(ctx context.Context, arg GetHttpServiceByIDParams) (HttpService, error) {
+	row := q.queryRow(ctx, q.getHttpServiceByIDStmt, getHttpServiceByID, arg.ProfileID, arg.ID)
 	var i HttpService
 	err := row.Scan(
 		&i.ID,
@@ -120,11 +126,17 @@ SELECT
 FROM
   http_services
 WHERE
-  name = ?
+  profile_id = ?
+  AND name = ?
 `
 
-func (q *Queries) GetHttpServiceByName(ctx context.Context, name string) (HttpService, error) {
-	row := q.queryRow(ctx, q.getHttpServiceByNameStmt, getHttpServiceByName, name)
+type GetHttpServiceByNameParams struct {
+	ProfileID int64  `json:"profileId"`
+	Name      string `json:"name"`
+}
+
+func (q *Queries) GetHttpServiceByName(ctx context.Context, arg GetHttpServiceByNameParams) (HttpService, error) {
+	row := q.queryRow(ctx, q.getHttpServiceByNameStmt, getHttpServiceByName, arg.ProfileID, arg.Name)
 	var i HttpService
 	err := row.Scan(
 		&i.ID,

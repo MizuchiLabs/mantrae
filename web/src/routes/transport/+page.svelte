@@ -5,10 +5,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import {
-		ServersTransportType,
-		type ServersTransport
-	} from '$lib/gen/mantrae/v1/servers_transport_pb';
+	import { type ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import type { IconComponent } from '$lib/types';
@@ -25,8 +22,8 @@
 		Truck
 	} from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let item = $state({} as ServersTransport);
 	let open = $state(false);
@@ -48,7 +45,7 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
-				const protocol = row.getValue(columnId) as ServersTransportType;
+				const protocol = row.getValue(columnId) as ProtocolType;
 
 				// Handle both enum value and display label filtering
 				if (typeof filterValue === 'string') {
@@ -63,12 +60,12 @@
 				return protocol === filterValue;
 			},
 			cell: ({ row, column }) => {
-				const protocol = row.getValue('type') as ServersTransportType;
+				const protocol = row.getValue('type') as ProtocolType;
 				const label = getProtocolLabel(protocol);
-				const iconMap: Record<ServersTransportType, IconComponent> = {
-					[ServersTransportType.HTTP]: Globe,
-					[ServersTransportType.TCP]: Network,
-					[ServersTransportType.UNSPECIFIED]: TriangleAlert
+				const iconMap: Partial<Record<ProtocolType, IconComponent>> = {
+					[ProtocolType.HTTP]: Globe,
+					[ProtocolType.TCP]: Network,
+					[ProtocolType.UNSPECIFIED]: TriangleAlert
 				};
 				return renderComponent(ColumnBadge<ServersTransport>, {
 					label,
@@ -126,9 +123,9 @@
 	];
 
 	// Helper functions to avoid repetition
-	function getProtocolLabel(protocol: ServersTransportType): string {
-		if (protocol === ServersTransportType.HTTP) return 'HTTP';
-		if (protocol === ServersTransportType.TCP) return 'TCP';
+	function getProtocolLabel(protocol: ProtocolType): string {
+		if (protocol === ProtocolType.HTTP) return 'HTTP';
+		if (protocol === ProtocolType.TCP) return 'TCP';
 		return 'Unspecified';
 	}
 
@@ -200,8 +197,8 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	$effect(() => {
+		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 	});
 </script>
 

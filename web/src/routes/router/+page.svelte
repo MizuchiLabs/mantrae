@@ -9,7 +9,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import { RouterType, type Router } from '$lib/gen/mantrae/v1/router_pb';
+	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
@@ -29,9 +29,9 @@
 		Waves
 	} from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { type IconComponent } from '$lib/types';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	let item = $state({} as Router);
 	let open = $state(false);
@@ -39,7 +39,6 @@
 	// Data state
 	let data = $state<Router[]>([]);
 	let rowCount = $state<number>(0);
-	// let viewMode = $state<'table' | 'grid'>('table');
 
 	const columns: ColumnDef<Router>[] = [
 		{
@@ -62,7 +61,7 @@
 			enableSorting: true,
 			enableGlobalFilter: false,
 			filterFn: (row, columnId, filterValue) => {
-				const protocol = row.getValue(columnId) as RouterType;
+				const protocol = row.getValue(columnId) as ProtocolType;
 
 				// Handle both enum value and display label filtering
 				if (typeof filterValue === 'string') {
@@ -77,13 +76,13 @@
 				return protocol === filterValue;
 			},
 			cell: ({ row, column }) => {
-				const protocol = row.getValue('type') as RouterType;
+				const protocol = row.getValue('type') as ProtocolType;
 				const label = getProtocolLabel(protocol);
-				const iconMap: Record<RouterType, IconComponent> = {
-					[RouterType.HTTP]: Globe,
-					[RouterType.TCP]: Network,
-					[RouterType.UDP]: Waves,
-					[RouterType.UNSPECIFIED]: TriangleAlert
+				const iconMap: Record<ProtocolType, IconComponent> = {
+					[ProtocolType.HTTP]: Globe,
+					[ProtocolType.TCP]: Network,
+					[ProtocolType.UDP]: Waves,
+					[ProtocolType.UNSPECIFIED]: TriangleAlert
 				};
 				return renderComponent(ColumnBadge<Router>, {
 					label,
@@ -133,7 +132,7 @@
 			cell: ({ row }) => {
 				return renderComponent(ColumnRule, {
 					rule: (row.original.config?.rule as string) ?? '',
-					routerType: row.original.type as RouterType.HTTP | RouterType.TCP
+					protocol: row.original.type as ProtocolType.HTTP | ProtocolType.TCP
 				});
 			}
 		},
@@ -200,10 +199,10 @@
 	];
 
 	// Helper functions to avoid repetition
-	function getProtocolLabel(protocol: RouterType): string {
-		if (protocol === RouterType.HTTP) return 'HTTP';
-		if (protocol === RouterType.TCP) return 'TCP';
-		if (protocol === RouterType.UDP) return 'UDP';
+	function getProtocolLabel(protocol: ProtocolType): string {
+		if (protocol === ProtocolType.HTTP) return 'HTTP';
+		if (protocol === ProtocolType.TCP) return 'TCP';
+		if (protocol === ProtocolType.UDP) return 'UDP';
 		return 'Unspecified';
 	}
 
@@ -256,9 +255,13 @@
 				enabled: item.enabled,
 				dnsProviders: item.dnsProviders
 			});
-			const service = await serviceClient.getServiceByRouter({
-				name: item.name,
-				type: item.type
+			const service = await serviceClient.getService({
+				profileId: profile.id,
+				type: item.type,
+				identifier: {
+					value: item.name,
+					case: 'name'
+				}
 			});
 			if (service.service) {
 				service.service.enabled = item.enabled;
@@ -332,18 +335,8 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	onMount(() => {
-		refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-
-		// Set up resize handler
-		// const handleResize = () => {
-		// 	const isMobile = window.matchMedia('(max-width: 768px)').matches;
-		// 	if (isMobile) viewMode = 'grid';
-		// };
-
-		// handleResize(); // Check initial state
-		// window.addEventListener('resize', handleResize);
-		// return () => window.removeEventListener('resize', handleResize);
+	$effect(() => {
+		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 	});
 </script>
 
@@ -362,51 +355,8 @@
 			</h1>
 			<p class="text-muted-foreground text-sm sm:text-base">Manage your routers and services</p>
 		</div>
-
-		<!-- View Toggle (Don't show on mobile) -->
-		<!-- <div class="hidden items-center gap-2 self-start sm:self-auto md:flex"> -->
-		<!-- 	<Button -->
-		<!-- 		variant={viewMode === 'table' ? 'default' : 'outline'} -->
-		<!-- 		size="sm" -->
-		<!-- 		onclick={() => (viewMode = 'table')} -->
-		<!-- 		class="flex-1 sm:flex-none" -->
-		<!-- 	> -->
-		<!-- 		<Table class="h-4 w-4 sm:mr-2" /> -->
-		<!-- 		<span class="hidden sm:block">Table</span> -->
-		<!-- 	</Button> -->
-		<!-- 	<Button -->
-		<!-- 		variant={viewMode === 'grid' ? 'default' : 'outline'} -->
-		<!-- 		size="sm" -->
-		<!-- 		onclick={() => (viewMode = 'grid')} -->
-		<!-- 		class="flex-1 sm:flex-none" -->
-		<!-- 	> -->
-		<!-- 		<LayoutGrid class="h-4 w-4 sm:mr-2" /> -->
-		<!-- 		<span class="hidden sm:block">Grid</span> -->
-		<!-- 	</Button> -->
-		<!-- </div> -->
 	</div>
 
-	<!-- <DataTable -->
-	<!-- 	{data} -->
-	<!-- 	{columns} -->
-	<!-- 	{rowCount} -->
-	<!-- 	{viewMode} -->
-	<!-- 	{onPaginationChange} -->
-	<!-- 	{bulkActions} -->
-	<!-- 	rowClassModifiers={{}} -->
-	<!-- 	cardConfig={{ -->
-	<!-- 		titleKey: 'name', -->
-	<!-- 		subtitleKey: 'type', -->
-	<!-- 		excludeColumns: [] -->
-	<!-- 	}} -->
-	<!-- 	createButton={{ -->
-	<!-- 		label: 'Create Router', -->
-	<!-- 		onClick: () => { -->
-	<!-- 			item = { type: RouterType.HTTP } as Router; -->
-	<!-- 			open = true; -->
-	<!-- 		} -->
-	<!-- 	}} -->
-	<!-- /> -->
 	<DataTable
 		{data}
 		{columns}
@@ -416,7 +366,7 @@
 		createButton={{
 			label: 'Create Router',
 			onClick: () => {
-				item = { type: RouterType.HTTP } as Router;
+				item = { type: ProtocolType.HTTP } as Router;
 				open = true;
 			}
 		}}

@@ -2,7 +2,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { ServiceType, type Service } from '$lib/gen/mantrae/v1/service_pb';
+	import { type Service } from '$lib/gen/mantrae/v1/service_pb';
 	import { Plus, Trash } from '@lucide/svelte';
 	import { marshalConfig } from '$lib/types';
 	import type { TCPService } from '$lib/gen/zen/traefik-schemas';
@@ -39,9 +39,7 @@
 						server.address = input.value;
 						service.config = marshalConfig(config);
 					}}
-					placeholder={service.type === ServiceType.HTTP
-						? 'http://127.0.0.1:8080'
-						: '127.0.0.1:8080'}
+					placeholder="127.0.0.1:8080"
 				/>
 				<Button
 					variant="ghost"

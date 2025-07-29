@@ -12,7 +12,6 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { CircleCheck, CircleSlash, EthernetPort, Pencil, Trash } from '@lucide/svelte';
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	let item = $state({} as EntryPoint);
@@ -166,8 +165,8 @@
 		rowCount = Number(response.totalCount);
 	}
 
-	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	$effect(() => {
+		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 	});
 </script>
 

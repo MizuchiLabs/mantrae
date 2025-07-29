@@ -2,7 +2,6 @@
 	import AppFooter from '$lib/components/nav/AppFooter.svelte';
 	import AppHeader from '$lib/components/nav/AppHeader.svelte';
 	import AppSidebar from '$lib/components/nav/AppSidebar.svelte';
-	// import AppCenter from '$lib/components/nav/AppCenter.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { ModeWatcher } from 'mode-watcher';
@@ -19,7 +18,6 @@
 
 <ModeWatcher />
 <Toaster />
-<!-- <AppCenter /> -->
 
 {#if user.isLoggedIn()}
 	<Sidebar.Provider>

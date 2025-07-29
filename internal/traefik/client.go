@@ -37,7 +37,13 @@ func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
 		return
 	}
 
-	instance, err := q.GetTraefikInstanceByName(context.Background(), instanceName)
+	instance, err := q.GetTraefikInstanceByName(
+		context.Background(),
+		db.GetTraefikInstanceByNameParams{
+			ProfileID: profileID,
+			Name:      instanceName,
+		},
+	)
 	if err != nil {
 		// Create new temporary instance
 		instance = db.TraefikInstance{

@@ -1,8 +1,8 @@
-import type { Profile } from "$lib/gen/mantrae/v1/profile_pb";
-import { createLocalStorage } from "$lib/storage.svelte";
+import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+import { createLocalStorage } from '$lib/storage.svelte';
 
 class ProfileStore {
-	private store = createLocalStorage<Profile | null>("selected_profile", null);
+	private store = createLocalStorage<Profile | null>('selected_profile', null);
 
 	get value(): Profile | null {
 		return this.store.value ?? null;
@@ -31,11 +31,11 @@ class ProfileStore {
 
 	// Validation methods
 	hasValidId(): boolean {
-		return typeof this.id === "bigint" && this.id > 0n;
+		return typeof this.id === 'bigint' && this.id > 0n;
 	}
 
 	hasValidName(): boolean {
-		return typeof this.name === "string" && this.name.length > 0;
+		return typeof this.name === 'string' && this.name.length > 0;
 	}
 
 	isValid(): boolean {

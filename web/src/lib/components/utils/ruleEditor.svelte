@@ -6,20 +6,23 @@
 	import { ValidateRule } from './ruleString';
 	import { CircleCheck, CircleX } from '@lucide/svelte';
 	import { ruleTab } from '$lib/stores/common';
-	import { RouterType } from '$lib/gen/mantrae/v1/router_pb';
-	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	interface Props {
 		rule?: string;
-		type: RouterType.HTTP | RouterType.TCP;
+		type: ProtocolType.HTTP | ProtocolType.TCP;
 		disabled?: boolean;
 	}
 
-	let { rule = $bindable(), type = $bindable(RouterType.HTTP), disabled = false }: Props = $props();
+	let {
+		rule = $bindable(),
+		type = $bindable(ProtocolType.HTTP),
+		disabled = false
+	}: Props = $props();
 
 	// Simplified rule templates
 	const ruleTemplates = {
-		[RouterType.HTTP]: [
+		[ProtocolType.HTTP]: [
 			'Header(`key`, `value`)',
 			'HeaderRegexp(`key`, `regexp`)',
 			'Host(`domain`)',
@@ -32,7 +35,7 @@
 			'QueryRegexp(`key`, `regexp`)',
 			'ClientIP(`ip`)'
 		],
-		[RouterType.TCP]: [
+		[ProtocolType.TCP]: [
 			'HostSNI(`domain`)',
 			'HostSNIRegexp(`regexp`)',
 			'ClientIP(`ip`)',
@@ -58,11 +61,11 @@
 	$effect(() => {
 		if (!rule) return;
 
-		const hostPattern = type === RouterType.HTTP ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
+		const hostPattern = type === ProtocolType.HTTP ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
 		const pathPattern = /Path\(`(.*?)`\)/;
 
 		host = rule.match(hostPattern)?.[1] ?? '';
-		path = type === RouterType.HTTP ? (rule.match(pathPattern)?.[1] ?? '') : '';
+		path = type === ProtocolType.HTTP ? (rule.match(pathPattern)?.[1] ?? '') : '';
 
 		checkSimpleMode();
 	});
@@ -94,7 +97,7 @@
 			return;
 		}
 
-		if (type === RouterType.HTTP) {
+		if (type === ProtocolType.HTTP) {
 			rule = [host ? `Host(\`${host}\`)` : null, path ? `Path(\`${path}\`)` : null]
 				.filter(Boolean)
 				.join(' && ');
@@ -238,10 +241,10 @@
 					bind:value={host}
 					oninput={handleSimpleInput}
 					placeholder="example.com"
-					class={type === RouterType.HTTP ? 'col-span-6' : 'col-span-8'}
+					class={type === ProtocolType.HTTP ? 'col-span-6' : 'col-span-8'}
 					{disabled}
 				/>
-				{#if type === RouterType.HTTP}
+				{#if type === ProtocolType.HTTP}
 					<Input
 						id="path"
 						bind:value={path}

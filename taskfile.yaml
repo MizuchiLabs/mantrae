@@ -40,6 +40,14 @@ tasks:
       - go get -u ./...
       - cd web && pnpm update --latest
 
+  #  Generate code
+  gen:
+    desc: Generate sqlc and buf
+    cmds:
+      - buf generate --clean
+      - sqlc generate
+      - go run -tags dev main.go -zod
+
   #   Build binary
   build:
     desc: Build Go binary

@@ -6,7 +6,6 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import CopyButton from '../ui/copy-button/copy-button.svelte';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { RotateCcw } from '@lucide/svelte';
 	import { agentClient } from '$lib/api';

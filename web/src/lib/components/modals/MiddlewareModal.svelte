@@ -6,14 +6,15 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import { MiddlewareType, type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
+	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
 	import { middlewareClient } from '$lib/api';
-	import { middlewareTypes } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import HTTPMiddlewareForm from '../forms/HTTPMiddlewareForm.svelte';
 	import TCPMiddlewareForm from '../forms/TCPMiddlewareForm.svelte';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { protocolTypes } from '$lib/types';
 
 	interface Props {
 		data: Middleware[];
@@ -102,15 +103,18 @@
 						onValueChange={(value) => (item.type = parseInt(value, 10))}
 					>
 						<Select.Trigger class="w-full">
-							{middlewareTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+							{protocolTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
 						</Select.Trigger>
 						<Select.Content>
 							<Select.Group>
 								<Select.Label>Middleware Type</Select.Label>
-								{#each middlewareTypes as t (t.value)}
-									<Select.Item value={t.value.toString()} label={t.label}>
-										{t.label}
-									</Select.Item>
+								{#each protocolTypes as t (t.value)}
+									<!-- Skip UDP -->
+									{#if t.value !== ProtocolType.UDP}
+										<Select.Item value={t.value.toString()} label={t.label}>
+											{t.label}
+										</Select.Item>
+									{/if}
 								{/each}
 							</Select.Group>
 						</Select.Content>
@@ -118,10 +122,10 @@
 				</div>
 			</div>
 
-			{#if item.type === MiddlewareType.HTTP}
+			{#if item.type === ProtocolType.HTTP}
 				<HTTPMiddlewareForm bind:middleware={item} />
 			{/if}
-			{#if item.type === MiddlewareType.TCP}
+			{#if item.type === ProtocolType.TCP}
 				<TCPMiddlewareForm bind:middleware={item} />
 			{/if}
 

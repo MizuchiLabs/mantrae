@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/internal/store/schema"
@@ -38,183 +39,142 @@ func (e *EntryPoint) ToProto() *mantraev1.EntryPoint {
 }
 
 func (r *HttpRouter) ToProto() *mantraev1.Router {
-	config, err := MarshalStruct(r.Config)
-	if err != nil {
-		return nil
-	}
-
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(r.Config),
 		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_HTTP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}
 }
 
 func (r *TcpRouter) ToProto() *mantraev1.Router {
-	config, err := MarshalStruct(r.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(r.Config),
 		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_TCP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}
 }
 
 func (r *UdpRouter) ToProto() *mantraev1.Router {
-	config, err := MarshalStruct(r.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Router{
 		Id:        r.ID,
 		ProfileId: r.ProfileID,
 		AgentId:   SafeString(r.AgentID),
 		Name:      r.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(r.Config),
 		Enabled:   r.Enabled,
-		Type:      mantraev1.RouterType_ROUTER_TYPE_UDP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
 		CreatedAt: SafeTimestamp(r.CreatedAt),
 		UpdatedAt: SafeTimestamp(r.UpdatedAt),
 	}
 }
 
 func (s *HttpService) ToProto() *mantraev1.Service {
-	config, err := MarshalStruct(s.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Service{
 		Id:        s.ID,
 		ProfileId: s.ProfileID,
 		AgentId:   SafeString(s.AgentID),
 		Name:      s.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(s.Config),
 		Enabled:   s.Enabled,
-		Type:      mantraev1.ServiceType_SERVICE_TYPE_HTTP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(s.CreatedAt),
 		UpdatedAt: SafeTimestamp(s.UpdatedAt),
 	}
 }
 
 func (s *TcpService) ToProto() *mantraev1.Service {
-	config, err := MarshalStruct(s.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Service{
 		Id:        s.ID,
 		ProfileId: s.ProfileID,
 		AgentId:   SafeString(s.AgentID),
 		Name:      s.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(s.Config),
 		Enabled:   s.Enabled,
-		Type:      mantraev1.ServiceType_SERVICE_TYPE_TCP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 		CreatedAt: SafeTimestamp(s.CreatedAt),
 		UpdatedAt: SafeTimestamp(s.UpdatedAt),
 	}
 }
 
 func (s *UdpService) ToProto() *mantraev1.Service {
-	config, err := MarshalStruct(s.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Service{
 		Id:        s.ID,
 		ProfileId: s.ProfileID,
 		AgentId:   SafeString(s.AgentID),
 		Name:      s.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(s.Config),
 		Enabled:   s.Enabled,
-		Type:      mantraev1.ServiceType_SERVICE_TYPE_UDP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
 		CreatedAt: SafeTimestamp(s.CreatedAt),
 		UpdatedAt: SafeTimestamp(s.UpdatedAt),
 	}
 }
 
 func (m *HttpMiddleware) ToProto() *mantraev1.Middleware {
-	config, err := MarshalStruct(m.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Middleware{
 		Id:        m.ID,
 		ProfileId: m.ProfileID,
 		AgentId:   SafeString(m.AgentID),
 		Name:      m.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(m.Config),
 		Enabled:   m.Enabled,
 		IsDefault: m.IsDefault,
-		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_HTTP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
 }
 
 func (m *TcpMiddleware) ToProto() *mantraev1.Middleware {
-	config, err := MarshalStruct(m.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.Middleware{
 		Id:        m.ID,
 		ProfileId: m.ProfileID,
 		AgentId:   SafeString(m.AgentID),
 		Name:      m.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(m.Config),
 		Enabled:   m.Enabled,
 		IsDefault: m.IsDefault,
-		Type:      mantraev1.MiddlewareType_MIDDLEWARE_TYPE_TCP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
 }
 
 func (m *HttpServersTransport) ToProto() *mantraev1.ServersTransport {
-	config, err := MarshalStruct(m.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.ServersTransport{
 		Id:        m.ID,
 		ProfileId: m.ProfileID,
 		AgentId:   SafeString(m.AgentID),
 		Name:      m.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(m.Config),
 		Enabled:   m.Enabled,
-		Type:      mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_HTTP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
 }
 
 func (m *TcpServersTransport) ToProto() *mantraev1.ServersTransport {
-	config, err := MarshalStruct(m.Config)
-	if err != nil {
-		return nil
-	}
 	return &mantraev1.ServersTransport{
 		Id:        m.ID,
 		ProfileId: m.ProfileID,
 		AgentId:   SafeString(m.AgentID),
 		Name:      m.Name,
-		Config:    config,
+		Config:    MustMarshalStruct(m.Config),
 		Enabled:   m.Enabled,
-		Type:      mantraev1.ServersTransportType_SERVERS_TRANSPORT_TYPE_TCP,
+		Type:      mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
 		CreatedAt: SafeTimestamp(m.CreatedAt),
 		UpdatedAt: SafeTimestamp(m.UpdatedAt),
 	}
@@ -295,6 +255,21 @@ func (d *DnsProvider) ToProto() *mantraev1.DnsProvider {
 	}
 }
 
+func (t *TraefikInstance) ToProto() *mantraev1.TraefikInstance {
+	return &mantraev1.TraefikInstance{
+		Id:          t.ID,
+		Name:        t.Name,
+		Url:         t.Url,
+		Tls:         t.Tls,
+		EntryPoints: MustMarshalStruct(t.Entrypoints),
+		Overview:    MustMarshalStruct(t.Overview),
+		Config:      MustMarshalStruct(t.Config),
+		Version:     MustMarshalStruct(t.Version),
+		CreatedAt:   SafeTimestamp(t.CreatedAt),
+		UpdatedAt:   SafeTimestamp(t.UpdatedAt),
+	}
+}
+
 func (a *ListAuditLogsRow) ToProto() *mantraev1.AuditLog {
 	return &mantraev1.AuditLog{
 		Id:          a.ID,
@@ -313,7 +288,7 @@ func (a *ListAuditLogsRow) ToProto() *mantraev1.AuditLog {
 // Proto to SQL ---------------------------------------------------------------
 
 func (r *HttpRouter) FromProto(proto *mantraev1.Router) error {
-	if proto.Type != mantraev1.RouterType_ROUTER_TYPE_HTTP {
+	if proto.Type != mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP {
 		return errors.New("invalid router type for HTTP router")
 	}
 
@@ -420,4 +395,34 @@ func MarshalStruct[T any](s *T) (*structpb.Struct, error) {
 		return nil, err
 	}
 	return &out, nil
+}
+
+func MustMarshalStruct[T any](s *T) *structpb.Struct {
+	data, err := json.Marshal(s)
+	if err != nil {
+		slog.Error("failed to marshal struct", "error", err)
+		return nil
+	}
+
+	var out structpb.Struct
+	if err := out.UnmarshalJSON(data); err != nil {
+		slog.Error("failed to unmarshal struct", "error", err)
+		return nil
+	}
+	return &out
+}
+
+func MustUnmarshalStruct[T any](s *structpb.Struct) *T {
+	data, err := s.MarshalJSON()
+	if err != nil {
+		slog.Error("failed to marshal struct", "error", err)
+		return nil
+	}
+
+	var out T
+	if err := json.Unmarshal(data, &out); err != nil {
+		slog.Error("failed to unmarshal struct", "error", err)
+		return nil
+	}
+	return &out
 }

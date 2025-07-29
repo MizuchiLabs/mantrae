@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "mantrae/v1/dns_provider.proto";
+import "mantrae/v1/protocol.proto";
 
 service RouterService {
   rpc GetRouter(GetRouterRequest) returns (GetRouterResponse) {
@@ -19,13 +20,6 @@ service RouterService {
   }
 }
 
-enum RouterType {
-  ROUTER_TYPE_UNSPECIFIED = 0;
-  ROUTER_TYPE_HTTP = 1;
-  ROUTER_TYPE_TCP = 2;
-  ROUTER_TYPE_UDP = 3;
-}
-
 message Router {
   int64 id = 1;
   int64 profile_id = 2;
@@ -33,7 +27,7 @@ message Router {
   string name = 4;
   google.protobuf.Struct config = 5;
   bool enabled = 6;
-  RouterType type = 7;
+  ProtocolType type = 7;
   repeated DnsProvider dns_providers = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
@@ -41,7 +35,7 @@ message Router {
 
 message GetRouterRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  RouterType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetRouterResponse {
   Router router = 1;
@@ -53,7 +47,7 @@ message CreateRouterRequest {
   string name = 3 [(buf.validate.field).string.min_len = 1];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
-  RouterType type = 6 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 6 [(buf.validate.field).enum.defined_only = true];
 }
 message CreateRouterResponse {
   Router router = 1;
@@ -62,7 +56,7 @@ message CreateRouterResponse {
 message UpdateRouterRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
   string name = 2 [(buf.validate.field).string.min_len = 1];
-  RouterType type = 3 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
   repeated DnsProvider dns_providers = 6;
@@ -73,14 +67,14 @@ message UpdateRouterResponse {
 
 message DeleteRouterRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  RouterType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteRouterResponse {}
 
 message ListRoutersRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional RouterType type = 3;
+  optional ProtocolType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"

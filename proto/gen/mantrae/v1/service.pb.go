@@ -24,58 +24,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ServiceType int32
-
-const (
-	ServiceType_SERVICE_TYPE_UNSPECIFIED ServiceType = 0
-	ServiceType_SERVICE_TYPE_HTTP        ServiceType = 1
-	ServiceType_SERVICE_TYPE_TCP         ServiceType = 2
-	ServiceType_SERVICE_TYPE_UDP         ServiceType = 3
-)
-
-// Enum value maps for ServiceType.
-var (
-	ServiceType_name = map[int32]string{
-		0: "SERVICE_TYPE_UNSPECIFIED",
-		1: "SERVICE_TYPE_HTTP",
-		2: "SERVICE_TYPE_TCP",
-		3: "SERVICE_TYPE_UDP",
-	}
-	ServiceType_value = map[string]int32{
-		"SERVICE_TYPE_UNSPECIFIED": 0,
-		"SERVICE_TYPE_HTTP":        1,
-		"SERVICE_TYPE_TCP":         2,
-		"SERVICE_TYPE_UDP":         3,
-	}
-)
-
-func (x ServiceType) Enum() *ServiceType {
-	p := new(ServiceType)
-	*p = x
-	return p
-}
-
-func (x ServiceType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (ServiceType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mantrae_v1_service_proto_enumTypes[0].Descriptor()
-}
-
-func (ServiceType) Type() protoreflect.EnumType {
-	return &file_mantrae_v1_service_proto_enumTypes[0]
-}
-
-func (x ServiceType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use ServiceType.Descriptor instead.
-func (ServiceType) EnumDescriptor() ([]byte, []int) {
-	return file_mantrae_v1_service_proto_rawDescGZIP(), []int{0}
-}
-
 type Service struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -84,7 +32,7 @@ type Service struct {
 	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`
-	Type          ServiceType            `protobuf:"varint,7,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,7,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -163,11 +111,11 @@ func (x *Service) GetConfig() *structpb.Struct {
 	return nil
 }
 
-func (x *Service) GetType() ServiceType {
+func (x *Service) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *Service) GetCreatedAt() *timestamppb.Timestamp {
@@ -185,9 +133,14 @@ func (x *Service) GetUpdatedAt() *timestamppb.Timestamp {
 }
 
 type GetServiceRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          ServiceType            `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ProfileId int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
+	Type      ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
+	// Types that are valid to be assigned to Identifier:
+	//
+	//	*GetServiceRequest_Id
+	//	*GetServiceRequest_Name
+	Identifier    isGetServiceRequest_Identifier `protobuf_oneof:"identifier"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -222,19 +175,60 @@ func (*GetServiceRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetServiceRequest) GetId() int64 {
+func (x *GetServiceRequest) GetProfileId() int64 {
 	if x != nil {
-		return x.Id
+		return x.ProfileId
 	}
 	return 0
 }
 
-func (x *GetServiceRequest) GetType() ServiceType {
+func (x *GetServiceRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
+
+func (x *GetServiceRequest) GetIdentifier() isGetServiceRequest_Identifier {
+	if x != nil {
+		return x.Identifier
+	}
+	return nil
+}
+
+func (x *GetServiceRequest) GetId() int64 {
+	if x != nil {
+		if x, ok := x.Identifier.(*GetServiceRequest_Id); ok {
+			return x.Id
+		}
+	}
+	return 0
+}
+
+func (x *GetServiceRequest) GetName() string {
+	if x != nil {
+		if x, ok := x.Identifier.(*GetServiceRequest_Name); ok {
+			return x.Name
+		}
+	}
+	return ""
+}
+
+type isGetServiceRequest_Identifier interface {
+	isGetServiceRequest_Identifier()
+}
+
+type GetServiceRequest_Id struct {
+	Id int64 `protobuf:"varint,3,opt,name=id,proto3,oneof"`
+}
+
+type GetServiceRequest_Name struct {
+	Name string `protobuf:"bytes,4,opt,name=name,proto3,oneof"`
+}
+
+func (*GetServiceRequest_Id) isGetServiceRequest_Identifier() {}
+
+func (*GetServiceRequest_Name) isGetServiceRequest_Identifier() {}
 
 type GetServiceResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -287,7 +281,7 @@ type CreateServiceRequest struct {
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Type          ServiceType            `protobuf:"varint,6,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,6,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -357,11 +351,11 @@ func (x *CreateServiceRequest) GetEnabled() bool {
 	return false
 }
 
-func (x *CreateServiceRequest) GetType() ServiceType {
+func (x *CreateServiceRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type CreateServiceResponse struct {
@@ -414,7 +408,7 @@ type UpdateServiceRequest struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Enabled       bool                   `protobuf:"varint,3,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
-	Type          ServiceType            `protobuf:"varint,5,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,5,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -477,11 +471,11 @@ func (x *UpdateServiceRequest) GetConfig() *structpb.Struct {
 	return nil
 }
 
-func (x *UpdateServiceRequest) GetType() ServiceType {
+func (x *UpdateServiceRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type UpdateServiceResponse struct {
@@ -531,7 +525,7 @@ func (x *UpdateServiceResponse) GetService() *Service {
 type DeleteServiceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          ServiceType            `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -573,11 +567,11 @@ func (x *DeleteServiceRequest) GetId() int64 {
 	return 0
 }
 
-func (x *DeleteServiceRequest) GetType() ServiceType {
+func (x *DeleteServiceRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type DeleteServiceResponse struct {
@@ -620,7 +614,7 @@ type ListServicesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
-	Type          *ServiceType           `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ServiceType,oneof" json:"type,omitempty"`
+	Type          *ProtocolType          `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType,oneof" json:"type,omitempty"`
 	Limit         *int64                 `protobuf:"varint,4,opt,name=limit,proto3,oneof" json:"limit,omitempty"`
 	Offset        *int64                 `protobuf:"varint,5,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -671,11 +665,11 @@ func (x *ListServicesRequest) GetAgentId() string {
 	return ""
 }
 
-func (x *ListServicesRequest) GetType() ServiceType {
+func (x *ListServicesRequest) GetType() ProtocolType {
 	if x != nil && x.Type != nil {
 		return *x.Type
 	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *ListServicesRequest) GetLimit() int64 {
@@ -744,108 +738,12 @@ func (x *ListServicesResponse) GetTotalCount() int64 {
 	return 0
 }
 
-type GetServiceByRouterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type          ServiceType            `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ServiceType" json:"type,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetServiceByRouterRequest) Reset() {
-	*x = GetServiceByRouterRequest{}
-	mi := &file_mantrae_v1_service_proto_msgTypes[11]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetServiceByRouterRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetServiceByRouterRequest) ProtoMessage() {}
-
-func (x *GetServiceByRouterRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_service_proto_msgTypes[11]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetServiceByRouterRequest.ProtoReflect.Descriptor instead.
-func (*GetServiceByRouterRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_service_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *GetServiceByRouterRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *GetServiceByRouterRequest) GetType() ServiceType {
-	if x != nil {
-		return x.Type
-	}
-	return ServiceType_SERVICE_TYPE_UNSPECIFIED
-}
-
-type GetServiceByRouterResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Service       *Service               `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetServiceByRouterResponse) Reset() {
-	*x = GetServiceByRouterResponse{}
-	mi := &file_mantrae_v1_service_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetServiceByRouterResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetServiceByRouterResponse) ProtoMessage() {}
-
-func (x *GetServiceByRouterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_service_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetServiceByRouterResponse.ProtoReflect.Descriptor instead.
-func (*GetServiceByRouterResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_service_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *GetServiceByRouterResponse) GetService() *Service {
-	if x != nil {
-		return x.Service
-	}
-	return nil
-}
-
 var File_mantrae_v1_service_proto protoreflect.FileDescriptor
 
 const file_mantrae_v1_service_proto_rawDesc = "" +
 	"\n" +
 	"\x18mantrae/v1/service.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd5\x02\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19mantrae/v1/protocol.proto\"\xd6\x02\n" +
 	"\aService\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
@@ -853,45 +751,50 @@ const file_mantrae_v1_service_proto_rawDesc = "" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x12\n" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x18\n" +
 	"\aenabled\x18\x05 \x01(\bR\aenabled\x12/\n" +
-	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06config\x12+\n" +
-	"\x04type\x18\a \x01(\x0e2\x17.mantrae.v1.ServiceTypeR\x04type\x129\n" +
+	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06config\x12,\n" +
+	"\x04type\x18\a \x01(\x0e2\x18.mantrae.v1.ProtocolTypeR\x04type\x129\n" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"c\n" +
-	"\x11GetServiceRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x125\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x17.mantrae.v1.ServiceTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"C\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc2\x01\n" +
+	"\x11GetServiceRequest\x12&\n" +
+	"\n" +
+	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x126\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12\x19\n" +
+	"\x02id\x18\x03 \x01(\x03B\a\xbaH\x04\"\x02 \x00H\x00R\x02id\x12\x1d\n" +
+	"\x04name\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x04nameB\x13\n" +
+	"\n" +
+	"identifier\x12\x05\xbaH\x02\b\x01\"C\n" +
 	"\x12GetServiceResponse\x12-\n" +
-	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"\x8a\x02\n" +
+	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"\x8b\x02\n" +
 	"\x14CreateServiceRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1e\n" +
 	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x88\x01\x01\x12\x1b\n" +
 	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
-	"\aenabled\x18\x05 \x01(\bR\aenabled\x125\n" +
-	"\x04type\x18\x06 \x01(\x0e2\x17.mantrae.v1.ServiceTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04typeB\v\n" +
+	"\aenabled\x18\x05 \x01(\bR\aenabled\x126\n" +
+	"\x04type\x18\x06 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04typeB\v\n" +
 	"\t_agent_id\"F\n" +
 	"\x15CreateServiceResponse\x12-\n" +
-	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"\xce\x01\n" +
+	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"\xcf\x01\n" +
 	"\x14UpdateServiceRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x18\n" +
 	"\aenabled\x18\x03 \x01(\bR\aenabled\x12/\n" +
-	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x125\n" +
-	"\x04type\x18\x05 \x01(\x0e2\x17.mantrae.v1.ServiceTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"F\n" +
+	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x126\n" +
+	"\x04type\x18\x05 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"F\n" +
 	"\x15UpdateServiceResponse\x12-\n" +
-	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"f\n" +
+	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice\"g\n" +
 	"\x14DeleteServiceRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x125\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x17.mantrae.v1.ServiceTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x17\n" +
-	"\x15DeleteServiceResponse\"\xdc\x02\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x17\n" +
+	"\x15DeleteServiceResponse\"\xdd\x02\n" +
 	"\x13ListServicesRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12'\n" +
-	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x120\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x17.mantrae.v1.ServiceTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
+	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x121\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
 	"\x05limit\x18\x04 \x01(\x03BV\xbaHS\xba\x01P\n" +
 	"\vlimit.valid\x12)limit must be either -1 or greater than 0\x1a\x16this == -1 || this > 0H\x02R\x05limit\x88\x01\x01\x12$\n" +
 	"\x06offset\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x03R\x06offset\x88\x01\x01B\v\n" +
@@ -902,25 +805,14 @@ const file_mantrae_v1_service_proto_rawDesc = "" +
 	"\x14ListServicesResponse\x12/\n" +
 	"\bservices\x18\x01 \x03(\v2\x13.mantrae.v1.ServiceR\bservices\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x03R\n" +
-	"totalCount\"o\n" +
-	"\x19GetServiceByRouterRequest\x12\x1b\n" +
-	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x125\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x17.mantrae.v1.ServiceTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"K\n" +
-	"\x1aGetServiceByRouterResponse\x12-\n" +
-	"\aservice\x18\x01 \x01(\v2\x13.mantrae.v1.ServiceR\aservice*n\n" +
-	"\vServiceType\x12\x1c\n" +
-	"\x18SERVICE_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11SERVICE_TYPE_HTTP\x10\x01\x12\x14\n" +
-	"\x10SERVICE_TYPE_TCP\x10\x02\x12\x14\n" +
-	"\x10SERVICE_TYPE_UDP\x10\x032\xa6\x04\n" +
+	"totalCount2\xbc\x03\n" +
 	"\x0eServiceService\x12P\n" +
 	"\n" +
 	"GetService\x12\x1d.mantrae.v1.GetServiceRequest\x1a\x1e.mantrae.v1.GetServiceResponse\"\x03\x90\x02\x01\x12T\n" +
 	"\rCreateService\x12 .mantrae.v1.CreateServiceRequest\x1a!.mantrae.v1.CreateServiceResponse\x12T\n" +
 	"\rUpdateService\x12 .mantrae.v1.UpdateServiceRequest\x1a!.mantrae.v1.UpdateServiceResponse\x12T\n" +
 	"\rDeleteService\x12 .mantrae.v1.DeleteServiceRequest\x1a!.mantrae.v1.DeleteServiceResponse\x12V\n" +
-	"\fListServices\x12\x1f.mantrae.v1.ListServicesRequest\x1a .mantrae.v1.ListServicesResponse\"\x03\x90\x02\x01\x12h\n" +
-	"\x12GetServiceByRouter\x12%.mantrae.v1.GetServiceByRouterRequest\x1a&.mantrae.v1.GetServiceByRouterResponse\"\x03\x90\x02\x01B\xa6\x01\n" +
+	"\fListServices\x12\x1f.mantrae.v1.ListServicesRequest\x1a .mantrae.v1.ListServicesResponse\"\x03\x90\x02\x01B\xa6\x01\n" +
 	"\x0ecom.mantrae.v1B\fServiceProtoP\x01Z=github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1;mantraev1\xa2\x02\x03MXX\xaa\x02\n" +
 	"Mantrae.V1\xca\x02\n" +
 	"Mantrae\\V1\xe2\x02\x16Mantrae\\V1\\GPBMetadata\xea\x02\vMantrae::V1b\x06proto3"
@@ -937,67 +829,65 @@ func file_mantrae_v1_service_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_service_proto_rawDescData
 }
 
-var file_mantrae_v1_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_mantrae_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_mantrae_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_mantrae_v1_service_proto_goTypes = []any{
-	(ServiceType)(0),                   // 0: mantrae.v1.ServiceType
-	(*Service)(nil),                    // 1: mantrae.v1.Service
-	(*GetServiceRequest)(nil),          // 2: mantrae.v1.GetServiceRequest
-	(*GetServiceResponse)(nil),         // 3: mantrae.v1.GetServiceResponse
-	(*CreateServiceRequest)(nil),       // 4: mantrae.v1.CreateServiceRequest
-	(*CreateServiceResponse)(nil),      // 5: mantrae.v1.CreateServiceResponse
-	(*UpdateServiceRequest)(nil),       // 6: mantrae.v1.UpdateServiceRequest
-	(*UpdateServiceResponse)(nil),      // 7: mantrae.v1.UpdateServiceResponse
-	(*DeleteServiceRequest)(nil),       // 8: mantrae.v1.DeleteServiceRequest
-	(*DeleteServiceResponse)(nil),      // 9: mantrae.v1.DeleteServiceResponse
-	(*ListServicesRequest)(nil),        // 10: mantrae.v1.ListServicesRequest
-	(*ListServicesResponse)(nil),       // 11: mantrae.v1.ListServicesResponse
-	(*GetServiceByRouterRequest)(nil),  // 12: mantrae.v1.GetServiceByRouterRequest
-	(*GetServiceByRouterResponse)(nil), // 13: mantrae.v1.GetServiceByRouterResponse
-	(*structpb.Struct)(nil),            // 14: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),      // 15: google.protobuf.Timestamp
+	(*Service)(nil),               // 0: mantrae.v1.Service
+	(*GetServiceRequest)(nil),     // 1: mantrae.v1.GetServiceRequest
+	(*GetServiceResponse)(nil),    // 2: mantrae.v1.GetServiceResponse
+	(*CreateServiceRequest)(nil),  // 3: mantrae.v1.CreateServiceRequest
+	(*CreateServiceResponse)(nil), // 4: mantrae.v1.CreateServiceResponse
+	(*UpdateServiceRequest)(nil),  // 5: mantrae.v1.UpdateServiceRequest
+	(*UpdateServiceResponse)(nil), // 6: mantrae.v1.UpdateServiceResponse
+	(*DeleteServiceRequest)(nil),  // 7: mantrae.v1.DeleteServiceRequest
+	(*DeleteServiceResponse)(nil), // 8: mantrae.v1.DeleteServiceResponse
+	(*ListServicesRequest)(nil),   // 9: mantrae.v1.ListServicesRequest
+	(*ListServicesResponse)(nil),  // 10: mantrae.v1.ListServicesResponse
+	(*structpb.Struct)(nil),       // 11: google.protobuf.Struct
+	(ProtocolType)(0),             // 12: mantrae.v1.ProtocolType
+	(*timestamppb.Timestamp)(nil), // 13: google.protobuf.Timestamp
 }
 var file_mantrae_v1_service_proto_depIdxs = []int32{
-	14, // 0: mantrae.v1.Service.config:type_name -> google.protobuf.Struct
-	0,  // 1: mantrae.v1.Service.type:type_name -> mantrae.v1.ServiceType
-	15, // 2: mantrae.v1.Service.created_at:type_name -> google.protobuf.Timestamp
-	15, // 3: mantrae.v1.Service.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: mantrae.v1.GetServiceRequest.type:type_name -> mantrae.v1.ServiceType
-	1,  // 5: mantrae.v1.GetServiceResponse.service:type_name -> mantrae.v1.Service
-	14, // 6: mantrae.v1.CreateServiceRequest.config:type_name -> google.protobuf.Struct
-	0,  // 7: mantrae.v1.CreateServiceRequest.type:type_name -> mantrae.v1.ServiceType
-	1,  // 8: mantrae.v1.CreateServiceResponse.service:type_name -> mantrae.v1.Service
-	14, // 9: mantrae.v1.UpdateServiceRequest.config:type_name -> google.protobuf.Struct
-	0,  // 10: mantrae.v1.UpdateServiceRequest.type:type_name -> mantrae.v1.ServiceType
-	1,  // 11: mantrae.v1.UpdateServiceResponse.service:type_name -> mantrae.v1.Service
-	0,  // 12: mantrae.v1.DeleteServiceRequest.type:type_name -> mantrae.v1.ServiceType
-	0,  // 13: mantrae.v1.ListServicesRequest.type:type_name -> mantrae.v1.ServiceType
-	1,  // 14: mantrae.v1.ListServicesResponse.services:type_name -> mantrae.v1.Service
-	0,  // 15: mantrae.v1.GetServiceByRouterRequest.type:type_name -> mantrae.v1.ServiceType
-	1,  // 16: mantrae.v1.GetServiceByRouterResponse.service:type_name -> mantrae.v1.Service
-	2,  // 17: mantrae.v1.ServiceService.GetService:input_type -> mantrae.v1.GetServiceRequest
-	4,  // 18: mantrae.v1.ServiceService.CreateService:input_type -> mantrae.v1.CreateServiceRequest
-	6,  // 19: mantrae.v1.ServiceService.UpdateService:input_type -> mantrae.v1.UpdateServiceRequest
-	8,  // 20: mantrae.v1.ServiceService.DeleteService:input_type -> mantrae.v1.DeleteServiceRequest
-	10, // 21: mantrae.v1.ServiceService.ListServices:input_type -> mantrae.v1.ListServicesRequest
-	12, // 22: mantrae.v1.ServiceService.GetServiceByRouter:input_type -> mantrae.v1.GetServiceByRouterRequest
-	3,  // 23: mantrae.v1.ServiceService.GetService:output_type -> mantrae.v1.GetServiceResponse
-	5,  // 24: mantrae.v1.ServiceService.CreateService:output_type -> mantrae.v1.CreateServiceResponse
-	7,  // 25: mantrae.v1.ServiceService.UpdateService:output_type -> mantrae.v1.UpdateServiceResponse
-	9,  // 26: mantrae.v1.ServiceService.DeleteService:output_type -> mantrae.v1.DeleteServiceResponse
-	11, // 27: mantrae.v1.ServiceService.ListServices:output_type -> mantrae.v1.ListServicesResponse
-	13, // 28: mantrae.v1.ServiceService.GetServiceByRouter:output_type -> mantrae.v1.GetServiceByRouterResponse
-	23, // [23:29] is the sub-list for method output_type
-	17, // [17:23] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	11, // 0: mantrae.v1.Service.config:type_name -> google.protobuf.Struct
+	12, // 1: mantrae.v1.Service.type:type_name -> mantrae.v1.ProtocolType
+	13, // 2: mantrae.v1.Service.created_at:type_name -> google.protobuf.Timestamp
+	13, // 3: mantrae.v1.Service.updated_at:type_name -> google.protobuf.Timestamp
+	12, // 4: mantrae.v1.GetServiceRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 5: mantrae.v1.GetServiceResponse.service:type_name -> mantrae.v1.Service
+	11, // 6: mantrae.v1.CreateServiceRequest.config:type_name -> google.protobuf.Struct
+	12, // 7: mantrae.v1.CreateServiceRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 8: mantrae.v1.CreateServiceResponse.service:type_name -> mantrae.v1.Service
+	11, // 9: mantrae.v1.UpdateServiceRequest.config:type_name -> google.protobuf.Struct
+	12, // 10: mantrae.v1.UpdateServiceRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 11: mantrae.v1.UpdateServiceResponse.service:type_name -> mantrae.v1.Service
+	12, // 12: mantrae.v1.DeleteServiceRequest.type:type_name -> mantrae.v1.ProtocolType
+	12, // 13: mantrae.v1.ListServicesRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 14: mantrae.v1.ListServicesResponse.services:type_name -> mantrae.v1.Service
+	1,  // 15: mantrae.v1.ServiceService.GetService:input_type -> mantrae.v1.GetServiceRequest
+	3,  // 16: mantrae.v1.ServiceService.CreateService:input_type -> mantrae.v1.CreateServiceRequest
+	5,  // 17: mantrae.v1.ServiceService.UpdateService:input_type -> mantrae.v1.UpdateServiceRequest
+	7,  // 18: mantrae.v1.ServiceService.DeleteService:input_type -> mantrae.v1.DeleteServiceRequest
+	9,  // 19: mantrae.v1.ServiceService.ListServices:input_type -> mantrae.v1.ListServicesRequest
+	2,  // 20: mantrae.v1.ServiceService.GetService:output_type -> mantrae.v1.GetServiceResponse
+	4,  // 21: mantrae.v1.ServiceService.CreateService:output_type -> mantrae.v1.CreateServiceResponse
+	6,  // 22: mantrae.v1.ServiceService.UpdateService:output_type -> mantrae.v1.UpdateServiceResponse
+	8,  // 23: mantrae.v1.ServiceService.DeleteService:output_type -> mantrae.v1.DeleteServiceResponse
+	10, // 24: mantrae.v1.ServiceService.ListServices:output_type -> mantrae.v1.ListServicesResponse
+	20, // [20:25] is the sub-list for method output_type
+	15, // [15:20] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_service_proto_init() }
 func file_mantrae_v1_service_proto_init() {
 	if File_mantrae_v1_service_proto != nil {
 		return
+	}
+	file_mantrae_v1_protocol_proto_init()
+	file_mantrae_v1_service_proto_msgTypes[1].OneofWrappers = []any{
+		(*GetServiceRequest_Id)(nil),
+		(*GetServiceRequest_Name)(nil),
 	}
 	file_mantrae_v1_service_proto_msgTypes[3].OneofWrappers = []any{}
 	file_mantrae_v1_service_proto_msgTypes[9].OneofWrappers = []any{}
@@ -1006,14 +896,13 @@ func file_mantrae_v1_service_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_service_proto_rawDesc), len(file_mantrae_v1_service_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   13,
+			NumEnums:      0,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_mantrae_v1_service_proto_goTypes,
 		DependencyIndexes: file_mantrae_v1_service_proto_depIdxs,
-		EnumInfos:         file_mantrae_v1_service_proto_enumTypes,
 		MessageInfos:      file_mantrae_v1_service_proto_msgTypes,
 	}.Build()
 	File_mantrae_v1_service_proto = out.File

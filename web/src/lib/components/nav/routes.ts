@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { Component } from 'svelte';
 import {
 	Bot,
 	EthernetPort,
@@ -9,10 +9,10 @@ import {
 	Settings,
 	Truck,
 	Users,
-	type IconProps,
-} from "@lucide/svelte";
+	type IconProps
+} from '@lucide/svelte';
 
-type IconComponent = Component<IconProps, Record<string, never>, "">;
+type IconComponent = Component<IconProps, Record<string, never>, ''>;
 
 type Routes = {
 	title: string;
@@ -23,16 +23,16 @@ type Routes = {
 };
 
 export const mainRoutes: Routes[] = [
-	{ title: "Dashboard", url: "/", icon: Gauge },
-	{ title: "Router", url: "/router/", icon: Route },
-	{ title: "Middlewares", url: "/middlewares/", icon: Layers },
-	{ title: "Entry Points", url: "/entrypoints/", icon: EthernetPort },
-	{ title: "Server Transports", url: "/transport/", icon: Truck },
+	{ title: 'Dashboard', url: '/', icon: Gauge },
+	{ title: 'Router', url: '/router/', icon: Route },
+	{ title: 'Middlewares', url: '/middlewares/', icon: Layers },
+	{ title: 'Entry Points', url: '/entrypoints/', icon: EthernetPort },
+	{ title: 'Server Transports', url: '/transport/', icon: Truck }
 ];
 export const adminRoutes: Routes[] = [
-	{ title: "Users", url: "/users/", icon: Users },
-	{ title: "Agents", url: "/agents/", icon: Bot },
-	{ title: "DNS", url: "/dns/", icon: Globe },
-	{ title: "Settings", url: "/settings/", icon: Settings },
+	{ title: 'Users', url: '/users/', icon: Users },
+	{ title: 'Agents', url: '/agents/', icon: Bot },
+	{ title: 'DNS', url: '/dns/', icon: Globe },
+	{ title: 'Settings', url: '/settings/', icon: Settings }
 ];
 export const SiteRoutes = [...mainRoutes, ...adminRoutes];

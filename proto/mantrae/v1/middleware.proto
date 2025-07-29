@@ -5,6 +5,7 @@ package mantrae.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "mantrae/v1/protocol.proto";
 
 service MiddlewareService {
   rpc GetMiddleware(GetMiddlewareRequest) returns (GetMiddlewareResponse) {
@@ -21,12 +22,6 @@ service MiddlewareService {
   }
 }
 
-enum MiddlewareType {
-  MIDDLEWARE_TYPE_UNSPECIFIED = 0;
-  MIDDLEWARE_TYPE_HTTP = 1;
-  MIDDLEWARE_TYPE_TCP = 2;
-}
-
 message Middleware {
   int64 id = 1;
   int64 profile_id = 2;
@@ -35,7 +30,7 @@ message Middleware {
   google.protobuf.Struct config = 5;
   bool enabled = 6;
   bool is_default = 7;
-  MiddlewareType type = 8;
+  ProtocolType type = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }
@@ -66,7 +61,7 @@ message PluginSnippet {
 
 message GetMiddlewareRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  MiddlewareType type = 2 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetMiddlewareResponse {
   Middleware middleware = 1;
@@ -76,7 +71,7 @@ message CreateMiddlewareRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2;
   string name = 3 [(buf.validate.field).string.min_len = 1];
-  MiddlewareType type = 4 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 4 [(buf.validate.field).enum.defined_only = true];
   bool is_default = 5;
   google.protobuf.Struct config = 6;
 }
@@ -87,7 +82,7 @@ message CreateMiddlewareResponse {
 message UpdateMiddlewareRequest {
   int64 id = 1 [(buf.validate.field).int64.gt = 0];
   string name = 2 [(buf.validate.field).string.min_len = 1];
-  MiddlewareType type = 3 [(buf.validate.field).enum.defined_only = true];
+  ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
   bool is_default = 6;
@@ -97,15 +92,15 @@ message UpdateMiddlewareResponse {
 }
 
 message DeleteMiddlewareRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  MiddlewareType type = 2 [(buf.validate.field).enum.defined_only = true];
+  int64 id = 2 [(buf.validate.field).int64.gt = 0];
+  ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteMiddlewareResponse {}
 
 message ListMiddlewaresRequest {
   int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
   optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
-  optional MiddlewareType type = 3;
+  optional ProtocolType type = 3;
   optional int64 limit = 4 [(buf.validate.field).cel = {
     id: "limit.valid"
     message: "limit must be either -1 or greater than 0"

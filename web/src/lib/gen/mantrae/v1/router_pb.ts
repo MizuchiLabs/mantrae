@@ -2,20 +2,22 @@
 // @generated from file mantrae/v1/router.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { DnsProvider } from "./dns_provider_pb";
 import { file_mantrae_v1_dns_provider } from "./dns_provider_pb";
+import type { ProtocolType } from "./protocol_pb";
+import { file_mantrae_v1_protocol } from "./protocol_pb";
 import type { JsonObject, Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/router.proto.
  */
 export const file_mantrae_v1_router: GenFile = /*@__PURE__*/
-  fileDesc("ChdtYW50cmFlL3YxL3JvdXRlci5wcm90bxIKbWFudHJhZS52MSK4AgoGUm91dGVyEgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSJAoEdHlwZRgHIAEoDjIWLm1hbnRyYWUudjEuUm91dGVyVHlwZRIuCg1kbnNfcHJvdmlkZXJzGAggAygLMhcubWFudHJhZS52MS5EbnNQcm92aWRlchIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJXChBHZXRSb3V0ZXJSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEi4KBHR5cGUYAiABKA4yFi5tYW50cmFlLnYxLlJvdXRlclR5cGVCCLpIBYIBAhABIjcKEUdldFJvdXRlclJlc3BvbnNlEiIKBnJvdXRlchgBIAEoCzISLm1hbnRyYWUudjEuUm91dGVyItcBChNDcmVhdGVSb3V0ZXJSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASFQoIYWdlbnRfaWQYAiABKAlIAIgBARIVCgRuYW1lGAMgASgJQge6SARyAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCBIuCgR0eXBlGAYgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgi6SAWCAQIQAUILCglfYWdlbnRfaWQiOgoUQ3JlYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIi2wEKE1VwZGF0ZVJvdXRlclJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASFQoEbmFtZRgCIAEoCUIHukgEcgIQARIuCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgi6SAWCAQIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSLgoNZG5zX3Byb3ZpZGVycxgGIAMoCzIXLm1hbnRyYWUudjEuRG5zUHJvdmlkZXIiOgoUVXBkYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIiWgoTRGVsZXRlUm91dGVyUmVxdWVzdBITCgJpZBgBIAEoA0IHukgEIgIgABIuCgR0eXBlGAIgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlQgi6SAWCAQIQASIWChREZWxldGVSb3V0ZXJSZXNwb25zZSKxAgoSTGlzdFJvdXRlcnNSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASHgoIYWdlbnRfaWQYAiABKAlCB7pIBHICEAFIAIgBARIpCgR0eXBlGAMgASgOMhYubWFudHJhZS52MS5Sb3V0ZXJUeXBlSAGIAQESagoFbGltaXQYBCABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSAKIAQESHAoGb2Zmc2V0GAUgASgDQge6SAQiAigASAOIAQFCCwoJX2FnZW50X2lkQgcKBV90eXBlQggKBl9saW1pdEIJCgdfb2Zmc2V0Ik8KE0xpc3RSb3V0ZXJzUmVzcG9uc2USIwoHcm91dGVycxgBIAMoCzISLm1hbnRyYWUudjEuUm91dGVyEhMKC3RvdGFsX2NvdW50GAIgASgDKmkKClJvdXRlclR5cGUSGwoXUk9VVEVSX1RZUEVfVU5TUEVDSUZJRUQQABIUChBST1VURVJfVFlQRV9IVFRQEAESEwoPUk9VVEVSX1RZUEVfVENQEAISEwoPUk9VVEVSX1RZUEVfVURQEAMyrAMKDVJvdXRlclNlcnZpY2USTQoJR2V0Um91dGVyEhwubWFudHJhZS52MS5HZXRSb3V0ZXJSZXF1ZXN0Gh0ubWFudHJhZS52MS5HZXRSb3V0ZXJSZXNwb25zZSIDkAIBElEKDENyZWF0ZVJvdXRlchIfLm1hbnRyYWUudjEuQ3JlYXRlUm91dGVyUmVxdWVzdBogLm1hbnRyYWUudjEuQ3JlYXRlUm91dGVyUmVzcG9uc2USUQoMVXBkYXRlUm91dGVyEh8ubWFudHJhZS52MS5VcGRhdGVSb3V0ZXJSZXF1ZXN0GiAubWFudHJhZS52MS5VcGRhdGVSb3V0ZXJSZXNwb25zZRJRCgxEZWxldGVSb3V0ZXISHy5tYW50cmFlLnYxLkRlbGV0ZVJvdXRlclJlcXVlc3QaIC5tYW50cmFlLnYxLkRlbGV0ZVJvdXRlclJlc3BvbnNlElMKC0xpc3RSb3V0ZXJzEh4ubWFudHJhZS52MS5MaXN0Um91dGVyc1JlcXVlc3QaHy5tYW50cmFlLnYxLkxpc3RSb3V0ZXJzUmVzcG9uc2UiA5ACAUKlAQoOY29tLm1hbnRyYWUudjFCC1JvdXRlclByb3RvUAFaPWdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9wcm90by9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_dns_provider]);
+  fileDesc("ChdtYW50cmFlL3YxL3JvdXRlci5wcm90bxIKbWFudHJhZS52MSK6AgoGUm91dGVyEgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSEAoIYWdlbnRfaWQYAyABKAkSDAoEbmFtZRgEIAEoCRInCgZjb25maWcYBSABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBiABKAgSJgoEdHlwZRgHIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlEi4KDWRuc19wcm92aWRlcnMYCCADKAsyFy5tYW50cmFlLnYxLkRuc1Byb3ZpZGVyEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIlkKEEdldFJvdXRlclJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASMAoEdHlwZRgCIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQASI3ChFHZXRSb3V0ZXJSZXNwb25zZRIiCgZyb3V0ZXIYASABKAsyEi5tYW50cmFlLnYxLlJvdXRlciLZAQoTQ3JlYXRlUm91dGVyUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEhUKCGFnZW50X2lkGAIgASgJSACIAQESFQoEbmFtZRgDIAEoCUIHukgEcgIQARInCgZjb25maWcYBCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Eg8KB2VuYWJsZWQYBSABKAgSMAoEdHlwZRgGIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlQgi6SAWCAQIQAUILCglfYWdlbnRfaWQiOgoUQ3JlYXRlUm91dGVyUmVzcG9uc2USIgoGcm91dGVyGAEgASgLMhIubWFudHJhZS52MS5Sb3V0ZXIi3QEKE1VwZGF0ZVJvdXRlclJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAASFQoEbmFtZRgCIAEoCUIHukgEcgIQARIwCgR0eXBlGAMgASgOMhgubWFudHJhZS52MS5Qcm90b2NvbFR5cGVCCLpIBYIBAhABEicKBmNvbmZpZxgEIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSDwoHZW5hYmxlZBgFIAEoCBIuCg1kbnNfcHJvdmlkZXJzGAYgAygLMhcubWFudHJhZS52MS5EbnNQcm92aWRlciI6ChRVcGRhdGVSb3V0ZXJSZXNwb25zZRIiCgZyb3V0ZXIYASABKAsyEi5tYW50cmFlLnYxLlJvdXRlciJcChNEZWxldGVSb3V0ZXJSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEjAKBHR5cGUYAiABKA4yGC5tYW50cmFlLnYxLlByb3RvY29sVHlwZUIIukgFggECEAEiFgoURGVsZXRlUm91dGVyUmVzcG9uc2UiswIKEkxpc3RSb3V0ZXJzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEh4KCGFnZW50X2lkGAIgASgJQge6SARyAhABSACIAQESKwoEdHlwZRgDIAEoDjIYLm1hbnRyYWUudjEuUHJvdG9jb2xUeXBlSAGIAQESagoFbGltaXQYBCABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSAKIAQESHAoGb2Zmc2V0GAUgASgDQge6SAQiAigASAOIAQFCCwoJX2FnZW50X2lkQgcKBV90eXBlQggKBl9saW1pdEIJCgdfb2Zmc2V0Ik8KE0xpc3RSb3V0ZXJzUmVzcG9uc2USIwoHcm91dGVycxgBIAMoCzISLm1hbnRyYWUudjEuUm91dGVyEhMKC3RvdGFsX2NvdW50GAIgASgDMqwDCg1Sb3V0ZXJTZXJ2aWNlEk0KCUdldFJvdXRlchIcLm1hbnRyYWUudjEuR2V0Um91dGVyUmVxdWVzdBodLm1hbnRyYWUudjEuR2V0Um91dGVyUmVzcG9uc2UiA5ACARJRCgxDcmVhdGVSb3V0ZXISHy5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlcXVlc3QaIC5tYW50cmFlLnYxLkNyZWF0ZVJvdXRlclJlc3BvbnNlElEKDFVwZGF0ZVJvdXRlchIfLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVxdWVzdBogLm1hbnRyYWUudjEuVXBkYXRlUm91dGVyUmVzcG9uc2USUQoMRGVsZXRlUm91dGVyEh8ubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXF1ZXN0GiAubWFudHJhZS52MS5EZWxldGVSb3V0ZXJSZXNwb25zZRJTCgtMaXN0Um91dGVycxIeLm1hbnRyYWUudjEuTGlzdFJvdXRlcnNSZXF1ZXN0Gh8ubWFudHJhZS52MS5MaXN0Um91dGVyc1Jlc3BvbnNlIgOQAgFCpQEKDmNvbS5tYW50cmFlLnYxQgtSb3V0ZXJQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp, file_mantrae_v1_dns_provider, file_mantrae_v1_protocol]);
 
 /**
  * @generated from message mantrae.v1.Router
@@ -52,9 +54,9 @@ export type Router = Message<"mantrae.v1.Router"> & {
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.RouterType type = 7;
+   * @generated from field: mantrae.v1.ProtocolType type = 7;
    */
-  type: RouterType;
+  type: ProtocolType;
 
   /**
    * @generated from field: repeated mantrae.v1.DnsProvider dns_providers = 8;
@@ -89,9 +91,9 @@ export type GetRouterRequest = Message<"mantrae.v1.GetRouterRequest"> & {
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.RouterType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: RouterType;
+  type: ProtocolType;
 };
 
 /**
@@ -148,9 +150,9 @@ export type CreateRouterRequest = Message<"mantrae.v1.CreateRouterRequest"> & {
   enabled: boolean;
 
   /**
-   * @generated from field: mantrae.v1.RouterType type = 6;
+   * @generated from field: mantrae.v1.ProtocolType type = 6;
    */
-  type: RouterType;
+  type: ProtocolType;
 };
 
 /**
@@ -192,9 +194,9 @@ export type UpdateRouterRequest = Message<"mantrae.v1.UpdateRouterRequest"> & {
   name: string;
 
   /**
-   * @generated from field: mantrae.v1.RouterType type = 3;
+   * @generated from field: mantrae.v1.ProtocolType type = 3;
    */
-  type: RouterType;
+  type: ProtocolType;
 
   /**
    * @generated from field: google.protobuf.Struct config = 4;
@@ -246,9 +248,9 @@ export type DeleteRouterRequest = Message<"mantrae.v1.DeleteRouterRequest"> & {
   id: bigint;
 
   /**
-   * @generated from field: mantrae.v1.RouterType type = 2;
+   * @generated from field: mantrae.v1.ProtocolType type = 2;
    */
-  type: RouterType;
+  type: ProtocolType;
 };
 
 /**
@@ -286,9 +288,9 @@ export type ListRoutersRequest = Message<"mantrae.v1.ListRoutersRequest"> & {
   agentId?: string;
 
   /**
-   * @generated from field: optional mantrae.v1.RouterType type = 3;
+   * @generated from field: optional mantrae.v1.ProtocolType type = 3;
    */
-  type?: RouterType;
+  type?: ProtocolType;
 
   /**
    * @generated from field: optional int64 limit = 4;
@@ -329,37 +331,6 @@ export type ListRoutersResponse = Message<"mantrae.v1.ListRoutersResponse"> & {
  */
 export const ListRoutersResponseSchema: GenMessage<ListRoutersResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_router, 10);
-
-/**
- * @generated from enum mantrae.v1.RouterType
- */
-export enum RouterType {
-  /**
-   * @generated from enum value: ROUTER_TYPE_UNSPECIFIED = 0;
-   */
-  UNSPECIFIED = 0,
-
-  /**
-   * @generated from enum value: ROUTER_TYPE_HTTP = 1;
-   */
-  HTTP = 1,
-
-  /**
-   * @generated from enum value: ROUTER_TYPE_TCP = 2;
-   */
-  TCP = 2,
-
-  /**
-   * @generated from enum value: ROUTER_TYPE_UDP = 3;
-   */
-  UDP = 3,
-}
-
-/**
- * Describes the enum mantrae.v1.RouterType.
- */
-export const RouterTypeSchema: GenEnum<RouterType> = /*@__PURE__*/
-  enumDesc(file_mantrae_v1_router, 0);
 
 /**
  * @generated from service mantrae.v1.RouterService

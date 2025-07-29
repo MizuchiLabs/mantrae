@@ -12,7 +12,6 @@
 	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { user } from '$lib/stores/user';
 	import { create } from '@bufbuild/protobuf';
-	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
 		data?: User[];

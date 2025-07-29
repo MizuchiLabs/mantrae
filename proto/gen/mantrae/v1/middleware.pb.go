@@ -24,55 +24,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type MiddlewareType int32
-
-const (
-	MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED MiddlewareType = 0
-	MiddlewareType_MIDDLEWARE_TYPE_HTTP        MiddlewareType = 1
-	MiddlewareType_MIDDLEWARE_TYPE_TCP         MiddlewareType = 2
-)
-
-// Enum value maps for MiddlewareType.
-var (
-	MiddlewareType_name = map[int32]string{
-		0: "MIDDLEWARE_TYPE_UNSPECIFIED",
-		1: "MIDDLEWARE_TYPE_HTTP",
-		2: "MIDDLEWARE_TYPE_TCP",
-	}
-	MiddlewareType_value = map[string]int32{
-		"MIDDLEWARE_TYPE_UNSPECIFIED": 0,
-		"MIDDLEWARE_TYPE_HTTP":        1,
-		"MIDDLEWARE_TYPE_TCP":         2,
-	}
-)
-
-func (x MiddlewareType) Enum() *MiddlewareType {
-	p := new(MiddlewareType)
-	*p = x
-	return p
-}
-
-func (x MiddlewareType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (MiddlewareType) Descriptor() protoreflect.EnumDescriptor {
-	return file_mantrae_v1_middleware_proto_enumTypes[0].Descriptor()
-}
-
-func (MiddlewareType) Type() protoreflect.EnumType {
-	return &file_mantrae_v1_middleware_proto_enumTypes[0]
-}
-
-func (x MiddlewareType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use MiddlewareType.Descriptor instead.
-func (MiddlewareType) EnumDescriptor() ([]byte, []int) {
-	return file_mantrae_v1_middleware_proto_rawDescGZIP(), []int{0}
-}
-
 type Middleware struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -82,7 +33,7 @@ type Middleware struct {
 	Config        *structpb.Struct       `protobuf:"bytes,5,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,6,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	IsDefault     bool                   `protobuf:"varint,7,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
-	Type          MiddlewareType         `protobuf:"varint,8,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,8,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -168,11 +119,11 @@ func (x *Middleware) GetIsDefault() bool {
 	return false
 }
 
-func (x *Middleware) GetType() MiddlewareType {
+func (x *Middleware) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *Middleware) GetCreatedAt() *timestamppb.Timestamp {
@@ -408,7 +359,7 @@ func (x *PluginSnippet) GetToml() string {
 type GetMiddlewareRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          MiddlewareType         `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -450,11 +401,11 @@ func (x *GetMiddlewareRequest) GetId() int64 {
 	return 0
 }
 
-func (x *GetMiddlewareRequest) GetType() MiddlewareType {
+func (x *GetMiddlewareRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type GetMiddlewareResponse struct {
@@ -506,7 +457,7 @@ type CreateMiddlewareRequest struct {
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Type          MiddlewareType         `protobuf:"varint,4,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,4,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	IsDefault     bool                   `protobuf:"varint,5,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -564,11 +515,11 @@ func (x *CreateMiddlewareRequest) GetName() string {
 	return ""
 }
 
-func (x *CreateMiddlewareRequest) GetType() MiddlewareType {
+func (x *CreateMiddlewareRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *CreateMiddlewareRequest) GetIsDefault() bool {
@@ -633,7 +584,7 @@ type UpdateMiddlewareRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Type          MiddlewareType         `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
 	IsDefault     bool                   `protobuf:"varint,6,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
@@ -685,11 +636,11 @@ func (x *UpdateMiddlewareRequest) GetName() string {
 	return ""
 }
 
-func (x *UpdateMiddlewareRequest) GetType() MiddlewareType {
+func (x *UpdateMiddlewareRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *UpdateMiddlewareRequest) GetConfig() *structpb.Struct {
@@ -759,8 +710,8 @@ func (x *UpdateMiddlewareResponse) GetMiddleware() *Middleware {
 
 type DeleteMiddlewareRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Type          MiddlewareType         `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType" json:"type,omitempty"`
+	Id            int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Type          ProtocolType           `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -802,11 +753,11 @@ func (x *DeleteMiddlewareRequest) GetId() int64 {
 	return 0
 }
 
-func (x *DeleteMiddlewareRequest) GetType() MiddlewareType {
+func (x *DeleteMiddlewareRequest) GetType() ProtocolType {
 	if x != nil {
 		return x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 type DeleteMiddlewareResponse struct {
@@ -849,7 +800,7 @@ type ListMiddlewaresRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       *string                `protobuf:"bytes,2,opt,name=agent_id,json=agentId,proto3,oneof" json:"agent_id,omitempty"`
-	Type          *MiddlewareType        `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.MiddlewareType,oneof" json:"type,omitempty"`
+	Type          *ProtocolType          `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType,oneof" json:"type,omitempty"`
 	Limit         *int64                 `protobuf:"varint,4,opt,name=limit,proto3,oneof" json:"limit,omitempty"`
 	Offset        *int64                 `protobuf:"varint,5,opt,name=offset,proto3,oneof" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -900,11 +851,11 @@ func (x *ListMiddlewaresRequest) GetAgentId() string {
 	return ""
 }
 
-func (x *ListMiddlewaresRequest) GetType() MiddlewareType {
+func (x *ListMiddlewaresRequest) GetType() ProtocolType {
 	if x != nil && x.Type != nil {
 		return *x.Type
 	}
-	return MiddlewareType_MIDDLEWARE_TYPE_UNSPECIFIED
+	return ProtocolType_PROTOCOL_TYPE_UNSPECIFIED
 }
 
 func (x *ListMiddlewaresRequest) GetLimit() int64 {
@@ -1058,7 +1009,7 @@ var File_mantrae_v1_middleware_proto protoreflect.FileDescriptor
 const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\n" +
 	"\x1bmantrae/v1/middleware.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfa\x02\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19mantrae/v1/protocol.proto\"\xf8\x02\n" +
 	"\n" +
 	"Middleware\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
@@ -1069,8 +1020,8 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\x06config\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
 	"\aenabled\x18\x06 \x01(\bR\aenabled\x12\x1d\n" +
 	"\n" +
-	"is_default\x18\a \x01(\bR\tisDefault\x12.\n" +
-	"\x04type\x18\b \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeR\x04type\x129\n" +
+	"is_default\x18\a \x01(\bR\tisDefault\x12,\n" +
+	"\x04type\x18\b \x01(\x0e2\x18.mantrae.v1.ProtocolTypeR\x04type\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -1098,20 +1049,20 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\rPluginSnippet\x12\x10\n" +
 	"\x03k8s\x18\x01 \x01(\tR\x03k8s\x12\x12\n" +
 	"\x04yaml\x18\x02 \x01(\tR\x04yaml\x12\x12\n" +
-	"\x04toml\x18\x03 \x01(\tR\x04toml\"i\n" +
+	"\x04toml\x18\x03 \x01(\tR\x04toml\"g\n" +
 	"\x14GetMiddlewareRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x128\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"O\n" +
+	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"O\n" +
 	"\x15GetMiddlewareResponse\x126\n" +
 	"\n" +
 	"middleware\x18\x01 \x01(\v2\x16.mantrae.v1.MiddlewareR\n" +
-	"middleware\"\x95\x02\n" +
+	"middleware\"\x93\x02\n" +
 	"\x17CreateMiddlewareRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1e\n" +
 	"\bagent_id\x18\x02 \x01(\tH\x00R\aagentId\x88\x01\x01\x12\x1b\n" +
-	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x128\n" +
-	"\x04type\x18\x04 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12\x1d\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x126\n" +
+	"\x04type\x18\x04 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12\x1d\n" +
 	"\n" +
 	"is_default\x18\x05 \x01(\bR\tisDefault\x12/\n" +
 	"\x06config\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06configB\v\n" +
@@ -1119,11 +1070,11 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\x18CreateMiddlewareResponse\x126\n" +
 	"\n" +
 	"middleware\x18\x01 \x01(\v2\x16.mantrae.v1.MiddlewareR\n" +
-	"middleware\"\xf3\x01\n" +
+	"middleware\"\xf1\x01\n" +
 	"\x17UpdateMiddlewareRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x128\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12/\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x126\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
 	"\aenabled\x18\x05 \x01(\bR\aenabled\x12\x1d\n" +
 	"\n" +
@@ -1131,16 +1082,16 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"\x18UpdateMiddlewareResponse\x126\n" +
 	"\n" +
 	"middleware\x18\x01 \x01(\v2\x16.mantrae.v1.MiddlewareR\n" +
-	"middleware\"l\n" +
+	"middleware\"j\n" +
 	"\x17DeleteMiddlewareRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x128\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x1a\n" +
-	"\x18DeleteMiddlewareResponse\"\xe2\x02\n" +
+	"\x02id\x18\x02 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x1a\n" +
+	"\x18DeleteMiddlewareResponse\"\xe0\x02\n" +
 	"\x16ListMiddlewaresRequest\x12&\n" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12'\n" +
-	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x123\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x1a.mantrae.v1.MiddlewareTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
+	"\bagent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\aagentId\x88\x01\x01\x121\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeH\x01R\x04type\x88\x01\x01\x12q\n" +
 	"\x05limit\x18\x04 \x01(\x03BV\xbaHS\xba\x01P\n" +
 	"\vlimit.valid\x12)limit must be either -1 or greater than 0\x1a\x16this == -1 || this > 0H\x02R\x05limit\x88\x01\x01\x12$\n" +
 	"\x06offset\x18\x05 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x03R\x06offset\x88\x01\x01B\v\n" +
@@ -1154,11 +1105,7 @@ const file_mantrae_v1_middleware_proto_rawDesc = "" +
 	"totalCount\"\x1d\n" +
 	"\x1bGetMiddlewarePluginsRequest\"L\n" +
 	"\x1cGetMiddlewarePluginsResponse\x12,\n" +
-	"\aplugins\x18\x01 \x03(\v2\x12.mantrae.v1.PluginR\aplugins*d\n" +
-	"\x0eMiddlewareType\x12\x1f\n" +
-	"\x1bMIDDLEWARE_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14MIDDLEWARE_TYPE_HTTP\x10\x01\x12\x17\n" +
-	"\x13MIDDLEWARE_TYPE_TCP\x10\x022\xdc\x04\n" +
+	"\aplugins\x18\x01 \x03(\v2\x12.mantrae.v1.PluginR\aplugins2\xdc\x04\n" +
 	"\x11MiddlewareService\x12Y\n" +
 	"\rGetMiddleware\x12 .mantrae.v1.GetMiddlewareRequest\x1a!.mantrae.v1.GetMiddlewareResponse\"\x03\x90\x02\x01\x12]\n" +
 	"\x10CreateMiddleware\x12#.mantrae.v1.CreateMiddlewareRequest\x1a$.mantrae.v1.CreateMiddlewareResponse\x12]\n" +
@@ -1182,58 +1129,57 @@ func file_mantrae_v1_middleware_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_middleware_proto_rawDescData
 }
 
-var file_mantrae_v1_middleware_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_mantrae_v1_middleware_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_mantrae_v1_middleware_proto_goTypes = []any{
-	(MiddlewareType)(0),                  // 0: mantrae.v1.MiddlewareType
-	(*Middleware)(nil),                   // 1: mantrae.v1.Middleware
-	(*Plugin)(nil),                       // 2: mantrae.v1.Plugin
-	(*PluginSnippet)(nil),                // 3: mantrae.v1.PluginSnippet
-	(*GetMiddlewareRequest)(nil),         // 4: mantrae.v1.GetMiddlewareRequest
-	(*GetMiddlewareResponse)(nil),        // 5: mantrae.v1.GetMiddlewareResponse
-	(*CreateMiddlewareRequest)(nil),      // 6: mantrae.v1.CreateMiddlewareRequest
-	(*CreateMiddlewareResponse)(nil),     // 7: mantrae.v1.CreateMiddlewareResponse
-	(*UpdateMiddlewareRequest)(nil),      // 8: mantrae.v1.UpdateMiddlewareRequest
-	(*UpdateMiddlewareResponse)(nil),     // 9: mantrae.v1.UpdateMiddlewareResponse
-	(*DeleteMiddlewareRequest)(nil),      // 10: mantrae.v1.DeleteMiddlewareRequest
-	(*DeleteMiddlewareResponse)(nil),     // 11: mantrae.v1.DeleteMiddlewareResponse
-	(*ListMiddlewaresRequest)(nil),       // 12: mantrae.v1.ListMiddlewaresRequest
-	(*ListMiddlewaresResponse)(nil),      // 13: mantrae.v1.ListMiddlewaresResponse
-	(*GetMiddlewarePluginsRequest)(nil),  // 14: mantrae.v1.GetMiddlewarePluginsRequest
-	(*GetMiddlewarePluginsResponse)(nil), // 15: mantrae.v1.GetMiddlewarePluginsResponse
-	(*structpb.Struct)(nil),              // 16: google.protobuf.Struct
+	(*Middleware)(nil),                   // 0: mantrae.v1.Middleware
+	(*Plugin)(nil),                       // 1: mantrae.v1.Plugin
+	(*PluginSnippet)(nil),                // 2: mantrae.v1.PluginSnippet
+	(*GetMiddlewareRequest)(nil),         // 3: mantrae.v1.GetMiddlewareRequest
+	(*GetMiddlewareResponse)(nil),        // 4: mantrae.v1.GetMiddlewareResponse
+	(*CreateMiddlewareRequest)(nil),      // 5: mantrae.v1.CreateMiddlewareRequest
+	(*CreateMiddlewareResponse)(nil),     // 6: mantrae.v1.CreateMiddlewareResponse
+	(*UpdateMiddlewareRequest)(nil),      // 7: mantrae.v1.UpdateMiddlewareRequest
+	(*UpdateMiddlewareResponse)(nil),     // 8: mantrae.v1.UpdateMiddlewareResponse
+	(*DeleteMiddlewareRequest)(nil),      // 9: mantrae.v1.DeleteMiddlewareRequest
+	(*DeleteMiddlewareResponse)(nil),     // 10: mantrae.v1.DeleteMiddlewareResponse
+	(*ListMiddlewaresRequest)(nil),       // 11: mantrae.v1.ListMiddlewaresRequest
+	(*ListMiddlewaresResponse)(nil),      // 12: mantrae.v1.ListMiddlewaresResponse
+	(*GetMiddlewarePluginsRequest)(nil),  // 13: mantrae.v1.GetMiddlewarePluginsRequest
+	(*GetMiddlewarePluginsResponse)(nil), // 14: mantrae.v1.GetMiddlewarePluginsResponse
+	(*structpb.Struct)(nil),              // 15: google.protobuf.Struct
+	(ProtocolType)(0),                    // 16: mantrae.v1.ProtocolType
 	(*timestamppb.Timestamp)(nil),        // 17: google.protobuf.Timestamp
 }
 var file_mantrae_v1_middleware_proto_depIdxs = []int32{
-	16, // 0: mantrae.v1.Middleware.config:type_name -> google.protobuf.Struct
-	0,  // 1: mantrae.v1.Middleware.type:type_name -> mantrae.v1.MiddlewareType
+	15, // 0: mantrae.v1.Middleware.config:type_name -> google.protobuf.Struct
+	16, // 1: mantrae.v1.Middleware.type:type_name -> mantrae.v1.ProtocolType
 	17, // 2: mantrae.v1.Middleware.created_at:type_name -> google.protobuf.Timestamp
 	17, // 3: mantrae.v1.Middleware.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 4: mantrae.v1.Plugin.snippet:type_name -> mantrae.v1.PluginSnippet
-	0,  // 5: mantrae.v1.GetMiddlewareRequest.type:type_name -> mantrae.v1.MiddlewareType
-	1,  // 6: mantrae.v1.GetMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
-	0,  // 7: mantrae.v1.CreateMiddlewareRequest.type:type_name -> mantrae.v1.MiddlewareType
-	16, // 8: mantrae.v1.CreateMiddlewareRequest.config:type_name -> google.protobuf.Struct
-	1,  // 9: mantrae.v1.CreateMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
-	0,  // 10: mantrae.v1.UpdateMiddlewareRequest.type:type_name -> mantrae.v1.MiddlewareType
-	16, // 11: mantrae.v1.UpdateMiddlewareRequest.config:type_name -> google.protobuf.Struct
-	1,  // 12: mantrae.v1.UpdateMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
-	0,  // 13: mantrae.v1.DeleteMiddlewareRequest.type:type_name -> mantrae.v1.MiddlewareType
-	0,  // 14: mantrae.v1.ListMiddlewaresRequest.type:type_name -> mantrae.v1.MiddlewareType
-	1,  // 15: mantrae.v1.ListMiddlewaresResponse.middlewares:type_name -> mantrae.v1.Middleware
-	2,  // 16: mantrae.v1.GetMiddlewarePluginsResponse.plugins:type_name -> mantrae.v1.Plugin
-	4,  // 17: mantrae.v1.MiddlewareService.GetMiddleware:input_type -> mantrae.v1.GetMiddlewareRequest
-	6,  // 18: mantrae.v1.MiddlewareService.CreateMiddleware:input_type -> mantrae.v1.CreateMiddlewareRequest
-	8,  // 19: mantrae.v1.MiddlewareService.UpdateMiddleware:input_type -> mantrae.v1.UpdateMiddlewareRequest
-	10, // 20: mantrae.v1.MiddlewareService.DeleteMiddleware:input_type -> mantrae.v1.DeleteMiddlewareRequest
-	12, // 21: mantrae.v1.MiddlewareService.ListMiddlewares:input_type -> mantrae.v1.ListMiddlewaresRequest
-	14, // 22: mantrae.v1.MiddlewareService.GetMiddlewarePlugins:input_type -> mantrae.v1.GetMiddlewarePluginsRequest
-	5,  // 23: mantrae.v1.MiddlewareService.GetMiddleware:output_type -> mantrae.v1.GetMiddlewareResponse
-	7,  // 24: mantrae.v1.MiddlewareService.CreateMiddleware:output_type -> mantrae.v1.CreateMiddlewareResponse
-	9,  // 25: mantrae.v1.MiddlewareService.UpdateMiddleware:output_type -> mantrae.v1.UpdateMiddlewareResponse
-	11, // 26: mantrae.v1.MiddlewareService.DeleteMiddleware:output_type -> mantrae.v1.DeleteMiddlewareResponse
-	13, // 27: mantrae.v1.MiddlewareService.ListMiddlewares:output_type -> mantrae.v1.ListMiddlewaresResponse
-	15, // 28: mantrae.v1.MiddlewareService.GetMiddlewarePlugins:output_type -> mantrae.v1.GetMiddlewarePluginsResponse
+	2,  // 4: mantrae.v1.Plugin.snippet:type_name -> mantrae.v1.PluginSnippet
+	16, // 5: mantrae.v1.GetMiddlewareRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 6: mantrae.v1.GetMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
+	16, // 7: mantrae.v1.CreateMiddlewareRequest.type:type_name -> mantrae.v1.ProtocolType
+	15, // 8: mantrae.v1.CreateMiddlewareRequest.config:type_name -> google.protobuf.Struct
+	0,  // 9: mantrae.v1.CreateMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
+	16, // 10: mantrae.v1.UpdateMiddlewareRequest.type:type_name -> mantrae.v1.ProtocolType
+	15, // 11: mantrae.v1.UpdateMiddlewareRequest.config:type_name -> google.protobuf.Struct
+	0,  // 12: mantrae.v1.UpdateMiddlewareResponse.middleware:type_name -> mantrae.v1.Middleware
+	16, // 13: mantrae.v1.DeleteMiddlewareRequest.type:type_name -> mantrae.v1.ProtocolType
+	16, // 14: mantrae.v1.ListMiddlewaresRequest.type:type_name -> mantrae.v1.ProtocolType
+	0,  // 15: mantrae.v1.ListMiddlewaresResponse.middlewares:type_name -> mantrae.v1.Middleware
+	1,  // 16: mantrae.v1.GetMiddlewarePluginsResponse.plugins:type_name -> mantrae.v1.Plugin
+	3,  // 17: mantrae.v1.MiddlewareService.GetMiddleware:input_type -> mantrae.v1.GetMiddlewareRequest
+	5,  // 18: mantrae.v1.MiddlewareService.CreateMiddleware:input_type -> mantrae.v1.CreateMiddlewareRequest
+	7,  // 19: mantrae.v1.MiddlewareService.UpdateMiddleware:input_type -> mantrae.v1.UpdateMiddlewareRequest
+	9,  // 20: mantrae.v1.MiddlewareService.DeleteMiddleware:input_type -> mantrae.v1.DeleteMiddlewareRequest
+	11, // 21: mantrae.v1.MiddlewareService.ListMiddlewares:input_type -> mantrae.v1.ListMiddlewaresRequest
+	13, // 22: mantrae.v1.MiddlewareService.GetMiddlewarePlugins:input_type -> mantrae.v1.GetMiddlewarePluginsRequest
+	4,  // 23: mantrae.v1.MiddlewareService.GetMiddleware:output_type -> mantrae.v1.GetMiddlewareResponse
+	6,  // 24: mantrae.v1.MiddlewareService.CreateMiddleware:output_type -> mantrae.v1.CreateMiddlewareResponse
+	8,  // 25: mantrae.v1.MiddlewareService.UpdateMiddleware:output_type -> mantrae.v1.UpdateMiddlewareResponse
+	10, // 26: mantrae.v1.MiddlewareService.DeleteMiddleware:output_type -> mantrae.v1.DeleteMiddlewareResponse
+	12, // 27: mantrae.v1.MiddlewareService.ListMiddlewares:output_type -> mantrae.v1.ListMiddlewaresResponse
+	14, // 28: mantrae.v1.MiddlewareService.GetMiddlewarePlugins:output_type -> mantrae.v1.GetMiddlewarePluginsResponse
 	23, // [23:29] is the sub-list for method output_type
 	17, // [17:23] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name
@@ -1246,6 +1192,7 @@ func file_mantrae_v1_middleware_proto_init() {
 	if File_mantrae_v1_middleware_proto != nil {
 		return
 	}
+	file_mantrae_v1_protocol_proto_init()
 	file_mantrae_v1_middleware_proto_msgTypes[5].OneofWrappers = []any{}
 	file_mantrae_v1_middleware_proto_msgTypes[11].OneofWrappers = []any{}
 	type x struct{}
@@ -1253,14 +1200,13 @@ func file_mantrae_v1_middleware_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_middleware_proto_rawDesc), len(file_mantrae_v1_middleware_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      0,
 			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_mantrae_v1_middleware_proto_goTypes,
 		DependencyIndexes: file_mantrae_v1_middleware_proto_depIdxs,
-		EnumInfos:         file_mantrae_v1_middleware_proto_enumTypes,
 		MessageInfos:      file_mantrae_v1_middleware_proto_msgTypes,
 	}.Build()
 	File_mantrae_v1_middleware_proto = out.File

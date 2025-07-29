@@ -197,7 +197,11 @@ func (s *HTTPRouterOps) Delete(
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetHttpServiceByName(ctx, router.Config.Service)
+		service, err := s.app.Conn.GetQuery().
+			GetHttpServiceByName(ctx, db.GetHttpServiceByNameParams{
+				ProfileID: router.ProfileID,
+				Name:      router.Config.Service,
+			})
 		if err != nil {
 			slog.Error("failed to get http service", "err", err)
 		}
@@ -362,7 +366,10 @@ func (s *TCPRouterOps) Delete(
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, router.Config.Service)
+		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, db.GetTcpServiceByNameParams{
+			ProfileID: router.ProfileID,
+			Name:      router.Config.Service,
+		})
 		if err != nil {
 			slog.Error("failed to get tcp service", "err", err)
 		}
@@ -485,7 +492,10 @@ func (s *UDPRouterOps) Delete(
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, router.Config.Service)
+		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, db.GetUdpServiceByNameParams{
+			ProfileID: router.ProfileID,
+			Name:      router.Config.Service,
+		})
 		if err != nil {
 			slog.Error("failed to get udp service", "err", err)
 		}
