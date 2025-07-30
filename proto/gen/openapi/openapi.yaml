@@ -350,24 +350,7 @@ components:
           format: int64
       title: ListAgentsResponse
       additionalProperties: false
-    mantrae.v1.RotateAgentTokenRequest:
-      type: object
-      properties:
-        id:
-          type: string
-          title: id
-          minLength: 1
-      title: RotateAgentTokenRequest
-      additionalProperties: false
-    mantrae.v1.RotateAgentTokenResponse:
-      type: object
-      properties:
-        agent:
-          title: agent
-          $ref: '#/components/schemas/mantrae.v1.Agent'
-      title: RotateAgentTokenResponse
-      additionalProperties: false
-    mantrae.v1.UpdateAgentIPRequest:
+    mantrae.v1.UpdateAgentRequest:
       type: object
       properties:
         id:
@@ -378,15 +361,20 @@ components:
           type: string
           title: ip
           format: ip
-      title: UpdateAgentIPRequest
+          nullable: true
+        rotateToken:
+          type: boolean
+          title: rotate_token
+          nullable: true
+      title: UpdateAgentRequest
       additionalProperties: false
-    mantrae.v1.UpdateAgentIPResponse:
+    mantrae.v1.UpdateAgentResponse:
       type: object
       properties:
         agent:
           title: agent
           $ref: '#/components/schemas/mantrae.v1.Agent'
-      title: UpdateAgentIPResponse
+      title: UpdateAgentResponse
       additionalProperties: false
     encoding:
       title: encoding
@@ -2838,12 +2826,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.CreateAgentResponse'
-  /mantrae.v1.AgentService/UpdateAgentIP:
+  /mantrae.v1.AgentService/UpdateAgent:
     post:
       tags:
         - mantrae.v1.AgentService
-      summary: UpdateAgentIP
-      operationId: mantrae.v1.AgentService.UpdateAgentIP
+      summary: UpdateAgent
+      operationId: mantrae.v1.AgentService.UpdateAgent
       parameters:
         - name: Connect-Protocol-Version
           in: header
@@ -2858,7 +2846,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/mantrae.v1.UpdateAgentIPRequest'
+              $ref: '#/components/schemas/mantrae.v1.UpdateAgentRequest'
         required: true
       responses:
         default:
@@ -2872,7 +2860,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/mantrae.v1.UpdateAgentIPResponse'
+                $ref: '#/components/schemas/mantrae.v1.UpdateAgentResponse'
   /mantrae.v1.AgentService/DeleteAgent:
     post:
       tags:
@@ -3029,41 +3017,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.HealthCheckResponse'
-  /mantrae.v1.AgentService/RotateAgentToken:
-    post:
-      tags:
-        - mantrae.v1.AgentService
-      summary: RotateAgentToken
-      operationId: mantrae.v1.AgentService.RotateAgentToken
-      parameters:
-        - name: Connect-Protocol-Version
-          in: header
-          required: true
-          schema:
-            $ref: '#/components/schemas/connect-protocol-version'
-        - name: Connect-Timeout-Ms
-          in: header
-          schema:
-            $ref: '#/components/schemas/connect-timeout-header'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenRequest'
-        required: true
-      responses:
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/connect.error'
-        "200":
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/mantrae.v1.RotateAgentTokenResponse'
   /mantrae.v1.AuditLogService/ListAuditLogs:
     get:
       tags:

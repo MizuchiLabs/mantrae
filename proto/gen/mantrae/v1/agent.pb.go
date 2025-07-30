@@ -407,28 +407,29 @@ func (x *CreateAgentResponse) GetAgent() *Agent {
 	return nil
 }
 
-type UpdateAgentIPRequest struct {
+type UpdateAgentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Ip            string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
+	Ip            *string                `protobuf:"bytes,2,opt,name=ip,proto3,oneof" json:"ip,omitempty"`
+	RotateToken   *bool                  `protobuf:"varint,3,opt,name=rotate_token,json=rotateToken,proto3,oneof" json:"rotate_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateAgentIPRequest) Reset() {
-	*x = UpdateAgentIPRequest{}
+func (x *UpdateAgentRequest) Reset() {
+	*x = UpdateAgentRequest{}
 	mi := &file_mantrae_v1_agent_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateAgentIPRequest) String() string {
+func (x *UpdateAgentRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateAgentIPRequest) ProtoMessage() {}
+func (*UpdateAgentRequest) ProtoMessage() {}
 
-func (x *UpdateAgentIPRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateAgentRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_mantrae_v1_agent_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -440,46 +441,53 @@ func (x *UpdateAgentIPRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateAgentIPRequest.ProtoReflect.Descriptor instead.
-func (*UpdateAgentIPRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateAgentRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAgentRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_agent_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *UpdateAgentIPRequest) GetId() string {
+func (x *UpdateAgentRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *UpdateAgentIPRequest) GetIp() string {
-	if x != nil {
-		return x.Ip
+func (x *UpdateAgentRequest) GetIp() string {
+	if x != nil && x.Ip != nil {
+		return *x.Ip
 	}
 	return ""
 }
 
-type UpdateAgentIPResponse struct {
+func (x *UpdateAgentRequest) GetRotateToken() bool {
+	if x != nil && x.RotateToken != nil {
+		return *x.RotateToken
+	}
+	return false
+}
+
+type UpdateAgentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Agent         *Agent                 `protobuf:"bytes,1,opt,name=agent,proto3" json:"agent,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateAgentIPResponse) Reset() {
-	*x = UpdateAgentIPResponse{}
+func (x *UpdateAgentResponse) Reset() {
+	*x = UpdateAgentResponse{}
 	mi := &file_mantrae_v1_agent_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateAgentIPResponse) String() string {
+func (x *UpdateAgentResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateAgentIPResponse) ProtoMessage() {}
+func (*UpdateAgentResponse) ProtoMessage() {}
 
-func (x *UpdateAgentIPResponse) ProtoReflect() protoreflect.Message {
+func (x *UpdateAgentResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_mantrae_v1_agent_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -491,12 +499,12 @@ func (x *UpdateAgentIPResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateAgentIPResponse.ProtoReflect.Descriptor instead.
-func (*UpdateAgentIPResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateAgentResponse.ProtoReflect.Descriptor instead.
+func (*UpdateAgentResponse) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_agent_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *UpdateAgentIPResponse) GetAgent() *Agent {
+func (x *UpdateAgentResponse) GetAgent() *Agent {
 	if x != nil {
 		return x.Agent
 	}
@@ -799,94 +807,6 @@ func (x *HealthCheckResponse) GetAgent() *Agent {
 	return nil
 }
 
-type RotateAgentTokenRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RotateAgentTokenRequest) Reset() {
-	*x = RotateAgentTokenRequest{}
-	mi := &file_mantrae_v1_agent_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RotateAgentTokenRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RotateAgentTokenRequest) ProtoMessage() {}
-
-func (x *RotateAgentTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_agent_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RotateAgentTokenRequest.ProtoReflect.Descriptor instead.
-func (*RotateAgentTokenRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_agent_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *RotateAgentTokenRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type RotateAgentTokenResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Agent         *Agent                 `protobuf:"bytes,1,opt,name=agent,proto3" json:"agent,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RotateAgentTokenResponse) Reset() {
-	*x = RotateAgentTokenResponse{}
-	mi := &file_mantrae_v1_agent_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RotateAgentTokenResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RotateAgentTokenResponse) ProtoMessage() {}
-
-func (x *RotateAgentTokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_agent_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RotateAgentTokenResponse.ProtoReflect.Descriptor instead.
-func (*RotateAgentTokenResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_agent_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *RotateAgentTokenResponse) GetAgent() *Agent {
-	if x != nil {
-		return x.Agent
-	}
-	return nil
-}
-
 var File_mantrae_v1_agent_proto protoreflect.FileDescriptor
 
 const file_mantrae_v1_agent_proto_rawDesc = "" +
@@ -933,11 +853,15 @@ const file_mantrae_v1_agent_proto_rawDesc = "" +
 	"\n" +
 	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\">\n" +
 	"\x13CreateAgentResponse\x12'\n" +
-	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent\"H\n" +
-	"\x14UpdateAgentIPRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x17\n" +
-	"\x02ip\x18\x02 \x01(\tB\a\xbaH\x04r\x02p\x01R\x02ip\"@\n" +
-	"\x15UpdateAgentIPResponse\x12'\n" +
+	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent\"\x8e\x01\n" +
+	"\x12UpdateAgentRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x1f\n" +
+	"\x02ip\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xd8\x01\x00r\x02p\x01H\x00R\x02ip\x88\x01\x01\x12&\n" +
+	"\frotate_token\x18\x03 \x01(\bH\x01R\vrotateToken\x88\x01\x01B\x05\n" +
+	"\x03_ipB\x0f\n" +
+	"\r_rotate_token\">\n" +
+	"\x13UpdateAgentResponse\x12'\n" +
 	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent\"-\n" +
 	"\x12DeleteAgentRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"\x15\n" +
@@ -960,20 +884,15 @@ const file_mantrae_v1_agent_proto_rawDesc = "" +
 	"\n" +
 	"private_ip\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tprivateIp\">\n" +
 	"\x13HealthCheckResponse\x12'\n" +
-	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent\"2\n" +
-	"\x17RotateAgentTokenRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"C\n" +
-	"\x18RotateAgentTokenResponse\x12'\n" +
-	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent2\xd1\x04\n" +
+	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent2\xec\x03\n" +
 	"\fAgentService\x12J\n" +
 	"\bGetAgent\x12\x1b.mantrae.v1.GetAgentRequest\x1a\x1c.mantrae.v1.GetAgentResponse\"\x03\x90\x02\x01\x12N\n" +
-	"\vCreateAgent\x12\x1e.mantrae.v1.CreateAgentRequest\x1a\x1f.mantrae.v1.CreateAgentResponse\x12T\n" +
-	"\rUpdateAgentIP\x12 .mantrae.v1.UpdateAgentIPRequest\x1a!.mantrae.v1.UpdateAgentIPResponse\x12N\n" +
+	"\vCreateAgent\x12\x1e.mantrae.v1.CreateAgentRequest\x1a\x1f.mantrae.v1.CreateAgentResponse\x12N\n" +
+	"\vUpdateAgent\x12\x1e.mantrae.v1.UpdateAgentRequest\x1a\x1f.mantrae.v1.UpdateAgentResponse\x12N\n" +
 	"\vDeleteAgent\x12\x1e.mantrae.v1.DeleteAgentRequest\x1a\x1f.mantrae.v1.DeleteAgentResponse\x12P\n" +
 	"\n" +
 	"ListAgents\x12\x1d.mantrae.v1.ListAgentsRequest\x1a\x1e.mantrae.v1.ListAgentsResponse\"\x03\x90\x02\x01\x12N\n" +
-	"\vHealthCheck\x12\x1e.mantrae.v1.HealthCheckRequest\x1a\x1f.mantrae.v1.HealthCheckResponse\x12]\n" +
-	"\x10RotateAgentToken\x12#.mantrae.v1.RotateAgentTokenRequest\x1a$.mantrae.v1.RotateAgentTokenResponseB\xa4\x01\n" +
+	"\vHealthCheck\x12\x1e.mantrae.v1.HealthCheckRequest\x1a\x1f.mantrae.v1.HealthCheckResponseB\xa4\x01\n" +
 	"\x0ecom.mantrae.v1B\n" +
 	"AgentProtoP\x01Z=github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1;mantraev1\xa2\x02\x03MXX\xaa\x02\n" +
 	"Mantrae.V1\xca\x02\n" +
@@ -991,60 +910,55 @@ func file_mantrae_v1_agent_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_agent_proto_rawDescData
 }
 
-var file_mantrae_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_mantrae_v1_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_mantrae_v1_agent_proto_goTypes = []any{
-	(*Agent)(nil),                    // 0: mantrae.v1.Agent
-	(*Container)(nil),                // 1: mantrae.v1.Container
-	(*GetAgentRequest)(nil),          // 2: mantrae.v1.GetAgentRequest
-	(*GetAgentResponse)(nil),         // 3: mantrae.v1.GetAgentResponse
-	(*CreateAgentRequest)(nil),       // 4: mantrae.v1.CreateAgentRequest
-	(*CreateAgentResponse)(nil),      // 5: mantrae.v1.CreateAgentResponse
-	(*UpdateAgentIPRequest)(nil),     // 6: mantrae.v1.UpdateAgentIPRequest
-	(*UpdateAgentIPResponse)(nil),    // 7: mantrae.v1.UpdateAgentIPResponse
-	(*DeleteAgentRequest)(nil),       // 8: mantrae.v1.DeleteAgentRequest
-	(*DeleteAgentResponse)(nil),      // 9: mantrae.v1.DeleteAgentResponse
-	(*ListAgentsRequest)(nil),        // 10: mantrae.v1.ListAgentsRequest
-	(*ListAgentsResponse)(nil),       // 11: mantrae.v1.ListAgentsResponse
-	(*HealthCheckRequest)(nil),       // 12: mantrae.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),      // 13: mantrae.v1.HealthCheckResponse
-	(*RotateAgentTokenRequest)(nil),  // 14: mantrae.v1.RotateAgentTokenRequest
-	(*RotateAgentTokenResponse)(nil), // 15: mantrae.v1.RotateAgentTokenResponse
-	nil,                              // 16: mantrae.v1.Container.LabelsEntry
-	nil,                              // 17: mantrae.v1.Container.PortmapEntry
-	(*timestamppb.Timestamp)(nil),    // 18: google.protobuf.Timestamp
+	(*Agent)(nil),                 // 0: mantrae.v1.Agent
+	(*Container)(nil),             // 1: mantrae.v1.Container
+	(*GetAgentRequest)(nil),       // 2: mantrae.v1.GetAgentRequest
+	(*GetAgentResponse)(nil),      // 3: mantrae.v1.GetAgentResponse
+	(*CreateAgentRequest)(nil),    // 4: mantrae.v1.CreateAgentRequest
+	(*CreateAgentResponse)(nil),   // 5: mantrae.v1.CreateAgentResponse
+	(*UpdateAgentRequest)(nil),    // 6: mantrae.v1.UpdateAgentRequest
+	(*UpdateAgentResponse)(nil),   // 7: mantrae.v1.UpdateAgentResponse
+	(*DeleteAgentRequest)(nil),    // 8: mantrae.v1.DeleteAgentRequest
+	(*DeleteAgentResponse)(nil),   // 9: mantrae.v1.DeleteAgentResponse
+	(*ListAgentsRequest)(nil),     // 10: mantrae.v1.ListAgentsRequest
+	(*ListAgentsResponse)(nil),    // 11: mantrae.v1.ListAgentsResponse
+	(*HealthCheckRequest)(nil),    // 12: mantrae.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),   // 13: mantrae.v1.HealthCheckResponse
+	nil,                           // 14: mantrae.v1.Container.LabelsEntry
+	nil,                           // 15: mantrae.v1.Container.PortmapEntry
+	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
 }
 var file_mantrae_v1_agent_proto_depIdxs = []int32{
 	1,  // 0: mantrae.v1.Agent.containers:type_name -> mantrae.v1.Container
-	18, // 1: mantrae.v1.Agent.created_at:type_name -> google.protobuf.Timestamp
-	18, // 2: mantrae.v1.Agent.updated_at:type_name -> google.protobuf.Timestamp
-	16, // 3: mantrae.v1.Container.labels:type_name -> mantrae.v1.Container.LabelsEntry
-	17, // 4: mantrae.v1.Container.portmap:type_name -> mantrae.v1.Container.PortmapEntry
-	18, // 5: mantrae.v1.Container.created:type_name -> google.protobuf.Timestamp
+	16, // 1: mantrae.v1.Agent.created_at:type_name -> google.protobuf.Timestamp
+	16, // 2: mantrae.v1.Agent.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 3: mantrae.v1.Container.labels:type_name -> mantrae.v1.Container.LabelsEntry
+	15, // 4: mantrae.v1.Container.portmap:type_name -> mantrae.v1.Container.PortmapEntry
+	16, // 5: mantrae.v1.Container.created:type_name -> google.protobuf.Timestamp
 	0,  // 6: mantrae.v1.GetAgentResponse.agent:type_name -> mantrae.v1.Agent
 	0,  // 7: mantrae.v1.CreateAgentResponse.agent:type_name -> mantrae.v1.Agent
-	0,  // 8: mantrae.v1.UpdateAgentIPResponse.agent:type_name -> mantrae.v1.Agent
+	0,  // 8: mantrae.v1.UpdateAgentResponse.agent:type_name -> mantrae.v1.Agent
 	0,  // 9: mantrae.v1.ListAgentsResponse.agents:type_name -> mantrae.v1.Agent
 	0,  // 10: mantrae.v1.HealthCheckResponse.agent:type_name -> mantrae.v1.Agent
-	0,  // 11: mantrae.v1.RotateAgentTokenResponse.agent:type_name -> mantrae.v1.Agent
-	2,  // 12: mantrae.v1.AgentService.GetAgent:input_type -> mantrae.v1.GetAgentRequest
-	4,  // 13: mantrae.v1.AgentService.CreateAgent:input_type -> mantrae.v1.CreateAgentRequest
-	6,  // 14: mantrae.v1.AgentService.UpdateAgentIP:input_type -> mantrae.v1.UpdateAgentIPRequest
-	8,  // 15: mantrae.v1.AgentService.DeleteAgent:input_type -> mantrae.v1.DeleteAgentRequest
-	10, // 16: mantrae.v1.AgentService.ListAgents:input_type -> mantrae.v1.ListAgentsRequest
-	12, // 17: mantrae.v1.AgentService.HealthCheck:input_type -> mantrae.v1.HealthCheckRequest
-	14, // 18: mantrae.v1.AgentService.RotateAgentToken:input_type -> mantrae.v1.RotateAgentTokenRequest
-	3,  // 19: mantrae.v1.AgentService.GetAgent:output_type -> mantrae.v1.GetAgentResponse
-	5,  // 20: mantrae.v1.AgentService.CreateAgent:output_type -> mantrae.v1.CreateAgentResponse
-	7,  // 21: mantrae.v1.AgentService.UpdateAgentIP:output_type -> mantrae.v1.UpdateAgentIPResponse
-	9,  // 22: mantrae.v1.AgentService.DeleteAgent:output_type -> mantrae.v1.DeleteAgentResponse
-	11, // 23: mantrae.v1.AgentService.ListAgents:output_type -> mantrae.v1.ListAgentsResponse
-	13, // 24: mantrae.v1.AgentService.HealthCheck:output_type -> mantrae.v1.HealthCheckResponse
-	15, // 25: mantrae.v1.AgentService.RotateAgentToken:output_type -> mantrae.v1.RotateAgentTokenResponse
-	19, // [19:26] is the sub-list for method output_type
-	12, // [12:19] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	2,  // 11: mantrae.v1.AgentService.GetAgent:input_type -> mantrae.v1.GetAgentRequest
+	4,  // 12: mantrae.v1.AgentService.CreateAgent:input_type -> mantrae.v1.CreateAgentRequest
+	6,  // 13: mantrae.v1.AgentService.UpdateAgent:input_type -> mantrae.v1.UpdateAgentRequest
+	8,  // 14: mantrae.v1.AgentService.DeleteAgent:input_type -> mantrae.v1.DeleteAgentRequest
+	10, // 15: mantrae.v1.AgentService.ListAgents:input_type -> mantrae.v1.ListAgentsRequest
+	12, // 16: mantrae.v1.AgentService.HealthCheck:input_type -> mantrae.v1.HealthCheckRequest
+	3,  // 17: mantrae.v1.AgentService.GetAgent:output_type -> mantrae.v1.GetAgentResponse
+	5,  // 18: mantrae.v1.AgentService.CreateAgent:output_type -> mantrae.v1.CreateAgentResponse
+	7,  // 19: mantrae.v1.AgentService.UpdateAgent:output_type -> mantrae.v1.UpdateAgentResponse
+	9,  // 20: mantrae.v1.AgentService.DeleteAgent:output_type -> mantrae.v1.DeleteAgentResponse
+	11, // 21: mantrae.v1.AgentService.ListAgents:output_type -> mantrae.v1.ListAgentsResponse
+	13, // 22: mantrae.v1.AgentService.HealthCheck:output_type -> mantrae.v1.HealthCheckResponse
+	17, // [17:23] is the sub-list for method output_type
+	11, // [11:17] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_agent_proto_init() }
@@ -1052,6 +966,7 @@ func file_mantrae_v1_agent_proto_init() {
 	if File_mantrae_v1_agent_proto != nil {
 		return
 	}
+	file_mantrae_v1_agent_proto_msgTypes[6].OneofWrappers = []any{}
 	file_mantrae_v1_agent_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1059,7 +974,7 @@ func file_mantrae_v1_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_agent_proto_rawDesc), len(file_mantrae_v1_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

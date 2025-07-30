@@ -154,14 +154,15 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent
 const updateAgent = `-- name: UpdateAgent :one
 UPDATE agents
 SET
-  hostname = COALESCE(?, hostname),
-  public_ip = COALESCE(?, public_ip),
-  private_ip = COALESCE(?, private_ip),
-  active_ip = COALESCE(?, active_ip),
-  containers = COALESCE(?, containers),
+  hostname = COALESCE(?1, hostname),
+  public_ip = COALESCE(?2, public_ip),
+  private_ip = COALESCE(?3, private_ip),
+  active_ip = COALESCE(?4, active_ip),
+  containers = COALESCE(?5, containers),
+  token = COALESCE(?6, token),
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
+  id = ?7 RETURNING id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
 `
 
 type UpdateAgentParams struct {
@@ -170,6 +171,7 @@ type UpdateAgentParams struct {
 	PrivateIp  *string                 `json:"privateIp"`
 	ActiveIp   *string                 `json:"activeIp"`
 	Containers *schema.AgentContainers `json:"containers"`
+	Token      *string                 `json:"token"`
 	ID         string                  `json:"id"`
 }
 
@@ -180,6 +182,7 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent
 		arg.PrivateIp,
 		arg.ActiveIp,
 		arg.Containers,
+		arg.Token,
 		arg.ID,
 	)
 	var i Agent
@@ -196,40 +199,4 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent
 		&i.PrivateIp,
 	)
 	return i, err
-}
-
-const updateAgentIP = `-- name: UpdateAgentIP :exec
-UPDATE agents
-SET
-  active_ip = ?
-WHERE
-  id = ?
-`
-
-type UpdateAgentIPParams struct {
-	ActiveIp *string `json:"activeIp"`
-	ID       string  `json:"id"`
-}
-
-func (q *Queries) UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error {
-	_, err := q.exec(ctx, q.updateAgentIPStmt, updateAgentIP, arg.ActiveIp, arg.ID)
-	return err
-}
-
-const updateAgentToken = `-- name: UpdateAgentToken :exec
-UPDATE agents
-SET
-  token = ?
-WHERE
-  id = ?
-`
-
-type UpdateAgentTokenParams struct {
-	Token string `json:"token"`
-	ID    string `json:"id"`
-}
-
-func (q *Queries) UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error {
-	_, err := q.exec(ctx, q.updateAgentTokenStmt, updateAgentToken, arg.Token, arg.ID)
-	return err
 }

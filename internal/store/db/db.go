@@ -429,12 +429,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateAgentStmt, err = db.PrepareContext(ctx, updateAgent); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAgent: %w", err)
 	}
-	if q.updateAgentIPStmt, err = db.PrepareContext(ctx, updateAgentIP); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateAgentIP: %w", err)
-	}
-	if q.updateAgentTokenStmt, err = db.PrepareContext(ctx, updateAgentToken); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateAgentToken: %w", err)
-	}
 	if q.updateDnsProviderStmt, err = db.PrepareContext(ctx, updateDnsProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateDnsProvider: %w", err)
 	}
@@ -1172,16 +1166,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateAgentStmt: %w", cerr)
 		}
 	}
-	if q.updateAgentIPStmt != nil {
-		if cerr := q.updateAgentIPStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateAgentIPStmt: %w", cerr)
-		}
-	}
-	if q.updateAgentTokenStmt != nil {
-		if cerr := q.updateAgentTokenStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateAgentTokenStmt: %w", cerr)
-		}
-	}
 	if q.updateDnsProviderStmt != nil {
 		if cerr := q.updateDnsProviderStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateDnsProviderStmt: %w", cerr)
@@ -1451,8 +1435,6 @@ type Queries struct {
 	unsetDefaultHttpMiddlewareStmt       *sql.Stmt
 	unsetDefaultTcpMiddlewareStmt        *sql.Stmt
 	updateAgentStmt                      *sql.Stmt
-	updateAgentIPStmt                    *sql.Stmt
-	updateAgentTokenStmt                 *sql.Stmt
 	updateDnsProviderStmt                *sql.Stmt
 	updateEntryPointStmt                 *sql.Stmt
 	updateHttpMiddlewareStmt             *sql.Stmt
@@ -1613,8 +1595,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		unsetDefaultHttpMiddlewareStmt:       q.unsetDefaultHttpMiddlewareStmt,
 		unsetDefaultTcpMiddlewareStmt:        q.unsetDefaultTcpMiddlewareStmt,
 		updateAgentStmt:                      q.updateAgentStmt,
-		updateAgentIPStmt:                    q.updateAgentIPStmt,
-		updateAgentTokenStmt:                 q.updateAgentTokenStmt,
 		updateDnsProviderStmt:                q.updateDnsProviderStmt,
 		updateEntryPointStmt:                 q.updateEntryPointStmt,
 		updateHttpMiddlewareStmt:             q.updateHttpMiddlewareStmt,

@@ -37,28 +37,15 @@ WHERE
 -- name: UpdateAgent :one
 UPDATE agents
 SET
-  hostname = COALESCE(?, hostname),
-  public_ip = COALESCE(?, public_ip),
-  private_ip = COALESCE(?, private_ip),
-  active_ip = COALESCE(?, active_ip),
-  containers = COALESCE(?, containers),
+  hostname = COALESCE(sqlc.arg ('hostname'), hostname),
+  public_ip = COALESCE(sqlc.arg ('publicIp'), public_ip),
+  private_ip = COALESCE(sqlc.arg ('privateIp'), private_ip),
+  active_ip = COALESCE(sqlc.arg ('activeIp'), active_ip),
+  containers = COALESCE(sqlc.arg ('containers'), containers),
+  token = COALESCE(sqlc.narg ('token'), token),
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING *;
-
--- name: UpdateAgentIP :exec
-UPDATE agents
-SET
-  active_ip = ?
-WHERE
-  id = ?;
-
--- name: UpdateAgentToken :exec
-UPDATE agents
-SET
-  token = ?
-WHERE
-  id = ?;
+  id = sqlc.arg ('id') RETURNING *;
 
 -- name: DeleteAgent :exec
 DELETE FROM agents

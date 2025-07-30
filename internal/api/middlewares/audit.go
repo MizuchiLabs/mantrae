@@ -350,14 +350,11 @@ func extractAgentServiceDetails(
 			)
 		}
 	case "UpdateAgent":
-		if updateReq, ok := req.Any().(*mantraev1.UpdateAgentIPRequest); ok {
-			if updateResp, ok := resp.Any().(*mantraev1.UpdateAgentIPResponse); ok {
-				return &updateResp.Agent.ProfileId, fmt.Sprintf(
-					"Updated agent IP to '%s' (ID: %s)",
-					updateReq.Ip,
-					updateResp.Agent.Id,
-				)
-			}
+		if updateResp, ok := resp.Any().(*mantraev1.UpdateAgentResponse); ok {
+			return &updateResp.Agent.ProfileId, fmt.Sprintf(
+				"Updated agent (ID: %s)",
+				updateResp.Agent.Id,
+			)
 		}
 	case "DeleteAgent":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteAgentRequest); ok {

@@ -46,15 +46,7 @@ func (s *AgentService) CreateAgent(
 		ProfileID: req.Msg.ProfileId,
 	}
 
-	serverURL, ok := s.app.SM.Get(ctx, settings.KeyServerURL)
-	if !ok || serverURL == "" {
-		return nil, connect.NewError(
-			connect.CodeInternal,
-			errors.New("server url is required, check your settings"),
-		)
-	}
-
-	token, err := s.createToken(params.ID, req.Msg.ProfileId)
+	token, err := s.createToken(params.ID, params.ProfileID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -69,23 +61,32 @@ func (s *AgentService) CreateAgent(
 	}), nil
 }
 
-func (s *AgentService) UpdateAgentIP(
+func (s *AgentService) UpdateAgent(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateAgentIPRequest],
-) (*connect.Response[mantraev1.UpdateAgentIPResponse], error) {
-	params := db.UpdateAgentIPParams{
+	req *connect.Request[mantraev1.UpdateAgentRequest],
+) (*connect.Response[mantraev1.UpdateAgentResponse], error) {
+	params := db.UpdateAgentParams{
 		ID:       req.Msg.Id,
-		ActiveIp: &req.Msg.Ip,
+		ActiveIp: req.Msg.Ip,
 	}
 
-	if err := s.app.Conn.GetQuery().UpdateAgentIP(ctx, params); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	if req.Msg.RotateToken != nil && *req.Msg.RotateToken {
+		agent, err := s.app.Conn.GetQuery().GetAgent(ctx, params.ID)
+		if err != nil {
+			return nil, err
+		}
+		token, err := s.createToken(params.ID, agent.ProfileID)
+		if err != nil {
+			return nil, err
+		}
+		params.Token = token
 	}
-	result, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Msg.Id)
+
+	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.UpdateAgentIPResponse{
+	return connect.NewResponse(&mantraev1.UpdateAgentResponse{
 		Agent: result.ToProto(),
 	}), nil
 }
@@ -172,31 +173,6 @@ func (s *AgentService) HealthCheck(
 	}), nil
 }
 
-func (s *AgentService) RotateAgentToken(
-	ctx context.Context,
-	req *connect.Request[mantraev1.RotateAgentTokenRequest],
-) (*connect.Response[mantraev1.RotateAgentTokenResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Msg.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	token, err := s.createToken(result.ID, result.ProfileID)
-	if err != nil {
-		return nil, err
-	}
-	if err = s.app.Conn.GetQuery().UpdateAgentToken(ctx, db.UpdateAgentTokenParams{
-		ID:    result.ID,
-		Token: *token,
-	}); err != nil {
-		return nil, err
-	}
-
-	return connect.NewResponse(&mantraev1.RotateAgentTokenResponse{
-		Agent: result.ToProto(),
-	}), nil
-}
-
 func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*string, error) {
 	claims, err := meta.DecodeAgentToken(agent.Token, s.app.Secret)
 	if err != nil {
@@ -215,9 +191,9 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 		return nil, err
 	}
 
-	if err = s.app.Conn.GetQuery().UpdateAgentToken(ctx, db.UpdateAgentTokenParams{
+	if _, err = s.app.Conn.GetQuery().UpdateAgent(ctx, db.UpdateAgentParams{
 		ID:    agent.ID,
-		Token: *token,
+		Token: token,
 	}); err != nil {
 		return nil, err
 	}
@@ -227,17 +203,21 @@ func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*strin
 }
 
 func (s *AgentService) createToken(agentID string, profileID int64) (*string, error) {
-	sets := s.app.SM.GetMany(
-		context.Background(),
-		[]string{settings.KeyServerURL, settings.KeyAgentCleanupInterval},
-	)
+	serverURL, ok := s.app.SM.Get(context.Background(), settings.KeyServerURL)
+	if !ok || serverURL == "" {
+		return nil, errors.New("server url is required, check your settings")
+	}
+	cleanupInterval, ok := s.app.SM.Get(context.Background(), settings.KeyAgentCleanupInterval)
+	if !ok {
+		return nil, errors.New("agent cleanup interval is required, check your settings")
+	}
 
 	token, err := meta.EncodeAgentToken(
 		profileID,
 		agentID,
-		sets[settings.KeyServerURL],
+		serverURL,
 		s.app.Secret,
-		time.Now().Add(settings.AsDuration(sets[settings.KeyAgentCleanupInterval])),
+		time.Now().Add(settings.AsDuration(cleanupInterval)),
 	)
 	if err != nil {
 		return nil, err

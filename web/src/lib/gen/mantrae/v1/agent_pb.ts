@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file mantrae/v1/agent.proto.
  */
 export const file_mantrae_v1_agent: GenFile = /*@__PURE__*/
-  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIo0CCgVBZ2VudBIKCgJpZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgDEhAKCGhvc3RuYW1lGAMgASgJEhEKCXB1YmxpY19pcBgEIAEoCRISCgpwcml2YXRlX2lwGAUgASgJEhEKCWFjdGl2ZV9pcBgGIAEoCRINCgV0b2tlbhgHIAEoCRIpCgpjb250YWluZXJzGAggAygLMhUubWFudHJhZS52MS5Db250YWluZXISLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiuAIKCUNvbnRhaW5lchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEjEKBmxhYmVscxgDIAMoCzIhLm1hbnRyYWUudjEuQ29udGFpbmVyLkxhYmVsc0VudHJ5Eg0KBWltYWdlGAQgASgJEjMKB3BvcnRtYXAYBSADKAsyIi5tYW50cmFlLnYxLkNvbnRhaW5lci5Qb3J0bWFwRW50cnkSDgoGc3RhdHVzGAYgASgJEisKB2NyZWF0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMUG9ydG1hcEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEiJgoPR2V0QWdlbnRSZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABIjQKEEdldEFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IjEKEkNyZWF0ZUFnZW50UmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAIjcKE0NyZWF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IkAKFFVwZGF0ZUFnZW50SVBSZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABEhMKAmlwGAIgASgJQge6SARyAnABIjkKFVVwZGF0ZUFnZW50SVBSZXNwb25zZRIgCgVhZ2VudBgBIAEoCzIRLm1hbnRyYWUudjEuQWdlbnQiKQoSRGVsZXRlQWdlbnRSZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABIhUKE0RlbGV0ZUFnZW50UmVzcG9uc2UizwEKEUxpc3RBZ2VudHNSZXF1ZXN0EhsKCnByb2ZpbGVfaWQYASABKANCB7pIBCICIAASagoFbGltaXQYAiABKANCVrpIU7oBUAoLbGltaXQudmFsaWQSKWxpbWl0IG11c3QgYmUgZWl0aGVyIC0xIG9yIGdyZWF0ZXIgdGhhbiAwGhZ0aGlzID09IC0xIHx8IHRoaXMgPiAwSACIAQESHAoGb2Zmc2V0GAMgASgDQge6SAQiAigASAGIAQFCCAoGX2xpbWl0QgkKB19vZmZzZXQiTAoSTGlzdEFnZW50c1Jlc3BvbnNlEiEKBmFnZW50cxgBIAMoCzIRLm1hbnRyYWUudjEuQWdlbnQSEwoLdG90YWxfY291bnQYAiABKAMiaAoSSGVhbHRoQ2hlY2tSZXF1ZXN0EhkKCGhvc3RuYW1lGAMgASgJQge6SARyAhABEhoKCXB1YmxpY19pcBgEIAEoCUIHukgEcgIQARIbCgpwcml2YXRlX2lwGAUgASgJQge6SARyAhABIjcKE0hlYWx0aENoZWNrUmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50Ii4KF1JvdGF0ZUFnZW50VG9rZW5SZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABIjwKGFJvdGF0ZUFnZW50VG9rZW5SZXNwb25zZRIgCgVhZ2VudBgBIAEoCzIRLm1hbnRyYWUudjEuQWdlbnQy0QQKDEFnZW50U2VydmljZRJKCghHZXRBZ2VudBIbLm1hbnRyYWUudjEuR2V0QWdlbnRSZXF1ZXN0GhwubWFudHJhZS52MS5HZXRBZ2VudFJlc3BvbnNlIgOQAgESTgoLQ3JlYXRlQWdlbnQSHi5tYW50cmFlLnYxLkNyZWF0ZUFnZW50UmVxdWVzdBofLm1hbnRyYWUudjEuQ3JlYXRlQWdlbnRSZXNwb25zZRJUCg1VcGRhdGVBZ2VudElQEiAubWFudHJhZS52MS5VcGRhdGVBZ2VudElQUmVxdWVzdBohLm1hbnRyYWUudjEuVXBkYXRlQWdlbnRJUFJlc3BvbnNlEk4KC0RlbGV0ZUFnZW50Eh4ubWFudHJhZS52MS5EZWxldGVBZ2VudFJlcXVlc3QaHy5tYW50cmFlLnYxLkRlbGV0ZUFnZW50UmVzcG9uc2USUAoKTGlzdEFnZW50cxIdLm1hbnRyYWUudjEuTGlzdEFnZW50c1JlcXVlc3QaHi5tYW50cmFlLnYxLkxpc3RBZ2VudHNSZXNwb25zZSIDkAIBEk4KC0hlYWx0aENoZWNrEh4ubWFudHJhZS52MS5IZWFsdGhDaGVja1JlcXVlc3QaHy5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVzcG9uc2USXQoQUm90YXRlQWdlbnRUb2tlbhIjLm1hbnRyYWUudjEuUm90YXRlQWdlbnRUb2tlblJlcXVlc3QaJC5tYW50cmFlLnYxLlJvdGF0ZUFnZW50VG9rZW5SZXNwb25zZUKkAQoOY29tLm1hbnRyYWUudjFCCkFnZW50UHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
+  fileDesc("ChZtYW50cmFlL3YxL2FnZW50LnByb3RvEgptYW50cmFlLnYxIo0CCgVBZ2VudBIKCgJpZBgBIAEoCRISCgpwcm9maWxlX2lkGAIgASgDEhAKCGhvc3RuYW1lGAMgASgJEhEKCXB1YmxpY19pcBgEIAEoCRISCgpwcml2YXRlX2lwGAUgASgJEhEKCWFjdGl2ZV9pcBgGIAEoCRINCgV0b2tlbhgHIAEoCRIpCgpjb250YWluZXJzGAggAygLMhUubWFudHJhZS52MS5Db250YWluZXISLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiuAIKCUNvbnRhaW5lchIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEjEKBmxhYmVscxgDIAMoCzIhLm1hbnRyYWUudjEuQ29udGFpbmVyLkxhYmVsc0VudHJ5Eg0KBWltYWdlGAQgASgJEjMKB3BvcnRtYXAYBSADKAsyIi5tYW50cmFlLnYxLkNvbnRhaW5lci5Qb3J0bWFwRW50cnkSDgoGc3RhdHVzGAYgASgJEisKB2NyZWF0ZWQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGi0KC0xhYmVsc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaLgoMUG9ydG1hcEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEiJgoPR2V0QWdlbnRSZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABIjQKEEdldEFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IjEKEkNyZWF0ZUFnZW50UmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAIjcKE0NyZWF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50InkKElVwZGF0ZUFnZW50UmVxdWVzdBITCgJpZBgBIAEoCUIHukgEcgIQARIbCgJpcBgCIAEoCUIKukgH2AEAcgJwAUgAiAEBEhkKDHJvdGF0ZV90b2tlbhgDIAEoCEgBiAEBQgUKA19pcEIPCg1fcm90YXRlX3Rva2VuIjcKE1VwZGF0ZUFnZW50UmVzcG9uc2USIAoFYWdlbnQYASABKAsyES5tYW50cmFlLnYxLkFnZW50IikKEkRlbGV0ZUFnZW50UmVxdWVzdBITCgJpZBgBIAEoCUIHukgEcgIQASIVChNEZWxldGVBZ2VudFJlc3BvbnNlIs8BChFMaXN0QWdlbnRzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEmoKBWxpbWl0GAIgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgDIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IkwKEkxpc3RBZ2VudHNSZXNwb25zZRIhCgZhZ2VudHMYASADKAsyES5tYW50cmFlLnYxLkFnZW50EhMKC3RvdGFsX2NvdW50GAIgASgDImgKEkhlYWx0aENoZWNrUmVxdWVzdBIZCghob3N0bmFtZRgDIAEoCUIHukgEcgIQARIaCglwdWJsaWNfaXAYBCABKAlCB7pIBHICEAESGwoKcHJpdmF0ZV9pcBgFIAEoCUIHukgEcgIQASI3ChNIZWFsdGhDaGVja1Jlc3BvbnNlEiAKBWFnZW50GAEgASgLMhEubWFudHJhZS52MS5BZ2VudDLsAwoMQWdlbnRTZXJ2aWNlEkoKCEdldEFnZW50EhsubWFudHJhZS52MS5HZXRBZ2VudFJlcXVlc3QaHC5tYW50cmFlLnYxLkdldEFnZW50UmVzcG9uc2UiA5ACARJOCgtDcmVhdGVBZ2VudBIeLm1hbnRyYWUudjEuQ3JlYXRlQWdlbnRSZXF1ZXN0Gh8ubWFudHJhZS52MS5DcmVhdGVBZ2VudFJlc3BvbnNlEk4KC1VwZGF0ZUFnZW50Eh4ubWFudHJhZS52MS5VcGRhdGVBZ2VudFJlcXVlc3QaHy5tYW50cmFlLnYxLlVwZGF0ZUFnZW50UmVzcG9uc2USTgoLRGVsZXRlQWdlbnQSHi5tYW50cmFlLnYxLkRlbGV0ZUFnZW50UmVxdWVzdBofLm1hbnRyYWUudjEuRGVsZXRlQWdlbnRSZXNwb25zZRJQCgpMaXN0QWdlbnRzEh0ubWFudHJhZS52MS5MaXN0QWdlbnRzUmVxdWVzdBoeLm1hbnRyYWUudjEuTGlzdEFnZW50c1Jlc3BvbnNlIgOQAgESTgoLSGVhbHRoQ2hlY2sSHi5tYW50cmFlLnYxLkhlYWx0aENoZWNrUmVxdWVzdBofLm1hbnRyYWUudjEuSGVhbHRoQ2hlY2tSZXNwb25zZUKkAQoOY29tLm1hbnRyYWUudjFCCkFnZW50UHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Agent
@@ -193,31 +193,36 @@ export const CreateAgentResponseSchema: GenMessage<CreateAgentResponse> = /*@__P
   messageDesc(file_mantrae_v1_agent, 5);
 
 /**
- * @generated from message mantrae.v1.UpdateAgentIPRequest
+ * @generated from message mantrae.v1.UpdateAgentRequest
  */
-export type UpdateAgentIPRequest = Message<"mantrae.v1.UpdateAgentIPRequest"> & {
+export type UpdateAgentRequest = Message<"mantrae.v1.UpdateAgentRequest"> & {
   /**
    * @generated from field: string id = 1;
    */
   id: string;
 
   /**
-   * @generated from field: string ip = 2;
+   * @generated from field: optional string ip = 2;
    */
-  ip: string;
+  ip?: string;
+
+  /**
+   * @generated from field: optional bool rotate_token = 3;
+   */
+  rotateToken?: boolean;
 };
 
 /**
- * Describes the message mantrae.v1.UpdateAgentIPRequest.
- * Use `create(UpdateAgentIPRequestSchema)` to create a new message.
+ * Describes the message mantrae.v1.UpdateAgentRequest.
+ * Use `create(UpdateAgentRequestSchema)` to create a new message.
  */
-export const UpdateAgentIPRequestSchema: GenMessage<UpdateAgentIPRequest> = /*@__PURE__*/
+export const UpdateAgentRequestSchema: GenMessage<UpdateAgentRequest> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_agent, 6);
 
 /**
- * @generated from message mantrae.v1.UpdateAgentIPResponse
+ * @generated from message mantrae.v1.UpdateAgentResponse
  */
-export type UpdateAgentIPResponse = Message<"mantrae.v1.UpdateAgentIPResponse"> & {
+export type UpdateAgentResponse = Message<"mantrae.v1.UpdateAgentResponse"> & {
   /**
    * @generated from field: mantrae.v1.Agent agent = 1;
    */
@@ -225,10 +230,10 @@ export type UpdateAgentIPResponse = Message<"mantrae.v1.UpdateAgentIPResponse"> 
 };
 
 /**
- * Describes the message mantrae.v1.UpdateAgentIPResponse.
- * Use `create(UpdateAgentIPResponseSchema)` to create a new message.
+ * Describes the message mantrae.v1.UpdateAgentResponse.
+ * Use `create(UpdateAgentResponseSchema)` to create a new message.
  */
-export const UpdateAgentIPResponseSchema: GenMessage<UpdateAgentIPResponse> = /*@__PURE__*/
+export const UpdateAgentResponseSchema: GenMessage<UpdateAgentResponse> = /*@__PURE__*/
   messageDesc(file_mantrae_v1_agent, 7);
 
 /**
@@ -355,40 +360,6 @@ export const HealthCheckResponseSchema: GenMessage<HealthCheckResponse> = /*@__P
   messageDesc(file_mantrae_v1_agent, 13);
 
 /**
- * @generated from message mantrae.v1.RotateAgentTokenRequest
- */
-export type RotateAgentTokenRequest = Message<"mantrae.v1.RotateAgentTokenRequest"> & {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id: string;
-};
-
-/**
- * Describes the message mantrae.v1.RotateAgentTokenRequest.
- * Use `create(RotateAgentTokenRequestSchema)` to create a new message.
- */
-export const RotateAgentTokenRequestSchema: GenMessage<RotateAgentTokenRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 14);
-
-/**
- * @generated from message mantrae.v1.RotateAgentTokenResponse
- */
-export type RotateAgentTokenResponse = Message<"mantrae.v1.RotateAgentTokenResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.Agent agent = 1;
-   */
-  agent?: Agent;
-};
-
-/**
- * Describes the message mantrae.v1.RotateAgentTokenResponse.
- * Use `create(RotateAgentTokenResponseSchema)` to create a new message.
- */
-export const RotateAgentTokenResponseSchema: GenMessage<RotateAgentTokenResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_agent, 15);
-
-/**
  * @generated from service mantrae.v1.AgentService
  */
 export const AgentService: GenService<{
@@ -409,12 +380,12 @@ export const AgentService: GenService<{
     output: typeof CreateAgentResponseSchema;
   },
   /**
-   * @generated from rpc mantrae.v1.AgentService.UpdateAgentIP
+   * @generated from rpc mantrae.v1.AgentService.UpdateAgent
    */
-  updateAgentIP: {
+  updateAgent: {
     methodKind: "unary";
-    input: typeof UpdateAgentIPRequestSchema;
-    output: typeof UpdateAgentIPResponseSchema;
+    input: typeof UpdateAgentRequestSchema;
+    output: typeof UpdateAgentResponseSchema;
   },
   /**
    * @generated from rpc mantrae.v1.AgentService.DeleteAgent
@@ -439,14 +410,6 @@ export const AgentService: GenService<{
     methodKind: "unary";
     input: typeof HealthCheckRequestSchema;
     output: typeof HealthCheckResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.AgentService.RotateAgentToken
-   */
-  rotateAgentToken: {
-    methodKind: "unary";
-    input: typeof RotateAgentTokenRequestSchema;
-    output: typeof RotateAgentTokenResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_mantrae_v1_agent, 0);

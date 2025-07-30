@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -7,13 +8,16 @@
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
-	import { RotateCcw } from '@lucide/svelte';
+	import { Check, Container, Copy, RotateCcw, X } from '@lucide/svelte';
 	import { agentClient } from '$lib/api';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import CopyInput from '../ui/copy-input/copy-input.svelte';
+	import CopyButton from '../ui/copy-button/copy-button.svelte';
+	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte';
+	import { scale } from 'svelte/transition';
 
 	interface Props {
 		data: Agent[];
@@ -28,7 +32,7 @@
 	const handleSubmit = async (ip: string | undefined) => {
 		try {
 			if (item.id) {
-				const response = await agentClient.updateAgentIP({ id: item.id, ip });
+				const response = await agentClient.updateAgent({ id: item.id, ip });
 				if (!response.agent) throw new Error('Failed to create agent');
 				item = response.agent;
 				toast.success(`Agent ${item.hostname} updated successfully`);
@@ -66,7 +70,7 @@
 
 	const handleRotate = async () => {
 		try {
-			const response = await agentClient.rotateAgentToken({ id: item.id });
+			const response = await agentClient.updateAgent({ id: item.id, rotateToken: true });
 			if (!response.agent) throw new Error('Failed to rotate token');
 			item.token = response.agent.token;
 			toast.success('Token rotated successfully');
@@ -82,6 +86,32 @@
 			const e = ConnectError.from(err);
 			toast.error('Failed to rotate token', { description: e.message });
 		}
+	};
+
+	const dockerComposeText = $derived(`services:
+  mantrae-agent:
+    image: ghcr.io/mizuchilabs/mantrae-agent:latest
+    container_name: mantrae-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./agent:/data
+    environment:
+      - TOKEN=${item.token}
+    restart: unless-stopped`);
+
+	const dockerRunText = $derived(
+		`docker run -d --name mantrae-agent -v /var/run/docker.sock:/var/run/docker.sock -v ./agent:/data -e TOKEN=${item.token} ghcr.io/mizuchilabs/mantrae-agent:latest`
+	);
+
+	const dockerComposeClipboard = new UseClipboard();
+	const dockerRunClipboard = new UseClipboard();
+
+	const handleCopyCompose = async () => {
+		await dockerComposeClipboard.copy(dockerComposeText);
+	};
+
+	const handleCopyRun = async () => {
+		await dockerRunClipboard.copy(dockerRunText);
 	};
 </script>
 
@@ -256,6 +286,123 @@
 
 			<!-- Actions -->
 			<div class="flex gap-2">
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button {...props} variant="outline" class="gap-2">
+								<Container class="h-4 w-4" />
+								Docker Setup
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content class="w-80" align="center" side="top" sideOffset={4}>
+						<DropdownMenu.Label class="flex items-center gap-2 px-2 py-3">
+							<Container class="h-4 w-4" />
+							Docker Configuration
+						</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+
+						<div class="space-y-1 p-1">
+							<!-- Docker Compose Item -->
+							<DropdownMenu.Item
+								closeOnSelect={false}
+								class="hover:bg-accent/50 focus:bg-accent/50 relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200"
+								onclick={handleCopyCompose}
+							>
+								{#if dockerComposeClipboard.status === 'success'}
+									<div
+										in:scale={{ duration: 500, start: 0.85 }}
+										class="absolute inset-0 animate-pulse bg-green-500/20"
+									></div>
+								{:else if dockerComposeClipboard.status === 'failure'}
+									<div
+										in:scale={{ duration: 500, start: 0.85 }}
+										class="absolute inset-0 animate-pulse bg-red-500/20"
+									></div>
+								{/if}
+
+								<div class="relative z-10 flex w-full items-center justify-between">
+									<div class="flex items-center gap-2">
+										<Container
+											class="h-4 w-4 text-blue-500 transition-transform duration-200 group-hover:scale-110"
+										/>
+										<span class="font-medium">Docker Compose</span>
+									</div>
+									<div class="text-muted-foreground flex items-center gap-1 text-xs">
+										{#if dockerComposeClipboard.status === 'success'}
+											<Check class="h-3 w-3 text-green-500" />
+											<span class="text-green-600">Copied!</span>
+										{:else if dockerComposeClipboard.status === 'failure'}
+											<X class="h-3 w-3 text-red-500" />
+											<span class="text-red-600">Failed</span>
+										{:else}
+											<Copy class="h-3 w-3" />
+											Click to copy
+										{/if}
+									</div>
+								</div>
+								<p class="text-muted-foreground relative z-10 mt-1 text-xs leading-relaxed">
+									Complete docker-compose.yml configuration with volumes and environment setup
+								</p>
+							</DropdownMenu.Item>
+
+							<!-- Docker Run Item -->
+							<DropdownMenu.Item
+								closeOnSelect={false}
+								class="hover:bg-accent/50 focus:bg-accent/50 relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200"
+								onclick={handleCopyRun}
+							>
+								{#if dockerRunClipboard.status === 'success'}
+									<div
+										in:scale={{ duration: 500, start: 0.85 }}
+										class="absolute inset-0 animate-pulse bg-green-500/20"
+									></div>
+								{:else if dockerRunClipboard.status === 'failure'}
+									<div
+										in:scale={{ duration: 500, start: 0.85 }}
+										class="absolute inset-0 animate-pulse bg-red-500/20"
+									></div>
+								{/if}
+
+								<div class="relative z-10 flex w-full items-center justify-between">
+									<div class="flex items-center gap-2">
+										<Container
+											class="h-4 w-4 text-green-500 transition-transform duration-200 group-hover:scale-110"
+										/>
+										<span class="font-medium">Docker Run</span>
+									</div>
+									<div class="text-muted-foreground flex items-center gap-1 text-xs">
+										{#if dockerRunClipboard.status === 'success'}
+											<Check class="h-3 w-3 text-green-500" />
+											<span class="text-green-600">Copied!</span>
+										{:else if dockerRunClipboard.status === 'failure'}
+											<X class="h-3 w-3 text-red-500" />
+											<span class="text-red-600">Failed</span>
+										{:else}
+											<Copy class="h-3 w-3" />
+											Click to copy
+										{/if}
+									</div>
+								</div>
+								<p class="text-muted-foreground relative z-10 mt-1 text-xs leading-relaxed">
+									Single command to run the agent container with all required parameters
+								</p>
+							</DropdownMenu.Item>
+						</div>
+
+						<DropdownMenu.Separator />
+
+						<div class="p-2">
+							<div class="rounded-lg border border-blue-200 bg-blue-50 p-3">
+								<p class="text-xs text-blue-600 dark:text-blue-800">
+									<strong>💡 Quick Start:</strong> Click any option above to copy. Make sure Docker is
+									installed and running on your target machine.
+								</p>
+							</div>
+						</div>
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+
 				<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
 					Delete Agent
 				</Button>

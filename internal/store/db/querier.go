@@ -144,8 +144,6 @@ type Querier interface {
 	UnsetDefaultHttpMiddleware(ctx context.Context) error
 	UnsetDefaultTcpMiddleware(ctx context.Context) error
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
-	UpdateAgentIP(ctx context.Context, arg UpdateAgentIPParams) error
-	UpdateAgentToken(ctx context.Context, arg UpdateAgentTokenParams) error
 	UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderParams) (DnsProvider, error)
 	UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error)
 	UpdateHttpMiddleware(ctx context.Context, arg UpdateHttpMiddlewareParams) (HttpMiddleware, error)
