@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 )
 
 const (
@@ -50,13 +52,13 @@ func Update(update bool) {
 
 	if !update {
 		if compareVersions(
-			strings.TrimPrefix(Version, "v"),
+			strings.TrimPrefix(meta.Version, "v"),
 			strings.TrimPrefix(latest.Tag, "v"),
 		) <= 0 {
 			slog.Info("You are running the latest version!")
 			return
 		}
-		slog.Info("New version available!", "latest", latest.Tag, "current", Version)
+		slog.Info("New version available!", "latest", latest.Tag, "current", meta.Version)
 		return
 	}
 

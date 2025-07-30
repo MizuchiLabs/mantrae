@@ -3,10 +3,23 @@ version: "3"
 output: prefixed
 
 env:
+  CGO_ENABLED: 0
   IMAGE_SERVER_DEV: ko.local/mantrae
   IMAGE_AGENT_DEV: ko.local/mantrae-agent
   IMAGE_SERVER_PROD: ghcr.io/mizuchilabs/mantrae
   IMAGE_AGENT_PROD: ghcr.io/mizuchilabs/mantrae-agent
+
+vars:
+  VERSION:
+    sh: git describe --tags --abbrev=0
+  COMMIT:
+    sh: git rev-parse --short HEAD
+  DATE:
+    sh: date -u +%Y-%m-%d
+  LDFLAGS: >-
+    -s -w -X 'github.com/mizuchilabs/mantrae/pkg/meta.Version={{.VERSION}}' -X
+    'github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.COMMIT}}' -X
+    'github.com/mizuchilabs/mantrae/pkg/meta.Date={{.DATE}}'
 
 tasks:
   dev:
@@ -16,7 +29,7 @@ tasks:
   backend:
     desc: Run Go backend
     cmds:
-      - go run main.go
+      - go run server/cmd/main.go
     silent: false
 
   frontend:
@@ -29,8 +42,7 @@ tasks:
   agent:
     desc: Run Go agent
     cmds:
-      - go run main.go
-    dir: cmd/agent
+      - go run agent/cmd/main.go
     silent: false
 
   # 󰚰 Update deps
@@ -46,18 +58,17 @@ tasks:
     cmds:
       - buf generate --clean
       - sqlc generate
-      - go run -tags dev main.go -zod
+      - go run -tags dev server/cmd/main.go -zod
 
   #   Build binary
   build:
     desc: Build Go binary
     deps: [build:frontend]
     cmds:
-      - go build -o bin/server ./cmd/server
-    sources:
-      - "**/*.go"
-    generates:
-      - bin/server
+      - go build -o bin/server -ldflags="{{.LDFLAGS}}" ./server/cmd
+      - go build -o bin/agent -ldflags="{{.LDFLAGS}}" ./agent/cmd
+      - upx -9 bin/server
+      - upx -9 bin/agent
 
   # 🏗 Build frontend
   build:frontend:

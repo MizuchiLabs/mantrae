@@ -1,0 +1,113 @@
+package service
+
+import (
+	"context"
+
+	"connectrpc.com/connect"
+
+	"github.com/mizuchilabs/mantrae/server/internal/config"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
+	"github.com/mizuchilabs/mantrae/pkg/util"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+)
+
+type ProfileService struct {
+	app *config.App
+}
+
+func NewProfileService(app *config.App) *ProfileService {
+	return &ProfileService{app: app}
+}
+
+func (s *ProfileService) GetProfile(
+	ctx context.Context,
+	req *connect.Request[mantraev1.GetProfileRequest],
+) (*connect.Response[mantraev1.GetProfileResponse], error) {
+	result, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&mantraev1.GetProfileResponse{
+		Profile: result.ToProto(),
+	}), nil
+}
+
+func (s *ProfileService) CreateProfile(
+	ctx context.Context,
+	req *connect.Request[mantraev1.CreateProfileRequest],
+) (*connect.Response[mantraev1.CreateProfileResponse], error) {
+	params := db.CreateProfileParams{
+		Name:        req.Msg.Name,
+		Description: req.Msg.Description,
+		Token:       util.GenerateToken(6),
+	}
+
+	result, err := s.app.Conn.GetQuery().CreateProfile(ctx, params)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&mantraev1.CreateProfileResponse{
+		Profile: result.ToProto(),
+	}), nil
+}
+
+func (s *ProfileService) UpdateProfile(
+	ctx context.Context,
+	req *connect.Request[mantraev1.UpdateProfileRequest],
+) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
+	params := db.UpdateProfileParams{
+		ID:          req.Msg.Id,
+		Name:        req.Msg.Name,
+		Description: req.Msg.Description,
+	}
+	if req.Msg.GetRegenerateToken() {
+		params.Token = util.GenerateToken(6)
+	}
+
+	result, err := s.app.Conn.GetQuery().UpdateProfile(ctx, params)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&mantraev1.UpdateProfileResponse{
+		Profile: result.ToProto(),
+	}), nil
+}
+
+func (s *ProfileService) DeleteProfile(
+	ctx context.Context,
+	req *connect.Request[mantraev1.DeleteProfileRequest],
+) (*connect.Response[mantraev1.DeleteProfileResponse], error) {
+	if err := s.app.Conn.GetQuery().DeleteProfile(ctx, req.Msg.Id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&mantraev1.DeleteProfileResponse{}), nil
+}
+
+func (s *ProfileService) ListProfiles(
+	ctx context.Context,
+	req *connect.Request[mantraev1.ListProfilesRequest],
+) (*connect.Response[mantraev1.ListProfilesResponse], error) {
+	params := db.ListProfilesParams{
+		Limit:  req.Msg.Limit,
+		Offset: req.Msg.Offset,
+	}
+
+	result, err := s.app.Conn.GetQuery().ListProfiles(ctx, params)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	totalCount, err := s.app.Conn.GetQuery().CountProfiles(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	profiles := make([]*mantraev1.Profile, 0, len(result))
+	for _, p := range result {
+		profiles = append(profiles, p.ToProto())
+	}
+	return connect.NewResponse(&mantraev1.ListProfilesResponse{
+		Profiles:   profiles,
+		TotalCount: totalCount,
+	}), nil
+}

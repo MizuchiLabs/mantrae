@@ -11,8 +11,8 @@ import (
 	"syscall"
 
 	"github.com/mizuchilabs/mantrae/agent/internal/client"
-	"github.com/mizuchilabs/mantrae/pkg/build"
 	"github.com/mizuchilabs/mantrae/pkg/logger"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Println(build.Version)
+		fmt.Println(meta.Version)
 		return
 	}
 
