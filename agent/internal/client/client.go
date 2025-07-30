@@ -269,8 +269,8 @@ func (t *TokenSource) upsertRouters(
 				Id:      r.Id,
 				Name:    name,
 				Config:  newConfig,
-				Enabled: true,
 				Type:    typ,
+				Enabled: true,
 			}
 			if _, err := client.UpdateRouter(ctx, connect.NewRequest(params)); err != nil {
 				return err
@@ -282,8 +282,8 @@ func (t *TokenSource) upsertRouters(
 				AgentId:   &t.claims.AgentID,
 				Name:      name,
 				Config:    newConfig,
-				Enabled:   true,
 				Type:      typ,
+				Enabled:   true,
 			}
 			res, err := client.CreateRouter(ctx, connect.NewRequest(params))
 			if err != nil {
@@ -330,10 +330,11 @@ func (t *TokenSource) upsertServices(
 				continue
 			}
 			params := &mantraev1.UpdateServiceRequest{
-				Id:     s.Id,
-				Name:   name,
-				Config: newConfig,
-				Type:   typ,
+				Id:      s.Id,
+				Name:    name,
+				Config:  newConfig,
+				Type:    typ,
+				Enabled: true,
 			}
 			if _, err := client.UpdateService(ctx, connect.NewRequest(params)); err != nil {
 				return err
@@ -346,6 +347,7 @@ func (t *TokenSource) upsertServices(
 				Name:      name,
 				Config:    newConfig,
 				Type:      typ,
+				Enabled:   true,
 			}
 			res, err := client.CreateService(ctx, connect.NewRequest(params))
 			if err != nil {
