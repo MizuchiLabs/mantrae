@@ -192,18 +192,43 @@ func (t *TokenSource) Update(ctx context.Context) error {
 }
 
 func injectServiceAddresses(d *dynamic.Configuration, ip string, port uint16) {
-	p := strconv.Itoa(int(port))
-	fullURL := fmt.Sprintf("http://%s:%s", ip, p)
-	fullAddress := fmt.Sprintf("%s:%s", ip, p)
+	fallbackPort := strconv.Itoa(int(port))
 
 	for _, svc := range d.HTTP.Services {
-		svc.LoadBalancer.Servers = []dynamic.Server{{URL: fullURL}}
+		for i := range svc.LoadBalancer.Servers {
+			if svc.LoadBalancer.Servers[i].Port == "" {
+				svc.LoadBalancer.Servers[i].Port = fallbackPort
+			}
+			svc.LoadBalancer.Servers[i].URL = fmt.Sprintf(
+				"http://%s:%s",
+				ip,
+				svc.LoadBalancer.Servers[i].Port,
+			)
+		}
 	}
 	for _, svc := range d.TCP.Services {
-		svc.LoadBalancer.Servers = []dynamic.TCPServer{{Address: fullAddress}}
+		for i := range svc.LoadBalancer.Servers {
+			if svc.LoadBalancer.Servers[i].Port == "" {
+				svc.LoadBalancer.Servers[i].Port = fallbackPort
+			}
+			svc.LoadBalancer.Servers[i].Address = fmt.Sprintf(
+				"%s:%s",
+				ip,
+				svc.LoadBalancer.Servers[i].Port,
+			)
+		}
 	}
 	for _, svc := range d.UDP.Services {
-		svc.LoadBalancer.Servers = []dynamic.UDPServer{{Address: fullAddress}}
+		for i := range svc.LoadBalancer.Servers {
+			if svc.LoadBalancer.Servers[i].Port == "" {
+				svc.LoadBalancer.Servers[i].Port = fallbackPort
+			}
+			svc.LoadBalancer.Servers[i].Address = fmt.Sprintf(
+				"%s:%s",
+				ip,
+				svc.LoadBalancer.Servers[i].Port,
+			)
+		}
 	}
 }
 
