@@ -4,6 +4,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -192,14 +193,17 @@ func (t *TokenSource) Update(ctx context.Context) error {
 
 func injectServiceAddresses(d *dynamic.Configuration, ip string, port uint16) {
 	p := strconv.Itoa(int(port))
+	fullURL := fmt.Sprintf("http://%s:%s", ip, p)
+	fullAddress := fmt.Sprintf("%s:%s", ip, p)
+
 	for _, svc := range d.HTTP.Services {
-		svc.LoadBalancer.Servers = []dynamic.Server{{URL: ip, Port: p}}
+		svc.LoadBalancer.Servers = []dynamic.Server{{URL: fullURL}}
 	}
 	for _, svc := range d.TCP.Services {
-		svc.LoadBalancer.Servers = []dynamic.TCPServer{{Address: ip, Port: p}}
+		svc.LoadBalancer.Servers = []dynamic.TCPServer{{Address: fullAddress}}
 	}
 	for _, svc := range d.UDP.Services {
-		svc.LoadBalancer.Servers = []dynamic.UDPServer{{Address: ip, Port: p}}
+		svc.LoadBalancer.Servers = []dynamic.UDPServer{{Address: fullAddress}}
 	}
 }
 
