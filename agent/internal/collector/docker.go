@@ -6,13 +6,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
 
 // GetContainers retrieves all local containers
-func GetContainers() ([]types.Container, error) {
+func GetContainers() ([]container.Summary, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, errors.New("failed to create Docker client")
@@ -26,7 +25,7 @@ func GetContainers() ([]types.Container, error) {
 		return nil, errors.New("failed to list containers")
 	}
 
-	var result []types.Container
+	var result []container.Summary
 	for _, c := range containers {
 		// Skip Traefik by name
 		skip := false
