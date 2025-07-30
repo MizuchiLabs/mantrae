@@ -149,7 +149,6 @@ func (t *TokenSource) Refresh(ctx context.Context) {
 
 	info := collector.GetMachineInfo()
 	req := connect.NewRequest(&mantraev1.HealthCheckRequest{
-		MachineId: info.MachineID,
 		Hostname:  info.Hostname,
 		PrivateIp: info.PrivateIP,
 		PublicIp:  info.PublicIPs.IPv4,

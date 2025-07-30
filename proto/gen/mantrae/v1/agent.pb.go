@@ -697,10 +697,9 @@ func (x *ListAgentsResponse) GetTotalCount() int64 {
 
 type HealthCheckRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	MachineId     string                 `protobuf:"bytes,1,opt,name=machine_id,json=machineId,proto3" json:"machine_id,omitempty"`
-	Hostname      string                 `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
-	PublicIp      string                 `protobuf:"bytes,3,opt,name=public_ip,json=publicIp,proto3" json:"public_ip,omitempty"`
-	PrivateIp     string                 `protobuf:"bytes,4,opt,name=private_ip,json=privateIp,proto3" json:"private_ip,omitempty"`
+	Hostname      string                 `protobuf:"bytes,3,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	PublicIp      string                 `protobuf:"bytes,4,opt,name=public_ip,json=publicIp,proto3" json:"public_ip,omitempty"`
+	PrivateIp     string                 `protobuf:"bytes,5,opt,name=private_ip,json=privateIp,proto3" json:"private_ip,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -733,13 +732,6 @@ func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
 func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_agent_proto_rawDescGZIP(), []int{12}
-}
-
-func (x *HealthCheckRequest) GetMachineId() string {
-	if x != nil {
-		return x.MachineId
-	}
-	return ""
 }
 
 func (x *HealthCheckRequest) GetHostname() string {
@@ -961,14 +953,12 @@ const file_mantrae_v1_agent_proto_rawDesc = "" +
 	"\x12ListAgentsResponse\x12)\n" +
 	"\x06agents\x18\x01 \x03(\v2\x11.mantrae.v1.AgentR\x06agents\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x03R\n" +
-	"totalCount\"\xaf\x01\n" +
-	"\x12HealthCheckRequest\x12&\n" +
+	"totalCount\"\x87\x01\n" +
+	"\x12HealthCheckRequest\x12#\n" +
+	"\bhostname\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bhostname\x12$\n" +
+	"\tpublic_ip\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bpublicIp\x12&\n" +
 	"\n" +
-	"machine_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tmachineId\x12#\n" +
-	"\bhostname\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bhostname\x12$\n" +
-	"\tpublic_ip\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\bpublicIp\x12&\n" +
-	"\n" +
-	"private_ip\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tprivateIp\">\n" +
+	"private_ip\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\tprivateIp\">\n" +
 	"\x13HealthCheckResponse\x12'\n" +
 	"\x05agent\x18\x01 \x01(\v2\x11.mantrae.v1.AgentR\x05agent\"2\n" +
 	"\x17RotateAgentTokenRequest\x12\x17\n" +

@@ -280,10 +280,6 @@ components:
     mantrae.v1.HealthCheckRequest:
       type: object
       properties:
-        machineId:
-          type: string
-          title: machine_id
-          minLength: 1
         hostname:
           type: string
           title: hostname

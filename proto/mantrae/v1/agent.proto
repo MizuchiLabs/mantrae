@@ -84,10 +84,9 @@ message ListAgentsResponse {
 }
 
 message HealthCheckRequest {
-  string machine_id = 1 [(buf.validate.field).string.min_len = 1];
-  string hostname = 2 [(buf.validate.field).string.min_len = 1];
-  string public_ip = 3 [(buf.validate.field).string.min_len = 1];
-  string private_ip = 4 [(buf.validate.field).string.min_len = 1];
+  string hostname = 3 [(buf.validate.field).string.min_len = 1];
+  string public_ip = 4 [(buf.validate.field).string.min_len = 1];
+  string private_ip = 5 [(buf.validate.field).string.min_len = 1];
 }
 message HealthCheckResponse {
   Agent agent = 1;

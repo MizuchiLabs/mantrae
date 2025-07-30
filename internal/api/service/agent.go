@@ -150,19 +150,11 @@ func (s *AgentService) HealthCheck(
 	}
 
 	// Update Agent
-	var params db.UpdateAgentParams
-	params.ID = agent.ID
-	// if req.Msg.MachineId != "" {
-	// 	params.MachineId = &req.Msg.MachineId
-	// }
-	if req.Msg.Hostname != "" {
-		params.Hostname = &req.Msg.Hostname
-	}
-	if req.Msg.PublicIp != "" {
-		params.PublicIp = &req.Msg.PublicIp
-	}
-	if req.Msg.PrivateIp != "" {
-		params.PrivateIp = &req.Msg.PrivateIp
+	params := db.UpdateAgentParams{
+		ID:        agent.ID,
+		Hostname:  &req.Msg.Hostname,
+		PublicIp:  &req.Msg.PublicIp,
+		PrivateIp: &req.Msg.PrivateIp,
 	}
 
 	// Update ActiveIp if it's not set
