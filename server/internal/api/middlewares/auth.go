@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
-	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
+	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -173,20 +173,7 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("unauthorized"),
 			)
 		}
-		claims, err := meta.DecodeAgentToken(agent.Token, i.app.Secret)
-		if err != nil {
-			return nil, connect.NewError(
-				connect.CodeUnauthenticated,
-				errors.New("unauthorized"),
-			)
-		}
-		// Check if token is expired
-		if claims.IsExpired() {
-			return nil, connect.NewError(
-				connect.CodeUnauthenticated,
-				errors.New("unauthorized"),
-			)
-		}
+
 		return context.WithValue(ctx, AuthAgentIDKey, agent.ID), nil
 	}
 

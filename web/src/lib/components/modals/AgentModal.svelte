@@ -9,13 +9,12 @@
 	import Separator from '../ui/separator/separator.svelte';
 	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
 	import { Check, Container, Copy, RotateCcw, X } from '@lucide/svelte';
-	import { agentClient } from '$lib/api';
+	import { agentClient, settingClient } from '$lib/api';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import CopyInput from '../ui/copy-input/copy-input.svelte';
-	import CopyButton from '../ui/copy-button/copy-button.svelte';
 	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte';
 	import { scale } from 'svelte/transition';
 
@@ -88,7 +87,10 @@
 		}
 	};
 
-	const dockerComposeText = $derived(`services:
+	const dockerComposeText = $derived.by(async () => {
+		const response = await settingClient.getSetting({ key: 'server_url' });
+		const serverURL = response.value ?? 'http://127.0.0.1:3000';
+		return `services:
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae-agent
@@ -97,21 +99,25 @@
       - ./agent:/data
     environment:
       - TOKEN=${item.token}
-    restart: unless-stopped`);
+      - HOST=${serverURL}
+    restart: unless-stopped`;
+	});
 
-	const dockerRunText = $derived(
-		`docker run -d --name mantrae-agent -v /var/run/docker.sock:/var/run/docker.sock -v ./agent:/data -e TOKEN=${item.token} ghcr.io/mizuchilabs/mantrae-agent:latest`
-	);
+	const dockerRunText = $derived.by(async () => {
+		const response = await settingClient.getSetting({ key: 'server_url' });
+		const serverURL = response.value ?? 'http://127.0.0.1:3000';
+		return `docker run -d --name mantrae-agent -v /var/run/docker.sock:/var/run/docker.sock -v ./agent:/data -e TOKEN=${item.token} -e HOST=${serverURL} ghcr.io/mizuchilabs/mantrae-agent:latest`;
+	});
 
 	const dockerComposeClipboard = new UseClipboard();
 	const dockerRunClipboard = new UseClipboard();
 
 	const handleCopyCompose = async () => {
-		await dockerComposeClipboard.copy(dockerComposeText);
+		await dockerComposeClipboard.copy(await dockerComposeText);
 	};
 
 	const handleCopyRun = async () => {
-		await dockerRunClipboard.copy(dockerRunText);
+		await dockerRunClipboard.copy(await dockerRunText);
 	};
 </script>
 

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base32"
 	"encoding/hex"
+	"fmt"
 	"math/big"
 	"regexp"
 	"strings"
@@ -60,6 +61,10 @@ func GenerateToken(length int) string {
 	}
 	token := base32.StdEncoding.EncodeToString(b)
 	return strings.ToLower(strings.TrimRight(token, "="))
+}
+
+func GenerateAgentToken(profileID, agentID string) string {
+	return fmt.Sprintf("%s.%s.%s", profileID, agentID, GenerateToken(8))
 }
 
 // GenerateOTP creates a secure 6-digit token

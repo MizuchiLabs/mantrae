@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/server/internal/config"
@@ -17,6 +18,10 @@ import (
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"gopkg.in/yaml.v3"
 )
+
+func sanitizeFilename(name string) string {
+	return filepath.Base(strings.ReplaceAll(name, "..", ""))
+}
 
 func UploadAvatar(a *config.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -48,14 +53,13 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			}
 		}()
 
-		extension := filepath.Ext(header.Filename)
+		extension := filepath.Ext(sanitizeFilename(header.Filename))
 		allowedExtensions := []string{".png", ".jpg", ".jpeg"}
 		if !slices.Contains(allowedExtensions, extension) {
 			http.Error(w, "Invalid file type", http.StatusBadRequest)
 			return
 		}
 
-		filename := fmt.Sprintf("avatar_%s%s", userID, filepath.Ext(header.Filename))
 		_, err = a.Conn.GetQuery().GetUserByID(r.Context(), userID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -67,6 +71,7 @@ func UploadAvatar(a *config.App) http.HandlerFunc {
 			http.Error(w, "Failed to get storage backend", http.StatusInternalServerError)
 			return
 		}
+		filename := fmt.Sprintf("avatar_%s%s", userID, extension)
 		if err := storePath.Store(r.Context(), filename, file); err != nil {
 			http.Error(w, "Failed to store file", http.StatusInternalServerError)
 			return
@@ -100,7 +105,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 			}
 		}()
 
-		extension := filepath.Ext(header.Filename)
+		extension := filepath.Ext(sanitizeFilename(header.Filename))
 		allowedExtensions := []string{".db", ".json", ".yaml", ".yml"}
 		if !slices.Contains(allowedExtensions, extension) {
 			http.Error(w, "Invalid file type", http.StatusBadRequest)

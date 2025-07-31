@@ -3,530 +3,122 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/agent/internal/collector"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
-	"github.com/traefik/paerser/parser"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func Client(ctx context.Context) {
-	t := NewTokenSource()
-	t.Refresh(ctx)
-	t.PrintConnection()
+type Agent struct {
+	config    *Config
+	client    mantraev1connect.AgentServiceClient
+	activeIP  string
+	connected bool
+}
 
-	// Prepare tickers
-	healthTicker := time.NewTicker(15 * time.Second)
+func NewAgent(cfg *Config) *Agent {
+	httpClient := &http.Client{Timeout: cfg.ConnectionTimeout}
+
+	client := mantraev1connect.NewAgentServiceClient(
+		httpClient,
+		cfg.ServerURL,
+		connect.WithInterceptors(authInterceptor(cfg)),
+	)
+
+	return &Agent{
+		config: cfg,
+		client: client,
+	}
+}
+
+func (a *Agent) Run(ctx context.Context) {
+	a.healthCheck(ctx)
+
+	healthTicker := time.NewTicker(a.config.HealthCheckInterval)
 	defer healthTicker.Stop()
-	containerTicker := time.NewTicker(10 * time.Second)
-	defer containerTicker.Stop()
+
+	updateTicker := time.NewTicker(a.config.UpdateInterval)
+	defer updateTicker.Stop()
 
 	for {
 		select {
 		case <-healthTicker.C:
-			t.Refresh(ctx)
-		case <-containerTicker.C:
-			if err := t.Update(ctx); err != nil {
-				slog.Error("Failed to send update", "error", err)
+			a.healthCheck(ctx)
+		case <-updateTicker.C:
+			if a.connected {
+				if err := a.syncContainers(ctx); err != nil {
+					slog.Error("Failed to sync containers", "error", err)
+					a.connected = false
+				}
 			}
 		case <-ctx.Done():
+			slog.Info("Agent stopping...")
 			return
 		}
 	}
 }
 
-func (t *TokenSource) Update(ctx context.Context) error {
-	if !t.IsConnected() {
-		slog.Debug("Skipping update - not connected", "state", t.state.String())
-		return nil
+func (a *Agent) healthCheck(ctx context.Context) {
+	ctx, cancel := context.WithTimeout(ctx, a.config.HealthTimeout)
+	defer cancel()
+
+	info := collector.GetMachineInfo()
+	req := connect.NewRequest(&mantraev1.HealthCheckRequest{
+		Hostname:  info.Hostname,
+		PrivateIp: info.PrivateIP,
+		PublicIp:  info.PublicIPs.IPv4,
+	})
+
+	resp, err := a.client.HealthCheck(ctx, req)
+	if err != nil {
+		slog.Error("Health check failed", "error", err)
+		a.connected = false
+		return
 	}
 
+	if resp.Msg.Agent == nil {
+		slog.Error("Agent not found on server")
+		a.connected = false
+		return
+	}
+
+	a.connected = true
+	if ip := resp.Msg.Agent.ActiveIp; ip != "" {
+		a.activeIP = ip
+	}
+
+	slog.Debug("Health check successful", "active_ip", a.activeIP)
+}
+
+func (a *Agent) syncContainers(ctx context.Context) error {
 	containers, err := collector.GetContainers()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get containers: %w", err)
 	}
-	routerClient := mantraev1connect.NewRouterServiceClient(
-		http.DefaultClient,
-		t.claims.ServerURL,
-		connect.WithInterceptors(t.Interceptor()),
-	)
-	serviceClient := mantraev1connect.NewServiceServiceClient(
-		http.DefaultClient,
-		t.claims.ServerURL,
-		connect.WithInterceptors(t.Interceptor()),
-	)
-	middlewareClient := mantraev1connect.NewMiddlewareServiceClient(
-		http.DefaultClient,
-		t.claims.ServerURL,
-		connect.WithInterceptors(t.Interceptor()),
-	)
 
-	// Track which resources are synced
-	syncedRouters := map[string]struct{}{}
-	syncedServices := map[string]struct{}{}
-	syncedMiddlewares := map[string]struct{}{}
+	syncer := newResourceSyncer(a.config, a.activeIP)
 
-	// Parse labels and upsert
 	for _, container := range containers {
-		dyn := &dynamic.Configuration{
-			HTTP: &dynamic.HTTPConfiguration{},
-			TCP:  &dynamic.TCPConfiguration{},
-			UDP:  &dynamic.UDPConfiguration{},
-			TLS:  &dynamic.TLSConfiguration{},
-		}
-
-		if err := parser.Decode(
-			container.Labels,
-			dyn,
-			parser.DefaultRootName,
-			"traefik.http",
-			"traefik.tcp",
-			"traefik.udp",
-			"traefik.tls.stores.default",
-		); err != nil {
-			return err
-		}
-
-		// Use the first public port
-		port := container.Ports[0].PublicPort
-		injectServiceAddresses(dyn, t.activeIP, port)
-
-		// Routers ------------------------------------------------------------
-		if err := t.upsertRouters(
-			ctx,
-			routerClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
-			ToAnyMap(dyn.HTTP.Routers),
-			syncedRouters,
-		); err != nil {
-			return err
-		}
-		if err := t.upsertRouters(
-			ctx,
-			routerClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
-			ToAnyMap(dyn.TCP.Routers),
-			syncedRouters,
-		); err != nil {
-			return err
-		}
-		if err := t.upsertRouters(
-			ctx,
-			routerClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
-			ToAnyMap(dyn.UDP.Routers),
-			syncedRouters,
-		); err != nil {
-			return err
-		}
-
-		// Services -----------------------------------------------------------
-		if err := t.upsertServices(
-			ctx,
-			serviceClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
-			ToAnyMap(dyn.HTTP.Services),
-			syncedServices,
-		); err != nil {
-			return err
-		}
-		if err := t.upsertServices(
-			ctx,
-			serviceClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
-			ToAnyMap(dyn.TCP.Services),
-			syncedServices,
-		); err != nil {
-			return err
-		}
-		if err := t.upsertServices(
-			ctx,
-			serviceClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_UDP,
-			ToAnyMap(dyn.UDP.Services),
-			syncedServices,
-		); err != nil {
-			return err
-		}
-
-		// Middlewares --------------------------------------------------------
-		if err := t.upsertMiddlewares(
-			ctx,
-			middlewareClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP,
-			ToAnyMap(dyn.HTTP.Middlewares),
-			syncedMiddlewares,
-		); err != nil {
-			return err
-		}
-		if err := t.upsertMiddlewares(
-			ctx,
-			middlewareClient,
-			mantraev1.ProtocolType_PROTOCOL_TYPE_TCP,
-			ToAnyMap(dyn.TCP.Middlewares),
-			syncedMiddlewares,
-		); err != nil {
-			return err
+		if err := syncer.processContainer(ctx, container); err != nil {
+			return fmt.Errorf("failed to process container %s: %w", container.ID[:12], err)
 		}
 	}
 
-	return t.cleanup(
-		ctx,
-		routerClient,
-		serviceClient,
-		middlewareClient,
-		syncedRouters,
-		syncedServices,
-		syncedMiddlewares,
-	)
+	return syncer.cleanup(ctx)
 }
 
-func injectServiceAddresses(d *dynamic.Configuration, ip string, port uint16) {
-	fallbackPort := strconv.Itoa(int(port))
-
-	for _, svc := range d.HTTP.Services {
-		for i := range svc.LoadBalancer.Servers {
-			if svc.LoadBalancer.Servers[i].Port == "" {
-				svc.LoadBalancer.Servers[i].Port = fallbackPort
-			}
-			svc.LoadBalancer.Servers[i].URL = fmt.Sprintf(
-				"http://%s:%s",
-				ip,
-				svc.LoadBalancer.Servers[i].Port,
-			)
+func authInterceptor(cfg *Config) connect.UnaryInterceptorFunc {
+	return func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			req.Header().Set("Authorization", "Bearer "+cfg.Token)
+			req.Header().Set(meta.HeaderAgentID, cfg.AgentID)
+			return next(ctx, req)
 		}
 	}
-	for _, svc := range d.TCP.Services {
-		for i := range svc.LoadBalancer.Servers {
-			if svc.LoadBalancer.Servers[i].Port == "" {
-				svc.LoadBalancer.Servers[i].Port = fallbackPort
-			}
-			svc.LoadBalancer.Servers[i].Address = fmt.Sprintf(
-				"%s:%s",
-				ip,
-				svc.LoadBalancer.Servers[i].Port,
-			)
-		}
-	}
-	for _, svc := range d.UDP.Services {
-		for i := range svc.LoadBalancer.Servers {
-			if svc.LoadBalancer.Servers[i].Port == "" {
-				svc.LoadBalancer.Servers[i].Port = fallbackPort
-			}
-			svc.LoadBalancer.Servers[i].Address = fmt.Sprintf(
-				"%s:%s",
-				ip,
-				svc.LoadBalancer.Servers[i].Port,
-			)
-		}
-	}
-}
-
-func (t *TokenSource) upsertRouters(
-	ctx context.Context,
-	client mantraev1connect.RouterServiceClient,
-	typ mantraev1.ProtocolType,
-	routers map[string]any,
-	synced map[string]struct{},
-) error {
-	res, err := client.ListRouters(ctx, connect.NewRequest(&mantraev1.ListRoutersRequest{
-		ProfileId: t.claims.ProfileID,
-		AgentId:   &t.claims.AgentID,
-		Type:      &typ,
-	}))
-	if err != nil {
-		return err
-	}
-
-	existing := make(map[string]*mantraev1.Router, len(res.Msg.Routers))
-	for _, r := range res.Msg.Routers {
-		existing[r.Name] = r
-	}
-
-	for name, cfg := range routers {
-		synced[name] = struct{}{}
-		newConfig, err := ToProtoStruct(cfg)
-		if err != nil {
-			return err
-		}
-
-		if r, found := existing[name]; found {
-			if proto.Equal(r.Config, newConfig) {
-				slog.Debug("Skipped updating router", "name", name, "id", r.Id)
-				continue
-			}
-			params := &mantraev1.UpdateRouterRequest{
-				Id:      r.Id,
-				Name:    name,
-				Config:  newConfig,
-				Type:    typ,
-				Enabled: true,
-			}
-			if _, err := client.UpdateRouter(ctx, connect.NewRequest(params)); err != nil {
-				return err
-			}
-			slog.Debug("Updated router", "name", name, "id", r.Id)
-		} else {
-			params := &mantraev1.CreateRouterRequest{
-				ProfileId: t.claims.ProfileID,
-				AgentId:   &t.claims.AgentID,
-				Name:      name,
-				Config:    newConfig,
-				Type:      typ,
-				Enabled:   true,
-			}
-			res, err := client.CreateRouter(ctx, connect.NewRequest(params))
-			if err != nil {
-				return err
-			}
-			slog.Debug("Created router", "name", res.Msg.Router.Name, "id", res.Msg.Router.Id)
-		}
-	}
-
-	return nil
-}
-
-func (t *TokenSource) upsertServices(
-	ctx context.Context,
-	client mantraev1connect.ServiceServiceClient,
-	typ mantraev1.ProtocolType,
-	services map[string]any,
-	synced map[string]struct{},
-) error {
-	res, err := client.ListServices(ctx, connect.NewRequest(&mantraev1.ListServicesRequest{
-		ProfileId: t.claims.ProfileID,
-		AgentId:   &t.claims.AgentID,
-		Type:      &typ,
-	}))
-	if err != nil {
-		return err
-	}
-
-	existing := make(map[string]*mantraev1.Service, len(res.Msg.Services))
-	for _, s := range res.Msg.Services {
-		existing[s.Name] = s
-	}
-
-	for name, cfg := range services {
-		synced[name] = struct{}{}
-		newConfig, err := ToProtoStruct(cfg)
-		if err != nil {
-			return err
-		}
-
-		if s, found := existing[name]; found {
-			if proto.Equal(s.Config, newConfig) {
-				slog.Debug("Skipped updating service", "name", name, "id", s.Id)
-				continue
-			}
-			params := &mantraev1.UpdateServiceRequest{
-				Id:      s.Id,
-				Name:    name,
-				Config:  newConfig,
-				Type:    typ,
-				Enabled: true,
-			}
-			if _, err := client.UpdateService(ctx, connect.NewRequest(params)); err != nil {
-				return err
-			}
-			slog.Debug("Updated service", "name", name, "id", s.Id)
-		} else {
-			params := &mantraev1.CreateServiceRequest{
-				ProfileId: t.claims.ProfileID,
-				AgentId:   &t.claims.AgentID,
-				Name:      name,
-				Config:    newConfig,
-				Type:      typ,
-				Enabled:   true,
-			}
-			res, err := client.CreateService(ctx, connect.NewRequest(params))
-			if err != nil {
-				return err
-			}
-			slog.Debug("Created service", "name", res.Msg.Service.Name, "id", res.Msg.Service.Id)
-		}
-	}
-
-	return nil
-}
-
-func (t *TokenSource) upsertMiddlewares(
-	ctx context.Context,
-	client mantraev1connect.MiddlewareServiceClient,
-	typ mantraev1.ProtocolType,
-	middlewares map[string]any,
-	synced map[string]struct{},
-) error {
-	res, err := client.ListMiddlewares(ctx, connect.NewRequest(&mantraev1.ListMiddlewaresRequest{
-		ProfileId: t.claims.ProfileID,
-		AgentId:   &t.claims.AgentID,
-		Type:      &typ,
-	}))
-	if err != nil {
-		return err
-	}
-
-	existing := make(map[string]*mantraev1.Middleware, len(res.Msg.Middlewares))
-	for _, m := range res.Msg.Middlewares {
-		existing[m.Name] = m
-	}
-
-	for name, cfg := range middlewares {
-		synced[name] = struct{}{}
-		newConfig, err := ToProtoStruct(cfg)
-		if err != nil {
-			return err
-		}
-
-		if m, found := existing[name]; found {
-			if proto.Equal(m.Config, newConfig) {
-				slog.Debug("Skipped updating middleware", "name", name, "id", m.Id)
-				continue
-			}
-			params := &mantraev1.UpdateMiddlewareRequest{
-				Id:      m.Id,
-				Name:    name,
-				Config:  newConfig,
-				Type:    typ,
-				Enabled: true,
-			}
-			if _, err := client.UpdateMiddleware(ctx, connect.NewRequest(params)); err != nil {
-				return err
-			}
-			slog.Debug("Updated middleware", "name", name, "id", m.Id)
-		} else {
-			params := &mantraev1.CreateMiddlewareRequest{
-				ProfileId: t.claims.ProfileID,
-				AgentId:   &t.claims.AgentID,
-				Name:      name,
-				Config:    newConfig,
-				Type:      typ,
-			}
-			res, err := client.CreateMiddleware(ctx, connect.NewRequest(params))
-			if err != nil {
-				return err
-			}
-			slog.Debug("Created middleware", "name", res.Msg.Middleware.Name, "id", res.Msg.Middleware.Id)
-		}
-	}
-
-	return nil
-}
-
-// cleanup removes all stale resources
-func (t *TokenSource) cleanup(
-	ctx context.Context,
-	routerClient mantraev1connect.RouterServiceClient,
-	serviceClient mantraev1connect.ServiceServiceClient,
-	middlewareClient mantraev1connect.MiddlewareServiceClient,
-	syncedRouters map[string]struct{},
-	syncedServices map[string]struct{},
-	syncedMiddlewares map[string]struct{},
-) error {
-	// Cleanup Routers
-	routers, err := routerClient.ListRouters(ctx, connect.NewRequest(&mantraev1.ListRoutersRequest{
-		ProfileId: t.claims.ProfileID,
-		AgentId:   &t.claims.AgentID,
-	}))
-	if err != nil {
-		return err
-	}
-	for _, r := range routers.Msg.Routers {
-		if _, ok := syncedRouters[r.Name]; !ok {
-			if _, err = routerClient.DeleteRouter(
-				ctx,
-				connect.NewRequest(&mantraev1.DeleteRouterRequest{Id: r.Id, Type: r.Type}),
-			); err != nil {
-				slog.Error("Failed to delete stale router", "name", r.Name, "err", err)
-			} else {
-				slog.Info("Deleted stale router", "name", r.Name)
-			}
-		}
-	}
-
-	// Cleanup Services
-	services, err := serviceClient.ListServices(
-		ctx,
-		connect.NewRequest(&mantraev1.ListServicesRequest{
-			ProfileId: t.claims.ProfileID,
-			AgentId:   &t.claims.AgentID,
-		}),
-	)
-	if err != nil {
-		return err
-	}
-
-	for _, s := range services.Msg.Services {
-		if _, ok := syncedServices[s.Name]; !ok {
-			if _, err = serviceClient.DeleteService(
-				ctx,
-				connect.NewRequest(&mantraev1.DeleteServiceRequest{Id: s.Id, Type: s.Type}),
-			); err != nil {
-				slog.Error("Failed to delete stale service", "name", s.Name, "err", err)
-			} else {
-				slog.Info("Deleted stale service", "name", s.Name)
-			}
-		}
-	}
-
-	// Cleanup Middlewares
-	middlewares, err := middlewareClient.ListMiddlewares(
-		ctx,
-		connect.NewRequest(&mantraev1.ListMiddlewaresRequest{
-			ProfileId: t.claims.ProfileID,
-			AgentId:   &t.claims.AgentID,
-		}),
-	)
-	if err != nil {
-		return err
-	}
-
-	for _, m := range middlewares.Msg.Middlewares {
-		if _, ok := syncedMiddlewares[m.Name]; !ok {
-			if _, err := middlewareClient.DeleteMiddleware(
-				ctx,
-				connect.NewRequest(&mantraev1.DeleteMiddlewareRequest{Id: m.Id, Type: m.Type}),
-			); err != nil {
-				slog.Error("Failed to delete stale middleware", "name", m.Name, "err", err)
-			} else {
-				slog.Info("Deleted stale middleware", "name", m.Name)
-			}
-		}
-	}
-
-	return nil
-}
-
-// ToAnyMap converts a map[string]T to map[string]any
-func ToAnyMap[T any](in map[string]T) map[string]any {
-	out := make(map[string]any, len(in))
-	for k, v := range in {
-		out[k] = v
-	}
-	return out
-}
-
-// ToProtoStruct converts any Go struct to *structpb.Struct
-func ToProtoStruct(v any) (*structpb.Struct, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-
-	var mapData map[string]any
-	if err := json.Unmarshal(data, &mapData); err != nil {
-		return nil, err
-	}
-
-	return structpb.NewStruct(mapData)
 }

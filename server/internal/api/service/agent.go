@@ -3,17 +3,16 @@ package service
 import (
 	"context"
 	"errors"
-	"log/slog"
-	"time"
+	"strconv"
 
 	"connectrpc.com/connect"
 
 	"github.com/google/uuid"
-	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"github.com/mizuchilabs/mantrae/server/internal/settings"
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/mizuchilabs/mantrae/server/internal/config"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
 type AgentService struct {
@@ -46,11 +45,7 @@ func (s *AgentService) CreateAgent(
 		ProfileID: req.Msg.ProfileId,
 	}
 
-	token, err := s.createToken(params.ID, params.ProfileID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	params.Token = *token
+	params.Token = util.GenerateAgentToken(strconv.Itoa(int(params.ProfileID)), params.ID)
 
 	result, err := s.app.Conn.GetQuery().CreateAgent(ctx, params)
 	if err != nil {
@@ -75,11 +70,8 @@ func (s *AgentService) UpdateAgent(
 		if err != nil {
 			return nil, err
 		}
-		token, err := s.createToken(params.ID, agent.ProfileID)
-		if err != nil {
-			return nil, err
-		}
-		params.Token = token
+		token := util.GenerateAgentToken(strconv.Itoa(int(agent.ProfileID)), agent.ID)
+		params.Token = &token
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
@@ -145,11 +137,6 @@ func (s *AgentService) HealthCheck(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// Rotate Token if it's close to expiring
-	if _, err = s.updateToken(ctx, &agent); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
 	// Update Agent
 	params := db.UpdateAgentParams{
 		ID:        agent.ID,
@@ -171,57 +158,4 @@ func (s *AgentService) HealthCheck(
 	return connect.NewResponse(&mantraev1.HealthCheckResponse{
 		Agent: result.ToProto(),
 	}), nil
-}
-
-func (s *AgentService) updateToken(ctx context.Context, agent *db.Agent) (*string, error) {
-	claims, err := meta.DecodeAgentToken(agent.Token, s.app.Secret)
-	if err != nil {
-		return nil, err
-	}
-
-	// Only update the token if it's close to expiring (less than 25%)
-	lifetime := claims.ExpiresAt.Sub(claims.IssuedAt.Time)
-	remaining := time.Until(claims.ExpiresAt.Time)
-	if remaining > lifetime/4 {
-		return &agent.Token, nil // Token is still valid
-	}
-
-	token, err := s.createToken(agent.ID, agent.ProfileID)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err = s.app.Conn.GetQuery().UpdateAgent(ctx, db.UpdateAgentParams{
-		ID:    agent.ID,
-		Token: token,
-	}); err != nil {
-		return nil, err
-	}
-
-	slog.Info("Rotating agent token", "agentID", agent.ID, "token", token)
-	return token, nil
-}
-
-func (s *AgentService) createToken(agentID string, profileID int64) (*string, error) {
-	serverURL, ok := s.app.SM.Get(context.Background(), settings.KeyServerURL)
-	if !ok || serverURL == "" {
-		return nil, errors.New("server url is required, check your settings")
-	}
-	cleanupInterval, ok := s.app.SM.Get(context.Background(), settings.KeyAgentCleanupInterval)
-	if !ok {
-		return nil, errors.New("agent cleanup interval is required, check your settings")
-	}
-
-	token, err := meta.EncodeAgentToken(
-		profileID,
-		agentID,
-		serverURL,
-		s.app.Secret,
-		time.Now().Add(settings.AsDuration(cleanupInterval)),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &token, nil
 }

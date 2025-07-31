@@ -189,27 +189,6 @@
 				{/each}
 			</Sidebar.Menu>
 		</Sidebar.Group>
-
-		<!-- Bottom buttons -->
-		<!-- {#if profile.isValid()} -->
-		<!-- 	<Sidebar.Group class="mt-auto"> -->
-		<!-- 		<Sidebar.GroupContent> -->
-		<!-- 			<Sidebar.GroupLabel>Status</Sidebar.GroupLabel> -->
-		<!-- 			<Sidebar.Menu> -->
-		<!-- 				<Sidebar.MenuItem> -->
-		<!-- 					<Sidebar.MenuButton> -->
-		<!-- 						{#snippet child({ props })} -->
-		<!-- 							<button {...props} onclick={() => (modalInfoOpen = true)}> -->
-		<!-- 								<Radio /> -->
-		<!-- 								<span>View Config</span> -->
-		<!-- 							</button> -->
-		<!-- 						{/snippet} -->
-		<!-- 					</Sidebar.MenuButton> -->
-		<!-- 				</Sidebar.MenuItem> -->
-		<!-- 			</Sidebar.Menu> -->
-		<!-- 		</Sidebar.GroupContent> -->
-		<!-- 	</Sidebar.Group> -->
-		<!-- {/if} -->
 	</Sidebar.Content>
 
 	<!-- User Profile -->
@@ -224,10 +203,10 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								{...props}
 							>
-								<Avatar.Root class="h-8 w-8 rounded-lg">
+								<Avatar.Root class="bg-muted h-10 w-10 rounded-full">
 									<!-- <Avatar.Image src={user.avatar} alt={'@' + $user?.username} /> -->
-									<Avatar.Fallback class="rounded-lg">
-										{user.username?.slice(0, 2).toUpperCase()}
+									<Avatar.Fallback class="text-muted-foreground uppercase">
+										{user.username?.slice(0, 2)}
 									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">
@@ -246,10 +225,10 @@
 					>
 						<DropdownMenu.Label class="p-0 font-normal">
 							<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-								<Avatar.Root class="h-8 w-8 rounded-lg">
+								<Avatar.Root class="bg-muted h-10 w-10 rounded-full">
 									<!-- <Avatar.Image src={user?.avatar} alt={'@' + $user?.username} /> -->
-									<Avatar.Fallback class="rounded-lg">
-										{user.username?.slice(0, 2).toUpperCase()}
+									<Avatar.Fallback class="text-muted-foreground uppercase">
+										{user.username?.slice(0, 2)}
 									</Avatar.Fallback>
 								</Avatar.Root>
 								<div class="grid flex-1 text-left text-sm leading-tight">

@@ -15,7 +15,6 @@
 	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { readable } from 'svelte/store';
 
 	let item = $state({} as Agent);
 	let open = $state(false);
@@ -98,17 +97,11 @@
 		}
 	];
 
-	const now = readable(new Date(), (set) => {
-		const interval = setInterval(() => {
-			set(new Date());
-		}, 1000);
-		return () => clearInterval(interval);
-	});
 	function getAgentStatus(agent: Agent) {
 		if (!agent.updatedAt) return false;
 		const lastSeen = new Date(timestampDate(agent.updatedAt));
-		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
-		return lastSeenInSeconds <= 30 ? true : false;
+		const lastSeenInSeconds = (new Date().getTime() - lastSeen.getTime()) / 1000;
+		return lastSeenInSeconds <= 60 ? true : false;
 	}
 
 	const bulkActions: BulkAction<Agent>[] = [

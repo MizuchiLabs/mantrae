@@ -26,19 +26,48 @@ func main() {
 		return
 	}
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	// quit := make(chan os.Signal, 1)
+	// signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
+	// logger.Setup()
+
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
+
+	// // start agent loop
+	// go client.Client(ctx)
+
+	// <-quit
+	// slog.Info("Shutting down agent...")
+	// cancel()
+	// <-ctx.Done()
 	logger.Setup()
+
+	cfg, err := client.Load()
+	if err != nil {
+		slog.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
+	}
+
+	slog.Info("Starting agent",
+		"server", cfg.ServerURL,
+		"profile_id", cfg.ProfileID,
+		"agent_id", cfg.AgentID)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// start agent loop
-	go client.Client(ctx)
+	// Setup signal handling
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	<-quit
-	slog.Info("Shutting down agent...")
-	cancel()
-	<-ctx.Done()
+	agent := client.NewAgent(cfg)
+
+	go func() {
+		<-quit
+		slog.Info("Shutting down agent...")
+		cancel()
+	}()
+
+	agent.Run(ctx)
 }

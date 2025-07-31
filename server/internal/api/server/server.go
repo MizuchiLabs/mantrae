@@ -4,7 +4,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
@@ -21,7 +20,6 @@ import (
 	"github.com/mizuchilabs/mantrae/server/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/server/internal/api/service"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"github.com/mizuchilabs/mantrae/web"
 )
 
 const elementsHTML = `<!DOCTYPE html>
@@ -177,13 +175,7 @@ func (s *Server) registerServices() {
 	// s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	// Static files
-	staticContent, err := fs.Sub(web.StaticFS, "build")
-	if err != nil {
-		log.Fatal(err)
-	}
-	uploadsContent := http.FileServer(http.Dir("./data/uploads"))
-	s.mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadsContent))
-	s.mux.Handle("/", CompressedFileHandler(staticContent))
+	s.WithStatic()
 
 	// Health check
 	s.mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
