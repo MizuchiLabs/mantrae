@@ -38,6 +38,7 @@ func NewAgent(cfg *Config) *Agent {
 }
 
 func (a *Agent) Run(ctx context.Context) {
+	// Run initial health check
 	a.healthCheck(ctx)
 
 	healthTicker := time.NewTicker(a.config.HealthCheckInterval)

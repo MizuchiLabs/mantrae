@@ -16,9 +16,7 @@ import (
 )
 
 func main() {
-	// update := flag.Bool("update", false, "Update to latest version")
 	version := flag.Bool("version", false, "Show version")
-
 	flag.Parse()
 
 	if *version {
@@ -26,21 +24,6 @@ func main() {
 		return
 	}
 
-	// quit := make(chan os.Signal, 1)
-	// signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-	// logger.Setup()
-
-	// ctx, cancel := context.WithCancel(context.Background())
-	// defer cancel()
-
-	// // start agent loop
-	// go client.Client(ctx)
-
-	// <-quit
-	// slog.Info("Shutting down agent...")
-	// cancel()
-	// <-ctx.Done()
 	logger.Setup()
 
 	cfg, err := client.Load()
@@ -63,6 +46,7 @@ func main() {
 
 	agent := client.NewAgent(cfg)
 
+	// Handle graceful shutdown
 	go func() {
 		<-quit
 		slog.Info("Shutting down agent...")

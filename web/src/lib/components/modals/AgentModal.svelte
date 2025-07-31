@@ -94,9 +94,9 @@
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae-agent
+    network_mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./agent:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - TOKEN=${item.token}
       - HOST=${serverURL}
@@ -106,7 +106,7 @@
 	const dockerRunText = $derived.by(async () => {
 		const response = await settingClient.getSetting({ key: 'server_url' });
 		const serverURL = response.value ?? 'http://127.0.0.1:3000';
-		return `docker run -d --name mantrae-agent -v /var/run/docker.sock:/var/run/docker.sock -v ./agent:/data -e TOKEN=${item.token} -e HOST=${serverURL} ghcr.io/mizuchilabs/mantrae-agent:latest`;
+		return `docker run -d --name mantrae-agent --network host -v /var/run/docker.sock:/var/run/docker.sock:ro -e TOKEN=${item.token} -e HOST=${serverURL} ghcr.io/mizuchilabs/mantrae-agent:latest`;
 	});
 
 	const dockerComposeClipboard = new UseClipboard();
