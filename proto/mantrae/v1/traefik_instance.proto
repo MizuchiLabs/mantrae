@@ -18,17 +18,18 @@ service TraefikInstanceService {
 
 message TraefikInstance {
   int64 id = 1;
-  string name = 2;
-  string url = 3;
-  string username = 4;
-  string password = 5;
-  bool tls = 6;
-  google.protobuf.Struct entry_points = 7;
-  google.protobuf.Struct overview = 8;
-  google.protobuf.Struct config = 9;
-  google.protobuf.Struct version = 10;
-  google.protobuf.Timestamp created_at = 11;
-  google.protobuf.Timestamp updated_at = 12;
+  int64 profile_id = 2;
+  string name = 3;
+  string url = 4;
+  string username = 5;
+  string password = 6;
+  bool tls = 7;
+  google.protobuf.Struct entry_points = 8;
+  google.protobuf.Struct overview = 9;
+  google.protobuf.Struct config = 10;
+  google.protobuf.Struct version = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
 }
 
 message GetTraefikInstanceRequest {

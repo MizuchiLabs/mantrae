@@ -69,7 +69,7 @@
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
 
 {#if user.isLoggedIn() && user.value}
-	<UserModal bind:open={modalUserOpen} bind:item={user.value} data={undefined} />
+	<UserModal bind:open={modalUserOpen} bind:item={user.value} />
 {/if}
 
 <Sidebar.Root collapsible="offcanvas" {...restProps}>

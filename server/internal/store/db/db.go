@@ -249,8 +249,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getHttpServersTransportStmt, err = db.PrepareContext(ctx, getHttpServersTransport); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpServersTransport: %w", err)
 	}
-	if q.getHttpServiceByIDStmt, err = db.PrepareContext(ctx, getHttpServiceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetHttpServiceByID: %w", err)
+	if q.getHttpServiceStmt, err = db.PrepareContext(ctx, getHttpService); err != nil {
+		return nil, fmt.Errorf("error preparing query GetHttpService: %w", err)
 	}
 	if q.getHttpServiceByNameStmt, err = db.PrepareContext(ctx, getHttpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpServiceByName: %w", err)
@@ -282,8 +282,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpServersTransportStmt, err = db.PrepareContext(ctx, getTcpServersTransport); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServersTransport: %w", err)
 	}
-	if q.getTcpServiceByIDStmt, err = db.PrepareContext(ctx, getTcpServiceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTcpServiceByID: %w", err)
+	if q.getTcpServiceStmt, err = db.PrepareContext(ctx, getTcpService); err != nil {
+		return nil, fmt.Errorf("error preparing query GetTcpService: %w", err)
 	}
 	if q.getTcpServiceByNameStmt, err = db.PrepareContext(ctx, getTcpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServiceByName: %w", err)
@@ -300,8 +300,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUdpRoutersUsingEntryPointStmt, err = db.PrepareContext(ctx, getUdpRoutersUsingEntryPoint); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpRoutersUsingEntryPoint: %w", err)
 	}
-	if q.getUdpServiceByIDStmt, err = db.PrepareContext(ctx, getUdpServiceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUdpServiceByID: %w", err)
+	if q.getUdpServiceStmt, err = db.PrepareContext(ctx, getUdpService); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUdpService: %w", err)
 	}
 	if q.getUdpServiceByNameStmt, err = db.PrepareContext(ctx, getUdpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpServiceByName: %w", err)
@@ -866,9 +866,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getHttpServersTransportStmt: %w", cerr)
 		}
 	}
-	if q.getHttpServiceByIDStmt != nil {
-		if cerr := q.getHttpServiceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getHttpServiceByIDStmt: %w", cerr)
+	if q.getHttpServiceStmt != nil {
+		if cerr := q.getHttpServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getHttpServiceStmt: %w", cerr)
 		}
 	}
 	if q.getHttpServiceByNameStmt != nil {
@@ -921,9 +921,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpServersTransportStmt: %w", cerr)
 		}
 	}
-	if q.getTcpServiceByIDStmt != nil {
-		if cerr := q.getTcpServiceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTcpServiceByIDStmt: %w", cerr)
+	if q.getTcpServiceStmt != nil {
+		if cerr := q.getTcpServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getTcpServiceStmt: %w", cerr)
 		}
 	}
 	if q.getTcpServiceByNameStmt != nil {
@@ -951,9 +951,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUdpRoutersUsingEntryPointStmt: %w", cerr)
 		}
 	}
-	if q.getUdpServiceByIDStmt != nil {
-		if cerr := q.getUdpServiceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUdpServiceByIDStmt: %w", cerr)
+	if q.getUdpServiceStmt != nil {
+		if cerr := q.getUdpServiceStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUdpServiceStmt: %w", cerr)
 		}
 	}
 	if q.getUdpServiceByNameStmt != nil {
@@ -1375,7 +1375,7 @@ type Queries struct {
 	getHttpRoutersUsingEntryPointStmt    *sql.Stmt
 	getHttpRoutersUsingMiddlewareStmt    *sql.Stmt
 	getHttpServersTransportStmt          *sql.Stmt
-	getHttpServiceByIDStmt               *sql.Stmt
+	getHttpServiceStmt                   *sql.Stmt
 	getHttpServiceByNameStmt             *sql.Stmt
 	getProfileStmt                       *sql.Stmt
 	getProfileByNameStmt                 *sql.Stmt
@@ -1386,13 +1386,13 @@ type Queries struct {
 	getTcpRoutersUsingEntryPointStmt     *sql.Stmt
 	getTcpRoutersUsingMiddlewareStmt     *sql.Stmt
 	getTcpServersTransportStmt           *sql.Stmt
-	getTcpServiceByIDStmt                *sql.Stmt
+	getTcpServiceStmt                    *sql.Stmt
 	getTcpServiceByNameStmt              *sql.Stmt
 	getTraefikInstanceByIDStmt           *sql.Stmt
 	getTraefikInstanceByNameStmt         *sql.Stmt
 	getUdpRouterStmt                     *sql.Stmt
 	getUdpRoutersUsingEntryPointStmt     *sql.Stmt
-	getUdpServiceByIDStmt                *sql.Stmt
+	getUdpServiceStmt                    *sql.Stmt
 	getUdpServiceByNameStmt              *sql.Stmt
 	getUserByEmailStmt                   *sql.Stmt
 	getUserByIDStmt                      *sql.Stmt
@@ -1535,7 +1535,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getHttpRoutersUsingEntryPointStmt:    q.getHttpRoutersUsingEntryPointStmt,
 		getHttpRoutersUsingMiddlewareStmt:    q.getHttpRoutersUsingMiddlewareStmt,
 		getHttpServersTransportStmt:          q.getHttpServersTransportStmt,
-		getHttpServiceByIDStmt:               q.getHttpServiceByIDStmt,
+		getHttpServiceStmt:                   q.getHttpServiceStmt,
 		getHttpServiceByNameStmt:             q.getHttpServiceByNameStmt,
 		getProfileStmt:                       q.getProfileStmt,
 		getProfileByNameStmt:                 q.getProfileByNameStmt,
@@ -1546,13 +1546,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpRoutersUsingEntryPointStmt:     q.getTcpRoutersUsingEntryPointStmt,
 		getTcpRoutersUsingMiddlewareStmt:     q.getTcpRoutersUsingMiddlewareStmt,
 		getTcpServersTransportStmt:           q.getTcpServersTransportStmt,
-		getTcpServiceByIDStmt:                q.getTcpServiceByIDStmt,
+		getTcpServiceStmt:                    q.getTcpServiceStmt,
 		getTcpServiceByNameStmt:              q.getTcpServiceByNameStmt,
 		getTraefikInstanceByIDStmt:           q.getTraefikInstanceByIDStmt,
 		getTraefikInstanceByNameStmt:         q.getTraefikInstanceByNameStmt,
 		getUdpRouterStmt:                     q.getUdpRouterStmt,
 		getUdpRoutersUsingEntryPointStmt:     q.getUdpRoutersUsingEntryPointStmt,
-		getUdpServiceByIDStmt:                q.getUdpServiceByIDStmt,
+		getUdpServiceStmt:                    q.getUdpServiceStmt,
 		getUdpServiceByNameStmt:              q.getUdpServiceByNameStmt,
 		getUserByEmailStmt:                   q.getUserByEmailStmt,
 		getUserByIDStmt:                      q.getUserByIDStmt,

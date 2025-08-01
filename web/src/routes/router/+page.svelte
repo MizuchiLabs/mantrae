@@ -11,7 +11,6 @@
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
 	import {
@@ -28,17 +27,14 @@
 		TriangleAlert,
 		Waves
 	} from '@lucide/svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import { type IconComponent } from '$lib/types';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { routers } from '$lib/stores/realtime';
 
 	let item = $state({} as Router);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<Router[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<Router>[] = [
 		{
@@ -230,14 +226,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	const deleteItem = async (item: Router) => {
 		try {
 			await routerClient.deleteRouter({ id: item.id, type: item.type });
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Router ${item.name} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -273,7 +264,6 @@
 					enabled: service.service.enabled
 				});
 			}
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Router ${item.name} updated`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -318,25 +308,18 @@
 					break;
 			}
 
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Successfully ${action}d ${rows.length} routers`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error(`Failed to ${action}d routers`, { description: e.message });
 		}
 	}
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await routerClient.listRouters({
-			profileId: profile.id,
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.routers;
-		rowCount = Number(response.totalCount);
-	}
-
 	$effect(() => {
-		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		if (profile.isValid()) {
+			routerClient.listRouters({ profileId: profile.id }).then((response) => {
+				routers.set(response.routers);
+			});
+		}
 	});
 </script>
 
@@ -358,10 +341,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$routers}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		createButton={{
 			label: 'Create Router',
@@ -373,4 +354,4 @@
 	/>
 </div>
 
-<RouterModal bind:open bind:item bind:data />
+<RouterModal bind:open bind:item />

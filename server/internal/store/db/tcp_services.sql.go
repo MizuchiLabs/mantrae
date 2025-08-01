@@ -89,23 +89,17 @@ func (q *Queries) DeleteTcpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getTcpServiceByID = `-- name: GetTcpServiceByID :one
+const getTcpService = `-- name: GetTcpService :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   tcp_services
 WHERE
-  profile_id = ?
-  AND id = ?
+  id = ?
 `
 
-type GetTcpServiceByIDParams struct {
-	ProfileID int64 `json:"profileId"`
-	ID        int64 `json:"id"`
-}
-
-func (q *Queries) GetTcpServiceByID(ctx context.Context, arg GetTcpServiceByIDParams) (TcpService, error) {
-	row := q.queryRow(ctx, q.getTcpServiceByIDStmt, getTcpServiceByID, arg.ProfileID, arg.ID)
+func (q *Queries) GetTcpService(ctx context.Context, id int64) (TcpService, error) {
+	row := q.queryRow(ctx, q.getTcpServiceStmt, getTcpService, id)
 	var i TcpService
 	err := row.Scan(
 		&i.ID,

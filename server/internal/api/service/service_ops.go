@@ -68,14 +68,10 @@ func (s *HTTPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.GetQuery().GetHttpServiceByID(ctx, db.GetHttpServiceByIDParams{
-			ProfileID: req.ProfileId,
-			ID:        id.Id,
-		})
+		result, err = s.app.Conn.GetQuery().GetHttpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
-		break
 	case *mantraev1.GetServiceRequest_Name:
 		result, err = s.app.Conn.GetQuery().GetHttpServiceByName(ctx, db.GetHttpServiceByNameParams{
 			ProfileID: req.ProfileId,
@@ -84,7 +80,6 @@ func (s *HTTPServiceOps) Get(
 		if err != nil {
 			return nil, err
 		}
-		break
 	default:
 		return nil, errors.New("invalid service identifier")
 	}
@@ -114,6 +109,13 @@ func (s *HTTPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -139,6 +141,13 @@ func (s *HTTPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -148,9 +157,20 @@ func (s *HTTPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
+	service, err := s.app.Conn.GetQuery().GetHttpService(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.app.Conn.GetQuery().DeleteHttpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: service.ToProto(),
+		},
+	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 
@@ -197,14 +217,10 @@ func (s *TCPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.GetQuery().GetTcpServiceByID(ctx, db.GetTcpServiceByIDParams{
-			ProfileID: req.ProfileId,
-			ID:        id.Id,
-		})
+		result, err = s.app.Conn.GetQuery().GetTcpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
-		break
 	case *mantraev1.GetServiceRequest_Name:
 		result, err = s.app.Conn.GetQuery().GetTcpServiceByName(ctx, db.GetTcpServiceByNameParams{
 			ProfileID: req.ProfileId,
@@ -213,7 +229,6 @@ func (s *TCPServiceOps) Get(
 		if err != nil {
 			return nil, err
 		}
-		break
 	default:
 		return nil, errors.New("invalid service identifier")
 	}
@@ -243,6 +258,13 @@ func (s *TCPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -268,6 +290,13 @@ func (s *TCPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -277,9 +306,20 @@ func (s *TCPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
+	service, err := s.app.Conn.GetQuery().GetTcpService(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.app.Conn.GetQuery().DeleteTcpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: service.ToProto(),
+		},
+	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 
@@ -326,14 +366,10 @@ func (s *UDPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.GetQuery().GetUdpServiceByID(ctx, db.GetUdpServiceByIDParams{
-			ProfileID: req.ProfileId,
-			ID:        id.Id,
-		})
+		result, err = s.app.Conn.GetQuery().GetUdpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
-		break
 	case *mantraev1.GetServiceRequest_Name:
 		result, err = s.app.Conn.GetQuery().GetUdpServiceByName(ctx, db.GetUdpServiceByNameParams{
 			ProfileID: req.ProfileId,
@@ -342,7 +378,6 @@ func (s *UDPServiceOps) Get(
 		if err != nil {
 			return nil, err
 		}
-		break
 	default:
 		return nil, errors.New("invalid service identifier")
 	}
@@ -372,6 +407,13 @@ func (s *UDPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -397,6 +439,13 @@ func (s *UDPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: result.ToProto(),
+		},
+	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -406,9 +455,20 @@ func (s *UDPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
+	service, err := s.app.Conn.GetQuery().GetUdpService(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.app.Conn.GetQuery().DeleteUdpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_Service{
+			Service: service.ToProto(),
+		},
+	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 

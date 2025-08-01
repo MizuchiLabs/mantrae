@@ -34,9 +34,20 @@ func (s *TraefikInstanceService) DeleteTraefikInstance(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteTraefikInstanceRequest],
 ) (*connect.Response[mantraev1.DeleteTraefikInstanceResponse], error) {
+	instance, err := s.app.Conn.GetQuery().GetTraefikInstanceByID(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, err
+	}
 	if err := s.app.Conn.GetQuery().DeleteTraefikInstance(ctx, req.Msg.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_TraefikInstance{
+			TraefikInstance: instance.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.DeleteTraefikInstanceResponse{}), nil
 }
 

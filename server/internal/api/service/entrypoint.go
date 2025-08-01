@@ -52,6 +52,13 @@ func (s *EntryPointService) CreateEntryPoint(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_EntryPoint{
+			EntryPoint: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.CreateEntryPointResponse{
 		EntryPoint: result.ToProto(),
 	}), nil
@@ -82,6 +89,13 @@ func (s *EntryPointService) UpdateEntryPoint(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_EntryPoint{
+			EntryPoint: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.UpdateEntryPointResponse{
 		EntryPoint: result.ToProto(),
 	}), nil
@@ -91,12 +105,22 @@ func (s *EntryPointService) DeleteEntryPoint(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteEntryPointRequest],
 ) (*connect.Response[mantraev1.DeleteEntryPointResponse], error) {
+	entryPoint, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	if err := s.updateRouterEntrypoints(ctx, req.Msg.Id, ""); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := s.app.Conn.GetQuery().DeleteEntryPointByID(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_EntryPoint{
+			EntryPoint: entryPoint.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.DeleteEntryPointResponse{}), nil
 }
 

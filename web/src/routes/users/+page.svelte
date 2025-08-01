@@ -1,12 +1,12 @@
 <script lang="ts">
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import { Pencil, Trash, Users } from '@lucide/svelte';
 	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { toast } from 'svelte-sonner';
-	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
+	import { DateFormat } from '$lib/stores/common';
 	import type { User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
@@ -14,13 +14,10 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
+	import { users } from '$lib/stores/realtime';
 
 	let item = $state({} as User);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<User[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<User>[] = [
 		{
@@ -93,14 +90,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	const deleteItem = async (item: User) => {
 		try {
 			await userClient.deleteUser({ id: item.id });
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`User ${item.username} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -116,7 +108,6 @@
 			for (const row of rows) {
 				await userClient.deleteUser({ id: row.id });
 			}
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Successfully deleted ${rows.length} Users`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -124,17 +115,9 @@
 		}
 	}
 
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await userClient.listUsers({
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.users;
-		rowCount = Number(response.totalCount);
-	}
-
 	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		const response = await userClient.listUsers({});
+		users.set(response.users);
 	});
 </script>
 
@@ -156,10 +139,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$users}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		createButton={{
 			label: 'Add User',
@@ -171,4 +152,4 @@
 	/>
 </div>
 
-<UserModal bind:open bind:item bind:data />
+<UserModal bind:open bind:item />

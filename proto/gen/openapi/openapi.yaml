@@ -2338,6 +2338,12 @@ components:
             - string
           title: id
           format: int64
+        profileId:
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
         name:
           type: string
           title: name
@@ -2674,6 +2680,105 @@ components:
           title: user
           $ref: '#/components/schemas/mantrae.v1.User'
       title: VerifyOTPResponse
+      additionalProperties: false
+    mantrae.v1.EventAction:
+      type: string
+      title: EventAction
+      enum:
+        - EVENT_ACTION_UNSPECIFIED
+        - EVENT_ACTION_CREATED
+        - EVENT_ACTION_UPDATED
+        - EVENT_ACTION_DELETED
+    mantrae.v1.EventStreamRequest:
+      type: object
+      properties:
+        profileId:
+          exclusiveMinimum: 0
+          type:
+            - integer
+            - string
+          title: profile_id
+          format: int64
+      title: EventStreamRequest
+      additionalProperties: false
+    mantrae.v1.EventStreamResponse:
+      type: object
+      oneOf:
+        - properties:
+            agent:
+              title: agent
+              $ref: '#/components/schemas/mantrae.v1.Agent'
+          title: agent
+          required:
+            - agent
+        - properties:
+            dnsProvider:
+              title: dns_provider
+              $ref: '#/components/schemas/mantrae.v1.DnsProvider'
+          title: dns_provider
+          required:
+            - dnsProvider
+        - properties:
+            entryPoint:
+              title: entry_point
+              $ref: '#/components/schemas/mantrae.v1.EntryPoint'
+          title: entry_point
+          required:
+            - entryPoint
+        - properties:
+            middleware:
+              title: middleware
+              $ref: '#/components/schemas/mantrae.v1.Middleware'
+          title: middleware
+          required:
+            - middleware
+        - properties:
+            profile:
+              title: profile
+              $ref: '#/components/schemas/mantrae.v1.Profile'
+          title: profile
+          required:
+            - profile
+        - properties:
+            router:
+              title: router
+              $ref: '#/components/schemas/mantrae.v1.Router'
+          title: router
+          required:
+            - router
+        - properties:
+            serversTransport:
+              title: servers_transport
+              $ref: '#/components/schemas/mantrae.v1.ServersTransport'
+          title: servers_transport
+          required:
+            - serversTransport
+        - properties:
+            service:
+              title: service
+              $ref: '#/components/schemas/mantrae.v1.Service'
+          title: service
+          required:
+            - service
+        - properties:
+            traefikInstance:
+              title: traefik_instance
+              $ref: '#/components/schemas/mantrae.v1.TraefikInstance'
+          title: traefik_instance
+          required:
+            - traefikInstance
+        - properties:
+            user:
+              title: user
+              $ref: '#/components/schemas/mantrae.v1.User'
+          title: user
+          required:
+            - user
+      properties:
+        action:
+          title: action
+          $ref: '#/components/schemas/mantrae.v1.EventAction'
+      title: EventStreamResponse
       additionalProperties: false
     mantrae.v1.GetPublicIPRequest:
       type: object
@@ -6356,6 +6461,104 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/mantrae.v1.GetPublicIPResponse'
+  /mantrae.v1.UtilService/EventStream:
+    post:
+      tags:
+        - mantrae.v1.UtilService
+      summary: EventStream
+      operationId: mantrae.v1.UtilService.EventStream
+      parameters:
+        - name: Connect-Protocol-Version
+          in: header
+          required: true
+          schema:
+            $ref: '#/components/schemas/connect-protocol-version'
+        - name: Connect-Timeout-Ms
+          in: header
+          schema:
+            $ref: '#/components/schemas/connect-timeout-header'
+      requestBody:
+        content:
+          application/connect+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/connect+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc-web:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc-web+proto:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+          application/grpc-web+json:
+            schema:
+              $ref: '#/components/schemas/mantrae.v1.EventStreamRequest'
+        required: true
+      responses:
+        default:
+          description: Error
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/connect.error'
+        "200":
+          description: Success
+          content:
+            application/connect+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/connect+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc-web:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc-web+proto:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
+            application/grpc-web+json:
+              schema:
+                $ref: '#/components/schemas/mantrae.v1.EventStreamResponse'
 tags:
   - name: mantrae.v1.AgentService
   - name: mantrae.v1.AuditLogService

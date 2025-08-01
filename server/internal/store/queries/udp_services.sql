@@ -11,14 +11,13 @@ INSERT INTO
 VALUES
   (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
--- name: GetUdpServiceByID :one
+-- name: GetUdpService :one
 SELECT
   *
 FROM
   udp_services
 WHERE
-  profile_id = ?
-  AND id = ?;
+  id = ?;
 
 -- name: GetUdpServiceByName :one
 SELECT

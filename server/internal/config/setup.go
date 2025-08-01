@@ -13,6 +13,7 @@ import (
 	"github.com/mizuchilabs/mantrae/pkg/logger"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/mizuchilabs/mantrae/server/internal/backup"
+	"github.com/mizuchilabs/mantrae/server/internal/event"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
 	"github.com/mizuchilabs/mantrae/server/internal/store"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -23,6 +24,7 @@ type App struct {
 	Conn   *store.Connection
 	BM     *backup.BackupManager
 	SM     *settings.SettingsManager
+	Event  *event.Broadcaster
 }
 
 func Setup(ctx context.Context) (*App, error) {
@@ -38,13 +40,14 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	// app.Event = events.NewEventBroadcaster()
 	app.Conn = store.NewConnection("")
 	app.SM = settings.NewManager(app.Conn)
 	app.SM.Start(ctx)
 
 	app.BM = backup.NewManager(app.Conn, app.SM)
 	app.BM.Start(ctx)
+
+	app.Event = event.NewBroadcaster(ctx)
 
 	if err := app.setupDefaultData(ctx); err != nil {
 		return nil, err

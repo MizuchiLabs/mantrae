@@ -2,232 +2,249 @@
 // @generated from file mantrae/v1/traefik_instance.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_struct, file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { JsonObject, Message } from "@bufbuild/protobuf";
+import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
+import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
+import {
+	file_google_protobuf_struct,
+	file_google_protobuf_timestamp
+} from '@bufbuild/protobuf/wkt';
+import type { JsonObject, Message } from '@bufbuild/protobuf';
 
 /**
  * Describes the file mantrae/v1/traefik_instance.proto.
  */
-export const file_mantrae_v1_traefik_instance: GenFile = /*@__PURE__*/
-  fileDesc("CiFtYW50cmFlL3YxL3RyYWVmaWtfaW5zdGFuY2UucHJvdG8SCm1hbnRyYWUudjEi9gIKD1RyYWVmaWtJbnN0YW5jZRIKCgJpZBgBIAEoAxIMCgRuYW1lGAIgASgJEgsKA3VybBgDIAEoCRIQCgh1c2VybmFtZRgEIAEoCRIQCghwYXNzd29yZBgFIAEoCRILCgN0bHMYBiABKAgSLQoMZW50cnlfcG9pbnRzGAcgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIpCghvdmVydmlldxgIIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSJwoGY29uZmlnGAkgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIoCgd2ZXJzaW9uGAogASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIuCgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIwChlHZXRUcmFlZmlrSW5zdGFuY2VSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAIlMKGkdldFRyYWVmaWtJbnN0YW5jZVJlc3BvbnNlEjUKEHRyYWVmaWtfaW5zdGFuY2UYASABKAsyGy5tYW50cmFlLnYxLlRyYWVmaWtJbnN0YW5jZSIzChxEZWxldGVUcmFlZmlrSW5zdGFuY2VSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAIh8KHURlbGV0ZVRyYWVmaWtJbnN0YW5jZVJlc3BvbnNlItkBChtMaXN0VHJhZWZpa0luc3RhbmNlc1JlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgABJqCgVsaW1pdBgCIAEoA0JWukhTugFQCgtsaW1pdC52YWxpZBIpbGltaXQgbXVzdCBiZSBlaXRoZXIgLTEgb3IgZ3JlYXRlciB0aGFuIDAaFnRoaXMgPT0gLTEgfHwgdGhpcyA+IDBIAIgBARIcCgZvZmZzZXQYAyABKANCB7pIBCICKABIAYgBAUIICgZfbGltaXRCCQoHX29mZnNldCJrChxMaXN0VHJhZWZpa0luc3RhbmNlc1Jlc3BvbnNlEjYKEXRyYWVmaWtfaW5zdGFuY2VzGAEgAygLMhsubWFudHJhZS52MS5UcmFlZmlrSW5zdGFuY2USEwoLdG90YWxfY291bnQYAiABKAMy4AIKFlRyYWVmaWtJbnN0YW5jZVNlcnZpY2USaAoSR2V0VHJhZWZpa0luc3RhbmNlEiUubWFudHJhZS52MS5HZXRUcmFlZmlrSW5zdGFuY2VSZXF1ZXN0GiYubWFudHJhZS52MS5HZXRUcmFlZmlrSW5zdGFuY2VSZXNwb25zZSIDkAIBEmwKFURlbGV0ZVRyYWVmaWtJbnN0YW5jZRIoLm1hbnRyYWUudjEuRGVsZXRlVHJhZWZpa0luc3RhbmNlUmVxdWVzdBopLm1hbnRyYWUudjEuRGVsZXRlVHJhZWZpa0luc3RhbmNlUmVzcG9uc2USbgoUTGlzdFRyYWVmaWtJbnN0YW5jZXMSJy5tYW50cmFlLnYxLkxpc3RUcmFlZmlrSW5zdGFuY2VzUmVxdWVzdBooLm1hbnRyYWUudjEuTGlzdFRyYWVmaWtJbnN0YW5jZXNSZXNwb25zZSIDkAIBQq4BCg5jb20ubWFudHJhZS52MUIUVHJhZWZpa0luc3RhbmNlUHJvdG9QAVo9Z2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL3Byb3RvL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM", [file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]);
+export const file_mantrae_v1_traefik_instance: GenFile =
+	/*@__PURE__*/
+	fileDesc(
+		'CiFtYW50cmFlL3YxL3RyYWVmaWtfaW5zdGFuY2UucHJvdG8SCm1hbnRyYWUudjEiigMKD1RyYWVmaWtJbnN0YW5jZRIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEgwKBG5hbWUYAyABKAkSCwoDdXJsGAQgASgJEhAKCHVzZXJuYW1lGAUgASgJEhAKCHBhc3N3b3JkGAYgASgJEgsKA3RscxgHIAEoCBItCgxlbnRyeV9wb2ludHMYCCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EikKCG92ZXJ2aWV3GAkgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBInCgZjb25maWcYCiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EigKB3ZlcnNpb24YCyABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Ei4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjAKGUdldFRyYWVmaWtJbnN0YW5jZVJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAAiUwoaR2V0VHJhZWZpa0luc3RhbmNlUmVzcG9uc2USNQoQdHJhZWZpa19pbnN0YW5jZRgBIAEoCzIbLm1hbnRyYWUudjEuVHJhZWZpa0luc3RhbmNlIjMKHERlbGV0ZVRyYWVmaWtJbnN0YW5jZVJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAAiHwodRGVsZXRlVHJhZWZpa0luc3RhbmNlUmVzcG9uc2Ui2QEKG0xpc3RUcmFlZmlrSW5zdGFuY2VzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEmoKBWxpbWl0GAIgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgDIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0ImsKHExpc3RUcmFlZmlrSW5zdGFuY2VzUmVzcG9uc2USNgoRdHJhZWZpa19pbnN0YW5jZXMYASADKAsyGy5tYW50cmFlLnYxLlRyYWVmaWtJbnN0YW5jZRITCgt0b3RhbF9jb3VudBgCIAEoAzLgAgoWVHJhZWZpa0luc3RhbmNlU2VydmljZRJoChJHZXRUcmFlZmlrSW5zdGFuY2USJS5tYW50cmFlLnYxLkdldFRyYWVmaWtJbnN0YW5jZVJlcXVlc3QaJi5tYW50cmFlLnYxLkdldFRyYWVmaWtJbnN0YW5jZVJlc3BvbnNlIgOQAgESbAoVRGVsZXRlVHJhZWZpa0luc3RhbmNlEigubWFudHJhZS52MS5EZWxldGVUcmFlZmlrSW5zdGFuY2VSZXF1ZXN0GikubWFudHJhZS52MS5EZWxldGVUcmFlZmlrSW5zdGFuY2VSZXNwb25zZRJuChRMaXN0VHJhZWZpa0luc3RhbmNlcxInLm1hbnRyYWUudjEuTGlzdFRyYWVmaWtJbnN0YW5jZXNSZXF1ZXN0GigubWFudHJhZS52MS5MaXN0VHJhZWZpa0luc3RhbmNlc1Jlc3BvbnNlIgOQAgFCrgEKDmNvbS5tYW50cmFlLnYxQhRUcmFlZmlrSW5zdGFuY2VQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
+		[file_buf_validate_validate, file_google_protobuf_struct, file_google_protobuf_timestamp]
+	);
 
 /**
  * @generated from message mantrae.v1.TraefikInstance
  */
-export type TraefikInstance = Message<"mantrae.v1.TraefikInstance"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type TraefikInstance = Message<'mantrae.v1.TraefikInstance'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 
-  /**
-   * @generated from field: string name = 2;
-   */
-  name: string;
+	/**
+	 * @generated from field: int64 profile_id = 2;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: string url = 3;
-   */
-  url: string;
+	/**
+	 * @generated from field: string name = 3;
+	 */
+	name: string;
 
-  /**
-   * @generated from field: string username = 4;
-   */
-  username: string;
+	/**
+	 * @generated from field: string url = 4;
+	 */
+	url: string;
 
-  /**
-   * @generated from field: string password = 5;
-   */
-  password: string;
+	/**
+	 * @generated from field: string username = 5;
+	 */
+	username: string;
 
-  /**
-   * @generated from field: bool tls = 6;
-   */
-  tls: boolean;
+	/**
+	 * @generated from field: string password = 6;
+	 */
+	password: string;
 
-  /**
-   * @generated from field: google.protobuf.Struct entry_points = 7;
-   */
-  entryPoints?: JsonObject;
+	/**
+	 * @generated from field: bool tls = 7;
+	 */
+	tls: boolean;
 
-  /**
-   * @generated from field: google.protobuf.Struct overview = 8;
-   */
-  overview?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct entry_points = 8;
+	 */
+	entryPoints?: JsonObject;
 
-  /**
-   * @generated from field: google.protobuf.Struct config = 9;
-   */
-  config?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct overview = 9;
+	 */
+	overview?: JsonObject;
 
-  /**
-   * @generated from field: google.protobuf.Struct version = 10;
-   */
-  version?: JsonObject;
+	/**
+	 * @generated from field: google.protobuf.Struct config = 10;
+	 */
+	config?: JsonObject;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp created_at = 11;
-   */
-  createdAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Struct version = 11;
+	 */
+	version?: JsonObject;
 
-  /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 12;
-   */
-  updatedAt?: Timestamp;
+	/**
+	 * @generated from field: google.protobuf.Timestamp created_at = 12;
+	 */
+	createdAt?: Timestamp;
+
+	/**
+	 * @generated from field: google.protobuf.Timestamp updated_at = 13;
+	 */
+	updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.TraefikInstance.
  * Use `create(TraefikInstanceSchema)` to create a new message.
  */
-export const TraefikInstanceSchema: GenMessage<TraefikInstance> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 0);
+export const TraefikInstanceSchema: GenMessage<TraefikInstance> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 0);
 
 /**
  * @generated from message mantrae.v1.GetTraefikInstanceRequest
  */
-export type GetTraefikInstanceRequest = Message<"mantrae.v1.GetTraefikInstanceRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type GetTraefikInstanceRequest = Message<'mantrae.v1.GetTraefikInstanceRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.GetTraefikInstanceRequest.
  * Use `create(GetTraefikInstanceRequestSchema)` to create a new message.
  */
-export const GetTraefikInstanceRequestSchema: GenMessage<GetTraefikInstanceRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 1);
+export const GetTraefikInstanceRequestSchema: GenMessage<GetTraefikInstanceRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 1);
 
 /**
  * @generated from message mantrae.v1.GetTraefikInstanceResponse
  */
-export type GetTraefikInstanceResponse = Message<"mantrae.v1.GetTraefikInstanceResponse"> & {
-  /**
-   * @generated from field: mantrae.v1.TraefikInstance traefik_instance = 1;
-   */
-  traefikInstance?: TraefikInstance;
+export type GetTraefikInstanceResponse = Message<'mantrae.v1.GetTraefikInstanceResponse'> & {
+	/**
+	 * @generated from field: mantrae.v1.TraefikInstance traefik_instance = 1;
+	 */
+	traefikInstance?: TraefikInstance;
 };
 
 /**
  * Describes the message mantrae.v1.GetTraefikInstanceResponse.
  * Use `create(GetTraefikInstanceResponseSchema)` to create a new message.
  */
-export const GetTraefikInstanceResponseSchema: GenMessage<GetTraefikInstanceResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 2);
+export const GetTraefikInstanceResponseSchema: GenMessage<GetTraefikInstanceResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 2);
 
 /**
  * @generated from message mantrae.v1.DeleteTraefikInstanceRequest
  */
-export type DeleteTraefikInstanceRequest = Message<"mantrae.v1.DeleteTraefikInstanceRequest"> & {
-  /**
-   * @generated from field: int64 id = 1;
-   */
-  id: bigint;
+export type DeleteTraefikInstanceRequest = Message<'mantrae.v1.DeleteTraefikInstanceRequest'> & {
+	/**
+	 * @generated from field: int64 id = 1;
+	 */
+	id: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteTraefikInstanceRequest.
  * Use `create(DeleteTraefikInstanceRequestSchema)` to create a new message.
  */
-export const DeleteTraefikInstanceRequestSchema: GenMessage<DeleteTraefikInstanceRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 3);
+export const DeleteTraefikInstanceRequestSchema: GenMessage<DeleteTraefikInstanceRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 3);
 
 /**
  * @generated from message mantrae.v1.DeleteTraefikInstanceResponse
  */
-export type DeleteTraefikInstanceResponse = Message<"mantrae.v1.DeleteTraefikInstanceResponse"> & {
-};
+export type DeleteTraefikInstanceResponse =
+	Message<'mantrae.v1.DeleteTraefikInstanceResponse'> & {};
 
 /**
  * Describes the message mantrae.v1.DeleteTraefikInstanceResponse.
  * Use `create(DeleteTraefikInstanceResponseSchema)` to create a new message.
  */
-export const DeleteTraefikInstanceResponseSchema: GenMessage<DeleteTraefikInstanceResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 4);
+export const DeleteTraefikInstanceResponseSchema: GenMessage<DeleteTraefikInstanceResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 4);
 
 /**
  * @generated from message mantrae.v1.ListTraefikInstancesRequest
  */
-export type ListTraefikInstancesRequest = Message<"mantrae.v1.ListTraefikInstancesRequest"> & {
-  /**
-   * @generated from field: int64 profile_id = 1;
-   */
-  profileId: bigint;
+export type ListTraefikInstancesRequest = Message<'mantrae.v1.ListTraefikInstancesRequest'> & {
+	/**
+	 * @generated from field: int64 profile_id = 1;
+	 */
+	profileId: bigint;
 
-  /**
-   * @generated from field: optional int64 limit = 2;
-   */
-  limit?: bigint;
+	/**
+	 * @generated from field: optional int64 limit = 2;
+	 */
+	limit?: bigint;
 
-  /**
-   * @generated from field: optional int64 offset = 3;
-   */
-  offset?: bigint;
+	/**
+	 * @generated from field: optional int64 offset = 3;
+	 */
+	offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListTraefikInstancesRequest.
  * Use `create(ListTraefikInstancesRequestSchema)` to create a new message.
  */
-export const ListTraefikInstancesRequestSchema: GenMessage<ListTraefikInstancesRequest> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 5);
+export const ListTraefikInstancesRequestSchema: GenMessage<ListTraefikInstancesRequest> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 5);
 
 /**
  * @generated from message mantrae.v1.ListTraefikInstancesResponse
  */
-export type ListTraefikInstancesResponse = Message<"mantrae.v1.ListTraefikInstancesResponse"> & {
-  /**
-   * @generated from field: repeated mantrae.v1.TraefikInstance traefik_instances = 1;
-   */
-  traefikInstances: TraefikInstance[];
+export type ListTraefikInstancesResponse = Message<'mantrae.v1.ListTraefikInstancesResponse'> & {
+	/**
+	 * @generated from field: repeated mantrae.v1.TraefikInstance traefik_instances = 1;
+	 */
+	traefikInstances: TraefikInstance[];
 
-  /**
-   * @generated from field: int64 total_count = 2;
-   */
-  totalCount: bigint;
+	/**
+	 * @generated from field: int64 total_count = 2;
+	 */
+	totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListTraefikInstancesResponse.
  * Use `create(ListTraefikInstancesResponseSchema)` to create a new message.
  */
-export const ListTraefikInstancesResponseSchema: GenMessage<ListTraefikInstancesResponse> = /*@__PURE__*/
-  messageDesc(file_mantrae_v1_traefik_instance, 6);
+export const ListTraefikInstancesResponseSchema: GenMessage<ListTraefikInstancesResponse> =
+	/*@__PURE__*/
+	messageDesc(file_mantrae_v1_traefik_instance, 6);
 
 /**
  * @generated from service mantrae.v1.TraefikInstanceService
  */
 export const TraefikInstanceService: GenService<{
-  /**
-   * @generated from rpc mantrae.v1.TraefikInstanceService.GetTraefikInstance
-   */
-  getTraefikInstance: {
-    methodKind: "unary";
-    input: typeof GetTraefikInstanceRequestSchema;
-    output: typeof GetTraefikInstanceResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.TraefikInstanceService.DeleteTraefikInstance
-   */
-  deleteTraefikInstance: {
-    methodKind: "unary";
-    input: typeof DeleteTraefikInstanceRequestSchema;
-    output: typeof DeleteTraefikInstanceResponseSchema;
-  },
-  /**
-   * @generated from rpc mantrae.v1.TraefikInstanceService.ListTraefikInstances
-   */
-  listTraefikInstances: {
-    methodKind: "unary";
-    input: typeof ListTraefikInstancesRequestSchema;
-    output: typeof ListTraefikInstancesResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_mantrae_v1_traefik_instance, 0);
-
+	/**
+	 * @generated from rpc mantrae.v1.TraefikInstanceService.GetTraefikInstance
+	 */
+	getTraefikInstance: {
+		methodKind: 'unary';
+		input: typeof GetTraefikInstanceRequestSchema;
+		output: typeof GetTraefikInstanceResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.TraefikInstanceService.DeleteTraefikInstance
+	 */
+	deleteTraefikInstance: {
+		methodKind: 'unary';
+		input: typeof DeleteTraefikInstanceRequestSchema;
+		output: typeof DeleteTraefikInstanceResponseSchema;
+	};
+	/**
+	 * @generated from rpc mantrae.v1.TraefikInstanceService.ListTraefikInstances
+	 */
+	listTraefikInstances: {
+		methodKind: 'unary';
+		input: typeof ListTraefikInstancesRequestSchema;
+		output: typeof ListTraefikInstancesResponseSchema;
+	};
+}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_traefik_instance, 0);

@@ -9,11 +9,22 @@
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/state';
 	import '../app.css';
+	import { onDestroy, onMount } from 'svelte';
+	import { subscribe, unsubscribe } from '$lib/stores/realtime';
 
 	interface Props {
 		children?: import('svelte').Snippet;
 	}
 	let { children }: Props = $props();
+
+	onMount(async () => {
+		if (user.isLoggedIn()) {
+			await subscribe();
+		}
+	});
+	onDestroy(() => {
+		unsubscribe();
+	});
 </script>
 
 <ModeWatcher />

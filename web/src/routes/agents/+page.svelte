@@ -7,21 +7,18 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
-	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
+	import { DateFormat } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
+	import { agents } from '$lib/stores/realtime';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import { ConnectError } from '@connectrpc/connect';
 	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
-	import { onMount } from 'svelte';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
+	import { readable } from 'svelte/store';
 
 	let item = $state({} as Agent);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<Agent[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<Agent>[] = [
 		{
@@ -97,11 +94,17 @@
 		}
 	];
 
+	const now = readable(new Date(), (set) => {
+		const interval = setInterval(() => {
+			set(new Date());
+		}, 1000);
+		return () => clearInterval(interval);
+	});
 	function getAgentStatus(agent: Agent) {
 		if (!agent.updatedAt) return false;
 		const lastSeen = new Date(timestampDate(agent.updatedAt));
-		const lastSeenInSeconds = (new Date().getTime() - lastSeen.getTime()) / 1000;
-		return lastSeenInSeconds <= 60 ? true : false;
+		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
+		return lastSeenInSeconds <= 20 ? true : false;
 	}
 
 	const bulkActions: BulkAction<Agent>[] = [
@@ -114,14 +117,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	const deleteItem = async (item: Agent) => {
 		try {
 			await agentClient.deleteAgent({ id: item.id });
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Agent ${item.hostname ?? item.id} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -137,32 +135,19 @@
 			for (const row of rows) {
 				await agentClient.deleteAgent({ id: row.id });
 			}
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Successfully deleted ${rows.length} agents`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete agents', { description: e.message });
 		}
 	}
-
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await agentClient.listAgents({
-			profileId: profile.id,
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.agents;
-		rowCount = Number(response.totalCount);
-	}
-
 	async function createAgent() {
 		try {
 			const response = await agentClient.createAgent({ profileId: profile.id });
 			if (!response.agent) return;
+			item = response.agent;
 
 			toast.success('Agent created');
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
-			item = response.agent;
 			open = true;
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -170,8 +155,12 @@
 		}
 	}
 
-	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+	$effect(() => {
+		if (profile.isValid()) {
+			agentClient.listAgents({ profileId: profile.id }).then((response) => {
+				agents.set(response.agents);
+			});
+		}
 	});
 </script>
 
@@ -193,10 +182,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$agents}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		rowClassModifiers={{
 			'bg-red-300/25 dark:bg-red-700/25': (r) => !getAgentStatus(r)
@@ -208,4 +195,4 @@
 	/>
 </div>
 
-<AgentModal bind:open bind:item bind:data />
+<AgentModal bind:open bind:item />

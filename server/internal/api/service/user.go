@@ -248,6 +248,13 @@ func (s *UserService) CreateUser(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_User{
+			User: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.CreateUserResponse{
 		User: result.ToProto(),
 	}), nil
@@ -262,7 +269,7 @@ func (s *UserService) UpdateUser(
 		Username: req.Msg.Username,
 		Email:    req.Msg.Email,
 	}
-	user, err := s.app.Conn.GetQuery().UpdateUser(ctx, params)
+	result, err := s.app.Conn.GetQuery().UpdateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -275,15 +282,21 @@ func (s *UserService) UpdateUser(
 		}
 
 		if err := s.app.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
-			ID:       user.ID,
+			ID:       result.ID,
 			Password: hash,
 		}); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_User{
+			User: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.UpdateUserResponse{
-		User: user.ToProto(),
+		User: result.ToProto(),
 	}), nil
 }
 
@@ -291,9 +304,20 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteUserRequest],
 ) (*connect.Response[mantraev1.DeleteUserResponse], error) {
+	user, err := s.app.Conn.GetQuery().GetUserByID(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	if err := s.app.Conn.GetQuery().DeleteUser(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_User{
+			User: user.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.DeleteUserResponse{}), nil
 }
 

@@ -11,7 +11,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import { type Service } from '$lib/gen/mantrae/v1/service_pb';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import { protocolTypes, unmarshalConfig } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
@@ -35,12 +34,11 @@
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	interface Props {
-		data: Router[];
 		item: Router;
 		open?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 	let service = $state({} as Service);
 	let hasLoadedService = $state(false);
 
@@ -130,14 +128,6 @@
 					enabled: service.enabled
 				});
 			}
-
-			// Refresh data
-			const response = await routerClient.listRouters({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.routers;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error(`Failed to ${item.id ? 'update' : 'save'} router`, {
@@ -153,7 +143,6 @@
 		try {
 			await routerClient.deleteRouter({ id: item.id, type: item.type });
 			toast.success('Router deleted successfully');
-			data = data.filter((r) => r.id !== item.id);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete router', { description: e.message });
@@ -211,7 +200,6 @@
 										<Card.Description>Manage DNS providers for this router</Card.Description>
 									</div>
 									<DnsProviderSelect
-										bind:data
 										bind:item
 										disabled={item.type === ProtocolType.UDP || !item.id}
 									/>
@@ -288,11 +276,7 @@
 							</div>
 
 							<!-- DNS Providers -->
-							<DnsProviderSelect
-								bind:data
-								bind:item
-								disabled={item.type === ProtocolType.UDP || !item.id}
-							/>
+							<DnsProviderSelect bind:item disabled={item.type === ProtocolType.UDP || !item.id} />
 						</Card.Header>
 						<Card.Content class="space-y-4">
 							<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">

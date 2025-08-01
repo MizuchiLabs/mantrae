@@ -37,12 +37,15 @@ const (
 	UtilServiceGetVersionProcedure = "/mantrae.v1.UtilService/GetVersion"
 	// UtilServiceGetPublicIPProcedure is the fully-qualified name of the UtilService's GetPublicIP RPC.
 	UtilServiceGetPublicIPProcedure = "/mantrae.v1.UtilService/GetPublicIP"
+	// UtilServiceEventStreamProcedure is the fully-qualified name of the UtilService's EventStream RPC.
+	UtilServiceEventStreamProcedure = "/mantrae.v1.UtilService/EventStream"
 )
 
 // UtilServiceClient is a client for the mantrae.v1.UtilService service.
 type UtilServiceClient interface {
 	GetVersion(context.Context, *connect.Request[v1.GetVersionRequest]) (*connect.Response[v1.GetVersionResponse], error)
 	GetPublicIP(context.Context, *connect.Request[v1.GetPublicIPRequest]) (*connect.Response[v1.GetPublicIPResponse], error)
+	EventStream(context.Context, *connect.Request[v1.EventStreamRequest]) (*connect.ServerStreamForClient[v1.EventStreamResponse], error)
 }
 
 // NewUtilServiceClient constructs a client for the mantrae.v1.UtilService service. By default, it
@@ -68,6 +71,12 @@ func NewUtilServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(utilServiceMethods.ByName("GetPublicIP")),
 			connect.WithClientOptions(opts...),
 		),
+		eventStream: connect.NewClient[v1.EventStreamRequest, v1.EventStreamResponse](
+			httpClient,
+			baseURL+UtilServiceEventStreamProcedure,
+			connect.WithSchema(utilServiceMethods.ByName("EventStream")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -75,6 +84,7 @@ func NewUtilServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type utilServiceClient struct {
 	getVersion  *connect.Client[v1.GetVersionRequest, v1.GetVersionResponse]
 	getPublicIP *connect.Client[v1.GetPublicIPRequest, v1.GetPublicIPResponse]
+	eventStream *connect.Client[v1.EventStreamRequest, v1.EventStreamResponse]
 }
 
 // GetVersion calls mantrae.v1.UtilService.GetVersion.
@@ -87,10 +97,16 @@ func (c *utilServiceClient) GetPublicIP(ctx context.Context, req *connect.Reques
 	return c.getPublicIP.CallUnary(ctx, req)
 }
 
+// EventStream calls mantrae.v1.UtilService.EventStream.
+func (c *utilServiceClient) EventStream(ctx context.Context, req *connect.Request[v1.EventStreamRequest]) (*connect.ServerStreamForClient[v1.EventStreamResponse], error) {
+	return c.eventStream.CallServerStream(ctx, req)
+}
+
 // UtilServiceHandler is an implementation of the mantrae.v1.UtilService service.
 type UtilServiceHandler interface {
 	GetVersion(context.Context, *connect.Request[v1.GetVersionRequest]) (*connect.Response[v1.GetVersionResponse], error)
 	GetPublicIP(context.Context, *connect.Request[v1.GetPublicIPRequest]) (*connect.Response[v1.GetPublicIPResponse], error)
+	EventStream(context.Context, *connect.Request[v1.EventStreamRequest], *connect.ServerStream[v1.EventStreamResponse]) error
 }
 
 // NewUtilServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -112,12 +128,20 @@ func NewUtilServiceHandler(svc UtilServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(utilServiceMethods.ByName("GetPublicIP")),
 		connect.WithHandlerOptions(opts...),
 	)
+	utilServiceEventStreamHandler := connect.NewServerStreamHandler(
+		UtilServiceEventStreamProcedure,
+		svc.EventStream,
+		connect.WithSchema(utilServiceMethods.ByName("EventStream")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mantrae.v1.UtilService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UtilServiceGetVersionProcedure:
 			utilServiceGetVersionHandler.ServeHTTP(w, r)
 		case UtilServiceGetPublicIPProcedure:
 			utilServiceGetPublicIPHandler.ServeHTTP(w, r)
+		case UtilServiceEventStreamProcedure:
+			utilServiceEventStreamHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -133,4 +157,8 @@ func (UnimplementedUtilServiceHandler) GetVersion(context.Context, *connect.Requ
 
 func (UnimplementedUtilServiceHandler) GetPublicIP(context.Context, *connect.Request[v1.GetPublicIPRequest]) (*connect.Response[v1.GetPublicIPResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UtilService.GetPublicIP is not implemented"))
+}
+
+func (UnimplementedUtilServiceHandler) EventStream(context.Context, *connect.Request[v1.EventStreamRequest], *connect.ServerStream[v1.EventStreamResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UtilService.EventStream is not implemented"))
 }

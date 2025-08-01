@@ -17,17 +17,15 @@
 	} from '$lib/gen/mantrae/v1/dns_provider_pb';
 	import { dnsClient, utilClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { dnsProviderTypes } from '$lib/types';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 
 	interface Props {
-		data: DnsProvider[];
 		item: DnsProvider;
 		open?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
@@ -49,13 +47,6 @@
 				});
 				toast.success('DNS Provider created successfully');
 			}
-
-			// Refresh data
-			let response = await dnsClient.listDnsProviders({
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.dnsProviders;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to save dnsProvider', {
@@ -70,7 +61,6 @@
 
 		try {
 			await dnsClient.deleteDnsProvider({ id: item.id });
-			data = data.filter((e) => e.id !== item.id);
 			toast.success('EntryPoint deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);

@@ -75,6 +75,13 @@ func (s *DnsProviderService) CreateDnsProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_DnsProvider{
+			DnsProvider: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.CreateDnsProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
@@ -123,6 +130,13 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_DnsProvider{
+			DnsProvider: result.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.UpdateDnsProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
@@ -132,9 +146,20 @@ func (s *DnsProviderService) DeleteDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteDnsProviderRequest],
 ) (*connect.Response[mantraev1.DeleteDnsProviderResponse], error) {
+	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	if err := s.app.Conn.GetQuery().DeleteDnsProvider(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_DnsProvider{
+			DnsProvider: dnsProvider.ToProto(),
+		},
+	})
 	return connect.NewResponse(&mantraev1.DeleteDnsProviderResponse{}), nil
 }
 

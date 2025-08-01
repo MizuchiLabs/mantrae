@@ -27,17 +27,18 @@ const (
 type TraefikInstance struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Url           string                 `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
-	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,5,opt,name=password,proto3" json:"password,omitempty"`
-	Tls           bool                   `protobuf:"varint,6,opt,name=tls,proto3" json:"tls,omitempty"`
-	EntryPoints   *structpb.Struct       `protobuf:"bytes,7,opt,name=entry_points,json=entryPoints,proto3" json:"entry_points,omitempty"`
-	Overview      *structpb.Struct       `protobuf:"bytes,8,opt,name=overview,proto3" json:"overview,omitempty"`
-	Config        *structpb.Struct       `protobuf:"bytes,9,opt,name=config,proto3" json:"config,omitempty"`
-	Version       *structpb.Struct       `protobuf:"bytes,10,opt,name=version,proto3" json:"version,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Url           string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
+	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`
+	Tls           bool                   `protobuf:"varint,7,opt,name=tls,proto3" json:"tls,omitempty"`
+	EntryPoints   *structpb.Struct       `protobuf:"bytes,8,opt,name=entry_points,json=entryPoints,proto3" json:"entry_points,omitempty"`
+	Overview      *structpb.Struct       `protobuf:"bytes,9,opt,name=overview,proto3" json:"overview,omitempty"`
+	Config        *structpb.Struct       `protobuf:"bytes,10,opt,name=config,proto3" json:"config,omitempty"`
+	Version       *structpb.Struct       `protobuf:"bytes,11,opt,name=version,proto3" json:"version,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,6 +76,13 @@ func (*TraefikInstance) Descriptor() ([]byte, []int) {
 func (x *TraefikInstance) GetId() int64 {
 	if x != nil {
 		return x.Id
+	}
+	return 0
+}
+
+func (x *TraefikInstance) GetProfileId() int64 {
+	if x != nil {
+		return x.ProfileId
 	}
 	return 0
 }
@@ -441,23 +449,25 @@ var File_mantrae_v1_traefik_instance_proto protoreflect.FileDescriptor
 const file_mantrae_v1_traefik_instance_proto_rawDesc = "" +
 	"\n" +
 	"!mantrae/v1/traefik_instance.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdc\x03\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x03\n" +
 	"\x0fTraefikInstance\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
-	"\x03url\x18\x03 \x01(\tR\x03url\x12\x1a\n" +
-	"\busername\x18\x04 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x05 \x01(\tR\bpassword\x12\x10\n" +
-	"\x03tls\x18\x06 \x01(\bR\x03tls\x12:\n" +
-	"\fentry_points\x18\a \x01(\v2\x17.google.protobuf.StructR\ventryPoints\x123\n" +
-	"\boverview\x18\b \x01(\v2\x17.google.protobuf.StructR\boverview\x12/\n" +
-	"\x06config\x18\t \x01(\v2\x17.google.protobuf.StructR\x06config\x121\n" +
-	"\aversion\x18\n" +
-	" \x01(\v2\x17.google.protobuf.StructR\aversion\x129\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"profile_id\x18\x02 \x01(\x03R\tprofileId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x10\n" +
+	"\x03url\x18\x04 \x01(\tR\x03url\x12\x1a\n" +
+	"\busername\x18\x05 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x06 \x01(\tR\bpassword\x12\x10\n" +
+	"\x03tls\x18\a \x01(\bR\x03tls\x12:\n" +
+	"\fentry_points\x18\b \x01(\v2\x17.google.protobuf.StructR\ventryPoints\x123\n" +
+	"\boverview\x18\t \x01(\v2\x17.google.protobuf.StructR\boverview\x12/\n" +
+	"\x06config\x18\n" +
+	" \x01(\v2\x17.google.protobuf.StructR\x06config\x121\n" +
+	"\aversion\x18\v \x01(\v2\x17.google.protobuf.StructR\aversion\x129\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"4\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"\n" +
+	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"4\n" +
 	"\x19GetTraefikInstanceRequest\x12\x17\n" +
 	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"d\n" +
 	"\x1aGetTraefikInstanceResponse\x12F\n" +

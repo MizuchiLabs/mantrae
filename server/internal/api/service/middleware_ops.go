@@ -94,6 +94,13 @@ func (s *HTTPMiddlewareOps) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: result.ToProto(),
+		},
+	})
 	return &mantraev1.CreateMiddlewareResponse{
 		Middleware: result.ToProto(),
 	}, nil
@@ -159,6 +166,13 @@ func (s *HTTPMiddlewareOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: result.ToProto(),
+		},
+	})
 	return &mantraev1.UpdateMiddlewareResponse{
 		Middleware: result.ToProto(),
 	}, nil
@@ -199,6 +213,13 @@ func (s *HTTPMiddlewareOps) Delete(
 	if err := s.app.Conn.GetQuery().DeleteHttpMiddleware(ctx, req.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: middleware.ToProto(),
+		},
+	})
 	return &mantraev1.DeleteMiddlewareResponse{}, nil
 }
 
@@ -277,6 +298,13 @@ func (s *TCPMiddlewareOps) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: result.ToProto(),
+		},
+	})
 	return &mantraev1.CreateMiddlewareResponse{
 		Middleware: result.ToProto(),
 	}, nil
@@ -339,6 +367,13 @@ func (s *TCPMiddlewareOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: result.ToProto(),
+		},
+	})
 	return &mantraev1.UpdateMiddlewareResponse{
 		Middleware: result.ToProto(),
 	}, nil
@@ -379,6 +414,13 @@ func (s *TCPMiddlewareOps) Delete(
 	if err := s.app.Conn.GetQuery().DeleteTcpMiddleware(ctx, req.Id); err != nil {
 		return nil, err
 	}
+
+	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
+		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
+		Data: &mantraev1.EventStreamResponse_Middleware{
+			Middleware: middleware.ToProto(),
+		},
+	})
 	return &mantraev1.DeleteMiddlewareResponse{}, nil
 }
 

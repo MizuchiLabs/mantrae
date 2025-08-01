@@ -2,7 +2,6 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Progress } from '$lib/components/ui/progress/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import {
 		Globe,
@@ -44,17 +43,25 @@
 	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
 	import TraefikConnection from '$lib/components/utils/TraefikConnection.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import {
+		agents,
+		dnsProviders,
+		middlewares,
+		profiles,
+		routers,
+		services,
+		traefikInstances,
+		users
+	} from '$lib/stores/realtime';
+	import { onMount } from 'svelte';
 
-	let onlineAgents = $derived.by(async () => {
-		const response = await agentClient.listAgents({ profileId: profile.id });
-		const now = Date.now();
-
-		let activeAgents = response.agents.reduce((count, agent) => {
+	let onlineAgents = $derived.by(() => {
+		let activeAgents = $agents.reduce((count, agent) => {
 			if (!agent.updatedAt) return 0;
 			const lastSeen = new Date(timestampDate(agent.updatedAt));
-			const diffSeconds = (now - lastSeen.getTime()) / 1000;
+			const diffSeconds = (Date.now() - lastSeen.getTime()) / 1000;
 
-			return diffSeconds <= 30 ? count + 1 : count;
+			return diffSeconds <= 20 ? count + 1 : count;
 		}, 0);
 		return BigInt(activeAgents);
 	});
@@ -85,6 +92,34 @@
 	let modalProfileOpen = $state(false);
 	let modalConfigOpen = $state(false);
 	let modalAuditLogOpen = $state(false);
+
+	onMount(async () => {
+		const p = await profileClient.listProfiles({});
+		profiles.set(p.profiles);
+
+		const u = await userClient.listUsers({});
+		users.set(u.users);
+
+		const d = await dnsClient.listDnsProviders({});
+		dnsProviders.set(d.dnsProviders);
+
+		if (profile.isValid()) {
+			const a = await agentClient.listAgents({ profileId: profile.id });
+			agents.set(a.agents);
+
+			const r = await routerClient.listRouters({ profileId: profile.id });
+			routers.set(r.routers);
+
+			const s = await serviceClient.listServices({ profileId: profile.id });
+			services.set(s.services);
+
+			const m = await middlewareClient.listMiddlewares({ profileId: profile.id });
+			middlewares.set(m.middlewares);
+
+			const i = await traefikClient.listTraefikInstances({ profileId: profile.id });
+			traefikInstances.set(i.traefikInstances);
+		}
+	});
 </script>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
@@ -115,13 +150,11 @@
 					<Layers2 class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await profileClient.listProfiles({}) then result}
-						<div class="text-3xl font-bold">{result.totalCount}</div>
-						<div class="mt-2 flex items-center text-sm">
-							<TrendingUp class="mr-1 h-3 w-3 text-green-500" />
-							<span class="text-green-500">Active configurations</span>
-						</div>
-					{/await}
+					<div class="text-3xl font-bold">{$profiles?.length}</div>
+					<div class="mt-2 flex items-center text-sm">
+						<TrendingUp class="mr-1 h-3 w-3 text-green-500" />
+						<span class="text-green-500">Active configurations</span>
+					</div>
 				</Card.Content>
 				<div
 					class="from-primary/5 absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl to-transparent"
@@ -136,15 +169,11 @@
 					<Bot class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await onlineAgents}
-						<div class="text-3xl font-bold">0</div>
-					{:then result}
-						<div class="text-3xl font-bold">{result}</div>
-						<div class="mt-2 flex items-center text-sm">
-							<Wifi class="mr-1 h-3 w-3 text-blue-500" />
-							<span class="text-blue-500">Online now</span>
-						</div>
-					{/await}
+					<div class="text-3xl font-bold">{onlineAgents}</div>
+					<div class="mt-2 flex items-center text-sm">
+						<Wifi class="mr-1 h-3 w-3 text-blue-500" />
+						<span class="text-blue-500">Online now</span>
+					</div>
 				</Card.Content>
 				<div
 					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-blue-500/5 to-transparent"
@@ -158,22 +187,20 @@
 					<Globe class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await dnsClient.listDnsProviders({}) then result}
-						<div class="text-3xl font-bold">
-							{result.totalCount}
-						</div>
-						<div class="mt-2 flex items-center text-sm">
-							{#if result.dnsProviders.find((p) => p.isDefault)}
-								<CheckCircle class="mr-1 h-3 w-3 text-green-500" />
-							{:else}
-								<AlertCircle class="mr-1 h-3 w-3 text-yellow-500" />
-							{/if}
-							<span class="text-muted-foreground">
-								{result.dnsProviders.find((p) => p.isDefault)?.name || 'None'}
-								set as default
-							</span>
-						</div>
-					{/await}
+					<div class="text-3xl font-bold">
+						{$dnsProviders?.length}
+					</div>
+					<div class="mt-2 flex items-center text-sm">
+						{#if $dnsProviders.find((p) => p.isDefault)}
+							<CheckCircle class="mr-1 h-3 w-3 text-green-500" />
+						{:else}
+							<AlertCircle class="mr-1 h-3 w-3 text-yellow-500" />
+						{/if}
+						<span class="text-muted-foreground">
+							{$dnsProviders.find((p) => p.isDefault)?.name || 'None'}
+							set as default
+						</span>
+					</div>
 				</Card.Content>
 				<div
 					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-green-500/5 to-transparent"
@@ -187,13 +214,11 @@
 					<Users class="text-muted-foreground h-4 w-4" />
 				</Card.Header>
 				<Card.Content>
-					{#await userClient.listUsers({}) then result}
-						<div class="text-3xl font-bold">{result.totalCount}</div>
-						<div class="mt-2 flex items-center text-sm">
-							<Shield class="mr-1 h-3 w-3 text-purple-500" />
-							<span class="text-muted-foreground">Access managed</span>
-						</div>
-					{/await}
+					<div class="text-3xl font-bold">{$users?.length}</div>
+					<div class="mt-2 flex items-center text-sm">
+						<Shield class="mr-1 h-3 w-3 text-purple-500" />
+						<span class="text-muted-foreground">Access managed</span>
+					</div>
 				</Card.Content>
 				<div
 					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-purple-500/5 to-transparent"
@@ -212,37 +237,35 @@
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
-					{#await routerClient.listRouters({ profileId: profile.id }) then result}
-						<div class="space-y-3">
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-blue-500"></div>
-									<span class="text-sm">HTTP Routers</span>
-								</div>
-								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === ProtocolType.HTTP).length}
-								</Badge>
+					<div class="space-y-3">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-3 rounded-full bg-blue-500"></div>
+								<span class="text-sm">HTTP Routers</span>
 							</div>
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-green-500"></div>
-									<span class="text-sm">TCP Routers</span>
-								</div>
-								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === ProtocolType.TCP).length}
-								</Badge>
-							</div>
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-purple-500"></div>
-									<span class="text-sm">UDP Routers</span>
-								</div>
-								<Badge variant="secondary">
-									{result.routers.filter((r) => r.type === ProtocolType.UDP).length}
-								</Badge>
-							</div>
+							<Badge variant="secondary">
+								{$routers.filter((r) => r.type === ProtocolType.HTTP).length}
+							</Badge>
 						</div>
-					{/await}
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-3 rounded-full bg-green-500"></div>
+								<span class="text-sm">TCP Routers</span>
+							</div>
+							<Badge variant="secondary">
+								{$routers.filter((r) => r.type === ProtocolType.TCP).length}
+							</Badge>
+						</div>
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-3 rounded-full bg-purple-500"></div>
+								<span class="text-sm">UDP Routers</span>
+							</div>
+							<Badge variant="secondary">
+								{$routers.filter((r) => r.type === ProtocolType.UDP).length}
+							</Badge>
+						</div>
+					</div>
 				</Card.Content>
 			</Card.Root>
 
@@ -255,57 +278,53 @@
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
-					{#await middlewareClient.listMiddlewares({ profileId: profile.id }) then result}
-						<div class="space-y-3">
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-red-500"></div>
-									<span class="text-sm">HTTP Middlewares</span>
-								</div>
-								<Badge variant="secondary">
-									{result.middlewares.filter((m) => m.type === ProtocolType.HTTP).length}
-								</Badge>
+					<div class="space-y-3">
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-3 rounded-full bg-red-500"></div>
+								<span class="text-sm">HTTP Middlewares</span>
 							</div>
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-yellow-500"></div>
-									<span class="text-sm">TCP Middlewares</span>
-								</div>
-								<Badge variant="secondary">
-									{result.middlewares.filter((m) => m.type === ProtocolType.TCP).length}
-								</Badge>
-							</div>
+							<Badge variant="secondary">
+								{$middlewares.filter((m) => m.type === ProtocolType.HTTP).length}
+							</Badge>
 						</div>
-					{/await}
+						<div class="flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<div class="h-3 w-3 rounded-full bg-yellow-500"></div>
+								<span class="text-sm">TCP Middlewares</span>
+							</div>
+							<Badge variant="secondary">
+								{$middlewares.filter((m) => m.type === ProtocolType.TCP).length}
+							</Badge>
+						</div>
+					</div>
 				</Card.Content>
 			</Card.Root>
 
 			<!-- Instances Overview -->
 			<Card.Root>
-				{#await traefikClient.listTraefikInstances({ profileId: profile.id }) then result}
-					<Card.Header class="flex items-center justify-between">
-						<Card.Title class="flex items-center gap-2">
-							<Server class="h-5 w-5" />
-							Traefik Instances
-						</Card.Title>
-						<Badge variant="secondary">{result.totalCount}</Badge>
-					</Card.Header>
-					<Card.Content class="space-y-4">
-						<div class="max-h-64 space-y-2 overflow-y-auto pr-2">
-							{#each result.traefikInstances || [] as instance (instance.id)}
-								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-2">
-										<div class="h-3 w-3 rounded-full bg-green-500"></div>
-										<span class="text-sm">{instance.name}</span>
-									</div>
-									<Badge variant="secondary">
-										{instance.url}
-									</Badge>
+				<Card.Header class="flex items-center justify-between">
+					<Card.Title class="flex items-center gap-2">
+						<Server class="h-5 w-5" />
+						Traefik Instances
+					</Card.Title>
+					<Badge variant="secondary">{$traefikInstances?.length}</Badge>
+				</Card.Header>
+				<Card.Content class="space-y-4">
+					<div class="max-h-64 space-y-2 overflow-y-auto pr-2">
+						{#each $traefikInstances || [] as instance (instance.id)}
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-2">
+									<div class="h-3 w-3 rounded-full bg-green-500"></div>
+									<span class="text-sm">{instance.name}</span>
 								</div>
-							{/each}
-						</div>
-					</Card.Content>
-				{/await}
+								<Badge variant="secondary">
+									{instance.url}
+								</Badge>
+							</div>
+						{/each}
+					</div>
+				</Card.Content>
 			</Card.Root>
 		</div>
 
@@ -327,137 +346,90 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-4">
-						{#await profileClient.listProfiles({}) then result}
-							{#each result.profiles || [] as profile (profile.id)}
-								<div class="space-y-4 rounded-lg border p-4">
-									<div class="flex items-start justify-between">
-										<div class="flex items-start gap-3">
-											<div class="bg-primary/10 rounded-lg p-2">
-												<Database class="text-primary h-4 w-4" />
-											</div>
-											<div class="space-y-1">
-												<h3 class="text-lg font-semibold">{profile.name}</h3>
-												<p class="text-muted-foreground text-sm">{profile.description}</p>
-												<p class="text-muted-foreground text-xs">
-													{#if profile.createdAt}
-														Created {DateFormat.format(timestampDate(profile.createdAt))}
-													{/if}
-												</p>
-											</div>
+						{#each $profiles || [] as profile (profile.id)}
+							<div class="space-y-4 rounded-lg border p-4">
+								<div class="flex items-start justify-between">
+									<div class="flex items-start gap-3">
+										<div class="bg-primary/10 rounded-lg p-2">
+											<Database class="text-primary h-4 w-4" />
+										</div>
+										<div class="space-y-1">
+											<h3 class="text-lg font-semibold">{profile.name}</h3>
+											<p class="text-muted-foreground text-sm">{profile.description}</p>
+											<p class="text-muted-foreground text-xs">
+												{#if profile.createdAt}
+													Created {DateFormat.format(timestampDate(profile.createdAt))}
+												{/if}
+											</p>
 										</div>
 									</div>
+								</div>
 
-									<Separator />
+								<Separator />
 
-									<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-										{#await agentClient.listAgents({ profileId: profile.id }) then agentResult}
-											<div class="text-center">
-												<div class="text-2xl font-bold text-blue-600">{agentResult.totalCount}</div>
-												<div class="text-muted-foreground text-xs">Agents</div>
-											</div>
-										{/await}
-
-										{#await routerClient.listRouters({ profileId: profile.id }) then routerResult}
-											<div class="text-center">
-												<div class="text-2xl font-bold text-green-600">
-													{routerResult.totalCount}
-												</div>
-												<div class="text-muted-foreground text-xs">Routers</div>
-											</div>
-										{/await}
-
-										{#await serviceClient.listServices( { profileId: profile.id } ) then serviceResult}
-											<div class="text-center">
-												<div class="text-2xl font-bold text-orange-600">
-													{serviceResult.totalCount}
-												</div>
-												<div class="text-muted-foreground text-xs">Services</div>
-											</div>
-										{/await}
-
-										{#await middlewareClient.listMiddlewares( { profileId: profile.id } ) then middlewareResult}
-											<div class="text-center">
-												<div class="text-2xl font-bold text-purple-600">
-													{middlewareResult.totalCount}
-												</div>
-												<div class="text-muted-foreground text-xs">Middlewares</div>
-											</div>
-										{/await}
+								<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+									<div class="text-center">
+										<div class="text-2xl font-bold text-blue-600">{$agents?.length}</div>
+										<div class="text-muted-foreground text-xs">Agents</div>
 									</div>
 
-									<div class="grid grid-cols-1 gap-2 lg:grid-cols-3">
-										<Button
-											size="sm"
-											variant="outline"
-											class="gap-2"
-											onclick={() => {
-												modalProfile = profile;
-												modalProfileOpen = true;
-											}}
-										>
-											<Pen />
-											Edit
-										</Button>
-										<Button
-											size="sm"
-											variant="outline"
-											class="gap-2"
-											onclick={() => (modalConfigOpen = true)}
-										>
-											<Activity />
-											Config
-										</Button>
-										<TraefikConnection {profile} variant="compact" />
+									<div class="text-center">
+										<div class="text-2xl font-bold text-green-600">
+											{$routers?.length}
+										</div>
+										<div class="text-muted-foreground text-xs">Routers</div>
+									</div>
+
+									<div class="text-center">
+										<div class="text-2xl font-bold text-orange-600">
+											{$services?.length}
+										</div>
+										<div class="text-muted-foreground text-xs">Services</div>
+									</div>
+
+									<div class="text-center">
+										<div class="text-2xl font-bold text-purple-600">
+											{$middlewares?.length}
+										</div>
+										<div class="text-muted-foreground text-xs">Middlewares</div>
 									</div>
 								</div>
-							{/each}
-						{/await}
+
+								<div class="grid grid-cols-1 gap-2 lg:grid-cols-3">
+									<Button
+										size="sm"
+										variant="outline"
+										class="gap-2"
+										onclick={() => {
+											modalProfile = profile;
+											modalProfileOpen = true;
+										}}
+									>
+										<Pen />
+										Edit
+									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										class="gap-2"
+										onclick={() => (modalConfigOpen = true)}
+									>
+										<Activity />
+										Config
+									</Button>
+									<TraefikConnection {profile} variant="compact" />
+								</div>
+							</div>
+						{/each}
 					</div>
 				</Card.Content>
 			</Card.Root>
 
-			<!-- System Health & Quick Actions -->
 			<div class="space-y-6">
 				<!-- Traefik Connection -->
 				{#if profile.value}
 					<TraefikConnection profile={profile.value} variant="full" />
 				{/if}
-
-				<!-- System Health -->
-				<!-- <Card.Root> -->
-				<!-- 	<Card.Header> -->
-				<!-- 		<Card.Title class="flex items-center gap-2"> -->
-				<!-- 			<CheckCircle class="h-5 w-5 text-green-500" /> -->
-				<!-- 			System Health -->
-				<!-- 		</Card.Title> -->
-				<!-- 	</Card.Header> -->
-				<!-- 	<Card.Content class="space-y-4"> -->
-				<!-- 		<div class="space-y-3"> -->
-				<!-- 			<div class="flex items-center justify-between"> -->
-				<!-- 				<span class="text-sm">Configuration Valid</span> -->
-				<!-- 				<CheckCircle class="h-4 w-4 text-green-500" /> -->
-				<!-- 			</div> -->
-				<!-- 			<div class="flex items-center justify-between"> -->
-				<!-- 				<span class="text-sm">DNS Resolution</span> -->
-				<!-- 				<CheckCircle class="h-4 w-4 text-green-500" /> -->
-				<!-- 			</div> -->
-				<!-- 			<div class="flex items-center justify-between"> -->
-				<!-- 				<span class="text-sm">Agent Connectivity</span> -->
-				<!-- 				{#await Promise.all([totalAgents, onlineAgents]) then [total, online]} -->
-				<!-- 					{#if total === online} -->
-				<!-- 						<CheckCircle class="h-4 w-4 text-green-500" /> -->
-				<!-- 					{:else} -->
-				<!-- 						<AlertCircle class="h-4 w-4 text-yellow-500" /> -->
-				<!-- 					{/if} -->
-				<!-- 				{/await} -->
-				<!-- 			</div> -->
-				<!-- 			<div class="flex items-center justify-between"> -->
-				<!-- 				<span class="text-sm">SSL Certificates</span> -->
-				<!-- 				<AlertCircle class="h-4 w-4 text-yellow-500" /> -->
-				<!-- 			</div> -->
-				<!-- 		</div> -->
-				<!-- 	</Card.Content> -->
-				<!-- </Card.Root> -->
 
 				<!-- Recent Activity -->
 				<Card.Root>

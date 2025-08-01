@@ -89,23 +89,17 @@ func (q *Queries) DeleteUdpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getUdpServiceByID = `-- name: GetUdpServiceByID :one
+const getUdpService = `-- name: GetUdpService :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   udp_services
 WHERE
-  profile_id = ?
-  AND id = ?
+  id = ?
 `
 
-type GetUdpServiceByIDParams struct {
-	ProfileID int64 `json:"profileId"`
-	ID        int64 `json:"id"`
-}
-
-func (q *Queries) GetUdpServiceByID(ctx context.Context, arg GetUdpServiceByIDParams) (UdpService, error) {
-	row := q.queryRow(ctx, q.getUdpServiceByIDStmt, getUdpServiceByID, arg.ProfileID, arg.ID)
+func (q *Queries) GetUdpService(ctx context.Context, id int64) (UdpService, error) {
+	row := q.queryRow(ctx, q.getUdpServiceStmt, getUdpService, id)
 	var i UdpService
 	err := row.Scan(
 		&i.ID,

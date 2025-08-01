@@ -9,17 +9,15 @@
 	import { UpdateUserRequestSchema, type User } from '$lib/gen/mantrae/v1/user_pb';
 	import { userClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { user } from '$lib/stores/user';
 	import { create } from '@bufbuild/protobuf';
 
 	interface Props {
-		data?: User[];
 		item: User;
 		open?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let password = $state('');
 	let isSelf = $derived(item?.id === user.value?.id);
@@ -44,14 +42,6 @@
 				});
 				toast.success(`User ${item.username} created successfully.`);
 			}
-
-			// Refresh data
-			if (!data) return;
-			let response = await userClient.listUsers({
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.users;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error(`Failed to update user`, { description: e.message });
@@ -65,7 +55,6 @@
 
 		try {
 			await userClient.deleteUser({ id: item.id });
-			if (data) data = data.filter((e) => e.id !== item.id);
 			toast.success('User deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);

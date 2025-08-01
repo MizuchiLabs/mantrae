@@ -21,12 +21,11 @@
 	import { protocolTypes } from '$lib/types';
 
 	interface Props {
-		data: ServersTransport[];
 		item: ServersTransport;
 		open?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
@@ -48,14 +47,6 @@
 				});
 				toast.success('Transport created successfully');
 			}
-
-			// Refresh data
-			let response = await serversTransportClient.listServersTransports({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.serversTransports;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to save transport', { description: e.message });
@@ -68,7 +59,6 @@
 
 		try {
 			await serversTransportClient.deleteServersTransport({ id: item.id });
-			data = data.filter((e) => e.id !== item.id);
 			toast.success('Transport deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);

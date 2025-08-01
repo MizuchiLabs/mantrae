@@ -3,7 +3,7 @@
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import MiddlewareModal from '$lib/components/modals/MiddlewareModal.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import {
 		Bot,
 		CircleCheck,
@@ -21,18 +21,14 @@
 	import { profile } from '$lib/stores/profile';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import ColumnText from '$lib/components/tables/ColumnText.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { middlewares } from '$lib/stores/realtime';
 
 	let item = $state({} as Middleware);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<Middleware[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<Middleware>[] = [
 		{
@@ -194,14 +190,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	const deleteItem = async (id: bigint, type: ProtocolType) => {
 		try {
 			await middlewareClient.deleteMiddleware({ id: id, type: type });
-			await refreshData(pageSize.value ?? 10, 0);
 			toast.success('Middleware deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -219,7 +210,6 @@
 				enabled: item.enabled,
 				isDefault: item.isDefault
 			});
-			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(`Middleware ${item.name} updated`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -238,25 +228,19 @@
 			for (const row of rows) {
 				await middlewareClient.deleteMiddleware({ id: row.id, type: row.type });
 			}
-			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(`Successfully deleted ${selectedRows.length} middlewares`);
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete middlewares', { description: e.message });
 		}
 	}
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await middlewareClient.listMiddlewares({
-			profileId: profile.id,
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.middlewares;
-		rowCount = Number(response.totalCount);
-	}
 
 	$effect(() => {
-		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		if (profile.isValid()) {
+			middlewareClient.listMiddlewares({ profileId: profile.id }).then((response) => {
+				middlewares.set(response.middlewares);
+			});
+		}
 	});
 </script>
 
@@ -278,10 +262,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$middlewares}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		createButton={{
 			label: 'Create Middleware',
@@ -293,4 +275,4 @@
 	/>
 </div>
 
-<MiddlewareModal bind:open bind:item bind:data />
+<MiddlewareModal bind:open bind:item />

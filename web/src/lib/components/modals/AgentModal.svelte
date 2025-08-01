@@ -7,7 +7,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import { DateFormat, pageIndex, pageSize } from '$lib/stores/common';
+	import { DateFormat } from '$lib/stores/common';
 	import { Check, Container, Copy, RotateCcw, X } from '@lucide/svelte';
 	import { agentClient, settingClient } from '$lib/api';
 	import { profile } from '$lib/stores/profile';
@@ -19,12 +19,11 @@
 	import { scale } from 'svelte/transition';
 
 	interface Props {
-		data: Agent[];
 		item: Agent;
 		open?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	let newIP = $state('');
 
@@ -40,14 +39,6 @@
 				toast.success(`Agent ${item.hostname} created successfully`);
 				open = false;
 			}
-
-			// Refresh data
-			let response = await agentClient.listAgents({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.agents;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to save agent', { description: e.message });
@@ -58,7 +49,6 @@
 
 		try {
 			await agentClient.deleteAgent({ id: item.id });
-			data = data.filter((e) => e.id !== item.id);
 			toast.success('Agent deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -73,14 +63,6 @@
 			if (!response.agent) throw new Error('Failed to rotate token');
 			item.token = response.agent.token;
 			toast.success('Token rotated successfully');
-
-			// Refresh data
-			let response2 = await agentClient.listAgents({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response2.agents;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to rotate token', { description: e.message });

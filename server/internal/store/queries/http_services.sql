@@ -11,14 +11,13 @@ INSERT INTO
 VALUES
   (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
 
--- name: GetHttpServiceByID :one
+-- name: GetHttpService :one
 SELECT
   *
 FROM
   http_services
 WHERE
-  profile_id = ?
-  AND id = ?;
+  id = ?;
 
 -- name: GetHttpServiceByName :one
 SELECT

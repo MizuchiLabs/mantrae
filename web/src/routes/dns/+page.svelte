@@ -8,19 +8,15 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { DnsProviderType, type DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
-	import { pageIndex, pageSize } from '$lib/stores/common';
+	import { dnsProviders } from '$lib/stores/realtime';
 	import { ConnectError } from '@connectrpc/connect';
 	import { CircleCheck, CircleSlash, Globe, Pencil, Trash } from '@lucide/svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	let item = $state({} as DnsProvider);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<DnsProvider[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<DnsProvider>[] = [
 		{
@@ -156,14 +152,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	const deleteItem = async (item: DnsProvider) => {
 		try {
 			await dnsClient.deleteDnsProvider({ id: item.id });
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`DNS Provider ${item.name} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -180,7 +171,6 @@
 				config: item.config,
 				isDefault: isDefault
 			});
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(
 				`DNS Provider ${item.name} ${isDefault ? 'set as default' : 'removed as default'}`
 			);
@@ -198,7 +188,6 @@
 			for (const row of rows) {
 				await dnsClient.deleteDnsProvider({ id: row.id });
 			}
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Successfully deleted ${rows.length} DNS Providers`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -206,17 +195,9 @@
 		}
 	}
 
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await dnsClient.listDnsProviders({
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.dnsProviders;
-		rowCount = Number(response.totalCount);
-	}
-
 	onMount(async () => {
-		await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		const response = await dnsClient.listDnsProviders({});
+		dnsProviders.set(response.dnsProviders);
 	});
 </script>
 
@@ -238,10 +219,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$dnsProviders}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		createButton={{
 			label: 'Add Provider',
@@ -253,4 +232,4 @@
 	/>
 </div>
 
-<DNSModal bind:open bind:item bind:data />
+<DNSModal bind:open bind:item />

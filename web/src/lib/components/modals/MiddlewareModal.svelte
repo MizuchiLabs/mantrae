@@ -10,18 +10,16 @@
 	import { middlewareClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import HTTPMiddlewareForm from '../forms/HTTPMiddlewareForm.svelte';
 	import TCPMiddlewareForm from '../forms/TCPMiddlewareForm.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { protocolTypes } from '$lib/types';
 
 	interface Props {
-		data: Middleware[];
 		item: Middleware;
 		open?: boolean;
 	}
-	let { data = $bindable(), item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
 	const handleSubmit = async () => {
 		try {
@@ -43,14 +41,6 @@
 				});
 				toast.success('Middleware created successfully');
 			}
-
-			// Refresh data
-			const response = await middlewareClient.listMiddlewares({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.middlewares;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to save item', { description: e.message });
@@ -64,14 +54,6 @@
 		try {
 			await middlewareClient.deleteMiddleware({ id: item.id, type: item.type });
 			toast.success('Middleware deleted successfully');
-
-			// Refresh data
-			const response = await middlewareClient.listMiddlewares({
-				profileId: profile.id,
-				limit: BigInt(pageSize.value ?? 10),
-				offset: BigInt(pageIndex.value ?? 0)
-			});
-			data = response.middlewares;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to delete item', { description: e.message });

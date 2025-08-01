@@ -1,54 +1,52 @@
-import type { DescService } from "@bufbuild/protobuf";
-import { createClient, type Client } from "@connectrpc/connect";
-import { createConnectTransport } from "@connectrpc/connect-web";
-import { ProfileService, type Profile } from "./gen/mantrae/v1/profile_pb";
-import { UserService } from "./gen/mantrae/v1/user_pb";
-import { RouterService } from "./gen/mantrae/v1/router_pb";
-import { ServiceService } from "./gen/mantrae/v1/service_pb";
-import { MiddlewareService } from "./gen/mantrae/v1/middleware_pb";
-import { SettingService } from "./gen/mantrae/v1/setting_pb";
-import { BackupService } from "./gen/mantrae/v1/backup_pb";
-import { EntryPointService } from "./gen/mantrae/v1/entry_point_pb";
-import { DnsProviderService } from "./gen/mantrae/v1/dns_provider_pb";
-import { UtilService } from "./gen/mantrae/v1/util_pb";
-import { AgentService } from "./gen/mantrae/v1/agent_pb";
-import { AuditLogService } from "./gen/mantrae/v1/auditlog_pb";
-import { ServersTransportService } from "./gen/mantrae/v1/servers_transport_pb";
-import { TraefikInstanceService } from "./gen/mantrae/v1/traefik_instance_pb";
-import { toast } from "svelte-sonner";
-import { profile } from "./stores/profile";
-import { baseURL } from "./stores/common";
+import type { DescService } from '@bufbuild/protobuf';
+import { createClient, type Client } from '@connectrpc/connect';
+import { createConnectTransport } from '@connectrpc/connect-web';
+import { ProfileService, type Profile } from './gen/mantrae/v1/profile_pb';
+import { UserService } from './gen/mantrae/v1/user_pb';
+import { RouterService } from './gen/mantrae/v1/router_pb';
+import { ServiceService } from './gen/mantrae/v1/service_pb';
+import { MiddlewareService } from './gen/mantrae/v1/middleware_pb';
+import { SettingService } from './gen/mantrae/v1/setting_pb';
+import { BackupService } from './gen/mantrae/v1/backup_pb';
+import { EntryPointService } from './gen/mantrae/v1/entry_point_pb';
+import { DnsProviderService } from './gen/mantrae/v1/dns_provider_pb';
+import { UtilService } from './gen/mantrae/v1/util_pb';
+import { AgentService } from './gen/mantrae/v1/agent_pb';
+import { AuditLogService } from './gen/mantrae/v1/auditlog_pb';
+import { ServersTransportService } from './gen/mantrae/v1/servers_transport_pb';
+import { TraefikInstanceService } from './gen/mantrae/v1/traefik_instance_pb';
+import { toast } from 'svelte-sonner';
+import { profile } from './stores/profile';
+import { baseURL } from './stores/common';
 
 export function useClient<T extends DescService>(
 	service: T,
-	customFetch?: typeof fetch,
+	customFetch?: typeof fetch
 ): Client<T> {
 	const wrappedFetch: typeof fetch = (input, init = {}) => {
 		return (customFetch || fetch)(input, {
 			...init,
 			headers: new Headers(init.headers || {}),
-			credentials: "include",
+			credentials: 'include'
 		});
 	};
 
-	if (!baseURL.value) throw new Error("Base URL not set");
+	if (!baseURL.value) throw new Error('Base URL not set');
 
 	const transport = createConnectTransport({
 		baseUrl: baseURL.value,
-		fetch: wrappedFetch,
+		fetch: wrappedFetch
 	});
 	return createClient(service, transport);
 }
 
 // Basic health check function
-export async function checkHealth(
-	customFetch?: typeof fetch,
-): Promise<boolean> {
+export async function checkHealth(customFetch?: typeof fetch): Promise<boolean> {
 	try {
-		if (!baseURL.value) throw new Error("Base URL not set");
+		if (!baseURL.value) throw new Error('Base URL not set');
 		if (!customFetch) customFetch = fetch;
 		const res = await customFetch(`${baseURL.value}/healthz`, {
-			method: "GET",
+			method: 'GET'
 		});
 		return res.ok;
 	} catch {
@@ -64,52 +62,48 @@ export async function upload(input: HTMLInputElement | null, endpoint: string) {
 	if (!input?.files?.length) return;
 
 	const body = new FormData();
-	body.append("file", input.files[0]);
+	body.append('file', input.files[0]);
 
 	const response = await fetch(`${baseURL.value}/upload/${endpoint}`, {
-		method: "POST",
+		method: 'POST',
 		body,
-		credentials: "include",
+		credentials: 'include'
 	});
 	if (!response.ok) {
-		throw new Error("Failed to upload");
+		throw new Error('Failed to upload');
 	}
-	toast.success("Uploaded successfully");
+	toast.success('Uploaded successfully');
 }
 
 // Get dynamic traefik config
 export async function getConfig(format: string) {
-	if (!profile.isValid() || !profile.token) return "";
+	if (!profile.isValid() || !profile.token) return '';
 
 	const headers = new Headers();
-	// headers.set("Mantrae-Traefik-Token", profile.token);
-	if (format === "yaml") {
-		headers.set("Accept", "application/x-yaml");
+	if (format === 'yaml') {
+		headers.set('Accept', 'application/x-yaml');
 	}
 
 	try {
-		const response = await fetch(
-			`${baseURL.value}/api/${profile.name}?token=${profile.token}`,
-			{
-				headers,
-			},
-		);
-		if (!response.ok) return "";
+		const response = await fetch(`${baseURL.value}/api/${profile.name}?token=${profile.token}`, {
+			headers
+		});
+		if (!response.ok) return '';
 
 		return await response.text();
 	} catch (err) {
 		const e = err as Error;
-		toast.error("Failed to fetch config", { description: e.message });
+		toast.error('Failed to fetch config', { description: e.message });
 	}
-	return "";
+	return '';
 }
 
 // Build traefik connection string
 export async function buildConnectionString(p: Profile) {
 	const item = p ?? profile?.value;
-	if (!item) return "";
-	const serverUrl = await settingClient.getSetting({ key: "server_url" });
-	if (!serverUrl.value) return "";
+	if (!item) return '';
+	const serverUrl = await settingClient.getSetting({ key: 'server_url' });
+	if (!serverUrl.value) return '';
 
 	return `${serverUrl.value}/api/${item.name}?token=${item.token}`;
 }

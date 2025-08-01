@@ -27,7 +27,6 @@
 	import {
 		ArrowDown,
 		ArrowUp,
-		Check,
 		ChevronLeft,
 		ChevronRight,
 		ChevronsLeft,
@@ -44,8 +43,6 @@
 	type DataTableProps<TData, TValue> = {
 		data: TData[];
 		columns: ColumnDef<TData, TValue>[];
-		rowCount: number;
-		viewMode?: 'table' | 'grid';
 		onPaginationChange?: (pagination: PaginationState) => void;
 		onSortingChange?: (sorting: SortingState) => void;
 		onRowSelection?: (rowSelection: RowSelectionState) => void;
@@ -56,26 +53,18 @@
 			label: string;
 			onClick: () => void;
 		};
-		cardConfig?: {
-			titleKey?: string;
-			subtitleKey?: string;
-			excludeColumns?: string[];
-		};
 	};
 
 	let {
 		data,
 		columns,
-		rowCount,
-		viewMode = 'table',
 		onPaginationChange,
 		onSortingChange,
 		onRowSelection,
 		getRowClassName,
 		rowClassModifiers,
 		bulkActions,
-		createButton,
-		cardConfig = {}
+		createButton
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
@@ -84,7 +73,6 @@
 		pageIndex: pageIndex.value ?? 0,
 		pageSize: pageSize.value ?? 10
 	});
-	let pageCount = $derived(Math.ceil(rowCount / pagination.pageSize));
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $derived<ColumnFiltersState>([]);
 	let columnVisibility = $state<VisibilityState>({});
@@ -118,13 +106,6 @@
 			},
 			...columns
 		],
-		manualPagination: true,
-		get rowCount() {
-			return rowCount;
-		},
-		get pageCount() {
-			return pageCount;
-		},
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);
@@ -232,17 +213,6 @@
 		const column = table.getColumn(columnId);
 		if (column) column.setFilterValue(undefined);
 	}
-	function getVisibleColumns() {
-		return table
-			.getAllColumns()
-			.filter(
-				(col) =>
-					col.getIsVisible() &&
-					col.id !== 'select' &&
-					col.id !== 'actions' &&
-					!cardConfig.excludeColumns?.includes(col.id)
-			);
-	}
 </script>
 
 <div>
@@ -277,26 +247,24 @@
 		{/if}
 
 		<!-- Column Visibility -->
-		{#if viewMode === 'table'}
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="outline" class="ml-auto">Columns</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="end">
-					{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
-						<DropdownMenu.CheckboxItem
-							class="capitalize"
-							closeOnSelect={false}
-							bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
-						>
-							{column.columnDef.header}
-						</DropdownMenu.CheckboxItem>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-		{/if}
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger>
+				{#snippet child({ props })}
+					<Button {...props} variant="outline" class="ml-auto">Columns</Button>
+				{/snippet}
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				{#each table.getAllColumns().filter((col) => col.getCanHide()) as column (column.id)}
+					<DropdownMenu.CheckboxItem
+						class="capitalize"
+						closeOnSelect={false}
+						bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
+					>
+						{column.columnDef.header}
+					</DropdownMenu.CheckboxItem>
+				{/each}
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 
 		{#if createButton}
 			<Button variant="default" onclick={createButton.onClick}>
@@ -306,204 +274,72 @@
 		{/if}
 	</div>
 
-	{#if viewMode === 'table'}
-		<!-- Table -->
-		<div class="rounded-md border">
-			{#key table.getRowModel().rows}
-				<Table.Root>
-					<Table.Header>
-						{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-							<Table.Row>
-								{#each headerGroup.headers as header (header.id)}
-									<Table.Head>
-										{#if !header.isPlaceholder}
-											<div class="flex items-center">
-												<Button
-													variant="ghost"
-													size="sm"
-													class="-ml-3 h-8 data-[sortable=false]:cursor-default"
-													data-sortable={header.column.getCanSort()}
-													onclick={() => header.column.toggleSorting()}
-												>
-													<FlexRender
-														content={header.column.columnDef.header}
-														context={header.getContext()}
-													/>
-													{#if header.column.getCanSort()}
-														{#if header.column.getIsSorted() === 'asc'}
-															<ArrowDown />
-														{:else if header.column.getIsSorted() === 'desc'}
-															<ArrowUp />
-														{/if}
-													{/if}
-												</Button>
-											</div>
-										{/if}
-									</Table.Head>
-								{/each}
-							</Table.Row>
-						{/each}
-					</Table.Header>
-					<Table.Body>
-						{#each table.getRowModel().rows as row (row.id)}
-							<Table.Row
-								data-state={row.getIsSelected() && 'selected'}
-								class={computeRowClasses(row.original)}
-							>
-								{#each row.getVisibleCells() as cell (cell.id)}
-									<Table.Cell>
-										<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-									</Table.Cell>
-								{/each}
-							</Table.Row>
-						{:else}
-							<Table.Row>
-								<Table.Cell colspan={columns.length} class="h-24 text-center"
-									>No results.</Table.Cell
-								>
-							</Table.Row>
-						{/each}
-					</Table.Body>
-					<Table.Footer>
-						<Table.Row class="border-t">
-							<Table.Cell colspan={columns.length}>Total</Table.Cell>
-							<Table.Cell class="mr-4 text-right">
-								{table.getPaginationRowModel().rows.length}
-							</Table.Cell>
-						</Table.Row>
-					</Table.Footer>
-				</Table.Root>
-			{/key}
-		</div>
-	{:else}
-		<!-- Grid View -->
-		<div
-			class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-		>
-			{#each table.getRowModel().rows as row (row.id)}
-				{@const isSelected = row.getIsSelected()}
-				{@const titleCell = cardConfig.titleKey
-					? row.getVisibleCells().find((c) => c.column.id === cardConfig.titleKey)
-					: null}
-				{@const subtitleCell = cardConfig.subtitleKey
-					? row.getVisibleCells().find((c) => c.column.id === cardConfig.subtitleKey)
-					: null}
-				{@const actionsCell = row.getVisibleCells().find((c) => c.column.id === 'actions')}
-				{@const visibleColumns = getVisibleColumns()}
-
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<!-- svelte-ignore a11y_no_static_element_interactions -->
-				<div
-					class="group bg-card text-card-foreground hover:shadow-primary/5 relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md {computeRowClasses(
-						row.original
-					)} {isSelected
-						? 'ring-primary bg-primary/5 border-primary/20 ring-2'
-						: 'hover:border-primary/20'}"
-					onclick={() => row.toggleSelected()}
-					ontouchstart={(e) => {
-						let touchTimer;
-						touchTimer = setTimeout(() => {
-							// Long press action - could show context menu
-							if (actionsCell) {
-								e.preventDefault();
-								// You could dispatch a custom event here for showing actions menu
-							}
-						}, 500);
-
-						// Clear timer on touch end
-						const clearTimer = () => {
-							clearTimeout(touchTimer);
-							document.removeEventListener('touchend', clearTimer);
-							document.removeEventListener('touchmove', clearTimer);
-						};
-
-						document.addEventListener('touchend', clearTimer);
-						document.addEventListener('touchmove', clearTimer);
-					}}
-				>
-					{#if isSelected}
-						<Check class="absolute bottom-3 left-3 z-10 text-green-500 " />
-					{/if}
-
-					<div class="space-y-3 p-4">
-						<!-- Header Section -->
-						<div class="flex items-center justify-between space-y-2">
-							{#if titleCell && cardConfig.titleKey}
-								{@const titleColumn = table.getColumn(cardConfig.titleKey)}
-								<h3 class="line-clamp-2 pr-8 text-base leading-tight font-semibold">
-									<FlexRender
-										content={titleColumn?.columnDef.cell}
-										context={titleCell.getContext()}
-									/>
-								</h3>
-							{/if}
-
-							{#if subtitleCell && cardConfig.subtitleKey}
-								{@const subtitleColumn = table.getColumn(cardConfig.subtitleKey)}
-								<div class="text-muted-foreground text-sm">
-									<FlexRender
-										content={subtitleColumn?.columnDef.cell}
-										context={subtitleCell.getContext()}
-									/>
-								</div>
-							{/if}
-						</div>
-
-						<!-- Content Section - Show only most important fields -->
-						{#if visibleColumns.length > 0}
-							<div class="space-y-2.5 border-t pt-3">
-								{#each visibleColumns as column (column.id)}
-									{@const cell = row.getVisibleCells().find((c) => c.column.id === column.id)}
-									{#if cell && column.id !== cardConfig.titleKey && column.id !== cardConfig.subtitleKey}
-										<div class="flex items-center justify-between gap-2 text-xs">
-											<span
-												class="text-muted-foreground min-w-0 truncate font-medium tracking-wide uppercase"
+	<!-- Table -->
+	<div class="rounded-md border">
+		{#key table.getRowModel().rows}
+			<Table.Root>
+				<Table.Header>
+					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+						<Table.Row>
+							{#each headerGroup.headers as header (header.id)}
+								<Table.Head>
+									{#if !header.isPlaceholder}
+										<div class="flex items-center">
+											<Button
+												variant="ghost"
+												size="sm"
+												class="-ml-3 h-8 data-[sortable=false]:cursor-default"
+												data-sortable={header.column.getCanSort()}
+												onclick={() => header.column.toggleSorting()}
 											>
-												{column.columnDef.header}
-											</span>
-											<div class="min-w-0 flex-1 text-right">
 												<FlexRender
-													content={cell.column.columnDef.cell}
-													context={cell.getContext()}
+													content={header.column.columnDef.header}
+													context={header.getContext()}
 												/>
-											</div>
+												{#if header.column.getCanSort()}
+													{#if header.column.getIsSorted() === 'asc'}
+														<ArrowDown />
+													{:else if header.column.getIsSorted() === 'desc'}
+														<ArrowUp />
+													{/if}
+												{/if}
+											</Button>
 										</div>
 									{/if}
-								{/each}
-							</div>
-						{/if}
-
-						<!-- Actions Section -->
-						{#if actionsCell}
-							<div
-								class="flex justify-end border-t pt-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100 sm:opacity-100"
-							>
-								<div class="flex gap-1">
-									<FlexRender
-										content={actionsCell.column.columnDef.cell}
-										context={actionsCell.getContext()}
-									/>
-								</div>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Hover Overlay -->
-					<div
-						class="from-primary/5 pointer-events-none absolute inset-0 bg-gradient-to-t to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-					></div>
-				</div>
-			{:else}
-				<div class="col-span-full flex h-32 items-center justify-center">
-					<div class="text-center space-y-2">
-						<div class="text-muted-foreground text-4xl">📋</div>
-						<p class="text-muted-foreground font-medium">No results found</p>
-						<p class="text-muted-foreground text-sm">Try adjusting your search or filters</p>
-					</div>
-				</div>
-			{/each}
-		</div>
-	{/if}
+								</Table.Head>
+							{/each}
+						</Table.Row>
+					{/each}
+				</Table.Header>
+				<Table.Body>
+					{#each table.getRowModel().rows as row (row.id)}
+						<Table.Row
+							data-state={row.getIsSelected() && 'selected'}
+							class={computeRowClasses(row.original)}
+						>
+							{#each row.getVisibleCells() as cell (cell.id)}
+								<Table.Cell>
+									<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+								</Table.Cell>
+							{/each}
+						</Table.Row>
+					{:else}
+						<Table.Row>
+							<Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+				<Table.Footer>
+					<Table.Row class="border-t">
+						<Table.Cell colspan={columns.length}>Total</Table.Cell>
+						<Table.Cell class="mr-4 text-right">
+							{table.getPaginationRowModel().rows.length}
+						</Table.Cell>
+					</Table.Row>
+				</Table.Footer>
+			</Table.Root>
+		{/key}
+	</div>
 
 	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
 		<BulkActions

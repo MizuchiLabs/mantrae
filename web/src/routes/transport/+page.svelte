@@ -6,7 +6,6 @@
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
 	import { type ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { profile } from '$lib/stores/profile';
 	import type { IconComponent } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
@@ -21,16 +20,13 @@
 		TriangleAlert,
 		Truck
 	} from '@lucide/svelte';
-	import type { ColumnDef, PaginationState } from '@tanstack/table-core';
+	import type { ColumnDef } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { serversTransports } from '$lib/stores/realtime';
 
 	let item = $state({} as ServersTransport);
 	let open = $state(false);
-
-	// Data state
-	let data = $state<ServersTransport[]>([]);
-	let rowCount = $state<number>(0);
 
 	const columns: ColumnDef<ServersTransport>[] = [
 		{
@@ -139,14 +135,9 @@
 		}
 	];
 
-	async function onPaginationChange(p: PaginationState) {
-		await refreshData(p.pageSize, p.pageIndex);
-	}
-
 	async function deleteItem(id: bigint) {
 		try {
 			await serversTransportClient.deleteServersTransport({ id: id });
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success('Transport deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -163,7 +154,6 @@
 				type: item.type,
 				enabled: item.enabled
 			});
-			await refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
 			toast.success(`Transport ${item.name} updated`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -179,7 +169,6 @@
 			for (const s of rows) {
 				await serversTransportClient.deleteServersTransport({ id: s.id });
 			}
-			await refreshData(pageSize.value ?? 10, 0);
 			toast.success(`Successfully deleted ${rows.length} transports`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -187,18 +176,12 @@
 		}
 	}
 
-	async function refreshData(pageSize: number, pageIndex: number) {
-		const response = await serversTransportClient.listServersTransports({
-			profileId: profile.id,
-			limit: BigInt(pageSize),
-			offset: BigInt(pageIndex * pageSize)
-		});
-		data = response.serversTransports;
-		rowCount = Number(response.totalCount);
-	}
-
 	$effect(() => {
-		if (profile) refreshData(pageSize.value ?? 10, pageIndex.value ?? 0);
+		if (profile.isValid()) {
+			serversTransportClient.listServersTransports({ profileId: profile.id }).then((response) => {
+				serversTransports.set(response.serversTransports);
+			});
+		}
 	});
 </script>
 
@@ -220,10 +203,8 @@
 	</div>
 
 	<DataTable
-		{data}
+		data={$serversTransports}
 		{columns}
-		{rowCount}
-		{onPaginationChange}
 		{bulkActions}
 		createButton={{
 			label: 'Create Transport',
@@ -235,4 +216,4 @@
 	/>
 </div>
 
-<ServerTransportModal bind:open bind:item bind:data />
+<ServerTransportModal bind:open bind:item />

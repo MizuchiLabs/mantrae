@@ -89,23 +89,17 @@ func (q *Queries) DeleteHttpService(ctx context.Context, id int64) error {
 	return err
 }
 
-const getHttpServiceByID = `-- name: GetHttpServiceByID :one
+const getHttpService = `-- name: GetHttpService :one
 SELECT
   id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 FROM
   http_services
 WHERE
-  profile_id = ?
-  AND id = ?
+  id = ?
 `
 
-type GetHttpServiceByIDParams struct {
-	ProfileID int64 `json:"profileId"`
-	ID        int64 `json:"id"`
-}
-
-func (q *Queries) GetHttpServiceByID(ctx context.Context, arg GetHttpServiceByIDParams) (HttpService, error) {
-	row := q.queryRow(ctx, q.getHttpServiceByIDStmt, getHttpServiceByID, arg.ProfileID, arg.ID)
+func (q *Queries) GetHttpService(ctx context.Context, id int64) (HttpService, error) {
+	row := q.queryRow(ctx, q.getHttpServiceStmt, getHttpService, id)
 	var i HttpService
 	err := row.Scan(
 		&i.ID,
