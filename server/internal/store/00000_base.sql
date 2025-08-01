@@ -1,15 +1,46 @@
 -- +goose Up
-CREATE TABLE profiles (
+CREATE TABLE dns_providers (
   id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  description TEXT,
-  token TEXT NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  type VARCHAR(255) NOT NULL,
+  config JSON NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE "settings" (
+  key VARCHAR(255) PRIMARY KEY,
+  value TEXT NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE "agents" (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  hostname TEXT,
+  public_ip TEXT,
+  containers JSONB,
+  active_ip TEXT,
+  token TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  private_ip TEXT,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE errors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  profile_id INTEGER NOT NULL,
+  category TEXT NOT NULL,
+  message TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
 CREATE TABLE entry_points (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   address TEXT,
@@ -21,7 +52,7 @@ CREATE TABLE entry_points (
 );
 
 CREATE TABLE http_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -33,11 +64,9 @@ CREATE TABLE http_routers (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_http_routers_profile_name ON http_routers (profile_id, name);
 
 CREATE TABLE tcp_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -49,11 +78,9 @@ CREATE TABLE tcp_routers (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
 
 CREATE TABLE udp_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -65,56 +92,51 @@ CREATE TABLE udp_routers (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_udp_routers_profile_name ON udp_routers (profile_id, name);
 
 CREATE TABLE http_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_http_services_profile_name ON http_services (profile_id, name);
 
 CREATE TABLE tcp_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_tcp_services_profile_name ON tcp_services (profile_id, name);
 
 CREATE TABLE udp_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
   config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
 
 CREATE TABLE http_middlewares (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -127,11 +149,9 @@ CREATE TABLE http_middlewares (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, name);
 
 CREATE TABLE tcp_middlewares (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -145,10 +165,8 @@ CREATE TABLE tcp_middlewares (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
-
 CREATE TABLE http_servers_transports (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -160,11 +178,9 @@ CREATE TABLE http_servers_transports (
   FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
   UNIQUE (profile_id, name)
 );
-
-CREATE INDEX idx_servers_transports_profile_name ON servers_transports (profile_id, name);
 
 CREATE TABLE tcp_servers_transports (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -177,10 +193,8 @@ CREATE TABLE tcp_servers_transports (
   UNIQUE (profile_id, name)
 );
 
-CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (profile_id, name);
-
 CREATE TABLE traefik_instances (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   entrypoints TEXT,
@@ -197,6 +211,26 @@ CREATE TABLE traefik_instances (
   UNIQUE (profile_id, name)
 );
 
+CREATE TABLE audit_logs (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER,
+  user_id TEXT,
+  agent_id TEXT,
+  event TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE profiles (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  token TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
@@ -209,48 +243,8 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE settings (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE errors (
-  id INTEGER PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
-  category TEXT NOT NULL,
-  message TEXT NOT NULL,
-  details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-);
-
-CREATE TABLE agents (
-  id TEXT PRIMARY KEY,
-  profile_id INTEGER NOT NULL,
-  hostname TEXT,
-  public_ip TEXT,
-  private_ip TEXT,
-  containers TEXT,
-  active_ip TEXT,
-  token TEXT NOT NULL DEFAULT '',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-);
-
-CREATE TABLE dns_providers (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  type TEXT NOT NULL,
-  config TEXT NOT NULL,
-  is_default BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE http_router_dns_providers (
-  http_router_id INTEGER NOT NULL,
+  http_router_id TEXT NOT NULL,
   dns_provider_id INTEGER NOT NULL,
   PRIMARY KEY (http_router_id, dns_provider_id),
   FOREIGN KEY (http_router_id) REFERENCES http_routers (id) ON DELETE CASCADE,
@@ -258,25 +252,41 @@ CREATE TABLE http_router_dns_providers (
 );
 
 CREATE TABLE tcp_router_dns_providers (
-  tcp_router_id INTEGER NOT NULL,
+  tcp_router_id TEXT NOT NULL,
   dns_provider_id INTEGER NOT NULL,
   PRIMARY KEY (tcp_router_id, dns_provider_id),
   FOREIGN KEY (tcp_router_id) REFERENCES tcp_routers (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
 );
 
-CREATE TABLE audit_logs (
-  id INTEGER PRIMARY KEY,
-  profile_id INTEGER,
-  user_id TEXT,
-  agent_id TEXT,
-  event TEXT NOT NULL,
-  details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE INDEX idx_http_routers_profile_name ON http_routers (profile_id, name);
+
+CREATE INDEX idx_tcp_routers_profile_name ON tcp_routers (profile_id, name);
+
+CREATE INDEX idx_udp_routers_profile_name ON udp_routers (profile_id, name);
+
+CREATE INDEX idx_http_services_profile_name ON http_services (profile_id, name);
+
+CREATE INDEX idx_tcp_services_profile_name ON tcp_services (profile_id, name);
+
+CREATE INDEX idx_udp_services_profile_name ON udp_services (profile_id, name);
+
+CREATE INDEX idx_http_middlewares_profile_name ON http_middlewares (profile_id, name);
+
+CREATE INDEX idx_tcp_middlewares_profile_name ON tcp_middlewares (profile_id, name);
+
+CREATE INDEX idx_http_servers_transports_profile_name ON http_servers_transports (profile_id, name);
+
+CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (profile_id, name);
 
 -- +goose Down
-DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS dns_providers;
+
+DROP TABLE IF EXISTS settings;
+
+DROP TABLE IF EXISTS agents;
+
+DROP TABLE IF EXISTS errors;
 
 DROP TABLE IF EXISTS entry_points;
 
@@ -296,20 +306,18 @@ DROP TABLE IF EXISTS http_middlewares;
 
 DROP TABLE IF EXISTS tcp_middlewares;
 
+DROP TABLE IF EXISTS http_servers_transports;
+
+DROP TABLE IF EXISTS tcp_servers_transports;
+
 DROP TABLE IF EXISTS traefik_instances;
 
+DROP TABLE IF EXISTS audit_logs;
+
+DROP TABLE IF EXISTS profiles;
+
 DROP TABLE IF EXISTS users;
-
-DROP TABLE IF EXISTS settings;
-
-DROP TABLE IF EXISTS errors;
-
-DROP TABLE IF EXISTS agents;
-
-DROP TABLE IF EXISTS dns_providers;
 
 DROP TABLE IF EXISTS http_router_dns_providers;
 
 DROP TABLE IF EXISTS tcp_router_dns_providers;
-
-DROP TABLE IF EXISTS udp_router_dns_providers;
