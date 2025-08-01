@@ -7,7 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
-	"net/http/pprof"
 	"runtime/debug"
 	"time"
 
@@ -167,11 +166,11 @@ func (s *Server) registerServices() {
 	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
 	// PProf debug endpoints
-	s.mux.HandleFunc("/debug/pprof/", pprof.Index)
-	s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// s.mux.HandleFunc("/debug/pprof/", pprof.Index)
+	// s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	// s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	// s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	// s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	// Static files
 	s.WithStatic()
