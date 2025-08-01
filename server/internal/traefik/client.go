@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
-	"github.com/mizuchilabs/mantrae/pkg/meta"
 )
 
 const (

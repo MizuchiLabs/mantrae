@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 	"github.com/mizuchilabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
 type TechnitiumProvider struct {

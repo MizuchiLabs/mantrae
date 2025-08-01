@@ -9,14 +9,14 @@ import (
 	"connectrpc.com/connect"
 
 	"github.com/google/uuid"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
+	"github.com/mizuchilabs/mantrae/pkg/util"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/mail"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
-	"github.com/mizuchilabs/mantrae/pkg/meta"
-	"github.com/mizuchilabs/mantrae/pkg/util"
-	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type UserService struct {

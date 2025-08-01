@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
-	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"golang.org/x/oauth2"
 )
 

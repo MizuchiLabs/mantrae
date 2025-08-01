@@ -5,10 +5,10 @@ import (
 
 	"connectrpc.com/connect"
 
-	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/mizuchilabs/mantrae/server/internal/config"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
 type ProfileService struct {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
 type DNSProvider interface {

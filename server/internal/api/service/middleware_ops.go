@@ -4,10 +4,10 @@ import (
 	"context"
 	"slices"
 
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
-	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type MiddlewareOps interface {

@@ -6,9 +6,9 @@ import (
 
 	"connectrpc.com/connect"
 
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
-	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 )
 
 type EntryPointService struct {

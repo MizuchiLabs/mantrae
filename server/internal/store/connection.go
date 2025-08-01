@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )

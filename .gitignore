@@ -29,3 +29,7 @@ go.work
 .envrc
 dist/
 data/
+
+# Crush
+.crush/
+CRUSH.md

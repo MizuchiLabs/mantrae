@@ -42,7 +42,6 @@ const elementsHTML = `<!DOCTYPE html>
 `
 
 type Server struct {
-	Host string `env:"HOST" envDefault:"0.0.0.0"`
 	Port string `env:"PORT" envDefault:"3000"`
 	mux  *http.ServeMux
 	app  *config.App
@@ -55,7 +54,6 @@ func NewServer(app *config.App) *Server {
 	}
 
 	return &Server{
-		Host: cfg.Host,
 		Port: cfg.Port,
 		mux:  http.NewServeMux(),
 		app:  app,
@@ -71,7 +69,7 @@ func (s *Server) Start(ctx context.Context) error {
 	}()
 
 	server := &http.Server{
-		Addr:              s.Host + ":" + s.Port,
+		Addr:              "0.0.0.0:" + s.Port,
 		Handler:           s.WithCORS(s.mux),
 		ReadHeaderTimeout: 3 * time.Second,
 		ReadTimeout:       5 * time.Minute,
@@ -86,7 +84,7 @@ func (s *Server) Start(ctx context.Context) error {
 	go func() {
 		serverURL, ok := s.app.SM.Get(ctx, "server_url")
 		if ok && serverURL == "" {
-			serverURL = s.Host + ":" + s.Port
+			serverURL = "http://127.0.0.1:" + s.Port
 		}
 		slog.Info("Server listening on", "address", "http://127.0.0.1:"+s.Port)
 		slog.Info("Agents can connect to", "address", serverURL)

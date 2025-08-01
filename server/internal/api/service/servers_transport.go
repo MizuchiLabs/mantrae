@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"connectrpc.com/connect"
-	"github.com/mizuchilabs/mantrae/server/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
+	"github.com/mizuchilabs/mantrae/server/internal/config"
 )
 
 type ServersTransportService struct {

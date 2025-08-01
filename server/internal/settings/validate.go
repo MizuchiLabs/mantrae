@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
 func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettingParams) error {
