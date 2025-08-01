@@ -1,7 +1,7 @@
 -- +goose Up
 -- Create new tables that don't exist in the old schema
 CREATE TABLE entry_points (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   address TEXT,
@@ -13,7 +13,7 @@ CREATE TABLE entry_points (
 );
 
 CREATE TABLE http_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE http_routers (
 );
 
 CREATE TABLE tcp_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE tcp_routers (
 );
 
 CREATE TABLE udp_routers (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE udp_routers (
 );
 
 CREATE TABLE http_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE http_services (
 );
 
 CREATE TABLE tcp_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE tcp_services (
 );
 
 CREATE TABLE udp_services (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE udp_services (
 );
 
 CREATE TABLE http_middlewares (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -112,7 +112,7 @@ CREATE TABLE http_middlewares (
 );
 
 CREATE TABLE tcp_middlewares (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE tcp_middlewares (
 );
 
 CREATE TABLE http_servers_transports (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE http_servers_transports (
 );
 
 CREATE TABLE tcp_servers_transports (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   agent_id TEXT,
   name TEXT NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE tcp_servers_transports (
 );
 
 CREATE TABLE traefik_instances (
-  id INTEGER PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   entrypoints TEXT,
@@ -183,7 +183,9 @@ CREATE TABLE audit_logs (
 );
 
 -- Update profiles table structure
-CREATE TABLE new_profiles (
+DROP TABLE profiles;
+
+CREATE TABLE profiles (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -192,20 +194,6 @@ CREATE TABLE new_profiles (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (id) REFERENCES profiles (id) ON DELETE CASCADE
 );
-
-INSERT INTO
-  new_profiles (id, name, token)
-SELECT
-  id,
-  name,
-  ''
-FROM
-  profiles;
-
-DROP TABLE profiles;
-
-ALTER TABLE new_profiles
-RENAME TO profiles;
 
 -- Update agents table - change JSON columns to TEXT
 UPDATE agents
@@ -254,7 +242,7 @@ DROP COLUMN description;
 
 -- Create new DNS provider association tables
 CREATE TABLE http_router_dns_providers (
-  http_router_id INTEGER NOT NULL,
+  http_router_id TEXT NOT NULL,
   dns_provider_id INTEGER NOT NULL,
   PRIMARY KEY (http_router_id, dns_provider_id),
   FOREIGN KEY (http_router_id) REFERENCES http_routers (id) ON DELETE CASCADE,
@@ -262,7 +250,7 @@ CREATE TABLE http_router_dns_providers (
 );
 
 CREATE TABLE tcp_router_dns_providers (
-  tcp_router_id INTEGER NOT NULL,
+  tcp_router_id TEXT NOT NULL,
   dns_provider_id INTEGER NOT NULL,
   PRIMARY KEY (tcp_router_id, dns_provider_id),
   FOREIGN KEY (tcp_router_id) REFERENCES tcp_routers (id) ON DELETE CASCADE,

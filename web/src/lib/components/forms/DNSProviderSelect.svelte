@@ -10,12 +10,11 @@
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
-		data: Router[];
 		item: Router;
 		disabled?: boolean;
 	}
 
-	let { data = $bindable(), item = $bindable(), disabled = $bindable(false) }: Props = $props();
+	let { item = $bindable(), disabled = $bindable(false) }: Props = $props();
 
 	let dnsAnchor = $state({} as HTMLElement);
 	let selectDNSOpen = $state(false);
@@ -23,7 +22,7 @@
 	async function handleDNSProviderChange(value: string[]) {
 		if (value.length === 0) item.dnsProviders = [];
 		try {
-			const result = await dnsClient.listDnsProviders({ limit: -1n, offset: 0n });
+			const result = await dnsClient.listDnsProviders({});
 			item.dnsProviders = result.dnsProviders.filter((p) => value.includes(p.id.toString()));
 			await routerClient.updateRouter({
 				id: item.id,

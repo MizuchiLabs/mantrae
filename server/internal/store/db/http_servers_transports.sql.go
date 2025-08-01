@@ -39,6 +39,7 @@ func (q *Queries) CountHttpServersTransports(ctx context.Context, arg CountHttpS
 const createHttpServersTransport = `-- name: CreateHttpServersTransport :one
 INSERT INTO
   http_servers_transports (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpServersTransportParams struct {
+	ID        string                       `json:"id"`
 	ProfileID int64                        `json:"profileId"`
 	AgentID   *string                      `json:"agentId"`
 	Name      string                       `json:"name"`
@@ -59,6 +69,7 @@ type CreateHttpServersTransportParams struct {
 
 func (q *Queries) CreateHttpServersTransport(ctx context.Context, arg CreateHttpServersTransportParams) (HttpServersTransport, error) {
 	row := q.queryRow(ctx, q.createHttpServersTransportStmt, createHttpServersTransport,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteHttpServersTransport(ctx context.Context, id int64) error {
+func (q *Queries) DeleteHttpServersTransport(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteHttpServersTransportStmt, deleteHttpServersTransport, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpServersTransport(ctx context.Context, id int64) (HttpServersTransport, error) {
+func (q *Queries) GetHttpServersTransport(ctx context.Context, id string) (HttpServersTransport, error) {
 	row := q.queryRow(ctx, q.getHttpServersTransportStmt, getHttpServersTransport, id)
 	var i HttpServersTransport
 	err := row.Scan(
@@ -234,7 +245,7 @@ type UpdateHttpServersTransportParams struct {
 	Name    string                       `json:"name"`
 	Config  *schema.HTTPServersTransport `json:"config"`
 	Enabled bool                         `json:"enabled"`
-	ID      int64                        `json:"id"`
+	ID      string                       `json:"id"`
 }
 
 func (q *Queries) UpdateHttpServersTransport(ctx context.Context, arg UpdateHttpServersTransportParams) (HttpServersTransport, error) {

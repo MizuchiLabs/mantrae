@@ -6,6 +6,7 @@ import (
 
 	"connectrpc.com/connect"
 
+	"github.com/google/uuid"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -37,13 +38,14 @@ func (s *EntryPointService) CreateEntryPoint(
 	req *connect.Request[mantraev1.CreateEntryPointRequest],
 ) (*connect.Response[mantraev1.CreateEntryPointResponse], error) {
 	params := db.CreateEntryPointParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.Msg.ProfileId,
 		Name:      req.Msg.Name,
 		Address:   req.Msg.Address,
 		IsDefault: req.Msg.IsDefault,
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx); err != nil {
+		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
@@ -75,7 +77,7 @@ func (s *EntryPointService) UpdateEntryPoint(
 		IsDefault: req.Msg.IsDefault,
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx); err != nil {
+		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
@@ -156,7 +158,7 @@ func (s *EntryPointService) ListEntryPoints(
 // Helper functions
 func (s *EntryPointService) updateRouterEntrypoints(
 	ctx context.Context,
-	id int64,
+	id,
 	newEntrypoint string,
 ) error {
 	entrypoint, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, id)

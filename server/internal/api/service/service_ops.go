@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -94,6 +95,7 @@ func (s *HTTPServiceOps) Create(
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
 	params := db.CreateHttpServiceParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,
@@ -243,6 +245,7 @@ func (s *TCPServiceOps) Create(
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
 	params := db.CreateTcpServiceParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,
@@ -392,6 +395,7 @@ func (s *UDPServiceOps) Create(
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
 	params := db.CreateUdpServiceParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,

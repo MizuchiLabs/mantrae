@@ -1,6 +1,7 @@
 -- name: CreateHttpMiddleware :one
 INSERT INTO
   http_middlewares (
+    id,
     profile_id,
     agent_id,
     name,
@@ -11,6 +12,7 @@ INSERT INTO
   )
 VALUES
   (
+    ?,
     ?,
     ?,
     ?,
@@ -33,7 +35,8 @@ UPDATE http_middlewares
 SET
   is_default = FALSE
 WHERE
-  is_default = TRUE;
+  is_default = TRUE
+  AND profile_id = ?;
 
 -- name: ListHttpMiddlewares :many
 SELECT

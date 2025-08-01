@@ -102,7 +102,7 @@ func Squash() {
 	}
 
 	// Write new reference
-	err = os.WriteFile("internal/db/00000_base.sql", []byte(baseFile), 0644)
+	err = os.WriteFile("00000_base.sql", []byte(baseFile), 0644)
 	if err != nil {
 		panic(err)
 	}

@@ -26,6 +26,7 @@
 			if (item.id) {
 				await middlewareClient.updateMiddleware({
 					id: item.id,
+					profileId: item.profileId,
 					name: item.name,
 					config: item.config,
 					type: item.type,

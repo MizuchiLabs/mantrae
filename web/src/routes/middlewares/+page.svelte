@@ -162,7 +162,7 @@
 							label: 'Delete Middleware',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id, row.original.type),
+							onClick: () => deleteItem(row.original),
 							popover: {
 								title: 'Delete Middleware?',
 								description: 'This middleware and its configuration will be permanently deleted.',
@@ -190,9 +190,9 @@
 		}
 	];
 
-	const deleteItem = async (id: bigint, type: ProtocolType) => {
+	const deleteItem = async (item: Middleware) => {
 		try {
-			await middlewareClient.deleteMiddleware({ id: id, type: type });
+			await middlewareClient.deleteMiddleware({ id: item.id, type: item.type });
 			toast.success('Middleware deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -204,6 +204,7 @@
 		try {
 			await middlewareClient.updateMiddleware({
 				id: item.id,
+				profileId: item.profileId,
 				name: item.name,
 				type: item.type,
 				config: item.config,

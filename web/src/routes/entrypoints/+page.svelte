@@ -116,6 +116,7 @@
 		try {
 			await entryPointClient.updateEntryPoint({
 				id: item.id,
+				profileId: item.profileId,
 				name: item.name,
 				address: item.address,
 				isDefault: isDefault

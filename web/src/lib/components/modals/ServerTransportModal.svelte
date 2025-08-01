@@ -9,7 +9,6 @@
 	import { serversTransportClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
 	import { profile } from '$lib/stores/profile';
-	import { pageIndex, pageSize } from '$lib/stores/common';
 	import { type ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 	import {
 		type TCPServersTransport,
@@ -58,7 +57,7 @@
 		if (!item.id) return;
 
 		try {
-			await serversTransportClient.deleteServersTransport({ id: item.id });
+			await serversTransportClient.deleteServersTransport({ id: item.id, type: item.type });
 			toast.success('Transport deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);

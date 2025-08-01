@@ -39,6 +39,7 @@ func (q *Queries) CountTcpServices(ctx context.Context, arg CountTcpServicesPara
 const createTcpService = `-- name: CreateTcpService :one
 INSERT INTO
   tcp_services (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateTcpServiceParams struct {
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
@@ -59,6 +69,7 @@ type CreateTcpServiceParams struct {
 
 func (q *Queries) CreateTcpService(ctx context.Context, arg CreateTcpServiceParams) (TcpService, error) {
 	row := q.queryRow(ctx, q.createTcpServiceStmt, createTcpService,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteTcpService(ctx context.Context, id int64) error {
+func (q *Queries) DeleteTcpService(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteTcpServiceStmt, deleteTcpService, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpService(ctx context.Context, id int64) (TcpService, error) {
+func (q *Queries) GetTcpService(ctx context.Context, id string) (TcpService, error) {
 	row := q.queryRow(ctx, q.getTcpServiceStmt, getTcpService, id)
 	var i TcpService
 	err := row.Scan(
@@ -265,7 +276,7 @@ type UpdateTcpServiceParams struct {
 	Name    string             `json:"name"`
 	Config  *schema.TCPService `json:"config"`
 	Enabled bool               `json:"enabled"`
-	ID      int64              `json:"id"`
+	ID      string             `json:"id"`
 }
 
 func (q *Queries) UpdateTcpService(ctx context.Context, arg UpdateTcpServiceParams) (TcpService, error) {

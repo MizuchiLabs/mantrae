@@ -28,6 +28,7 @@ func (q *Queries) CountEntryPoints(ctx context.Context, profileID int64) (int64,
 const createEntryPoint = `-- name: CreateEntryPoint :one
 INSERT INTO
   entry_points (
+    id,
     profile_id,
     name,
     address,
@@ -36,10 +37,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
 `
 
 type CreateEntryPointParams struct {
+	ID        string  `json:"id"`
 	ProfileID int64   `json:"profileId"`
 	Name      string  `json:"name"`
 	Address   *string `json:"address"`
@@ -48,6 +58,7 @@ type CreateEntryPointParams struct {
 
 func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointParams) (EntryPoint, error) {
 	row := q.queryRow(ctx, q.createEntryPointStmt, createEntryPoint,
+		arg.ID,
 		arg.ProfileID,
 		arg.Name,
 		arg.Address,
@@ -72,7 +83,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteEntryPointByID(ctx context.Context, id int64) error {
+func (q *Queries) DeleteEntryPointByID(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteEntryPointByIDStmt, deleteEntryPointByID, id)
 	return err
 }
@@ -112,7 +123,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetEntryPoint(ctx context.Context, id int64) (EntryPoint, error) {
+func (q *Queries) GetEntryPoint(ctx context.Context, id string) (EntryPoint, error) {
 	row := q.queryRow(ctx, q.getEntryPointStmt, getEntryPoint, id)
 	var i EntryPoint
 	err := row.Scan(
@@ -185,10 +196,11 @@ SET
   is_default = FALSE
 WHERE
   is_default = TRUE
+  AND profile_id = ?
 `
 
-func (q *Queries) UnsetDefaultEntryPoint(ctx context.Context) error {
-	_, err := q.exec(ctx, q.unsetDefaultEntryPointStmt, unsetDefaultEntryPoint)
+func (q *Queries) UnsetDefaultEntryPoint(ctx context.Context, profileID int64) error {
+	_, err := q.exec(ctx, q.unsetDefaultEntryPointStmt, unsetDefaultEntryPoint, profileID)
 	return err
 }
 
@@ -207,7 +219,7 @@ type UpdateEntryPointParams struct {
 	Name      string  `json:"name"`
 	Address   *string `json:"address"`
 	IsDefault bool    `json:"isDefault"`
-	ID        int64   `json:"id"`
+	ID        string  `json:"id"`
 }
 
 func (q *Queries) UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error) {

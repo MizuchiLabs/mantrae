@@ -47,11 +47,12 @@ export async function subscribe() {
 		}
 	} catch (error) {
 		const err = error as ConnectError;
-		if (err.name !== 'canceled') {
-			console.error('Event stream error:', err.message);
-			// Retry connection after delay
-			setTimeout(subscribe, 5000);
+		if (err.message.includes('canceled') || err.message.includes('aborted')) {
+			return;
 		}
+		console.error('Event stream error:', err.message);
+		// Retry connection after delay
+		setTimeout(subscribe, 5000);
 	}
 }
 
@@ -181,7 +182,7 @@ function handleEvent(event: EventStreamResponse) {
 					break;
 				}
 				case 'dnsProvider': {
-					dnsClient.listDnsProviders({ profileId: profile.id }).then((response) => {
+					dnsClient.listDnsProviders({}).then((response) => {
 						dnsProviders.set(response.dnsProviders);
 					});
 					break;

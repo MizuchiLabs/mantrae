@@ -39,6 +39,7 @@ func (q *Queries) CountTcpMiddlewares(ctx context.Context, arg CountTcpMiddlewar
 const createTcpMiddleware = `-- name: CreateTcpMiddleware :one
 INSERT INTO
   tcp_middlewares (
+    id,
     profile_id,
     agent_id,
     name,
@@ -54,12 +55,14 @@ VALUES
     ?,
     ?,
     ?,
+    ?,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   ) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
 `
 
 type CreateTcpMiddlewareParams struct {
+	ID        string                `json:"id"`
 	ProfileID int64                 `json:"profileId"`
 	AgentID   *string               `json:"agentId"`
 	Name      string                `json:"name"`
@@ -69,6 +72,7 @@ type CreateTcpMiddlewareParams struct {
 
 func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewareParams) (TcpMiddleware, error) {
 	row := q.queryRow(ctx, q.createTcpMiddlewareStmt, createTcpMiddleware,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -96,7 +100,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteTcpMiddleware(ctx context.Context, id int64) error {
+func (q *Queries) DeleteTcpMiddleware(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteTcpMiddlewareStmt, deleteTcpMiddleware, id)
 	return err
 }
@@ -110,7 +114,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpMiddleware(ctx context.Context, id int64) (TcpMiddleware, error) {
+func (q *Queries) GetTcpMiddleware(ctx context.Context, id string) (TcpMiddleware, error) {
 	row := q.queryRow(ctx, q.getTcpMiddlewareStmt, getTcpMiddleware, id)
 	var i TcpMiddleware
 	err := row.Scan(
@@ -240,10 +244,11 @@ SET
   is_default = FALSE
 WHERE
   is_default = TRUE
+  AND profile_id = ?
 `
 
-func (q *Queries) UnsetDefaultTcpMiddleware(ctx context.Context) error {
-	_, err := q.exec(ctx, q.unsetDefaultTcpMiddlewareStmt, unsetDefaultTcpMiddleware)
+func (q *Queries) UnsetDefaultTcpMiddleware(ctx context.Context, profileID int64) error {
+	_, err := q.exec(ctx, q.unsetDefaultTcpMiddlewareStmt, unsetDefaultTcpMiddleware, profileID)
 	return err
 }
 
@@ -264,7 +269,7 @@ type UpdateTcpMiddlewareParams struct {
 	Config    *schema.TCPMiddleware `json:"config"`
 	Enabled   bool                  `json:"enabled"`
 	IsDefault bool                  `json:"isDefault"`
-	ID        int64                 `json:"id"`
+	ID        string                `json:"id"`
 }
 
 func (q *Queries) UpdateTcpMiddleware(ctx context.Context, arg UpdateTcpMiddlewareParams) (TcpMiddleware, error) {

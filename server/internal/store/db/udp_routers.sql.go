@@ -39,6 +39,7 @@ func (q *Queries) CountUdpRouters(ctx context.Context, arg CountUdpRoutersParams
 const createUdpRouter = `-- name: CreateUdpRouter :one
 INSERT INTO
   udp_routers (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateUdpRouterParams struct {
+	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
 	AgentID   *string           `json:"agentId"`
 	Name      string            `json:"name"`
@@ -59,6 +69,7 @@ type CreateUdpRouterParams struct {
 
 func (q *Queries) CreateUdpRouter(ctx context.Context, arg CreateUdpRouterParams) (UdpRouter, error) {
 	row := q.queryRow(ctx, q.createUdpRouterStmt, createUdpRouter,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteUdpRouter(ctx context.Context, id int64) error {
+func (q *Queries) DeleteUdpRouter(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteUdpRouterStmt, deleteUdpRouter, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetUdpRouter(ctx context.Context, id int64) (UdpRouter, error) {
+func (q *Queries) GetUdpRouter(ctx context.Context, id string) (UdpRouter, error) {
 	row := q.queryRow(ctx, q.getUdpRouterStmt, getUdpRouter, id)
 	var i UdpRouter
 	err := row.Scan(
@@ -137,12 +148,12 @@ FROM
 `
 
 type GetUdpRoutersUsingEntryPointParams struct {
-	ID        int64 `json:"id"`
-	ProfileID int64 `json:"profileId"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
 }
 
 type GetUdpRoutersUsingEntryPointRow struct {
-	ID      int64             `json:"id"`
+	ID      string            `json:"id"`
 	Name    string            `json:"name"`
 	Config  *schema.UDPRouter `json:"config"`
 	Enabled bool              `json:"enabled"`
@@ -296,7 +307,7 @@ type UpdateUdpRouterParams struct {
 	Name    string            `json:"name"`
 	Config  *schema.UDPRouter `json:"config"`
 	Enabled bool              `json:"enabled"`
-	ID      int64             `json:"id"`
+	ID      string            `json:"id"`
 }
 
 func (q *Queries) UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams) (UdpRouter, error) {

@@ -26,7 +26,7 @@ const (
 
 type ServersTransport struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
@@ -69,11 +69,11 @@ func (*ServersTransport) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_servers_transport_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ServersTransport) GetId() int64 {
+func (x *ServersTransport) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *ServersTransport) GetProfileId() int64 {
@@ -134,7 +134,7 @@ func (x *ServersTransport) GetUpdatedAt() *timestamppb.Timestamp {
 
 type GetServersTransportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -170,11 +170,11 @@ func (*GetServersTransportRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_servers_transport_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetServersTransportRequest) GetId() int64 {
+func (x *GetServersTransportRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *GetServersTransportRequest) GetType() ProtocolType {
@@ -358,7 +358,7 @@ func (x *CreateServersTransportResponse) GetServersTransport() *ServersTransport
 
 type UpdateServersTransportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,3,opt,name=config,proto3" json:"config,omitempty"`
 	Enabled       bool                   `protobuf:"varint,4,opt,name=enabled,proto3" json:"enabled,omitempty"`
@@ -397,11 +397,11 @@ func (*UpdateServersTransportRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_servers_transport_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateServersTransportRequest) GetId() int64 {
+func (x *UpdateServersTransportRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateServersTransportRequest) GetName() string {
@@ -478,7 +478,7 @@ func (x *UpdateServersTransportResponse) GetServersTransport() *ServersTransport
 
 type DeleteServersTransportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -514,11 +514,11 @@ func (*DeleteServersTransportRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_servers_transport_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *DeleteServersTransportRequest) GetId() int64 {
+func (x *DeleteServersTransportRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *DeleteServersTransportRequest) GetType() ProtocolType {
@@ -699,7 +699,7 @@ const file_mantrae_v1_servers_transport_proto_rawDesc = "" +
 	"\"mantrae/v1/servers_transport.proto\x12\n" +
 	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19mantrae/v1/protocol.proto\"\xdf\x02\n" +
 	"\x10ServersTransport\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x02 \x01(\x03R\tprofileId\x12\x19\n" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x12\n" +
@@ -712,7 +712,7 @@ const file_mantrae_v1_servers_transport_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"m\n" +
 	"\x1aGetServersTransportRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x126\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"h\n" +
 	"\x1bGetServersTransportResponse\x12I\n" +
 	"\x11servers_transport\x18\x01 \x01(\v2\x1c.mantrae.v1.ServersTransportR\x10serversTransport\"\x94\x02\n" +
@@ -728,7 +728,7 @@ const file_mantrae_v1_servers_transport_proto_rawDesc = "" +
 	"\x1eCreateServersTransportResponse\x12I\n" +
 	"\x11servers_transport\x18\x01 \x01(\v2\x1c.mantrae.v1.ServersTransportR\x10serversTransport\"\xd8\x01\n" +
 	"\x1dUpdateServersTransportRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12/\n" +
 	"\x06config\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
 	"\aenabled\x18\x04 \x01(\bR\aenabled\x126\n" +
@@ -736,7 +736,7 @@ const file_mantrae_v1_servers_transport_proto_rawDesc = "" +
 	"\x1eUpdateServersTransportResponse\x12I\n" +
 	"\x11servers_transport\x18\x01 \x01(\v2\x1c.mantrae.v1.ServersTransportR\x10serversTransport\"p\n" +
 	"\x1dDeleteServersTransportRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x126\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\" \n" +
 	"\x1eDeleteServersTransportResponse\"\xe6\x02\n" +
 	"\x1cListServersTransportsRequest\x12&\n" +

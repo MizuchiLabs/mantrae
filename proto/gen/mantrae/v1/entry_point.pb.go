@@ -25,7 +25,7 @@ const (
 
 type EntryPoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Address       string                 `protobuf:"bytes,4,opt,name=address,proto3" json:"address,omitempty"`
@@ -66,11 +66,11 @@ func (*EntryPoint) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_entry_point_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *EntryPoint) GetId() int64 {
+func (x *EntryPoint) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *EntryPoint) GetProfileId() int64 {
@@ -117,7 +117,7 @@ func (x *EntryPoint) GetUpdatedAt() *timestamppb.Timestamp {
 
 type GetEntryPointRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -152,11 +152,11 @@ func (*GetEntryPointRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_entry_point_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetEntryPointRequest) GetId() int64 {
+func (x *GetEntryPointRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type GetEntryPointResponse struct {
@@ -317,10 +317,11 @@ func (x *CreateEntryPointResponse) GetEntryPoint() *EntryPoint {
 
 type UpdateEntryPointRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	IsDefault     bool                   `protobuf:"varint,3,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
-	Address       *string                `protobuf:"bytes,4,opt,name=address,proto3,oneof" json:"address,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	IsDefault     bool                   `protobuf:"varint,4,opt,name=is_default,json=isDefault,proto3" json:"is_default,omitempty"`
+	Address       *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -355,9 +356,16 @@ func (*UpdateEntryPointRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_entry_point_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateEntryPointRequest) GetId() int64 {
+func (x *UpdateEntryPointRequest) GetId() string {
 	if x != nil {
 		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateEntryPointRequest) GetProfileId() int64 {
+	if x != nil {
+		return x.ProfileId
 	}
 	return 0
 }
@@ -429,7 +437,7 @@ func (x *UpdateEntryPointResponse) GetEntryPoint() *EntryPoint {
 
 type DeleteEntryPointRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -464,11 +472,11 @@ func (*DeleteEntryPointRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_entry_point_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *DeleteEntryPointRequest) GetId() int64 {
+func (x *DeleteEntryPointRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type DeleteEntryPointResponse struct {
@@ -627,7 +635,7 @@ const file_mantrae_v1_entry_point_proto_rawDesc = "" +
 	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfe\x01\n" +
 	"\n" +
 	"EntryPoint\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x02 \x01(\x03R\tprofileId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x18\n" +
@@ -639,7 +647,7 @@ const file_mantrae_v1_entry_point_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"/\n" +
 	"\x14GetEntryPointRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"P\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"P\n" +
 	"\x15GetEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
 	"entryPoint\"\xa8\x01\n" +
@@ -654,20 +662,22 @@ const file_mantrae_v1_entry_point_proto_rawDesc = "" +
 	"\b_address\"S\n" +
 	"\x18CreateEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
-	"entryPoint\"\x99\x01\n" +
+	"entryPoint\"\xc1\x01\n" +
 	"\x17UpdateEntryPointRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12&\n" +
 	"\n" +
-	"is_default\x18\x03 \x01(\bR\tisDefault\x12\x1d\n" +
-	"\aaddress\x18\x04 \x01(\tH\x00R\aaddress\x88\x01\x01B\n" +
+	"profile_id\x18\x02 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\x12\x1b\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1d\n" +
+	"\n" +
+	"is_default\x18\x04 \x01(\bR\tisDefault\x12\x1d\n" +
+	"\aaddress\x18\x05 \x01(\tH\x00R\aaddress\x88\x01\x01B\n" +
 	"\n" +
 	"\b_address\"S\n" +
 	"\x18UpdateEntryPointResponse\x127\n" +
 	"\ventry_point\x18\x01 \x01(\v2\x16.mantrae.v1.EntryPointR\n" +
 	"entryPoint\"2\n" +
 	"\x17DeleteEntryPointRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"\x1a\n" +
 	"\x18DeleteEntryPointResponse\"\xee\x01\n" +
 	"\x16ListEntryPointsRequest\x12&\n" +
 	"\n" +

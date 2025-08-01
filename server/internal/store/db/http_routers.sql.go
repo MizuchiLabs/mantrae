@@ -39,6 +39,7 @@ func (q *Queries) CountHttpRouters(ctx context.Context, arg CountHttpRoutersPara
 const createHttpRouter = `-- name: CreateHttpRouter :one
 INSERT INTO
   http_routers (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpRouterParams struct {
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
@@ -59,6 +69,7 @@ type CreateHttpRouterParams struct {
 
 func (q *Queries) CreateHttpRouter(ctx context.Context, arg CreateHttpRouterParams) (HttpRouter, error) {
 	row := q.queryRow(ctx, q.createHttpRouterStmt, createHttpRouter,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteHttpRouter(ctx context.Context, id int64) error {
+func (q *Queries) DeleteHttpRouter(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteHttpRouterStmt, deleteHttpRouter, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpRouter(ctx context.Context, id int64) (HttpRouter, error) {
+func (q *Queries) GetHttpRouter(ctx context.Context, id string) (HttpRouter, error) {
 	row := q.queryRow(ctx, q.getHttpRouterStmt, getHttpRouter, id)
 	var i HttpRouter
 	err := row.Scan(
@@ -137,12 +148,12 @@ FROM
 `
 
 type GetHttpRoutersUsingEntryPointParams struct {
-	ID        int64 `json:"id"`
-	ProfileID int64 `json:"profileId"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
 }
 
 type GetHttpRoutersUsingEntryPointRow struct {
-	ID      int64              `json:"id"`
+	ID      string             `json:"id"`
 	Name    string             `json:"name"`
 	Config  *schema.HTTPRouter `json:"config"`
 	Enabled bool               `json:"enabled"`
@@ -199,12 +210,12 @@ FROM
 `
 
 type GetHttpRoutersUsingMiddlewareParams struct {
-	ID        int64 `json:"id"`
-	ProfileID int64 `json:"profileId"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
 }
 
 type GetHttpRoutersUsingMiddlewareRow struct {
-	ID      int64              `json:"id"`
+	ID      string             `json:"id"`
 	Name    string             `json:"name"`
 	Config  *schema.HTTPRouter `json:"config"`
 	Enabled bool               `json:"enabled"`
@@ -358,7 +369,7 @@ type UpdateHttpRouterParams struct {
 	Name    string             `json:"name"`
 	Config  *schema.HTTPRouter `json:"config"`
 	Enabled bool               `json:"enabled"`
-	ID      int64              `json:"id"`
+	ID      string             `json:"id"`
 }
 
 func (q *Queries) UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterParams) (HttpRouter, error) {

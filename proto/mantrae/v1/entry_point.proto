@@ -18,7 +18,7 @@ service EntryPointService {
 }
 
 message EntryPoint {
-  int64 id = 1;
+  string id = 1;
   int64 profile_id = 2;
   string name = 3;
   string address = 4;
@@ -28,7 +28,7 @@ message EntryPoint {
 }
 
 message GetEntryPointRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
 }
 message GetEntryPointResponse {
   EntryPoint entry_point = 1;
@@ -45,17 +45,18 @@ message CreateEntryPointResponse {
 }
 
 message UpdateEntryPointRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  string name = 2 [(buf.validate.field).string.min_len = 1];
-  bool is_default = 3;
-  optional string address = 4;
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  int64 profile_id = 2 [(buf.validate.field).int64.gt = 0];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  bool is_default = 4;
+  optional string address = 5;
 }
 message UpdateEntryPointResponse {
   EntryPoint entry_point = 1;
 }
 
 message DeleteEntryPointRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
 }
 message DeleteEntryPointResponse {}
 

@@ -26,7 +26,7 @@ const (
 
 type TraefikInstance struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Url           string                 `protobuf:"bytes,4,opt,name=url,proto3" json:"url,omitempty"`
@@ -73,11 +73,11 @@ func (*TraefikInstance) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_traefik_instance_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *TraefikInstance) GetId() int64 {
+func (x *TraefikInstance) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *TraefikInstance) GetProfileId() int64 {
@@ -166,7 +166,7 @@ func (x *TraefikInstance) GetUpdatedAt() *timestamppb.Timestamp {
 
 type GetTraefikInstanceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -201,11 +201,11 @@ func (*GetTraefikInstanceRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_traefik_instance_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetTraefikInstanceRequest) GetId() int64 {
+func (x *GetTraefikInstanceRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type GetTraefikInstanceResponse struct {
@@ -254,7 +254,7 @@ func (x *GetTraefikInstanceResponse) GetTraefikInstance() *TraefikInstance {
 
 type DeleteTraefikInstanceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -289,11 +289,11 @@ func (*DeleteTraefikInstanceRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_traefik_instance_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *DeleteTraefikInstanceRequest) GetId() int64 {
+func (x *DeleteTraefikInstanceRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type DeleteTraefikInstanceResponse struct {
@@ -451,7 +451,7 @@ const file_mantrae_v1_traefik_instance_proto_rawDesc = "" +
 	"!mantrae/v1/traefik_instance.proto\x12\n" +
 	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x03\n" +
 	"\x0fTraefikInstance\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x02 \x01(\x03R\tprofileId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x10\n" +
@@ -469,11 +469,11 @@ const file_mantrae_v1_traefik_instance_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"4\n" +
 	"\x19GetTraefikInstanceRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"d\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"d\n" +
 	"\x1aGetTraefikInstanceResponse\x12F\n" +
 	"\x10traefik_instance\x18\x01 \x01(\v2\x1b.mantrae.v1.TraefikInstanceR\x0ftraefikInstance\"7\n" +
 	"\x1cDeleteTraefikInstanceRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\"\x1f\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"\x1f\n" +
 	"\x1dDeleteTraefikInstanceResponse\"\xf3\x01\n" +
 	"\x1bListTraefikInstancesRequest\x12&\n" +
 	"\n" +

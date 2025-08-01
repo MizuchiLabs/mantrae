@@ -23,6 +23,7 @@
 			if (item.id) {
 				await entryPointClient.updateEntryPoint({
 					id: item.id,
+					profileId: item.profileId,
 					name: item.name,
 					address: item.address,
 					isDefault: item.isDefault

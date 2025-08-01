@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/google/uuid"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -68,6 +69,7 @@ func (s *HTTPServersTransportOps) Create(
 	req *mantraev1.CreateServersTransportRequest,
 ) (*mantraev1.CreateServersTransportResponse, error) {
 	params := db.CreateHttpServersTransportParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 		Name:      req.Name,
@@ -201,6 +203,7 @@ func (s *TCPServersTransportOps) Create(
 	req *mantraev1.CreateServersTransportRequest,
 ) (*mantraev1.CreateServersTransportResponse, error) {
 	params := db.CreateTcpServersTransportParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 		Name:      req.Name,

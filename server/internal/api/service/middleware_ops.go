@@ -4,6 +4,7 @@ import (
 	"context"
 	"slices"
 
+	"github.com/google/uuid"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -69,6 +70,7 @@ func (s *HTTPMiddlewareOps) Create(
 	req *mantraev1.CreateMiddlewareRequest,
 ) (*mantraev1.CreateMiddlewareResponse, error) {
 	params := db.CreateHttpMiddlewareParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 		Name:      req.Name,
@@ -85,7 +87,7 @@ func (s *HTTPMiddlewareOps) Create(
 	}
 
 	if req.IsDefault {
-		if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
+		if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx, req.ProfileId); err != nil {
 			return nil, err
 		}
 	}
@@ -127,7 +129,7 @@ func (s *HTTPMiddlewareOps) Update(
 	}
 
 	if req.IsDefault {
-		if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx); err != nil {
+		if err = s.app.Conn.GetQuery().UnsetDefaultHttpMiddleware(ctx, req.ProfileId); err != nil {
 			return nil, err
 		}
 	}
@@ -276,6 +278,7 @@ func (s *TCPMiddlewareOps) Create(
 	req *mantraev1.CreateMiddlewareRequest,
 ) (*mantraev1.CreateMiddlewareResponse, error) {
 	params := db.CreateTcpMiddlewareParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 		Name:      req.Name,
@@ -289,7 +292,7 @@ func (s *TCPMiddlewareOps) Create(
 	}
 
 	if req.IsDefault {
-		if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
+		if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx, req.ProfileId); err != nil {
 			return nil, err
 		}
 	}
@@ -328,7 +331,7 @@ func (s *TCPMiddlewareOps) Update(
 	}
 
 	if req.IsDefault {
-		if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx); err != nil {
+		if err = s.app.Conn.GetQuery().UnsetDefaultTcpMiddleware(ctx, req.ProfileId); err != nil {
 			return nil, err
 		}
 	}

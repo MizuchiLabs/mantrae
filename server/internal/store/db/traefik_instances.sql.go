@@ -33,7 +33,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteTraefikInstance(ctx context.Context, id int64) error {
+func (q *Queries) DeleteTraefikInstance(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteTraefikInstanceStmt, deleteTraefikInstance, id)
 	return err
 }
@@ -47,7 +47,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id int64) (TraefikInstance, error) {
+func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id string) (TraefikInstance, error) {
 	row := q.queryRow(ctx, q.getTraefikInstanceByIDStmt, getTraefikInstanceByID, id)
 	var i TraefikInstance
 	err := row.Scan(
@@ -176,6 +176,7 @@ func (q *Queries) PurgeTraefikInstances(ctx context.Context) error {
 const upsertTraefikInstance = `-- name: UpsertTraefikInstance :one
 INSERT INTO
   traefik_instances (
+    id,
     profile_id,
     name,
     url,
@@ -191,6 +192,7 @@ INSERT INTO
   )
 VALUES
   (
+    ?,
     ?,
     ?,
     ?,
@@ -218,6 +220,7 @@ SET
 `
 
 type UpsertTraefikInstanceParams struct {
+	ID          string                `json:"id"`
 	ProfileID   int64                 `json:"profileId"`
 	Name        string                `json:"name"`
 	Url         string                `json:"url"`
@@ -232,6 +235,7 @@ type UpsertTraefikInstanceParams struct {
 
 func (q *Queries) UpsertTraefikInstance(ctx context.Context, arg UpsertTraefikInstanceParams) (TraefikInstance, error) {
 	row := q.queryRow(ctx, q.upsertTraefikInstanceStmt, upsertTraefikInstance,
+		arg.ID,
 		arg.ProfileID,
 		arg.Name,
 		arg.Url,

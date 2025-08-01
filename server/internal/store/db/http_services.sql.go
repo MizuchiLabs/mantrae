@@ -39,6 +39,7 @@ func (q *Queries) CountHttpServices(ctx context.Context, arg CountHttpServicesPa
 const createHttpService = `-- name: CreateHttpService :one
 INSERT INTO
   http_services (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpServiceParams struct {
+	ID        string              `json:"id"`
 	ProfileID int64               `json:"profileId"`
 	AgentID   *string             `json:"agentId"`
 	Name      string              `json:"name"`
@@ -59,6 +69,7 @@ type CreateHttpServiceParams struct {
 
 func (q *Queries) CreateHttpService(ctx context.Context, arg CreateHttpServiceParams) (HttpService, error) {
 	row := q.queryRow(ctx, q.createHttpServiceStmt, createHttpService,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteHttpService(ctx context.Context, id int64) error {
+func (q *Queries) DeleteHttpService(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteHttpServiceStmt, deleteHttpService, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpService(ctx context.Context, id int64) (HttpService, error) {
+func (q *Queries) GetHttpService(ctx context.Context, id string) (HttpService, error) {
 	row := q.queryRow(ctx, q.getHttpServiceStmt, getHttpService, id)
 	var i HttpService
 	err := row.Scan(
@@ -265,7 +276,7 @@ type UpdateHttpServiceParams struct {
 	Name    string              `json:"name"`
 	Config  *schema.HTTPService `json:"config"`
 	Enabled bool                `json:"enabled"`
-	ID      int64               `json:"id"`
+	ID      string              `json:"id"`
 }
 
 func (q *Queries) UpdateHttpService(ctx context.Context, arg UpdateHttpServiceParams) (HttpService, error) {

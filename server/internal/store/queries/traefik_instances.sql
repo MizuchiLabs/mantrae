@@ -40,6 +40,7 @@ WHERE
 -- name: UpsertTraefikInstance :one
 INSERT INTO
   traefik_instances (
+    id,
     profile_id,
     name,
     url,
@@ -55,6 +56,7 @@ INSERT INTO
   )
 VALUES
   (
+    ?,
     ?,
     ?,
     ?,

@@ -39,6 +39,7 @@ func (q *Queries) CountTcpRouters(ctx context.Context, arg CountTcpRoutersParams
 const createTcpRouter = `-- name: CreateTcpRouter :one
 INSERT INTO
   tcp_routers (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateTcpRouterParams struct {
+	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
 	AgentID   *string           `json:"agentId"`
 	Name      string            `json:"name"`
@@ -59,6 +69,7 @@ type CreateTcpRouterParams struct {
 
 func (q *Queries) CreateTcpRouter(ctx context.Context, arg CreateTcpRouterParams) (TcpRouter, error) {
 	row := q.queryRow(ctx, q.createTcpRouterStmt, createTcpRouter,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteTcpRouter(ctx context.Context, id int64) error {
+func (q *Queries) DeleteTcpRouter(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteTcpRouterStmt, deleteTcpRouter, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpRouter(ctx context.Context, id int64) (TcpRouter, error) {
+func (q *Queries) GetTcpRouter(ctx context.Context, id string) (TcpRouter, error) {
 	row := q.queryRow(ctx, q.getTcpRouterStmt, getTcpRouter, id)
 	var i TcpRouter
 	err := row.Scan(
@@ -137,12 +148,12 @@ FROM
 `
 
 type GetTcpRoutersUsingEntryPointParams struct {
-	ID        int64 `json:"id"`
-	ProfileID int64 `json:"profileId"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
 }
 
 type GetTcpRoutersUsingEntryPointRow struct {
-	ID      int64             `json:"id"`
+	ID      string            `json:"id"`
 	Name    string            `json:"name"`
 	Config  *schema.TCPRouter `json:"config"`
 	Enabled bool              `json:"enabled"`
@@ -199,12 +210,12 @@ FROM
 `
 
 type GetTcpRoutersUsingMiddlewareParams struct {
-	ID        int64 `json:"id"`
-	ProfileID int64 `json:"profileId"`
+	ID        string `json:"id"`
+	ProfileID int64  `json:"profileId"`
 }
 
 type GetTcpRoutersUsingMiddlewareRow struct {
-	ID      int64             `json:"id"`
+	ID      string            `json:"id"`
 	Name    string            `json:"name"`
 	Config  *schema.TCPRouter `json:"config"`
 	Enabled bool              `json:"enabled"`
@@ -358,7 +369,7 @@ type UpdateTcpRouterParams struct {
 	Name    string            `json:"name"`
 	Config  *schema.TCPRouter `json:"config"`
 	Enabled bool              `json:"enabled"`
-	ID      int64             `json:"id"`
+	ID      string            `json:"id"`
 }
 
 func (q *Queries) UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams) (TcpRouter, error) {

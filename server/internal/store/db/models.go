@@ -44,7 +44,7 @@ type DnsProvider struct {
 }
 
 type EntryPoint struct {
-	ID        int64      `json:"id"`
+	ID        string     `json:"id"`
 	ProfileID int64      `json:"profileId"`
 	Name      string     `json:"name"`
 	Address   *string    `json:"address"`
@@ -63,7 +63,7 @@ type Error struct {
 }
 
 type HttpMiddleware struct {
-	ID        int64                  `json:"id"`
+	ID        string                 `json:"id"`
 	ProfileID int64                  `json:"profileId"`
 	AgentID   *string                `json:"agentId"`
 	Name      string                 `json:"name"`
@@ -75,7 +75,7 @@ type HttpMiddleware struct {
 }
 
 type HttpRouter struct {
-	ID        int64              `json:"id"`
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
@@ -86,12 +86,12 @@ type HttpRouter struct {
 }
 
 type HttpRouterDnsProvider struct {
-	HttpRouterID  int64 `json:"httpRouterId"`
-	DnsProviderID int64 `json:"dnsProviderId"`
+	HttpRouterID  string `json:"httpRouterId"`
+	DnsProviderID int64  `json:"dnsProviderId"`
 }
 
 type HttpServersTransport struct {
-	ID        int64                        `json:"id"`
+	ID        string                       `json:"id"`
 	ProfileID int64                        `json:"profileId"`
 	AgentID   *string                      `json:"agentId"`
 	Name      string                       `json:"name"`
@@ -102,7 +102,7 @@ type HttpServersTransport struct {
 }
 
 type HttpService struct {
-	ID        int64               `json:"id"`
+	ID        string              `json:"id"`
 	ProfileID int64               `json:"profileId"`
 	AgentID   *string             `json:"agentId"`
 	Name      string              `json:"name"`
@@ -128,7 +128,7 @@ type Setting struct {
 }
 
 type TcpMiddleware struct {
-	ID        int64                 `json:"id"`
+	ID        string                `json:"id"`
 	ProfileID int64                 `json:"profileId"`
 	AgentID   *string               `json:"agentId"`
 	Name      string                `json:"name"`
@@ -140,7 +140,7 @@ type TcpMiddleware struct {
 }
 
 type TcpRouter struct {
-	ID        int64             `json:"id"`
+	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
 	AgentID   *string           `json:"agentId"`
 	Name      string            `json:"name"`
@@ -151,12 +151,12 @@ type TcpRouter struct {
 }
 
 type TcpRouterDnsProvider struct {
-	TcpRouterID   int64 `json:"tcpRouterId"`
-	DnsProviderID int64 `json:"dnsProviderId"`
+	TcpRouterID   string `json:"tcpRouterId"`
+	DnsProviderID int64  `json:"dnsProviderId"`
 }
 
 type TcpServersTransport struct {
-	ID        int64                       `json:"id"`
+	ID        string                      `json:"id"`
 	ProfileID int64                       `json:"profileId"`
 	AgentID   *string                     `json:"agentId"`
 	Name      string                      `json:"name"`
@@ -167,7 +167,7 @@ type TcpServersTransport struct {
 }
 
 type TcpService struct {
-	ID        int64              `json:"id"`
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
@@ -178,7 +178,7 @@ type TcpService struct {
 }
 
 type TraefikInstance struct {
-	ID          int64                 `json:"id"`
+	ID          string                `json:"id"`
 	ProfileID   int64                 `json:"profileId"`
 	Name        string                `json:"name"`
 	Entrypoints *schema.EntryPoints   `json:"entrypoints"`
@@ -194,7 +194,7 @@ type TraefikInstance struct {
 }
 
 type UdpRouter struct {
-	ID        int64             `json:"id"`
+	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
 	AgentID   *string           `json:"agentId"`
 	Name      string            `json:"name"`
@@ -205,7 +205,7 @@ type UdpRouter struct {
 }
 
 type UdpService struct {
-	ID        int64              `json:"id"`
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`

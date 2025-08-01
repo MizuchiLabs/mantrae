@@ -21,7 +21,7 @@ service RouterService {
 }
 
 message Router {
-  int64 id = 1;
+  string id = 1;
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
@@ -34,7 +34,7 @@ message Router {
 }
 
 message GetRouterRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetRouterResponse {
@@ -54,7 +54,7 @@ message CreateRouterResponse {
 }
 
 message UpdateRouterRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   string name = 2 [(buf.validate.field).string.min_len = 1];
   ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
@@ -66,7 +66,7 @@ message UpdateRouterResponse {
 }
 
 message DeleteRouterRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteRouterResponse {}

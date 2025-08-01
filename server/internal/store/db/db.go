@@ -51,12 +51,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countProfilesStmt, err = db.PrepareContext(ctx, countProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query CountProfiles: %w", err)
 	}
-	if q.countServersTransportsByAgentStmt, err = db.PrepareContext(ctx, countServersTransportsByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query CountServersTransportsByAgent: %w", err)
-	}
-	if q.countServersTransportsByProfileStmt, err = db.PrepareContext(ctx, countServersTransportsByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query CountServersTransportsByProfile: %w", err)
-	}
 	if q.countTcpMiddlewaresStmt, err = db.PrepareContext(ctx, countTcpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpMiddlewares: %w", err)
 	}
@@ -357,12 +351,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listProfilesStmt, err = db.PrepareContext(ctx, listProfiles); err != nil {
 		return nil, fmt.Errorf("error preparing query ListProfiles: %w", err)
 	}
-	if q.listServersTransportsByAgentStmt, err = db.PrepareContext(ctx, listServersTransportsByAgent); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServersTransportsByAgent: %w", err)
-	}
-	if q.listServersTransportsByProfileStmt, err = db.PrepareContext(ctx, listServersTransportsByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query ListServersTransportsByProfile: %w", err)
-	}
 	if q.listSettingsStmt, err = db.PrepareContext(ctx, listSettings); err != nil {
 		return nil, fmt.Errorf("error preparing query ListSettings: %w", err)
 	}
@@ -534,16 +522,6 @@ func (q *Queries) Close() error {
 	if q.countProfilesStmt != nil {
 		if cerr := q.countProfilesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countProfilesStmt: %w", cerr)
-		}
-	}
-	if q.countServersTransportsByAgentStmt != nil {
-		if cerr := q.countServersTransportsByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countServersTransportsByAgentStmt: %w", cerr)
-		}
-	}
-	if q.countServersTransportsByProfileStmt != nil {
-		if cerr := q.countServersTransportsByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countServersTransportsByProfileStmt: %w", cerr)
 		}
 	}
 	if q.countTcpMiddlewaresStmt != nil {
@@ -1046,16 +1024,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listProfilesStmt: %w", cerr)
 		}
 	}
-	if q.listServersTransportsByAgentStmt != nil {
-		if cerr := q.listServersTransportsByAgentStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServersTransportsByAgentStmt: %w", cerr)
-		}
-	}
-	if q.listServersTransportsByProfileStmt != nil {
-		if cerr := q.listServersTransportsByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listServersTransportsByProfileStmt: %w", cerr)
-		}
-	}
 	if q.listSettingsStmt != nil {
 		if cerr := q.listSettingsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listSettingsStmt: %w", cerr)
@@ -1309,8 +1277,6 @@ type Queries struct {
 	countHttpServersTransportsStmt       *sql.Stmt
 	countHttpServicesStmt                *sql.Stmt
 	countProfilesStmt                    *sql.Stmt
-	countServersTransportsByAgentStmt    *sql.Stmt
-	countServersTransportsByProfileStmt  *sql.Stmt
 	countTcpMiddlewaresStmt              *sql.Stmt
 	countTcpRoutersStmt                  *sql.Stmt
 	countTcpServersTransportsStmt        *sql.Stmt
@@ -1411,8 +1377,6 @@ type Queries struct {
 	listHttpServicesStmt                 *sql.Stmt
 	listHttpServicesEnabledStmt          *sql.Stmt
 	listProfilesStmt                     *sql.Stmt
-	listServersTransportsByAgentStmt     *sql.Stmt
-	listServersTransportsByProfileStmt   *sql.Stmt
 	listSettingsStmt                     *sql.Stmt
 	listTcpMiddlewaresStmt               *sql.Stmt
 	listTcpMiddlewaresEnabledStmt        *sql.Stmt
@@ -1469,8 +1433,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countHttpServersTransportsStmt:       q.countHttpServersTransportsStmt,
 		countHttpServicesStmt:                q.countHttpServicesStmt,
 		countProfilesStmt:                    q.countProfilesStmt,
-		countServersTransportsByAgentStmt:    q.countServersTransportsByAgentStmt,
-		countServersTransportsByProfileStmt:  q.countServersTransportsByProfileStmt,
 		countTcpMiddlewaresStmt:              q.countTcpMiddlewaresStmt,
 		countTcpRoutersStmt:                  q.countTcpRoutersStmt,
 		countTcpServersTransportsStmt:        q.countTcpServersTransportsStmt,
@@ -1571,8 +1533,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listHttpServicesStmt:                 q.listHttpServicesStmt,
 		listHttpServicesEnabledStmt:          q.listHttpServicesEnabledStmt,
 		listProfilesStmt:                     q.listProfilesStmt,
-		listServersTransportsByAgentStmt:     q.listServersTransportsByAgentStmt,
-		listServersTransportsByProfileStmt:   q.listServersTransportsByProfileStmt,
 		listSettingsStmt:                     q.listSettingsStmt,
 		listTcpMiddlewaresStmt:               q.listTcpMiddlewaresStmt,
 		listTcpMiddlewaresEnabledStmt:        q.listTcpMiddlewaresEnabledStmt,

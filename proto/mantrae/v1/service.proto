@@ -20,7 +20,7 @@ service ServiceService {
 }
 
 message Service {
-  int64 id = 1;
+  string id = 1;
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
@@ -36,7 +36,7 @@ message GetServiceRequest {
   ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
   oneof identifier {
     option (buf.validate.oneof).required = true;
-    int64 id = 3 [(buf.validate.field).int64.gt = 0];
+    string id = 3 [(buf.validate.field).string.min_len = 1];
     string name = 4 [(buf.validate.field).string.min_len = 1];
   }
 }
@@ -57,7 +57,7 @@ message CreateServiceResponse {
 }
 
 message UpdateServiceRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   string name = 2 [(buf.validate.field).string.min_len = 1];
   bool enabled = 3;
   google.protobuf.Struct config = 4;
@@ -68,7 +68,7 @@ message UpdateServiceResponse {
 }
 
 message DeleteServiceRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteServiceResponse {}

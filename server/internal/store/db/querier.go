@@ -18,8 +18,6 @@ type Querier interface {
 	CountHttpServersTransports(ctx context.Context, arg CountHttpServersTransportsParams) (int64, error)
 	CountHttpServices(ctx context.Context, arg CountHttpServicesParams) (int64, error)
 	CountProfiles(ctx context.Context) (int64, error)
-	CountServersTransportsByAgent(ctx context.Context, arg CountServersTransportsByAgentParams) (int64, error)
-	CountServersTransportsByProfile(ctx context.Context, arg CountServersTransportsByProfileParams) (int64, error)
 	CountTcpMiddlewares(ctx context.Context, arg CountTcpMiddlewaresParams) (int64, error)
 	CountTcpRouters(ctx context.Context, arg CountTcpRoutersParams) (int64, error)
 	CountTcpServersTransports(ctx context.Context, arg CountTcpServersTransportsParams) (int64, error)
@@ -48,60 +46,60 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDnsProvider(ctx context.Context, id int64) error
-	DeleteEntryPointByID(ctx context.Context, id int64) error
+	DeleteEntryPointByID(ctx context.Context, id string) error
 	DeleteErrorById(ctx context.Context, id int64) error
 	DeleteErrorsByProfile(ctx context.Context, profileID int64) error
 	DeleteErrorsByProfileCategory(ctx context.Context, arg DeleteErrorsByProfileCategoryParams) error
-	DeleteHttpMiddleware(ctx context.Context, id int64) error
-	DeleteHttpRouter(ctx context.Context, id int64) error
+	DeleteHttpMiddleware(ctx context.Context, id string) error
+	DeleteHttpRouter(ctx context.Context, id string) error
 	DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHttpRouterDNSProviderParams) error
-	DeleteHttpServersTransport(ctx context.Context, id int64) error
-	DeleteHttpService(ctx context.Context, id int64) error
+	DeleteHttpServersTransport(ctx context.Context, id string) error
+	DeleteHttpService(ctx context.Context, id string) error
 	DeleteOldAuditLogs(ctx context.Context) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteSetting(ctx context.Context, key string) error
-	DeleteTcpMiddleware(ctx context.Context, id int64) error
-	DeleteTcpRouter(ctx context.Context, id int64) error
+	DeleteTcpMiddleware(ctx context.Context, id string) error
+	DeleteTcpRouter(ctx context.Context, id string) error
 	DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpRouterDNSProviderParams) error
-	DeleteTcpServersTransport(ctx context.Context, id int64) error
-	DeleteTcpService(ctx context.Context, id int64) error
-	DeleteTraefikInstance(ctx context.Context, id int64) error
-	DeleteUdpRouter(ctx context.Context, id int64) error
-	DeleteUdpService(ctx context.Context, id int64) error
+	DeleteTcpServersTransport(ctx context.Context, id string) error
+	DeleteTcpService(ctx context.Context, id string) error
+	DeleteTraefikInstance(ctx context.Context, id string) error
+	DeleteUdpRouter(ctx context.Context, id string) error
+	DeleteUdpService(ctx context.Context, id string) error
 	DeleteUser(ctx context.Context, id string) error
 	GetAgent(ctx context.Context, id string) (Agent, error)
 	GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error)
 	GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error)
 	GetDnsProvider(ctx context.Context, id int64) (DnsProvider, error)
 	GetDnsProviderByName(ctx context.Context, name string) (DnsProvider, error)
-	GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID int64) ([]DnsProvider, error)
-	GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID int64) ([]DnsProvider, error)
-	GetEntryPoint(ctx context.Context, id int64) (EntryPoint, error)
+	GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID string) ([]DnsProvider, error)
+	GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID string) ([]DnsProvider, error)
+	GetEntryPoint(ctx context.Context, id string) (EntryPoint, error)
 	GetErrorsByProfile(ctx context.Context, profileID int64) ([]Error, error)
-	GetHttpMiddleware(ctx context.Context, id int64) (HttpMiddleware, error)
-	GetHttpRouter(ctx context.Context, id int64) (HttpRouter, error)
+	GetHttpMiddleware(ctx context.Context, id string) (HttpMiddleware, error)
+	GetHttpRouter(ctx context.Context, id string) (HttpRouter, error)
 	GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDomainsRow, error)
 	GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error)
 	GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error)
-	GetHttpServersTransport(ctx context.Context, id int64) (HttpServersTransport, error)
-	GetHttpService(ctx context.Context, id int64) (HttpService, error)
+	GetHttpServersTransport(ctx context.Context, id string) (HttpServersTransport, error)
+	GetHttpService(ctx context.Context, id string) (HttpService, error)
 	GetHttpServiceByName(ctx context.Context, arg GetHttpServiceByNameParams) (HttpService, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetProfileByName(ctx context.Context, name string) (Profile, error)
 	GetSetting(ctx context.Context, key string) (Setting, error)
-	GetTcpMiddleware(ctx context.Context, id int64) (TcpMiddleware, error)
-	GetTcpRouter(ctx context.Context, id int64) (TcpRouter, error)
+	GetTcpMiddleware(ctx context.Context, id string) (TcpMiddleware, error)
+	GetTcpRouter(ctx context.Context, id string) (TcpRouter, error)
 	GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomainsRow, error)
 	GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRoutersUsingEntryPointParams) ([]GetTcpRoutersUsingEntryPointRow, error)
 	GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRoutersUsingMiddlewareParams) ([]GetTcpRoutersUsingMiddlewareRow, error)
-	GetTcpServersTransport(ctx context.Context, id int64) (TcpServersTransport, error)
-	GetTcpService(ctx context.Context, id int64) (TcpService, error)
+	GetTcpServersTransport(ctx context.Context, id string) (TcpServersTransport, error)
+	GetTcpService(ctx context.Context, id string) (TcpService, error)
 	GetTcpServiceByName(ctx context.Context, arg GetTcpServiceByNameParams) (TcpService, error)
-	GetTraefikInstanceByID(ctx context.Context, id int64) (TraefikInstance, error)
+	GetTraefikInstanceByID(ctx context.Context, id string) (TraefikInstance, error)
 	GetTraefikInstanceByName(ctx context.Context, arg GetTraefikInstanceByNameParams) (TraefikInstance, error)
-	GetUdpRouter(ctx context.Context, id int64) (UdpRouter, error)
+	GetUdpRouter(ctx context.Context, id string) (UdpRouter, error)
 	GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRoutersUsingEntryPointParams) ([]GetUdpRoutersUsingEntryPointRow, error)
-	GetUdpService(ctx context.Context, id int64) (UdpService, error)
+	GetUdpService(ctx context.Context, id string) (UdpService, error)
 	GetUdpServiceByName(ctx context.Context, arg GetUdpServiceByNameParams) (UdpService, error)
 	GetUserByEmail(ctx context.Context, email *string) (User, error)
 	GetUserByID(ctx context.Context, id string) (User, error)
@@ -120,8 +118,6 @@ type Querier interface {
 	ListHttpServices(ctx context.Context, arg ListHttpServicesParams) ([]HttpService, error)
 	ListHttpServicesEnabled(ctx context.Context, profileID int64) ([]HttpService, error)
 	ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error)
-	ListServersTransportsByAgent(ctx context.Context, arg ListServersTransportsByAgentParams) ([]ListServersTransportsByAgentRow, error)
-	ListServersTransportsByProfile(ctx context.Context, arg ListServersTransportsByProfileParams) ([]ListServersTransportsByProfileRow, error)
 	ListSettings(ctx context.Context) ([]Setting, error)
 	ListTcpMiddlewares(ctx context.Context, arg ListTcpMiddlewaresParams) ([]TcpMiddleware, error)
 	ListTcpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]TcpMiddleware, error)
@@ -140,9 +136,9 @@ type Querier interface {
 	LogError(ctx context.Context, arg LogErrorParams) error
 	PurgeTraefikInstances(ctx context.Context) error
 	UnsetDefaultDNSProvider(ctx context.Context) error
-	UnsetDefaultEntryPoint(ctx context.Context) error
-	UnsetDefaultHttpMiddleware(ctx context.Context) error
-	UnsetDefaultTcpMiddleware(ctx context.Context) error
+	UnsetDefaultEntryPoint(ctx context.Context, profileID int64) error
+	UnsetDefaultHttpMiddleware(ctx context.Context, profileID int64) error
+	UnsetDefaultTcpMiddleware(ctx context.Context, profileID int64) error
 	UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error)
 	UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderParams) (DnsProvider, error)
 	UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error)

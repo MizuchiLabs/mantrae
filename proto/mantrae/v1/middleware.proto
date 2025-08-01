@@ -23,7 +23,7 @@ service MiddlewareService {
 }
 
 message Middleware {
-  int64 id = 1;
+  string id = 1;
   int64 profile_id = 2;
   string agent_id = 3;
   string name = 4;
@@ -60,7 +60,7 @@ message PluginSnippet {
 }
 
 message GetMiddlewareRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
   ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message GetMiddlewareResponse {
@@ -80,20 +80,21 @@ message CreateMiddlewareResponse {
 }
 
 message UpdateMiddlewareRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  string name = 2 [(buf.validate.field).string.min_len = 1];
-  ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
-  google.protobuf.Struct config = 4;
-  bool enabled = 5;
-  bool is_default = 6;
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  int64 profile_id = 2 [(buf.validate.field).int64.gt = 0];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 4 [(buf.validate.field).enum.defined_only = true];
+  google.protobuf.Struct config = 5;
+  bool enabled = 6;
+  bool is_default = 7;
 }
 message UpdateMiddlewareResponse {
   Middleware middleware = 1;
 }
 
 message DeleteMiddlewareRequest {
-  int64 id = 2 [(buf.validate.field).int64.gt = 0];
-  ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
 }
 message DeleteMiddlewareResponse {}
 

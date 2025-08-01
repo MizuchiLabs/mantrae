@@ -26,7 +26,7 @@ const (
 
 type Router struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	AgentId       string                 `protobuf:"bytes,3,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
@@ -70,11 +70,11 @@ func (*Router) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_router_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Router) GetId() int64 {
+func (x *Router) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *Router) GetProfileId() int64 {
@@ -142,7 +142,7 @@ func (x *Router) GetUpdatedAt() *timestamppb.Timestamp {
 
 type GetRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -178,11 +178,11 @@ func (*GetRouterRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_router_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetRouterRequest) GetId() int64 {
+func (x *GetRouterRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *GetRouterRequest) GetType() ProtocolType {
@@ -366,7 +366,7 @@ func (x *CreateRouterResponse) GetRouter() *Router {
 
 type UpdateRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Type          ProtocolType           `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
@@ -406,11 +406,11 @@ func (*UpdateRouterRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_router_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *UpdateRouterRequest) GetId() int64 {
+func (x *UpdateRouterRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateRouterRequest) GetName() string {
@@ -494,7 +494,7 @@ func (x *UpdateRouterResponse) GetRouter() *Router {
 
 type DeleteRouterRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Type          ProtocolType           `protobuf:"varint,2,opt,name=type,proto3,enum=mantrae.v1.ProtocolType" json:"type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -530,11 +530,11 @@ func (*DeleteRouterRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_router_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *DeleteRouterRequest) GetId() int64 {
+func (x *DeleteRouterRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *DeleteRouterRequest) GetType() ProtocolType {
@@ -715,7 +715,7 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x17mantrae/v1/router.proto\x12\n" +
 	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1dmantrae/v1/dns_provider.proto\x1a\x19mantrae/v1/protocol.proto\"\x93\x03\n" +
 	"\x06Router\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
 	"profile_id\x18\x02 \x01(\x03R\tprofileId\x12\x19\n" +
 	"\bagent_id\x18\x03 \x01(\tR\aagentId\x12\x12\n" +
@@ -730,7 +730,7 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"updated_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"c\n" +
 	"\x10GetRouterRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x126\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"?\n" +
 	"\x11GetRouterResponse\x12*\n" +
 	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8a\x02\n" +
@@ -746,7 +746,7 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x14CreateRouterResponse\x12*\n" +
 	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"\x8c\x02\n" +
 	"\x13UpdateRouterRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x126\n" +
 	"\x04type\x18\x03 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x12/\n" +
 	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12\x18\n" +
@@ -755,7 +755,7 @@ const file_mantrae_v1_router_proto_rawDesc = "" +
 	"\x14UpdateRouterResponse\x12*\n" +
 	"\x06router\x18\x01 \x01(\v2\x12.mantrae.v1.RouterR\x06router\"f\n" +
 	"\x13DeleteRouterRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x126\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x126\n" +
 	"\x04type\x18\x02 \x01(\x0e2\x18.mantrae.v1.ProtocolTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\"\x16\n" +
 	"\x14DeleteRouterResponse\"\xdc\x02\n" +
 	"\x12ListRoutersRequest\x12&\n" +

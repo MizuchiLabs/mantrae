@@ -39,6 +39,7 @@ func (q *Queries) CountUdpServices(ctx context.Context, arg CountUdpServicesPara
 const createUdpService = `-- name: CreateUdpService :one
 INSERT INTO
   udp_services (
+    id,
     profile_id,
     agent_id,
     name,
@@ -47,10 +48,19 @@ INSERT INTO
     updated_at
   )
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateUdpServiceParams struct {
+	ID        string             `json:"id"`
 	ProfileID int64              `json:"profileId"`
 	AgentID   *string            `json:"agentId"`
 	Name      string             `json:"name"`
@@ -59,6 +69,7 @@ type CreateUdpServiceParams struct {
 
 func (q *Queries) CreateUdpService(ctx context.Context, arg CreateUdpServiceParams) (UdpService, error) {
 	row := q.queryRow(ctx, q.createUdpServiceStmt, createUdpService,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -84,7 +95,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteUdpService(ctx context.Context, id int64) error {
+func (q *Queries) DeleteUdpService(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteUdpServiceStmt, deleteUdpService, id)
 	return err
 }
@@ -98,7 +109,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetUdpService(ctx context.Context, id int64) (UdpService, error) {
+func (q *Queries) GetUdpService(ctx context.Context, id string) (UdpService, error) {
 	row := q.queryRow(ctx, q.getUdpServiceStmt, getUdpService, id)
 	var i UdpService
 	err := row.Scan(
@@ -265,7 +276,7 @@ type UpdateUdpServiceParams struct {
 	Name    string             `json:"name"`
 	Config  *schema.UDPService `json:"config"`
 	Enabled bool               `json:"enabled"`
-	ID      int64              `json:"id"`
+	ID      string             `json:"id"`
 }
 
 func (q *Queries) UpdateUdpService(ctx context.Context, arg UpdateUdpServiceParams) (UdpService, error) {

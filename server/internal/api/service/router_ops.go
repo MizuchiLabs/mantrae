@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/google/uuid"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -77,6 +78,7 @@ func (s *HTTPRouterOps) Create(
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
 	params := db.CreateHttpRouterParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,
@@ -287,6 +289,7 @@ func (s *TCPRouterOps) Create(
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
 	params := db.CreateTcpRouterParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,
@@ -476,6 +479,7 @@ func (s *UDPRouterOps) Create(
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
 	params := db.CreateUdpRouterParams{
+		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
 		AgentID:   req.AgentId,

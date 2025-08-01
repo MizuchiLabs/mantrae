@@ -15,7 +15,7 @@ import type { Message } from '@bufbuild/protobuf';
 export const file_mantrae_v1_entry_point: GenFile =
 	/*@__PURE__*/
 	fileDesc(
-		'ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIr8BCgpFbnRyeVBvaW50EgoKAmlkGAEgASgDEhIKCnByb2ZpbGVfaWQYAiABKAMSDAoEbmFtZRgDIAEoCRIPCgdhZGRyZXNzGAQgASgJEhIKCmlzX2RlZmF1bHQYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiKwoUR2V0RW50cnlQb2ludFJlcXVlc3QSEwoCaWQYASABKANCB7pIBCICIAAiRAoVR2V0RW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IoMBChdDcmVhdGVFbnRyeVBvaW50UmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEhUKBG5hbWUYAiABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgDIAEoCBIUCgdhZGRyZXNzGAQgASgJSACIAQFCCgoIX2FkZHJlc3MiRwoYQ3JlYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50InsKF1VwZGF0ZUVudHJ5UG9pbnRSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAEhUKBG5hbWUYAiABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgDIAEoCBIUCgdhZGRyZXNzGAQgASgJSACIAQFCCgoIX2FkZHJlc3MiRwoYVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50Ii4KF0RlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0EhMKAmlkGAEgASgDQge6SAQiAiAAIhoKGERlbGV0ZUVudHJ5UG9pbnRSZXNwb25zZSLUAQoWTGlzdEVudHJ5UG9pbnRzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEmoKBWxpbWl0GAIgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgDIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlwKF0xpc3RFbnRyeVBvaW50c1Jlc3BvbnNlEiwKDGVudHJ5X3BvaW50cxgBIAMoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludBITCgt0b3RhbF9jb3VudBgCIAEoAzLsAwoRRW50cnlQb2ludFNlcnZpY2USWQoNR2V0RW50cnlQb2ludBIgLm1hbnRyYWUudjEuR2V0RW50cnlQb2ludFJlcXVlc3QaIS5tYW50cmFlLnYxLkdldEVudHJ5UG9pbnRSZXNwb25zZSIDkAIBEl0KEENyZWF0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLkNyZWF0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5DcmVhdGVFbnRyeVBvaW50UmVzcG9uc2USXQoQVXBkYXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuVXBkYXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLlVwZGF0ZUVudHJ5UG9pbnRSZXNwb25zZRJdChBEZWxldGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5EZWxldGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuRGVsZXRlRW50cnlQb2ludFJlc3BvbnNlEl8KD0xpc3RFbnRyeVBvaW50cxIiLm1hbnRyYWUudjEuTGlzdEVudHJ5UG9pbnRzUmVxdWVzdBojLm1hbnRyYWUudjEuTGlzdEVudHJ5UG9pbnRzUmVzcG9uc2UiA5ACAUKpAQoOY29tLm1hbnRyYWUudjFCD0VudHJ5UG9pbnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
+		'ChxtYW50cmFlL3YxL2VudHJ5X3BvaW50LnByb3RvEgptYW50cmFlLnYxIr8BCgpFbnRyeVBvaW50EgoKAmlkGAEgASgJEhIKCnByb2ZpbGVfaWQYAiABKAMSDAoEbmFtZRgDIAEoCRIPCgdhZGRyZXNzGAQgASgJEhIKCmlzX2RlZmF1bHQYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiKwoUR2V0RW50cnlQb2ludFJlcXVlc3QSEwoCaWQYASABKAlCB7pIBHICEAEiRAoVR2V0RW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IoMBChdDcmVhdGVFbnRyeVBvaW50UmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEhUKBG5hbWUYAiABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgDIAEoCBIUCgdhZGRyZXNzGAQgASgJSACIAQFCCgoIX2FkZHJlc3MiRwoYQ3JlYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50IpgBChdVcGRhdGVFbnRyeVBvaW50UmVxdWVzdBITCgJpZBgBIAEoCUIHukgEcgIQARIbCgpwcm9maWxlX2lkGAIgASgDQge6SAQiAiAAEhUKBG5hbWUYAyABKAlCB7pIBHICEAESEgoKaXNfZGVmYXVsdBgEIAEoCBIUCgdhZGRyZXNzGAUgASgJSACIAQFCCgoIX2FkZHJlc3MiRwoYVXBkYXRlRW50cnlQb2ludFJlc3BvbnNlEisKC2VudHJ5X3BvaW50GAEgASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50Ii4KF0RlbGV0ZUVudHJ5UG9pbnRSZXF1ZXN0EhMKAmlkGAEgASgJQge6SARyAhABIhoKGERlbGV0ZUVudHJ5UG9pbnRSZXNwb25zZSLUAQoWTGlzdEVudHJ5UG9pbnRzUmVxdWVzdBIbCgpwcm9maWxlX2lkGAEgASgDQge6SAQiAiAAEmoKBWxpbWl0GAIgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgDIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlwKF0xpc3RFbnRyeVBvaW50c1Jlc3BvbnNlEiwKDGVudHJ5X3BvaW50cxgBIAMoCzIWLm1hbnRyYWUudjEuRW50cnlQb2ludBITCgt0b3RhbF9jb3VudBgCIAEoAzLsAwoRRW50cnlQb2ludFNlcnZpY2USWQoNR2V0RW50cnlQb2ludBIgLm1hbnRyYWUudjEuR2V0RW50cnlQb2ludFJlcXVlc3QaIS5tYW50cmFlLnYxLkdldEVudHJ5UG9pbnRSZXNwb25zZSIDkAIBEl0KEENyZWF0ZUVudHJ5UG9pbnQSIy5tYW50cmFlLnYxLkNyZWF0ZUVudHJ5UG9pbnRSZXF1ZXN0GiQubWFudHJhZS52MS5DcmVhdGVFbnRyeVBvaW50UmVzcG9uc2USXQoQVXBkYXRlRW50cnlQb2ludBIjLm1hbnRyYWUudjEuVXBkYXRlRW50cnlQb2ludFJlcXVlc3QaJC5tYW50cmFlLnYxLlVwZGF0ZUVudHJ5UG9pbnRSZXNwb25zZRJdChBEZWxldGVFbnRyeVBvaW50EiMubWFudHJhZS52MS5EZWxldGVFbnRyeVBvaW50UmVxdWVzdBokLm1hbnRyYWUudjEuRGVsZXRlRW50cnlQb2ludFJlc3BvbnNlEl8KD0xpc3RFbnRyeVBvaW50cxIiLm1hbnRyYWUudjEuTGlzdEVudHJ5UG9pbnRzUmVxdWVzdBojLm1hbnRyYWUudjEuTGlzdEVudHJ5UG9pbnRzUmVzcG9uc2UiA5ACAUKpAQoOY29tLm1hbnRyYWUudjFCD0VudHJ5UG9pbnRQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
 		[file_buf_validate_validate, file_google_protobuf_timestamp]
 	);
 
@@ -24,9 +24,9 @@ export const file_mantrae_v1_entry_point: GenFile =
  */
 export type EntryPoint = Message<'mantrae.v1.EntryPoint'> & {
 	/**
-	 * @generated from field: int64 id = 1;
+	 * @generated from field: string id = 1;
 	 */
-	id: bigint;
+	id: string;
 
 	/**
 	 * @generated from field: int64 profile_id = 2;
@@ -72,9 +72,9 @@ export const EntryPointSchema: GenMessage<EntryPoint> =
  */
 export type GetEntryPointRequest = Message<'mantrae.v1.GetEntryPointRequest'> & {
 	/**
-	 * @generated from field: int64 id = 1;
+	 * @generated from field: string id = 1;
 	 */
-	id: bigint;
+	id: string;
 };
 
 /**
@@ -159,22 +159,27 @@ export const CreateEntryPointResponseSchema: GenMessage<CreateEntryPointResponse
  */
 export type UpdateEntryPointRequest = Message<'mantrae.v1.UpdateEntryPointRequest'> & {
 	/**
-	 * @generated from field: int64 id = 1;
+	 * @generated from field: string id = 1;
 	 */
-	id: bigint;
+	id: string;
 
 	/**
-	 * @generated from field: string name = 2;
+	 * @generated from field: int64 profile_id = 2;
+	 */
+	profileId: bigint;
+
+	/**
+	 * @generated from field: string name = 3;
 	 */
 	name: string;
 
 	/**
-	 * @generated from field: bool is_default = 3;
+	 * @generated from field: bool is_default = 4;
 	 */
 	isDefault: boolean;
 
 	/**
-	 * @generated from field: optional string address = 4;
+	 * @generated from field: optional string address = 5;
 	 */
 	address?: string;
 };
@@ -210,9 +215,9 @@ export const UpdateEntryPointResponseSchema: GenMessage<UpdateEntryPointResponse
  */
 export type DeleteEntryPointRequest = Message<'mantrae.v1.DeleteEntryPointRequest'> & {
 	/**
-	 * @generated from field: int64 id = 1;
+	 * @generated from field: string id = 1;
 	 */
-	id: bigint;
+	id: string;
 };
 
 /**

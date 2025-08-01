@@ -39,6 +39,7 @@ func (q *Queries) CountHttpMiddlewares(ctx context.Context, arg CountHttpMiddlew
 const createHttpMiddleware = `-- name: CreateHttpMiddleware :one
 INSERT INTO
   http_middlewares (
+    id,
     profile_id,
     agent_id,
     name,
@@ -54,12 +55,14 @@ VALUES
     ?,
     ?,
     ?,
+    ?,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   ) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
 `
 
 type CreateHttpMiddlewareParams struct {
+	ID        string                 `json:"id"`
 	ProfileID int64                  `json:"profileId"`
 	AgentID   *string                `json:"agentId"`
 	Name      string                 `json:"name"`
@@ -69,6 +72,7 @@ type CreateHttpMiddlewareParams struct {
 
 func (q *Queries) CreateHttpMiddleware(ctx context.Context, arg CreateHttpMiddlewareParams) (HttpMiddleware, error) {
 	row := q.queryRow(ctx, q.createHttpMiddlewareStmt, createHttpMiddleware,
+		arg.ID,
 		arg.ProfileID,
 		arg.AgentID,
 		arg.Name,
@@ -96,7 +100,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) DeleteHttpMiddleware(ctx context.Context, id int64) error {
+func (q *Queries) DeleteHttpMiddleware(ctx context.Context, id string) error {
 	_, err := q.exec(ctx, q.deleteHttpMiddlewareStmt, deleteHttpMiddleware, id)
 	return err
 }
@@ -110,7 +114,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpMiddleware(ctx context.Context, id int64) (HttpMiddleware, error) {
+func (q *Queries) GetHttpMiddleware(ctx context.Context, id string) (HttpMiddleware, error) {
 	row := q.queryRow(ctx, q.getHttpMiddlewareStmt, getHttpMiddleware, id)
 	var i HttpMiddleware
 	err := row.Scan(
@@ -240,10 +244,11 @@ SET
   is_default = FALSE
 WHERE
   is_default = TRUE
+  AND profile_id = ?
 `
 
-func (q *Queries) UnsetDefaultHttpMiddleware(ctx context.Context) error {
-	_, err := q.exec(ctx, q.unsetDefaultHttpMiddlewareStmt, unsetDefaultHttpMiddleware)
+func (q *Queries) UnsetDefaultHttpMiddleware(ctx context.Context, profileID int64) error {
+	_, err := q.exec(ctx, q.unsetDefaultHttpMiddlewareStmt, unsetDefaultHttpMiddleware, profileID)
 	return err
 }
 
@@ -264,7 +269,7 @@ type UpdateHttpMiddlewareParams struct {
 	Config    *schema.HTTPMiddleware `json:"config"`
 	Enabled   bool                   `json:"enabled"`
 	IsDefault bool                   `json:"isDefault"`
-	ID        int64                  `json:"id"`
+	ID        string                 `json:"id"`
 }
 
 func (q *Queries) UpdateHttpMiddleware(ctx context.Context, arg UpdateHttpMiddlewareParams) (HttpMiddleware, error) {

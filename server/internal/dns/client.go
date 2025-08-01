@@ -103,7 +103,7 @@ func UpdateDNS(ctx context.Context, q *db.Queries) (err error) {
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func DeleteDNS(ctx context.Context, q *db.Queries, proto string, routerID int64) error {
+func DeleteDNS(ctx context.Context, q *db.Queries, proto, routerID string) error {
 	switch proto {
 	case "http":
 		router, err := q.GetHttpRouter(ctx, routerID)

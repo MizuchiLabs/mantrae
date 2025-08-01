@@ -104,7 +104,7 @@
 							label: 'Delete Transport',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id),
+							onClick: () => deleteItem(row.original),
 							popover: {
 								title: 'Delete Transport?',
 								description: 'This transport will be permanently deleted.',
@@ -135,9 +135,9 @@
 		}
 	];
 
-	async function deleteItem(id: bigint) {
+	async function deleteItem(item: ServersTransport) {
 		try {
-			await serversTransportClient.deleteServersTransport({ id: id });
+			await serversTransportClient.deleteServersTransport({ id: item.id, type: item.type });
 			toast.success('Transport deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);

@@ -861,12 +861,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: DeleteEntryPointRequest
       additionalProperties: false
     mantrae.v1.DeleteEntryPointResponse:
@@ -877,11 +874,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
@@ -909,12 +903,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: GetEntryPointRequest
       additionalProperties: false
     mantrae.v1.GetEntryPointResponse:
@@ -977,11 +968,15 @@ components:
       type: object
       properties:
         id:
+          type: string
+          title: id
+          minLength: 1
+        profileId:
           exclusiveMinimum: 0
           type:
             - integer
             - string
-          title: id
+          title: profile_id
           format: int64
         name:
           type: string
@@ -1118,12 +1113,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1151,12 +1143,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1231,11 +1220,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
@@ -1341,11 +1327,15 @@ components:
       type: object
       properties:
         id:
+          type: string
+          title: id
+          minLength: 1
+        profileId:
           exclusiveMinimum: 0
           type:
             - integer
             - string
-          title: id
+          title: profile_id
           format: int64
         name:
           type: string
@@ -1570,12 +1560,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1589,12 +1576,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1669,11 +1653,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
@@ -1712,12 +1693,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         name:
           type: string
           title: name
@@ -1787,12 +1765,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1806,12 +1781,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -1886,11 +1858,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
@@ -1924,12 +1893,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         name:
           type: string
           title: name
@@ -1994,12 +1960,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         type:
           title: type
           $ref: '#/components/schemas/mantrae.v1.ProtocolType'
@@ -2014,12 +1977,9 @@ components:
       oneOf:
         - properties:
             id:
-              exclusiveMinimum: 0
-              type:
-                - integer
-                - string
+              type: string
               title: id
-              format: int64
+              minLength: 1
           title: id
           required:
             - id
@@ -2113,11 +2073,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
@@ -2151,12 +2108,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         name:
           type: string
           title: name
@@ -2249,12 +2203,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: DeleteTraefikInstanceRequest
       additionalProperties: false
     mantrae.v1.DeleteTraefikInstanceResponse:
@@ -2265,12 +2216,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: GetTraefikInstanceRequest
       additionalProperties: false
     mantrae.v1.GetTraefikInstanceResponse:
@@ -2333,11 +2281,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         profileId:
           type:
             - integer
