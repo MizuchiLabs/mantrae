@@ -78,7 +78,7 @@
 							label: 'Delete EntryPoint',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteItem(row.original.id),
+							onClick: () => deleteItem(row.original),
 							popover: {
 								title: 'Delete EntryPoint?',
 								description: 'This entry point will be permanently deleted.',
@@ -102,9 +102,9 @@
 		}
 	];
 
-	async function deleteItem(id: bigint) {
+	async function deleteItem(item: EntryPoint) {
 		try {
-			await entryPointClient.deleteEntryPoint({ id: id });
+			await entryPointClient.deleteEntryPoint({ id: item.id });
 			toast.success('EntryPoint deleted');
 		} catch (err) {
 			const e = ConnectError.from(err);
