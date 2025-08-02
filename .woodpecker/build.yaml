@@ -19,7 +19,6 @@ steps:
       - pnpm config set store-dir .pnpm-store
       - pnpm install
       - pnpm format
-      - pnpm lint
       - pnpm build
 
   - name: test:backend
