@@ -8,13 +8,13 @@
 	import { goto } from '$app/navigation';
 	import { checkHealth } from '$lib/api';
 	import { baseURL } from '$lib/stores/common';
-	import { Loader2 } from '@lucide/svelte';
+	import { Loader } from '@lucide/svelte';
 	import { onDestroy, onMount } from 'svelte';
 
 	let url = $state(baseURL.value ?? '');
 	let isChecking = $state(false);
 	let isHealthy = $state(false);
-	let reconnectTimer = $state<NodeJS.Timeout | null>(null);
+	let reconnectTimer = $state<ReturnType<typeof setInterval> | null>(null);
 
 	const silentCheckConnection = async () => {
 		if (isChecking) return; // Don't run if already checking
@@ -139,7 +139,7 @@
 
 		<Button class="w-full" onclick={handleSave} disabled={isChecking || !url.trim()}>
 			{#if isChecking}
-				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+				<Loader class="mr-2 h-4 w-4 animate-spin" />
 				Connecting...
 			{:else}
 				Save & Connect
