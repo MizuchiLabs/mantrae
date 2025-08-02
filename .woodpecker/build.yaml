@@ -31,6 +31,8 @@ steps:
       - go vet ./...
       - go test ./...
       - golangci-lint run
+    depends_on:
+      - build:frontend
 
   - name: release:container
     image: ghcr.io/ko-build/ko:latest
