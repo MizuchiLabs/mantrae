@@ -7,11 +7,10 @@
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
-	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
 	import { onMount } from 'svelte';
-	import { profile } from '$lib/stores/profile';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { entryPoints, middlewares, routers } from '$lib/stores/realtime';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -23,40 +22,19 @@
 	});
 
 	onMount(async () => {
-		// Get cert resolvers
-		const response = await routerClient.listRouters({
-			profileId: router.profileId ?? profile.id,
-			type: router.type,
-			limit: -1n,
-			offset: 0n
+		$routers.forEach((r) => {
+			if (r.type === router.type) {
+				let tmp = unmarshalConfig(r.config) as TCPRouter;
+				if (tmp?.tls?.certResolver) certResolvers.push(tmp.tls?.certResolver);
+			}
 		});
-		const resolverSet = new Set(
-			response.routers
-				.filter((r) => {
-					let tmp = unmarshalConfig(r.config) as TCPRouter;
-					if (!tmp?.tls?.certResolver) return false;
-					return true;
-				})
-				.map((r) => {
-					let tmp = unmarshalConfig(r.config) as TCPRouter;
-					return tmp.tls?.certResolver ?? '';
-				})
-		);
-		certResolvers = Array.from(resolverSet);
 
 		// Set default entrypoint
-		entryPointClient
-			.listEntryPoints({ profileId: profile.id, limit: -1n, offset: 0n })
-			.then((data) => {
-				let defaultEntryPoint = data.entryPoints.find((e) => e.isDefault);
-				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
-			});
-		middlewareClient
-			.listMiddlewares({ profileId: profile.id, type: ProtocolType.TCP, limit: -1n, offset: 0n })
-			.then((data) => {
-				let defaultMiddleware = data.middlewares.find((m) => m.isDefault);
-				if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
-			});
+		let defaultEntryPoint = $entryPoints.find((e) => e.isDefault);
+		if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
+
+		let defaultMiddleware = $middlewares.find((m) => m.isDefault && m.type === ProtocolType.TCP);
+		if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
 	});
 </script>
 
@@ -69,18 +47,16 @@
 				{config.entryPoints?.join(', ') || 'Select entrypoints'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await entryPointClient.listEntryPoints( { profileId: profile.id, limit: -1n, offset: 0n } ) then value}
-					{#each value.entryPoints as e (e.id)}
-						<Select.Item value={e.name}>
-							<div class="flex items-center gap-2">
-								{e.name}
-								{#if e.isDefault}
-									<Star size="1rem" class="text-yellow-300" />
-								{/if}
-							</div>
-						</Select.Item>
-					{/each}
-				{/await}
+				{#each $entryPoints || [] as e (e.id)}
+					<Select.Item value={e.name}>
+						<div class="flex items-center gap-2">
+							{e.name}
+							{#if e.isDefault}
+								<Star size="1rem" class="text-yellow-300" />
+							{/if}
+						</div>
+					</Select.Item>
+				{/each}
 			</Select.Content>
 		</Select.Root>
 	</div>
@@ -93,13 +69,11 @@
 				{config.middlewares?.join(', ') || 'Select middlewares'}
 			</Select.Trigger>
 			<Select.Content>
-				{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: ProtocolType.TCP, limit: -1n, offset: 0n } ) then value}
-					{#each value.middlewares as middleware (middleware.name)}
-						<Select.Item value={middleware.name}>
-							{middleware.name}
-						</Select.Item>
-					{/each}
-				{/await}
+				{#each $middlewares || [] as middleware (middleware.id)}
+					<Select.Item value={middleware.name}>
+						{middleware.name}
+					</Select.Item>
+				{/each}
 			</Select.Content>
 		</Select.Root>
 	</div>

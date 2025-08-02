@@ -8,13 +8,12 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { Router as HTTPRouter, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
-	import { AlertCircle, ExternalLink, Plus, Star } from '@lucide/svelte';
-	import { entryPointClient, middlewareClient, routerClient } from '$lib/api';
+	import { CircleAlert, ExternalLink, Plus, Star } from '@lucide/svelte';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
-	import { profile } from '$lib/stores/profile';
 	import { formatArrayDisplay } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { entryPoints, middlewares, routers } from '$lib/stores/realtime';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -26,131 +25,105 @@
 	});
 
 	onMount(async () => {
-		// Get cert resolvers
-		const response = await routerClient.listRouters({
-			profileId: router.profileId ?? profile.id,
-			type: router.type,
-			limit: -1n,
-			offset: 0n
+		$routers.forEach((r) => {
+			if (r.type === router.type) {
+				let tmp = unmarshalConfig(r.config) as HTTPRouter;
+				if (tmp?.tls?.certResolver) certResolvers.push(tmp.tls?.certResolver);
+			}
 		});
-		const resolverSet = new Set(
-			response.routers
-				.filter((r) => {
-					let tmp = unmarshalConfig(r.config) as HTTPRouter;
-					if (!tmp?.tls?.certResolver) return false;
-					return true;
-				})
-				.map((r) => {
-					let tmp = unmarshalConfig(r.config) as HTTPRouter;
-					return tmp.tls?.certResolver ?? '';
-				})
-				.filter(Boolean)
-		);
-		certResolvers = Array.from(resolverSet);
 
-		// Set default entrypoint
-		entryPointClient
-			.listEntryPoints({ profileId: profile.id, limit: -1n, offset: 0n })
-			.then((data) => {
-				let defaultEntryPoint = data.entryPoints.find((e) => e.isDefault);
-				if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
-			});
-		middlewareClient
-			.listMiddlewares({ profileId: profile.id, type: ProtocolType.HTTP, limit: -1n, offset: 0n })
-			.then((data) => {
-				let defaultMiddleware = data.middlewares.find((m) => m.isDefault);
-				if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
-			});
+		// Set defaults
+		let defaultEntryPoint = $entryPoints.find((e) => e.isDefault);
+		if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
+
+		let defaultMiddleware = $middlewares.find((m) => m.isDefault && m.type === ProtocolType.HTTP);
+		if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
 	});
 </script>
 
 <div class="flex flex-col gap-3">
 	<!-- Entrypoints -->
-	{#await entryPointClient.listEntryPoints( { profileId: profile.id, limit: -1n, offset: 0n } ) then value}
-		{#if !value.entryPoints.length}
-			<Alert.Root class="border-dashed">
-				<AlertCircle class="h-4 w-4" />
-				<Alert.Title>No entrypoints found</Alert.Title>
-				<Alert.Description class="flex items-center justify-between">
-					<span>Create an entrypoint to get started.</span>
-					<Button
-						variant="outline"
-						size="sm"
-						href="/entrypoints"
-						class="ml-4 flex shrink-0 items-center gap-2"
-					>
-						<Plus />
-						Create Entrypoint
-						<ExternalLink />
-					</Button>
-				</Alert.Description>
-			</Alert.Root>
-		{:else}
-			<div class="flex flex-col gap-2">
-				<Label class="mr-2">Entrypoints</Label>
-				<Select.Root type="multiple" bind:value={config.entryPoints}>
-					<Select.Trigger class="w-full">
-						<span class="truncate text-left">
-							{formatArrayDisplay(config.entryPoints) || 'Select entrypoints'}
-						</span>
-					</Select.Trigger>
-					<Select.Content>
-						{#each value.entryPoints as e (e.id)}
-							<Select.Item value={e.name}>
-								<div class="flex items-center gap-2">
-									<span class="truncate">{e.name}</span>
-									{#if e.isDefault}
-										<Star size="1rem" class="text-yellow-300" />
-									{/if}
-								</div>
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-		{/if}
-	{/await}
+	{#if !$entryPoints.length}
+		<Alert.Root class="border-dashed">
+			<CircleAlert class="h-4 w-4" />
+			<Alert.Title>No entrypoints found</Alert.Title>
+			<Alert.Description class="flex items-center justify-between">
+				<span>Create an entrypoint to get started.</span>
+				<Button
+					variant="outline"
+					size="sm"
+					href="/entrypoints"
+					class="ml-4 flex shrink-0 items-center gap-2"
+				>
+					<Plus />
+					Create Entrypoint
+					<ExternalLink />
+				</Button>
+			</Alert.Description>
+		</Alert.Root>
+	{:else}
+		<div class="flex flex-col gap-2">
+			<Label class="mr-2">Entrypoints</Label>
+			<Select.Root type="multiple" bind:value={config.entryPoints}>
+				<Select.Trigger class="w-full">
+					<span class="truncate text-left">
+						{formatArrayDisplay(config.entryPoints) || 'Select entrypoints'}
+					</span>
+				</Select.Trigger>
+				<Select.Content>
+					{#each $entryPoints || [] as e (e.id)}
+						<Select.Item value={e.name}>
+							<div class="flex items-center gap-2">
+								<span class="truncate">{e.name}</span>
+								{#if e.isDefault}
+									<Star size="1rem" class="text-yellow-300" />
+								{/if}
+							</div>
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
+	{/if}
 
 	<!-- Middlewares -->
-	{#await middlewareClient.listMiddlewares( { profileId: profile.id, type: ProtocolType.HTTP, limit: -1n, offset: 0n } ) then value}
-		{#if !value.middlewares.length}
-			<Alert.Root class="border-dashed">
-				<AlertCircle class="h-4 w-4" />
-				<Alert.Title>No middlewares found</Alert.Title>
-				<Alert.Description class="flex items-center justify-between">
-					<span>Create middlewares to add authentication, rate limiting, and more.</span>
-					<Button
-						variant="outline"
-						size="sm"
-						href="/middlewares"
-						class="ml-4 flex shrink-0 items-center gap-2"
-					>
-						<Plus />
-						Create Middleware
-						<ExternalLink />
-					</Button>
-				</Alert.Description>
-			</Alert.Root>
-		{:else}
-			<div class="flex flex-col gap-2">
-				<Label class="mr-2">Middlewares</Label>
-				<Select.Root type="multiple" bind:value={config.middlewares}>
-					<Select.Trigger class="w-full" disabled={!value.middlewares.length}>
-						<span class="truncate text-left">
-							{formatArrayDisplay(config.middlewares) || 'Select middlewares'}
-						</span>
-					</Select.Trigger>
-					<Select.Content>
-						{#each value.middlewares as middleware (middleware.name)}
-							<Select.Item value={middleware.name}>
-								<span class="truncate">{middleware.name}</span>
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			</div>
-		{/if}
-	{/await}
+	{#if !$middlewares.length}
+		<Alert.Root class="border-dashed">
+			<CircleAlert class="h-4 w-4" />
+			<Alert.Title>No middlewares found</Alert.Title>
+			<Alert.Description class="flex items-center justify-between">
+				<span>Create middlewares to add authentication, rate limiting, and more.</span>
+				<Button
+					variant="outline"
+					size="sm"
+					href="/middlewares"
+					class="ml-4 flex shrink-0 items-center gap-2"
+				>
+					<Plus />
+					Create Middleware
+					<ExternalLink />
+				</Button>
+			</Alert.Description>
+		</Alert.Root>
+	{:else}
+		<div class="flex flex-col gap-2">
+			<Label class="mr-2">Middlewares</Label>
+			<Select.Root type="multiple" bind:value={config.middlewares}>
+				<Select.Trigger class="w-full" disabled={!$middlewares.length}>
+					<span class="truncate text-left">
+						{formatArrayDisplay(config.middlewares) || 'Select middlewares'}
+					</span>
+				</Select.Trigger>
+				<Select.Content>
+					{#each $middlewares || [] as middleware (middleware.id)}
+						<Select.Item value={middleware.name}>
+							<span class="truncate">{middleware.name}</span>
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
+	{/if}
 
 	<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
 		<!-- TLS Configuration -->

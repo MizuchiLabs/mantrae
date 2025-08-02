@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dnsClient, routerClient, serviceClient } from '$lib/api';
+	import { routerClient, serviceClient } from '$lib/api';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -32,6 +32,7 @@
 	import UDPServiceForm from '../forms/UDPServiceForm.svelte';
 	import DnsProviderSelect from '../forms/DNSProviderSelect.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { dnsProviders } from '$lib/stores/realtime';
 
 	interface Props {
 		item: Router;
@@ -190,35 +191,33 @@
 				</Alert.Root>
 
 				<!-- DNS Providers (Editable) -->
-				{#await dnsClient.listDnsProviders({ limit: -1n, offset: 0n }) then value}
-					{#if value.dnsProviders.length > 0}
-						<Card.Root>
-							<Card.Header>
-								<div class="flex items-center justify-between">
-									<div>
-										<Card.Title class="flex items-center gap-2">DNS Providers</Card.Title>
-										<Card.Description>Manage DNS providers for this router</Card.Description>
-									</div>
-									<DnsProviderSelect
-										bind:item
-										disabled={item.type === ProtocolType.UDP || !item.id}
-									/>
+				{#if $dnsProviders.length > 0}
+					<Card.Root>
+						<Card.Header>
+							<div class="flex items-center justify-between">
+								<div>
+									<Card.Title class="flex items-center gap-2">DNS Providers</Card.Title>
+									<Card.Description>Manage DNS providers for this router</Card.Description>
 								</div>
-							</Card.Header>
-							{#if item.dnsProviders?.length > 0}
-								<Card.Content>
-									<div class="flex flex-wrap gap-2">
-										{#each item.dnsProviders as provider (provider.id)}
-											<Badge variant="secondary">
-												{provider.name}
-											</Badge>
-										{/each}
-									</div>
-								</Card.Content>
-							{/if}
-						</Card.Root>
-					{/if}
-				{/await}
+								<DnsProviderSelect
+									bind:item
+									disabled={item.type === ProtocolType.UDP || !item.id}
+								/>
+							</div>
+						</Card.Header>
+						{#if item.dnsProviders?.length > 0}
+							<Card.Content>
+								<div class="flex flex-wrap gap-2">
+									{#each item.dnsProviders as provider (provider.id)}
+										<Badge variant="secondary">
+											{provider.name}
+										</Badge>
+									{/each}
+								</div>
+							</Card.Content>
+						{/if}
+					</Card.Root>
+				{/if}
 
 				<!-- Router Info (Read-only) -->
 				<Card.Root class="bg-muted/30">

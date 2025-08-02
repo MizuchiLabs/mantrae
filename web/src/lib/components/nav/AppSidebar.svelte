@@ -27,12 +27,13 @@
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
-	import { profileClient, userClient } from '$lib/api';
+	import { userClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
 	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
+	import { profiles } from '$lib/stores/realtime';
 
 	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -107,31 +108,29 @@
 						sideOffset={4}
 					>
 						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
-						{#await profileClient.listProfiles({}) then value}
-							{#each value.profiles || [] as p (p.id)}
-								<DropdownMenu.Item
-									onSelect={() => (profile.value = p)}
-									class="flex justify-between gap-2"
+						{#each $profiles || [] as p (p.id)}
+							<DropdownMenu.Item
+								onSelect={() => (profile.value = p)}
+								class="flex justify-between gap-2"
+							>
+								<div class="flex items-center gap-2">
+									<Layers2 class="size-4 shrink-0" />
+									{p.name}
+								</div>
+								<Button
+									variant="outline"
+									class="rounded-full"
+									size="sm"
+									onclick={() => {
+										modalProfile = p;
+										modalProfileOpen = true;
+									}}
 								>
-									<div class="flex items-center gap-2">
-										<Layers2 class="size-4 shrink-0" />
-										{p.name}
-									</div>
-									<Button
-										variant="outline"
-										class="rounded-full"
-										size="sm"
-										onclick={() => {
-											modalProfile = p;
-											modalProfileOpen = true;
-										}}
-									>
-										<Pencil />
-										Edit
-									</Button>
-								</DropdownMenu.Item>
-							{/each}
-						{/await}
+									<Pencil />
+									Edit
+								</Button>
+							</DropdownMenu.Item>
+						{/each}
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item
 							class="gap-2 p-2"

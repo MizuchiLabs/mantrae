@@ -7,7 +7,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
 	import { auditLogClient } from '$lib/api';
-	import { Search, User, AlertTriangle, Bot } from '@lucide/svelte';
+	import { Search, User, Bot, TriangleAlert } from '@lucide/svelte';
 	import type { AuditLog } from '$lib/gen/mantrae/v1/auditlog_pb';
 
 	interface Props {
@@ -98,7 +98,7 @@
 				{#if logs.length === 0}
 					<div class="flex items-center justify-center py-12">
 						<div class="space-y-2 text-center">
-							<AlertTriangle class="text-muted-foreground mx-auto h-8 w-8" />
+							<TriangleAlert class="text-muted-foreground mx-auto h-8 w-8" />
 							<p class="text-muted-foreground text-sm">
 								{searchQuery ? 'No logs match your search criteria' : 'No audit logs found'}
 							</p>
@@ -163,7 +163,7 @@
 			{:catch error}
 				<div class="flex items-center justify-center py-12">
 					<div class="space-y-2 text-center">
-						<AlertTriangle class="text-destructive mx-auto h-8 w-8" />
+						<TriangleAlert class="text-destructive mx-auto h-8 w-8" />
 						<p class="text-destructive text-sm">Failed to load audit logs</p>
 						<p class="text-muted-foreground text-xs">{error.message}</p>
 					</div>

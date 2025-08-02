@@ -24,17 +24,7 @@
 		CircleAlert
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
-	import {
-		agentClient,
-		auditLogClient,
-		dnsClient,
-		middlewareClient,
-		profileClient,
-		routerClient,
-		serviceClient,
-		traefikClient,
-		userClient
-	} from '$lib/api';
+	import { auditLogClient } from '$lib/api';
 	import { DateFormat } from '$lib/stores/common';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
@@ -53,7 +43,6 @@
 		traefikInstances,
 		users
 	} from '$lib/stores/realtime';
-	import { onMount } from 'svelte';
 
 	let onlineAgents = $derived.by(() => {
 		let activeAgents = $agents.reduce((count, agent) => {
@@ -92,34 +81,6 @@
 	let modalProfileOpen = $state(false);
 	let modalConfigOpen = $state(false);
 	let modalAuditLogOpen = $state(false);
-
-	onMount(async () => {
-		const p = await profileClient.listProfiles({});
-		profiles.set(p.profiles);
-
-		const u = await userClient.listUsers({});
-		users.set(u.users);
-
-		const d = await dnsClient.listDnsProviders({});
-		dnsProviders.set(d.dnsProviders);
-
-		if (profile.isValid()) {
-			const a = await agentClient.listAgents({ profileId: profile.id });
-			agents.set(a.agents);
-
-			const r = await routerClient.listRouters({ profileId: profile.id });
-			routers.set(r.routers);
-
-			const s = await serviceClient.listServices({ profileId: profile.id });
-			services.set(s.services);
-
-			const m = await middlewareClient.listMiddlewares({ profileId: profile.id });
-			middlewares.set(m.middlewares);
-
-			const i = await traefikClient.listTraefikInstances({ profileId: profile.id });
-			traefikInstances.set(i.traefikInstances);
-		}
-	});
 </script>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
@@ -456,7 +417,7 @@
 											<div class="mt-2 h-2 w-2 rounded-full bg-orange-500"></div>
 										{/if}
 										<div>
-											<p class="text-sm">{log.details}</p>
+											<p class="line-clamp-1 text-sm" title={log.details}>{log.details}</p>
 
 											<div class="text-muted-foreground flex items-center gap-2 text-xs">
 												{#if log.createdAt}
