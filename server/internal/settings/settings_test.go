@@ -15,12 +15,21 @@ func setupTest() (*SettingsManager, func()) {
 	conn := store.NewConnection(":memory:")
 	sm := NewManager(conn)
 
-	return sm, func() { conn.Close() }
+	return sm, func() {
+		if err := conn.Close(); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func TestNewManager(t *testing.T) {
 	conn := store.NewConnection(":memory:")
-	defer conn.Close()
+	// defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			t.Errorf("failed to close connection: %v", err)
+		}
+	}()
 
 	sm := NewManager(conn)
 	assert.NotNil(t, sm)
@@ -81,8 +90,14 @@ func TestStart(t *testing.T) {
 	ctx := context.Background()
 
 	// Set an environment variable
-	os.Setenv("SERVER_URL", "http://env.test")
-	defer os.Unsetenv("SERVER_URL")
+	if err := os.Setenv("SERVER_URL", "http://env.test"); err != nil {
+		t.Errorf("failed to set environment variable: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("SERVER_URL"); err != nil {
+			t.Errorf("failed to unset environment variable: %v", err)
+		}
+	}()
 
 	// Add a value to the database
 	err := sm.conn.GetQuery().UpsertSetting(ctx, db.UpsertSettingParams{

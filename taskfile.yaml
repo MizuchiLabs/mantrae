@@ -45,6 +45,13 @@ tasks:
       - go run agent/cmd/main.go
     silent: false
 
+  test:
+    desc: Run Go tests
+    cmds:
+      - go vet ./...
+      - go test ./...
+      - golangci-lint run
+
   # 󰚰 Update deps
   update:
     desc: Update dependencies
@@ -89,9 +96,8 @@ tasks:
   docker:build:
     desc: Build local test container with ko
     deps: [build:frontend]
-    dir: cmd/server
     cmds:
-      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build --bare .
+      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build --bare ./server/cmd
       - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build --bare ./agent/cmd
       - grype $IMAGE_SERVER_DEV
       - grype $IMAGE_AGENT_DEV

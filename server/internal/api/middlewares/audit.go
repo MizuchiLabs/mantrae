@@ -198,7 +198,7 @@ func extractRouterServiceDetails(
 		if updateReq, ok := req.Any().(*mantraev1.UpdateRouterRequest); ok {
 			if updateResp, ok := resp.Any().(*mantraev1.UpdateRouterResponse); ok {
 				return &updateResp.Router.ProfileId, fmt.Sprintf(
-					"Updated router '%s' (ID: %d)",
+					"Updated router '%s' (ID: %s)",
 					updateReq.Name,
 					updateResp.Router.Id,
 				)
@@ -206,7 +206,7 @@ func extractRouterServiceDetails(
 		}
 	case "DeleteRouter":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteRouterRequest); ok {
-			return nil, fmt.Sprintf("Deleted router (ID: %d)", deleteReq.Id)
+			return nil, fmt.Sprintf("Deleted router (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -230,7 +230,7 @@ func extractServiceServiceDetails(
 		if updateReq, ok := req.Any().(*mantraev1.UpdateServiceRequest); ok {
 			if updateResp, ok := resp.Any().(*mantraev1.UpdateServiceResponse); ok {
 				return &updateResp.Service.ProfileId, fmt.Sprintf(
-					"Updated service '%s' (ID: %d)",
+					"Updated service '%s' (ID: %s)",
 					updateReq.Name,
 					updateResp.Service.Id,
 				)
@@ -238,7 +238,7 @@ func extractServiceServiceDetails(
 		}
 	case "DeleteService":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteServiceRequest); ok {
-			return nil, fmt.Sprintf("Deleted service (ID: %d)", deleteReq.Id)
+			return nil, fmt.Sprintf("Deleted service (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -262,7 +262,7 @@ func extractMiddlewareServiceDetails(
 		if updateReq, ok := req.Any().(*mantraev1.UpdateMiddlewareRequest); ok {
 			if updateResp, ok := resp.Any().(*mantraev1.UpdateMiddlewareResponse); ok {
 				return &updateResp.Middleware.ProfileId, fmt.Sprintf(
-					"Updated middleware '%s' (ID: %d)",
+					"Updated middleware '%s' (ID: %s)",
 					updateReq.Name,
 					updateResp.Middleware.Id,
 				)
@@ -270,7 +270,7 @@ func extractMiddlewareServiceDetails(
 		}
 	case "DeleteMiddleware":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteMiddlewareRequest); ok {
-			return nil, fmt.Sprintf("Deleted middleware (ID: %d)", deleteReq.Id)
+			return nil, fmt.Sprintf("Deleted middleware (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -294,7 +294,7 @@ func extractEntryPointServiceDetails(
 		if updateReq, ok := req.Any().(*mantraev1.UpdateEntryPointRequest); ok {
 			if updateResp, ok := resp.Any().(*mantraev1.UpdateEntryPointResponse); ok {
 				return &updateResp.EntryPoint.ProfileId, fmt.Sprintf(
-					"Updated entrypoint '%s' (ID: %d)",
+					"Updated entrypoint '%s' (ID: %s)",
 					updateReq.Name,
 					updateResp.EntryPoint.Id,
 				)
@@ -302,7 +302,7 @@ func extractEntryPointServiceDetails(
 		}
 	case "DeleteEntryPoint":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteEntryPointRequest); ok {
-			return nil, fmt.Sprintf("Deleted entrypoint (ID: %d)", deleteReq.Id)
+			return nil, fmt.Sprintf("Deleted entrypoint (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
@@ -390,21 +390,4 @@ func extractUserServiceDetails(
 		}
 	}
 	return nil, ""
-}
-
-// createAuditLog creates an audit log entry
-func createAuditLog(ctx context.Context, q *db.Queries, event AuditEvent) error {
-	var params db.CreateAuditLogParams
-	params.Event = event.Event
-	if event.ProfileID != nil {
-		params.ProfileID = event.ProfileID
-	}
-	if event.Details != "" {
-		params.Details = &event.Details
-	}
-
-	// Extract user/agent context if available
-	params.UserID = GetUserIDFromContext(ctx)
-	params.AgentID = GetAgentIDFromContext(ctx)
-	return q.CreateAuditLog(ctx, params)
 }

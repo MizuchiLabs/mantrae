@@ -19,14 +19,13 @@
 
 	let { item = $bindable(), open = $bindable(false) }: Props = $props();
 
-	const handleSubmit = async (regenerateToken: boolean) => {
+	const onsubmit = async () => {
 		try {
 			if (item.id) {
 				const response = await profileClient.updateProfile({
 					id: item.id,
 					name: item.name,
-					description: item.description,
-					regenerateToken
+					description: item.description
 				});
 				toast.success(`Profile ${response.profile?.name} updated successfully`);
 				if (response.profile) profileStore.value = response.profile;
@@ -45,14 +44,14 @@
 		open = false;
 	};
 
-	const handleDelete = async () => {
+	const deleteProfile = async () => {
 		if (!item.id) return;
 
 		try {
 			await profileClient.deleteProfile({ id: item.id });
 			toast.success('Profile deleted successfully');
 			if (item.id === profileStore.value?.id) {
-				let response = await profileClient.listProfiles({ limit: -1n, offset: 0n });
+				let response = await profileClient.listProfiles({});
 				if (response.profiles.length === 0) {
 					profileStore.value = {} as Profile;
 					return;
@@ -67,6 +66,22 @@
 		}
 		open = false;
 	};
+
+	const regenerate = async () => {
+		try {
+			const response = await profileClient.updateProfile({
+				id: item.id,
+				name: item.name,
+				description: item.description,
+				regenerateToken: true
+			});
+			toast.success(`Token regenerated successfully`);
+			if (response.profile) profileStore.value = response.profile;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to regenerate token', { description: e.message });
+		}
+	};
 </script>
 
 <Dialog.Root bind:open>
@@ -76,7 +91,7 @@
 			<Dialog.Description>Configure your profile settings</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={() => handleSubmit(false)} class="space-y-4">
+		<form {onsubmit} class="space-y-4">
 			<div class="space-y-2">
 				<Label for="name" class="text-sm font-medium">Name</Label>
 				<Input
@@ -99,12 +114,7 @@
 					<Label for="token" class="text-sm font-medium">Connection Token</Label>
 					<div class="flex gap-2">
 						<CopyInput id="token" value={item.token} readonly />
-						<Button
-							variant="outline"
-							size="icon"
-							onclick={() => handleSubmit(true)}
-							title="Regenerate token"
-						>
+						<Button variant="outline" size="icon" onclick={regenerate} title="Regenerate token">
 							<RotateCcw class="h-4 w-4" />
 						</Button>
 					</div>
@@ -124,7 +134,7 @@
 
 			<div class="flex w-full flex-row gap-2">
 				{#if item.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
+					<Button type="button" variant="destructive" onclick={deleteProfile} class="flex-1">
 						Delete
 					</Button>
 				{/if}

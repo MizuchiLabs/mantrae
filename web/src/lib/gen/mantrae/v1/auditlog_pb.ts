@@ -2,142 +2,137 @@
 // @generated from file mantrae/v1/auditlog.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/auditlog.proto.
  */
-export const file_mantrae_v1_auditlog: GenFile =
-	/*@__PURE__*/
-	fileDesc(
-		'ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxItoBCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEhQKDHByb2ZpbGVfbmFtZRgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEhEKCXVzZXJfbmFtZRgFIAEoCRIQCghhZ2VudF9pZBgGIAEoCRISCgphZ2VudF9uYW1lGAcgASgJEg0KBWV2ZW50GAggASgJEg8KB2RldGFpbHMYCSABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAitQEKFExpc3RBdWRpdExvZ3NSZXF1ZXN0EmoKBWxpbWl0GAEgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgCIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlYKFUxpc3RBdWRpdExvZ3NSZXNwb25zZRIoCgphdWRpdF9sb2dzGAEgAygLMhQubWFudHJhZS52MS5BdWRpdExvZxITCgt0b3RhbF9jb3VudBgCIAEoAzJsCg9BdWRpdExvZ1NlcnZpY2USWQoNTGlzdEF1ZGl0TG9ncxIgLm1hbnRyYWUudjEuTGlzdEF1ZGl0TG9nc1JlcXVlc3QaIS5tYW50cmFlLnYxLkxpc3RBdWRpdExvZ3NSZXNwb25zZSIDkAIBQqcBCg5jb20ubWFudHJhZS52MUINQXVkaXRsb2dQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw',
-		[file_buf_validate_validate, file_google_protobuf_timestamp]
-	);
+export const file_mantrae_v1_auditlog: GenFile = /*@__PURE__*/
+  fileDesc("ChltYW50cmFlL3YxL2F1ZGl0bG9nLnByb3RvEgptYW50cmFlLnYxItoBCghBdWRpdExvZxIKCgJpZBgBIAEoAxISCgpwcm9maWxlX2lkGAIgASgDEhQKDHByb2ZpbGVfbmFtZRgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEhEKCXVzZXJfbmFtZRgFIAEoCRIQCghhZ2VudF9pZBgGIAEoCRISCgphZ2VudF9uYW1lGAcgASgJEg0KBWV2ZW50GAggASgJEg8KB2RldGFpbHMYCSABKAkSLgoKY3JlYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAitQEKFExpc3RBdWRpdExvZ3NSZXF1ZXN0EmoKBWxpbWl0GAEgASgDQla6SFO6AVAKC2xpbWl0LnZhbGlkEilsaW1pdCBtdXN0IGJlIGVpdGhlciAtMSBvciBncmVhdGVyIHRoYW4gMBoWdGhpcyA9PSAtMSB8fCB0aGlzID4gMEgAiAEBEhwKBm9mZnNldBgCIAEoA0IHukgEIgIoAEgBiAEBQggKBl9saW1pdEIJCgdfb2Zmc2V0IlYKFUxpc3RBdWRpdExvZ3NSZXNwb25zZRIoCgphdWRpdF9sb2dzGAEgAygLMhQubWFudHJhZS52MS5BdWRpdExvZxITCgt0b3RhbF9jb3VudBgCIAEoAzJsCg9BdWRpdExvZ1NlcnZpY2USWQoNTGlzdEF1ZGl0TG9ncxIgLm1hbnRyYWUudjEuTGlzdEF1ZGl0TG9nc1JlcXVlc3QaIS5tYW50cmFlLnYxLkxpc3RBdWRpdExvZ3NSZXNwb25zZSIDkAIBQqcBCg5jb20ubWFudHJhZS52MUINQXVkaXRsb2dQcm90b1ABWj1naXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvcHJvdG8vZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.AuditLog
  */
-export type AuditLog = Message<'mantrae.v1.AuditLog'> & {
-	/**
-	 * @generated from field: int64 id = 1;
-	 */
-	id: bigint;
+export type AuditLog = Message<"mantrae.v1.AuditLog"> & {
+  /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
 
-	/**
-	 * @generated from field: int64 profile_id = 2;
-	 */
-	profileId: bigint;
+  /**
+   * @generated from field: int64 profile_id = 2;
+   */
+  profileId: bigint;
 
-	/**
-	 * @generated from field: string profile_name = 3;
-	 */
-	profileName: string;
+  /**
+   * @generated from field: string profile_name = 3;
+   */
+  profileName: string;
 
-	/**
-	 * @generated from field: string user_id = 4;
-	 */
-	userId: string;
+  /**
+   * @generated from field: string user_id = 4;
+   */
+  userId: string;
 
-	/**
-	 * @generated from field: string user_name = 5;
-	 */
-	userName: string;
+  /**
+   * @generated from field: string user_name = 5;
+   */
+  userName: string;
 
-	/**
-	 * @generated from field: string agent_id = 6;
-	 */
-	agentId: string;
+  /**
+   * @generated from field: string agent_id = 6;
+   */
+  agentId: string;
 
-	/**
-	 * @generated from field: string agent_name = 7;
-	 */
-	agentName: string;
+  /**
+   * @generated from field: string agent_name = 7;
+   */
+  agentName: string;
 
-	/**
-	 * @generated from field: string event = 8;
-	 */
-	event: string;
+  /**
+   * @generated from field: string event = 8;
+   */
+  event: string;
 
-	/**
-	 * @generated from field: string details = 9;
-	 */
-	details: string;
+  /**
+   * @generated from field: string details = 9;
+   */
+  details: string;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp created_at = 10;
-	 */
-	createdAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 10;
+   */
+  createdAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.AuditLog.
  * Use `create(AuditLogSchema)` to create a new message.
  */
-export const AuditLogSchema: GenMessage<AuditLog> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_auditlog, 0);
+export const AuditLogSchema: GenMessage<AuditLog> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_auditlog, 0);
 
 /**
  * @generated from message mantrae.v1.ListAuditLogsRequest
  */
-export type ListAuditLogsRequest = Message<'mantrae.v1.ListAuditLogsRequest'> & {
-	/**
-	 * @generated from field: optional int64 limit = 1;
-	 */
-	limit?: bigint;
+export type ListAuditLogsRequest = Message<"mantrae.v1.ListAuditLogsRequest"> & {
+  /**
+   * @generated from field: optional int64 limit = 1;
+   */
+  limit?: bigint;
 
-	/**
-	 * @generated from field: optional int64 offset = 2;
-	 */
-	offset?: bigint;
+  /**
+   * @generated from field: optional int64 offset = 2;
+   */
+  offset?: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListAuditLogsRequest.
  * Use `create(ListAuditLogsRequestSchema)` to create a new message.
  */
-export const ListAuditLogsRequestSchema: GenMessage<ListAuditLogsRequest> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_auditlog, 1);
+export const ListAuditLogsRequestSchema: GenMessage<ListAuditLogsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_auditlog, 1);
 
 /**
  * @generated from message mantrae.v1.ListAuditLogsResponse
  */
-export type ListAuditLogsResponse = Message<'mantrae.v1.ListAuditLogsResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.AuditLog audit_logs = 1;
-	 */
-	auditLogs: AuditLog[];
+export type ListAuditLogsResponse = Message<"mantrae.v1.ListAuditLogsResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.AuditLog audit_logs = 1;
+   */
+  auditLogs: AuditLog[];
 
-	/**
-	 * @generated from field: int64 total_count = 2;
-	 */
-	totalCount: bigint;
+  /**
+   * @generated from field: int64 total_count = 2;
+   */
+  totalCount: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.ListAuditLogsResponse.
  * Use `create(ListAuditLogsResponseSchema)` to create a new message.
  */
-export const ListAuditLogsResponseSchema: GenMessage<ListAuditLogsResponse> =
-	/*@__PURE__*/
-	messageDesc(file_mantrae_v1_auditlog, 2);
+export const ListAuditLogsResponseSchema: GenMessage<ListAuditLogsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_auditlog, 2);
 
 /**
  * @generated from service mantrae.v1.AuditLogService
  */
 export const AuditLogService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.AuditLogService.ListAuditLogs
-	 */
-	listAuditLogs: {
-		methodKind: 'unary';
-		input: typeof ListAuditLogsRequestSchema;
-		output: typeof ListAuditLogsResponseSchema;
-	};
-}> = /*@__PURE__*/ serviceDesc(file_mantrae_v1_auditlog, 0);
+  /**
+   * @generated from rpc mantrae.v1.AuditLogService.ListAuditLogs
+   */
+  listAuditLogs: {
+    methodKind: "unary";
+    input: typeof ListAuditLogsRequestSchema;
+    output: typeof ListAuditLogsResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_auditlog, 0);
+

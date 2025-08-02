@@ -14,14 +14,14 @@
 		Server,
 		Network,
 		Route,
-		CheckCircle,
-		AlertCircle,
 		Clock,
 		TrendingUp,
 		Wifi,
 		Database,
 		Pen,
-		Eye
+		Eye,
+		CircleCheck,
+		CircleAlert
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import {
@@ -192,9 +192,9 @@
 					</div>
 					<div class="mt-2 flex items-center text-sm">
 						{#if $dnsProviders.find((p) => p.isDefault)}
-							<CheckCircle class="mr-1 h-3 w-3 text-green-500" />
+							<CircleCheck class="mr-1 h-3 w-3 text-green-500" />
 						{:else}
-							<AlertCircle class="mr-1 h-3 w-3 text-yellow-500" />
+							<CircleAlert class="mr-1 h-3 w-3 text-yellow-500" />
 						{/if}
 						<span class="text-muted-foreground">
 							{$dnsProviders.find((p) => p.isDefault)?.name || 'None'}
