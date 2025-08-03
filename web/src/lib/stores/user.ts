@@ -1,6 +1,6 @@
 import type { User } from '$lib/gen/mantrae/v1/user_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { createLocalStorage } from '$lib/storage.svelte';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
 
 class UserStore {
 	private store = createLocalStorage<User | null>('current_user', null);

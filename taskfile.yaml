@@ -97,7 +97,7 @@ tasks:
     desc: Build local test container with ko
     deps: [build:frontend]
     cmds:
-      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build --bare ./server/cmd
-      - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build --bare ./agent/cmd
+      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./server/cmd --bare
+      - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build ./agent/cmd --bare
       - grype $IMAGE_SERVER_DEV
       - grype $IMAGE_AGENT_DEV

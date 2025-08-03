@@ -165,7 +165,8 @@
 </script>
 
 <svelte:head>
-	<title>Agents</title>
+	<title>Agents - Mantrae</title>
+	<meta name="description" content="Monitor and manage your connected Mantrae agents for distributed reverse proxy management" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">

@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Reset Password - Mantrae</title>
+	<meta name="description" content="Reset your Mantrae account password using the one-time password sent to your email" />
+</svelte:head>
+
 <script lang="ts">
 	import * as InputOTP from '$lib/components/ui/input-otp/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';

@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Welcome - Mantrae</title>
+	<meta name="description" content="Configure your Mantrae server connection to get started with reverse proxy management" />
+</svelte:head>
+
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';

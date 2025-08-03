@@ -122,19 +122,20 @@
 </script>
 
 <svelte:head>
-	<title>Users</title>
+	<title>User Management - Mantrae</title>
+	<meta name="description" content="Manage your Mantrae users and access permissions for your reverse proxy system" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Users class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Users class="h-6 w-6 text-primary" />
 				</div>
 				User Management
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your users and access management</p>
+			<p class="mt-1 text-muted-foreground">Manage your users and access management</p>
 		</div>
 	</div>
 

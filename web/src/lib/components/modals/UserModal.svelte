@@ -1,16 +1,16 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { userClient } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import { UpdateUserRequestSchema, type User } from '$lib/gen/mantrae/v1/user_pb';
+	import { user } from '$lib/stores/user';
+	import { create } from '@bufbuild/protobuf';
+	import { ConnectError } from '@connectrpc/connect';
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
-	import { UpdateUserRequestSchema, type User } from '$lib/gen/mantrae/v1/user_pb';
-	import { userClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
-	import { user } from '$lib/stores/user';
-	import { create } from '@bufbuild/protobuf';
 
 	interface Props {
 		item: User;
@@ -89,7 +89,7 @@
 						required
 						class="transition-colors"
 					/>
-					<p class="text-muted-foreground text-xs">Display name for the user account</p>
+					<p class="text-xs text-muted-foreground">Display name for the user account</p>
 				</div>
 
 				<div class="space-y-2">
@@ -101,7 +101,7 @@
 						placeholder="user@example.com"
 						class="transition-colors"
 					/>
-					<p class="text-muted-foreground text-xs">
+					<p class="text-xs text-muted-foreground">
 						Email address for notifications and account recovery
 					</p>
 				</div>
@@ -109,15 +109,15 @@
 				<div class="space-y-2">
 					<!-- <Label class="text-sm font-medium">Security</Label> -->
 					{#if item.id}
-						<Label for="password" class="text-muted-foreground text-sm font-normal">Password</Label>
+						<Label for="password" class="text-sm font-normal text-muted-foreground">Password</Label>
 						<PasswordInput id="password" bind:value={password} />
-						<p class="text-muted-foreground text-xs">
+						<p class="text-xs text-muted-foreground">
 							Only enter a new password if you want to change it
 						</p>
 					{:else}
-						<Label for="password" class="text-muted-foreground text-sm font-normal">Password</Label>
+						<Label for="password" class="text-sm font-normal text-muted-foreground">Password</Label>
 						<PasswordInput id="password" bind:value={item.password} required />
-						<p class="text-muted-foreground text-xs">Secure password for the user account</p>
+						<p class="text-xs text-muted-foreground">Secure password for the user account</p>
 					{/if}
 				</div>
 			</div>

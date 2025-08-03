@@ -246,7 +246,8 @@
 </script>
 
 <svelte:head>
-	<title>Middlewares</title>
+	<title>Middlewares - Mantrae</title>
+	<meta name="description" content="Manage HTTP and TCP middlewares to customize your reverse proxy behavior" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">

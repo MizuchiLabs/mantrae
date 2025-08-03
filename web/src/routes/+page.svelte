@@ -1,38 +1,17 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
+	import { auditLogClient } from '$lib/api';
+	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
+	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
+	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import {
-		Globe,
-		Shield,
-		Bot,
-		Users,
-		Gauge,
-		Layers2,
-		Activity,
-		Server,
-		Network,
-		Route,
-		Clock,
-		TrendingUp,
-		Wifi,
-		Database,
-		Pen,
-		Eye,
-		CircleCheck,
-		CircleAlert
-	} from '@lucide/svelte';
-	import { profile } from '$lib/stores/profile';
-	import { auditLogClient } from '$lib/api';
-	import { DateFormat } from '$lib/stores/common';
-	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
-	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
-	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
-	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
 	import TraefikConnection from '$lib/components/utils/TraefikConnection.svelte';
+	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { DateFormat } from '$lib/stores/common';
+	import { profile } from '$lib/stores/profile';
 	import {
 		agents,
 		dnsProviders,
@@ -43,6 +22,27 @@
 		traefikInstances,
 		users
 	} from '$lib/stores/realtime';
+	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
+	import {
+		Activity,
+		Bot,
+		CircleAlert,
+		CircleCheck,
+		Clock,
+		Database,
+		Eye,
+		Gauge,
+		Globe,
+		Layers2,
+		Network,
+		Pen,
+		Route,
+		Server,
+		Shield,
+		TrendingUp,
+		Users,
+		Wifi
+	} from '@lucide/svelte';
 
 	let onlineAgents = $derived.by(() => {
 		let activeAgents = $agents.reduce((count, agent) => {
@@ -83,6 +83,11 @@
 	let modalAuditLogOpen = $state(false);
 </script>
 
+<svelte:head>
+	<title>Dashboard - Mantrae</title>
+	<meta name="description" content="Monitor and manage your reverse proxy configurations, agents, DNS providers, and system users" />
+</svelte:head>
+
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
 <ConfigModal bind:open={modalConfigOpen} />
 <AuditLogModal bind:open={modalAuditLogOpen} />
@@ -92,12 +97,12 @@
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Gauge class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Gauge class="h-6 w-6 text-primary" />
 				</div>
 				Dashboard
 			</h1>
-			<p class="text-muted-foreground mt-1">Monitor and manage your reverse proxy configurations</p>
+			<p class="mt-1 text-muted-foreground">Monitor and manage your reverse proxy configurations</p>
 		</div>
 	</div>
 
@@ -107,8 +112,8 @@
 			<!-- Total Profiles -->
 			<Card.Root class="relative overflow-hidden">
 				<Card.Header class="flex flex-row items-center justify-between pb-2">
-					<Card.Title class="text-muted-foreground text-sm font-medium">Total Profiles</Card.Title>
-					<Layers2 class="text-muted-foreground h-4 w-4" />
+					<Card.Title class="text-sm font-medium text-muted-foreground">Total Profiles</Card.Title>
+					<Layers2 class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
 					<div class="text-3xl font-bold">{$profiles?.length}</div>
@@ -118,16 +123,16 @@
 					</div>
 				</Card.Content>
 				<div
-					class="from-primary/5 absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl to-transparent"
+					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-primary/5 to-transparent"
 				></div>
 			</Card.Root>
 
 			<!-- Connected Agents -->
 			<Card.Root class="relative overflow-hidden">
 				<Card.Header class="flex flex-row items-center justify-between pb-2">
-					<Card.Title class="text-muted-foreground text-sm font-medium">Connected Agents</Card.Title
+					<Card.Title class="text-sm font-medium text-muted-foreground">Connected Agents</Card.Title
 					>
-					<Bot class="text-muted-foreground h-4 w-4" />
+					<Bot class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
 					<div class="text-3xl font-bold">{onlineAgents}</div>
@@ -144,8 +149,8 @@
 			<!-- DNS Provider -->
 			<Card.Root class="relative overflow-hidden">
 				<Card.Header class="flex flex-row items-center justify-between pb-2">
-					<Card.Title class="text-muted-foreground text-sm font-medium">DNS Provider</Card.Title>
-					<Globe class="text-muted-foreground h-4 w-4" />
+					<Card.Title class="text-sm font-medium text-muted-foreground">DNS Provider</Card.Title>
+					<Globe class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
 					<div class="text-3xl font-bold">
@@ -171,8 +176,8 @@
 			<!-- Total Users -->
 			<Card.Root class="relative overflow-hidden">
 				<Card.Header class="flex flex-row items-center justify-between pb-2">
-					<Card.Title class="text-muted-foreground text-sm font-medium">System Users</Card.Title>
-					<Users class="text-muted-foreground h-4 w-4" />
+					<Card.Title class="text-sm font-medium text-muted-foreground">System Users</Card.Title>
+					<Users class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
 					<div class="text-3xl font-bold">{$users?.length}</div>
@@ -311,13 +316,13 @@
 							<div class="space-y-4 rounded-lg border p-4">
 								<div class="flex items-start justify-between">
 									<div class="flex items-start gap-3">
-										<div class="bg-primary/10 rounded-lg p-2">
-											<Database class="text-primary h-4 w-4" />
+										<div class="rounded-lg bg-primary/10 p-2">
+											<Database class="h-4 w-4 text-primary" />
 										</div>
 										<div class="space-y-1">
 											<h3 class="text-lg font-semibold">{profile.name}</h3>
-											<p class="text-muted-foreground text-sm">{profile.description}</p>
-											<p class="text-muted-foreground text-xs">
+											<p class="text-sm text-muted-foreground">{profile.description}</p>
+											<p class="text-xs text-muted-foreground">
 												{#if profile.createdAt}
 													Created {DateFormat.format(timestampDate(profile.createdAt))}
 												{/if}
@@ -331,28 +336,28 @@
 								<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
 									<div class="text-center">
 										<div class="text-2xl font-bold text-blue-600">{$agents?.length}</div>
-										<div class="text-muted-foreground text-xs">Agents</div>
+										<div class="text-xs text-muted-foreground">Agents</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-green-600">
 											{$routers?.length}
 										</div>
-										<div class="text-muted-foreground text-xs">Routers</div>
+										<div class="text-xs text-muted-foreground">Routers</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-orange-600">
 											{$services?.length}
 										</div>
-										<div class="text-muted-foreground text-xs">Services</div>
+										<div class="text-xs text-muted-foreground">Services</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-purple-600">
 											{$middlewares?.length}
 										</div>
-										<div class="text-muted-foreground text-xs">Middlewares</div>
+										<div class="text-xs text-muted-foreground">Middlewares</div>
 									</div>
 								</div>
 
@@ -419,9 +424,9 @@
 										<div>
 											<p class="line-clamp-1 text-sm" title={log.details}>{log.details}</p>
 
-											<div class="text-muted-foreground flex items-center gap-2 text-xs">
+											<div class="flex items-center gap-2 text-xs text-muted-foreground">
 												{#if log.createdAt}
-													<span class="text-muted-foreground text-xs">
+													<span class="text-xs text-muted-foreground">
 														{timeAgo(log.createdAt)}
 													</span>
 												{/if}

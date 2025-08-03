@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { serversTransportClient } from '$lib/api';
+	import ServerTransportModal from '$lib/components/modals/ServerTransportModal.svelte';
 	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { type ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 	import { profile } from '$lib/stores/profile';
+	import { serversTransports } from '$lib/stores/realtime';
 	import type { IconComponent } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
-	import ServerTransportModal from '$lib/components/modals/ServerTransportModal.svelte';
 	import {
 		Globe,
 		Network,
@@ -22,8 +24,6 @@
 	} from '@lucide/svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
-	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
-	import { serversTransports } from '$lib/stores/realtime';
 
 	let item = $state({} as ServersTransport);
 	let open = $state(false);
@@ -186,19 +186,20 @@
 </script>
 
 <svelte:head>
-	<title>Server Transports</title>
+	<title>Server Transports - Mantrae</title>
+	<meta name="description" content="Configure HTTP and TCP server transports for your reverse proxy services" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Truck class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Truck class="h-6 w-6 text-primary" />
 				</div>
 				Server Transports
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your server transports</p>
+			<p class="mt-1 text-muted-foreground">Manage your server transports</p>
 		</div>
 	</div>
 

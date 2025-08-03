@@ -1,7 +1,7 @@
-import { DnsProviderType } from './gen/mantrae/v1/dns_provider_pb';
 import type { JsonObject } from '@bufbuild/protobuf';
-import type { Component } from 'svelte';
 import type { IconProps } from '@lucide/svelte';
+import type { Component } from 'svelte';
+import { DnsProviderType } from './gen/mantrae/v1/dns_provider_pb';
 import { ProtocolType } from './gen/mantrae/v1/protocol_pb';
 
 export type IconComponent = Component<IconProps, Record<string, never>, ''>;

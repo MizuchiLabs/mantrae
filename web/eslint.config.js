@@ -1,9 +1,9 @@
-import js from "@eslint/js";
-import ts from "typescript-eslint";
-import svelte from "eslint-plugin-svelte";
-import prettier from "eslint-config-prettier";
-import globals from "globals";
-import svelteConfig from "./svelte.config.js";
+import js from '@eslint/js';
+import ts from 'typescript-eslint';
+import svelte from 'eslint-plugin-svelte';
+import prettier from 'eslint-config-prettier';
+import globals from 'globals';
+import svelteConfig from './svelte.config.js';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -16,39 +16,39 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				...globals.node,
-			},
+				...globals.node
+			}
 		},
 		rules: {
-			"no-unused-vars": "off",
-			"@typescript-eslint/no-unused-vars": [
-				"warn",
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'warn',
 				{
-					argsIgnorePattern: "^_",
-					varsIgnorePattern: "^_",
-					caughtErrorsIgnorePattern: "^_",
-				},
-			],
-		},
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_'
+				}
+			]
+		}
 	},
 	{
-		files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
 				projectService: true,
-				extraFileExtensions: [".svelte"],
+				extraFileExtensions: ['.svelte'],
 				parser: ts.parser,
-				svelteConfig,
-			},
-		},
+				svelteConfig
+			}
+		}
 	},
 	{
 		ignores: [
-			"build/",
-			".svelte-kit/",
-			"dist/",
-			"src/lib/components/gen/",
-			"src/lib/components/ui/",
-		],
-	},
+			'build/',
+			'.svelte-kit/',
+			'dist/',
+			'src/lib/components/gen/',
+			'src/lib/components/ui/'
+		]
+	}
 ];

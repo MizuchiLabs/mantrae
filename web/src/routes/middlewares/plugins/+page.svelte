@@ -101,7 +101,8 @@
 </script>
 
 <svelte:head>
-	<title>Plugins</title>
+	<title>Plugins - Mantrae</title>
+	<meta name="description" content="Browse and manage Traefik plugins for extended reverse proxy functionality" />
 </svelte:head>
 
 <div class="mt-4 flex flex-col gap-4 p-4">

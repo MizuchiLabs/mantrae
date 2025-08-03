@@ -324,7 +324,8 @@
 </script>
 
 <svelte:head>
-	<title>Routers</title>
+	<title>Routers - Mantrae</title>
+	<meta name="description" content="Manage your HTTP, TCP, and UDP routers for your reverse proxy configurations" />
 </svelte:head>
 
 <div class="flex flex-col gap-4 sm:gap-6">

@@ -155,7 +155,8 @@
 </script>
 
 <svelte:head>
-	<title>EntryPoints</title>
+	<title>EntryPoints - Mantrae</title>
+	<meta name="description" content="Configure entrypoints for your reverse proxy to listen for incoming connections" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">

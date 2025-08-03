@@ -156,7 +156,8 @@
 </script>
 
 <svelte:head>
-	<title>Settings</title>
+	<title>Settings - Mantrae</title>
+	<meta name="description" content="Configure your Mantrae system settings, backup management, and authentication options" />
 </svelte:head>
 
 <BackupModal bind:open={showBackupList} />

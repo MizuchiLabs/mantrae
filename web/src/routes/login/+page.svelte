@@ -1,3 +1,8 @@
+<svelte:head>
+	<title>Login - Mantrae</title>
+	<meta name="description" content="Sign in to your Mantrae account to manage your reverse proxy configurations" />
+</svelte:head>
+
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { handleOIDCLogin, profileClient, userClient } from '$lib/api';

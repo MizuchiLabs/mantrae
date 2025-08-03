@@ -202,7 +202,8 @@
 </script>
 
 <svelte:head>
-	<title>DNS Providers</title>
+	<title>DNS Providers - Mantrae</title>
+	<meta name="description" content="Manage your DNS providers for automatic DNS challenge resolution with Let's Encrypt" />
 </svelte:head>
 
 <div class="flex flex-col gap-2">

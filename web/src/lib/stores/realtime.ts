@@ -1,30 +1,30 @@
-import { EventAction, type EventStreamResponse } from '$lib/gen/mantrae/v1/util_pb';
 import {
-	utilClient,
-	entryPointClient,
-	middlewareClient,
-	dnsClient,
-	profileClient,
-	userClient,
-	agentClient,
-	routerClient,
-	serviceClient,
-	serversTransportClient,
-	traefikClient
+    agentClient,
+    dnsClient,
+    entryPointClient,
+    middlewareClient,
+    profileClient,
+    routerClient,
+    serversTransportClient,
+    serviceClient,
+    traefikClient,
+    userClient,
+    utilClient
 } from '$lib/api';
-import { profile } from './profile';
-import { writable } from 'svelte/store';
-import type { ConnectError } from '@connectrpc/connect';
-import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-import type { User } from '$lib/gen/mantrae/v1/user_pb';
 import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
-import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
-import type { Router } from '$lib/gen/mantrae/v1/router_pb';
-import type { Service } from '$lib/gen/mantrae/v1/service_pb';
-import type { Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
-import type { ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 import type { DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
+import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
+import type { Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
+import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+import type { Router } from '$lib/gen/mantrae/v1/router_pb';
+import type { ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
+import type { Service } from '$lib/gen/mantrae/v1/service_pb';
 import type { TraefikInstance } from '$lib/gen/mantrae/v1/traefik_instance_pb';
+import type { User } from '$lib/gen/mantrae/v1/user_pb';
+import { EventAction, type EventStreamResponse } from '$lib/gen/mantrae/v1/util_pb';
+import type { ConnectError } from '@connectrpc/connect';
+import { writable } from 'svelte/store';
+import { profile } from './profile';
 
 export const profiles = writable<Profile[]>([]);
 export const users = writable<User[]>([]);
