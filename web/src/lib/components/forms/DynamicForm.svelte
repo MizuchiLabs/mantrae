@@ -211,7 +211,7 @@
 							{/if}
 						</Label>
 						{#if field.description && showDescription(field.type)}
-							<p class="text-muted-foreground text-xs">{field.description}</p>
+							<p class="text-xs text-muted-foreground">{field.description}</p>
 						{/if}
 					</div>
 

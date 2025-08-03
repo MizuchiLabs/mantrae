@@ -122,14 +122,14 @@
 						<Label class="text-sm font-medium">Agent Information</Label>
 						<div class="flex gap-2">
 							<div class="space-y-1">
-								<p class="text-muted-foreground text-xs">Hostname</p>
+								<p class="text-xs text-muted-foreground">Hostname</p>
 								<Badge variant="secondary" class="w-full justify-center">
 									{item.hostname}
 								</Badge>
 							</div>
 							{#if item.containers?.length > 0}
 								<div class="space-y-1">
-									<p class="text-muted-foreground text-xs">Containers</p>
+									<p class="text-xs text-muted-foreground">Containers</p>
 									<Badge variant="secondary" class="w-full justify-center">
 										{item.containers.length}
 									</Badge>
@@ -137,7 +137,7 @@
 							{/if}
 							{#if item.updatedAt}
 								<div class="space-y-1">
-									<p class="text-muted-foreground text-xs">Last Seen</p>
+									<p class="text-xs text-muted-foreground">Last Seen</p>
 									<Badge variant="secondary" class="justify-center text-xs">
 										{DateFormat.format(timestampDate(item.updatedAt))}
 									</Badge>
@@ -168,7 +168,7 @@
 				<div class="space-y-4">
 					<div class="space-y-2">
 						<Label class="text-sm font-medium">Network Configuration</Label>
-						<p class="text-muted-foreground text-xs">
+						<p class="text-xs text-muted-foreground">
 							Choose which IP address to use for connecting to this agent
 						</p>
 					</div>
@@ -178,7 +178,7 @@
 							<div class="flex items-center justify-between rounded-lg border p-3">
 								<div class="space-y-1">
 									<Label class="text-sm">Public IP</Label>
-									<p class="text-muted-foreground text-xs">External network address</p>
+									<p class="text-xs text-muted-foreground">External network address</p>
 								</div>
 								<div class="flex items-center gap-2">
 									{#if item.activeIp === item.publicIp || !item.activeIp}
@@ -197,7 +197,7 @@
 							<div class="flex items-center justify-between rounded-lg border p-3">
 								<div class="space-y-1">
 									<Label class="text-sm">Private IP</Label>
-									<p class="text-muted-foreground text-xs">Internal network address</p>
+									<p class="text-xs text-muted-foreground">Internal network address</p>
 								</div>
 								<div class="flex items-center gap-2">
 									{#if item.activeIp === item.privateIp}
@@ -230,7 +230,7 @@
 									<Button onclick={() => handleSubmit(newIP)} size="sm">Use</Button>
 								{/if}
 							</div>
-							<p class="text-muted-foreground text-xs">
+							<p class="text-xs text-muted-foreground">
 								Specify a custom IP address for this agent
 							</p>
 						</div>
@@ -245,7 +245,7 @@
 				{#if item.hostname}
 					<div class="space-y-2">
 						<Label class="text-sm font-medium">Agent Token</Label>
-						<p class="text-muted-foreground text-xs">
+						<p class="text-xs text-muted-foreground">
 							{item.hostname
 								? 'Secure token for agent authentication'
 								: 'Copy this token to connect your agent'}
@@ -294,7 +294,7 @@
 							<!-- Docker Compose Item -->
 							<DropdownMenu.Item
 								closeOnSelect={false}
-								class="hover:bg-accent/50 focus:bg-accent/50 relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200"
+								class="relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200 hover:bg-accent/50 focus:bg-accent/50"
 								onclick={handleCopyCompose}
 							>
 								{#if dockerComposeClipboard.status === 'success'}
@@ -316,7 +316,7 @@
 										/>
 										<span class="font-medium">Docker Compose</span>
 									</div>
-									<div class="text-muted-foreground flex items-center gap-1 text-xs">
+									<div class="flex items-center gap-1 text-xs text-muted-foreground">
 										{#if dockerComposeClipboard.status === 'success'}
 											<Check class="h-3 w-3 text-green-500" />
 											<span class="text-green-600">Copied!</span>
@@ -329,7 +329,7 @@
 										{/if}
 									</div>
 								</div>
-								<p class="text-muted-foreground relative z-10 mt-1 text-xs leading-relaxed">
+								<p class="relative z-10 mt-1 text-xs leading-relaxed text-muted-foreground">
 									Complete docker-compose.yml configuration with volumes and environment setup
 								</p>
 							</DropdownMenu.Item>
@@ -337,7 +337,7 @@
 							<!-- Docker Run Item -->
 							<DropdownMenu.Item
 								closeOnSelect={false}
-								class="hover:bg-accent/50 focus:bg-accent/50 relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200"
+								class="relative h-auto cursor-pointer flex-col items-start overflow-hidden p-3 transition-all duration-200 hover:bg-accent/50 focus:bg-accent/50"
 								onclick={handleCopyRun}
 							>
 								{#if dockerRunClipboard.status === 'success'}
@@ -359,7 +359,7 @@
 										/>
 										<span class="font-medium">Docker Run</span>
 									</div>
-									<div class="text-muted-foreground flex items-center gap-1 text-xs">
+									<div class="flex items-center gap-1 text-xs text-muted-foreground">
 										{#if dockerRunClipboard.status === 'success'}
 											<Check class="h-3 w-3 text-green-500" />
 											<span class="text-green-600">Copied!</span>
@@ -372,7 +372,7 @@
 										{/if}
 									</div>
 								</div>
-								<p class="text-muted-foreground relative z-10 mt-1 text-xs leading-relaxed">
+								<p class="relative z-10 mt-1 text-xs leading-relaxed text-muted-foreground">
 									Single command to run the agent container with all required parameters
 								</p>
 							</DropdownMenu.Item>

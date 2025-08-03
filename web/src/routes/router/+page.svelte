@@ -325,19 +325,22 @@
 
 <svelte:head>
 	<title>Routers - Mantrae</title>
-	<meta name="description" content="Manage your HTTP, TCP, and UDP routers for your reverse proxy configurations" />
+	<meta
+		name="description"
+		content="Manage your HTTP, TCP, and UDP routers for your reverse proxy configurations"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-4 sm:gap-6">
 	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="space-y-2">
 			<h1 class="flex items-center gap-3 text-2xl font-bold tracking-tight sm:text-3xl">
-				<div class="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
-					<Route class="text-primary h-5 w-5 sm:h-6 sm:w-6" />
+				<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+					<Route class="h-5 w-5 text-primary sm:h-6 sm:w-6" />
 				</div>
 				<span class="truncate">Routers</span>
 			</h1>
-			<p class="text-muted-foreground text-sm sm:text-base">Manage your routers and services</p>
+			<p class="text-sm text-muted-foreground sm:text-base">Manage your routers and services</p>
 		</div>
 	</div>
 

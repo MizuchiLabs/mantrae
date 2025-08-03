@@ -60,7 +60,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="connectionTimeouts" class="text-sm font-medium">Connection Timeouts</Label>
-			<p class="text-muted-foreground text-xs">Configure connection timeouts</p>
+			<p class="text-xs text-muted-foreground">Configure connection timeouts</p>
 		</div>
 
 		<div class="space-y-2">
@@ -109,7 +109,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="tls" class="text-sm font-medium">TLS Configuration</Label>
-			<p class="text-muted-foreground text-xs">Configure TLS settings</p>
+			<p class="text-xs text-muted-foreground">Configure TLS settings</p>
 		</div>
 
 		<div class="grid grid-cols-2 gap-2">
@@ -162,7 +162,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="rootCAs" class="text-sm font-medium">Certificates</Label>
-			<p class="text-muted-foreground text-xs">Configure TLS certificates</p>
+			<p class="text-xs text-muted-foreground">Configure TLS certificates</p>
 		</div>
 
 		<div class="space-y-2">
@@ -249,7 +249,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="spiffe" class="text-sm font-medium">SPIFFE Configuration</Label>
-			<p class="text-muted-foreground text-xs">Configure SPIFFE integration</p>
+			<p class="text-xs text-muted-foreground">Configure SPIFFE integration</p>
 		</div>
 
 		<div class="space-y-2">

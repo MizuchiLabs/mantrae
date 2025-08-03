@@ -156,19 +156,22 @@
 
 <svelte:head>
 	<title>EntryPoints - Mantrae</title>
-	<meta name="description" content="Configure entrypoints for your reverse proxy to listen for incoming connections" />
+	<meta
+		name="description"
+		content="Configure entrypoints for your reverse proxy to listen for incoming connections"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<EthernetPort class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<EthernetPort class="h-6 w-6 text-primary" />
 				</div>
 				Entry Points
 			</h1>
-			<p class="text-muted-foreground mt-1">Manage your entry points</p>
+			<p class="mt-1 text-muted-foreground">Manage your entry points</p>
 		</div>
 	</div>
 

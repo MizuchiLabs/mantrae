@@ -85,7 +85,10 @@
 
 <svelte:head>
 	<title>Dashboard - Mantrae</title>
-	<meta name="description" content="Monitor and manage your reverse proxy configurations, agents, DNS providers, and system users" />
+	<meta
+		name="description"
+		content="Monitor and manage your reverse proxy configurations, agents, DNS providers, and system users"
+	/>
 </svelte:head>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />

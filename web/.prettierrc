@@ -6,11 +6,11 @@
 	"plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
 	"overrides": [
 		{
-			"files": ["*.svelte", "*.svelte.ts", "*.svelte.js"],
+			"files": ["*.svelte"],
 			"options": {
 				"parser": "svelte"
 			}
 		}
 	],
-    "tailwindStylesheet": "./src/app.css"
+	"tailwindStylesheet": "./src/app.css"
 }

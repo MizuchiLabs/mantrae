@@ -31,7 +31,7 @@
 	<div class="flex items-center justify-between rounded-lg border p-3">
 		<div class="space-y-1">
 			<Label class="flex items-center gap-1 text-sm">Pass Host Header</Label>
-			<p class="text-muted-foreground text-xs">Forward client host header to server</p>
+			<p class="text-xs text-muted-foreground">Forward client host header to server</p>
 		</div>
 		<CustomSwitch
 			checked={config.loadBalancer?.passHostHeader ?? true}

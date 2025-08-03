@@ -77,7 +77,7 @@
 						placeholder="e.g., web, api, postgres"
 						class="transition-colors"
 					/>
-					<p class="text-muted-foreground text-xs">A descriptive name for this entry point</p>
+					<p class="text-xs text-muted-foreground">A descriptive name for this entry point</p>
 				</div>
 
 				<div class="space-y-2">
@@ -91,7 +91,7 @@
 						class="transition-colors"
 					/>
 					<div class="flex items-center justify-between">
-						<p class="text-muted-foreground text-xs">
+						<p class="text-xs text-muted-foreground">
 							Port number (1-65535) where your service listens
 						</p>
 					</div>
@@ -102,7 +102,7 @@
 					<div class="flex items-center justify-between">
 						<div class="space-y-1">
 							<Label class="flex items-center gap-2 text-sm font-medium">Default Entry Point</Label>
-							<p class="text-muted-foreground text-xs">
+							<p class="text-xs text-muted-foreground">
 								Use this as the primary entry point for new routers
 							</p>
 						</div>
@@ -110,8 +110,8 @@
 					</div>
 
 					{#if item.isDefault}
-						<div class="bg-muted/50 border-primary rounded-lg border-l-2 p-3">
-							<p class="text-muted-foreground text-xs">
+						<div class="rounded-lg border-l-2 border-primary bg-muted/50 p-3">
+							<p class="text-xs text-muted-foreground">
 								<strong>Note:</strong> Setting this as default will remove the default status from other
 								entry points.
 							</p>

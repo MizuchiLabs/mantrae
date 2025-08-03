@@ -86,7 +86,7 @@
 					<div class="col-span-2 space-y-2">
 						<Label for="name" class="text-sm">Provider Name</Label>
 						<Input id="name" bind:value={item.name} required placeholder="e.g., Cloudflare" />
-						<p class="text-muted-foreground text-xs">Friendly name for this provider</p>
+						<p class="text-xs text-muted-foreground">Friendly name for this provider</p>
 					</div>
 
 					<div class="space-y-2">
@@ -116,7 +116,7 @@
 			<div class="space-y-4">
 				<div class="space-y-2">
 					<Label class="text-sm font-medium">Provider Settings</Label>
-					<p class="text-muted-foreground text-xs">Configure how this DNS provider should behave</p>
+					<p class="text-xs text-muted-foreground">Configure how this DNS provider should behave</p>
 				</div>
 
 				<div class="space-y-4">
@@ -139,7 +139,7 @@
 									</Tooltip.Root>
 								</Tooltip.Provider>
 							</Label>
-							<p class="text-muted-foreground text-xs">Use for new routers by default</p>
+							<p class="text-xs text-muted-foreground">Use for new routers by default</p>
 						</div>
 						<CustomSwitch bind:checked={item.isDefault} size="md" />
 					</div>
@@ -163,7 +163,7 @@
 									</Tooltip.Root>
 								</Tooltip.Provider>
 							</Label>
-							<p class="text-muted-foreground text-xs">Automatically sync with public IP</p>
+							<p class="text-xs text-muted-foreground">Automatically sync with public IP</p>
 						</div>
 						<CustomSwitch
 							checked={item.config?.autoUpdate}
@@ -180,7 +180,7 @@
 						<div class="flex items-center justify-between rounded-lg border p-3">
 							<div class="space-y-1">
 								<Label class="text-sm">Cloudflare Proxy</Label>
-								<p class="text-muted-foreground text-xs">Enable Cloudflare's proxy service</p>
+								<p class="text-xs text-muted-foreground">Enable Cloudflare's proxy service</p>
 							</div>
 							<CustomSwitch
 								checked={item.config?.proxied}
@@ -198,7 +198,7 @@
 						<div class="flex items-center justify-between rounded-lg border p-3">
 							<div class="space-y-1">
 								<Label class="text-sm">Zone Type</Label>
-								<p class="text-muted-foreground text-xs">DNS zone configuration type</p>
+								<p class="text-xs text-muted-foreground">DNS zone configuration type</p>
 							</div>
 							<CustomSwitch
 								variant="text"
@@ -232,7 +232,7 @@
 							</Tooltip.Root>
 						</Tooltip.Provider>
 					</Label>
-					<p class="text-muted-foreground text-xs">
+					<p class="text-xs text-muted-foreground">
 						Configure the IP address for DNS record creation
 					</p>
 				</div>
@@ -250,7 +250,7 @@
 										<Badge variant="secondary">{value?.ipv6}</Badge>
 									{/if}
 								</div>
-								<p class="text-muted-foreground text-xs">Automatically detected and updated</p>
+								<p class="text-xs text-muted-foreground">Automatically detected and updated</p>
 							{/await}
 						</div>
 					</div>
@@ -271,7 +271,7 @@
 							placeholder="Enter IP address for DNS records"
 							required
 						/>
-						<p class="text-muted-foreground text-xs">Static IP address for DNS record creation</p>
+						<p class="text-xs text-muted-foreground">Static IP address for DNS record creation</p>
 					</div>
 				{/if}
 			</div>
@@ -282,7 +282,7 @@
 			<div class="space-y-4">
 				<div class="space-y-2">
 					<Label class="text-sm font-medium">Authentication</Label>
-					<p class="text-muted-foreground text-xs">
+					<p class="text-xs text-muted-foreground">
 						Provide credentials to access your DNS provider's API
 					</p>
 				</div>
@@ -301,7 +301,7 @@
 							}}
 							placeholder="Enter your API key"
 						/>
-						<p class="text-muted-foreground text-xs">API key from your DNS provider</p>
+						<p class="text-xs text-muted-foreground">API key from your DNS provider</p>
 					</div>
 
 					{#if item.type === DnsProviderType.POWERDNS || item.type === DnsProviderType.TECHNITIUM}
@@ -321,7 +321,7 @@
 								placeholder="https://dns.example.com/api"
 								required
 							/>
-							<p class="text-muted-foreground text-xs">
+							<p class="text-xs text-muted-foreground">
 								{dnsProviderTypes.find((t) => t.value === item.type)?.label} server endpoint
 							</p>
 						</div>

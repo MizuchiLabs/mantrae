@@ -123,7 +123,10 @@
 
 <svelte:head>
 	<title>User Management - Mantrae</title>
-	<meta name="description" content="Manage your Mantrae users and access permissions for your reverse proxy system" />
+	<meta
+		name="description"
+		content="Manage your Mantrae users and access permissions for your reverse proxy system"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-2">

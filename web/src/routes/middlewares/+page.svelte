@@ -247,19 +247,22 @@
 
 <svelte:head>
 	<title>Middlewares - Mantrae</title>
-	<meta name="description" content="Manage HTTP and TCP middlewares to customize your reverse proxy behavior" />
+	<meta
+		name="description"
+		content="Manage HTTP and TCP middlewares to customize your reverse proxy behavior"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Layers class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Layers class="h-6 w-6 text-primary" />
 				</div>
 				Middlewares
 			</h1>
-			<p class="text-muted-foreground mt-1">Configure your middlewares</p>
+			<p class="mt-1 text-muted-foreground">Configure your middlewares</p>
 		</div>
 	</div>
 

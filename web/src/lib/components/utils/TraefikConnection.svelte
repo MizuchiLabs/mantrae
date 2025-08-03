@@ -39,7 +39,7 @@
 				<div class="space-y-4">
 					<div class="space-y-2">
 						<h4 class="leading-none font-medium">Traefik HTTP Provider</h4>
-						<p class="text-muted-foreground text-sm">
+						<p class="text-sm text-muted-foreground">
 							Copy the configuration for your Traefik setup
 						</p>
 					</div>
@@ -54,7 +54,7 @@
 								</Badge>
 								<CopyButton text={getYamlConfig(connectionString)} />
 							</div>
-							<pre class="bg-muted block overflow-x-auto rounded p-2 text-xs"><code
+							<pre class="block overflow-x-auto rounded bg-muted p-2 text-xs"><code
 									>{getYamlConfig(connectionString)}</code
 								></pre>
 						</div>
@@ -68,7 +68,7 @@
 								</Badge>
 								<CopyButton text={getCliConfig(connectionString)} />
 							</div>
-							<code class="bg-muted block rounded p-2 text-xs break-all">
+							<code class="block rounded bg-muted p-2 text-xs break-all">
 								{getCliConfig(connectionString)}
 							</code>
 						</div>
@@ -96,7 +96,7 @@
 						</Badge>
 						<CopyButton text={getYamlConfig(connectionString)} />
 					</div>
-					<pre class="bg-muted block overflow-x-auto rounded p-3 text-sm"><code
+					<pre class="block overflow-x-auto rounded bg-muted p-3 text-sm"><code
 							>{getYamlConfig(connectionString)}</code
 						></pre>
 				</div>
@@ -110,7 +110,7 @@
 						</Badge>
 						<CopyButton text={getCliConfig(connectionString)} />
 					</div>
-					<code class="bg-muted block rounded p-3 text-sm break-all">
+					<code class="block rounded bg-muted p-3 text-sm break-all">
 						{getCliConfig(connectionString)}
 					</code>
 				</div>

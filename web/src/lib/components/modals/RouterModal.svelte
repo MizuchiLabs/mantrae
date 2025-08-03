@@ -178,7 +178,7 @@
 			<div class="space-y-4">
 				<div>
 					<h2 class="text-l font-semibold tracking-tight">Agent-Managed Router</h2>
-					<p class="text-muted-foreground text-sm">Automatically managed via Docker labels</p>
+					<p class="text-sm text-muted-foreground">Automatically managed via Docker labels</p>
 				</div>
 
 				<Alert.Root variant="default" class="border-dashed border-blue-200 bg-blue-50">
@@ -222,7 +222,7 @@
 				<!-- Router Info (Read-only) -->
 				<Card.Root class="bg-muted/30">
 					<Card.Header>
-						<Card.Title class="text-muted-foreground flex items-center gap-2">
+						<Card.Title class="flex items-center gap-2 text-muted-foreground">
 							<Server class="h-4 w-4" />
 							Router Configuration
 						</Card.Title>
@@ -269,7 +269,7 @@
 						>
 							<div>
 								<Card.Title class="flex items-center gap-2">Router Configuration</Card.Title>
-								<Card.Description class="text-muted-foreground text-sm">
+								<Card.Description class="text-sm text-muted-foreground">
 									Define how traffic is routed to your service
 								</Card.Description>
 							</div>

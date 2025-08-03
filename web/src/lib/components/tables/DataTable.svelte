@@ -218,7 +218,7 @@
 <div>
 	<div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="relative flex items-center">
-			<Search class="text-muted-foreground absolute left-3" size={16} />
+			<Search class="absolute left-3 text-muted-foreground" size={16} />
 			<Input
 				placeholder="Search..."
 				bind:value={globalFilter}
@@ -226,7 +226,7 @@
 				class="w-full pl-9 sm:w-[180px] lg:w-[350px]"
 			/>
 			<Delete
-				class="text-muted-foreground absolute right-4"
+				class="absolute right-4 text-muted-foreground"
 				size={16}
 				onclick={() => table.setGlobalFilter('')}
 			/>
@@ -237,7 +237,7 @@
 			{#each table.getState().columnFilters as filter (filter.id)}
 				<Badge
 					variant="secondary"
-					class="hover:bg-muted-foreground/20 flex items-center gap-1 hover:cursor-pointer"
+					class="flex items-center gap-1 hover:cursor-pointer hover:bg-muted-foreground/20"
 					onclick={() => clearFilter(filter.id)}
 				>
 					<X size={12} />
@@ -389,7 +389,7 @@
 			>
 				<ChevronLeft />
 			</Button>
-			<span class="text-muted-foreground text-sm">
+			<span class="text-sm text-muted-foreground">
 				Page {pagination.pageIndex + 1} / {table.getPageCount()}
 			</span>
 			<Button

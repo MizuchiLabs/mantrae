@@ -1,8 +1,3 @@
-<svelte:head>
-	<title>Login - Mantrae</title>
-	<meta name="description" content="Sign in to your Mantrae account to manage your reverse proxy configurations" />
-</svelte:head>
-
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { handleOIDCLogin, profileClient, userClient } from '$lib/api';
@@ -74,12 +69,20 @@
 	};
 </script>
 
+<svelte:head>
+	<title>Login - Mantrae</title>
+	<meta
+		name="description"
+		content="Sign in to your Mantrae account to manage your reverse proxy configurations"
+	/>
+</svelte:head>
+
 {#if !user.isLoggedIn()}
 	{#await userClient.getOIDCStatus({}) then value}
 		<form
-			class="bg-muted m-auto h-fit w-full max-w-sm overflow-hidden rounded-[calc(var(--radius)+.125rem)] border shadow-md shadow-zinc-950/5 dark:[--color-muted:var(--color-zinc-900)]"
+			class="m-auto h-fit w-full max-w-sm overflow-hidden rounded-[calc(var(--radius)+.125rem)] border bg-muted shadow-md shadow-zinc-950/5 dark:[--color-muted:var(--color-zinc-900)]"
 		>
-			<div class="bg-card -m-px rounded-[calc(var(--radius)+.125rem)] border p-8 pb-6">
+			<div class="-m-px rounded-[calc(var(--radius)+.125rem)] border bg-card p-8 pb-6">
 				<div class="text-center">
 					<img src={logo} alt="logo" class="mx-auto h-8 w-fit" />
 					<h1 class="mt-4 mb-1 text-xl font-semibold">Sign In to Mantrae</h1>
@@ -99,7 +102,7 @@
 								<Button
 									variant="link"
 									size="sm"
-									class="link intent-info variant-ghost text-muted-foreground text-xs"
+									class="link intent-info variant-ghost text-xs text-muted-foreground"
 									onclick={handleReset}
 								>
 									Forgot your Password?
@@ -116,7 +119,7 @@
 					{#if value.loginEnabled}
 						<div class="my-6 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
 							<hr class="border-dashed" />
-							<span class="text-muted-foreground text-xs">Or continue With</span>
+							<span class="text-xs text-muted-foreground">Or continue With</span>
 							<hr class="border-dashed" />
 						</div>
 					{:else}

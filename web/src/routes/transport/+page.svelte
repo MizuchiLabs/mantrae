@@ -187,7 +187,10 @@
 
 <svelte:head>
 	<title>Server Transports - Mantrae</title>
-	<meta name="description" content="Configure HTTP and TCP server transports for your reverse proxy services" />
+	<meta
+		name="description"
+		content="Configure HTTP and TCP server transports for your reverse proxy services"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-2">

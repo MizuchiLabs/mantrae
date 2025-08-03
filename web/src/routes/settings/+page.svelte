@@ -157,7 +157,10 @@
 
 <svelte:head>
 	<title>Settings - Mantrae</title>
-	<meta name="description" content="Configure your Mantrae system settings, backup management, and authentication options" />
+	<meta
+		name="description"
+		content="Configure your Mantrae system settings, backup management, and authentication options"
+	/>
 </svelte:head>
 
 <BackupModal bind:open={showBackupList} />
@@ -235,7 +238,7 @@
 					{#if shouldShowGroup(groupKey)}
 						<div class="mt-4 first:mt-0">
 							<h2 class="mb-0.5 text-xl font-semibold" id={groupKey}>{group.title}</h2>
-							<p class="text-muted-foreground mb-2 text-sm">{group.description}</p>
+							<p class="mb-2 text-sm text-muted-foreground">{group.description}</p>
 							<Separator class="mb-4" />
 
 							<!-- Loop through settings in this group -->
@@ -244,10 +247,10 @@
 									<div
 										class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between"
 									>
-										<div class="border-muted-foreground border-l-2 pl-4">
+										<div class="border-l-2 border-muted-foreground pl-4">
 											<Label class="flex flex-col items-start gap-1">
 												<span class="text-sm font-medium">{setting.label}</span>
-												<p class="text-muted-foreground text-xs">{setting.description}</p>
+												<p class="text-xs text-muted-foreground">{setting.description}</p>
 											</Label>
 										</div>
 

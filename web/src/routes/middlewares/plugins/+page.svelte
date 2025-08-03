@@ -102,7 +102,10 @@
 
 <svelte:head>
 	<title>Plugins - Mantrae</title>
-	<meta name="description" content="Browse and manage Traefik plugins for extended reverse proxy functionality" />
+	<meta
+		name="description"
+		content="Browse and manage Traefik plugins for extended reverse proxy functionality"
+	/>
 </svelte:head>
 
 <div class="mt-4 flex flex-col gap-4 p-4">
@@ -208,7 +211,7 @@
 					rows={cliSnippet?.split('\n').length || 2}
 					readonly
 				/>
-				<CopyButton text={cliSnippet} class="bg-background absolute top-1 right-1" />
+				<CopyButton text={cliSnippet} class="absolute top-1 right-1 bg-background" />
 			</Tabs.Content>
 		</Tabs.Root>
 	</Dialog.Content>

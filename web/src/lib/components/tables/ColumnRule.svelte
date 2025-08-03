@@ -244,7 +244,7 @@
 				<!-- Multiple indicator -->
 				<Badge
 					variant="outline"
-					class="hover:bg-muted cursor-pointer text-xs transition-colors duration-200"
+					class="cursor-pointer text-xs transition-colors duration-200 hover:bg-muted"
 				>
 					<span class="hidden sm:inline">+{parsedRules.length - 1}</span>
 					<span class="sm:hidden">{parsedRules.length} rules</span>
@@ -254,20 +254,20 @@
 
 		<HoverCard.Content class="w-auto max-w-md" side="bottom" sideOffset={8}>
 			<div class="space-y-3">
-				<div class="border-border flex items-center gap-2 border-b pb-2">
-					<List class="text-muted-foreground h-4 w-4" />
+				<div class="flex items-center gap-2 border-b border-border pb-2">
+					<List class="h-4 w-4 text-muted-foreground" />
 					<span class="text-sm font-medium">Traefik Rules ({parsedRules.length})</span>
 				</div>
 
 				<div class="max-h-60 space-y-1 overflow-y-auto">
 					{#each parsedRules as rule, index (rule.value + index)}
-						<div class="bg-muted/30 flex items-center gap-2 rounded-md p-2">
+						<div class="flex items-center gap-2 rounded-md bg-muted/30 p-2">
 							{#if showIcons}
 								{@const Icon = getRuleIcon(rule.type)}
 
 								<div class="flex min-w-0 flex-1 items-center gap-1">
-									<Icon class="text-muted-foreground h-3 w-3 shrink-0" />
-									<span class="text-muted-foreground min-w-0 text-xs font-medium">
+									<Icon class="h-3 w-3 shrink-0 text-muted-foreground" />
+									<span class="min-w-0 text-xs font-medium text-muted-foreground">
 										{rule.type}:
 									</span>
 

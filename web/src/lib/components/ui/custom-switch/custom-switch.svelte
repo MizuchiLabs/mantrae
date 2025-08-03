@@ -78,7 +78,7 @@
 	aria-checked={checked}
 	{disabled}
 	onclick={handletoggle}
-	class="focus:ring-primary relative inline-flex items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none
+	class="relative inline-flex items-center rounded-full transition-colors duration-200 ease-in-out focus:ring-primary focus:outline-none
 		{sizeClasses[size]}
 		{checked ? 'bg-primary' : 'bg-input'}
 		{disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
@@ -89,10 +89,10 @@
 	{#if variant === 'text' && textLabels}
 		<!-- Background text labels -->
 		<div class="absolute inset-0 flex items-center justify-between px-2">
-			<span class="text-muted-foreground text-xs font-medium transition-colors duration-200">
+			<span class="text-xs font-medium text-muted-foreground transition-colors duration-200">
 				{textLabels.unchecked}
 			</span>
-			<span class="text-muted-foreground text-xs font-medium transition-colors duration-200">
+			<span class="text-xs font-medium text-muted-foreground transition-colors duration-200">
 				{textLabels.checked}
 			</span>
 		</div>
@@ -101,7 +101,7 @@
 	<span
 		class="pointer-events-none flex items-center justify-center rounded-full shadow-lg ring-0 transition-all duration-200 ease-in-out
 			{thumbSizeClasses[size]}
-			{checked ? 'bg-primary-foreground' : 'bg-background border-border/20 border'}
+			{checked ? 'bg-primary-foreground' : 'border border-border/20 bg-background'}
 			{getTranslation()}
 		"
 	>
@@ -117,7 +117,7 @@
 				{/if}
 			</div>
 		{:else if variant === 'text' && textLabels}
-			<span class="text-primary text-xs font-bold whitespace-nowrap">
+			<span class="text-xs font-bold whitespace-nowrap text-primary">
 				{checked ? textLabels.checked : textLabels.unchecked}
 			</span>
 		{/if}

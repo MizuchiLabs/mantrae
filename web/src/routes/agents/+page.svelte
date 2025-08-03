@@ -166,19 +166,22 @@
 
 <svelte:head>
 	<title>Agents - Mantrae</title>
-	<meta name="description" content="Monitor and manage your connected Mantrae agents for distributed reverse proxy management" />
+	<meta
+		name="description"
+		content="Monitor and manage your connected Mantrae agents for distributed reverse proxy management"
+	/>
 </svelte:head>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
-				<div class="bg-primary/10 rounded-lg p-2">
-					<Bot class="text-primary h-6 w-6" />
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Bot class="h-6 w-6 text-primary" />
 				</div>
 				Agents
 			</h1>
-			<p class="text-muted-foreground mt-1">Connect your agents</p>
+			<p class="mt-1 text-muted-foreground">Connect your agents</p>
 		</div>
 	</div>
 

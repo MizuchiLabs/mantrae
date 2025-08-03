@@ -60,15 +60,15 @@
 					<div class="space-y-4">
 						<div class="flex items-start gap-3">
 							<div
-								class="bg-destructive/10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+								class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10"
 							>
-								<AlertTriangle class="text-destructive h-4 w-4" />
+								<AlertTriangle class="h-4 w-4 text-destructive" />
 							</div>
 							<div class="flex-1 space-y-2">
 								<h4 class="text-sm leading-none font-semibold">
 									{action.popover.title}
 								</h4>
-								<p class="text-muted-foreground text-sm leading-relaxed">
+								<p class="text-sm leading-relaxed text-muted-foreground">
 									{action.popover.description}
 								</p>
 							</div>

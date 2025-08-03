@@ -31,7 +31,7 @@
 	<Button
 		variant="ghost"
 		size="icon"
-		class="text-muted-foreground absolute inset-y-0 right-1 flex items-center justify-center p-2 hover:bg-transparent hover:text-red-400"
+		class="absolute inset-y-0 right-1 flex items-center justify-center p-2 text-muted-foreground hover:bg-transparent hover:text-red-400"
 		onclick={async () => await clipboard.copy(value)}
 	>
 		{#if clipboard.status === 'success'}

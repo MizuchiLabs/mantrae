@@ -79,7 +79,7 @@
 			<div class="space-y-2">
 				<Label for="search" class="text-sm font-medium">Search Logs</Label>
 				<div class="relative">
-					<Search class="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+					<Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 					<Input
 						id="search"
 						bind:value={searchQuery}
@@ -98,21 +98,21 @@
 				{#if logs.length === 0}
 					<div class="flex items-center justify-center py-12">
 						<div class="space-y-2 text-center">
-							<TriangleAlert class="text-muted-foreground mx-auto h-8 w-8" />
-							<p class="text-muted-foreground text-sm">
+							<TriangleAlert class="mx-auto h-8 w-8 text-muted-foreground" />
+							<p class="text-sm text-muted-foreground">
 								{searchQuery ? 'No logs match your search criteria' : 'No audit logs found'}
 							</p>
 						</div>
 					</div>
 				{:else}
 					{#each logs as log (log.id)}
-						<div class="group hover:bg-muted/30 rounded-lg border p-4 transition-colors">
+						<div class="group rounded-lg border p-4 transition-colors hover:bg-muted/30">
 							<div class="flex items-start gap-3">
 								<!-- Activity Indicator -->
 								<div class="flex flex-col items-center gap-1 pt-1">
 									<div class="h-2 w-2 rounded-full {getActivityColor(log)}"></div>
 									{#if log !== logs[logs.length - 1]}
-										<div class="bg-border h-8 w-px"></div>
+										<div class="h-8 w-px bg-border"></div>
 									{/if}
 								</div>
 
@@ -121,7 +121,7 @@
 									<div class="space-y-1">
 										<p class="text-sm leading-relaxed font-medium">{log.details}</p>
 
-										<div class="text-muted-foreground flex items-center gap-2 text-xs">
+										<div class="flex items-center gap-2 text-xs text-muted-foreground">
 											{#if log.createdAt}
 												<span>{timeAgo(log.createdAt)}</span>
 											{/if}
@@ -163,9 +163,9 @@
 			{:catch error}
 				<div class="flex items-center justify-center py-12">
 					<div class="space-y-2 text-center">
-						<TriangleAlert class="text-destructive mx-auto h-8 w-8" />
-						<p class="text-destructive text-sm">Failed to load audit logs</p>
-						<p class="text-muted-foreground text-xs">{error.message}</p>
+						<TriangleAlert class="mx-auto h-8 w-8 text-destructive" />
+						<p class="text-sm text-destructive">Failed to load audit logs</p>
+						<p class="text-xs text-muted-foreground">{error.message}</p>
 					</div>
 				</div>
 			{/await}

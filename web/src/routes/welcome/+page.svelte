@@ -1,8 +1,3 @@
-<svelte:head>
-	<title>Welcome - Mantrae</title>
-	<meta name="description" content="Configure your Mantrae server connection to get started with reverse proxy management" />
-</svelte:head>
-
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -103,6 +98,14 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Welcome - Mantrae</title>
+	<meta
+		name="description"
+		content="Configure your Mantrae server connection to get started with reverse proxy management"
+	/>
+</svelte:head>
+
 <Card.Root class="max-w-md sm:min-w-[350px]">
 	<Card.Header class="flex flex-col items-center gap-3 text-center">
 		<div class="flex items-center gap-2">
@@ -138,7 +141,7 @@
 				/>
 			</div>
 			{#if !isHealthy && reconnectTimer}
-				<small class="text-muted-foreground animate-pulse">Attempting to reconnect...</small>
+				<small class="animate-pulse text-muted-foreground">Attempting to reconnect...</small>
 			{/if}
 		</div>
 

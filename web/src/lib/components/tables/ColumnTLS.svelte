@@ -89,7 +89,7 @@
 		<HoverCard.Content class="w-auto max-w-sm" side="bottom" sideOffset={8}>
 			<div class="space-y-3">
 				<!-- Header -->
-				<div class="border-border flex items-center gap-2 border-b pb-2">
+				<div class="flex items-center gap-2 border-b border-border pb-2">
 					<Shield class="h-4 w-4 text-green-500" />
 					<span class="text-sm font-medium">TLS Configuration</span>
 				</div>
@@ -225,7 +225,7 @@
 					class="cursor-pointer text-sm transition-colors duration-200"
 					onclick={() => column?.setFilterValue?.('disabled')}
 				>
-					<Unlock class="text-muted-foreground mr-1 h-3 w-3" />
+					<Unlock class="mr-1 h-3 w-3 text-muted-foreground" />
 					<span class="text-muted-foreground">Disabled</span>
 				</Badge>
 			</Tooltip.Trigger>

@@ -98,7 +98,7 @@
 								<HoverCard.Content class="w-full">
 									<div class="flex items-center">
 										<CalendarDays class="mr-2 size-4 opacity-70" />
-										<span class="text-muted-foreground text-xs">
+										<span class="text-xs text-muted-foreground">
 											Created
 											{#if b.createdAt}
 												{DateFormat.format(timestampDate(b.createdAt))}
@@ -140,7 +140,7 @@
 					</div>
 				{/each}
 				{#if sqliteBackups.length === 0}
-					<p class="text-muted-foreground pt-2 text-center text-sm">No backups available</p>
+					<p class="pt-2 text-center text-sm text-muted-foreground">No backups available</p>
 				{/if}
 			</Tabs.Content>
 			<Tabs.Content value="yaml" class="space-y-2">
@@ -154,7 +154,7 @@
 								<HoverCard.Content class="w-full">
 									<div class="flex items-center">
 										<CalendarDays class="mr-2 size-4 opacity-70" />
-										<span class="text-muted-foreground text-xs">
+										<span class="text-xs text-muted-foreground">
 											Created
 											{#if b.createdAt}
 												{DateFormat.format(timestampDate(b.createdAt))}
@@ -196,7 +196,7 @@
 					</div>
 				{/each}
 				{#if yamlBackups.length === 0}
-					<p class="text-muted-foreground pt-2 text-center text-sm">No backups available</p>
+					<p class="pt-2 text-center text-sm text-muted-foreground">No backups available</p>
 				{/if}
 			</Tabs.Content>
 		</Tabs.Root>

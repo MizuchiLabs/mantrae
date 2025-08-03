@@ -272,12 +272,12 @@
 			/>
 
 			{#if showDropdown}
-				<ul class="bg-card absolute mt-1 max-h-48 w-80 overflow-y-auto rounded-lg border p-2">
+				<ul class="absolute mt-1 max-h-48 w-80 overflow-y-auto rounded-lg border bg-card p-2">
 					{#each filteredRules as template, i (template)}
 						<button
 							role="option"
 							aria-selected={i === selectedRuleIndex}
-							class="hover:bg-muted w-full cursor-pointer rounded p-1 text-left font-mono text-sm"
+							class="w-full cursor-pointer rounded p-1 text-left font-mono text-sm hover:bg-muted"
 							class:bg-muted={i === selectedRuleIndex}
 							onclick={() => insertRule(template)}
 						>
@@ -289,7 +289,7 @@
 
 			{#if !disabled}
 				<div
-					class="text-muted-foreground flex items-center justify-end gap-1 border-t px-3 py-2 text-sm"
+					class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground"
 				>
 					{#if valid}
 						<span>Valid</span>
@@ -303,7 +303,7 @@
 		</div>
 
 		{#if !disabled}
-			<div class="text-muted-foreground text-xs">
+			<div class="text-xs text-muted-foreground">
 				<span class="font-bold">Examples:</span>
 				<ul class="list-inside list-disc">
 					{#each ruleTemplates[type] as template (template)}

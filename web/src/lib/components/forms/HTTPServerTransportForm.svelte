@@ -53,7 +53,7 @@
 	<div class="space-y-4">
 		<div class="flex flex-col gap-1">
 			<Label for="serverName" class="text-sm font-medium">General</Label>
-			<p class="text-muted-foreground text-xs">Configure general settings</p>
+			<p class="text-xs text-muted-foreground">Configure general settings</p>
 		</div>
 
 		<div class="grid grid-cols-2 gap-2">
@@ -112,7 +112,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label class="text-sm font-medium">Certificates</Label>
-			<p class="text-muted-foreground text-xs">Configure TLS certificates</p>
+			<p class="text-xs text-muted-foreground">Configure TLS certificates</p>
 		</div>
 
 		<div class="space-y-2">
@@ -199,7 +199,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="forwardingTimeouts" class="text-sm font-medium">Forwarding Timeouts</Label>
-			<p class="text-muted-foreground text-xs">Configure timeouts for forwarding</p>
+			<p class="text-xs text-muted-foreground">Configure timeouts for forwarding</p>
 		</div>
 
 		<div class="flex flex-col gap-4">
@@ -303,7 +303,7 @@
 	<div class="space-y-2">
 		<div class="flex flex-col gap-1 pb-2">
 			<Label for="spiffe" class="text-sm font-medium">SPIFFE Configuration</Label>
-			<p class="text-muted-foreground text-xs">Configure SPIFFE integration</p>
+			<p class="text-xs text-muted-foreground">Configure SPIFFE integration</p>
 		</div>
 
 		<div class="space-y-2">

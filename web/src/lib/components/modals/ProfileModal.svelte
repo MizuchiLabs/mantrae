@@ -100,13 +100,13 @@
 					placeholder="traefik-site"
 					class="transition-colors"
 				/>
-				<p class="text-muted-foreground text-xs">A descriptive name for this profile</p>
+				<p class="text-xs text-muted-foreground">A descriptive name for this profile</p>
 			</div>
 
 			<div class="space-y-2">
 				<Label for="description" class="text-sm font-medium">Description</Label>
 				<Input id="description" bind:value={item.description} placeholder="Site description" />
-				<p class="text-muted-foreground text-xs">Optional description for this profile</p>
+				<p class="text-xs text-muted-foreground">Optional description for this profile</p>
 			</div>
 
 			{#if item.id}
@@ -120,7 +120,7 @@
 					</div>
 					{#await buildConnectionString(item) then value}
 						<!-- <CopyInput id="token" {value} readonly /> -->
-						<p class="text-muted-foreground text-xs">
+						<p class="text-xs text-muted-foreground">
 							Used in the connection URL to connect to this profile with your traefik instance
 							<span class="underline">
 								{value}

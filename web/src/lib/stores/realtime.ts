@@ -1,15 +1,15 @@
 import {
-    agentClient,
-    dnsClient,
-    entryPointClient,
-    middlewareClient,
-    profileClient,
-    routerClient,
-    serversTransportClient,
-    serviceClient,
-    traefikClient,
-    userClient,
-    utilClient
+	agentClient,
+	dnsClient,
+	entryPointClient,
+	middlewareClient,
+	profileClient,
+	routerClient,
+	serversTransportClient,
+	serviceClient,
+	traefikClient,
+	userClient,
+	utilClient
 } from '$lib/api';
 import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 import type { DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';

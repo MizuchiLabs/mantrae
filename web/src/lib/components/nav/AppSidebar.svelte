@@ -87,7 +87,7 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 							>
 								<div
-									class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
+									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
 									<img src={logo} alt="Mantrae Logo" width="18" />
 								</div>
@@ -107,7 +107,7 @@
 						side={sidebar.isMobile ? 'bottom' : 'right'}
 						sideOffset={4}
 					>
-						<DropdownMenu.Label class="text-muted-foreground text-xs">Profiles</DropdownMenu.Label>
+						<DropdownMenu.Label class="text-xs text-muted-foreground">Profiles</DropdownMenu.Label>
 						{#each $profiles || [] as p (p.id)}
 							<DropdownMenu.Item
 								onSelect={() => (profile.value = p)}
@@ -139,10 +139,10 @@
 								modalProfileOpen = true;
 							}}
 						>
-							<div class="bg-background flex size-6 items-center justify-center rounded-md border">
+							<div class="flex size-6 items-center justify-center rounded-md border bg-background">
 								<Plus class="size-4" />
 							</div>
-							<div class="text-muted-foreground font-medium">Add Profile</div>
+							<div class="font-medium text-muted-foreground">Add Profile</div>
 						</DropdownMenu.Item>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
@@ -202,7 +202,7 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								{...props}
 							>
-								<Avatar.Root class="bg-muted h-10 w-10 rounded-full">
+								<Avatar.Root class="h-10 w-10 rounded-full bg-muted">
 									<!-- <Avatar.Image src={user.avatar} alt={'@' + $user?.username} /> -->
 									<Avatar.Fallback class="text-muted-foreground uppercase">
 										{user.username?.slice(0, 2)}
@@ -224,7 +224,7 @@
 					>
 						<DropdownMenu.Label class="p-0 font-normal">
 							<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-								<Avatar.Root class="bg-muted h-10 w-10 rounded-full">
+								<Avatar.Root class="h-10 w-10 rounded-full bg-muted">
 									<!-- <Avatar.Image src={user?.avatar} alt={'@' + $user?.username} /> -->
 									<Avatar.Fallback class="text-muted-foreground uppercase">
 										{user.username?.slice(0, 2)}
