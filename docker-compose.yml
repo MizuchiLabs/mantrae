@@ -57,6 +57,8 @@ services:
       - --providers.docker.exposedByDefault=false
       - --providers.docker.watch=true
       - --providers.http.endpoint=http://mantrae:3000/api/<profile-name>?token=<token> # use the correct profile name
+      - --providers.http.headers.Traefik-Instance-Name=my_cool_instance
+      - --providers.http.headers.Traefik-Instance-Url=http://127.0.0.1:8080
       - --certificatesresolvers.letsencrypt.acme.email=your@email.com
       - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
