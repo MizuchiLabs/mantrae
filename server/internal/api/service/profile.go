@@ -5,6 +5,7 @@ import (
 
 	"connectrpc.com/connect"
 
+	"github.com/gosimple/slug"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
@@ -37,7 +38,7 @@ func (s *ProfileService) CreateProfile(
 	req *connect.Request[mantraev1.CreateProfileRequest],
 ) (*connect.Response[mantraev1.CreateProfileResponse], error) {
 	params := db.CreateProfileParams{
-		Name:        req.Msg.Name,
+		Name:        slug.Make(req.Msg.Name),
 		Description: req.Msg.Description,
 		Token:       util.GenerateToken(6),
 	}
@@ -64,7 +65,7 @@ func (s *ProfileService) UpdateProfile(
 ) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
 	params := db.UpdateProfileParams{
 		ID:          req.Msg.Id,
-		Name:        req.Msg.Name,
+		Name:        slug.Make(req.Msg.Name),
 		Description: req.Msg.Description,
 	}
 	if req.Msg.GetRegenerateToken() {
