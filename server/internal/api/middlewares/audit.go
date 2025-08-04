@@ -322,7 +322,7 @@ func extractDNSProviderServiceDetails(
 		if updateReq, ok := req.Any().(*mantraev1.UpdateDnsProviderRequest); ok {
 			if updateResp, ok := resp.Any().(*mantraev1.UpdateDnsProviderResponse); ok {
 				return nil, fmt.Sprintf(
-					"Updated DNS provider '%s' (ID: %d)",
+					"Updated DNS provider '%s' (ID: %s)",
 					updateReq.Name,
 					updateResp.DnsProvider.Id,
 				)
@@ -330,7 +330,7 @@ func extractDNSProviderServiceDetails(
 		}
 	case "DeleteDnsProvider":
 		if deleteReq, ok := req.Any().(*mantraev1.DeleteDnsProviderRequest); ok {
-			return nil, fmt.Sprintf("Deleted DNS provider (ID: %d)", deleteReq.Id)
+			return nil, fmt.Sprintf("Deleted DNS provider (ID: %s)", deleteReq.Id)
 		}
 	}
 	return nil, ""
