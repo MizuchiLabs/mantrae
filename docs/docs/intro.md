@@ -6,8 +6,6 @@ sidebar_position: 1
 
 **Mantrae** is a modern web interface for managing [Traefik](https://traefik.io/) configurations, built using **Go** for backend services and **SvelteKit** for a reactive frontend experience. With Mantrae, you can easily create, update, and manage routers, middlewares, services, and other Traefik components across multiple profiles.
 
-To understand how Mantrae works, check out our [Architecture](./architecture) documentation.
-
 ## Key Features
 
 - **Multi-Profile Management**: Create and manage multiple profiles to handle different Traefik instances (development, staging, production)
