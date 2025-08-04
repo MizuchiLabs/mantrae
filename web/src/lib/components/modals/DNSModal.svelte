@@ -202,11 +202,11 @@
 							</div>
 							<CustomSwitch
 								variant="text"
-								textLabels={{ checked: 'Forward', unchecked: 'Primary' }}
-								checked={(item.config?.zoneType || 'primary') === 'forward'}
+								textLabels={{ checked: 'Forwarder', unchecked: 'Primary' }}
+								checked={(item.config?.zoneType || 'primary') === 'forwarder'}
 								onCheckedChange={(value) => {
 									if (item.config === undefined) item.config = {} as DnsProviderConfig;
-									item.config.zoneType = value ? 'forward' : 'primary';
+									item.config.zoneType = value ? 'forwarder' : 'primary';
 								}}
 								size="md"
 							/>
