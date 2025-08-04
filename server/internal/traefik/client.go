@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
@@ -47,6 +48,7 @@ func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
 	if err != nil {
 		// Create new temporary instance
 		instance = db.TraefikInstance{
+			ID:        uuid.New().String(),
 			ProfileID: profileID,
 			Name:      instanceName,
 			Url:       instanceURL,
@@ -133,6 +135,7 @@ func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
 	defer cancel()
 
 	if _, err := q.UpsertTraefikInstance(ctx, db.UpsertTraefikInstanceParams{
+		ID:          instance.ID,
 		Name:        instance.Name,
 		Url:         instance.Url,
 		Username:    instance.Username,
