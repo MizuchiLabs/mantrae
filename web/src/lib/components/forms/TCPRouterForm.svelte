@@ -1,21 +1,22 @@
 <script lang="ts">
-	import * as Select from '$lib/components/ui/select/index.js';
-	import RuleEditor from '../utils/ruleEditor.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/zen/traefik-schemas';
-	import { Star } from '@lucide/svelte';
-	import { unmarshalConfig, marshalConfig } from '$lib/types';
-	import { onMount } from 'svelte';
-	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { entryPoints, middlewares, routers } from '$lib/stores/realtime';
+	import { marshalConfig, unmarshalConfig } from '$lib/types';
+	import { Star } from '@lucide/svelte';
+	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
+	import RuleEditor from '../utils/ruleEditor.svelte';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
 	let config = $state(unmarshalConfig(router.config) as TCPRouter);
-	let certResolvers: string[] = $state([]);
+	let certResolvers = new SvelteSet();
 
 	$effect(() => {
 		if (config) router.config = marshalConfig(config);
@@ -25,7 +26,7 @@
 		$routers.forEach((r) => {
 			if (r.type === router.type) {
 				let tmp = unmarshalConfig(r.config) as TCPRouter;
-				if (tmp?.tls?.certResolver) certResolvers.push(tmp.tls?.certResolver);
+				if (tmp?.tls?.certResolver) certResolvers.add(tmp.tls?.certResolver);
 			}
 		});
 
@@ -105,7 +106,7 @@
 							<Badge
 								onclick={() => {
 									if (!config.tls) config.tls = {} as RouterTCPTLSConfig;
-									config.tls.certResolver = resolver;
+									if (resolver) config.tls.certResolver = resolver.toString();
 								}}
 								class="mt-1 cursor-pointer"
 							>

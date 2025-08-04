@@ -68,8 +68,16 @@ func (s *HTTPRouterOps) Get(
 	if err != nil {
 		return nil, err
 	}
+	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, result.ID)
+	if err != nil {
+		return nil, err
+	}
+	router := result.ToProto()
+	for _, p := range dnsProvider {
+		router.DnsProviders = append(router.DnsProviders, p.ToProto())
+	}
 	return &mantraev1.GetRouterResponse{
-		Router: result.ToProto(),
+		Router: router,
 	}, nil
 }
 
@@ -261,7 +269,15 @@ func (s *HTTPRouterOps) List(
 
 	routers := make([]*mantraev1.Router, 0, len(result))
 	for _, r := range result {
-		routers = append(routers, r.ToProto())
+		dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, r.ID)
+		if err != nil {
+			return nil, err
+		}
+		router := r.ToProto()
+		for _, p := range dnsProvider {
+			router.DnsProviders = append(router.DnsProviders, p.ToProto())
+		}
+		routers = append(routers, router)
 	}
 	return &mantraev1.ListRoutersResponse{
 		Routers:    routers,
@@ -278,6 +294,14 @@ func (s *TCPRouterOps) Get(
 	result, err := s.app.Conn.GetQuery().GetTcpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
+	}
+	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, result.ID)
+	if err != nil {
+		return nil, err
+	}
+	router := result.ToProto()
+	for _, p := range dnsProvider {
+		router.DnsProviders = append(router.DnsProviders, p.ToProto())
 	}
 	return &mantraev1.GetRouterResponse{
 		Router: result.ToProto(),
@@ -451,7 +475,15 @@ func (s *TCPRouterOps) List(
 
 	routers := make([]*mantraev1.Router, 0, len(result))
 	for _, r := range result {
-		routers = append(routers, r.ToProto())
+		dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, r.ID)
+		if err != nil {
+			return nil, err
+		}
+		router := r.ToProto()
+		for _, p := range dnsProvider {
+			router.DnsProviders = append(router.DnsProviders, p.ToProto())
+		}
+		routers = append(routers, router)
 	}
 	return &mantraev1.ListRoutersResponse{
 		Routers:    routers,
