@@ -1,10 +1,11 @@
+// Package logger provides logging setup and configuration for the application.
 package logger
 
 import (
 	"log/slog"
 	"strings"
 
-	"github.com/MizuchiLabs/mantrae/pkg/util"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 )
 
 func Setup() {

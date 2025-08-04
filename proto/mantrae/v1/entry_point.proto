@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+service EntryPointService {
+  rpc GetEntryPoint(GetEntryPointRequest) returns (GetEntryPointResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateEntryPoint(CreateEntryPointRequest) returns (CreateEntryPointResponse);
+  rpc UpdateEntryPoint(UpdateEntryPointRequest) returns (UpdateEntryPointResponse);
+  rpc DeleteEntryPoint(DeleteEntryPointRequest) returns (DeleteEntryPointResponse);
+  rpc ListEntryPoints(ListEntryPointsRequest) returns (ListEntryPointsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message EntryPoint {
+  string id = 1;
+  int64 profile_id = 2;
+  string name = 3;
+  string address = 4;
+  bool is_default = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetEntryPointRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+message GetEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message CreateEntryPointRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  bool is_default = 3;
+  optional string address = 4;
+}
+message CreateEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message UpdateEntryPointRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  int64 profile_id = 2 [(buf.validate.field).int64.gt = 0];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  bool is_default = 4;
+  optional string address = 5;
+}
+message UpdateEntryPointResponse {
+  EntryPoint entry_point = 1;
+}
+
+message DeleteEntryPointRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+}
+message DeleteEntryPointResponse {}
+
+message ListEntryPointsRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional int64 limit = 2 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 3 [(buf.validate.field).int64.gte = 0];
+}
+message ListEntryPointsResponse {
+  repeated EntryPoint entry_points = 1;
+  int64 total_count = 2;
+}

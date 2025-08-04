@@ -13,10 +13,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mizuchilabs/mantrae/pkg/meta"
 )
 
 const (
-	RepoURL = "https://api.github.com/repos/MizuchiLabs/mantrae"
+	RepoURL = "https://api.github.com/repos/mizuchilabs/mantrae"
 )
 
 type releaseAsset struct {
@@ -50,13 +52,13 @@ func Update(update bool) {
 
 	if !update {
 		if compareVersions(
-			strings.TrimPrefix(Version, "v"),
+			strings.TrimPrefix(meta.Version, "v"),
 			strings.TrimPrefix(latest.Tag, "v"),
 		) <= 0 {
 			slog.Info("You are running the latest version!")
 			return
 		}
-		slog.Info("New version available!", "latest", latest.Tag, "current", Version)
+		slog.Info("New version available!", "latest", latest.Tag, "current", meta.Version)
 		return
 	}
 
@@ -107,7 +109,11 @@ func fetchLatestRelease() (*release, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err = res.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("(%d) failed to send latest release request", res.StatusCode)
@@ -139,7 +145,11 @@ func downloadFile(url string, dest string) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if err = res.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("(%d) failed to send download file request", res.StatusCode)
@@ -149,7 +159,11 @@ func downloadFile(url string, dest string) error {
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		if err = out.Close(); err != nil {
+			slog.Error("failed to close output file", "error", err)
+		}
+	}()
 
 	if _, err := io.Copy(out, res.Body); err != nil {
 		return err
@@ -207,12 +221,9 @@ func compareVersions(a, b string) int {
 	bSplit := strings.Split(b, ".")
 	bTotal := len(bSplit)
 
-	limit := aTotal
-	if bTotal > aTotal {
-		limit = bTotal
-	}
+	limit := max(aTotal, bTotal)
 
-	for i := 0; i < limit; i++ {
+	for i := range limit {
 		var x, y int
 
 		if i < aTotal {

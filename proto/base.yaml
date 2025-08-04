@@ -1,0 +1,42 @@
+openapi: 3.1.0
+info:
+  title: Mantrae
+  description: |
+    Mantrae API Documentation
+    For more information, visit [Mantrae Documentation](https://mizuchi.dev/mantrae).
+  version: v1.0.0
+  contact:
+    name: Mantrae Support
+    url: https://mizuchi.dev/mantrae
+    email: admin@mizuchi.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://localhost:3000
+    description: Production
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+
+security:
+  - BearerAuth: []

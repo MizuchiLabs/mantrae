@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "mantrae/v1/protocol.proto";
+
+service ServiceService {
+  rpc GetService(GetServiceRequest) returns (GetServiceResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse);
+  rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse);
+  rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message Service {
+  string id = 1;
+  int64 profile_id = 2;
+  string agent_id = 3;
+  string name = 4;
+  bool enabled = 5;
+  google.protobuf.Struct config = 6;
+  ProtocolType type = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message GetServiceRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
+  oneof identifier {
+    option (buf.validate.oneof).required = true;
+    string id = 3 [(buf.validate.field).string.min_len = 1];
+    string name = 4 [(buf.validate.field).string.min_len = 1];
+  }
+}
+message GetServiceResponse {
+  Service service = 1;
+}
+
+message CreateServiceRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional string agent_id = 2;
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  google.protobuf.Struct config = 4;
+  bool enabled = 5;
+  ProtocolType type = 6 [(buf.validate.field).enum.defined_only = true];
+}
+message CreateServiceResponse {
+  Service service = 1;
+}
+
+message UpdateServiceRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  bool enabled = 3;
+  google.protobuf.Struct config = 4;
+  ProtocolType type = 5 [(buf.validate.field).enum.defined_only = true];
+}
+message UpdateServiceResponse {
+  Service service = 1;
+}
+
+message DeleteServiceRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
+}
+message DeleteServiceResponse {}
+
+message ListServicesRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
+  optional ProtocolType type = 3;
+  optional int64 limit = 4 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 5 [(buf.validate.field).int64.gte = 0];
+}
+message ListServicesResponse {
+  repeated Service services = 1;
+  int64 total_count = 2;
+}

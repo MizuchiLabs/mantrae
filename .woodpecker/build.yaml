@@ -3,27 +3,36 @@ when:
     event: [push, tag, deployment, manual]
     path:
       include:
-        - 'web/**'
-        - 'agent/**'
-        - 'internal/**'
-        - 'pkg/**'
-        - '*.go'
-        - 'go.mod'
-        - 'go.sum'
+        - "web/**"
+        - "*.go"
+        - "go.mod"
+        - "go.sum"
 
 steps:
-  - name: frontend-build
-    image: node:20
+  - name: build:frontend
+    image: node:22-alpine
+    directory: web
     commands:
-      - npm install -g corepack
+      - npm install --global corepack@latest
       - corepack enable
-      - corepack prepare pnpm@latest --activate
+      - corepack prepare pnpm@latest-10 --activate
       - pnpm config set store-dir .pnpm-store
-      - cd web
       - pnpm install
+      - pnpm format
       - pnpm build
 
-  - name: docker-build
+  - name: test:backend
+    image: golang:1.24-alpine
+    commands:
+      - go mod download
+      - go mod verify
+      - go mod tidy
+      - go vet ./...
+      - go test ./...
+    depends_on:
+      - build:frontend
+
+  - name: release:container
     image: ghcr.io/ko-build/ko:latest
     commands:
       - |
@@ -31,20 +40,32 @@ steps:
           TAGS="-t latest -t $CI_COMMIT_TAG"
         elif [ "$CI_COMMIT_BRANCH" = "$CI_REPO_DEFAULT_BRANCH" ]; then
           TAGS="-t latest"
+          echo "Building latest from main branch..."
         else
           TAGS="-t nightly"
+          echo "Building nightly release..."
         fi
-      - echo "$GITHUB_TOKEN" | ko login ghcr.io -u "$CI_REPO_OWNER" --password-stdin
-      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae ko build . --bare $TAGS
-      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd --bare $TAGS
+      - echo "$GITHUB_TOKEN" | ko login ghcr.io -u "$CI_REPO_OWNER"
+        --password-stdin
+      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae ko build ./server/cmd --bare
+        $TAGS
+      - KO_DOCKER_REPO=ghcr.io/mizuchilabs/mantrae-agent ko build ./agent/cmd
+        --bare $TAGS
+    depends_on:
+      - build:frontend
+      - test:backend
     environment:
       GITHUB_TOKEN:
         from_secret: gh_token
 
-  - name: release
+  - name: release:binary
     image: goreleaser/goreleaser
     commands:
+      - goreleaser check
       - goreleaser release --clean --skip=validate
+    depends_on:
+      - build:frontend
+      - test:backend
     environment:
       GITHUB_TOKEN:
         from_secret: gh_token

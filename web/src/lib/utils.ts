@@ -5,70 +5,47 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function safeClone<T>(obj: T): T {
-	try {
-		return JSON.parse(JSON.stringify(obj));
-	} catch (e) {
-		console.warn('Failed to clone object:', e);
-		return obj;
-	}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
+export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
+export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & {
+	ref?: U | null;
+};
+
+// Helper function to truncate text with ellipsis
+export function truncateText(text: string, maxLength: number = 30): string {
+	return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 }
 
-export async function tryLoad<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
-	try {
-		return await fn();
-	} catch (err: unknown) {
-		const error = err instanceof Error ? err.message : String(err);
-		console.warn('Failed to load:', error);
-		return fallback;
-	}
+// Helper function to format array display with ellipsis
+export function formatArrayDisplay(arr: string[] | undefined, maxItems: number = 2): string {
+	if (!arr || arr.length === 0) return '';
+	if (arr.length <= maxItems) return arr.join(', ');
+	return `${arr.slice(0, maxItems).join(', ')} (+${arr.length - maxItems})`;
 }
 
-export function cleanupFormData(data: unknown): unknown {
-	// Base cases for non-objects
-	if (data === null || data === undefined || data === '') {
-		return null;
+export function parseGoDuration(input: string) {
+	const normalized = input
+		.toLowerCase()
+		.replace(/minutes?|mins?/g, 'm')
+		.replace(/seconds?|secs?/g, 's')
+		.replace(/hours?|hrs?/g, 'h')
+		.replace(/\s+/g, '');
+
+	const regex = /(?<value>[-+]?\d+)(?<unit>ns|us|µs|ms|s|m|h)/g;
+	const parts: string[] = [];
+	let match;
+
+	while ((match = regex.exec(normalized)) !== null) {
+		const groups = match.groups as { value: string; unit: string } | undefined;
+		if (!groups) return null;
+
+		const { value, unit } = groups;
+		parts.push(`${parseInt(value)}${unit}`);
 	}
 
-	if (typeof data !== 'object') {
-		// Keep primitive values like numbers and booleans
-		return data;
-	}
-
-	// Handle arrays
-	if (Array.isArray(data)) {
-		// Filter out empty values and clean each remaining item
-		const filtered = data
-			.filter((item) => item !== null && item !== undefined && item !== '')
-			.map((item) => cleanupFormData(item))
-			.filter((item) => item !== null);
-
-		return filtered.length > 0 ? filtered : null;
-	}
-
-	// Handle objects
-	const result: Record<string, unknown> = {};
-	let hasValidProperty = false;
-
-	for (const [key, value] of Object.entries(data)) {
-		// Skip default values for specific properties
-		if (
-			(key === 'depth' && value === 0) ||
-			(key === 'requestHost' && value === false) ||
-			(key === 'excludedIPs' && Array.isArray(value) && value.length === 0)
-		) {
-			continue;
-		}
-
-		const cleanValue = cleanupFormData(value);
-
-		// Only include meaningful values
-		if (cleanValue !== null) {
-			result[key] = cleanValue;
-			hasValidProperty = true;
-		}
-	}
-
-	// Return null for empty objects to remove them entirely
-	return hasValidProperty ? result : null;
+	if (parts.length === 0) return null;
+	return parts.join('');
 }

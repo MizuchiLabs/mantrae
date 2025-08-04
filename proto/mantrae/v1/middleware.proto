@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package mantrae.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "mantrae/v1/protocol.proto";
+
+service MiddlewareService {
+  rpc GetMiddleware(GetMiddlewareRequest) returns (GetMiddlewareResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc CreateMiddleware(CreateMiddlewareRequest) returns (CreateMiddlewareResponse);
+  rpc UpdateMiddleware(UpdateMiddlewareRequest) returns (UpdateMiddlewareResponse);
+  rpc DeleteMiddleware(DeleteMiddlewareRequest) returns (DeleteMiddlewareResponse);
+  rpc ListMiddlewares(ListMiddlewaresRequest) returns (ListMiddlewaresResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+  rpc GetMiddlewarePlugins(GetMiddlewarePluginsRequest) returns (GetMiddlewarePluginsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+}
+
+message Middleware {
+  string id = 1;
+  int64 profile_id = 2;
+  string agent_id = 3;
+  string name = 4;
+  google.protobuf.Struct config = 5;
+  bool enabled = 6;
+  bool is_default = 7;
+  ProtocolType type = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message Plugin {
+  string id = 1;
+  string name = 2;
+  string display_name = 3;
+  string author = 4;
+  string type = 5;
+  string import = 6;
+  string summary = 7;
+  string icon_url = 8;
+  string banner_url = 9;
+  string readme = 10;
+  string latest_version = 11;
+  repeated string versions = 12;
+  int64 stars = 13;
+  PluginSnippet snippet = 14;
+  string created_at = 15;
+}
+
+message PluginSnippet {
+  string k8s = 1;
+  string yaml = 2;
+  string toml = 3;
+}
+
+message GetMiddlewareRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
+}
+message GetMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message CreateMiddlewareRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional string agent_id = 2;
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 4 [(buf.validate.field).enum.defined_only = true];
+  bool is_default = 5;
+  google.protobuf.Struct config = 6;
+}
+message CreateMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message UpdateMiddlewareRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  int64 profile_id = 2 [(buf.validate.field).int64.gt = 0];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 4 [(buf.validate.field).enum.defined_only = true];
+  google.protobuf.Struct config = 5;
+  bool enabled = 6;
+  bool is_default = 7;
+}
+message UpdateMiddlewareResponse {
+  Middleware middleware = 1;
+}
+
+message DeleteMiddlewareRequest {
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  ProtocolType type = 2 [(buf.validate.field).enum.defined_only = true];
+}
+message DeleteMiddlewareResponse {}
+
+message ListMiddlewaresRequest {
+  int64 profile_id = 1 [(buf.validate.field).int64.gt = 0];
+  optional string agent_id = 2 [(buf.validate.field).string.min_len = 1];
+  optional ProtocolType type = 3;
+  optional int64 limit = 4 [(buf.validate.field).cel = {
+    id: "limit.valid"
+    message: "limit must be either -1 or greater than 0"
+    expression: "this == -1 || this > 0"
+  }];
+  optional int64 offset = 5 [(buf.validate.field).int64.gte = 0];
+}
+message ListMiddlewaresResponse {
+  repeated Middleware middlewares = 1;
+  int64 total_count = 2;
+}
+
+message GetMiddlewarePluginsRequest {}
+message GetMiddlewarePluginsResponse {
+  repeated Plugin plugins = 1;
+}

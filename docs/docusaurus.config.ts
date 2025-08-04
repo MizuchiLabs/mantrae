@@ -29,6 +29,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
+          routeBasePath: "/",
         },
         blog: {
           showReadingTime: true,
@@ -87,11 +88,11 @@ const config: Config = {
           items: [
             {
               label: "Introduction",
-              to: "/docs/intro",
+              to: "/intro",
             },
             {
               label: "Usage",
-              to: "/docs/category/usage",
+              to: "/usage/profiles",
             },
           ],
         },

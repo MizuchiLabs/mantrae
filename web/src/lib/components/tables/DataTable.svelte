@@ -20,14 +20,10 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { TraefikSource } from '$lib/types';
-	import { source } from '$lib/stores/source';
-	import { api, rdps } from '$lib/api';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -40,37 +36,42 @@
 		Search,
 		X
 	} from '@lucide/svelte';
-	import { limit } from '$lib/stores/common';
 	import BulkActions from './BulkActions.svelte';
 	import type { BulkAction } from './types';
+	import { pageIndex, pageSize } from '$lib/stores/common';
 
 	type DataTableProps<TData, TValue> = {
-		columns: ColumnDef<TData, TValue>[];
 		data: TData[];
+		columns: ColumnDef<TData, TValue>[];
+		onPaginationChange?: (pagination: PaginationState) => void;
+		onSortingChange?: (sorting: SortingState) => void;
+		onRowSelection?: (rowSelection: RowSelectionState) => void;
+		getRowClassName?: (row: TData) => string;
+		rowClassModifiers?: Record<string, (row: TData) => boolean>;
+		bulkActions?: BulkAction<TData>[] | undefined;
 		createButton?: {
 			label: string;
 			onClick: () => void;
 		};
-		showSourceTabs?: boolean;
-		onRowSelection?: (selectedRows: TData[]) => void;
-		getRowClassName?: (row: TData) => string;
-		bulkActions?: BulkAction<TData>[] | undefined;
 	};
 
 	let {
 		data,
 		columns,
-		createButton,
-		showSourceTabs,
+		onPaginationChange,
+		onSortingChange,
+		onRowSelection,
 		getRowClassName,
-		bulkActions
+		rowClassModifiers,
+		bulkActions,
+		createButton
 	}: DataTableProps<TData, TValue> = $props();
 
 	// Pagination
-	const pageSizeOptions = [10, 25, 50, 100];
+	const pageSizeOptions = [5, 10, 25, 50, 100];
 	let pagination = $state<PaginationState>({
-		pageIndex: 0,
-		pageSize: parseInt(limit.value ?? pageSizeOptions[0].toString())
+		pageIndex: pageIndex.value ?? 0,
+		pageSize: pageSize.value ?? 10
 	});
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $derived<ColumnFiltersState>([]);
@@ -100,23 +101,24 @@
 						'aria-label': 'Select row'
 					}),
 				enableSorting: false,
-				enableHiding: false
+				enableHiding: false,
+				enableGlobalFilter: false
 			},
 			...columns
 		],
-		autoResetAll: true,
 		filterFns: {
 			fuzzy: (row, columnId, value, addMeta) => {
 				const itemRank = rankItem(row.getValue(columnId), value);
 				addMeta({ itemRank });
 				return itemRank.passed;
+			},
+			arrIncludes: (row, columnId, value) => {
+				const cellValue = row.getValue(columnId) as string[];
+				if (!Array.isArray(cellValue)) return false;
+				return cellValue.some((item) => item.toLowerCase().includes(value.toLowerCase()));
 			}
 		},
-		globalFilterFn: (row, columnId, value, addMeta) => {
-			const itemRank = rankItem(row.getValue(columnId), value);
-			addMeta({ itemRank });
-			return itemRank.passed;
-		},
+		globalFilterFn: 'includesString',
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -127,6 +129,9 @@
 			} else {
 				pagination = updater;
 			}
+			if (onPaginationChange) onPaginationChange(pagination);
+			pageIndex.value = pagination.pageIndex;
+			pageSize.value = pagination.pageSize;
 		},
 		onSortingChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -134,6 +139,7 @@
 			} else {
 				sorting = updater;
 			}
+			if (onSortingChange) onSortingChange(sorting);
 		},
 		onColumnFiltersChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -155,6 +161,7 @@
 			} else {
 				rowSelection = updater;
 			}
+			if (onRowSelection) onRowSelection(rowSelection);
 		},
 		onGlobalFilterChange: (updater) => {
 			if (typeof updater === 'function') {
@@ -185,24 +192,23 @@
 		}
 	});
 
-	// Update localStorage and fetch config when tab changes
-	async function handleTabChange(value: string) {
-		if (!source.isValid(value)) return;
-		source.value = value;
-		// Reset table state
-		table.resetRowSelection();
-		table.resetColumnFilters();
-		table.resetGlobalFilter();
-		table.resetColumnOrder();
-		table.resetPagination();
-		await Promise.all([api.getTraefikConfig(source.value), api.listDNSProviders()]);
+	// helper to merge all classes into one string
+	function computeRowClasses(row: TData) {
+		const classes: string[] = [];
+
+		if (getRowClassName) {
+			const c = getRowClassName(row);
+			if (c) classes.push(c);
+		}
+
+		if (rowClassModifiers) {
+			for (const [cls, fn] of Object.entries(rowClassModifiers)) {
+				if (fn(row)) classes.push(cls);
+			}
+		}
+		return classes.join(' ');
 	}
-	function handleLimitChange(value: string) {
-		if (!value) return;
-		table.setPageSize(Number(value));
-		pagination.pageSize = Number(value);
-		limit.value = value;
-	}
+
 	function clearFilter(columnId: string) {
 		const column = table.getColumn(columnId);
 		if (column) column.setFilterValue(undefined);
@@ -210,39 +216,28 @@
 </script>
 
 <div>
-	<div class="flex items-center justify-between gap-2 py-4">
+	<div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="relative flex items-center">
-			<Search class="text-muted-foreground absolute left-3" size={16} />
+			<Search class="absolute left-3 text-muted-foreground" size={16} />
 			<Input
 				placeholder="Search..."
 				bind:value={globalFilter}
 				oninput={() => table.setGlobalFilter(String(globalFilter))}
-				class="w-[200px] pl-9 lg:w-[350px]"
+				class="w-full pl-9 sm:w-[180px] lg:w-[350px]"
 			/>
 			<Delete
-				class="text-muted-foreground absolute right-4"
+				class="absolute right-4 text-muted-foreground"
 				size={16}
 				onclick={() => table.setGlobalFilter('')}
 			/>
 		</div>
-
-		<!-- Tabs -->
-		{#if showSourceTabs}
-			<Tabs.Root bind:value={source.value} onValueChange={handleTabChange}>
-				<Tabs.List class="grid w-[400px] grid-cols-3">
-					<Tabs.Trigger value={TraefikSource.LOCAL}>Local</Tabs.Trigger>
-					<Tabs.Trigger value={TraefikSource.API}>API</Tabs.Trigger>
-					<Tabs.Trigger value={TraefikSource.AGENT}>Agent</Tabs.Trigger>
-				</Tabs.List>
-			</Tabs.Root>
-		{/if}
 
 		{#if table.getState().columnFilters.length > 0}
 			<Button onclick={() => table.setColumnFilters([])}>Clear Filters</Button>
 			{#each table.getState().columnFilters as filter (filter.id)}
 				<Badge
 					variant="secondary"
-					class="hover:bg-muted-foreground/20 flex items-center gap-1 hover:cursor-pointer"
+					class="flex items-center gap-1 hover:cursor-pointer hover:bg-muted-foreground/20"
 					onclick={() => clearFilter(filter.id)}
 				>
 					<X size={12} />
@@ -281,7 +276,7 @@
 
 	<!-- Table -->
 	<div class="rounded-md border">
-		{#key source.value + $rdps + JSON.stringify(data)}
+		{#key table.getRowModel().rows}
 			<Table.Root>
 				<Table.Header>
 					{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
@@ -320,7 +315,7 @@
 					{#each table.getRowModel().rows as row (row.id)}
 						<Table.Row
 							data-state={row.getIsSelected() && 'selected'}
-							class={getRowClassName ? getRowClassName(row.original) : ''}
+							class={computeRowClasses(row.original)}
 						>
 							{#each row.getVisibleCells() as cell (cell.id)}
 								<Table.Cell>
@@ -337,14 +332,15 @@
 				<Table.Footer>
 					<Table.Row class="border-t">
 						<Table.Cell colspan={columns.length}>Total</Table.Cell>
-						<Table.Cell class="mr-4 text-right"
-							>{table.getPrePaginationRowModel().rows.length}</Table.Cell
-						>
+						<Table.Cell class="mr-4 text-right">
+							{table.getPaginationRowModel().rows.length}
+						</Table.Cell>
 					</Table.Row>
 				</Table.Footer>
 			</Table.Root>
 		{/key}
 	</div>
+
 	{#if table.getSelectedRowModel().rows.length > 0 && bulkActions && bulkActions.length > 0}
 		<BulkActions
 			selectedCount={table.getFilteredSelectedRowModel().rows.length}
@@ -355,15 +351,16 @@
 	{/if}
 
 	<!-- Pagination -->
-	<div class="flex items-center justify-between py-4">
-		<div>
+	<div class="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+		<!-- Page size selector -->
+		<div class="flex justify-center sm:justify-start">
 			<Select.Root
 				type="single"
 				allowDeselect={false}
-				value={limit.value ?? pagination.pageSize.toString()}
-				onValueChange={handleLimitChange}
+				value={pagination.pageSize.toString()}
+				onValueChange={(value) => table.setPageSize(Number(value))}
 			>
-				<Select.Trigger class="w-[180px]">
+				<Select.Trigger class="w-full sm:w-[180px]">
 					{pagination.pageSize}
 				</Select.Trigger>
 				<Select.Content>
@@ -373,7 +370,9 @@
 				</Select.Content>
 			</Select.Root>
 		</div>
-		<div class="flex items-center justify-end gap-2">
+
+		<!-- Pagination controls -->
+		<div class="flex flex-wrap items-center justify-center gap-2 text-sm sm:justify-end">
 			<Button
 				variant="outline"
 				size="icon"
@@ -390,7 +389,7 @@
 			>
 				<ChevronLeft />
 			</Button>
-			<span class="text-muted-foreground text-sm">
+			<span class="text-sm text-muted-foreground">
 				Page {pagination.pageIndex + 1} / {table.getPageCount()}
 			</span>
 			<Button

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLAttributes } from 'svelte/elements';
-	import type { WithElementRef } from 'bits-ui';
-	import Dot from '@lucide/svelte/icons/dot';
+	import type { WithElementRef } from '$lib/utils.js';
+	import DotIcon from '@lucide/svelte/icons/dot';
 
 	let {
 		ref = $bindable(null),
@@ -10,10 +10,10 @@
 	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
-<div bind:this={ref} role="separator" {...restProps}>
+<div bind:this={ref} data-slot="input-otp-separator" role="separator" {...restProps}>
 	{#if children}
 		{@render children?.()}
 	{:else}
-		<Dot />
+		<DotIcon />
 	{/if}
 </div>

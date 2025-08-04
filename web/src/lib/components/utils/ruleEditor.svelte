@@ -6,18 +6,23 @@
 	import { ValidateRule } from './ruleString';
 	import { CircleCheck, CircleX } from '@lucide/svelte';
 	import { ruleTab } from '$lib/stores/common';
+	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 	interface Props {
-		rule: string | undefined;
-		type: 'http' | 'tcp';
+		rule?: string;
+		type: ProtocolType.HTTP | ProtocolType.TCP;
 		disabled?: boolean;
 	}
 
-	let { rule = $bindable(), type = $bindable(), disabled = false }: Props = $props();
+	let {
+		rule = $bindable(),
+		type = $bindable(ProtocolType.HTTP),
+		disabled = false
+	}: Props = $props();
 
 	// Simplified rule templates
 	const ruleTemplates = {
-		http: [
+		[ProtocolType.HTTP]: [
 			'Header(`key`, `value`)',
 			'HeaderRegexp(`key`, `regexp`)',
 			'Host(`domain`)',
@@ -30,7 +35,12 @@
 			'QueryRegexp(`key`, `regexp`)',
 			'ClientIP(`ip`)'
 		],
-		tcp: ['HostSNI(`domain`)', 'HostSNIRegexp(`regexp`)', 'ClientIP(`ip`)', 'ALPN(`protocol`)']
+		[ProtocolType.TCP]: [
+			'HostSNI(`domain`)',
+			'HostSNIRegexp(`regexp`)',
+			'ClientIP(`ip`)',
+			'ALPN(`protocol`)'
+		]
 	};
 
 	// Editor state
@@ -51,11 +61,11 @@
 	$effect(() => {
 		if (!rule) return;
 
-		const hostPattern = type === 'http' ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
+		const hostPattern = type === ProtocolType.HTTP ? /Host\(`(.*?)`\)/ : /HostSNI\(`(.*?)`\)/;
 		const pathPattern = /Path\(`(.*?)`\)/;
 
 		host = rule.match(hostPattern)?.[1] ?? '';
-		path = type === 'http' ? (rule.match(pathPattern)?.[1] ?? '') : '';
+		path = type === ProtocolType.HTTP ? (rule.match(pathPattern)?.[1] ?? '') : '';
 
 		checkSimpleMode();
 	});
@@ -83,16 +93,16 @@
 	// Simple mode handler
 	function handleSimpleInput() {
 		if (!host && !path) {
-			rule = undefined;
+			rule = '';
 			return;
 		}
 
-		if (type === 'http') {
+		if (type === ProtocolType.HTTP) {
 			rule = [host ? `Host(\`${host}\`)` : null, path ? `Path(\`${path}\`)` : null]
 				.filter(Boolean)
 				.join(' && ');
 		} else {
-			rule = host ? `HostSNI(\`${host}\`)` : undefined;
+			rule = host ? `HostSNI(\`${host}\`)` : '';
 		}
 	}
 
@@ -206,48 +216,49 @@
 	}
 </script>
 
-<Tabs.Root
-	value={ruleTab.value}
-	onValueChange={(value) => (ruleTab.value = value)}
-	class="flex flex-col gap-2"
->
+<Tabs.Root value={ruleTab.value} onValueChange={(value) => (ruleTab.value = value)}>
 	{#if !disabled}
-		<div class="flex justify-end">
+		<div class="flex items-center justify-between gap-2">
+			<Label for="host">Rules</Label>
 			<Tabs.List class="h-8">
-				<Tabs.Trigger value="simple" class="px-2 py-0.5 font-bold" disabled={simpleDisabled}>
+				<Tabs.Trigger
+					value="simple"
+					class="px-2 py-0.5 text-xs font-bold"
+					disabled={simpleDisabled}
+				>
 					Simple
 				</Tabs.Trigger>
-				<Tabs.Trigger value="advanced" class="px-2 py-0.5 font-bold">Advanced</Tabs.Trigger>
+				<Tabs.Trigger value="advanced" class="px-2 py-0.5 text-xs font-bold">Advanced</Tabs.Trigger>
 			</Tabs.List>
 		</div>
 	{/if}
 
 	<Tabs.Content value="simple">
-		<div class="grid grid-cols-8 items-center gap-2">
-			<Label for="host" class="col-span-1 text-right">Domain</Label>
-			<Input
-				id="host"
-				bind:value={host}
-				oninput={handleSimpleInput}
-				placeholder="example.com"
-				class={type === 'http' ? 'col-span-5' : 'col-span-7'}
-				{disabled}
-			/>
-			{#if type === 'http'}
+		<div class="flex flex-col gap-2">
+			<div class="grid grid-cols-8 items-center gap-2">
 				<Input
-					id="path"
-					bind:value={path}
+					id="host"
+					bind:value={host}
 					oninput={handleSimpleInput}
-					placeholder="/path"
-					class="col-span-2"
+					placeholder="example.com"
+					class={type === ProtocolType.HTTP ? 'col-span-6' : 'col-span-8'}
 					{disabled}
 				/>
-			{/if}
+				{#if type === ProtocolType.HTTP}
+					<Input
+						id="path"
+						bind:value={path}
+						oninput={handleSimpleInput}
+						placeholder="/path"
+						class="col-span-2"
+						{disabled}
+					/>
+				{/if}
+			</div>
 		</div>
 	</Tabs.Content>
 
 	<Tabs.Content value="advanced">
-		<Label for="rule">Rules</Label>
 		<div class="relative mb-4 rounded-lg border">
 			<Textarea
 				id="rulesTextarea"
@@ -261,12 +272,12 @@
 			/>
 
 			{#if showDropdown}
-				<ul class="bg-card absolute mt-1 max-h-48 w-80 overflow-y-auto rounded-lg border p-2">
+				<ul class="absolute mt-1 max-h-48 w-80 overflow-y-auto rounded-lg border bg-card p-2">
 					{#each filteredRules as template, i (template)}
 						<button
 							role="option"
 							aria-selected={i === selectedRuleIndex}
-							class="hover:bg-muted w-full cursor-pointer rounded p-1 text-left font-mono text-sm"
+							class="w-full cursor-pointer rounded p-1 text-left font-mono text-sm hover:bg-muted"
 							class:bg-muted={i === selectedRuleIndex}
 							onclick={() => insertRule(template)}
 						>
@@ -278,7 +289,7 @@
 
 			{#if !disabled}
 				<div
-					class="text-muted-foreground flex items-center justify-end gap-1 border-t px-3 py-2 text-sm"
+					class="flex items-center justify-end gap-1 border-t px-3 py-2 text-sm text-muted-foreground"
 				>
 					{#if valid}
 						<span>Valid</span>
@@ -292,7 +303,7 @@
 		</div>
 
 		{#if !disabled}
-			<div class="text-muted-foreground text-xs">
+			<div class="text-xs text-muted-foreground">
 				<span class="font-bold">Examples:</span>
 				<ul class="list-inside list-disc">
 					{#each ruleTemplates[type] as template (template)}

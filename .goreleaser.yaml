@@ -18,9 +18,9 @@ builds:
     env: [CGO_ENABLED=0]
     ldflags:
       - -s -w
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Tag}}
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Commit={{.Commit}}
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Date={{.Date}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Version={{.Tag}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Commit={{.Commit}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
     goos:
       - linux
       - darwin
@@ -35,9 +35,9 @@ builds:
     env: [CGO_ENABLED=0]
     ldflags:
       - -s -w
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Tag}}
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Commit={{.Commit}}
-      - -X github.com/MizuchiLabs/mantrae/pkg/build.Date={{.Date}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Version={{.Tag}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Commit={{.Commit}}
+      - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
     goos:
       - linux
     goarch:

@@ -9,7 +9,7 @@
 	export let selectedItems: T[] = [];
 </script>
 
-<div class="bg-muted/50 my-2 flex items-center justify-between gap-2 rounded-lg border p-2 pr-6">
+<div class="my-2 flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-2 pr-6">
 	<div class="flex items-center gap-2">
 		{#each actions as action (action.label)}
 			{#if action.type === 'button'}
@@ -46,7 +46,7 @@
 			{/if}
 		{/each}
 	</div>
-	<span class="text-muted-foreground text-sm">
+	<span class="text-sm text-muted-foreground">
 		{selectedCount} of {totalCount} item(s) selected.
 	</span>
 </div>

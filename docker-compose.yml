@@ -5,13 +5,12 @@ services:
     image: ghcr.io/mizuchilabs/mantrae:latest
     container_name: mantrae
     environment:
-      - TRAEFIK_URL=https://traefik.example.com # either use the traefik url or the traefik container name if insecure
       - ADMIN_PASSWORD=<super secret password>
-      - SECRET=<secret> # generate a secret with openssl rand -hex 32
+      - SECRET=<secret> # generate a secret with openssl rand -base64 32
     volumes:
       - ./mantrae:/data # base directory used
     ports:
-      - 3000:3000 # remove this if you want to use traefik 
+      - 3000:3000 # remove this if you want to use traefik
     labels:
       - traefik.enable=true
       - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
@@ -22,11 +21,12 @@ services:
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae-agent
+    network_mode: host # for detecting the hostname of the machine
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
-      - ./agent:/data # persistent data directory for the token
     environment:
-      - TOKEN=<token> # initial token from mantrae server
+      - TOKEN=<token> # token from mantrae server
+      - HOST=https://mantrae.example.com # where to reach mantrae server
     restart: unless-stopped
 
   traefik:
@@ -57,7 +57,9 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --providers.docker.watch=true
-      - --providers.http.endpoint=http://mantrae:3000/api/<profile-name> # use the correct profile name
+      - --providers.http.endpoint=http://mantrae:3000/api/<profile-name>?token=<token> # use the correct profile name
+      - --providers.http.headers.Traefik-Instance-Name=my_cool_instance
+      - --providers.http.headers.Traefik-Instance-Url=http://127.0.0.1:8080
       - --certificatesresolvers.letsencrypt.acme.email=your@email.com
       - --certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare

@@ -4,17 +4,26 @@ defaultPlatforms:
   - linux/amd64
 defaultLdflags:
   - -s -w
-  - -X github.com/MizuchiLabs/mantrae/pkg/build.Version={{.Git.Tag}}
-  - -X github.com/MizuchiLabs/mantrae/pkg/build.Commit={{.Git.FullCommit}}
-  - -X github.com/MizuchiLabs/mantrae/pkg/build.Date={{.Date}}
+  - -X github.com/mizuchilabs/mantrae/pkg/meta.Version={{.Git.Tag}}
+  - -X github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.Git.FullCommit}}
+  - -X github.com/mizuchilabs/mantrae/pkg/meta.Date={{.Date}}
+  - -X github.com/mizuchilabs/mantrae/pkg/meta.Dirty={{.Git.IsDirty}}
 defaultLabels:
   org.opencontainers.image.title: "{{.Target}}"
-  org.opencontainers.image.version: "{{.Env.VERSION}}"
-  org.opencontainers.image.created: "{{.Env.DATE}}"
+  org.opencontainers.image.description:
+    "Mantrae is a self-hosted, open-source, Traefik dynamic config manager."
+  org.opencontainers.image.version: "{{.Git.Tag}}"
+  org.opencontainers.image.created: "{{.Date}}"
+  org.opencontainers.image.revision: "{{.Git.FullCommit}}"
+  org.opencontainers.image.licenses: "MIT"
   org.opencontainers.image.source: "https://github.com/MizuchiLabs/mantrae"
+  org.opencontainers.image.authors: "Mizuchi Labs <admin@mizuchi.dev>"
+  org.opencontainers.image.url: "https://github.com/MizuchiLabs/mantrae"
+  org.opencontainers.image.documentation: "https://github.com/MizuchiLabs/mantrae#readme"
 
 builds:
   - id: server
+    main: ./server/cmd
     env:
       - CGO_ENABLED=0
 
@@ -22,4 +31,3 @@ builds:
     main: ./agent/cmd
     env:
       - CGO_ENABLED=0
-

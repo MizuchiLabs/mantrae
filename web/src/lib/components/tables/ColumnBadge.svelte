@@ -1,89 +1,136 @@
 <script lang="ts" generics="TData">
-	import type { ComponentProps } from 'svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as HoverCard from '$lib/components/ui/hover-card/index.js';
-	import type { TLS } from '$lib/types/router';
-	import { AlertTriangle, Eye, Globe, Key } from '@lucide/svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { type IconProps } from '@lucide/svelte';
+	import { type Component } from 'svelte';
+	import type { ComponentProps } from 'svelte';
 	import type { Column } from '@tanstack/table-core';
+
+	type IconComponent = Component<IconProps, Record<string, never>, ''>;
 
 	type Props = ComponentProps<typeof Badge> & {
 		label: string | string[];
+		icon?: IconComponent;
+		iconProps?: IconProps;
 		column?: Column<TData, unknown>;
 		limit?: number;
-		tls?: TLS;
+		truncateAt?: number;
 	};
 
-	let { variant = 'default', label, column, limit = 3, tls, ...restProps }: Props = $props();
+	let {
+		label,
+		variant = 'default',
+		icon,
+		iconProps,
+		column,
+		limit = 3,
+		truncateAt = 15,
+		...restProps
+	}: Props = $props();
 
-	const isArray = Array.isArray(label);
-	const items = isArray ? label : [label];
-	const visibleItems = items.slice(0, limit);
-	const remaining = items.length - limit;
+	const items = Array.isArray(label) ? label : [label];
+	const visible = items.slice(0, limit);
+	const hidden = items.slice(limit);
+
+	function truncateText(text: string, maxLength: number): string {
+		return text?.length > maxLength ? `${text?.slice(0, maxLength)}...` : text;
+	}
 </script>
 
-{#if tls}
-	<HoverCard.Root>
-		<HoverCard.Trigger>
-			<div class="flex flex-col items-start gap-1">
-				{#each visibleItems as item (item)}
-					<Badge {variant} onclick={() => column?.setFilterValue(item)} {...restProps}>
+<div class="flex max-w-full flex-wrap items-center gap-1">
+	{#each visible as item, index (item)}
+		{@const truncated = truncateText(item, truncateAt)}
+		{@const shouldShowTooltip = item.length > truncateAt}
+
+		{#if shouldShowTooltip}
+			<Tooltip.Provider>
+				<Tooltip.Root delayDuration={300}>
+					<Tooltip.Trigger>
+						<Badge
+							{variant}
+							onclick={() => column?.setFilterValue?.(item)}
+							class="text-sm transition-colors duration-200 hover:cursor-pointer 
+                            {index > 0 ? 'hidden sm:flex' : ''}"
+							{...restProps}
+						>
+							{#if icon && index === 0}
+								{@const Icon = icon}
+								<Icon size={12} class="shrink-0" {...iconProps} />
+							{/if}
+							<span class="max-w-[8rem] truncate sm:max-w-none">{truncated}</span>
+						</Badge>
+					</Tooltip.Trigger>
+					<Tooltip.Content side="top" class="max-w-xs break-words">
 						{item}
-					</Badge>
-				{/each}
-				{#if remaining > 0}
-					<Badge variant="outline" {...restProps}>+{remaining} more</Badge>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
+		{:else}
+			<Badge
+				{variant}
+				onclick={() => column?.setFilterValue?.(item)}
+				class="text-sm transition-colors duration-200 hover:cursor-pointer
+					   {index > 0 ? 'hidden sm:flex' : ''}"
+				{...restProps}
+			>
+				{#if icon && index === 0}
+					{@const Icon = icon}
+					<Icon size={12} class="shrink-0" {...iconProps} />
 				{/if}
-			</div>
-		</HoverCard.Trigger>
-		<HoverCard.Content class="max-w-[300px] space-y-2 text-sm">
-			{#if tls.certResolver}
-				<div class="text-muted-foreground flex items-center gap-2 italic">
-					<Key size={14} class="text-blue-500" />
-					<span><strong>Resolver:</strong> {tls.certResolver}</span>
-				</div>
-			{/if}
-			{#if tls.passthrough}
-				<div class="text-muted-foreground flex items-center gap-2 italic">
-					<Globe size={14} class="text-green-500" />
-					<span><strong>Passthrough:</strong> Enabled</span>
-				</div>
-			{/if}
-			{#if tls.options}
-				<div class="text-muted-foreground flex items-center gap-2 italic">
-					<Eye size={14} class="text-purple-500" />
-					<span><strong>Options:</strong> {tls.options}</span>
-				</div>
-			{/if}
-			{#if tls.domains?.length}
-				<div class="text-muted-foreground flex items-center gap-2 italic">
-					<Globe size={14} class="mt-1 text-orange-400" />
-					<div class="space-y-1">
-						<strong>Domains:</strong>
-						<ul class="ml-4 list-disc">
-							{#each tls.domains as d (d)}
-								<li>{d.main}{d.sans ? ` (${d.sans.join(', ')})` : ''}</li>
-							{/each}
-						</ul>
-					</div>
-				</div>
-			{/if}
-			{#if !tls.certResolver && !tls.passthrough && !tls.options && !tls.domains?.length}
-				<div class="text-muted-foreground flex items-center gap-2 italic">
-					<AlertTriangle size={14} class="text-yellow-400" />
-					<span>TLS is enabled but has no configuration</span>
-				</div>
-			{/if}
-		</HoverCard.Content>
-	</HoverCard.Root>
-{:else}
-	<div class="flex flex-col items-start gap-1">
-		{#each visibleItems as item (item)}
-			<Badge {variant} onclick={() => column?.setFilterValue(item)} {...restProps}>
-				{item}
+				<span class="max-w-[8rem] truncate sm:max-w-none">{item}</span>
 			</Badge>
-		{/each}
-		{#if remaining > 0}
-			<Badge variant="outline" {...restProps}>+{remaining} more</Badge>
 		{/if}
-	</div>
-{/if}
+	{/each}
+
+	{#if hidden.length > 0}
+		<HoverCard.Root openDelay={200}>
+			<HoverCard.Trigger>
+				<Badge
+					variant="outline"
+					class="cursor-pointer text-xs transition-colors duration-200"
+					{...restProps}
+				>
+					{#if visible.length > 1}
+						<span class="sm:hidden">+{visible.length - 1 + hidden.length}</span>
+						<span class="hidden sm:block">+{hidden.length}</span>
+					{:else}
+						+{hidden.length}
+					{/if}
+				</Badge>
+			</HoverCard.Trigger>
+			<HoverCard.Content class="w-auto max-w-sm">
+				<div class="flex flex-wrap gap-1">
+					{#each visible.slice(1) as item (item)}
+						<Badge
+							{variant}
+							onclick={() => column?.setFilterValue?.(item)}
+							class="text-xs hover:cursor-pointer"
+							{...restProps}
+						>
+							{#if icon}
+								{@const Icon = icon}
+								<Icon size={12} {...iconProps} />
+							{/if}
+							{item}
+						</Badge>
+					{/each}
+					{#each hidden as item (item)}
+						<Badge
+							{variant}
+							onclick={() => column?.setFilterValue?.(item)}
+							class="text-xs hover:cursor-pointer"
+							{...restProps}
+						>
+							{#if icon}
+								{@const Icon = icon}
+								<Icon size={12} {...iconProps} />
+							{/if}
+							{item}
+						</Badge>
+					{/each}
+				</div>
+			</HoverCard.Content>
+		</HoverCard.Root>
+	{/if}
+</div>

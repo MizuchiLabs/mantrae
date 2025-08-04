@@ -2,27 +2,40 @@
 	import * as InputOTP from '$lib/components/ui/input-otp/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { REGEXP_ONLY_DIGITS } from 'bits-ui';
-	import { api } from '$lib/api';
 	import { page } from '$app/state';
 	import { toast } from 'svelte-sonner';
+	import { userClient } from '$lib/api';
+	import { ConnectError } from '@connectrpc/connect';
+	import { goto } from '$app/navigation';
+	import { user } from '$lib/stores/user';
 
-	let token = $state('');
+	let otp = $state('');
 
 	// Clean and trim the value
 	const pasteTransformer = (value: string) => value.replace(/[^0-9]/g, '').trim();
 	const onComplete = async () => {
 		const username = page.url.searchParams.get('username');
-		if (!username || !token) return;
+		if (!username || !otp) return;
+		const isEmail = username.includes('@');
+
 		try {
-			await api.verifyOTP(username, token);
+			let response = await userClient.verifyOTP({
+				identifier: {
+					case: isEmail ? 'email' : 'username',
+					value: username
+				},
+				otp
+			});
+			if (!response.user) throw new Error('Failed to verify token');
+
+			user.value = response.user;
 			toast.success('Token verified successfully!', {
 				description: 'Please reset your password!'
 			});
-		} catch (error) {
-			let err = error as Error;
-			toast.error('Failed to verify Token: ', {
-				description: err.message
-			});
+			await goto('/');
+		} catch (err) {
+			let e = ConnectError.from(err);
+			toast.error('Failed to verify Token', { description: e.message });
 		}
 	};
 	// Handle Ctrl+V paste
@@ -32,13 +45,21 @@
 			try {
 				const text = await navigator.clipboard.readText();
 				const cleaned = pasteTransformer(text);
-				token = cleaned.slice(0, 6); // Limit to max length
+				otp = cleaned.slice(0, 6); // Limit to max length
 			} catch (err) {
 				console.error('Failed to read clipboard:', err);
 			}
 		}
 	};
 </script>
+
+<svelte:head>
+	<title>Reset Password - Mantrae</title>
+	<meta
+		name="description"
+		content="Reset your Mantrae account password using the one-time password sent to your email"
+	/>
+</svelte:head>
 
 <Card.Root class="w-[400px]">
 	<Card.Header>
@@ -49,7 +70,7 @@
 		<InputOTP.Root
 			maxlength={6}
 			pattern={REGEXP_ONLY_DIGITS}
-			bind:value={token}
+			bind:value={otp}
 			{onComplete}
 			{pasteTransformer}
 			onkeydown={handleKeyDown}

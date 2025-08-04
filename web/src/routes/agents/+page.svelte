@@ -1,34 +1,24 @@
 <script lang="ts">
+	import { agentClient } from '$lib/api';
+	import AgentModal from '$lib/components/modals/AgentModal.svelte';
+	import ColumnBadge from '$lib/components/tables/ColumnBadge.svelte';
 	import DataTable from '$lib/components/tables/DataTable.svelte';
 	import TableActions from '$lib/components/tables/TableActions.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
-	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
-	import { type Agent } from '$lib/types';
-	import AgentModal from '$lib/components/modals/agent.svelte';
-	import { api, agents } from '$lib/api';
+	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import { toast } from 'svelte-sonner';
+	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import { DateFormat } from '$lib/stores/common';
-	import { onMount } from 'svelte';
+	import { profile } from '$lib/stores/profile';
+	import { agents } from '$lib/stores/realtime';
+	import { timestampDate } from '@bufbuild/protobuf/wkt';
+	import { ConnectError } from '@connectrpc/connect';
+	import { Bot, KeyRound, Pencil, Trash } from '@lucide/svelte';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import { toast } from 'svelte-sonner';
 	import { readable } from 'svelte/store';
 
-	interface ModalState {
-		isOpen: boolean;
-		agent?: Agent;
-	}
-
-	const initialModalState: ModalState = { isOpen: false };
-	let modalState = $state(initialModalState);
-
-	const deleteAgent = async (agent: Agent) => {
-		try {
-			await api.deleteAgent(agent.id);
-			toast.success('Agent deleted');
-		} catch (err: unknown) {
-			const e = err as Error;
-			toast.error(e.message);
-		}
-	};
+	let item = $state({} as Agent);
+	let open = $state(false);
 
 	const columns: ColumnDef<Agent>[] = [
 		{
@@ -46,29 +36,30 @@
 		{
 			header: 'Endpoint',
 			accessorKey: 'activeIp',
-			enableSorting: true
+			enableSorting: true,
+			cell: ({ row }) => {
+				return renderComponent(ColumnBadge, {
+					label: row.original.activeIp || 'Unknown',
+					class: 'hover:cursor-pointer'
+				});
+			}
 		},
 		{
 			header: 'Last Seen',
 			accessorKey: 'updatedAt',
 			enableSorting: true,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
-				const date = row.getValue('updatedAt') as string;
-				return DateFormat.format(new Date(date));
-			}
-		},
-		{
-			header: 'Created',
-			accessorKey: 'createdAt',
-			enableSorting: true,
-			cell: ({ row }) => {
-				const date = row.getValue('createdAt') as string;
-				return DateFormat.format(new Date(date));
+				if (row.original.updatedAt === undefined || !row.original.hostname) {
+					return renderComponent(ColumnBadge, { label: 'Never', class: 'text-xs' });
+				}
+				return DateFormat.format(timestampDate(row.original.updatedAt));
 			}
 		},
 		{
 			id: 'actions',
 			enableHiding: false,
+			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				let editText = row.original.hostname ? 'Edit Agent' : 'Connect Agent';
 				let editIcon = row.original.hostname ? Pencil : KeyRound;
@@ -79,18 +70,23 @@
 							label: editText,
 							icon: editIcon,
 							onClick: () => {
-								modalState = {
-									isOpen: true,
-									agent: row.original
-								};
+								item = row.original;
+								open = true;
 							}
 						},
 						{
-							type: 'button',
+							type: 'popover',
 							label: 'Delete Agent',
 							icon: Trash,
 							classProps: 'text-destructive',
-							onClick: () => deleteAgent(row.original)
+							onClick: () => deleteItem(row.original),
+							popover: {
+								title: 'Delete Agent?',
+								description:
+									'This agent will will be permanently deleted. This will also delete all associated routers.',
+								confirmLabel: 'Delete',
+								cancelLabel: 'Cancel'
+							}
 						}
 					]
 				});
@@ -104,35 +100,103 @@
 		}, 1000);
 		return () => clearInterval(interval);
 	});
-	let agentStatus = $derived((agent: Agent) => {
-		const lastSeen = new Date(agent.updatedAt);
+	function getAgentStatus(agent: Agent) {
+		if (!agent.updatedAt) return false;
+		const lastSeen = new Date(timestampDate(agent.updatedAt));
 		const lastSeenInSeconds = ($now.getTime() - lastSeen.getTime()) / 1000;
-		return lastSeenInSeconds <= 30 ? 'bg-green-500/10' : 'bg-red-500/10';
-	});
+		return lastSeenInSeconds <= 20 ? true : false;
+	}
 
-	onMount(async () => {
-		await api.listAgentsByProfile();
+	const bulkActions: BulkAction<Agent>[] = [
+		{
+			type: 'button',
+			label: 'Delete',
+			icon: Trash,
+			variant: 'destructive',
+			onClick: bulkDelete
+		}
+	];
+
+	const deleteItem = async (item: Agent) => {
+		try {
+			await agentClient.deleteAgent({ id: item.id });
+			toast.success(`Agent ${item.hostname ?? item.id} deleted`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete agent', { description: e.message });
+		}
+	};
+
+	async function bulkDelete(rows: Agent[]) {
+		try {
+			const confirmed = confirm(`Are you sure you want to delete ${rows.length} agents?`);
+			if (!confirmed) return;
+
+			for (const row of rows) {
+				await agentClient.deleteAgent({ id: row.id });
+			}
+			toast.success(`Successfully deleted ${rows.length} agents`);
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to delete agents', { description: e.message });
+		}
+	}
+	async function createAgent() {
+		try {
+			const response = await agentClient.createAgent({ profileId: profile.id });
+			if (!response.agent) return;
+			item = response.agent;
+
+			toast.success('Agent created');
+			open = true;
+		} catch (err) {
+			const e = ConnectError.from(err);
+			toast.error('Failed to create agent', { description: e.message });
+		}
+	}
+
+	$effect(() => {
+		if (profile.isValid()) {
+			agentClient.listAgents({ profileId: profile.id }).then((response) => {
+				agents.set(response.agents);
+			});
+		}
 	});
 </script>
 
 <svelte:head>
-	<title>Agents</title>
+	<title>Agents - Mantrae</title>
+	<meta
+		name="description"
+		content="Monitor and manage your connected Mantrae agents for distributed reverse proxy management"
+	/>
 </svelte:head>
 
-<div class="flex flex-col gap-4">
-	<div class="flex items-center justify-start gap-2">
-		<Bot />
-		<h1 class="text-2xl font-bold">Agent Management</h1>
+<div class="flex flex-col gap-2">
+	<div class="flex items-center justify-between">
+		<div>
+			<h1 class="flex items-center gap-3 text-3xl font-bold tracking-tight">
+				<div class="rounded-lg bg-primary/10 p-2">
+					<Bot class="h-6 w-6 text-primary" />
+				</div>
+				Agents
+			</h1>
+			<p class="mt-1 text-muted-foreground">Connect your agents</p>
+		</div>
 	</div>
+
 	<DataTable
+		data={$agents}
 		{columns}
-		data={$agents || []}
-		getRowClassName={agentStatus}
+		{bulkActions}
+		rowClassModifiers={{
+			'bg-red-300/25 dark:bg-red-700/25': (r) => !getAgentStatus(r)
+		}}
 		createButton={{
 			label: 'Add Agent',
-			onClick: () => api.createAgent()
+			onClick: createAgent
 		}}
 	/>
 </div>
 
-<AgentModal bind:open={modalState.isOpen} agent={modalState.agent} />
+<AgentModal bind:open bind:item />
