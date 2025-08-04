@@ -24,7 +24,7 @@ message TraefikInstance {
   string username = 5;
   string password = 6;
   bool tls = 7;
-  google.protobuf.Struct entry_points = 8;
+  google.protobuf.ListValue entry_points = 8;
   google.protobuf.Struct overview = 9;
   google.protobuf.Struct config = 10;
   google.protobuf.Struct version = 11;

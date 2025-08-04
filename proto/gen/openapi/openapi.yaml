@@ -2283,7 +2283,7 @@ components:
           title: tls
         entryPoints:
           title: entry_points
-          $ref: '#/components/schemas/google.protobuf.Struct'
+          $ref: '#/components/schemas/google.protobuf.ListValue'
         overview:
           title: overview
           $ref: '#/components/schemas/google.protobuf.Struct'

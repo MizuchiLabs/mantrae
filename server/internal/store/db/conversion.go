@@ -249,7 +249,7 @@ func (t *TraefikInstance) ToProto() *mantraev1.TraefikInstance {
 		Name:        t.Name,
 		Url:         t.Url,
 		Tls:         t.Tls,
-		EntryPoints: MustMarshalStruct(t.Entrypoints),
+		EntryPoints: MustMarshalSlice[schema.EntryPoint](*t.Entrypoints),
 		Overview:    MustMarshalStruct(t.Overview),
 		Config:      MustMarshalStruct(t.Config),
 		Version:     MustMarshalStruct(t.Version),
@@ -355,6 +355,8 @@ func TimePtr(t time.Time) *time.Time {
 	return &t
 }
 
+// JSON Objects marshalling and unmarshalling helper --------------------------
+
 func UnmarshalStruct[T any](s *structpb.Struct) (*T, error) {
 	// Marshal the proto Struct to JSON bytes
 	data, err := s.MarshalJSON()
@@ -413,4 +415,36 @@ func MustUnmarshalStruct[T any](s *structpb.Struct) *T {
 		return nil
 	}
 	return &out
+}
+
+// Slices marshalling and unmarshalling helper --------------------------------
+
+func MustMarshalSlice[T any](s []T) *structpb.ListValue {
+	data, err := json.Marshal(s)
+	if err != nil {
+		slog.Error("failed to marshal slice", "error", err)
+		return nil
+	}
+
+	var lv structpb.ListValue
+	if err := lv.UnmarshalJSON(data); err != nil {
+		slog.Error("failed to unmarshal to ListValue", "error", err)
+		return nil
+	}
+	return &lv
+}
+
+func MustUnmarshalSlice[T any](lv *structpb.ListValue) []T {
+	data, err := lv.MarshalJSON()
+	if err != nil {
+		slog.Error("failed to marshal ListValue", "error", err)
+		return nil
+	}
+
+	var out []T
+	if err := json.Unmarshal(data, &out); err != nil {
+		slog.Error("failed to unmarshal slice", "error", err)
+		return nil
+	}
+	return out
 }

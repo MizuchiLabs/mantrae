@@ -33,7 +33,7 @@ type TraefikInstance struct {
 	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`
 	Tls           bool                   `protobuf:"varint,7,opt,name=tls,proto3" json:"tls,omitempty"`
-	EntryPoints   *structpb.Struct       `protobuf:"bytes,8,opt,name=entry_points,json=entryPoints,proto3" json:"entry_points,omitempty"`
+	EntryPoints   *structpb.ListValue    `protobuf:"bytes,8,opt,name=entry_points,json=entryPoints,proto3" json:"entry_points,omitempty"`
 	Overview      *structpb.Struct       `protobuf:"bytes,9,opt,name=overview,proto3" json:"overview,omitempty"`
 	Config        *structpb.Struct       `protobuf:"bytes,10,opt,name=config,proto3" json:"config,omitempty"`
 	Version       *structpb.Struct       `protobuf:"bytes,11,opt,name=version,proto3" json:"version,omitempty"`
@@ -122,7 +122,7 @@ func (x *TraefikInstance) GetTls() bool {
 	return false
 }
 
-func (x *TraefikInstance) GetEntryPoints() *structpb.Struct {
+func (x *TraefikInstance) GetEntryPoints() *structpb.ListValue {
 	if x != nil {
 		return x.EntryPoints
 	}
@@ -449,7 +449,7 @@ var File_mantrae_v1_traefik_instance_proto protoreflect.FileDescriptor
 const file_mantrae_v1_traefik_instance_proto_rawDesc = "" +
 	"\n" +
 	"!mantrae/v1/traefik_instance.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfb\x03\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xfe\x03\n" +
 	"\x0fTraefikInstance\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -458,8 +458,8 @@ const file_mantrae_v1_traefik_instance_proto_rawDesc = "" +
 	"\x03url\x18\x04 \x01(\tR\x03url\x12\x1a\n" +
 	"\busername\x18\x05 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x06 \x01(\tR\bpassword\x12\x10\n" +
-	"\x03tls\x18\a \x01(\bR\x03tls\x12:\n" +
-	"\fentry_points\x18\b \x01(\v2\x17.google.protobuf.StructR\ventryPoints\x123\n" +
+	"\x03tls\x18\a \x01(\bR\x03tls\x12=\n" +
+	"\fentry_points\x18\b \x01(\v2\x1a.google.protobuf.ListValueR\ventryPoints\x123\n" +
 	"\boverview\x18\t \x01(\v2\x17.google.protobuf.StructR\boverview\x12/\n" +
 	"\x06config\x18\n" +
 	" \x01(\v2\x17.google.protobuf.StructR\x06config\x121\n" +
@@ -516,16 +516,17 @@ var file_mantrae_v1_traefik_instance_proto_goTypes = []any{
 	(*DeleteTraefikInstanceResponse)(nil), // 4: mantrae.v1.DeleteTraefikInstanceResponse
 	(*ListTraefikInstancesRequest)(nil),   // 5: mantrae.v1.ListTraefikInstancesRequest
 	(*ListTraefikInstancesResponse)(nil),  // 6: mantrae.v1.ListTraefikInstancesResponse
-	(*structpb.Struct)(nil),               // 7: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),         // 8: google.protobuf.Timestamp
+	(*structpb.ListValue)(nil),            // 7: google.protobuf.ListValue
+	(*structpb.Struct)(nil),               // 8: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),         // 9: google.protobuf.Timestamp
 }
 var file_mantrae_v1_traefik_instance_proto_depIdxs = []int32{
-	7,  // 0: mantrae.v1.TraefikInstance.entry_points:type_name -> google.protobuf.Struct
-	7,  // 1: mantrae.v1.TraefikInstance.overview:type_name -> google.protobuf.Struct
-	7,  // 2: mantrae.v1.TraefikInstance.config:type_name -> google.protobuf.Struct
-	7,  // 3: mantrae.v1.TraefikInstance.version:type_name -> google.protobuf.Struct
-	8,  // 4: mantrae.v1.TraefikInstance.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 5: mantrae.v1.TraefikInstance.updated_at:type_name -> google.protobuf.Timestamp
+	7,  // 0: mantrae.v1.TraefikInstance.entry_points:type_name -> google.protobuf.ListValue
+	8,  // 1: mantrae.v1.TraefikInstance.overview:type_name -> google.protobuf.Struct
+	8,  // 2: mantrae.v1.TraefikInstance.config:type_name -> google.protobuf.Struct
+	8,  // 3: mantrae.v1.TraefikInstance.version:type_name -> google.protobuf.Struct
+	9,  // 4: mantrae.v1.TraefikInstance.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 5: mantrae.v1.TraefikInstance.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 6: mantrae.v1.GetTraefikInstanceResponse.traefik_instance:type_name -> mantrae.v1.TraefikInstance
 	0,  // 7: mantrae.v1.ListTraefikInstancesResponse.traefik_instances:type_name -> mantrae.v1.TraefikInstance
 	1,  // 8: mantrae.v1.TraefikInstanceService.GetTraefikInstance:input_type -> mantrae.v1.GetTraefikInstanceRequest
