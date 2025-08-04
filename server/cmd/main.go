@@ -9,6 +9,7 @@ import (
 
 	"github.com/mizuchilabs/mantrae/server/internal/api/server"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
+	"github.com/mizuchilabs/mantrae/server/internal/tasks"
 )
 
 func main() {
@@ -21,6 +22,10 @@ func main() {
 		slog.Error("Setup failed", "error", err)
 		return
 	}
+
+	// Start background jobs
+	scheduler := tasks.NewScheduler(ctx, app)
+	scheduler.Start()
 
 	srv := server.NewServer(app)
 	if err := srv.Start(ctx); err != nil {

@@ -40,6 +40,10 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
+	if len(app.Secret) < 32 {
+		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes")
+	}
+
 	app.Conn = store.NewConnection("")
 	app.SM = settings.NewManager(app.Conn)
 	app.SM.Start(ctx)
@@ -49,13 +53,7 @@ func Setup(ctx context.Context) (*App, error) {
 
 	app.Event = event.NewBroadcaster(ctx)
 
-	if err := app.setupDefaultData(ctx); err != nil {
-		return nil, err
-	}
-
-	// Start background jobs
-	app.setupBackgroundJobs(ctx)
-	return &app, nil
+	return &app, app.setupDefaultData(ctx)
 }
 
 func (a *App) setupDefaultData(ctx context.Context) error {

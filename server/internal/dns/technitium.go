@@ -22,6 +22,8 @@ type TechnitiumProvider struct {
 	ZoneType   string // primary, forwarder
 }
 
+var ZoneTypes = []string{"primary", "forwarder"}
+
 func NewTechnitiumProvider(d *schema.DNSProviderConfig) *TechnitiumProvider {
 	if !slices.Contains(ZoneTypes, d.ZoneType) {
 		slog.Error("Invalid zone type", "type", d.ZoneType)

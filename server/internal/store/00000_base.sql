@@ -1,14 +1,4 @@
 -- +goose Up
-CREATE TABLE dns_providers (
-  id INTEGER PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  type VARCHAR(255) NOT NULL,
-  config JSON NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  is_default BOOLEAN NOT NULL DEFAULT FALSE
-);
-
 CREATE TABLE "settings" (
   key VARCHAR(255) PRIMARY KEY,
   value TEXT NOT NULL,
@@ -24,8 +14,7 @@ CREATE TABLE "agents" (
   active_ip TEXT,
   token TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  private_ip TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, private_ip TEXT,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
@@ -231,6 +220,16 @@ CREATE TABLE profiles (
   FOREIGN KEY (id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
+CREATE TABLE dns_providers (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  type INTEGER NOT NULL,
+  config TEXT NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
   username TEXT NOT NULL UNIQUE,
@@ -245,7 +244,7 @@ CREATE TABLE users (
 
 CREATE TABLE http_router_dns_providers (
   http_router_id TEXT NOT NULL,
-  dns_provider_id INTEGER NOT NULL,
+  dns_provider_id TEXT NOT NULL,
   PRIMARY KEY (http_router_id, dns_provider_id),
   FOREIGN KEY (http_router_id) REFERENCES http_routers (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
@@ -253,7 +252,7 @@ CREATE TABLE http_router_dns_providers (
 
 CREATE TABLE tcp_router_dns_providers (
   tcp_router_id TEXT NOT NULL,
-  dns_provider_id INTEGER NOT NULL,
+  dns_provider_id TEXT NOT NULL,
   PRIMARY KEY (tcp_router_id, dns_provider_id),
   FOREIGN KEY (tcp_router_id) REFERENCES tcp_routers (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
@@ -280,44 +279,24 @@ CREATE INDEX idx_http_servers_transports_profile_name ON http_servers_transports
 CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (profile_id, name);
 
 -- +goose Down
-DROP TABLE IF EXISTS dns_providers;
-
 DROP TABLE IF EXISTS settings;
-
 DROP TABLE IF EXISTS agents;
-
 DROP TABLE IF EXISTS errors;
-
 DROP TABLE IF EXISTS entry_points;
-
 DROP TABLE IF EXISTS http_routers;
-
 DROP TABLE IF EXISTS tcp_routers;
-
 DROP TABLE IF EXISTS udp_routers;
-
 DROP TABLE IF EXISTS http_services;
-
 DROP TABLE IF EXISTS tcp_services;
-
 DROP TABLE IF EXISTS udp_services;
-
 DROP TABLE IF EXISTS http_middlewares;
-
 DROP TABLE IF EXISTS tcp_middlewares;
-
 DROP TABLE IF EXISTS http_servers_transports;
-
 DROP TABLE IF EXISTS tcp_servers_transports;
-
 DROP TABLE IF EXISTS traefik_instances;
-
 DROP TABLE IF EXISTS audit_logs;
-
 DROP TABLE IF EXISTS profiles;
-
+DROP TABLE IF EXISTS dns_providers;
 DROP TABLE IF EXISTS users;
-
 DROP TABLE IF EXISTS http_router_dns_providers;
-
 DROP TABLE IF EXISTS tcp_router_dns_providers;

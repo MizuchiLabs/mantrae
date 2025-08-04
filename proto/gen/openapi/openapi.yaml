@@ -644,9 +644,6 @@ components:
           type: boolean
           title: is_default
       title: CreateDnsProviderRequest
-      required:
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.CreateDnsProviderResponse:
       type: object
@@ -660,15 +657,10 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: DeleteDnsProviderRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.DeleteDnsProviderResponse:
       type: object
@@ -678,11 +670,8 @@ components:
       type: object
       properties:
         id:
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
         name:
           type: string
           title: name
@@ -730,15 +719,10 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
       title: GetDnsProviderRequest
-      required:
-        - id
       additionalProperties: false
     mantrae.v1.GetDnsProviderResponse:
       type: object
@@ -793,12 +777,9 @@ components:
       type: object
       properties:
         id:
-          exclusiveMinimum: 0
-          type:
-            - integer
-            - string
+          type: string
           title: id
-          format: int64
+          minLength: 1
         name:
           type: string
           title: name
@@ -813,10 +794,6 @@ components:
           type: boolean
           title: is_default
       title: UpdateDnsProviderRequest
-      required:
-        - id
-        - name
-        - type
       additionalProperties: false
     mantrae.v1.UpdateDnsProviderResponse:
       type: object

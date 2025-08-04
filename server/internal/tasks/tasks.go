@@ -1,24 +1,34 @@
-package config
+// package tasks provides functionality for running periodic tasks.
+package tasks
 
 import (
 	"context"
 	"log/slog"
 	"time"
 
+	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/dns"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
-// setupBackgroundJobs initiates essential background operations for the application.
-func (a *App) setupBackgroundJobs(ctx context.Context) {
-	go a.syncDNS(ctx)
-	go a.cleanupAgents(ctx)
+type Scheduler struct {
+	ctx context.Context
+	cfg *config.App
+}
+
+func NewScheduler(ctx context.Context, cfg *config.App) *Scheduler {
+	return &Scheduler{ctx: ctx, cfg: cfg}
+}
+
+func (s *Scheduler) Start() {
+	go s.syncDNS()
+	go s.cleanupAgents()
 }
 
 // syncDNS periodically syncs the DNS records
-func (a *App) syncDNS(ctx context.Context) {
-	duration, ok := a.SM.Get(ctx, settings.KeyDNSSyncInterval)
+func (s *Scheduler) syncDNS() {
+	duration, ok := s.cfg.SM.Get(s.ctx, settings.KeyDNSSyncInterval)
 	if !ok {
 		slog.Error("Failed to get DNS sync interval setting")
 		return
@@ -27,23 +37,24 @@ func (a *App) syncDNS(ctx context.Context) {
 	ticker := time.NewTicker(settings.AsDuration(duration))
 	defer ticker.Stop()
 
-	if err := dns.UpdateDNS(ctx, a.Conn.GetQuery()); err != nil {
+	manager := dns.NewManager(s.cfg)
+	if err := manager.UpdateDNS(s.ctx); err != nil {
 		slog.Error("Failed to update DNS", "error", err)
 	}
 	for {
 		select {
-		case <-ctx.Done():
+		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
-			if err := dns.UpdateDNS(ctx, a.Conn.GetQuery()); err != nil {
+			if err := manager.UpdateDNS(s.ctx); err != nil {
 				slog.Error("Failed to update DNS", "error", err)
 			}
 		}
 	}
 }
 
-func (a *App) cleanupAgents(ctx context.Context) {
-	duration, ok := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
+func (s *Scheduler) cleanupAgents() {
+	duration, ok := s.cfg.SM.Get(s.ctx, settings.KeyAgentCleanupInterval)
 	if !ok {
 		slog.Error("failed to get agent cleanup interval setting")
 		return
@@ -54,10 +65,10 @@ func (a *App) cleanupAgents(ctx context.Context) {
 
 	for {
 		select {
-		case <-ctx.Done():
+		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
-			enabled, ok := a.SM.Get(ctx, settings.KeyAgentCleanupEnabled)
+			enabled, ok := s.cfg.SM.Get(s.ctx, settings.KeyAgentCleanupEnabled)
 			if !ok {
 				slog.Error("failed to get agent cleanup enabled setting")
 				return
@@ -68,14 +79,14 @@ func (a *App) cleanupAgents(ctx context.Context) {
 			}
 
 			// Timeout to delete old agents
-			timeout, ok := a.SM.Get(ctx, settings.KeyAgentCleanupInterval)
+			timeout, ok := s.cfg.SM.Get(s.ctx, settings.KeyAgentCleanupInterval)
 			if !ok {
 				slog.Error("failed to get agent cleanup interval setting")
 				return
 			}
 
 			// List profiles
-			profiles, err := a.Conn.GetQuery().ListProfiles(ctx, db.ListProfilesParams{})
+			profiles, err := s.cfg.Conn.GetQuery().ListProfiles(s.ctx, db.ListProfilesParams{})
 			if err != nil {
 				slog.Error("failed to list profiles", "error", err)
 				continue
@@ -83,8 +94,8 @@ func (a *App) cleanupAgents(ctx context.Context) {
 
 			var agents []db.Agent
 			for _, profile := range profiles {
-				a, err := a.Conn.GetQuery().
-					ListAgents(ctx, db.ListAgentsParams{ProfileID: profile.ID})
+				a, err := s.cfg.Conn.GetQuery().
+					ListAgents(s.ctx, db.ListAgentsParams{ProfileID: profile.ID})
 				if err != nil {
 					slog.Error("failed to list agents", "error", err)
 					continue
@@ -98,7 +109,7 @@ func (a *App) cleanupAgents(ctx context.Context) {
 				}
 
 				if time.Since(*agent.UpdatedAt) > settings.AsDuration(timeout) {
-					if err := a.Conn.GetQuery().DeleteAgent(ctx, agent.ID); err != nil {
+					if err := s.cfg.Conn.GetQuery().DeleteAgent(s.ctx, agent.ID); err != nil {
 						slog.Error(
 							"failed to delete disconnected agent",
 							"id",

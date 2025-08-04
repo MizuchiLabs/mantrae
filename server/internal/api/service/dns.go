@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"connectrpc.com/connect"
 
+	"github.com/google/uuid"
+	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
@@ -28,6 +29,11 @@ func (s *DnsProviderService) GetDnsProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	decryptedAPIKey, err := util.DecryptSecret(result.Config.APIKey, s.app.Secret)
+	if err != nil {
+		return nil, err
+	}
+	result.Config.APIKey = decryptedAPIKey
 	return connect.NewResponse(&mantraev1.GetDnsProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
@@ -37,26 +43,11 @@ func (s *DnsProviderService) CreateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateDnsProviderRequest],
 ) (*connect.Response[mantraev1.CreateDnsProviderResponse], error) {
-	var dnsType string
-	switch req.Msg.Type {
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
-		dnsType = "cloudflare"
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
-		dnsType = "powerdns"
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
-		dnsType = "technitium"
-	default:
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid dns provider type"),
-		)
-	}
-
 	params := db.CreateDnsProviderParams{
+		ID:   uuid.New().String(),
 		Name: req.Msg.Name,
-		Type: dnsType,
+		Type: int64(req.Msg.Type),
 		Config: &schema.DNSProviderConfig{
-			APIKey:     req.Msg.Config.ApiKey,
 			APIUrl:     req.Msg.Config.ApiUrl,
 			IP:         req.Msg.Config.Ip,
 			Proxied:    req.Msg.Config.Proxied,
@@ -64,6 +55,13 @@ func (s *DnsProviderService) CreateDnsProvider(
 			ZoneType:   req.Msg.Config.ZoneType,
 		},
 		IsDefault: req.Msg.IsDefault,
+	}
+	if req.Msg.Config.ApiKey != "" {
+		apiKeyHash, err := util.EncryptSecret(req.Msg.Config.ApiKey, s.app.Secret)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		params.Config.APIKey = apiKeyHash
 	}
 	if req.Msg.IsDefault {
 		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
@@ -91,27 +89,11 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateDnsProviderRequest],
 ) (*connect.Response[mantraev1.UpdateDnsProviderResponse], error) {
-	var dnsType string
-	switch req.Msg.Type {
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE:
-		dnsType = "cloudflare"
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS:
-		dnsType = "powerdns"
-	case mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM:
-		dnsType = "technitium"
-	default:
-		return nil, connect.NewError(
-			connect.CodeInvalidArgument,
-			errors.New("invalid dns provider type"),
-		)
-	}
-
 	params := db.UpdateDnsProviderParams{
 		ID:   req.Msg.Id,
 		Name: req.Msg.Name,
-		Type: dnsType,
+		Type: int64(req.Msg.Type),
 		Config: &schema.DNSProviderConfig{
-			APIKey:     req.Msg.Config.ApiKey,
 			APIUrl:     req.Msg.Config.ApiUrl,
 			IP:         req.Msg.Config.Ip,
 			Proxied:    req.Msg.Config.Proxied,
@@ -119,6 +101,13 @@ func (s *DnsProviderService) UpdateDnsProvider(
 			ZoneType:   req.Msg.Config.ZoneType,
 		},
 		IsDefault: req.Msg.IsDefault,
+	}
+	if req.Msg.Config.ApiKey != "" {
+		apiKeyHash, err := util.EncryptSecret(req.Msg.Config.ApiKey, s.app.Secret)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		params.Config.APIKey = apiKeyHash
 	}
 	if req.Msg.IsDefault {
 		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
@@ -183,6 +172,11 @@ func (s *DnsProviderService) ListDnsProviders(
 
 	dnsProviders := make([]*mantraev1.DnsProvider, 0, len(result))
 	for _, p := range result {
+		decryptedAPIKey, err := util.DecryptSecret(p.Config.APIKey, s.app.Secret)
+		if err != nil {
+			return nil, err
+		}
+		p.Config.APIKey = decryptedAPIKey
 		dnsProviders = append(dnsProviders, p.ToProto())
 	}
 	return connect.NewResponse(&mantraev1.ListDnsProvidersResponse{

@@ -34,13 +34,13 @@ type AuditLog struct {
 }
 
 type DnsProvider struct {
-	ID        int64                     `json:"id"`
+	ID        string                    `json:"id"`
 	Name      string                    `json:"name"`
-	Type      string                    `json:"type"`
+	Type      int64                     `json:"type"`
 	Config    *schema.DNSProviderConfig `json:"config"`
+	IsDefault bool                      `json:"isDefault"`
 	CreatedAt *time.Time                `json:"createdAt"`
 	UpdatedAt *time.Time                `json:"updatedAt"`
-	IsDefault bool                      `json:"isDefault"`
 }
 
 type EntryPoint struct {
@@ -87,7 +87,7 @@ type HttpRouter struct {
 
 type HttpRouterDnsProvider struct {
 	HttpRouterID  string `json:"httpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 type HttpServersTransport struct {
@@ -152,7 +152,7 @@ type TcpRouter struct {
 
 type TcpRouterDnsProvider struct {
 	TcpRouterID   string `json:"tcpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 type TcpServersTransport struct {

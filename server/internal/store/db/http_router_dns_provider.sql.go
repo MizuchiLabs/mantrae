@@ -20,7 +20,7 @@ VALUES
 
 type CreateHttpRouterDNSProviderParams struct {
 	HttpRouterID  string `json:"httpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 func (q *Queries) CreateHttpRouterDNSProvider(ctx context.Context, arg CreateHttpRouterDNSProviderParams) error {
@@ -37,7 +37,7 @@ WHERE
 
 type DeleteHttpRouterDNSProviderParams struct {
 	HttpRouterID  string `json:"httpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 func (q *Queries) DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHttpRouterDNSProviderParams) error {
@@ -47,7 +47,7 @@ func (q *Queries) DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHtt
 
 const getDnsProvidersByHttpRouter = `-- name: GetDnsProvidersByHttpRouter :many
 SELECT
-  dp.id, dp.name, dp.type, dp.config, dp.created_at, dp.updated_at, dp.is_default
+  dp.id, dp.name, dp.type, dp.config, dp.is_default, dp.created_at, dp.updated_at
 FROM
   dns_providers dp
   JOIN http_router_dns_providers hrdp ON dp.id = hrdp.dns_provider_id
@@ -69,9 +69,9 @@ func (q *Queries) GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID 
 			&i.Name,
 			&i.Type,
 			&i.Config,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.IsDefault,
 		); err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ type GetHttpRouterDomainsRow struct {
 	RouterName      string             `json:"routerName"`
 	ConfigJson      *schema.HTTPRouter `json:"configJson"`
 	ProfileName     string             `json:"profileName"`
-	DnsProviderID   *int64             `json:"dnsProviderId"`
+	DnsProviderID   *string            `json:"dnsProviderId"`
 	DnsProviderName *string            `json:"dnsProviderName"`
 }
 

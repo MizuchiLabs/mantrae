@@ -225,22 +225,10 @@ func (a *Agent) ToProto() *mantraev1.Agent {
 }
 
 func (d *DnsProvider) ToProto() *mantraev1.DnsProvider {
-	var dnsType mantraev1.DnsProviderType
-	switch d.Type {
-	case "cloudflare":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE
-	case "powerdns":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS
-	case "technitium":
-		dnsType = mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM
-	default:
-		return nil
-	}
-
 	return &mantraev1.DnsProvider{
 		Id:   d.ID,
 		Name: d.Name,
-		Type: dnsType,
+		Type: mantraev1.DnsProviderType(d.Type),
 		Config: &mantraev1.DnsProviderConfig{
 			ApiKey:     d.Config.APIKey,
 			ApiUrl:     d.Config.APIUrl,

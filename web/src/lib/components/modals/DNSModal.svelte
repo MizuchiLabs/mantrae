@@ -1,24 +1,24 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { dnsClient, utilClient } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { toast } from 'svelte-sonner';
-	import Separator from '../ui/separator/separator.svelte';
-	import Badge from '../ui/badge/badge.svelte';
-	import { CircleHelp } from '@lucide/svelte';
-	import PasswordInput from '../ui/password-input/password-input.svelte';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import {
 		DnsProviderType,
 		type DnsProvider,
 		type DnsProviderConfig
 	} from '$lib/gen/mantrae/v1/dns_provider_pb';
-	import { dnsClient, utilClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
 	import { dnsProviderTypes } from '$lib/types';
+	import { ConnectError } from '@connectrpc/connect';
+	import { CircleQuestionMark } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import Badge from '../ui/badge/badge.svelte';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
+	import PasswordInput from '../ui/password-input/password-input.svelte';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		item: DnsProvider;
@@ -128,7 +128,7 @@
 								<Tooltip.Provider>
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-											<CircleHelp size={14} />
+											<CircleQuestionMark size={14} />
 										</Tooltip.Trigger>
 										<Tooltip.Content align="start" class="w-64">
 											<p>
@@ -152,7 +152,7 @@
 								<Tooltip.Provider>
 									<Tooltip.Root>
 										<Tooltip.Trigger>
-											<CircleHelp size={14} />
+											<CircleQuestionMark size={14} />
 										</Tooltip.Trigger>
 										<Tooltip.Content align="start" class="w-64">
 											<p>
@@ -224,7 +224,7 @@
 						<Tooltip.Provider>
 							<Tooltip.Root>
 								<Tooltip.Trigger>
-									<CircleHelp size={14} />
+									<CircleQuestionMark size={14} />
 								</Tooltip.Trigger>
 								<Tooltip.Content align="start" class="w-64">
 									<p>IP used for DNS records. Should be the IP of your Traefik instance.</p>

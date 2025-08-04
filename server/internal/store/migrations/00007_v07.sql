@@ -215,11 +215,17 @@ DROP TRIGGER ensure_single_active_insert;
 
 DROP TRIGGER ensure_single_active_update;
 
-ALTER TABLE dns_providers
-DROP COLUMN is_active;
+DROP TABLE IF EXISTS dns_providers;
 
-ALTER TABLE dns_providers
-ADD COLUMN is_default BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE TABLE dns_providers (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  type INTEGER NOT NULL,
+  config TEXT NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- New users table
 DROP TABLE users;
@@ -243,7 +249,7 @@ DROP COLUMN description;
 -- Create new DNS provider association tables
 CREATE TABLE http_router_dns_providers (
   http_router_id TEXT NOT NULL,
-  dns_provider_id INTEGER NOT NULL,
+  dns_provider_id TEXT NOT NULL,
   PRIMARY KEY (http_router_id, dns_provider_id),
   FOREIGN KEY (http_router_id) REFERENCES http_routers (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
@@ -251,7 +257,7 @@ CREATE TABLE http_router_dns_providers (
 
 CREATE TABLE tcp_router_dns_providers (
   tcp_router_id TEXT NOT NULL,
-  dns_provider_id INTEGER NOT NULL,
+  dns_provider_id TEXT NOT NULL,
   PRIMARY KEY (tcp_router_id, dns_provider_id),
   FOREIGN KEY (tcp_router_id) REFERENCES tcp_routers (id) ON DELETE CASCADE,
   FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE

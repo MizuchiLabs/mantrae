@@ -77,7 +77,7 @@ func (DnsProviderType) EnumDescriptor() ([]byte, []int) {
 
 type DnsProvider struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Type          DnsProviderType        `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.DnsProviderType" json:"type,omitempty"`
 	Config        *DnsProviderConfig     `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
@@ -118,11 +118,11 @@ func (*DnsProvider) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_dns_provider_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DnsProvider) GetId() int64 {
+func (x *DnsProvider) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *DnsProvider) GetName() string {
@@ -169,12 +169,12 @@ func (x *DnsProvider) GetUpdatedAt() *timestamppb.Timestamp {
 
 type DnsProviderConfig struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ApiKey        string                 `protobuf:"bytes,1,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
-	ApiUrl        string                 `protobuf:"bytes,2,opt,name=api_url,json=apiUrl,proto3" json:"api_url,omitempty"`
-	Ip            string                 `protobuf:"bytes,3,opt,name=ip,proto3" json:"ip,omitempty"`
-	Proxied       bool                   `protobuf:"varint,4,opt,name=proxied,proto3" json:"proxied,omitempty"`
-	AutoUpdate    bool                   `protobuf:"varint,5,opt,name=auto_update,json=autoUpdate,proto3" json:"auto_update,omitempty"`
-	ZoneType      string                 `protobuf:"bytes,6,opt,name=zone_type,json=zoneType,proto3" json:"zone_type,omitempty"`
+	ApiKey        string                 `protobuf:"bytes,8,opt,name=api_key,json=apiKey,proto3" json:"api_key,omitempty"`
+	ApiUrl        string                 `protobuf:"bytes,9,opt,name=api_url,json=apiUrl,proto3" json:"api_url,omitempty"`
+	Ip            string                 `protobuf:"bytes,10,opt,name=ip,proto3" json:"ip,omitempty"`
+	Proxied       bool                   `protobuf:"varint,11,opt,name=proxied,proto3" json:"proxied,omitempty"`
+	AutoUpdate    bool                   `protobuf:"varint,12,opt,name=auto_update,json=autoUpdate,proto3" json:"auto_update,omitempty"`
+	ZoneType      string                 `protobuf:"bytes,13,opt,name=zone_type,json=zoneType,proto3" json:"zone_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -253,7 +253,7 @@ func (x *DnsProviderConfig) GetZoneType() string {
 
 type GetDnsProviderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -288,11 +288,11 @@ func (*GetDnsProviderRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_dns_provider_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetDnsProviderRequest) GetId() int64 {
+func (x *GetDnsProviderRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type GetDnsProviderResponse struct {
@@ -453,7 +453,7 @@ func (x *CreateDnsProviderResponse) GetDnsProvider() *DnsProvider {
 
 type UpdateDnsProviderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Type          DnsProviderType        `protobuf:"varint,3,opt,name=type,proto3,enum=mantrae.v1.DnsProviderType" json:"type,omitempty"`
 	Config        *DnsProviderConfig     `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
@@ -492,11 +492,11 @@ func (*UpdateDnsProviderRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_dns_provider_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *UpdateDnsProviderRequest) GetId() int64 {
+func (x *UpdateDnsProviderRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateDnsProviderRequest) GetName() string {
@@ -573,7 +573,7 @@ func (x *UpdateDnsProviderResponse) GetDnsProvider() *DnsProvider {
 
 type DeleteDnsProviderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -608,11 +608,11 @@ func (*DeleteDnsProviderRequest) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_dns_provider_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *DeleteDnsProviderRequest) GetId() int64 {
+func (x *DeleteDnsProviderRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type DeleteDnsProviderResponse struct {
@@ -762,7 +762,7 @@ const file_mantrae_v1_dns_provider_proto_rawDesc = "" +
 	"\x1dmantrae/v1/dns_provider.proto\x12\n" +
 	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xae\x02\n" +
 	"\vDnsProvider\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12/\n" +
 	"\x04type\x18\x03 \x01(\x0e2\x1b.mantrae.v1.DnsProviderTypeR\x04type\x125\n" +
 	"\x06config\x18\x04 \x01(\v2\x1d.mantrae.v1.DnsProviderConfigR\x06config\x12\x1d\n" +
@@ -773,41 +773,37 @@ const file_mantrae_v1_dns_provider_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xad\x01\n" +
 	"\x11DnsProviderConfig\x12\x17\n" +
-	"\aapi_key\x18\x01 \x01(\tR\x06apiKey\x12\x17\n" +
-	"\aapi_url\x18\x02 \x01(\tR\x06apiUrl\x12\x0e\n" +
-	"\x02ip\x18\x03 \x01(\tR\x02ip\x12\x18\n" +
-	"\aproxied\x18\x04 \x01(\bR\aproxied\x12\x1f\n" +
-	"\vauto_update\x18\x05 \x01(\bR\n" +
+	"\aapi_key\x18\b \x01(\tR\x06apiKey\x12\x17\n" +
+	"\aapi_url\x18\t \x01(\tR\x06apiUrl\x12\x0e\n" +
+	"\x02ip\x18\n" +
+	" \x01(\tR\x02ip\x12\x18\n" +
+	"\aproxied\x18\v \x01(\bR\aproxied\x12\x1f\n" +
+	"\vauto_update\x18\f \x01(\bR\n" +
 	"autoUpdate\x12\x1b\n" +
-	"\tzone_type\x18\x06 \x01(\tR\bzoneType\"3\n" +
-	"\x15GetDnsProviderRequest\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\x03B\n" +
-	"\xbaH\a\xc8\x01\x01\"\x02 \x00R\x02id\"T\n" +
+	"\tzone_type\x18\r \x01(\tR\bzoneType\"0\n" +
+	"\x15GetDnsProviderRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"T\n" +
 	"\x16GetDnsProviderResponse\x12:\n" +
-	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"\xce\x01\n" +
-	"\x18CreateDnsProviderRequest\x12\x1e\n" +
-	"\x04name\x18\x01 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x04name\x12<\n" +
-	"\x04type\x18\x02 \x01(\x0e2\x1b.mantrae.v1.DnsProviderTypeB\v\xbaH\b\xc8\x01\x01\x82\x01\x02\x10\x01R\x04type\x125\n" +
+	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"\xc8\x01\n" +
+	"\x18CreateDnsProviderRequest\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x1b.mantrae.v1.DnsProviderTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x125\n" +
 	"\x06config\x18\x03 \x01(\v2\x1d.mantrae.v1.DnsProviderConfigR\x06config\x12\x1d\n" +
 	"\n" +
 	"is_default\x18\x04 \x01(\bR\tisDefault\"W\n" +
 	"\x19CreateDnsProviderResponse\x12:\n" +
-	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"\xea\x01\n" +
-	"\x18UpdateDnsProviderRequest\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\x03B\n" +
-	"\xbaH\a\xc8\x01\x01\"\x02 \x00R\x02id\x12\x1e\n" +
-	"\x04name\x18\x02 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x10\x01R\x04name\x12<\n" +
-	"\x04type\x18\x03 \x01(\x0e2\x1b.mantrae.v1.DnsProviderTypeB\v\xbaH\b\xc8\x01\x01\x82\x01\x02\x10\x01R\x04type\x125\n" +
+	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"\xe1\x01\n" +
+	"\x18UpdateDnsProviderRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\x12\x1b\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x129\n" +
+	"\x04type\x18\x03 \x01(\x0e2\x1b.mantrae.v1.DnsProviderTypeB\b\xbaH\x05\x82\x01\x02\x10\x01R\x04type\x125\n" +
 	"\x06config\x18\x04 \x01(\v2\x1d.mantrae.v1.DnsProviderConfigR\x06config\x12\x1d\n" +
 	"\n" +
 	"is_default\x18\x05 \x01(\bR\tisDefault\"W\n" +
 	"\x19UpdateDnsProviderResponse\x12:\n" +
-	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"6\n" +
-	"\x18DeleteDnsProviderRequest\x12\x1a\n" +
-	"\x02id\x18\x01 \x01(\x03B\n" +
-	"\xbaH\a\xc8\x01\x01\"\x02 \x00R\x02id\"\x1b\n" +
+	"\fdns_provider\x18\x01 \x01(\v2\x17.mantrae.v1.DnsProviderR\vdnsProvider\"3\n" +
+	"\x18DeleteDnsProviderRequest\x12\x17\n" +
+	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x02id\"\x1b\n" +
 	"\x19DeleteDnsProviderResponse\"\xc7\x01\n" +
 	"\x17ListDnsProvidersRequest\x12q\n" +
 	"\x05limit\x18\x01 \x01(\x03BV\xbaHS\xba\x01P\n" +

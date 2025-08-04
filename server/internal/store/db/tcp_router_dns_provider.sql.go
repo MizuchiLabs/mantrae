@@ -20,7 +20,7 @@ VALUES
 
 type CreateTcpRouterDNSProviderParams struct {
 	TcpRouterID   string `json:"tcpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 func (q *Queries) CreateTcpRouterDNSProvider(ctx context.Context, arg CreateTcpRouterDNSProviderParams) error {
@@ -37,7 +37,7 @@ WHERE
 
 type DeleteTcpRouterDNSProviderParams struct {
 	TcpRouterID   string `json:"tcpRouterId"`
-	DnsProviderID int64  `json:"dnsProviderId"`
+	DnsProviderID string `json:"dnsProviderId"`
 }
 
 func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpRouterDNSProviderParams) error {
@@ -47,7 +47,7 @@ func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpR
 
 const getDnsProvidersByTcpRouter = `-- name: GetDnsProvidersByTcpRouter :many
 SELECT
-  dp.id, dp.name, dp.type, dp.config, dp.created_at, dp.updated_at, dp.is_default
+  dp.id, dp.name, dp.type, dp.config, dp.is_default, dp.created_at, dp.updated_at
 FROM
   dns_providers dp
   JOIN tcp_router_dns_providers trdp ON dp.id = trdp.dns_provider_id
@@ -69,9 +69,9 @@ func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID st
 			&i.Name,
 			&i.Type,
 			&i.Config,
+			&i.IsDefault,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.IsDefault,
 		); err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ type GetTcpRouterDomainsRow struct {
 	RouterName      string            `json:"routerName"`
 	ConfigJson      *schema.TCPRouter `json:"configJson"`
 	ProfileName     string            `json:"profileName"`
-	DnsProviderID   *int64            `json:"dnsProviderId"`
+	DnsProviderID   *string           `json:"dnsProviderId"`
 	DnsProviderName *string           `json:"dnsProviderName"`
 }
 

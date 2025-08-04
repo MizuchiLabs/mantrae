@@ -45,7 +45,7 @@ type Querier interface {
 	CreateUdpService(ctx context.Context, arg CreateUdpServiceParams) (UdpService, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAgent(ctx context.Context, id string) error
-	DeleteDnsProvider(ctx context.Context, id int64) error
+	DeleteDnsProvider(ctx context.Context, id string) error
 	DeleteEntryPointByID(ctx context.Context, id string) error
 	DeleteErrorById(ctx context.Context, id int64) error
 	DeleteErrorsByProfile(ctx context.Context, profileID int64) error
@@ -70,7 +70,7 @@ type Querier interface {
 	GetAgent(ctx context.Context, id string) (Agent, error)
 	GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error)
 	GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error)
-	GetDnsProvider(ctx context.Context, id int64) (DnsProvider, error)
+	GetDnsProvider(ctx context.Context, id string) (DnsProvider, error)
 	GetDnsProviderByName(ctx context.Context, name string) (DnsProvider, error)
 	GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID string) ([]DnsProvider, error)
 	GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID string) ([]DnsProvider, error)

@@ -139,13 +139,13 @@ func (s *HTTPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	existingMap := make(map[int64]bool)
+	existingMap := make(map[string]bool)
 	for _, provider := range existing {
 		existingMap[provider.ID] = true
 	}
 
-	desiredMap := make(map[int64]bool)
-	var desiredIDs []int64
+	desiredMap := make(map[string]bool)
+	var desiredIDs []string
 	for _, protoProvider := range req.DnsProviders {
 		desiredMap[protoProvider.Id] = true
 		desiredIDs = append(desiredIDs, protoProvider.Id)
@@ -340,13 +340,13 @@ func (s *TCPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	existingMap := make(map[int64]bool)
+	existingMap := make(map[string]bool)
 	for _, provider := range existing {
 		existingMap[provider.ID] = true
 	}
 
-	desiredMap := make(map[int64]bool)
-	var desiredIDs []int64
+	desiredMap := make(map[string]bool)
+	var desiredIDs []string
 	for _, protoProvider := range req.DnsProviders {
 		desiredMap[protoProvider.Id] = true
 		desiredIDs = append(desiredIDs, protoProvider.Id)

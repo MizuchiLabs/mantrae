@@ -25,7 +25,7 @@ enum DnsProviderType {
 }
 
 message DnsProvider {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   DnsProviderType type = 3;
   DnsProviderConfig config = 4;
@@ -35,33 +35,24 @@ message DnsProvider {
 }
 
 message DnsProviderConfig {
-  string api_key = 1;
-  string api_url = 2;
-  string ip = 3;
-  bool proxied = 4;
-  bool auto_update = 5;
-  string zone_type = 6;
+  string api_key = 8;
+  string api_url = 9;
+  string ip = 10;
+  bool proxied = 11;
+  bool auto_update = 12;
+  string zone_type = 13;
 }
 
 message GetDnsProviderRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
 }
 message GetDnsProviderResponse {
   DnsProvider dns_provider = 1;
 }
 
 message CreateDnsProviderRequest {
-  string name = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  DnsProviderType type = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  DnsProviderType type = 2 [(buf.validate.field).enum.defined_only = true];
   DnsProviderConfig config = 3;
   bool is_default = 4;
 }
@@ -70,18 +61,9 @@ message CreateDnsProviderResponse {
 }
 
 message UpdateDnsProviderRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
-  string name = 2 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).string.min_len = 1
-  ];
-  DnsProviderType type = 3 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).enum.defined_only = true
-  ];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
+  string name = 2 [(buf.validate.field).string.min_len = 1];
+  DnsProviderType type = 3 [(buf.validate.field).enum.defined_only = true];
   DnsProviderConfig config = 4;
   bool is_default = 5;
 }
@@ -90,10 +72,7 @@ message UpdateDnsProviderResponse {
 }
 
 message DeleteDnsProviderRequest {
-  int64 id = 1 [
-    (buf.validate.field).required = true,
-    (buf.validate.field).int64.gt = 0
-  ];
+  string id = 1 [(buf.validate.field).string.min_len = 1];
 }
 message DeleteDnsProviderResponse {}
 
