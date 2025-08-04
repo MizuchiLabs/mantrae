@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/server/internal/storage"
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
@@ -201,6 +202,7 @@ func DynamicToDB(
 				continue
 			}
 			entryPointSet[ep] = db.CreateEntryPointParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      ep,
 				IsDefault: false,
@@ -215,6 +217,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapRouter(v),
@@ -228,6 +231,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateHttpService(ctx, db.CreateHttpServiceParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapService(v),
@@ -240,6 +244,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapMiddleware(v),
@@ -254,6 +259,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapTCPRouter(v),
@@ -267,6 +273,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateTcpService(ctx, db.CreateTcpServiceParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapTCPService(v),
@@ -293,6 +300,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapUDPRouter(v),
@@ -306,6 +314,7 @@ func DynamicToDB(
 				continue
 			}
 			if _, err := q.CreateUdpService(ctx, db.CreateUdpServiceParams{
+				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapUDPService(v),

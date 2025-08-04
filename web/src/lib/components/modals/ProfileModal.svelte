@@ -1,16 +1,16 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { buildConnectionString, profileClient } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
-	import { toast } from 'svelte-sonner';
-	import Separator from '../ui/separator/separator.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
-	import { buildConnectionString, profileClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
 	import { profile as profileStore } from '$lib/stores/profile';
-	import CopyInput from '../ui/copy-input/copy-input.svelte';
+	import { ConnectError } from '@connectrpc/connect';
 	import { RotateCcw } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import CopyInput from '../ui/copy-input/copy-input.svelte';
+	import Separator from '../ui/separator/separator.svelte';
 
 	interface Props {
 		item: Profile;
@@ -75,8 +75,10 @@
 				description: item.description,
 				regenerateToken: true
 			});
+			if (!response.profile) throw new Error('Failed to regenerate token');
 			toast.success(`Token regenerated successfully`);
-			if (response.profile) profileStore.value = response.profile;
+			item = response.profile;
+			profileStore.value = response.profile;
 		} catch (err) {
 			const e = ConnectError.from(err);
 			toast.error('Failed to regenerate token', { description: e.message });
