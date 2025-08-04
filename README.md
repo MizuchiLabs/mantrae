@@ -35,7 +35,6 @@ Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
 
 - Add support for more DNS providers
 - User management and permissions system
-- Stable API
 
 ## Contributing
 
