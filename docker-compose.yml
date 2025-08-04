@@ -21,10 +21,11 @@ services:
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae-agent
+    network_mode: host # for detecting the hostname of the machine
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
     environment:
-      - TOKEN=<token> # initial token from mantrae server
+      - TOKEN=<token> # token from mantrae server
       - HOST=https://mantrae.example.com # where to reach mantrae server
     restart: unless-stopped
 

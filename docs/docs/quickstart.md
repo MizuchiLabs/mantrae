@@ -17,10 +17,10 @@ Get Mantrae up and running quickly with this guide. This will walk you through i
 First, generate a secure secret for Mantrae:
 
 ```bash
-openssl rand -hex 32
+openssl rand -base64 32
 ```
 
-Save this secret for the next step.
+Save this secret for the next step. It has to be either of size 16, 24, or 32 bytes.
 
 ## Step 2: Run Mantrae
 

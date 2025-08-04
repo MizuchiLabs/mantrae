@@ -6,6 +6,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import Progress from '$lib/components/ui/progress/progress.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import TraefikConnection from '$lib/components/utils/TraefikConnection.svelte';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
@@ -40,8 +41,7 @@
 		Server,
 		Shield,
 		TrendingUp,
-		Users,
-		Wifi
+		Users
 	} from '@lucide/svelte';
 
 	let onlineAgents = $derived.by(() => {
@@ -138,10 +138,26 @@
 					<Bot class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
-					<div class="text-3xl font-bold">{onlineAgents}</div>
-					<div class="mt-2 flex items-center text-sm">
-						<Wifi class="mr-1 h-3 w-3 text-blue-500" />
-						<span class="text-blue-500">Online now</span>
+					<div class="space-y-3">
+						<div class="flex items-baseline gap-2">
+							<span class="text-3xl font-bold text-primary">{onlineAgents}</span>
+							<span class="text-lg text-muted-foreground">/</span>
+							<span class="text-lg font-medium text-muted-foreground">{$agents?.length}</span>
+						</div>
+
+						<div class="space-y-2">
+							<Progress
+								value={$agents?.length ? (Number(onlineAgents) / $agents.length) * 100 : 0}
+								class="h-2"
+							/>
+							<div class="flex justify-between text-xs text-muted-foreground">
+								<span>{Number(onlineAgents)} online</span>
+								<span>
+									{$agents?.length ? Math.round((Number(onlineAgents) / $agents.length) * 100) : 0}
+									%
+								</span>
+							</div>
+						</div>
 					</div>
 				</Card.Content>
 				<div
@@ -186,7 +202,7 @@
 					<div class="text-3xl font-bold">{$users?.length}</div>
 					<div class="mt-2 flex items-center text-sm">
 						<Shield class="mr-1 h-3 w-3 text-purple-500" />
-						<span class="text-muted-foreground">Access managed</span>
+						<span class="text-muted-foreground">Active users</span>
 					</div>
 				</Card.Content>
 				<div

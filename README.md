@@ -17,7 +17,7 @@
 - **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
 - **Service Status**: Monitor the status of your services and see their health information.
 - **DNS Providers**: Support for multiple DNS providers (currently Cloudflare, PowerDNS, Technitium) for automatic DNS record updates.
-- **Agents**: New agent mode! Instead of defining your routers in the web ui, you can label your containers as usual using traefik labels. Start the agent on the machine and it will automatically set everything up for you.
+- **Agents**: Instead of defining your routers in the web ui, you can label your containers as usual using traefik labels. Start the agent on the machine and it will automatically set everything up for you.
 
 ## 🚧 Disclaimer 🚧
 
@@ -29,7 +29,7 @@ Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
 
 ### Screenshot
 
-![Routers](./.github/screenshots/routers.png "Routers")
+![Dashboard](./.github/screenshots/dashboard.png "Dashboard")
 
 ## Roadmap
 

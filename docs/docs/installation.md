@@ -11,7 +11,7 @@ Follow these instructions to install and start using Mantrae with Traefik.
 1. **Install Traefik**: Ensure you have a running instance of [Traefik](https://traefik.io/).
 2. **Generate a Secret**: Create a secure, random secret key to use with Mantrae:
    ```bash
-   openssl rand -hex 32
+   openssl rand -base64 32
    ```
    Copy the generated secret as you'll need it in the next steps.
 

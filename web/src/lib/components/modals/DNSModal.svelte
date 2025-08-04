@@ -5,6 +5,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import {
 		DnsProviderType,
@@ -200,16 +201,23 @@
 								<Label class="text-sm">Zone Type</Label>
 								<p class="text-xs text-muted-foreground">DNS zone configuration type</p>
 							</div>
-							<CustomSwitch
-								variant="text"
-								textLabels={{ checked: 'Forwarder', unchecked: 'Primary' }}
-								checked={(item.config?.zoneType || 'primary') === 'forwarder'}
-								onCheckedChange={(value) => {
+							<ToggleGroup.Root
+								type="single"
+								size="sm"
+								value={item.config?.zoneType}
+								onValueChange={(value) => {
 									if (item.config === undefined) item.config = {} as DnsProviderConfig;
-									item.config.zoneType = value ? 'forwarder' : 'primary';
+									item.config.zoneType = value;
 								}}
-								size="md"
-							/>
+								class="border"
+							>
+								<ToggleGroup.Item value="primary" aria-label="Toggle primary">
+									<span class="text-xs">Primary</span>
+								</ToggleGroup.Item>
+								<ToggleGroup.Item value="forwarder" aria-label="Toggle forwarder" class="px-2">
+									<span class="text-xs">Forwarder</span>
+								</ToggleGroup.Item>
+							</ToggleGroup.Root>
 						</div>
 					{/if}
 				</div>
