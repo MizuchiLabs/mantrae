@@ -181,9 +181,9 @@ func (s *Server) registerServices() {
 	})
 
 	// Serve OpenAPI specs file
-	s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "proto/gen/openapi/openapi.yaml")
-	})
+	// s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.ServeFile(w, r, "proto/gen/openapi/openapi.yaml")
+	// })
 
 	// Serve Elements UI
 	s.mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {

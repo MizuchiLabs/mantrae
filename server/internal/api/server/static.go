@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/mizuchilabs/mantrae/proto"
 	"github.com/mizuchilabs/mantrae/web"
 	"github.com/vearutop/statigz"
 	"github.com/vearutop/statigz/brotli"
@@ -16,4 +17,8 @@ func (s *Server) WithStatic() {
 		brotli.AddEncoding,
 		statigz.FSPrefix("build"),
 	))
+	s.mux.Handle(
+		"/openapi.yaml",
+		statigz.FileServer(proto.OpenAPIFS, statigz.FSPrefix("gen/openapi")),
+	)
 }

@@ -14,6 +14,7 @@ before:
 
 builds:
   - id: server
+    main: ./server/cmd/
     binary: mantrae
     env: [CGO_ENABLED=0]
     ldflags:
@@ -56,7 +57,6 @@ release:
   replace_existing_artifacts: true
   mode: keep-existing
 
-
 archives:
   - id: server
     ids: [server]
@@ -74,17 +74,17 @@ archives:
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
 snapshot:
-  version_template: '{{ incpatch .Version }}-next'
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
   filters:
     include:
-      - '^feat:'
-      - '^fix:'
-      - '^sec:'
-      - '^doc:'
-      - '^wip:'
+      - "^feat:"
+      - "^fix:"
+      - "^sec:"
+      - "^doc:"
+      - "^wip:"
   groups:
     - title: "🚀 Features"
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
