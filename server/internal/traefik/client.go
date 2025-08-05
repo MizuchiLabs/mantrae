@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,29 +31,24 @@ type APIResponse struct {
 	Err  error
 }
 
-func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
+func UpdateTraefikInstance(
+	r *http.Request,
+	q *db.Queries,
+	profileID int64,
+) (*db.TraefikInstance, error) {
 	instanceName := r.Header.Get(meta.HeaderTraefikName)
 	instanceURL := r.Header.Get(meta.HeaderTraefikURL)
 	if instanceName == "" || instanceURL == "" {
 		slog.Debug("Skipping traefik update, missing headers")
-		return
+		return nil, nil
 	}
 
-	instance, err := q.GetTraefikInstanceByName(
-		context.Background(),
-		db.GetTraefikInstanceByNameParams{
-			ProfileID: profileID,
-			Name:      instanceName,
-		},
-	)
-	if err != nil {
-		// Create new temporary instance
-		instance = db.TraefikInstance{
-			ID:        uuid.New().String(),
-			ProfileID: profileID,
-			Name:      instanceName,
-			Url:       instanceURL,
-		}
+	params := db.UpsertTraefikInstanceParams{
+		ID:        uuid.New().String(),
+		ProfileID: profileID,
+		Name:      instanceName,
+		Url:       instanceURL,
+		Tls:       strings.HasPrefix(instanceURL, "https"),
 	}
 
 	endpoints := []struct {
@@ -70,7 +66,7 @@ func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
 	// Fetch all endpoints concurrently
 	for _, endpoint := range endpoints {
 		go func(name, path string) {
-			data, err := fetch(instance, path)
+			data, err := fetch(params, path)
 			responses <- APIResponse{Name: name, Data: data, Err: err}
 		}(endpoint.name, endpoint.path)
 	}
@@ -102,57 +98,55 @@ func UpdateTraefikInstance(r *http.Request, q *db.Queries, profileID int64) {
 
 	// If any critical fetch failed, abort
 	if len(fetchErrors) > 0 {
-		return
+		return nil, nil
 	}
 
 	// Decode responses
-	var config schema.Configuration
-	if err := json.NewDecoder(results["raw"]).Decode(&config); err != nil {
-		slog.Error("failed to decode raw data", "error", err)
-		return
+	if results["raw"] != nil {
+		var config schema.Configuration
+		if err := json.NewDecoder(results["raw"]).Decode(&config); err != nil {
+			slog.Warn("failed to decode raw config", "error", err)
+		} else {
+			params.Config = &config
+		}
 	}
 
-	var entrypoints schema.EntryPoints
-	if err := json.NewDecoder(results["entrypoints"]).Decode(&entrypoints); err != nil {
-		slog.Error("failed to decode entrypoints", "error", err)
-		return
+	if results["entrypoints"] != nil {
+		var entrypoints schema.EntryPoints
+		if err := json.NewDecoder(results["entrypoints"]).Decode(&entrypoints); err != nil {
+			slog.Warn("failed to decode entrypoints", "error", err)
+		} else {
+			params.Entrypoints = &entrypoints
+		}
 	}
 
-	var overview schema.Overview
-	if err := json.NewDecoder(results["overview"]).Decode(&overview); err != nil {
-		slog.Error("failed to decode overview", "error", err)
-		return
+	if results["overview"] != nil {
+		var overview schema.Overview
+		params.Overview = &overview
+		if err := json.NewDecoder(results["overview"]).Decode(&overview); err != nil {
+			slog.Warn("failed to decode overview", "error", err)
+		} else {
+			params.Overview = &overview
+		}
 	}
 
-	var version schema.Version
-	if err := json.NewDecoder(results["version"]).Decode(&version); err != nil {
-		slog.Error("failed to decode version", "error", err)
-		return
+	if results["version"] != nil {
+		var version schema.Version
+		if err := json.NewDecoder(results["version"]).Decode(&version); err != nil {
+			slog.Warn("failed to decode version", "error", err)
+		} else {
+			params.Version = &version
+		}
 	}
 
-	// Upsert with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if _, err := q.UpsertTraefikInstance(ctx, db.UpsertTraefikInstanceParams{
-		ID:          instance.ID,
-		Name:        instance.Name,
-		Url:         instance.Url,
-		Username:    instance.Username,
-		Password:    instance.Password,
-		Tls:         instance.Tls,
-		Entrypoints: &entrypoints,
-		Overview:    &overview,
-		Config:      &config,
-		Version:     &version,
-		ProfileID:   profileID,
-	}); err != nil {
-		slog.Error("failed to update traefik instance", "error", err)
-		return
+	result, err := q.UpsertTraefikInstance(context.Background(), params)
+	if err != nil {
+		return nil, err
 	}
+	return &result, nil
 }
 
-func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) {
+func fetch(instance db.UpsertTraefikInstanceParams, endpoint string) (io.ReadCloser, error) {
 	if instance.Url == "" {
 		return nil, fmt.Errorf("invalid URL or endpoint")
 	}
@@ -181,9 +175,6 @@ func fetch(instance db.TraefikInstance, endpoint string) (io.ReadCloser, error) 
 
 	resp, err := client.Do(req)
 	if err != nil {
-		if err = resp.Body.Close(); err != nil {
-			slog.Error("failed to close response body", "error", err)
-		}
 		return nil, fmt.Errorf("failed to fetch %s: %w", instance.Url+endpoint, err)
 	}
 

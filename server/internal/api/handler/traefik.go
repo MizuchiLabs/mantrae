@@ -2,14 +2,15 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/pkg/meta"
+	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 	"github.com/mizuchilabs/mantrae/server/internal/traefik"
 	"golang.org/x/sync/singleflight"
 	"gopkg.in/yaml.v3"
@@ -17,18 +18,20 @@ import (
 
 var (
 	updateGroup    singleflight.Group
-	lastUpdateTime sync.Map // map[string]time.Time
+	lastUpdateTime sync.Map
 )
 
-func scheduleUpdate(r *http.Request, q *db.Queries, profileID int64) {
+func scheduleUpdate(r *http.Request, app *config.App, profileID int64) {
 	instanceName := r.Header.Get(meta.HeaderTraefikName)
-	if instanceName == "" {
+	instanceURL := r.Header.Get(meta.HeaderTraefikURL)
+	if instanceName == "" || instanceURL == "" {
+		slog.Debug("Skipping traefik update, missing headers")
 		return
 	}
 
 	// Check if we recently updated this instance
 	if lastUpdate, ok := lastUpdateTime.Load(instanceName); ok {
-		if time.Since(lastUpdate.(time.Time)) < 30*time.Second {
+		if time.Since(lastUpdate.(time.Time)) < 5*time.Second {
 			return // Skip if updated recently
 		}
 	}
@@ -37,7 +40,20 @@ func scheduleUpdate(r *http.Request, q *db.Queries, profileID int64) {
 	go func() {
 		_, _, _ = updateGroup.Do(instanceName, func() (any, error) {
 			lastUpdateTime.Store(instanceName, time.Now())
-			traefik.UpdateTraefikInstance(r, q, profileID)
+			result, err := traefik.UpdateTraefikInstance(r, app.Conn.GetQuery(), profileID)
+			if err != nil {
+				slog.Error("failed to update traefik instance", "error", err)
+				return nil, nil
+			}
+
+			if result != nil {
+				app.Event.Broadcast(&mantraev1.EventStreamResponse{
+					Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
+					Data: &mantraev1.EventStreamResponse_TraefikInstance{
+						TraefikInstance: result.ToProto(),
+					},
+				})
+			}
 			return nil, nil
 		})
 	}()
@@ -61,7 +77,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		}
 
 		// Create or update traefik instance
-		scheduleUpdate(r, a.Conn.GetQuery(), profile.ID)
+		scheduleUpdate(r, a, profile.ID)
 
 		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), profile)
 		if err != nil {
