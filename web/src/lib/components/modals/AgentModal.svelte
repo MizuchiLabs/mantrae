@@ -8,7 +8,7 @@
 	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import { DateFormat } from '$lib/stores/common';
-	import { Check, Container, Copy, RotateCcw, X } from '@lucide/svelte';
+	import { Check, Container, Copy, RotateCcw, Trash2, X } from '@lucide/svelte';
 	import { agentClient, settingClient } from '$lib/api';
 	import { profile } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
@@ -17,6 +17,7 @@
 	import CopyInput from '../ui/copy-input/copy-input.svelte';
 	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte';
 	import { scale } from 'svelte/transition';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 
 	interface Props {
 		item: Agent;
@@ -273,7 +274,7 @@
 			<Separator />
 
 			<!-- Actions -->
-			<div class="flex gap-2">
+			<div class="flex items-center justify-between gap-2">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger>
 						{#snippet child({ props })}
@@ -391,9 +392,15 @@
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 
-				<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-					Delete Agent
-				</Button>
+				<ConfirmButton
+					title="Delete Agent"
+					description="This agent and all associated data will be permanently deleted."
+					confirmLabel="Delete"
+					cancelLabel="Cancel"
+					icon={Trash2}
+					class="text-destructive"
+					onclick={handleDelete}
+				/>
 			</div>
 		</div>
 	</Dialog.Content>

@@ -14,6 +14,8 @@
 	import TCPMiddlewareForm from '../forms/TCPMiddlewareForm.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { protocolTypes } from '$lib/types';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { Trash2 } from '@lucide/svelte';
 
 	interface Props {
 		item: Middleware;
@@ -116,9 +118,15 @@
 
 			<div class="flex w-full flex-row gap-2">
 				{#if item.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete
-					</Button>
+					<ConfirmButton
+						title="Delete Middleware"
+						description="This middleware will be permanently deleted."
+						confirmLabel="Delete"
+						cancelLabel="Cancel"
+						icon={Trash2}
+						class="text-destructive"
+						onclick={handleDelete}
+					/>
 				{/if}
 				<Button type="submit" class="flex-1" onclick={handleSubmit}>
 					{item.id ? 'Update' : 'Create'}

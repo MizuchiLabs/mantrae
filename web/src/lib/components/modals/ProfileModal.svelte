@@ -7,10 +7,11 @@
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import { profile as profileStore } from '$lib/stores/profile';
 	import { ConnectError } from '@connectrpc/connect';
-	import { RotateCcw } from '@lucide/svelte';
+	import { RotateCcw, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import CopyInput from '../ui/copy-input/copy-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 
 	interface Props {
 		item: Profile;
@@ -136,9 +137,15 @@
 
 			<div class="flex w-full flex-row gap-2">
 				{#if item.id}
-					<Button type="button" variant="destructive" onclick={deleteProfile} class="flex-1">
-						Delete
-					</Button>
+					<ConfirmButton
+						title="Delete Profile"
+						description="This profile and all associated data will be permanently deleted."
+						confirmLabel="Delete"
+						cancelLabel="Cancel"
+						icon={Trash2}
+						class="text-destructive"
+						onclick={deleteProfile}
+					/>
 				{/if}
 				<Button type="submit" class="flex-1">{item.id ? 'Update' : 'Create'}</Button>
 			</div>

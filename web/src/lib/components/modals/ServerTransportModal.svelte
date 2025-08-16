@@ -18,6 +18,8 @@
 	import TCPServerTransportForm from '$lib/components/forms/TCPServerTransportForm.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { protocolTypes } from '$lib/types';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { Trash2 } from '@lucide/svelte';
 
 	interface Props {
 		item: ServersTransport;
@@ -137,9 +139,15 @@
 
 			<div class="flex w-full flex-col gap-2 sm:flex-row">
 				{#if item.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete
-					</Button>
+					<ConfirmButton
+						title="Delete Server Transport"
+						description="This server transport will be permanently deleted."
+						confirmLabel="Delete"
+						cancelLabel="Cancel"
+						icon={Trash2}
+						class="text-destructive"
+						onclick={handleDelete}
+					/>
 				{/if}
 				<Button type="submit" class="flex-1 text-sm">
 					{item.id ? 'Update' : 'Create'}

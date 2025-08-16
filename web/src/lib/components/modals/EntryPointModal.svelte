@@ -10,6 +10,8 @@
 	import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
 	import { profile } from '$lib/stores/profile';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
+	import { Trash2 } from '@lucide/svelte';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 
 	interface Props {
 		item: EntryPoint;
@@ -123,9 +125,15 @@
 
 				<div class="flex w-full flex-row gap-2">
 					{#if item.id}
-						<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-							Delete
-						</Button>
+						<ConfirmButton
+							title="Delete EntryPoint"
+							description="This entry point will be permanently deleted."
+							confirmLabel="Delete"
+							cancelLabel="Cancel"
+							icon={Trash2}
+							class="text-destructive"
+							onclick={handleDelete}
+						/>
 					{/if}
 					<Button type="submit" class="flex-1">
 						{item.id ? 'Update' : 'Create'}

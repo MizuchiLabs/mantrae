@@ -1,4 +1,3 @@
-// Package build provides build information.
 package meta
 
 var (

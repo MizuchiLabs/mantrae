@@ -14,7 +14,7 @@
 	import { profile } from '$lib/stores/profile';
 	import { protocolTypes, unmarshalConfig } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, Server } from '@lucide/svelte';
+	import { Bot, Server, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import type {
 		Service as HTTPService,
@@ -33,6 +33,7 @@
 	import DnsProviderSelect from '../forms/DNSProviderSelect.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { dnsProviders } from '$lib/stores/realtime';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 
 	interface Props {
 		item: Router;
@@ -366,9 +367,15 @@
 
 			<div class="flex w-full flex-col gap-2 sm:flex-row">
 				{#if item.id}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete
-					</Button>
+					<ConfirmButton
+						title="Delete Router"
+						description="This router will be permanently deleted."
+						confirmLabel="Delete"
+						cancelLabel="Cancel"
+						icon={Trash2}
+						class="text-destructive"
+						onclick={handleDelete}
+					/>
 				{/if}
 				<Button type="submit" class="flex-1 text-sm" onclick={handleSubmit}>
 					{item.id ? 'Update' : 'Create'}

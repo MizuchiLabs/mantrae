@@ -11,6 +11,8 @@
 	import { toast } from 'svelte-sonner';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
+	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { Trash2 } from '@lucide/svelte';
 
 	interface Props {
 		item: User;
@@ -156,9 +158,15 @@
 			<!-- Actions -->
 			<div class="flex gap-2">
 				{#if item.id && !isSelf}
-					<Button type="button" variant="destructive" onclick={handleDelete} class="flex-1">
-						Delete User
-					</Button>
+					<ConfirmButton
+						title="Delete User"
+						description="This user will be permanently deleted."
+						confirmLabel="Delete"
+						cancelLabel="Cancel"
+						icon={Trash2}
+						class="text-destructive"
+						onclick={handleDelete}
+					/>
 				{/if}
 				<Button type="submit" class="flex-1">
 					{item.id ? 'Update' : 'Create'}
