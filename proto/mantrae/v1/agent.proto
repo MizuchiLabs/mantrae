@@ -87,9 +87,10 @@ message ListAgentsResponse {
 }
 
 message HealthCheckRequest {
-  string hostname = 3 [(buf.validate.field).string.min_len = 1];
-  string public_ip = 4 [(buf.validate.field).string.min_len = 1];
-  string private_ip = 5 [(buf.validate.field).string.min_len = 1];
+  string hostname = 1 [(buf.validate.field).string.min_len = 1];
+  string public_ip = 2 [(buf.validate.field).string.min_len = 1];
+  string private_ip = 3 [(buf.validate.field).string.min_len = 1];
+  repeated Container containers = 4;
 }
 message HealthCheckResponse {
   Agent agent = 1;

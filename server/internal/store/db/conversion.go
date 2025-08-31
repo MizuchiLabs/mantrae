@@ -195,18 +195,15 @@ func (u *User) ToProto() *mantraev1.User {
 }
 
 func (a *Agent) ToProto() *mantraev1.Agent {
-	var containers []*mantraev1.Container
+	containers := make([]*mantraev1.Container, 0)
 	if a.Containers != nil {
-		for _, c := range *a.Containers {
-			containers = append(containers, &mantraev1.Container{
-				Id:      c.ID,
-				Name:    c.Name,
-				Labels:  c.Labels,
-				Image:   c.Image,
-				Portmap: c.Portmap,
-				Status:  c.Status,
-				Created: SafeTimestamp(c.Created),
-			})
+		raw, ok := a.Containers.([]byte)
+		if !ok {
+			slog.Error("containers is not []byte", "type", fmt.Sprintf("%T", a.Containers))
+		} else {
+			if err := json.Unmarshal(raw, &containers); err != nil {
+				slog.Error("failed to unmarshal agent containers", "error", err)
+			}
 		}
 	}
 
@@ -249,7 +246,7 @@ func (t *TraefikInstance) ToProto() *mantraev1.TraefikInstance {
 		Name:        t.Name,
 		Url:         t.Url,
 		Tls:         t.Tls,
-		EntryPoints: MustMarshalSlice[schema.EntryPoint](*t.Entrypoints),
+		EntryPoints: MustMarshalSlice(*t.Entrypoints),
 		Overview:    MustMarshalStruct(t.Overview),
 		Config:      MustMarshalStruct(t.Config),
 		Version:     MustMarshalStruct(t.Version),
@@ -293,7 +290,23 @@ func (r *HttpRouter) FromProto(proto *mantraev1.Router) error {
 	r.Enabled = proto.Enabled
 	r.CreatedAt = TimePtr(proto.CreatedAt.AsTime())
 	r.UpdatedAt = TimePtr(proto.UpdatedAt.AsTime())
+	return nil
+}
 
+func (a *Agent) FromProto(pb *mantraev1.Agent) error {
+	raw, err := json.Marshal(pb.Containers)
+	if err != nil {
+		return fmt.Errorf("failed to marshal containers: %w", err)
+	}
+
+	a.ID = pb.Id
+	a.ProfileID = pb.ProfileId
+	a.Hostname = StringPtr(pb.Hostname)
+	a.PublicIp = StringPtr(pb.PublicIp)
+	a.PrivateIp = StringPtr(pb.PrivateIp)
+	a.ActiveIp = StringPtr(pb.ActiveIp)
+	a.Token = pb.Token
+	a.Containers = raw
 	return nil
 }
 

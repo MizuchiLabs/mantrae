@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
 const countAgents = `-- name: CountAgents :one
@@ -166,13 +164,13 @@ WHERE
 `
 
 type UpdateAgentParams struct {
-	Hostname   *string                 `json:"hostname"`
-	PublicIp   *string                 `json:"publicIp"`
-	PrivateIp  *string                 `json:"privateIp"`
-	ActiveIp   *string                 `json:"activeIp"`
-	Containers *schema.AgentContainers `json:"containers"`
-	Token      *string                 `json:"token"`
-	ID         string                  `json:"id"`
+	Hostname   *string     `json:"hostname"`
+	PublicIp   *string     `json:"publicIp"`
+	PrivateIp  *string     `json:"privateIp"`
+	ActiveIp   *string     `json:"activeIp"`
+	Containers interface{} `json:"containers"`
+	Token      *string     `json:"token"`
+	ID         string      `json:"id"`
 }
 
 func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {

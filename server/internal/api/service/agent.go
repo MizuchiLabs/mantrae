@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 
@@ -170,10 +171,16 @@ func (s *AgentService) HealthCheck(
 		PublicIp:  &req.Msg.PublicIp,
 		PrivateIp: &req.Msg.PrivateIp,
 	}
-
-	// Update ActiveIp if it's not set
+	// Update ip if it's not set
 	if agent.ActiveIp == nil && req.Msg.PrivateIp != "" {
 		params.ActiveIp = &req.Msg.PrivateIp
+	}
+
+	if req.Msg.Containers != nil {
+		params.Containers, err = json.Marshal(req.Msg.Containers)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
