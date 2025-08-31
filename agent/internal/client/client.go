@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"slices"
 	"time"
 
 	"connectrpc.com/connect"
@@ -17,8 +18,8 @@ import (
 
 type Agent struct {
 	config    *Config
+	job       *SyncJob
 	client    mantraev1connect.AgentServiceClient
-	activeIP  string
 	connected bool
 }
 
@@ -34,6 +35,7 @@ func NewAgent(cfg *Config) *Agent {
 	return &Agent{
 		config: cfg,
 		client: client,
+		job:    NewJob(cfg),
 	}
 }
 
@@ -41,23 +43,26 @@ func (a *Agent) Run(ctx context.Context) {
 	// Run initial health check
 	a.healthCheck(ctx)
 
+	// Sync existing containers on startup
+	if a.connected {
+		if err := a.initialSync(ctx); err != nil {
+			slog.Error("Failed to sync containers", "error", err)
+		}
+	}
+
 	healthTicker := time.NewTicker(a.config.HealthCheckInterval)
 	defer healthTicker.Stop()
 
-	updateTicker := time.NewTicker(a.config.UpdateInterval)
-	defer updateTicker.Stop()
+	// Start container watcher
+	containerEvents := make(chan collector.ContainerInfo, 100)
+	go collector.WatchContainers(ctx, containerEvents)
 
 	for {
 		select {
 		case <-healthTicker.C:
 			a.healthCheck(ctx)
-		case <-updateTicker.C:
-			if a.connected {
-				if err := a.syncContainers(ctx); err != nil {
-					slog.Error("Failed to sync containers", "error", err)
-					a.connected = false
-				}
-			}
+		case container := <-containerEvents:
+			a.handleEvents(ctx, container)
 		case <-ctx.Done():
 			slog.Info("Agent stopping...")
 			return
@@ -91,27 +96,54 @@ func (a *Agent) healthCheck(ctx context.Context) {
 
 	a.connected = true
 	if ip := resp.Msg.Agent.ActiveIp; ip != "" {
-		a.activeIP = ip
+		a.config.ActiveIP = ip
 	}
 
-	slog.Debug("Health check successful", "active_ip", a.activeIP)
+	slog.Debug("Health check successful", "ip", a.config.ActiveIP)
 }
 
-func (a *Agent) syncContainers(ctx context.Context) error {
+func (a *Agent) initialSync(ctx context.Context) error {
 	containers, err := collector.GetContainers()
 	if err != nil {
 		return fmt.Errorf("failed to get containers: %w", err)
 	}
 
-	syncer := newResourceSyncer(a.config, a.activeIP)
-
 	for _, container := range containers {
-		if err := syncer.processContainer(ctx, container); err != nil {
+		if err := a.job.processContainer(ctx, container); err != nil {
 			return fmt.Errorf("failed to process container %s: %w", container.ID[:12], err)
 		}
 	}
 
-	return syncer.cleanup(ctx)
+	return a.job.cleanup(ctx)
+}
+
+func (a *Agent) handleEvents(ctx context.Context, container collector.ContainerInfo) {
+	if container.Action == "" || !a.connected {
+		return
+	}
+	if slices.Contains(collector.SyncActions, container.Action) {
+		if err := a.job.processContainer(ctx, container); err != nil {
+			slog.Error(
+				"Failed to sync container on start",
+				"container",
+				container.ID[:12],
+				"error",
+				err,
+			)
+		}
+	}
+	if slices.Contains(collector.CleanupActions, container.Action) {
+		a.job.removeContainer(container.ID)
+		if err := a.job.cleanup(ctx); err != nil {
+			slog.Error(
+				"Failed to cleanup container on stop/destroy",
+				"container",
+				container.ID[:12],
+				"error",
+				err,
+			)
+		}
+	}
 }
 
 func authInterceptor(cfg *Config) connect.UnaryInterceptorFunc {

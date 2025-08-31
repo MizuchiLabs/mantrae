@@ -15,6 +15,7 @@ type Config struct {
 	ServerURL           string
 	ProfileID           int64
 	AgentID             string
+	ActiveIP            string
 	HealthCheckInterval time.Duration
 	UpdateInterval      time.Duration
 	ConnectionTimeout   time.Duration
@@ -38,6 +39,7 @@ func Load() (*Config, error) {
 		ServerURL:           util.CleanURL(host),
 		ProfileID:           profileID,
 		AgentID:             agentID,
+		ActiveIP:            "",
 		HealthCheckInterval: 15 * time.Second,
 		UpdateInterval:      10 * time.Second,
 		ConnectionTimeout:   10 * time.Second,
