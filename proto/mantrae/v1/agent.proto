@@ -57,10 +57,7 @@ message CreateAgentResponse {
 
 message UpdateAgentRequest {
   string id = 1 [(buf.validate.field).string.min_len = 1];
-  optional string ip = 2 [
-    (buf.validate.field).string.ip = true,
-    (buf.validate.field).ignore = IGNORE_UNSPECIFIED
-  ];
+  optional string ip = 2 [(buf.validate.field).string.ip = true];
   optional bool rotate_token = 3;
 }
 message UpdateAgentResponse {
