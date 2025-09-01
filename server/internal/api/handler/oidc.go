@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
@@ -201,12 +202,20 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 			)
 			return
 		}
+		if user.ID == "" {
+			http.Error(w, "Failed to process user", http.StatusInternalServerError)
+			return
+		}
 
 		// Generate JWT
 		expirationTime := time.Now().Add(24 * time.Hour)
 		jwtToken, err := meta.EncodeUserToken(user.ID, a.Secret, expirationTime)
 		if err != nil {
-			http.Error(w, "Failed to generate JWT", http.StatusInternalServerError)
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to generate JWT: %v", err),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -332,8 +341,14 @@ func findOrCreateOIDCUser(
 	}
 
 	if user == nil {
+		id, err := uuid.NewV7()
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate UUID: %w", err)
+		}
+
 		// Ensure username is unique
 		params := db.CreateUserParams{
+			ID:       id.String(),
 			Username: generateUniqueUsername(ctx, q, userInfo),
 			Email:    &userInfo.Email,
 		}
