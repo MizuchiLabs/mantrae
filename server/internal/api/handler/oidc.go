@@ -260,7 +260,7 @@ func getOIDCConfig(
 		return nil, nil, errors.New("OIDC issuer URL not configured")
 	}
 
-	provider, err := oidc.NewProvider(ctx, strings.TrimSuffix(issuerURL, "/"))
+	provider, err := oidc.NewProvider(ctx, strings.TrimSpace(issuerURL))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create OIDC provider: %w", err)
 	}

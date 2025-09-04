@@ -235,7 +235,7 @@ func IsValidIPv6(ip string) bool {
 }
 
 func CleanURL(url string) string {
-	url = strings.TrimSuffix(url, "/")
+	url = strings.TrimSpace(url)
 	if !strings.HasPrefix(url, "http://") &&
 		!strings.HasPrefix(url, "https://") {
 		url = "http://" + url
