@@ -85,6 +85,18 @@ tasks:
       - pnpm install
       - pnpm build
 
+  cleanup:tags:
+    desc: "Delete all tags older than cutoff (local + remote)"
+    vars:
+      CUTOFF: '{{.CUTOFF | default "v0.5.0"}}'
+    cmds:
+      - |
+        for tag in $(git tag | sort -V | awk '$1 < "{{.CUTOFF}}"'); do
+          echo "Deleting tag $tag"
+          git tag -d "$tag"
+          git push --delete origin "$tag"
+        done
+
   # 󱓞  Release
   release:
     desc: Build and release Go binary
