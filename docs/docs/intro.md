@@ -25,4 +25,4 @@ sidebar_position: 1
 
 ## Getting Started
 
-To install and set up Mantrae, refer to our [Installation Guide](./installation).
+To install and set up Mantrae, refer to our [Quickstart Guide](./quickstart.md).

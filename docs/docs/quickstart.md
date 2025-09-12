@@ -17,25 +17,34 @@ Get Mantrae up and running quickly with this guide. This will walk you through i
 First, generate a secure secret for Mantrae:
 
 ```bash
-openssl rand -base64 32
+openssl rand -hex 16
 ```
 
 Save this secret for the next step. It has to be either of size 16, 24, or 32 bytes.
 
 ## Step 2: Run Mantrae
 
-### Using Docker (Recommended)
+### Using the Binary
+
+1. Visit the [releases page](https://github.com/mizuchilabs/mantrae/releases) to download the latest Mantrae binary for your platform.
+2. Run the binary with:
+   ```bash
+   export SECRET=<your_secret>
+   export ADMIN_PASSWORD=<your_admin_password>
+   ./mantrae
+   ```
+### Using Docker
 
 ```bash
 docker run --name mantrae \
-    -e SECRET=your-generated-secret \
-    -e ADMIN_PASSWORD=your-admin-password \
-    -p 3000:3000 \
-    -v mantrae-data:/app/data \
-    ghcr.io/mizuchilabs/mantrae:latest
+   -e SECRET=your-generated-secret \
+   -e ADMIN_PASSWORD=your-admin-password \
+   -p 3000:3000 \
+   -v mantrae-data:/app/data \
+   ghcr.io/mizuchilabs/mantrae:latest
 ```
 
-### Using Docker Compose
+### Using Docker Compose (Recommended)
 
 Create a `docker-compose.yml` file:
 
@@ -50,11 +59,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - mantrae-data:/app/data
+      - ./mantrae:/app/data
     restart: unless-stopped
-
-volumes:
-  mantrae-data:
 ```
 
 Then run:
@@ -72,8 +78,6 @@ Open your browser and navigate to:
 Log in with the username `admin` and your admin password.
 - Username: `admin`
 - Password: `your-admin-password`
-
-**Important**: Change the default password immediately after first login!
 
 ## Step 4: Use the default profile or create your own
 
@@ -123,7 +127,7 @@ services:
 2. Click "Add Router"
 3. Configure your router:
    - Name: `whoami`
-   - Rule: `Host(\`whoami.local\`)`
+   - Rule: Host(\`whoami.local\`)
    - Service: Create a new service pointing to your backend
    - Optional: Add middlewares or entry points
 4. Save the router
@@ -146,20 +150,3 @@ This should return the JSON configuration that Traefik is using.
 - [Configure DNS Providers](./usage/dns) for automatic certificate management
 - [Explore Backups](./usage/backups) to protect your configurations
 
-## Troubleshooting
-
-### "Invalid token" errors
-
-Ensure that the token in your Traefik configuration matches the profile token in Mantrae.
-
-### Traefik not picking up changes
-
-- Check that Traefik can reach the Mantrae server
-- Verify the poll interval is reasonable (5-30 seconds)
-- Check Traefik logs for any error messages
-
-### Can't access the web interface
-
-- Ensure the port mapping is correct in your Docker configuration
-- Check that no other service is using port 3000
-- Verify the container is running with `docker ps`
