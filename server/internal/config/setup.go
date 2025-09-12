@@ -40,7 +40,7 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	if len(app.Secret) < 32 {
+	if len(app.Secret) != 16 && len(app.Secret) != 24 && len(app.Secret) != 32 {
 		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes")
 	}
 
