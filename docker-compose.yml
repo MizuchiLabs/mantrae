@@ -6,7 +6,7 @@ services:
     container_name: mantrae
     environment:
       - ADMIN_PASSWORD=<super secret password>
-      - SECRET=<secret> # generate a secret with openssl rand -base64 32
+      - SECRET=<secret> # generate a secret with openssl rand -hex 16
     volumes:
       - ./mantrae:/data # base directory used
     ports:
