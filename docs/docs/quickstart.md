@@ -40,7 +40,7 @@ docker run --name mantrae \
    -e SECRET=your-generated-secret \
    -e ADMIN_PASSWORD=your-admin-password \
    -p 3000:3000 \
-   -v mantrae-data:/app/data \
+   -v ./mantrae:/data \
    ghcr.io/mizuchilabs/mantrae:latest
 ```
 
@@ -59,7 +59,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./mantrae:/app/data
+      - ./mantrae:/data
     restart: unless-stopped
 ```
 
