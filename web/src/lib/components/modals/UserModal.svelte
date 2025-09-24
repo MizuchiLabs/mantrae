@@ -31,8 +31,8 @@
 				payload.id = item.id;
 				payload.username = item.username;
 				payload.email = item.email;
-				if (item.password && item.password.length > 0) {
-					payload.password = item.password;
+				if (password && password.length > 0) {
+					payload.password = password;
 				}
 				await userClient.updateUser(payload);
 				toast.success(`User ${item.username} updated successfully.`);

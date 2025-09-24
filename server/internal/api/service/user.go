@@ -276,7 +276,7 @@ func (s *UserService) UpdateUser(
 
 	// Update password if provided
 	if req.Msg.Password != nil {
-		hash, err := util.HashPassword(*req.Msg.Password)
+		hash, err := util.HashPassword(req.Msg.GetPassword())
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
