@@ -111,20 +111,13 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) registerServices() {
-	// Protovalidator
-	validator, err := validate.NewInterceptor()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Common interceptors
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
 			middlewares.Logging(),
 			middlewares.NewAuthInterceptor(s.app),
 			middlewares.NewAuditInterceptor(s.app),
-			validator,
+			validate.NewInterceptor(),
 		),
 		connect.WithRecover(
 			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {

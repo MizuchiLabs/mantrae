@@ -105,13 +105,10 @@ func (s *HTTPRouterOps) Create(
 	}
 	router := result.ToProto()
 
-	dnsProviders, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, result.ID)
-	if err != nil {
-		return nil, err
-	}
-	router.DnsProviders = make([]*mantraev1.DnsProvider, 0, len(dnsProviders))
-	for _, p := range dnsProviders {
-		router.DnsProviders = append(router.DnsProviders, p.ToProto())
+	// Add default DNS provider
+	dnsProvider, err := s.app.Conn.GetQuery().GetDefaultDNSProvider(ctx)
+	if err == nil {
+		router.DnsProviders = append(router.DnsProviders, dnsProvider.ToProto())
 	}
 
 	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
