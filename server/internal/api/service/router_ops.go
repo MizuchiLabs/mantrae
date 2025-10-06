@@ -99,15 +99,22 @@ func (s *HTTPRouterOps) Create(
 	}
 	params.Config.Service = params.Name
 
+	// Add default DNS provider
+
 	result, err := s.app.Conn.GetQuery().CreateHttpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	router := result.ToProto()
 
-	// Add default DNS provider
 	dnsProvider, err := s.app.Conn.GetQuery().GetDefaultDNSProvider(ctx)
 	if err == nil {
+		if err := s.app.Conn.GetQuery().CreateHttpRouterDNSProvider(ctx, db.CreateHttpRouterDNSProviderParams{
+			HttpRouterID:  router.Id,
+			DnsProviderID: dnsProvider.ID,
+		}); err != nil {
+			return nil, err
+		}
 		router.DnsProviders = append(router.DnsProviders, dnsProvider.ToProto())
 	}
 
