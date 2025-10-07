@@ -14,8 +14,6 @@ Mantrae currently supports the following DNS providers:
 - **PowerDNS**
 - **Technitium**
 
-Each provider can be configured within a profile, allowing you to use different DNS providers for different environments.
-
 ## Adding a DNS Provider
 
 To add a DNS provider:
