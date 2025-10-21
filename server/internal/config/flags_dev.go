@@ -14,13 +14,15 @@ import (
 )
 
 type Flags struct {
-	Version bool
-	Update  bool
-	Squash  bool
-	Zod     bool
+	Version       bool
+	Update        bool
+	Squash        bool
+	Zod           bool
+	ResetPassword string
+	ResetUser     string
 }
 
-func ParseFlags() {
+func ParseFlags() *Flags {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
@@ -45,4 +47,6 @@ func ParseFlags() {
 		os.Exit(1)
 	}
 	build.Update(f.Update)
+
+	return f
 }

@@ -20,7 +20,7 @@ func main() {
 	app, err := config.Setup(ctx)
 	if err != nil {
 		slog.Error("Setup failed", "error", err)
-		return
+		os.Exit(1)
 	}
 
 	// Start background jobs

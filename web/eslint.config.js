@@ -1,12 +1,17 @@
+import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
-import ts from 'typescript-eslint';
-import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
+import svelte from 'eslint-plugin-svelte';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 
-/** @type {import('eslint').Linter.Config[]} */
-export default [
+const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
+
+export default defineConfig(
+	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
@@ -21,6 +26,15 @@ export default [
 		},
 		rules: {
 			'no-unused-vars': 'off',
+			'svelte/no-navigation-without-resolve': [
+				'error',
+				{
+					ignoreGoto: true,
+					ignoreLinks: true,
+					ignorePushState: false,
+					ignoreReplaceState: false
+				}
+			],
 			'@typescript-eslint/no-unused-vars': [
 				'warn',
 				{
@@ -43,12 +57,6 @@ export default [
 		}
 	},
 	{
-		ignores: [
-			'build/',
-			'.svelte-kit/',
-			'dist/',
-			'src/lib/components/gen/',
-			'src/lib/components/ui/'
-		]
+		ignores: ['src/lib/gen/**/*.ts', '**/*_pb.ts']
 	}
-];
+);

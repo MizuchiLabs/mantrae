@@ -3,6 +3,8 @@ package config
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -32,7 +34,7 @@ func Setup(ctx context.Context) (*App, error) {
 	logger.Setup()
 
 	// Read flags
-	ParseFlags()
+	flags := ParseFlags()
 
 	// Read environment variables
 	app, err := env.ParseAs[App]()
@@ -52,6 +54,8 @@ func Setup(ctx context.Context) (*App, error) {
 	app.BM.Start(ctx)
 
 	app.Event = event.NewBroadcaster(ctx)
+
+	app.resetPassword(ctx, flags)
 
 	return &app, app.setupDefaultData(ctx)
 }
@@ -139,4 +143,35 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (a *App) resetPassword(ctx context.Context, flags *Flags) {
+	if flags.ResetPassword == "" {
+		return
+	}
+
+	user, err := a.Conn.GetQuery().GetUserByUsername(ctx, flags.ResetUser)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			slog.Error("failed to get user", "user", flags.ResetUser)
+		} else {
+			slog.Error("failed to get user", "error", err)
+		}
+		os.Exit(1)
+	}
+	hash, err := util.HashPassword(flags.ResetPassword)
+	if err != nil {
+		slog.Error("failed to hash password", "error", err)
+		os.Exit(1)
+	}
+	if err = a.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:       user.ID,
+		Password: hash,
+	}); err != nil {
+		slog.Error("failed to update password for user", "user", flags.ResetUser, "error", err)
+		os.Exit(1)
+	}
+
+	slog.Info("Reset successful!", "user", flags.ResetUser, "password", flags.ResetPassword)
+	os.Exit(1)
 }

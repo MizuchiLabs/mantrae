@@ -14,16 +14,20 @@ import (
 )
 
 type Flags struct {
-	Version bool
-	Update  bool
-	Squash  bool
-	Zod     bool
+	Version       bool
+	Update        bool
+	Squash        bool
+	Zod           bool
+	ResetPassword string
+	ResetUser     string
 }
 
-func ParseFlags() {
+func ParseFlags() *Flags {
 	f := &Flags{}
 	flag.BoolVar(&f.Version, "version", false, "Print version and exit")
 	flag.BoolVar(&f.Update, "update", false, "Update the application")
+	flag.StringVar(&f.ResetPassword, "reset-password", "", "Set a new admin password")
+	flag.StringVar(&f.ResetUser, "reset-user", "admin", "Username to reset password for")
 
 	flag.Parse()
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -34,4 +38,5 @@ func ParseFlags() {
 	}
 
 	build.Update(f.Update)
+	return f
 }
