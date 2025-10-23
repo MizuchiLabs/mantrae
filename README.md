@@ -22,10 +22,23 @@
 ## 🚧 Disclaimer 🚧
 
 This project is still early in development and is not ready for production use. Expect a lot of breaking changes in meantime until the first stable release.
-Also you can try out nightly builds with the `nightly` tag. But beware, these builds will break your database! 
+Also you can try out nightly builds with the `nightly` tag. But beware, these builds will break your database!
+
 ### Documentation
 
 Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
+
+### Installation
+
+You can install Mantrae using the [install.sh](install.sh) script. It will download the latest release and install it in your `~/.local/bin` directory.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mizuchilabs/mantrae/main/install.sh | sh
+```
+
+Or you can download the latest release from the [releases](https://github.com/mizuchilabs/mantrae/releases) page and extract it to your `~/.local/bin` directory.
+
+Using docker/docker-compose is preferred for production environments.
 
 ### Screenshot
 

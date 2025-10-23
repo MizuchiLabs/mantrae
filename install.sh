@@ -21,40 +21,47 @@ main() {
 
    platform="$(uname -s)"
    arch="$(uname -m)"
-   temp="$(mktemp -t "$binary-XXXXXX")"
+   tempdir="$(mktemp -d -t "${binary}-XXXXXX")"
    latest=$(curl -fsSL "${REPO_API}/latest" | grep -o '"tag_name":.*' | cut -d '"' -f 4)
 
    case "$platform" in
    Darwin) platform="macos" ;;
    Linux) platform="linux" ;;
-   *)
-      echo "Unsupported platform: $platform"
-      exit 1
-      ;;
+   *) echo "Unsupported platform: $platform" && exit 1 ;;
    esac
 
    case "$arch" in
    arm64* | aarch64*) arch="arm64" ;;
    x86_64* | amd64*) arch="amd64" ;;
    i?86*) arch="386" ;;
-   *)
-      echo "Unsupported architecture: $arch"
-      exit 1
-      ;;
+   *) echo "Unsupported architecture: $arch" && exit 1 ;;
    esac
 
-   url="${REPO}/${latest}/${binary}_${platform}_${arch}"
+   # The filename matches goreleaser pattern: binary_platform_arch.tar.gz
+   filename="${binary}_${platform}_${arch}.tar.gz"
+   url="${REPO}/${latest}/${filename}"
 
-   echo "Downloading $binary from $url"
-   download "$url" "$temp"
+   echo "Downloading $filename from $url"
+   download "$url" "$tempdir/$filename"
 
-   # Ensure the file is not empty
-   if [ ! -s "$temp" ]; then
+   if [ ! -s "$tempdir/$filename" ]; then
       echo "Download failed: file is empty"
+      rm -rf "$tempdir"
       exit 1
    fi
 
-   install_binary "$temp" "$binary"
+   echo "Extracting archive..."
+   tar -xzf "$tempdir/$filename" -C "$tempdir"
+
+   # Expect the extracted binary to have the same name
+   if [ ! -f "$tempdir/$binary" ]; then
+      echo "Error: $binary not found inside archive"
+      rm -rf "$tempdir"
+      exit 1
+   fi
+
+   install_binary "$tempdir/$binary" "$binary"
+   rm -rf "$tempdir"
    post_install "$binary"
 }
 
