@@ -88,7 +88,7 @@ tasks:
   cleanup:tags:
     desc: "Delete all tags older than cutoff (local + remote)"
     vars:
-      CUTOFF: '{{.CUTOFF | default "v0.6.0"}}'
+      CUTOFF: '{{.CUTOFF | default "v0.7.0"}}'
     cmds:
       - |
         for tag in $(git tag | sort -V | awk '$1 < "{{.CUTOFF}}"'); do
