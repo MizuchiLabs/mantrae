@@ -10,10 +10,12 @@ Mantrae provides several command-line flags and environment variables to configu
 
 You can use the following flags to customize the behavior of Mantrae:
 
-| Flag | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
-| `-version` | `bool` | `false` | Prints the current version of Mantrae and exits. |
-| `-update` | `bool` | `false` | Updates Mantrae to the latest version. (Doesn't work inside a container) |
+| Flag              | Type     | Default | Description                                                              |
+| ----------------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `-version`        | `bool`   | `false` | Prints the current version of Mantrae and exits.                         |
+| `-update`         | `bool`   | `false` | Updates Mantrae to the latest version. (Doesn't work inside a container) |
+| `-reset-password` | `string` |         | Resets the admin password to the specified value.                        |
+| `-reset-user`     | `string` | `admin` | Choose the username to reset the password for.                           |
 
 ## Environment Variables
 
@@ -21,12 +23,12 @@ Environment variables can be used to set up Mantrae and configure its settings. 
 
 ### Core Configuration
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `SECRET` |         | Secret key required for secure access (required) |
-| `ADMIN_PASSWORD` |  | Admin password for the web interface (will be auto-generated if not set) |
-| `LOG_LEVEL` | `info` | Logging level (debug, info, warn, error) |
-| `LOG_FORMAT` | `text` | Log format (text, json) |
+| Variable         | Default | Description                                                              |
+| ---------------- | ------- | ------------------------------------------------------------------------ |
+| `SECRET`         |         | Secret key required for secure access (required)                         |
+| `ADMIN_PASSWORD` |         | Admin password for the web interface (will be auto-generated if not set) |
+| `LOG_LEVEL`      | `info`  | Logging level (debug, info, warn, error)                                 |
+| `LOG_FORMAT`     | `text`  | Log format (text, json)                                                  |
 
 ### Important Notes
 

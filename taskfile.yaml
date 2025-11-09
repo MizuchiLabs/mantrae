@@ -40,9 +40,16 @@ tasks:
     silent: false
 
   agent:
-    desc: Run Go agent
+    desc: Run agent
     cmds:
       - go run agent/cmd/main.go
+    silent: false
+
+  docs:
+    desc: Run docs
+    cmds:
+      - pnpm run start
+    dir: docs
     silent: false
 
   test:
@@ -58,6 +65,7 @@ tasks:
     cmds:
       - go get -u ./...
       - cd web && pnpm update --latest
+      - cd docs && pnpm update --latest
 
   #  Generate code
   gen:

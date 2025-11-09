@@ -15,7 +15,6 @@ const config: Config = {
   organizationName: "mizuchilabs",
   projectName: "mantrae",
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
   deploymentBranch: "gh-pages",
 
   i18n: {
@@ -128,3 +127,4 @@ const config: Config = {
 };
 
 export default config;
+

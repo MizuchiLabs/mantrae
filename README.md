@@ -44,10 +44,14 @@ Using docker/docker-compose is preferred for production environments.
 
 ![Dashboard](./.github/screenshots/dashboard.png "Dashboard")
 
-## Roadmap
+## Command-Line Arguments for the Server
 
-- Add support for more DNS providers
-- User management and permissions system
+| Flag              | Type     | Default | Description                                                              |
+| ----------------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `-version`        | `bool`   | `false` | Prints the current version of Mantrae and exits.                         |
+| `-update`         | `bool`   | `false` | Updates Mantrae to the latest version. (Doesn't work inside a container) |
+| `-reset-password` | `string` |         | Resets the admin password to the specified value.                        |
+| `-reset-user`     | `string` | `admin` | Choose the username to reset the password for.                           |
 
 ## Contributing
 
