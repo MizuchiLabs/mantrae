@@ -7,50 +7,25 @@ assignees: d34dscene
 
 ---
 
-### 🐛 Describe the bug
+<!-- ⚠️ STOP. READ THIS FIRST. 
+If you’re just stuck (e.g. can’t log in, config confusion, Docker woes) — this is *not* a bug. 
+Go to Discussions instead. Issues are for reproducible code problems only.
+-->
 
-A clear and concise description of what went wrong. Bonus points if you also describe *what you thought should happen* in one sentence.
+### What happened?
 
----
+<!-- Describe what went wrong and what you expected instead. -->
 
-### 🔄 Steps to reproduce
+### How to reproduce
 
-Help us recreate the bug. The clearer, the faster we fix it.
+<!-- Steps or commands to make it happen again. Minimal example if possible. -->
 
----
+### Environment
 
-### ✅ Expected behavior
+- OS:  
+- App version / commit:  
+- How you ran it: Docker / Binary / Other  
 
-What *should* have happened instead?
+### Logs or errors
 
----
-
-### 📸 Logs / Screenshots
-
-* Screenshots if it’s visual.
-* Logs, error messages, or stack traces if it’s CLI/server related.
-  (Use fenced code blocks for logs: \`\`\`bash … \`\`\`)
-
----
-
-### 🖥️ Environment
-
-Please complete the relevant section:
-
-**Desktop / Server**
-
-* OS & version: (e.g., Fedora 39, Ubuntu 22.04)
-* Go version (if relevant):
-* Project version / commit hash:
-
----
-
-### ⚙️ Config details
-
-If config or environment variables matter, share the minimal snippet to reproduce (sanitize secrets).
-
----
-
-### ➕ Additional context
-
-Anything else we should know? Links, related issues, “works on my machine” memes, etc.
+<!-- If config or environment variables matter, share the minimal snippet to reproduce (sanitize secrets) -->
