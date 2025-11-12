@@ -3,12 +3,12 @@ info:
   title: Mantrae
   description: |
     Mantrae API Documentation
-    For more information, visit [Mantrae Documentation](https://mizuchi.dev/mantrae).
+    For more information, visit the [Documentation](https://mizuchilabs.github.io/mantrae/)
   version: v1.0.0
   contact:
     name: Mantrae Support
-    url: https://mizuchi.dev/mantrae
-    email: admin@mizuchi.dev
+    url: https://mizuchilabs.github.io/mantrae/
+    email: support@mizuchi.dev
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

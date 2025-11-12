@@ -9,7 +9,7 @@ const config: Config = {
    tagline:
       "Simple yet powerful Traefik manager, enhanced with advanced features.",
    favicon: "img/favicon.ico",
-   url: "https://mizuchi.dev/",
+   url: "https://mizuchilabs.github.io/mantrae/",
    baseUrl: "/mantrae/",
    trailingSlash: false,
    organizationName: "mizuchilabs",
