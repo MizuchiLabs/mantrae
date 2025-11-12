@@ -49,4 +49,5 @@ jobs:
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v8
         with:
+          skip-cache: true
           args: --timeout=10m
