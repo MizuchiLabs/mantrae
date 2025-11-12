@@ -3,12 +3,10 @@ package config
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
-	"os"
+	"slices"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
@@ -21,20 +19,29 @@ import (
 	"github.com/mizuchilabs/mantrae/server/internal/store/db"
 )
 
+type EnvConfig struct {
+	Secret        string `env:"SECRET"`
+	AdminPassword string `env:"ADMIN_PASSWORD"`
+	AdminEmail    string `env:"ADMIN_EMAIL"`
+	BaseURL       string `env:"BASE_URL"       envDefault:"http://localhost:3000"`
+	FrontendURL   string `env:"FRONTEND_URL"   envDefault:"http://localhost:5173"`
+	Debug         bool   `env:"DEBUG"          envDefault:"false"`
+}
+
 type App struct {
-	Secret string `env:"SECRET"`
-	Conn   *store.Connection
-	BM     *backup.BackupManager
-	SM     *settings.SettingsManager
-	Event  *event.Broadcaster
+	// Environment variables
+	EnvConfig
+
+	// App state
+	Conn  *store.Connection
+	BM    *backup.BackupManager
+	SM    *settings.SettingsManager
+	Event *event.Broadcaster
 }
 
 func Setup(ctx context.Context) (*App, error) {
 	// Setup fancy logger
 	logger.Setup()
-
-	// Read flags
-	flags := ParseFlags()
 
 	// Read environment variables
 	app, err := env.ParseAs[App]()
@@ -42,8 +49,8 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	if len(app.Secret) != 16 && len(app.Secret) != 24 && len(app.Secret) != 32 {
-		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes")
+	if !slices.Contains([]int{16, 24, 32}, len(app.Secret)) {
+		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes, is %d", len(app.Secret))
 	}
 
 	app.Conn = store.NewConnection("")
@@ -54,8 +61,6 @@ func Setup(ctx context.Context) (*App, error) {
 	app.BM.Start(ctx)
 
 	app.Event = event.NewBroadcaster(ctx)
-
-	app.resetPassword(ctx, flags)
 
 	return &app, app.setupDefaultData(ctx)
 }
@@ -71,8 +76,8 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 
 	if len(users) == 0 {
 		// Generate password if not provided
-		password, ok := os.LookupEnv("ADMIN_PASSWORD")
-		if !ok {
+		password := a.AdminPassword
+		if password == "" {
 			password = util.GenPassword(32)
 			slog.Info("Generated new admin", "password", password)
 		}
@@ -82,8 +87,8 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 			return fmt.Errorf("failed to hash password: %w", err)
 		}
 
-		email, ok := os.LookupEnv("ADMIN_EMAIL")
-		if !ok {
+		email := a.AdminEmail
+		if email == "" {
 			email = "admin@localhost"
 		}
 
@@ -145,33 +150,42 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) resetPassword(ctx context.Context, flags *Flags) {
-	if flags.ResetPassword == "" {
-		return
-	}
+// --- BaseURL helpers ---
 
-	user, err := a.Conn.GetQuery().GetUserByUsername(ctx, flags.ResetUser)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			slog.Error("failed to get user", "user", flags.ResetUser)
-		} else {
-			slog.Error("failed to get user", "error", err)
-		}
-		os.Exit(1)
-	}
-	hash, err := util.HashPassword(flags.ResetPassword)
-	if err != nil {
-		slog.Error("failed to hash password", "error", err)
-		os.Exit(1)
-	}
-	if err = a.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
-		ID:       user.ID,
-		Password: hash,
-	}); err != nil {
-		slog.Error("failed to update password for user", "user", flags.ResetUser, "error", err)
-		os.Exit(1)
-	}
+func (c App) BaseHost() string {
+	host, _ := util.ParseHostPort(c.BaseURL)
+	return host
+}
 
-	slog.Info("Reset successful!", "user", flags.ResetUser, "password", flags.ResetPassword)
-	os.Exit(1)
+func (c App) BasePort() string {
+	_, port := util.ParseHostPort(c.BaseURL)
+	return port
+}
+
+func (c App) BaseDomain() string {
+	u, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return ""
+	}
+	return u.Host // includes port if present
+}
+
+// --- FrontendURL helpers ---
+
+func (c App) FrontendHost() string {
+	host, _ := util.ParseHostPort(c.FrontendURL)
+	return host
+}
+
+func (c App) FrontendPort() string {
+	_, port := util.ParseHostPort(c.FrontendURL)
+	return port
+}
+
+func (c App) FrontendDomain() string {
+	u, err := url.Parse(c.FrontendURL)
+	if err != nil {
+		return ""
+	}
+	return u.Host
 }

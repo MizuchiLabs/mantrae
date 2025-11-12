@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -216,6 +217,34 @@ func GetClientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return ip
+}
+
+// ParseHostPort parses a URL string and returns the host and port.
+func ParseHostPort(rawURL string) (host, port string) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", ""
+	}
+
+	h := u.Host
+	if strings.Contains(h, ":") {
+		host, port, err = net.SplitHostPort(h)
+		if err != nil {
+			return h, ""
+		}
+		return host, port
+	}
+	return h, ""
+}
+
+// OriginOnly returns the origin of a URL, without the path, query, or fragment.
+func OriginOnly(urlStr string) string {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return urlStr
+	}
+	u.Path, u.RawQuery, u.Fragment = "", "", ""
+	return strings.TrimSuffix(u.String(), "/")
 }
 
 func IsValidIPv4(ip string) bool {

@@ -56,7 +56,5 @@ export default defineConfig(
 			}
 		}
 	},
-	{
-		ignores: ['src/lib/gen/**/*.ts', '**/*_pb.ts']
-	}
+	{ ignores: ['src/lib/gen/**', '**/*_pb.ts'] }
 );

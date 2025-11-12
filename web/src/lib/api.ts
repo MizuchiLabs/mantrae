@@ -17,7 +17,7 @@ import { ServersTransportService } from './gen/mantrae/v1/servers_transport_pb';
 import { TraefikInstanceService } from './gen/mantrae/v1/traefik_instance_pb';
 import { toast } from 'svelte-sonner';
 import { profile } from './stores/profile';
-import { baseURL } from './stores/common';
+import { BackendURL } from './stores/common';
 
 export function useClient<T extends DescService>(
 	service: T,
@@ -31,10 +31,10 @@ export function useClient<T extends DescService>(
 		});
 	};
 
-	if (!baseURL.value) throw new Error('Base URL not set');
+	if (!BackendURL) throw new Error('Base URL not set');
 
 	const transport = createConnectTransport({
-		baseUrl: baseURL.value,
+		baseUrl: BackendURL,
 		fetch: wrappedFetch
 	});
 	return createClient(service, transport);
@@ -43,9 +43,9 @@ export function useClient<T extends DescService>(
 // Basic health check function
 export async function checkHealth(customFetch?: typeof fetch): Promise<boolean> {
 	try {
-		if (!baseURL.value) throw new Error('Base URL not set');
+		if (!BackendURL) throw new Error('Backend URL not set');
 		if (!customFetch) customFetch = fetch;
-		const res = await customFetch(`${baseURL.value}/healthz`, {
+		const res = await customFetch(`${BackendURL}/healthz`, {
 			method: 'GET'
 		});
 		return res.ok;
@@ -55,7 +55,7 @@ export async function checkHealth(customFetch?: typeof fetch): Promise<boolean> 
 }
 
 export function handleOIDCLogin() {
-	window.location.href = `${baseURL.value}/oidc/login`;
+	window.location.href = `${BackendURL}/oidc/login`;
 }
 
 export async function upload(input: HTMLInputElement | null, endpoint: string) {
@@ -64,7 +64,7 @@ export async function upload(input: HTMLInputElement | null, endpoint: string) {
 	const body = new FormData();
 	body.append('file', input.files[0]);
 
-	const response = await fetch(`${baseURL.value}/upload/${endpoint}`, {
+	const response = await fetch(`${BackendURL}/upload/${endpoint}`, {
 		method: 'POST',
 		body,
 		credentials: 'include'
@@ -85,7 +85,7 @@ export async function getConfig(format: string) {
 	}
 
 	try {
-		const response = await fetch(`${baseURL.value}/api/${profile.name}?token=${profile.token}`, {
+		const response = await fetch(`${BackendURL}/api/${profile.name}?token=${profile.token}`, {
 			headers
 		});
 		if (!response.ok) return '';

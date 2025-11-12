@@ -28,6 +28,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/traefik/paerser v0.2.2
 	github.com/traefik/traefik/v3 v3.6.0
+	github.com/urfave/cli/v3 v3.6.0
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.43.0
 	golang.org/x/net v0.46.0

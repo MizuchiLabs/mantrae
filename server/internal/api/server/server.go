@@ -4,9 +4,9 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
+	"net/http/pprof"
 	"runtime/debug"
 	"time"
 
@@ -14,7 +14,6 @@ import (
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
 	"connectrpc.com/validate"
-	"github.com/caarlos0/env/v11"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/mizuchilabs/mantrae/server/internal/api/handler"
 	"github.com/mizuchilabs/mantrae/server/internal/api/middlewares"
@@ -22,41 +21,15 @@ import (
 	"github.com/mizuchilabs/mantrae/server/internal/config"
 )
 
-const elementsHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>API Documentation</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
-</head>
-<body>
-    <elements-api
-        apiDescriptionUrl="/openapi.yaml"
-        router="hash"
-        layout="sidebar"
-    />
-</body>
-</html>
-`
-
 type Server struct {
-	Port string `env:"PORT" envDefault:"3000"`
-	mux  *http.ServeMux
-	app  *config.App
+	mux *http.ServeMux
+	app *config.App
 }
 
 func NewServer(app *config.App) *Server {
-	cfg, err := env.ParseAs[Server]()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return &Server{
-		Port: cfg.Port,
-		mux:  http.NewServeMux(),
-		app:  app,
+		mux: http.NewServeMux(),
+		app: app,
 	}
 }
 
@@ -69,11 +42,12 @@ func (s *Server) Start(ctx context.Context) error {
 	}()
 
 	server := &http.Server{
-		Addr:              "0.0.0.0:" + s.Port,
+		Addr:              "0.0.0.0:" + s.app.BasePort(),
 		Handler:           s.WithCORS(s.mux),
-		ReadHeaderTimeout: 3 * time.Second,
-		ReadTimeout:       5 * time.Minute,
-		WriteTimeout:      5 * time.Minute,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       120 * time.Second,
 		MaxHeaderBytes:    8 * 1024, // 8KiB
 	}
 
@@ -84,9 +58,9 @@ func (s *Server) Start(ctx context.Context) error {
 	go func() {
 		serverURL, ok := s.app.SM.Get(ctx, "server_url")
 		if ok && serverURL == "" {
-			serverURL = "http://127.0.0.1:" + s.Port
+			serverURL = "http://127.0.0.1:" + s.app.BasePort()
 		}
-		slog.Info("Server listening on", "address", "http://127.0.0.1:"+s.Port)
+		slog.Info("Server listening on", "address", "http://127.0.0.1:"+s.app.BasePort())
 		slog.Info("Agents can connect to", "address", serverURL)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
@@ -121,14 +95,18 @@ func (s *Server) registerServices() {
 		),
 		connect.WithRecover(
 			func(ctx context.Context, spec connect.Spec, header http.Header, panic any) error {
-				// Log the panic with context
-				slog.Error("panic recovered in RPC call",
-					"method", spec.Procedure,
-					"panic", panic,
-					"trace", string(debug.Stack()),
-				)
-				header.Set("X-Error-Type", "panic")
-				header.Set("Content-Type", "application/json")
+				if s.app.Debug {
+					slog.Error("panic recovered in RPC call",
+						"method", spec.Procedure,
+						"panic", panic,
+						"stack", string(debug.Stack()),
+					)
+				} else {
+					slog.Error("panic recovered in RPC call",
+						"method", spec.Procedure,
+						"panic", panic,
+					)
+				}
 				return connect.NewError(connect.CodeInternal, fmt.Errorf("internal server error"))
 			},
 		),
@@ -150,41 +128,22 @@ func (s *Server) registerServices() {
 		mantraev1connect.TraefikInstanceServiceName,
 		mantraev1connect.AuditLogServiceName,
 	}
+	s.registerHealthAndReflection(serviceNames)
 
-	checker := grpchealth.NewStaticChecker(serviceNames...)
-	reflector := grpcreflect.NewStaticReflector(serviceNames...)
-
-	s.mux.Handle(grpchealth.NewHandler(checker))
-	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
-	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
-
-	// PProf debug endpoints
-	// s.mux.HandleFunc("/debug/pprof/", pprof.Index)
-	// s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	// s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	// s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	// s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// Debug
+	if s.app.Debug {
+		s.mux.HandleFunc("/debug/pprof/", pprof.Index)
+		s.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		s.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		s.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		s.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
 
 	// Static files
 	s.WithStatic()
 
-	// Health check
-	s.mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
-
-	// Serve OpenAPI specs file
-	// s.mux.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.ServeFile(w, r, "proto/gen/openapi/openapi.yaml")
-	// })
-
-	// Serve Elements UI
-	s.mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		if _, err := w.Write([]byte(elementsHTML)); err != nil {
-			slog.Error("failed to write elements HTML", "error", err)
-		}
-	})
+	// Serve OpenAPI spec
+	s.OpenAPIHandler()
 
 	// Service implementations
 	s.mux.Handle(mantraev1connect.NewProfileServiceHandler(
@@ -259,4 +218,16 @@ func (s *Server) registerServices() {
 	// OIDC handlers (HTTP) ---------------------------------------------------
 	s.mux.Handle("GET /oidc/login", logChain(handler.OIDCLogin(s.app)))
 	s.mux.Handle("GET /oidc/callback", logChain(handler.OIDCCallback(s.app)))
+}
+
+func (s *Server) registerHealthAndReflection(serviceNames []string) {
+	checker := grpchealth.NewStaticChecker(serviceNames...)
+	reflector := grpcreflect.NewStaticReflector(serviceNames...)
+
+	s.mux.Handle(grpchealth.NewHandler(checker))
+	s.mux.Handle(grpcreflect.NewHandlerV1(reflector))
+	s.mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+	s.mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 }

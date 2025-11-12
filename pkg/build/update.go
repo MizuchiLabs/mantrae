@@ -94,7 +94,7 @@ func runningInDocker() bool {
 }
 
 func fetchLatestRelease() (*release, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	url := fmt.Sprintf("%s/releases/latest", RepoURL)
@@ -169,7 +169,7 @@ func downloadFile(url string, dest string) error {
 		return err
 	}
 
-	if err := out.Chmod(0755); err != nil {
+	if err := out.Chmod(0o755); err != nil {
 		return err
 	}
 

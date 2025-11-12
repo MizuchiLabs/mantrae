@@ -23,8 +23,8 @@ vars:
 
 tasks:
   dev:
-    desc: Run Go backend and Vite frontend concurrently
-    deps: [backend, frontend]
+    desc: Run Go backend and Vite web concurrently
+    deps: [backend, web]
 
   backend:
     desc: Run Go backend
@@ -32,8 +32,8 @@ tasks:
       - go run server/cmd/main.go
     silent: false
 
-  frontend:
-    desc: Run Vite frontend
+  web:
+    desc: Run frontend
     cmds:
       - pnpm run dev
     dir: web
@@ -52,12 +52,13 @@ tasks:
     dir: docs
     silent: false
 
-  test:
-    desc: Run Go tests
+  # 󰉠  Lint / static checks
+  lint:
+    desc: Run go vet & lint
     cmds:
+      - go mod tidy
+      - go fmt ./...
       - go vet ./...
-      - go test ./...
-      - golangci-lint run
 
   # 󰚰 Update deps
   update:
@@ -69,16 +70,16 @@ tasks:
 
   #  Generate code
   gen:
-    desc: Generate sqlc and buf
+    desc: Generate necessary files
     cmds:
-      - buf generate --clean
+      - buf generate
       - sqlc generate
-      - go run -tags dev server/cmd/main.go -zod
+      - go run zod.go
 
   #   Build binary
   build:
     desc: Build Go binary
-    deps: [build:frontend]
+    deps: [build:web]
     cmds:
       - go build -o bin/server -ldflags="{{.LDFLAGS}}" ./server/cmd
       - go build -o bin/agent -ldflags="{{.LDFLAGS}}" ./agent/cmd
@@ -86,8 +87,8 @@ tasks:
       - upx -9 bin/agent
 
   # 🏗 Build frontend
-  build:frontend:
-    desc: Build Svelte frontend
+  build:web:
+    desc: Build Frontend
     dir: web
     cmds:
       - pnpm install
@@ -105,17 +106,22 @@ tasks:
           git push --delete origin "$tag"
         done
 
+  snapshot:
+    desc: Snapshot
+    cmds:
+      - goreleaser --snapshot --clean --skip=validate
+
   # 󱓞  Release
   release:
-    desc: Build and release Go binary
-    deps: [build:frontend]
+    desc: Release
+    deps: [build:web]
     cmds:
       - goreleaser release --clean --skip=validate
 
   # 󰡨  Build container
   docker:build:
     desc: Build local test container with ko
-    deps: [build:frontend]
+    deps: [build:web]
     cmds:
       - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./server/cmd --bare
       - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build ./agent/cmd --bare

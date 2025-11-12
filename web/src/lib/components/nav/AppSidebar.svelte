@@ -23,7 +23,8 @@
 		EthernetPort,
 		Gauge,
 		Layers2,
-		Truck
+		Truck,
+		Cog
 	} from '@lucide/svelte';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
@@ -34,6 +35,7 @@
 	import { toggleMode, mode } from 'mode-watcher';
 	import { goto } from '$app/navigation';
 	import { profiles } from '$lib/stores/realtime';
+	import { BackendURL } from '$lib/stores/common';
 
 	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -60,6 +62,9 @@
 		{ title: 'Agents', url: '/agents/', icon: Bot },
 		{ title: 'DNS', url: '/dns/', icon: Globe },
 		{ title: 'Settings', url: '/settings/', icon: Settings }
+	];
+	const supportRoutes: Route[] = [
+		{ title: 'API Reference', url: `${BackendURL}/openapi`, icon: Cog }
 	];
 
 	let modalProfile = $state({} as Profile);
@@ -189,6 +194,27 @@
 			</Sidebar.Menu>
 		</Sidebar.Group>
 	</Sidebar.Content>
+
+	<!-- Bottom buttons -->
+	<Sidebar.Group class="mt-auto">
+		<Sidebar.GroupContent>
+			<Sidebar.GroupLabel>Support</Sidebar.GroupLabel>
+			<Sidebar.Menu>
+				{#each supportRoutes as r (r.title)}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton>
+							{#snippet child({ props })}
+								<a href={r.url} {...props}>
+									<r.icon />
+									<span>{r.title}</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/each}
+			</Sidebar.Menu>
+		</Sidebar.GroupContent>
+	</Sidebar.Group>
 
 	<!-- User Profile -->
 	<Sidebar.Footer>

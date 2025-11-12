@@ -8,61 +8,101 @@
 
 # Mantræ
 
-**Mantræ** is a user-friendly web interface designed to simplify the management of Traefik's dynamic configurations. Similar to Nginx Proxy Manager (NPM), this application allows you to manage your dynamic Traefik configuration from the comfort of a simple web ui.
+**Mantræ** is a web-based configuration manager for Traefik's dynamic configuration file. It provides a clean, intuitive interface to manage your routers, middleware, and services without editing YAML or TOML files manually.
+
+> **Important**: Mantræ is **not** a dashboard for Traefik. It operates independently and does not monitor Traefik's status. Instead, Traefik connects to Mantræ to fetch its dynamic configuration.
 
 ## Features
 
-- **Simplified UI**: A clean and intuitive interface that keeps the complexity to a minimum.
-- **Router Configuration**: Create and manage Traefik routers with custom rules, entrypoints, and middleware configurations.
-- **Middleware Management**: Add middlewares to your routers, including rate limiting, authentication, and more.
-- **Service Status**: Monitor the status of your services and see their health information.
-- **DNS Providers**: Support for multiple DNS providers (currently Cloudflare, PowerDNS, Technitium) for automatic DNS record updates.
-- **Agents**: Instead of defining your routers in the web ui, you can label your containers as usual using traefik labels. Start the agent on the machine and it will automatically set everything up for you.
+- **🎨 Clean Interface**: Manage your Traefik configuration through a simple web UI
+- **🔀 Router Management**: Create and configure routers with custom rules, entrypoints, and middleware
+- **⚙️ Middleware Support**: Add rate limiting, authentication, headers, and other middleware
+- **🏷️ Agent Mode**: Label your containers with standard Traefik labels and let the agent automatically sync them
+- **🌐 DNS Integration**: Automatic DNS record management for Cloudflare, PowerDNS, and Technitium
 
-## 🚧 Disclaimer 🚧
+## How It Works
 
-This project is still early in development and is not ready for production use. Expect a lot of breaking changes in meantime until the first stable release.
-Also you can try out nightly builds with the `nightly` tag. But beware, these builds will break your database!
+Mantræ generates and serves Traefik's dynamic configuration file. Configure Traefik to fetch its configuration from Mantræ's HTTP provider endpoint, and your changes will be applied automatically.
 
-### Documentation
+## 🚧 Development Status
 
-Check out the [docs](https://mizuchi.dev/mantrae/) for more information.
+This project is in active development and not yet production-ready. Expect breaking changes before the first stable release.
+
+## Quick Start
 
 ### Installation
 
-You can install Mantrae using the [install.sh](install.sh) script. It will download the latest release and install it in your `~/.local/bin` directory.
-
+**Using the install script:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mizuchilabs/mantrae/main/install.sh | sh
 ```
 
-Or you can download the latest release from the [releases](https://github.com/mizuchilabs/mantrae/releases) page and extract it to your `~/.local/bin` directory.
+**Manual installation:**
+Download the latest release from [releases](https://github.com/mizuchilabs/mantrae/releases) and extract to `~/.local/bin`.
 
-Using docker/docker-compose is preferred for production environments.
+**Docker (recommended for production):**
+See the [documentation](https://mizuchi.dev/mantrae/) for Docker setup instructions.
 
-### Screenshot
+### Usage
+
+```bash
+# Start the server
+mantrae
+
+# Display version
+mantrae --version
+
+# Check for updates
+mantrae update
+
+# Update to latest version (not available in Docker)
+mantrae update --install
+
+# Reset admin password
+mantrae reset --password newpassword
+
+# Reset password for a specific user
+mantrae reset --user username --password newpassword
+```
+
+## Command Reference
+
+| Command | Description |
+| ------- | ----------- |
+| `mantrae` | Start the Mantræ server |
+| `mantrae update` | Check for available updates |
+| `mantrae update --install` | Download and install the latest version |
+| `mantrae reset` | Reset user password (admin by default) |
+| `mantrae --version` | Display version information |
+
+### Flags
+
+| Flag | Aliases | Default | Description |
+| ---- | ------- | ------- | ----------- |
+| `--version` | `-v` | | Display version and exit |
+| `--password` | `-p` | | New password (used with reset) |
+| `--user` | `-u` | `admin` | Username for password reset |
+| `--install` | | `false` | Install update (used with update command) |
+
+## Documentation
+
+Full documentation is available at [mizuchi.dev/mantrae](https://mizuchi.dev/mantrae/)
+
+## Screenshot
 
 ![Dashboard](./.github/screenshots/dashboard.png "Dashboard")
 
-## Command-Line Arguments for the Server
-
-| Flag              | Type     | Default | Description                                                              |
-| ----------------- | -------- | ------- | ------------------------------------------------------------------------ |
-| `-version`        | `bool`   | `false` | Prints the current version of Mantrae and exits.                         |
-| `-update`         | `bool`   | `false` | Updates Mantrae to the latest version. (Doesn't work inside a container) |
-| `-reset-password` | `string` |         | Resets the admin password to the specified value.                        |
-| `-reset-user`     | `string` | `admin` | Choose the username to reset the password for.                           |
-
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues, fork the repository, and create pull requests.
+Contributions are welcome! Feel free to submit issues, fork the repository, and create pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - See [LICENSE](LICENSE)
 
 ## Acknowledgements
 
-- [**Traefik**](https://traefik.io/): For providing the powerful reverse proxy that powers this application.
-- [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager): For inspiration on building a simple and effective web UI for managing reverse proxies.
-- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns): For inspiration on building a simple DNS management system.
+- [**Traefik**](https://traefik.io/) - The powerful reverse proxy that this project manages
+- [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager) - Inspiration for the UI approach
+- [**External-DNS**](https://github.com/kubernetes-sigs/external-dns) - Inspiration for DNS management
+

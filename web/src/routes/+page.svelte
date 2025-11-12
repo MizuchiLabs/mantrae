@@ -126,7 +126,7 @@
 					</div>
 				</Card.Content>
 				<div
-					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-primary/5 to-transparent"
+					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-linear-to-bl from-primary/5 to-transparent"
 				></div>
 			</Card.Root>
 
@@ -161,7 +161,7 @@
 					</div>
 				</Card.Content>
 				<div
-					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-blue-500/5 to-transparent"
+					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-linear-to-bl from-blue-500/5 to-transparent"
 				></div>
 			</Card.Root>
 
@@ -188,7 +188,7 @@
 					</div>
 				</Card.Content>
 				<div
-					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-green-500/5 to-transparent"
+					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-linear-to-bl from-green-500/5 to-transparent"
 				></div>
 			</Card.Root>
 
@@ -206,13 +206,13 @@
 					</div>
 				</Card.Content>
 				<div
-					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-gradient-to-bl from-purple-500/5 to-transparent"
+					class="absolute top-0 right-0 h-16 w-16 rounded-bl-full bg-linear-to-bl from-purple-500/5 to-transparent"
 				></div>
 			</Card.Root>
 		</div>
 
 		<!-- Configuration Overview -->
-		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+		<div class={'grid gap-6 md:grid-cols-2' + ($traefikInstances?.length ? ' lg:grid-cols-3' : '')}>
 			<!-- Routers Overview -->
 			<Card.Root>
 				<Card.Header>
@@ -287,30 +287,32 @@
 			</Card.Root>
 
 			<!-- Instances Overview -->
-			<Card.Root>
-				<Card.Header class="flex items-center justify-between">
-					<Card.Title class="flex items-center gap-2">
-						<Server class="h-5 w-5" />
-						Traefik Instances
-					</Card.Title>
-					<Badge variant="secondary">{$traefikInstances?.length}</Badge>
-				</Card.Header>
-				<Card.Content class="space-y-4">
-					<div class="max-h-64 space-y-2 overflow-y-auto pr-2">
-						{#each $traefikInstances || [] as instance (instance.id)}
-							<div class="flex items-center justify-between">
-								<div class="flex items-center gap-2">
-									<div class="h-3 w-3 rounded-full bg-green-500"></div>
-									<span class="text-sm">{instance.name}</span>
+			{#if $traefikInstances?.length}
+				<Card.Root>
+					<Card.Header class="flex items-center justify-between">
+						<Card.Title class="flex items-center gap-2">
+							<Server class="h-5 w-5" />
+							Traefik Instances
+						</Card.Title>
+						<Badge variant="secondary">{$traefikInstances?.length}</Badge>
+					</Card.Header>
+					<Card.Content class="space-y-4">
+						<div class="max-h-64 space-y-2 overflow-y-auto pr-2">
+							{#each $traefikInstances || [] as instance (instance.id)}
+								<div class="flex items-center justify-between">
+									<div class="flex items-center gap-2">
+										<div class="h-3 w-3 rounded-full bg-green-500"></div>
+										<span class="text-sm">{instance.name}</span>
+									</div>
+									<Badge variant="secondary">
+										{instance.url}
+									</Badge>
 								</div>
-								<Badge variant="secondary">
-									{instance.url}
-								</Badge>
-							</div>
-						{/each}
-					</div>
-				</Card.Content>
-			</Card.Root>
+							{/each}
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/if}
 		</div>
 
 		<!-- Profile Details and Activity -->

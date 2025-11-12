@@ -1,4 +1,5 @@
 version: v2
+clean: true
 managed:
   enabled: true
   override:
@@ -19,12 +20,14 @@ plugins:
     opt: target=ts
     include_imports: true
   - local: protoc-gen-connect-openapi
-    out: proto/gen/openapi
+    out: server/internal/api/server/openapi
     strategy: all
     opt:
+      - features=connectrpc;google.api.http;protovalidate
       - allow-get
       - with-streaming
-      - path=openapi.yaml
-      - base=proto/base.yaml
+      - format=json
+      - path=openapi.json
+      - base=openapi.yaml
 inputs:
   - directory: proto

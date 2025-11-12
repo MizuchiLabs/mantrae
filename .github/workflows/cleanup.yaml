@@ -1,4 +1,4 @@
-name: ghcr.io cleanup
+name: Cleanup Registry
 
 on:
   push:

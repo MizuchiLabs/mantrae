@@ -6,7 +6,6 @@ pro: false
 
 before:
   hooks:
-    - rm -rf ./dist
     - go fmt ./...
     - go vet ./...
     - go mod tidy
@@ -24,8 +23,8 @@ builds:
       - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
     goos:
       - linux
-      - darwin
-      - windows
+      # - darwin
+      # - windows
     goarch:
       - amd64
       - arm64
@@ -45,29 +44,47 @@ builds:
       - amd64
       - arm64
 
+kos:
+  - id: server
+    base_image: alpine
+    repositories: [ghcr.io/mizuchilabs/mantrae]
+    bare: true
+    preserve_import_paths: false
+    tags:
+      - "{{.Version}}"
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
+  - id: agent
+    base_image: alpine
+    repositories: [ghcr.io/mizuchilabs/mantrae-agent]
+    bare: true
+    preserve_import_paths: false
+    tags:
+      - "{{.Version}}"
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
 upx:
   - enabled: true
+    lzma: true
+    compress: best
 
 source:
   enabled: true
 
 release:
-  draft: true
+  draft: false
   replace_existing_draft: true
   replace_existing_artifacts: true
   mode: keep-existing
 
 archives:
-  - id: server
-    ids: [server]
-    files:
-      - LICENSE
-    name_template: >-
-      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-  - id: agent
-    ids: [agent]
-    files:
+  - files:
       - LICENSE
     name_template: >-
       {{ .Binary }}_{{ .Os }}_{{ .Arch }}
@@ -83,7 +100,7 @@ changelog:
       - "^feat:"
       - "^fix:"
       - "^sec:"
-      - "^doc:"
+      - "^docs:"
       - "^wip:"
   groups:
     - title: "🚀 Features"
@@ -96,7 +113,7 @@ changelog:
       regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 2
     - title: "📚 Documentation"
-      regexp: '^.*?doc(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
       order: 3
     - title: "🚧 Work in progress"
       regexp: '^.*?wip(\([[:word:]]+\))??!?:.+$'

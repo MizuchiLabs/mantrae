@@ -197,13 +197,8 @@ func (u *User) ToProto() *mantraev1.User {
 func (a *Agent) ToProto() *mantraev1.Agent {
 	containers := make([]*mantraev1.Container, 0)
 	if a.Containers != nil {
-		raw, ok := a.Containers.([]byte)
-		if !ok {
-			slog.Error("containers is not []byte", "type", fmt.Sprintf("%T", a.Containers))
-		} else {
-			if err := json.Unmarshal(raw, &containers); err != nil {
-				slog.Error("failed to unmarshal agent containers", "error", err)
-			}
+		if err := json.Unmarshal(a.Containers, &containers); err != nil {
+			slog.Error("failed to unmarshal agent containers", "error", err)
 		}
 	}
 
