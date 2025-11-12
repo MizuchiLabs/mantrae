@@ -1,52 +1,40 @@
----
-sidebar_position: 2
----
+# Getting Started
 
-# Quick Start
+Mantrae is a web interface for managing Traefik's dynamic configuration. It generates configuration files that Traefik consumes via its HTTP provider.
 
-Get Mantrae up and running quickly with this guide. This will walk you through installing Mantrae, creating your first profile, and configuring Traefik to use it.
+## What Mantrae Does
+
+- Generates Traefik dynamic configuration (routers, services, middlewares)
+- Manages multiple configuration profiles for different environments
+- Provides optional agents for automatic Docker container discovery
+- Integrates with DNS providers (Cloudflare, PowerDNS, Technitium)
+- Backs up and restores configurations
+
+:::note
+Mantrae is **not** a Traefik dashboard. It doesn't monitor Traefik's status. Instead, Traefik pulls configuration from Mantrae.
+:::
 
 ## Prerequisites
 
-- Docker (recommended) or ability to run Go binaries
+- Docker (recommended) or Go runtime
 - A running Traefik instance
-- OpenSSL or similar tool to generate a secret
+- OpenSSL or similar tool
 
-## Step 1: Generate a Secret
+## Installation
 
-First, generate a secure secret for Mantrae:
+### 1. Generate a Secret
+
+Generate a 16, 24, or 32 byte secret:
 
 ```bash
 openssl rand -hex 16
 ```
 
-Save this secret for the next step. It has to be either of size 16, 24, or 32 bytes.
+### 2. Deploy Mantrae
 
-## Step 2: Run Mantrae
+Choose your deployment method:
 
-### Using the Binary
-
-1. Visit the [releases page](https://github.com/mizuchilabs/mantrae/releases) to download the latest Mantrae binary for your platform.
-2. Run the binary with:
-   ```bash
-   export SECRET=<your_secret>
-   export ADMIN_PASSWORD=<your_admin_password>
-   ./mantrae
-   ```
-### Using Docker
-
-```bash
-docker run --name mantrae \
-   -e SECRET=your-generated-secret \
-   -e ADMIN_PASSWORD=your-admin-password \
-   -p 3000:3000 \
-   -v ./mantrae:/data \
-   ghcr.io/mizuchilabs/mantrae:latest
-```
-
-### Using Docker Compose (Recommended)
-
-Create a `docker-compose.yml` file:
+#### Docker Compose (Recommended)
 
 ```yaml
 services:
@@ -63,36 +51,43 @@ services:
     restart: unless-stopped
 ```
 
-Then run:
-
+Run with:
 ```bash
 docker compose up -d
 ```
 
-## Step 3: Access the Web Interface
+#### Docker
 
-Open your browser and navigate to:
+```bash
+docker run --name mantrae \
+   -e SECRET=your-generated-secret \
+   -e ADMIN_PASSWORD=your-admin-password \
+   -p 3000:3000 \
+   -v ./mantrae:/data \
+   ghcr.io/mizuchilabs/mantrae:latest
+```
 
-[http://localhost:3000](http://localhost:3000)
+#### Binary
 
-Log in with the username `admin` and your admin password.
+Download from the [releases page](https://github.com/mizuchilabs/mantrae/releases), then:
+
+```bash
+export SECRET=your-generated-secret
+export ADMIN_PASSWORD=your-admin-password
+./mantrae
+```
+
+### 3. Access the Interface
+
+Open [http://localhost:3000](http://localhost:3000) and log in:
 - Username: `admin`
-- Password: `your-admin-password`
+- Password: your admin password
 
-## Step 4: Use the default profile or create your own
+## Configure Traefik
 
-1. Click on the profile dropdown in the top navigation
-2. Select "Create New Profile"
-3. Enter profile details:
-   - Name: `another-profile`
-   - Description: `New profile for another site`
-4. Click "Create"
+Point Traefik to Mantrae's HTTP provider endpoint. You'll need a profile token (found in profile settings).
 
-## Step 5: Configure Traefik
-
-Update your Traefik configuration to use Mantrae as a dynamic configuration provider.
-
-### Using Traefik Configuration File
+### Using traefik.yml
 
 ```yaml
 providers:
@@ -119,34 +114,54 @@ services:
     restart: unless-stopped
 ```
 
-**Note**: Replace `PROFILE_TOKEN` with the actual token from your profile (visible in the profile settings).
+Replace `PROFILE_TOKEN` with your actual token from the profile settings.
 
-## Step 6: Create Your First Router
+## Create Your First Router
 
-1. In the Mantrae web interface, navigate to "Routers"
+1. Navigate to "Routers" in the Mantrae interface
 2. Click "Add Router"
-3. Configure your router:
+3. Configure the router:
    - Name: `whoami`
    - Rule: Host(\`whoami.local\`)
-   - Service: Create a new service pointing to your backend
-   - Optional: Add middlewares or entry points
-4. Save the router
+   - Service: Create or select a service pointing to your backend
+4. Save
 
-## Step 7: Test Your Configuration
+Traefik will poll Mantrae and apply the configuration automatically.
 
-If you've set up everything correctly, Traefik should now be routing requests based on your Mantrae configuration.
+## Verify Configuration
 
-You can verify the dynamic configuration by accessing:
+Check the dynamic configuration at:
 ```
 http://localhost:3000/api/default?token=PROFILE_TOKEN
 ```
 
-This should return the JSON configuration that Traefik is using.
+This returns the JSON configuration Traefik is consuming.
+
+## Command Reference
+
+```bash
+# Start the server
+mantrae
+
+# Check version
+mantrae --version
+
+# Check for updates
+mantrae update
+
+# Update to latest version (binary only, not Docker)
+mantrae update --install
+
+# Reset admin password
+mantrae reset --password newpassword
+
+# Reset a specific user's password
+mantrae reset --user username --password newpassword
+```
 
 ## Next Steps
 
-- [Learn about Profiles](./usage/profiles) to manage multiple environments
-- [Set up Agents](./usage/agents) for automatic container discovery
-- [Configure DNS Providers](./usage/dns) for automatic certificate management
-- [Explore Backups](./usage/backups) to protect your configurations
-
+- [Profiles](./usage/profiles) - Manage multiple environments
+- [Agents](./usage/agents) - Automatic container discovery
+- [DNS Providers](./usage/dns) - DNS integration
+- [Backups](./usage/backups) - Configuration backups

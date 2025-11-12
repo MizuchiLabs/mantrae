@@ -1,114 +1,190 @@
----
-sidebar_position: 4
----
-
 # FAQ
 
 ## General Questions
 
-### Why would I use this? Traefik already has configuration discovery.
+### Why would I use Mantrae instead of Traefik's built-in configuration discovery?
 
-Yes, Traefik has amazing configuration discovery capabilities for various providers (Docker, Kubernetes, etc.). But for all those times you can't use these features (e.g. multiple machines not connected via Docker Swarm or Kubernetes) you have to use the file provider. Mantrae helps you with that and adds additional automation features like managing DNS records as well, similar to external-dns for Kubernetes.
+Traefik's automatic discovery works great for Docker Swarm and Kubernetes, but many users run Traefik in simpler setups where these features aren't available. Mantrae fills this gap by:
 
-Mantrae is particularly useful when you need to:
-- Manage multiple separate Traefik instances from a single interface
-- Automatically synchronize configurations from remote Docker hosts using agents
-- Have a visual interface for managing complex routing configurations
-- Centralize DNS management across multiple domains and providers
+- Providing a visual interface for managing Traefik's file provider configuration
+- Supporting multi-host Docker setups without requiring Swarm or Kubernetes
+- Offering centralized management of multiple Traefik instances
+- Automatically managing DNS records alongside routing configuration
+- Enabling team collaboration with user management and audit logs
 
-### What's the difference between using Mantrae and Traefik's file provider directly?
+### Is Mantrae a replacement for Traefik's dashboard?
 
-Using Mantrae provides several advantages over direct file provider management:
-- Web-based interface for easier configuration management
-- Multi-profile support for different environments
-- Agent-based automatic discovery of container configurations
-- Built-in DNS provider integration for certificate management
-- Backup and restore capabilities
-- User management and audit logging
-- Real-time configuration updates without manual file editing
+No. Mantrae is a **configuration manager**, not a monitoring dashboard. It generates the dynamic configuration that Traefik consumes via its HTTP provider. Traefik's dashboard shows real-time routing status and metrics, while Mantrae helps you create and manage those routes.
 
-## DNS Providers
+### Can I use Mantrae alongside Traefik's other providers (Docker, Kubernetes, etc.)?
 
-### I want to use multiple DNS providers of the same type (e.g. multiple Cloudflare accounts), how do I do that?
+Yes! Mantrae uses Traefik's HTTP provider, which works alongside other providers. You can have Traefik auto-discover some services while managing others through Mantrae. Just be careful to avoid naming conflicts between configurations.
 
-Traefik doesn't support multiple DNS Challenge providers, so you have to use CNAME records to manage multiple accounts.
+### What happens if Mantrae goes down?
 
-E.g. if you have a domain `example.com` on account "Foo" and a domain `example.org` on account "Bar", you can add the API Key for account "Foo" normally, but to get letsencrypt certificates for `example.org` you need add a CNAME record for `example.org` with these values:
+Traefik caches the configuration it receives from Mantrae. If Mantrae becomes unavailable:
+- Existing routes continue to work with the last cached configuration
+- You cannot make configuration changes until Mantrae is back online
+- DNS updates (if configured) won't happen until Mantrae recovers
 
-- Type: `CNAME`
-- Name: `_acme-challenge.example.org`
-- Target: `_acme-challenge.example.com`
+## Profiles
 
-Now you can request certificates for `sub.example.org` as well.
+### What are profiles and when should I use them?
 
-### Can I use different DNS providers for different domains within the same profile?
+Profiles are isolated configuration environments within Mantrae. Each profile has its own:
+- Routers, services, and middleware
+- DNS provider settings
+- Agent connections
+- API token for Traefik
 
-Yes, you can configure multiple DNS providers within a single profile and assign different providers to different routers. This allows you to manage domains across multiple DNS providers from a single Mantrae profile.
+Common use cases:
+- Separate configurations for development, staging, and production
+- Different Traefik instances for different teams or projects
+- Isolating configurations by customer in managed hosting scenarios
 
 ## Agents
 
-### How do agents handle network connectivity when behind firewalls?
+### What do agents do and when do I need them?
 
-Agents establish outbound connections to the Mantrae server, so they work well in environments where the Mantrae server is in a DMZ or cloud environment, and agents are behind firewalls. The Mantrae server does not need to initiate connections to the agents.
+Agents watch Docker containers on remote hosts and automatically create Mantrae configurations based on container labels. Use agents when:
 
-### What happens if an agent loses connectivity to the Mantrae server?
+- Your Docker hosts can't be reached directly by Mantrae (behind NAT/firewall)
+- You want automatic discovery similar to Traefik's Docker provider
+- Managing multiple Docker hosts from a single Mantrae instance
+- You prefer labeling containers over manual configuration
 
-When an agent loses connectivity:
-1. The agent will continue to monitor Docker containers locally
-2. Upon reconnection, the agent will synchronize any changes that occurred while offline
-3. The Mantrae server will mark the agent as offline after a timeout period
-4. Existing configurations will continue to function in Traefik
+If you're managing static configurations or non-Docker services, you don't need agents.
 
-### Can I run multiple agents on the same host?
+### How do agents communicate with Mantrae?
 
-Yes, you can run multiple agents on the same host, each configured for different profiles or with different tokens. This is useful in environments where you need to separate configurations for different purposes.
+Agents establish **outbound** connections to the Mantrae server using gRPC. This means:
+- Agents work behind firewalls and NAT (only outbound access needed)
+- No ports need to be opened on the agent's host
+- Communication can be secured with HTTPS/TLS
+- Mantrae server must be reachable from agent hosts
 
-## Profiles & Multi-Environment Management
+### What happens when an agent disconnects?
 
-### Can I share configurations between profiles?
+- The agent continues monitoring containers locally
+- When reconnected, it syncs any changes that occurred offline
+- Existing Traefik configurations remain active
+- Mantrae shows the agent as offline in the interface
 
-Currently, configurations are profile-specific for security and isolation. However, you can export configurations from one profile and import them into another through the backup/import functionality.
+## DNS Integration
 
-### How do I migrate from a single-profile setup to multi-profile?
+### Which DNS providers are supported?
 
-1. Create new profiles for each environment
-2. Export your existing configuration
-3. Import the configuration into each new profile as needed
-4. Update your Traefik instances to point to the new profile endpoints
+Currently supported:
+- Cloudflare
+- PowerDNS
+- Technitium DNS
+
+DNS integration automatically creates/updates DNS records when you configure routers, eliminating manual DNS management.
+
+### How do I handle multiple accounts for the same DNS provider?
+
+Traefik's ACME challenge only supports one provider instance. Use CNAME delegation:
+
+1. Configure the primary account (e.g., Cloudflare account A with `example.com`)
+2. For domains on other accounts (e.g., `example.org` on account B), add a CNAME:
+   - Type: `CNAME`
+   - Name: `_acme-challenge.example.org`
+   - Target: `_acme-challenge.example.com`
+
+This allows Traefik to validate certificates for domains across multiple accounts.
+
+## Configuration Management
+
+### How do I version control my Mantrae configurations?
+
+Use the backup feature to export configurations as JSON. You can:
+- Store exports in Git for version control
+- Include them in your infrastructure-as-code repository
+- Automate exports using Mantrae's API
+- Restore from backups when needed
+
+### Can I manage Mantrae configurations via API or CLI?
+
+Mantrae exposes a gRPC API using the Connect protocol (definitions in `proto/mantrae/v1/`). You can:
+- Programmatically create/update configurations
+- Integrate with CI/CD pipelines
+- Build custom tooling on top of Mantrae
+- Automate configuration management
+
+A CLI tool is planned for future releases.
+
+### How do I migrate from manual file provider configuration to Mantrae?
+
+1. Deploy Mantrae and create a profile
+2. Import your existing dynamic yaml config
+3. Verify routes work correctly
+4. Remove or comment out the old file provider configuration
+
+Start with non-critical routes first to minimize risk.
 
 ## Security
 
-### How are credentials and secrets protected?
+### How are credentials and API tokens protected?
 
-- Passwords are hashed using bcrypt with a cost factor of 12
-- API tokens are generated using cryptographically secure random generators
-- Database connections use prepared statements to prevent SQL injection
-- Communication between agents and the server can be secured with HTTPS
-- DNS provider credentials are encrypted at rest in the database
+- User passwords: hashed with bcrypt
+- API tokens: cryptographically secure random generation
+- DNS provider credentials: encrypted at rest
+- Database queries: prepared statements prevent SQL injection
+- Agent communication: supports HTTPS/TLS encryption
 
-### Can I enforce specific security policies?
+### Can multiple users access Mantrae?
 
-Mantrae supports:
-- OIDC/SAML integration for enterprise authentication
+Yes! Mantrae supports:
+- Multiple user accounts with individual credentials
+- OIDC integration
 - Audit logging of all configuration changes
-- Regular backup capabilities for disaster recovery
+
+### How do I rotate profile tokens?
+
+Profile tokens are used by Traefik to fetch configurations. To rotate:
+1. Generate a new token in the profile settings
+2. Update your Traefik configuration with the new token
+3. Wait for Traefik to successfully pull configuration with the new token
+
+Traefik will continue using the old token until you update its configuration.
 
 ## Troubleshooting
 
-### My routers aren't working, how can I debug this?
+### Traefik isn't applying my Mantrae configuration
 
-1. Check the Traefik logs for any error messages related to configuration loading
-2. Verify that the profile token in your Traefik configuration is correct
-3. Ensure the Mantrae server is accessible from your Traefik instance
-4. Check that the router rules are syntactically correct
-5. Confirm that services referenced by routers exist and are correctly configured
+Check these common issues:
 
-## Development & Customization
+1. **Verify the HTTP provider endpoint**: Ensure the URL and token are correct in Traefik's configuration
+2. **Check Traefik logs**: Look for errors fetching from the HTTP provider
+3. **Test the endpoint manually**: Access `http://mantrae:3000/api/PROFILE?token=TOKEN` in a browser
+4. **Verify network connectivity**: Ensure Traefik can reach Mantrae (especially in Docker networks)
+5. **Check poll interval**: Default is 5s, but you can adjust if needed
 
-### Is there an API I can integrate with?
+### DNS records aren't being created
 
-Yes, Mantrae exposes a gRPC API using the Connect protocol. The API definitions are in the `proto/mantrae/v1/` directory of the source code.
+Verify:
+1. DNS provider credentials are correct in Mantrae
+2. API token has sufficient permissions for DNS management
+3. The domain is managed by the configured DNS provider
+4. Router has DNS provider assigned in configuration
+5. Check Mantrae logs for DNS provider errors
 
-### How do I request new features?
+### Agent shows as offline but Docker containers are running
 
-Feature requests can be submitted as GitHub issues in the Mantrae repository. Community contributions are also welcome through pull requests.
+Check:
+1. Agent can reach Mantrae server (test with curl/ping)
+2. Profile token is correct in agent configuration
+3. Firewall isn't blocking outbound connections
+4. Agent logs for connection errors
+5. Mantrae server is running and accessible
+
+## Performance
+
+### How often does Traefik poll Mantrae?
+
+The default poll interval is 5 seconds. You can adjust this in Traefik's configuration:
+- Lower values: faster updates, more load on Mantrae
+- Higher values: reduced load, slower configuration propagation
+
+For most use cases, 5-10 seconds is appropriate.
+

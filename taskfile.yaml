@@ -52,7 +52,7 @@ tasks:
   update:
     desc: Update dependencies
     cmds:
-      - go get -u ./...
+      # - go get -u ./...
       - cd web && pnpm update --latest
       - cd docs && pnpm update --latest
 

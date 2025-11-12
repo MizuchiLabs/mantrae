@@ -18,7 +18,7 @@ services:
       - proxy
     restart: unless-stopped
 
-  mantrae-agent:
+  mantrae-agent: # agent for running on other machines
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
     container_name: mantrae-agent
     network_mode: host # for detecting the hostname of the machine
@@ -26,7 +26,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container
     environment:
       - TOKEN=<token> # token from mantrae server
-      - HOST=https://mantrae.example.com # where to reach mantrae server
+      - HOST=https://mantrae.example.com # where to reach your mantrae server
     restart: unless-stopped
 
   traefik:

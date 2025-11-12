@@ -1,7 +1,3 @@
----
-sidebar_position: 4
----
-
 # Agents
 
 Agents in Mantrae extend your Traefik setup by enabling automatic configuration discovery from remote Docker hosts. Instead of manually defining routers in the web UI, you can label your containers with standard Traefik labels, and the agent will automatically synchronize this information with your Mantrae server.
@@ -49,11 +45,11 @@ You can run the agent in several ways:
 Use the pre-generated Docker run command from the agent configuration page:
 ```bash
 docker run -d \
-    --name mantrae-agent \
-    -e TOKEN=YOUR_AGENT_TOKEN \
-    -e HOST=https://mantrae.example.com \
-    -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    ghcr.io/mizuchilabs/mantrae-agent:latest
+   --name mantrae-agent \
+   -e TOKEN=YOUR_AGENT_TOKEN \
+   -e HOST=https://mantrae.example.com \
+   -v /var/run/docker.sock:/var/run/docker.sock:ro \
+   ghcr.io/mizuchilabs/mantrae-agent:latest
 ```
 
 #### Option 3: Docker Compose
