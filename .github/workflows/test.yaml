@@ -43,7 +43,6 @@ jobs:
 
       - name: Generate & Build
         run: |
-          task gen
           task lint
           task build:web
 

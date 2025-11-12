@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -49,7 +48,6 @@ jobs:
 
       - name: Generate & Build
         run: |
-          task gen
           task lint
           task build:web
 
