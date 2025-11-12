@@ -41,10 +41,10 @@ jobs:
       - name: Install Task
         uses: go-task/setup-task@v1
 
-      - name: Generate & Build
+      - name: Build frontend & lint
         run: |
-          task lint
           task build:web
+          task lint
 
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v8
