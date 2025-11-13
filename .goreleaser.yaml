@@ -23,8 +23,8 @@ builds:
       - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
     goos:
       - linux
-      # - darwin
-      # - windows
+      - darwin
+      - windows
     goarch:
       - amd64
       - arm64
@@ -69,6 +69,14 @@ kos:
       - linux/amd64
       - linux/arm64
 
+sboms:
+  - cmd: syft
+    documents:
+      - "{{ .Binary }}_{{ .Os }}_{{ .Arch }}.sbom.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+    artifacts: binary
+    disable: false
+
 upx:
   - enabled: true
     lzma: true
@@ -84,11 +92,7 @@ release:
   mode: keep-existing
 
 archives:
-  - files:
-      - LICENSE
-    name_template: >-
-      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+  - formats: ["binary"]
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"

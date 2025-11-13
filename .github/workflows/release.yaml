@@ -33,6 +33,9 @@ jobs:
         with:
           go-version-file: "go.mod"
 
+      - name: Install Task
+        uses: go-task/setup-task@v1
+
       - name: Install UPX
         run: |
           sudo apt-get update
@@ -45,6 +48,9 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           upload-release-assets: false
+
+      - name: Install Ko
+        uses: ko-build/setup-ko@v0.9
 
       - name: Build frontend & lint
         run: |

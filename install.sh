@@ -12,7 +12,7 @@ binary="mantrae"
 # Downloads the latest release and moves it into ~/.local/bin
 main() {
    case "${1:-}" in
-   agent) binary="mantrae-agent" ;;
+   agent) binary="mantrae_agent" ;;
    uninstall)
       uninstall "${2:-}"
       exit 0
@@ -25,20 +25,21 @@ main() {
    latest=$(curl -fsSL "${REPO_API}/latest" | grep -o '"tag_name":.*' | cut -d '"' -f 4)
 
    case "$platform" in
-   Darwin) platform="macos" ;;
+   Darwin) platform="darwin" ;;
    Linux) platform="linux" ;;
+   MINGW* | MSYS* | CYGWIN*) platform="windows" ;;
    *) echo "Unsupported platform: $platform" && exit 1 ;;
    esac
 
    case "$arch" in
    arm64* | aarch64*) arch="arm64" ;;
    x86_64* | amd64*) arch="amd64" ;;
-   i?86*) arch="386" ;;
    *) echo "Unsupported architecture: $arch" && exit 1 ;;
    esac
 
-   # The filename matches goreleaser pattern: binary_platform_arch.tar.gz
-   filename="${binary}_${platform}_${arch}.tar.gz"
+   # The filename matches goreleaser binary format: binary_platform_arch
+   filename="${binary}_${platform}_${arch}"
+   [ "$platform" = "windows" ] && filename="${filename}.exe"
    url="${REPO}/${latest}/${filename}"
 
    echo "Downloading $filename from $url"
@@ -50,17 +51,7 @@ main() {
       exit 1
    fi
 
-   echo "Extracting archive..."
-   tar -xzf "$tempdir/$filename" -C "$tempdir"
-
-   # Expect the extracted binary to have the same name
-   if [ ! -f "$tempdir/$binary" ]; then
-      echo "Error: $binary not found inside archive"
-      rm -rf "$tempdir"
-      exit 1
-   fi
-
-   install_binary "$tempdir/$binary" "$binary"
+   install_binary "$tempdir/$filename" "$binary"
    rm -rf "$tempdir"
    post_install "$binary"
 }
@@ -103,7 +94,7 @@ uninstall() {
    case "$target" in
    mantrae | agent)
       binary="mantrae"
-      [ "$target" = "agent" ] && binary="mantrae-agent"
+      [ "$target" = "agent" ] && binary="mantrae_agent"
       bin_path="$HOME/.local/bin/$binary"
       if [ -f "$bin_path" ]; then
          echo "Removing $binary..."
