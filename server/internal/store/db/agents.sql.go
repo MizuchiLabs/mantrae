@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 )
 
 const countAgents = `-- name: CountAgents :one
@@ -30,7 +29,7 @@ const createAgent = `-- name: CreateAgent :one
 INSERT INTO
   agents (id, profile_id, token, created_at)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
+  (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
 `
 
 type CreateAgentParams struct {
@@ -49,10 +48,10 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent
 		&i.PublicIp,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.PrivateIp,
 		&i.Token,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.PrivateIp,
 	)
 	return i, err
 }
@@ -70,7 +69,7 @@ func (q *Queries) DeleteAgent(ctx context.Context, id string) error {
 
 const getAgent = `-- name: GetAgent :one
 SELECT
-  id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
+  id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
 FROM
   agents
 WHERE
@@ -87,17 +86,17 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 		&i.PublicIp,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.PrivateIp,
 		&i.Token,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.PrivateIp,
 	)
 	return i, err
 }
 
 const listAgents = `-- name: ListAgents :many
 SELECT
-  id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
+  id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
 FROM
   agents
 WHERE
@@ -132,10 +131,10 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent
 			&i.PublicIp,
 			&i.Containers,
 			&i.ActiveIp,
+			&i.PrivateIp,
 			&i.Token,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.PrivateIp,
 		); err != nil {
 			return nil, err
 		}
@@ -161,17 +160,17 @@ SET
   token = COALESCE(?6, token),
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ?7 RETURNING id, profile_id, hostname, public_ip, containers, active_ip, token, created_at, updated_at, private_ip
+  id = ?7 RETURNING id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
 `
 
 type UpdateAgentParams struct {
-	Hostname   *string         `json:"hostname"`
-	PublicIp   *string         `json:"publicIp"`
-	PrivateIp  *string         `json:"privateIp"`
-	ActiveIp   *string         `json:"activeIp"`
-	Containers json.RawMessage `json:"containers"`
-	Token      *string         `json:"token"`
-	ID         string          `json:"id"`
+	Hostname   *string `json:"hostname"`
+	PublicIp   *string `json:"publicIp"`
+	PrivateIp  *string `json:"privateIp"`
+	ActiveIp   *string `json:"activeIp"`
+	Containers *string `json:"containers"`
+	Token      *string `json:"token"`
+	ID         string  `json:"id"`
 }
 
 func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {
@@ -192,10 +191,10 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent
 		&i.PublicIp,
 		&i.Containers,
 		&i.ActiveIp,
+		&i.PrivateIp,
 		&i.Token,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.PrivateIp,
 	)
 	return i, err
 }

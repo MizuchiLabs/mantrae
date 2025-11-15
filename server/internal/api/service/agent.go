@@ -46,7 +46,10 @@ func (s *AgentService) CreateAgent(
 		ProfileID: req.Msg.ProfileId,
 	}
 
-	params.Token = util.GenerateAgentToken(strconv.Itoa(int(params.ProfileID)), params.ID)
+	params.Token = util.GenerateAgentToken(
+		strconv.Itoa(int(params.ProfileID)),
+		params.ID,
+	)
 
 	result, err := s.app.Conn.GetQuery().CreateAgent(ctx, params)
 	if err != nil {
@@ -177,10 +180,12 @@ func (s *AgentService) HealthCheck(
 	}
 
 	if req.Msg.Containers != nil {
-		params.Containers, err = json.Marshal(req.Msg.Containers)
+		jsonBytes, err := json.Marshal(req.Msg.Containers)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
+		containers := string(jsonBytes)
+		params.Containers = &containers
 	}
 
 	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)

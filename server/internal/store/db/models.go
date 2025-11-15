@@ -5,23 +5,22 @@
 package db
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
 type Agent struct {
-	ID         string          `json:"id"`
-	ProfileID  int64           `json:"profileId"`
-	Hostname   *string         `json:"hostname"`
-	PublicIp   *string         `json:"publicIp"`
-	Containers json.RawMessage `json:"containers"`
-	ActiveIp   *string         `json:"activeIp"`
-	Token      string          `json:"token"`
-	CreatedAt  *time.Time      `json:"createdAt"`
-	UpdatedAt  *time.Time      `json:"updatedAt"`
-	PrivateIp  *string         `json:"privateIp"`
+	ID         string     `json:"id"`
+	ProfileID  int64      `json:"profileId"`
+	Hostname   *string    `json:"hostname"`
+	PublicIp   *string    `json:"publicIp"`
+	Containers *string    `json:"containers"`
+	ActiveIp   *string    `json:"activeIp"`
+	PrivateIp  *string    `json:"privateIp"`
+	Token      string     `json:"token"`
+	CreatedAt  *time.Time `json:"createdAt"`
+	UpdatedAt  *time.Time `json:"updatedAt"`
 }
 
 type AuditLog struct {

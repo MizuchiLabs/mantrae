@@ -10,11 +10,12 @@ CREATE TABLE "agents" (
   profile_id INTEGER NOT NULL,
   hostname TEXT,
   public_ip TEXT,
-  containers JSONB,
+  containers TEXT,
   active_ip TEXT,
+  private_ip TEXT,
   token TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, private_ip TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
 );
 
@@ -280,23 +281,43 @@ CREATE INDEX idx_tcp_servers_transports_profile_name ON tcp_servers_transports (
 
 -- +goose Down
 DROP TABLE IF EXISTS settings;
+
 DROP TABLE IF EXISTS agents;
+
 DROP TABLE IF EXISTS errors;
+
 DROP TABLE IF EXISTS entry_points;
+
 DROP TABLE IF EXISTS http_routers;
+
 DROP TABLE IF EXISTS tcp_routers;
+
 DROP TABLE IF EXISTS udp_routers;
+
 DROP TABLE IF EXISTS http_services;
+
 DROP TABLE IF EXISTS tcp_services;
+
 DROP TABLE IF EXISTS udp_services;
+
 DROP TABLE IF EXISTS http_middlewares;
+
 DROP TABLE IF EXISTS tcp_middlewares;
+
 DROP TABLE IF EXISTS http_servers_transports;
+
 DROP TABLE IF EXISTS tcp_servers_transports;
+
 DROP TABLE IF EXISTS traefik_instances;
+
 DROP TABLE IF EXISTS audit_logs;
+
 DROP TABLE IF EXISTS profiles;
+
 DROP TABLE IF EXISTS dns_providers;
+
 DROP TABLE IF EXISTS users;
+
 DROP TABLE IF EXISTS http_router_dns_providers;
+
 DROP TABLE IF EXISTS tcp_router_dns_providers;

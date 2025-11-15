@@ -197,7 +197,7 @@ func (u *User) ToProto() *mantraev1.User {
 func (a *Agent) ToProto() *mantraev1.Agent {
 	containers := make([]*mantraev1.Container, 0)
 	if a.Containers != nil {
-		if err := json.Unmarshal(a.Containers, &containers); err != nil {
+		if err := json.Unmarshal([]byte(*a.Containers), &containers); err != nil {
 			slog.Error("failed to unmarshal agent containers", "error", err)
 		}
 	}
@@ -293,6 +293,7 @@ func (a *Agent) FromProto(pb *mantraev1.Agent) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal containers: %w", err)
 	}
+	containers := string(raw)
 
 	a.ID = pb.Id
 	a.ProfileID = pb.ProfileId
@@ -301,7 +302,7 @@ func (a *Agent) FromProto(pb *mantraev1.Agent) error {
 	a.PrivateIp = StringPtr(pb.PrivateIp)
 	a.ActiveIp = StringPtr(pb.ActiveIp)
 	a.Token = pb.Token
-	a.Containers = raw
+	a.Containers = &containers
 	return nil
 }
 
