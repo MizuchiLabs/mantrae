@@ -20,10 +20,10 @@ importers:
         version: 2.10.1
       '@connectrpc/connect':
         specifier: ^2.1.0
-        version: 2.1.0(@bufbuild/protobuf@2.10.1)
+        version: 2.1.1(@bufbuild/protobuf@2.10.1)
       '@connectrpc/connect-web':
         specifier: ^2.1.0
-        version: 2.1.0(@bufbuild/protobuf@2.10.1)(@connectrpc/connect@2.1.0(@bufbuild/protobuf@2.10.1))
+        version: 2.1.1(@bufbuild/protobuf@2.10.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.10.1))
       '@internationalized/date':
         specifier: ^3.10.0
         version: 3.10.0
@@ -62,10 +62,10 @@ importers:
         version: 1.1.0(svelte@5.43.8)
       oxlint:
         specifier: ^1.28.0
-        version: 1.28.0(oxlint-tsgolint@0.7.0)
+        version: 1.28.0(oxlint-tsgolint@0.7.1)
       oxlint-tsgolint:
         specifier: ^0.7.0
-        version: 0.7.0
+        version: 0.7.1
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
@@ -139,14 +139,14 @@ packages:
   '@bufbuild/protobuf@2.10.1':
     resolution: {integrity: sha512-ckS3+vyJb5qGpEYv/s1OebUHDi/xSNtfgw1wqKZo7MR9F2z+qXr0q5XagafAG/9O0QPVIUfST0smluYSTpYFkg==}
 
-  '@connectrpc/connect-web@2.1.0':
-    resolution: {integrity: sha512-4IBFeMeXS1RVtmmFE/MwH+vWq/5vDRKys70va+DAaWDh83Rdy0iUQOJbITUDzvonlY5as3vwfs5yy9Yp2miHSw==}
+  '@connectrpc/connect-web@2.1.1':
+    resolution: {integrity: sha512-J8317Q2MaFRCT1jzVR1o06bZhDIBmU0UAzWx6xOIXzOq8+k71/+k7MUF7AwcBUX+34WIvbm5syRgC5HXQA8fOg==}
     peerDependencies:
       '@bufbuild/protobuf': ^2.7.0
-      '@connectrpc/connect': 2.1.0
+      '@connectrpc/connect': 2.1.1
 
-  '@connectrpc/connect@2.1.0':
-    resolution: {integrity: sha512-xhiwnYlJNHzmFsRw+iSPIwXR/xweTvTw8x5HiwWp10sbVtd4OpOXbRgE7V58xs1EC17fzusF1f5uOAy24OkBuA==}
+  '@connectrpc/connect@2.1.1':
+    resolution: {integrity: sha512-JzhkaTvM73m2K1URT6tv53k2RwngSmCXLZJgK580qNQOXRzZRR/BCMfZw3h+90JpnG6XksP5bYT+cz0rpUzUWQ==}
     peerDependencies:
       '@bufbuild/protobuf': ^2.7.0
 
@@ -358,33 +358,33 @@ packages:
     peerDependencies:
       svelte: ^5
 
-  '@oxlint-tsgolint/darwin-arm64@0.7.0':
-    resolution: {integrity: sha512-izoi/CWxaWNQ0mx30C5XOHj/2bQgCCOrI/NANhwvTF57x4ucrDs4QBOe9mmVXs7UWKdEJnIIVWFkOkBL+AeSXw==}
+  '@oxlint-tsgolint/darwin-arm64@0.7.1':
+    resolution: {integrity: sha512-RyMq2FRizgBWQJrlbNYXwEx7Q6/OsurhMQ5mXM/e3YrL9e91fXxRKiaRHzVxo6Id4iWz2+xKX5Dqp3C+ME4wtA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@oxlint-tsgolint/darwin-x64@0.7.0':
-    resolution: {integrity: sha512-e44m6SAlPi0x3Mw26NUqNDv/KhoLbOr2acanP8ESkgENx1AE+rGg11XONQTbBgah0VXg/Vrmn+RAbW0+Awc4HQ==}
+  '@oxlint-tsgolint/darwin-x64@0.7.1':
+    resolution: {integrity: sha512-d5v5+KXxu8we3jB668Qf2fapaglcJM/PqRXaX3ZYNsdDfTTjaV3KEaKRoozfBvFhnw3Z3MaJ647mEIRmrQivbg==}
     cpu: [x64]
     os: [darwin]
 
-  '@oxlint-tsgolint/linux-arm64@0.7.0':
-    resolution: {integrity: sha512-ry7cFVmFH0d5qR79V5D/JWCQnEOP3ykwYMTzKi0fNX5TBrRS1mza81DsEZiLzZCcftgKbv/FfZ4x3ZYuBdNlsw==}
+  '@oxlint-tsgolint/linux-arm64@0.7.1':
+    resolution: {integrity: sha512-6HF1Ck+60PPUjId4cjsABaanD+vMug7zBscGgtSjxb4nqcGOm9QknJ5EiDaiazU94hlykPSP013QUauEs48sJg==}
     cpu: [arm64]
     os: [linux]
 
-  '@oxlint-tsgolint/linux-x64@0.7.0':
-    resolution: {integrity: sha512-SdBnhInM2YyEo68fNAR02Fc21TiUJn52huxuGqJtZVhXmxgDPKXqlv5+gcUTeSkLlurJCS75PTr+VCTvIPPJpQ==}
+  '@oxlint-tsgolint/linux-x64@0.7.1':
+    resolution: {integrity: sha512-rbai2x15i6Ym4h3vGITxtZN9mQt2qTHUpGwN1Yz3e+K1X1HYVX2aBf0aMpe5L8leaYU2xOPRzyzI6z9UAiygqQ==}
     cpu: [x64]
     os: [linux]
 
-  '@oxlint-tsgolint/win32-arm64@0.7.0':
-    resolution: {integrity: sha512-CcqZAbd0QNfppd3hHHaGFZsIAeEsk55BP6ful7ooosQGKt+IS3RNNbsLtiJwv6BE3I8Msc8xR5y5tp7CidioRQ==}
+  '@oxlint-tsgolint/win32-arm64@0.7.1':
+    resolution: {integrity: sha512-h73QR1p6bn9yXyPzaC22HuIfcZr/PQJPsMsYJb1kNCyNltUmvfxxX2+EIm7N9aUonWZQiQYUZqf754SfHw194g==}
     cpu: [arm64]
     os: [win32]
 
-  '@oxlint-tsgolint/win32-x64@0.7.0':
-    resolution: {integrity: sha512-wSUqtNB3SmqcM7OFI55ixQCEqXJz2W756KydQMExHoOzDJfjtacuo/anSdSkRdbpL/Sb7p0z7DeEki/hiPIz6g==}
+  '@oxlint-tsgolint/win32-x64@0.7.1':
+    resolution: {integrity: sha512-+ZdJW8uCIiAS6vIwaVtXt4K+HEjbNyR1zf5l+8kfVWW6oIyYby2emZMT+1YQxft6LJ159Bt7qkVpO6sscIBp6Q==}
     cpu: [x64]
     os: [win32]
 
@@ -1102,8 +1102,8 @@ packages:
   oniguruma-to-es@4.3.3:
     resolution: {integrity: sha512-rPiZhzC3wXwE59YQMRDodUwwT9FZ9nNBwQQfsd1wfdtlKEyCdRV0avrTcSZ5xlIvGRVPd/cx6ZN45ECmS39xvg==}
 
-  oxlint-tsgolint@0.7.0:
-    resolution: {integrity: sha512-/bQym+gjssCWyKBJ30U0vJxojPx5fJQ2DFCARdjibvB0/DGbCRzZhJU5gZVs1gMnr9nBDz0+OUo1LZVZl3LDPw==}
+  oxlint-tsgolint@0.7.1:
+    resolution: {integrity: sha512-v55AjqzCu1cV5GORTHXNhaxOX6cSVtJ1z/VwG+0aEjqSQ09887uLWNglrgXe1xLY7elRazssjYNLxiwFs9s8uQ==}
     hasBin: true
 
   oxlint@1.28.0:
@@ -1530,12 +1530,12 @@ snapshots:
 
   '@bufbuild/protobuf@2.10.1': {}
 
-  '@connectrpc/connect-web@2.1.0(@bufbuild/protobuf@2.10.1)(@connectrpc/connect@2.1.0(@bufbuild/protobuf@2.10.1))':
+  '@connectrpc/connect-web@2.1.1(@bufbuild/protobuf@2.10.1)(@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.10.1))':
     dependencies:
       '@bufbuild/protobuf': 2.10.1
-      '@connectrpc/connect': 2.1.0(@bufbuild/protobuf@2.10.1)
+      '@connectrpc/connect': 2.1.1(@bufbuild/protobuf@2.10.1)
 
-  '@connectrpc/connect@2.1.0(@bufbuild/protobuf@2.10.1)':
+  '@connectrpc/connect@2.1.1(@bufbuild/protobuf@2.10.1)':
     dependencies:
       '@bufbuild/protobuf': 2.10.1
 
@@ -1682,22 +1682,22 @@ snapshots:
     dependencies:
       svelte: 5.43.8
 
-  '@oxlint-tsgolint/darwin-arm64@0.7.0':
+  '@oxlint-tsgolint/darwin-arm64@0.7.1':
     optional: true
 
-  '@oxlint-tsgolint/darwin-x64@0.7.0':
+  '@oxlint-tsgolint/darwin-x64@0.7.1':
     optional: true
 
-  '@oxlint-tsgolint/linux-arm64@0.7.0':
+  '@oxlint-tsgolint/linux-arm64@0.7.1':
     optional: true
 
-  '@oxlint-tsgolint/linux-x64@0.7.0':
+  '@oxlint-tsgolint/linux-x64@0.7.1':
     optional: true
 
-  '@oxlint-tsgolint/win32-arm64@0.7.0':
+  '@oxlint-tsgolint/win32-arm64@0.7.1':
     optional: true
 
-  '@oxlint-tsgolint/win32-x64@0.7.0':
+  '@oxlint-tsgolint/win32-x64@0.7.1':
     optional: true
 
   '@oxlint/darwin-arm64@1.28.0':
@@ -2356,16 +2356,16 @@ snapshots:
       regex: 6.0.1
       regex-recursion: 6.0.2
 
-  oxlint-tsgolint@0.7.0:
+  oxlint-tsgolint@0.7.1:
     optionalDependencies:
-      '@oxlint-tsgolint/darwin-arm64': 0.7.0
-      '@oxlint-tsgolint/darwin-x64': 0.7.0
-      '@oxlint-tsgolint/linux-arm64': 0.7.0
-      '@oxlint-tsgolint/linux-x64': 0.7.0
-      '@oxlint-tsgolint/win32-arm64': 0.7.0
-      '@oxlint-tsgolint/win32-x64': 0.7.0
+      '@oxlint-tsgolint/darwin-arm64': 0.7.1
+      '@oxlint-tsgolint/darwin-x64': 0.7.1
+      '@oxlint-tsgolint/linux-arm64': 0.7.1
+      '@oxlint-tsgolint/linux-x64': 0.7.1
+      '@oxlint-tsgolint/win32-arm64': 0.7.1
+      '@oxlint-tsgolint/win32-x64': 0.7.1
 
-  oxlint@1.28.0(oxlint-tsgolint@0.7.0):
+  oxlint@1.28.0(oxlint-tsgolint@0.7.1):
     optionalDependencies:
       '@oxlint/darwin-arm64': 1.28.0
       '@oxlint/darwin-x64': 1.28.0
@@ -2375,7 +2375,7 @@ snapshots:
       '@oxlint/linux-x64-musl': 1.28.0
       '@oxlint/win32-arm64': 1.28.0
       '@oxlint/win32-x64': 1.28.0
-      oxlint-tsgolint: 0.7.0
+      oxlint-tsgolint: 0.7.1
 
   picocolors@1.1.1: {}
 
