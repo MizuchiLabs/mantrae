@@ -18,9 +18,9 @@ builds:
     env: [CGO_ENABLED=0]
     ldflags:
       - -s -w
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Version={{.Tag}}
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Commit={{.Commit}}
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Version={{.Version}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.Commit}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Date={{.Date}}
     goos:
       - linux
       - darwin
@@ -35,9 +35,9 @@ builds:
     env: [CGO_ENABLED=0]
     ldflags:
       - -s -w
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Version={{.Tag}}
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Commit={{.Commit}}
-      - -X github.com/mizuchilabs/mantrae/pkg/build.Date={{.Date}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Version={{.Version}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.Commit}}
+      - -X github.com/mizuchilabs/mantrae/pkg/meta.Date={{.Date}}
     goos:
       - linux
     goarch:
@@ -47,7 +47,7 @@ builds:
 kos:
   - id: server
     build: server
-    main: ./server/cmd/
+    # main: ./server/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae]
     bare: true
@@ -61,7 +61,7 @@ kos:
 
   - id: agent
     build: agent
-    main: ./agent/cmd/
+    # main: ./agent/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae-agent]
     bare: true

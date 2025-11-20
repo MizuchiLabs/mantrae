@@ -52,7 +52,7 @@ tasks:
   update:
     desc: Update dependencies
     cmds:
-      # - go get -u ./...
+      - go get -u ./...
       - cd web && pnpm update --latest
       - cd docs && pnpm update --latest
 
@@ -99,9 +99,16 @@ tasks:
   # 󰡨  Build container
   docker:build:
     desc: Build local test container with ko
-    deps: [build:web]
+    # deps: [build:web]
     cmds:
       - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./server/cmd --bare
       - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build ./agent/cmd --bare
       - grype $IMAGE_SERVER_DEV
       - grype $IMAGE_AGENT_DEV
+
+  docker:release:
+    desc: Build and push container to registry
+    deps: [build:web]
+    cmds:
+      - KO_DOCKER_REPO=$IMAGE_SERVER_PROD ko build ./server/cmd --bare
+      - KO_DOCKER_REPO=$IMAGE_AGENT_PROD ko build ./agent/cmd --bare

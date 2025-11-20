@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -22,7 +21,7 @@ func main() {
 		EnableShellCompletion: true,
 		Suggest:               true,
 		Name:                  "mantrae",
-		Version:               fmt.Sprintf("%s (%s)", meta.Version, meta.Commit),
+		Version:               meta.Version,
 		Usage:                 "mantrae [command]",
 		Description: `Mantrae simplifies the management of Traefik reverse proxy configurations through an intuitive web interface. Manage routers, middleware, services, and DNS providers with ease.
 

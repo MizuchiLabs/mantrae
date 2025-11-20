@@ -37,21 +37,9 @@ func main() {
 		"profile_id", cfg.ProfileID,
 		"agent_id", cfg.AgentID)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	// Graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	// Setup signal handling
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
-	agent := client.NewAgent(cfg)
-
-	// Handle graceful shutdown
-	go func() {
-		<-quit
-		slog.Info("Shutting down agent...")
-		cancel()
-	}()
-
-	agent.Run(ctx)
+	client.NewAgent(cfg).Run(ctx)
 }
