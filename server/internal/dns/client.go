@@ -8,11 +8,12 @@ import (
 
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
-	"github.com/mizuchilabs/mantrae/server/internal/config"
+	"github.com/mizuchilabs/mantrae/server/internal/store"
 )
 
 type DNSManager struct {
-	app *config.App
+	conn   *store.Connection
+	secret string
 }
 
 type DNSProvider interface {
@@ -36,8 +37,8 @@ type DNSRouterInfo struct {
 
 var managedTXT = "\"managed-by=mantrae\""
 
-func NewManager(app *config.App) *DNSManager {
-	return &DNSManager{app: app}
+func NewManager(conn *store.Connection, secret string) *DNSManager {
+	return &DNSManager{conn: conn, secret: secret}
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
@@ -49,8 +50,7 @@ func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
 
 	for domain, entries := range domainMap {
 		for _, entry := range entries {
-			err := entry.Provider.UpsertRecord(domain)
-			if err != nil {
+			if err := entry.Provider.UpsertRecord(domain); err != nil {
 				slog.Error("Failed to upsert DNS record",
 					"domain", domain,
 					"router", entry.RouterName,
@@ -68,7 +68,7 @@ func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
 func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) error {
 	switch proto {
 	case "http":
-		router, err := d.app.Conn.GetQuery().GetHttpRouter(ctx, routerID)
+		router, err := d.conn.GetQuery().GetHttpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get traefik config: %w", err)
 		}
@@ -77,7 +77,7 @@ func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) erro
 			return fmt.Errorf("failed to extract domains: %w", err)
 		}
 
-		providers, err := d.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, routerID)
+		providers, err := d.conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get DNS provider: %w", err)
 		}
@@ -98,7 +98,7 @@ func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) erro
 			}
 		}
 	case "tcp":
-		router, err := d.app.Conn.GetQuery().GetTcpRouter(ctx, routerID)
+		router, err := d.conn.GetQuery().GetTcpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get traefik config: %w", err)
 		}
@@ -107,7 +107,7 @@ func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) erro
 			return fmt.Errorf("failed to extract domains: %w", err)
 		}
 
-		providers, err := d.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, routerID)
+		providers, err := d.conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, routerID)
 		if err != nil {
 			return fmt.Errorf("failed to get DNS provider: %w", err)
 		}
@@ -140,14 +140,14 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 		return nil, fmt.Errorf("invalid provider id")
 	}
 
-	provider, err := d.app.Conn.GetQuery().GetDnsProvider(context.Background(), id)
+	provider, err := d.conn.GetQuery().GetDnsProvider(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
 	if provider.Config.APIKey == "" {
 		return nil, fmt.Errorf("invalid provider config")
 	}
-	decryptedAPIKey, err := util.DecryptSecret(provider.Config.APIKey, d.app.Secret)
+	decryptedAPIKey, err := util.DecryptSecret(provider.Config.APIKey, d.secret)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +222,7 @@ func (d *DNSManager) getDomainConfig(ctx context.Context) (map[string][]DNSRoute
 	}
 
 	// HTTP
-	if httpRouters, err := d.app.Conn.GetQuery().GetHttpRouterDomains(ctx); err != nil {
+	if httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(ctx); err != nil {
 		return nil, err
 	} else {
 		for _, r := range httpRouters {
@@ -236,7 +236,7 @@ func (d *DNSManager) getDomainConfig(ctx context.Context) (map[string][]DNSRoute
 	}
 
 	// TCP
-	if tcpRouters, err := d.app.Conn.GetQuery().GetTcpRouterDomains(ctx); err != nil {
+	if tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(ctx); err != nil {
 		return nil, err
 	} else {
 		for _, r := range tcpRouters {

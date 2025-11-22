@@ -13,6 +13,7 @@ import (
 	"github.com/mizuchilabs/mantrae/pkg/logger"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/mizuchilabs/mantrae/server/internal/backup"
+	"github.com/mizuchilabs/mantrae/server/internal/dns"
 	"github.com/mizuchilabs/mantrae/server/internal/event"
 	"github.com/mizuchilabs/mantrae/server/internal/settings"
 	"github.com/mizuchilabs/mantrae/server/internal/store"
@@ -37,6 +38,7 @@ type App struct {
 	BM    *backup.BackupManager
 	SM    *settings.SettingsManager
 	Event *event.Broadcaster
+	DNS   *dns.DNSManager
 }
 
 func Setup(ctx context.Context) (*App, error) {
@@ -61,6 +63,7 @@ func Setup(ctx context.Context) (*App, error) {
 	app.BM.Start(ctx)
 
 	app.Event = event.NewBroadcaster(ctx)
+	app.DNS = dns.NewManager(app.Conn, app.Secret)
 
 	return &app, app.setupDefaultData(ctx)
 }

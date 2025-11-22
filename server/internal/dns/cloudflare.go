@@ -5,15 +5,18 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go/v6"
+	"github.com/cloudflare/cloudflare-go/v6/dns"
+	"github.com/cloudflare/cloudflare-go/v6/option"
+	"github.com/cloudflare/cloudflare-go/v6/zones"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
 type CloudflareProvider struct {
-	Client     *cloudflare.API
+	Client     *cloudflare.Client
 	ExternalIP string
-	Proxied    *bool
+	Proxied    bool
 }
 
 func NewCloudflareProvider(d *schema.DNSProviderConfig) *CloudflareProvider {
@@ -21,16 +24,10 @@ func NewCloudflareProvider(d *schema.DNSProviderConfig) *CloudflareProvider {
 		slog.Error("Invalid Cloudflare provider config")
 		return nil
 	}
-	client, err := cloudflare.NewWithAPIToken(d.APIKey)
-	if err != nil {
-		slog.Error("Failed to create Cloudflare client", "error", err)
-		return nil
-	}
-
 	return &CloudflareProvider{
-		Client:     client,
+		Client:     cloudflare.NewClient(option.WithAPIToken(d.APIKey)),
 		ExternalIP: d.IP,
-		Proxied:    &d.Proxied,
+		Proxied:    d.Proxied,
 	}
 }
 
@@ -38,40 +35,57 @@ func (c *CloudflareProvider) UpsertRecord(subdomain string) error {
 	if c.Client == nil {
 		return nil
 	}
-	var recordType string
-	if util.IsValidIPv4(c.ExternalIP) {
-		recordType = "A"
-	} else if util.IsValidIPv6(c.ExternalIP) {
-		recordType = "AAAA"
-	} else {
-		return fmt.Errorf("invalid IP address: %s", c.ExternalIP)
+
+	recordType, err := c.getRecordType()
+	if err != nil {
+		return err
 	}
 
-	// Check if the record exists
+	// List existing records
 	records, err := c.ListRecords(subdomain)
 	if err != nil {
 		return err
 	}
 
-	// Check if the record is managed by us
-	if err := c.checkRecord(subdomain); err != nil {
-		return err
+	// Check if records are managed by us
+	if !c.isManagedByUs(records, subdomain) && len(records) > 0 {
+		return fmt.Errorf("record not managed by Mantrae")
 	}
 
-	shouldUpdate := verifyRecords(records, subdomain, c.ExternalIP)
-	if len(records) <= 1 {
+	// Separate DNS records from TXT marker
+	dnsRecords, txtRecord := c.separateRecords(records, subdomain)
+
+	// No records exist - create new
+	if len(dnsRecords) == 0 {
 		if err := c.createRecord(subdomain, recordType); err != nil {
 			return err
 		}
 		slog.Info("Created record", "name", subdomain, "type", recordType, "content", c.ExternalIP)
-	} else if shouldUpdate {
-		for _, record := range records {
-			if record.Type != "TXT" {
-				if err := c.updateRecord(record.ID, recordType, subdomain); err != nil {
-					return err
-				}
-				slog.Info("Updated record", "name", record.Name, "type", record.Type, "content", record.Content)
+		return nil
+	}
+
+	// Records exist - check if update needed
+	if c.needsUpdate(dnsRecords, recordType) {
+		for _, record := range dnsRecords {
+			if err := c.updateRecord(record.ID, recordType, subdomain); err != nil {
+				return err
 			}
+			slog.Info(
+				"Updated record",
+				"name",
+				record.Name,
+				"type",
+				record.Type,
+				"content",
+				c.ExternalIP,
+			)
+		}
+	}
+
+	// Ensure TXT marker exists
+	if txtRecord == nil {
+		if err := c.createTXTMarker(subdomain); err != nil {
+			return fmt.Errorf("failed to create TXT marker: %w", err)
 		}
 	}
 
@@ -82,12 +96,9 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 	if c.Client == nil {
 		return nil
 	}
+
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
-		return err
-	}
-
-	if err = c.checkRecord(subdomain); err != nil {
 		return err
 	}
 
@@ -96,24 +107,33 @@ func (c *CloudflareProvider) DeleteRecord(subdomain string) error {
 		return err
 	}
 
-	zoneID, err := c.Client.ZoneIDByName(domain)
+	// Check if managed by us before deleting
+	if !c.isManagedByUs(records, subdomain) {
+		return fmt.Errorf("record not managed by Mantrae")
+	}
+
+	zoneID, err := c.getZoneID(domain)
 	if err != nil {
 		return err
 	}
 
+	// Delete all records (including TXT marker)
 	for _, record := range records {
-		if err := c.Client.DeleteDNSRecord(context.Background(), cloudflare.ZoneIdentifier(zoneID), record.ID); err != nil {
-			return err
+		_, err := c.Client.DNS.Records.Delete(
+			context.Background(),
+			record.ID,
+			dns.RecordDeleteParams{
+				ZoneID: cloudflare.F(zoneID),
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("failed to delete record %s: %w", record.ID, err)
 		}
 
-		slog.Info(
-			"Deleted record",
-			"subdomain",
-			subdomain,
-			"type",
-			record.Type,
-			"content",
-			record.Content,
+		slog.Info("Deleted record",
+			"subdomain", subdomain,
+			"type", record.Type,
+			"content", record.Content,
 		)
 	}
 
@@ -124,74 +144,96 @@ func (c *CloudflareProvider) createRecord(subdomain, recordType string) error {
 	if c.Client == nil {
 		return nil
 	}
+
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	zoneID, err := c.Client.ZoneIDByName(domain)
+	zoneID, err := c.getZoneID(domain)
 	if err != nil {
 		return err
 	}
 
-	// Create the A/AAAA record
-	_, err = c.Client.CreateDNSRecord(
-		context.Background(),
-		cloudflare.ZoneIdentifier(zoneID),
-		cloudflare.CreateDNSRecordParams{
-			Type:    recordType,
-			Name:    subdomain,
-			Content: c.ExternalIP,
-			Proxied: c.Proxied,
-		},
-	)
+	// Create DNS record
+	switch recordType {
+	case "A":
+		params := dns.RecordNewParams{
+			ZoneID: cloudflare.F(zoneID),
+			Body: dns.ARecordParam{
+				Name:    cloudflare.F(subdomain),
+				Content: cloudflare.F(c.ExternalIP),
+				Proxied: cloudflare.F(c.Proxied),
+				Type:    cloudflare.F(dns.ARecordTypeA),
+			},
+		}
+		_, err = c.Client.DNS.Records.New(context.Background(), params)
+	case "AAAA":
+		params := dns.RecordNewParams{
+			ZoneID: cloudflare.F(zoneID),
+			Body: dns.AAAARecordParam{
+				Name:    cloudflare.F(subdomain),
+				Content: cloudflare.F(c.ExternalIP),
+				Proxied: cloudflare.F(c.Proxied),
+				Type:    cloudflare.F(dns.AAAARecordTypeAAAA),
+			},
+		}
+		_, err = c.Client.DNS.Records.New(context.Background(), params)
+	default:
+		return fmt.Errorf("unsupported record type: %s", recordType)
+	}
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create %s record: %w", recordType, err)
 	}
 
-	_, err = c.Client.CreateDNSRecord(
-		context.Background(),
-		cloudflare.ZoneIdentifier(zoneID),
-		cloudflare.CreateDNSRecordParams{
-			Type:    "TXT",
-			Name:    "_mantrae-" + subdomain,
-			Content: managedTXT,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	// Create TXT marker
+	return c.createTXTMarker(subdomain)
 }
 
 func (c *CloudflareProvider) updateRecord(recordID, recordType, subdomain string) error {
 	if c.Client == nil {
 		return nil
 	}
+
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	zoneID, err := c.Client.ZoneIDByName(domain)
+	zoneID, err := c.getZoneID(domain)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.Client.UpdateDNSRecord(
-		context.Background(),
-		cloudflare.ZoneIdentifier(zoneID),
-		cloudflare.UpdateDNSRecordParams{
-			ID:      recordID,
-			Type:    recordType,
-			Name:    subdomain,
-			Content: c.ExternalIP,
-			Proxied: c.Proxied,
-		},
-	)
+	switch recordType {
+	case "A":
+		params := dns.RecordUpdateParams{
+			ZoneID: cloudflare.F(zoneID),
+			Body: dns.ARecordParam{
+				Name:    cloudflare.F(subdomain),
+				Content: cloudflare.F(c.ExternalIP),
+				Proxied: cloudflare.F(c.Proxied),
+				Type:    cloudflare.F(dns.ARecordTypeA),
+			},
+		}
+		_, err = c.Client.DNS.Records.Update(context.Background(), recordID, params)
+	case "AAAA":
+		params := dns.RecordUpdateParams{
+			ZoneID: cloudflare.F(zoneID),
+			Body: dns.AAAARecordParam{
+				Name:    cloudflare.F(subdomain),
+				Content: cloudflare.F(c.ExternalIP),
+				Proxied: cloudflare.F(c.Proxied),
+				Type:    cloudflare.F(dns.AAAARecordTypeAAAA),
+			},
+		}
+		_, err = c.Client.DNS.Records.Update(context.Background(), recordID, params)
+	default:
+		return fmt.Errorf("unsupported record type: %s", recordType)
+	}
+
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update %s record: %w", recordType, err)
 	}
 
 	return nil
@@ -201,43 +243,70 @@ func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	if c.Client == nil {
 		return nil, nil
 	}
+
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}
 
-	zoneID, err := c.Client.ZoneIDByName(domain)
+	zoneID, err := c.getZoneID(domain)
 	if err != nil {
 		return nil, fmt.Errorf("error getting zone ID for subdomain %s: %w", subdomain, err)
 	}
 
-	recordsA, _, err := c.Client.ListDNSRecords(
+	var allRecords []dns.RecordResponse
+
+	// Query A records
+	recordsA, err := c.Client.DNS.Records.List(
 		context.Background(),
-		cloudflare.ZoneIdentifier(zoneID),
-		cloudflare.ListDNSRecordsParams{Name: subdomain},
+		dns.RecordListParams{
+			ZoneID: cloudflare.F(zoneID),
+			Type:   cloudflare.F(dns.RecordListParamsTypeA),
+			Name:   cloudflare.F(dns.RecordListParamsName{Contains: cloudflare.F(subdomain)}),
+		},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error listing A records for subdomain %s: %w", subdomain, err)
 	}
+	allRecords = append(allRecords, recordsA.Result...)
 
-	recordsTXT, _, err := c.Client.ListDNSRecords(
+	// Query AAAA records
+	recordsAAAA, err := c.Client.DNS.Records.List(
 		context.Background(),
-		cloudflare.ZoneIdentifier(zoneID),
-		cloudflare.ListDNSRecordsParams{
-			Type: "TXT",
-			Name: "_mantrae-" + subdomain,
+		dns.RecordListParams{
+			ZoneID: cloudflare.F(zoneID),
+			Type:   cloudflare.F(dns.RecordListParamsTypeAAAA),
+			Name:   cloudflare.F(dns.RecordListParamsName{Contains: cloudflare.F(subdomain)}),
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error listing AAAA records for subdomain %s: %w", subdomain, err)
+	}
+	allRecords = append(allRecords, recordsAAAA.Result...)
+
+	// Query TXT marker
+	recordsTXT, err := c.Client.DNS.Records.List(
+		context.Background(),
+		dns.RecordListParams{
+			ZoneID: cloudflare.F(zoneID),
+			Type:   cloudflare.F(dns.RecordListParamsTypeTXT),
+			Name: cloudflare.F(
+				dns.RecordListParamsName{Contains: cloudflare.F("_mantrae-" + subdomain)},
+			),
 		},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error listing TXT records for subdomain %s: %w", subdomain, err)
 	}
+	allRecords = append(allRecords, recordsTXT.Result...)
 
+	// Convert to DNSRecord
 	var dnsRecords []DNSRecord
-	for _, record := range append(recordsA, recordsTXT...) {
+	for _, record := range allRecords {
 		dnsRecords = append(dnsRecords, DNSRecord{
 			ID:      record.ID,
 			Name:    record.Name,
-			Type:    record.Type,
+			Type:    string(record.Type),
 			Content: record.Content,
 		})
 	}
@@ -245,23 +314,101 @@ func (c *CloudflareProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	return dnsRecords, nil
 }
 
-// checkRecord verifies if the TXT record for verification exists and is managed by us.
-func (c *CloudflareProvider) checkRecord(subdomain string) error {
-	records, err := c.ListRecords(subdomain)
+// separateRecords splits DNS records from the TXT marker
+func (c *CloudflareProvider) separateRecords(
+	records []DNSRecord,
+	subdomain string,
+) ([]DNSRecord, *DNSRecord) {
+	var dnsRecords []DNSRecord
+	var txtRecord *DNSRecord
+	markerName := "_mantrae-" + subdomain
+
+	for i := range records {
+		if records[i].Type == "TXT" && records[i].Name == markerName {
+			txtRecord = &records[i]
+		} else if records[i].Type == "A" || records[i].Type == "AAAA" {
+			dnsRecords = append(dnsRecords, records[i])
+		}
+	}
+
+	return dnsRecords, txtRecord
+}
+
+// isManagedByUs checks if the TXT marker exists
+func (c *CloudflareProvider) isManagedByUs(records []DNSRecord, subdomain string) bool {
+	markerName := "_mantrae-" + subdomain
+	for _, record := range records {
+		if record.Name == markerName && record.Type == "TXT" && record.Content == managedTXT {
+			return true
+		}
+	}
+	return false
+}
+
+// getRecordType determines A or AAAA based on IP
+func (c *CloudflareProvider) getRecordType() (string, error) {
+	if util.IsValidIPv4(c.ExternalIP) {
+		return "A", nil
+	}
+	if util.IsValidIPv6(c.ExternalIP) {
+		return "AAAA", nil
+	}
+	return "", fmt.Errorf("invalid IP address: %s", c.ExternalIP)
+}
+
+func (c *CloudflareProvider) createTXTMarker(subdomain string) error {
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	if len(records) == 0 {
-		return nil
+	zoneID, err := c.getZoneID(domain)
+	if err != nil {
+		return err
 	}
 
+	params := dns.RecordNewParams{
+		ZoneID: cloudflare.F(zoneID),
+		Body: dns.TXTRecordParam{
+			Name:    cloudflare.F("_mantrae-" + subdomain),
+			Content: cloudflare.F(managedTXT),
+			Type:    cloudflare.F(dns.TXTRecordTypeTXT),
+		},
+	}
+	_, err = c.Client.DNS.Records.New(context.Background(), params)
+	if err != nil {
+		return fmt.Errorf("failed to create TXT marker: %w", err)
+	}
+
+	return nil
+}
+
+// needsUpdate checks if any DNS record needs updating
+func (c *CloudflareProvider) needsUpdate(records []DNSRecord, expectedType string) bool {
 	for _, record := range records {
-		if record.Name == "_mantrae-"+subdomain && record.Type == "TXT" &&
-			record.Content == managedTXT {
-			return nil
+		// Wrong type or wrong content
+		if record.Type != expectedType || record.Content != c.ExternalIP {
+			return true
 		}
 	}
+	return false
+}
 
-	return fmt.Errorf("record not managed by Mantrae")
+// getZoneID retrieves the zone ID for a given domain
+func (c *CloudflareProvider) getZoneID(domain string) (string, error) {
+	zoneList, err := c.Client.Zones.List(
+		context.Background(),
+		zones.ZoneListParams{
+			Name: cloudflare.F(domain),
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+
+	if len(zoneList.Result) == 0 {
+		return "", fmt.Errorf("no zone found for domain: %s", domain)
+	}
+
+	return zoneList.Result[0].ID, nil
 }

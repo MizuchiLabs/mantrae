@@ -37,7 +37,7 @@ func (s *Scheduler) syncDNS() {
 	ticker := time.NewTicker(settings.AsDuration(duration))
 	defer ticker.Stop()
 
-	manager := dns.NewManager(s.cfg)
+	manager := dns.NewManager(s.cfg.Conn, s.cfg.Secret)
 	if err := manager.UpdateDNS(s.ctx); err != nil {
 		slog.Error("Failed to update DNS", "error", err)
 	}
