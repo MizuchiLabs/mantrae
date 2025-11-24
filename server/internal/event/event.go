@@ -40,7 +40,7 @@ func (b *Broadcaster) Subscribe(
 	defer b.mu.Unlock()
 	id = b.nextID
 	b.nextID++
-	c := make(chan *mantraev1.EventStreamResponse, 32)
+	c := make(chan *mantraev1.EventStreamResponse, 64)
 	b.clients[id] = &subscriber{
 		profileID: profileID,
 		ch:        c,
@@ -58,6 +58,13 @@ func (b *Broadcaster) Unsubscribe(id int) {
 }
 
 func (b *Broadcaster) Broadcast(event *mantraev1.EventStreamResponse) {
+	// Check if broadcaster is shutting down
+	select {
+	case <-b.ctx.Done():
+		return
+	default:
+	}
+
 	profileID, isGlobal := getProfileIDFromEvent(event)
 
 	b.mu.RLock()
@@ -69,7 +76,7 @@ func (b *Broadcaster) Broadcast(event *mantraev1.EventStreamResponse) {
 		select {
 		case sub.ch <- event:
 		default:
-			close(sub.ch)
+			slog.Warn("dropped event for slow subscriber", "profileID", sub.profileID)
 		}
 	}
 }
@@ -77,13 +84,17 @@ func (b *Broadcaster) Broadcast(event *mantraev1.EventStreamResponse) {
 func (b *Broadcaster) cleanup() {
 	<-b.ctx.Done()
 	slog.Info("Broadcaster is shutting down")
-	b.mu.Lock()
-	defer b.mu.Unlock()
 
-	for _, client := range b.clients {
-		close(client.ch)
-	}
-	b.clients = nil
+	done := make(chan struct{})
+	go func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for _, client := range b.clients {
+			close(client.ch)
+		}
+		b.clients = nil
+		close(done)
+	}()
 }
 
 func getProfileIDFromEvent(event *mantraev1.EventStreamResponse) (int64, bool) {

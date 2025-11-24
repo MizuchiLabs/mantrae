@@ -70,9 +70,10 @@ func configureSQLite(db *sql.DB) error {
 		return fmt.Errorf("executing pragmas: %w", err)
 	}
 
-	db.SetMaxOpenConns(1)
-	db.SetMaxIdleConns(1)
-	db.SetConnMaxLifetime(0)
+	db.SetMaxOpenConns(10)                 // Allow multiple concurrent connections
+	db.SetMaxIdleConns(5)                  // Keep some connections alive
+	db.SetConnMaxLifetime(0)               // Reuse connections indefinitely
+	db.SetConnMaxIdleTime(5 * time.Minute) // Close idle connections after 5min
 
 	return nil
 }

@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import RuleEditor from '../utils/ruleEditor.svelte';
+	import { CustomSwitch } from '../ui/custom-switch';
 
 	let { router = $bindable() }: { router: Router } = $props();
 
@@ -125,6 +126,21 @@
 			</Select.Root>
 		</div>
 	{/if}
+
+	<div class="flex items-center justify-between rounded-lg border p-3">
+		<div class="space-y-1">
+			<Label class="text-sm">Enable TLS</Label>
+			<p class="text-xs text-muted-foreground">Automatically enabled when a certResolver is set</p>
+		</div>
+
+		<CustomSwitch
+			checked={config.tls !== undefined}
+			onCheckedChange={(checked) => {
+				if (!config.tls && checked) config.tls = {} as RouterTLSConfig;
+				if (!checked) delete config.tls;
+			}}
+		/>
+	</div>
 
 	<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
 		<!-- TLS Configuration -->

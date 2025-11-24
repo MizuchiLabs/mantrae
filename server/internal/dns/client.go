@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -14,6 +15,7 @@ import (
 type DNSManager struct {
 	conn   *store.Connection
 	secret string
+	mu     sync.RWMutex
 }
 
 type DNSProvider interface {
@@ -43,6 +45,9 @@ func NewManager(conn *store.Connection, secret string) *DNSManager {
 
 // UpdateDNS updates the DNS records for all locally managed domains
 func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	domainMap, err := d.getDomainConfig(ctx)
 	if err != nil {
 		return err
@@ -66,6 +71,9 @@ func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
 func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	switch proto {
 	case "http":
 		router, err := d.conn.GetQuery().GetHttpRouter(ctx, routerID)

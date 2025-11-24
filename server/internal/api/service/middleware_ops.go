@@ -150,7 +150,7 @@ func (s *HTTPMiddlewareOps) Update(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, req.Name); idx != -1 {
+		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
 		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)
@@ -352,7 +352,7 @@ func (s *TCPMiddlewareOps) Update(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, req.Name); idx != -1 {
+		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
 		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)

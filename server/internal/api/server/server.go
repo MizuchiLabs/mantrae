@@ -35,6 +35,7 @@ func NewServer(app *config.App) *Server {
 
 func (s *Server) Start(ctx context.Context) error {
 	s.registerServices()
+
 	defer func() {
 		if err := s.app.Conn.Close(); err != nil {
 			slog.Error("failed to close database connection", "error", err)
@@ -89,6 +90,7 @@ func (s *Server) registerServices() {
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
 			middlewares.Logging(),
+			middlewares.TimeoutInterceptor(),
 			middlewares.NewAuthInterceptor(s.app),
 			middlewares.NewAuditInterceptor(s.app),
 			validate.NewInterceptor(),

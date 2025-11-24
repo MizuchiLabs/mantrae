@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@plugin '@tailwindcss/typography';
+@import '@fontsource-variable/manrope';
+@import '@fontsource-variable/victor-mono';
+@import '@fontsource-variable/victor-mono/wght-italic.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -36,9 +40,6 @@
 	--sidebar-accent-foreground: oklch(0.3791 0.1378 265.5222);
 	--sidebar-border: oklch(0.9276 0.0058 264.5313);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
-	--font-sans: Geist, sans-serif;
-	--font-serif: Geist, sans-serif;
-	--font-mono: Geist Mono, monospace;
 	--radius: 0.5rem;
 	--shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
@@ -50,6 +51,11 @@
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 	--tracking-normal: 0em;
 	--spacing: 0.25rem;
+
+	/* Fonts */
+	--font-sans: 'Manrope Variable', sans-serif;
+	--font-serif: Georgia, serif;
+	--font-mono: 'Victor Mono Variable', monospace;
 }
 
 .dark {
@@ -85,9 +91,6 @@
 	--sidebar-accent-foreground: oklch(0.8823 0.0571 254.1284);
 	--sidebar-border: oklch(0.3715 0 0);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
-	--font-sans: Geist, sans-serif;
-	--font-serif: Geist, sans-serif;
-	--font-mono: Geist Mono, monospace;
 	--radius: 0.5rem;
 	--shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
@@ -97,6 +100,11 @@
 	--shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
 	--shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+	/* Fonts */
+	--font-sans: 'Manrope Variable', sans-serif;
+	--font-serif: Georgia, serif;
+	--font-mono: 'Victor Mono Variable', monospace;
 }
 
 @theme inline {
