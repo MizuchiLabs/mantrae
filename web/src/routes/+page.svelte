@@ -334,6 +334,13 @@
 				<Card.Content>
 					<div class="space-y-4">
 						{#each $profiles || [] as profile (profile.id)}
+							{@const routerCount = $routers.filter((r) => r.profileId === profile.id).length}
+							{@const serviceCount = $services.filter((s) => s.profileId === profile.id).length}
+							{@const middlewareCount = $middlewares.filter(
+								(m) => m.profileId === profile.id
+							).length}
+							{@const agentCount = $agents.filter((a) => a.profileId === profile.id).length}
+
 							<div class="space-y-4 rounded-lg border p-4">
 								<div class="flex items-start justify-between">
 									<div class="flex items-start gap-3">
@@ -356,27 +363,27 @@
 
 								<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
 									<div class="text-center">
-										<div class="text-2xl font-bold text-blue-600">{$agents?.length}</div>
+										<div class="text-2xl font-bold text-blue-600">{agentCount}</div>
 										<div class="text-xs text-muted-foreground">Agents</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-green-600">
-											{$routers?.length}
+											{routerCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Routers</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-orange-600">
-											{$services?.length}
+											{serviceCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Services</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-purple-600">
-											{$middlewares?.length}
+											{middlewareCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Middlewares</div>
 									</div>
