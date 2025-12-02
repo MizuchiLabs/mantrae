@@ -24,7 +24,7 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
+      # - windows # too much too handle for gh runner :/
     goarch:
       - amd64
       - arm64
@@ -47,7 +47,6 @@ builds:
 kos:
   - id: server
     build: server
-    # main: ./server/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae]
     bare: true
@@ -61,7 +60,6 @@ kos:
 
   - id: agent
     build: agent
-    # main: ./agent/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae-agent]
     bare: true
