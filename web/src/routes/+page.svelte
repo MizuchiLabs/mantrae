@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { auditLogClient } from '$lib/api';
+	import {
+		agentClient,
+		auditLogClient,
+		middlewareClient,
+		routerClient,
+		serviceClient
+	} from '$lib/api';
 	import AuditLogModal from '$lib/components/modals/AuditLogModal.svelte';
 	import ConfigModal from '$lib/components/modals/ConfigModal.svelte';
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
@@ -43,6 +49,7 @@
 		TrendingUp,
 		Users
 	} from '@lucide/svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let onlineAgents = $derived.by(() => {
 		let activeAgents = $agents.reduce((count, agent) => {
@@ -76,6 +83,55 @@
 			}
 		}
 	}
+
+	let profileStats = $state<
+		Map<
+			bigint,
+			{
+				routerCount: bigint;
+				serviceCount: bigint;
+				middlewareCount: bigint;
+				agentCount: bigint;
+			}
+		>
+	>(new Map());
+
+	$effect(() => {
+		// React to changes in profiles
+		if ($profiles?.length) {
+			// Fetch stats for all profiles
+			Promise.all(
+				$profiles.map(async (profile) => {
+					if (!profile.id) return null;
+
+					const [routers, services, middlewares, agents] = await Promise.all([
+						routerClient.listRouters({ profileId: profile.id }),
+						serviceClient.listServices({ profileId: profile.id }),
+						middlewareClient.listMiddlewares({ profileId: profile.id }),
+						agentClient.listAgents({ profileId: profile.id })
+					]);
+
+					return {
+						profileId: profile.id,
+						stats: {
+							routerCount: routers.totalCount,
+							serviceCount: services.totalCount,
+							middlewareCount: middlewares.totalCount,
+							agentCount: agents.totalCount
+						}
+					};
+				})
+			).then((results) => {
+				const newStats = new Map();
+				results.forEach((result) => {
+					if (result) {
+						newStats.set(result.profileId, result.stats);
+					}
+				});
+				profileStats = newStats;
+			});
+		}
+	});
 
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
@@ -334,12 +390,12 @@
 				<Card.Content>
 					<div class="space-y-4">
 						{#each $profiles || [] as profile (profile.id)}
-							{@const routerCount = $routers.filter((r) => r.profileId === profile.id).length}
-							{@const serviceCount = $services.filter((s) => s.profileId === profile.id).length}
-							{@const middlewareCount = $middlewares.filter(
-								(m) => m.profileId === profile.id
-							).length}
-							{@const agentCount = $agents.filter((a) => a.profileId === profile.id).length}
+							{@const stats = profileStats.get(profile.id) ?? {
+								routerCount: 0n,
+								serviceCount: 0n,
+								middlewareCount: 0n,
+								agentCount: 0n
+							}}
 
 							<div class="space-y-4 rounded-lg border p-4">
 								<div class="flex items-start justify-between">
@@ -363,27 +419,27 @@
 
 								<div class="grid grid-cols-2 gap-4 md:grid-cols-4">
 									<div class="text-center">
-										<div class="text-2xl font-bold text-blue-600">{agentCount}</div>
+										<div class="text-2xl font-bold text-blue-600">{stats.agentCount}</div>
 										<div class="text-xs text-muted-foreground">Agents</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-green-600">
-											{routerCount}
+											{stats.routerCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Routers</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-orange-600">
-											{serviceCount}
+											{stats.serviceCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Services</div>
 									</div>
 
 									<div class="text-center">
 										<div class="text-2xl font-bold text-purple-600">
-											{middlewareCount}
+											{stats.middlewareCount}
 										</div>
 										<div class="text-xs text-muted-foreground">Middlewares</div>
 									</div>
