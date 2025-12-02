@@ -1,6 +1,6 @@
 import type { LayoutLoad } from './$types';
 import { goto } from '$app/navigation';
-import { checkHealth, useClient } from '$lib/api';
+import { useClient } from '$lib/api';
 import { profile } from '$lib/stores/profile';
 import { user } from '$lib/stores/user';
 import { UserService } from '$lib/gen/mantrae/v1/user_pb';
@@ -31,7 +31,8 @@ export const load: LayoutLoad = async ({ url, fetch }) => {
 		}
 
 		if (isPublic) await goto('/');
-	} catch (_) {
+	} catch (err) {
+		console.error(err);
 		user.clear();
 		profile.clear();
 		if (!isPublic) await goto('/login');

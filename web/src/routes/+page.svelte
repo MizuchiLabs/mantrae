@@ -148,7 +148,7 @@
 </svelte:head>
 
 <ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
-<ConfigModal bind:open={modalConfigOpen} />
+<ConfigModal bind:item={modalProfile} bind:open={modalConfigOpen} />
 <AuditLogModal bind:open={modalAuditLogOpen} />
 
 <div class="container mx-auto space-y-6 p-6">
@@ -462,7 +462,10 @@
 										size="sm"
 										variant="outline"
 										class="gap-2"
-										onclick={() => (modalConfigOpen = true)}
+										onclick={() => {
+											modalProfile = profile;
+											modalConfigOpen = true;
+										}}
 									>
 										<Activity />
 										Config

@@ -4,11 +4,17 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { createHighlighter } from 'shiki';
 	import { getConfig } from '$lib/api';
+	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 
-	let { open = $bindable(false) } = $props();
+	type Props = {
+		open?: boolean;
+		item: Profile;
+	};
+
+	let { open = $bindable(false), item = $bindable() }: Props = $props();
 
 	let lang: 'json' | 'yaml' = $state('yaml');
-	let config = $derived(getConfig(lang));
+	let config = $derived(getConfig(lang, item));
 
 	let code = $derived.by(async () => {
 		const currentLang = lang;
@@ -30,9 +36,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content
-		class="max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-[40rem]"
-	>
+	<Dialog.Content class="max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-160">
 		<Dialog.Header class="flex justify-between gap-2 py-4">
 			<Dialog.Title>Dynamic Config</Dialog.Title>
 			<Dialog.Description>

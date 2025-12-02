@@ -76,8 +76,8 @@ export async function upload(input: HTMLInputElement | null, endpoint: string) {
 }
 
 // Get dynamic traefik config
-export async function getConfig(format: string) {
-	if (!profile.isValid() || !profile.token) return '';
+export async function getConfig(format: string, profile: Profile) {
+	if (!profile.id || !profile.token) return '';
 
 	const headers = new Headers();
 	if (format === 'yaml') {
