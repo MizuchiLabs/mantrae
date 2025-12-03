@@ -29,7 +29,7 @@ type CountUdpServicesParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountUdpServices(ctx context.Context, arg CountUdpServicesParams) (int64, error) {
+func (q *Queries) CountUdpServices(ctx context.Context, arg *CountUdpServicesParams) (int64, error) {
 	row := q.queryRow(ctx, q.countUdpServicesStmt, countUdpServices, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountUdpServices(ctx context.Context, arg CountUdpServicesPara
 
 const createUdpService = `-- name: CreateUdpService :one
 INSERT INTO
-  udp_services (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  udp_services (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateUdpServiceParams struct {
@@ -67,7 +51,7 @@ type CreateUdpServiceParams struct {
 	Config    *schema.UDPService `json:"config"`
 }
 
-func (q *Queries) CreateUdpService(ctx context.Context, arg CreateUdpServiceParams) (UdpService, error) {
+func (q *Queries) CreateUdpService(ctx context.Context, arg *CreateUdpServiceParams) (*UdpService, error) {
 	row := q.queryRow(ctx, q.createUdpServiceStmt, createUdpService,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateUdpService(ctx context.Context, arg CreateUdpServicePara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteUdpService = `-- name: DeleteUdpService :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetUdpService(ctx context.Context, id string) (UdpService, error) {
+func (q *Queries) GetUdpService(ctx context.Context, id string) (*UdpService, error) {
 	row := q.queryRow(ctx, q.getUdpServiceStmt, getUdpService, id)
 	var i UdpService
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetUdpService(ctx context.Context, id string) (UdpService, err
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUdpServiceByName = `-- name: GetUdpServiceByName :one
@@ -140,7 +124,7 @@ type GetUdpServiceByNameParams struct {
 	Name      string `json:"name"`
 }
 
-func (q *Queries) GetUdpServiceByName(ctx context.Context, arg GetUdpServiceByNameParams) (UdpService, error) {
+func (q *Queries) GetUdpServiceByName(ctx context.Context, arg *GetUdpServiceByNameParams) (*UdpService, error) {
 	row := q.queryRow(ctx, q.getUdpServiceByNameStmt, getUdpServiceByName, arg.ProfileID, arg.Name)
 	var i UdpService
 	err := row.Scan(
@@ -153,7 +137,7 @@ func (q *Queries) GetUdpServiceByName(ctx context.Context, arg GetUdpServiceByNa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listUdpServices = `-- name: ListUdpServices :many
@@ -182,7 +166,7 @@ type ListUdpServicesParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListUdpServices(ctx context.Context, arg ListUdpServicesParams) ([]UdpService, error) {
+func (q *Queries) ListUdpServices(ctx context.Context, arg *ListUdpServicesParams) ([]*UdpService, error) {
 	rows, err := q.query(ctx, q.listUdpServicesStmt, listUdpServices,
 		arg.ProfileID,
 		arg.AgentID,
@@ -193,7 +177,7 @@ func (q *Queries) ListUdpServices(ctx context.Context, arg ListUdpServicesParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UdpService
+	var items []*UdpService
 	for rows.Next() {
 		var i UdpService
 		if err := rows.Scan(
@@ -208,7 +192,7 @@ func (q *Queries) ListUdpServices(ctx context.Context, arg ListUdpServicesParams
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -229,13 +213,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListUdpServicesEnabled(ctx context.Context, profileID int64) ([]UdpService, error) {
+func (q *Queries) ListUdpServicesEnabled(ctx context.Context, profileID int64) ([]*UdpService, error) {
 	rows, err := q.query(ctx, q.listUdpServicesEnabledStmt, listUdpServicesEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UdpService
+	var items []*UdpService
 	for rows.Next() {
 		var i UdpService
 		if err := rows.Scan(
@@ -250,7 +234,7 @@ func (q *Queries) ListUdpServicesEnabled(ctx context.Context, profileID int64) (
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -279,7 +263,7 @@ type UpdateUdpServiceParams struct {
 	ID      string             `json:"id"`
 }
 
-func (q *Queries) UpdateUdpService(ctx context.Context, arg UpdateUdpServiceParams) (UdpService, error) {
+func (q *Queries) UpdateUdpService(ctx context.Context, arg *UpdateUdpServiceParams) (*UdpService, error) {
 	row := q.queryRow(ctx, q.updateUdpServiceStmt, updateUdpService,
 		arg.Name,
 		arg.Config,
@@ -297,5 +281,5 @@ func (q *Queries) UpdateUdpService(ctx context.Context, arg UpdateUdpServicePara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

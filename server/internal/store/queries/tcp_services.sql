@@ -1,24 +1,8 @@
 -- name: CreateTcpService :one
 INSERT INTO
-  tcp_services (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  tcp_services (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetTcpService :one
 SELECT

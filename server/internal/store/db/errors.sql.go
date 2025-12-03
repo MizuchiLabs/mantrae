@@ -43,7 +43,7 @@ type DeleteErrorsByProfileCategoryParams struct {
 	Category  string `json:"category"`
 }
 
-func (q *Queries) DeleteErrorsByProfileCategory(ctx context.Context, arg DeleteErrorsByProfileCategoryParams) error {
+func (q *Queries) DeleteErrorsByProfileCategory(ctx context.Context, arg *DeleteErrorsByProfileCategoryParams) error {
 	_, err := q.exec(ctx, q.deleteErrorsByProfileCategoryStmt, deleteErrorsByProfileCategory, arg.ProfileID, arg.Category)
 	return err
 }
@@ -59,13 +59,13 @@ ORDER BY
   created_at DESC
 `
 
-func (q *Queries) GetErrorsByProfile(ctx context.Context, profileID int64) ([]Error, error) {
+func (q *Queries) GetErrorsByProfile(ctx context.Context, profileID int64) ([]*Error, error) {
 	rows, err := q.query(ctx, q.getErrorsByProfileStmt, getErrorsByProfile, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Error
+	var items []*Error
 	for rows.Next() {
 		var i Error
 		if err := rows.Scan(
@@ -78,7 +78,7 @@ func (q *Queries) GetErrorsByProfile(ctx context.Context, profileID int64) ([]Er
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -98,13 +98,13 @@ ORDER BY
   created_at DESC
 `
 
-func (q *Queries) ListErrors(ctx context.Context) ([]Error, error) {
+func (q *Queries) ListErrors(ctx context.Context) ([]*Error, error) {
 	rows, err := q.query(ctx, q.listErrorsStmt, listErrors)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Error
+	var items []*Error
 	for rows.Next() {
 		var i Error
 		if err := rows.Scan(
@@ -117,7 +117,7 @@ func (q *Queries) ListErrors(ctx context.Context) ([]Error, error) {
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -132,10 +132,7 @@ const logError = `-- name: LogError :exec
 INSERT INTO
   errors (profile_id, category, message, details)
 VALUES
-  (?, ?, ?, ?) ON CONFLICT (profile_id, category, details) DO
-UPDATE
-SET
-  created_at = CURRENT_TIMESTAMP
+  (?, ?, ?, ?)
 `
 
 type LogErrorParams struct {
@@ -145,7 +142,7 @@ type LogErrorParams struct {
 	Details   *string `json:"details"`
 }
 
-func (q *Queries) LogError(ctx context.Context, arg LogErrorParams) error {
+func (q *Queries) LogError(ctx context.Context, arg *LogErrorParams) error {
 	_, err := q.exec(ctx, q.logErrorStmt, logError,
 		arg.ProfileID,
 		arg.Category,

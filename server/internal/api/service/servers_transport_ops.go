@@ -68,7 +68,7 @@ func (s *HTTPServersTransportOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateServersTransportRequest,
 ) (*mantraev1.CreateServersTransportResponse, error) {
-	params := db.CreateHttpServersTransportParams{
+	params := &db.CreateHttpServersTransportParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
@@ -101,7 +101,7 @@ func (s *HTTPServersTransportOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateServersTransportRequest,
 ) (*mantraev1.UpdateServersTransportResponse, error) {
-	params := db.UpdateHttpServersTransportParams{
+	params := &db.UpdateHttpServersTransportParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -155,7 +155,7 @@ func (s *HTTPServersTransportOps) List(
 	req *mantraev1.ListServersTransportsRequest,
 ) (*mantraev1.ListServersTransportsResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListHttpServersTransports(ctx, db.ListHttpServersTransportsParams{
+		ListHttpServersTransports(ctx, &db.ListHttpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -165,7 +165,7 @@ func (s *HTTPServersTransportOps) List(
 		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().
-		CountHttpServersTransports(ctx, db.CountHttpServersTransportsParams{
+		CountHttpServersTransports(ctx, &db.CountHttpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 		})
@@ -202,7 +202,7 @@ func (s *TCPServersTransportOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateServersTransportRequest,
 ) (*mantraev1.CreateServersTransportResponse, error) {
-	params := db.CreateTcpServersTransportParams{
+	params := &db.CreateTcpServersTransportParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
@@ -235,7 +235,7 @@ func (s *TCPServersTransportOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateServersTransportRequest,
 ) (*mantraev1.UpdateServersTransportResponse, error) {
-	params := db.UpdateTcpServersTransportParams{
+	params := &db.UpdateTcpServersTransportParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -289,7 +289,7 @@ func (s *TCPServersTransportOps) List(
 	req *mantraev1.ListServersTransportsRequest,
 ) (*mantraev1.ListServersTransportsResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListTcpServersTransports(ctx, db.ListTcpServersTransportsParams{
+		ListTcpServersTransports(ctx, &db.ListTcpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -299,7 +299,7 @@ func (s *TCPServersTransportOps) List(
 		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().
-		CountTcpServersTransports(ctx, db.CountTcpServersTransportsParams{
+		CountTcpServersTransports(ctx, &db.CountTcpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 		})

@@ -29,7 +29,7 @@ type CountTcpServicesParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountTcpServices(ctx context.Context, arg CountTcpServicesParams) (int64, error) {
+func (q *Queries) CountTcpServices(ctx context.Context, arg *CountTcpServicesParams) (int64, error) {
 	row := q.queryRow(ctx, q.countTcpServicesStmt, countTcpServices, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountTcpServices(ctx context.Context, arg CountTcpServicesPara
 
 const createTcpService = `-- name: CreateTcpService :one
 INSERT INTO
-  tcp_services (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  tcp_services (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateTcpServiceParams struct {
@@ -67,7 +51,7 @@ type CreateTcpServiceParams struct {
 	Config    *schema.TCPService `json:"config"`
 }
 
-func (q *Queries) CreateTcpService(ctx context.Context, arg CreateTcpServiceParams) (TcpService, error) {
+func (q *Queries) CreateTcpService(ctx context.Context, arg *CreateTcpServiceParams) (*TcpService, error) {
 	row := q.queryRow(ctx, q.createTcpServiceStmt, createTcpService,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateTcpService(ctx context.Context, arg CreateTcpServicePara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteTcpService = `-- name: DeleteTcpService :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpService(ctx context.Context, id string) (TcpService, error) {
+func (q *Queries) GetTcpService(ctx context.Context, id string) (*TcpService, error) {
 	row := q.queryRow(ctx, q.getTcpServiceStmt, getTcpService, id)
 	var i TcpService
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetTcpService(ctx context.Context, id string) (TcpService, err
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getTcpServiceByName = `-- name: GetTcpServiceByName :one
@@ -140,7 +124,7 @@ type GetTcpServiceByNameParams struct {
 	Name      string `json:"name"`
 }
 
-func (q *Queries) GetTcpServiceByName(ctx context.Context, arg GetTcpServiceByNameParams) (TcpService, error) {
+func (q *Queries) GetTcpServiceByName(ctx context.Context, arg *GetTcpServiceByNameParams) (*TcpService, error) {
 	row := q.queryRow(ctx, q.getTcpServiceByNameStmt, getTcpServiceByName, arg.ProfileID, arg.Name)
 	var i TcpService
 	err := row.Scan(
@@ -153,7 +137,7 @@ func (q *Queries) GetTcpServiceByName(ctx context.Context, arg GetTcpServiceByNa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listTcpServices = `-- name: ListTcpServices :many
@@ -182,7 +166,7 @@ type ListTcpServicesParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListTcpServices(ctx context.Context, arg ListTcpServicesParams) ([]TcpService, error) {
+func (q *Queries) ListTcpServices(ctx context.Context, arg *ListTcpServicesParams) ([]*TcpService, error) {
 	rows, err := q.query(ctx, q.listTcpServicesStmt, listTcpServices,
 		arg.ProfileID,
 		arg.AgentID,
@@ -193,7 +177,7 @@ func (q *Queries) ListTcpServices(ctx context.Context, arg ListTcpServicesParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpService
+	var items []*TcpService
 	for rows.Next() {
 		var i TcpService
 		if err := rows.Scan(
@@ -208,7 +192,7 @@ func (q *Queries) ListTcpServices(ctx context.Context, arg ListTcpServicesParams
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -229,13 +213,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListTcpServicesEnabled(ctx context.Context, profileID int64) ([]TcpService, error) {
+func (q *Queries) ListTcpServicesEnabled(ctx context.Context, profileID int64) ([]*TcpService, error) {
 	rows, err := q.query(ctx, q.listTcpServicesEnabledStmt, listTcpServicesEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpService
+	var items []*TcpService
 	for rows.Next() {
 		var i TcpService
 		if err := rows.Scan(
@@ -250,7 +234,7 @@ func (q *Queries) ListTcpServicesEnabled(ctx context.Context, profileID int64) (
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -279,7 +263,7 @@ type UpdateTcpServiceParams struct {
 	ID      string             `json:"id"`
 }
 
-func (q *Queries) UpdateTcpService(ctx context.Context, arg UpdateTcpServiceParams) (TcpService, error) {
+func (q *Queries) UpdateTcpService(ctx context.Context, arg *UpdateTcpServiceParams) (*TcpService, error) {
 	row := q.queryRow(ctx, q.updateTcpServiceStmt, updateTcpService,
 		arg.Name,
 		arg.Config,
@@ -297,5 +281,5 @@ func (q *Queries) UpdateTcpService(ctx context.Context, arg UpdateTcpServicePara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

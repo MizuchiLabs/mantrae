@@ -1,24 +1,8 @@
 -- name: CreateUdpService :one
 INSERT INTO
-  udp_services (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  udp_services (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetUdpService :one
 SELECT

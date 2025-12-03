@@ -29,7 +29,7 @@ type CountHttpRoutersParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountHttpRouters(ctx context.Context, arg CountHttpRoutersParams) (int64, error) {
+func (q *Queries) CountHttpRouters(ctx context.Context, arg *CountHttpRoutersParams) (int64, error) {
 	row := q.queryRow(ctx, q.countHttpRoutersStmt, countHttpRouters, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountHttpRouters(ctx context.Context, arg CountHttpRoutersPara
 
 const createHttpRouter = `-- name: CreateHttpRouter :one
 INSERT INTO
-  http_routers (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  http_routers (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpRouterParams struct {
@@ -67,7 +51,7 @@ type CreateHttpRouterParams struct {
 	Config    *schema.HTTPRouter `json:"config"`
 }
 
-func (q *Queries) CreateHttpRouter(ctx context.Context, arg CreateHttpRouterParams) (HttpRouter, error) {
+func (q *Queries) CreateHttpRouter(ctx context.Context, arg *CreateHttpRouterParams) (*HttpRouter, error) {
 	row := q.queryRow(ctx, q.createHttpRouterStmt, createHttpRouter,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateHttpRouter(ctx context.Context, arg CreateHttpRouterPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteHttpRouter = `-- name: DeleteHttpRouter :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpRouter(ctx context.Context, id string) (HttpRouter, error) {
+func (q *Queries) GetHttpRouter(ctx context.Context, id string) (*HttpRouter, error) {
 	row := q.queryRow(ctx, q.getHttpRouterStmt, getHttpRouter, id)
 	var i HttpRouter
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetHttpRouter(ctx context.Context, id string) (HttpRouter, err
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getHttpRoutersUsingEntryPoint = `-- name: GetHttpRoutersUsingEntryPoint :many
@@ -159,13 +143,13 @@ type GetHttpRoutersUsingEntryPointRow struct {
 	Enabled bool               `json:"enabled"`
 }
 
-func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttpRoutersUsingEntryPointParams) ([]GetHttpRoutersUsingEntryPointRow, error) {
+func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg *GetHttpRoutersUsingEntryPointParams) ([]*GetHttpRoutersUsingEntryPointRow, error) {
 	rows, err := q.query(ctx, q.getHttpRoutersUsingEntryPointStmt, getHttpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetHttpRoutersUsingEntryPointRow
+	var items []*GetHttpRoutersUsingEntryPointRow
 	for rows.Next() {
 		var i GetHttpRoutersUsingEntryPointRow
 		if err := rows.Scan(
@@ -176,7 +160,7 @@ func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg GetHttp
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -221,13 +205,13 @@ type GetHttpRoutersUsingMiddlewareRow struct {
 	Enabled bool               `json:"enabled"`
 }
 
-func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttpRoutersUsingMiddlewareParams) ([]GetHttpRoutersUsingMiddlewareRow, error) {
+func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg *GetHttpRoutersUsingMiddlewareParams) ([]*GetHttpRoutersUsingMiddlewareRow, error) {
 	rows, err := q.query(ctx, q.getHttpRoutersUsingMiddlewareStmt, getHttpRoutersUsingMiddleware, arg.ID, arg.ProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetHttpRoutersUsingMiddlewareRow
+	var items []*GetHttpRoutersUsingMiddlewareRow
 	for rows.Next() {
 		var i GetHttpRoutersUsingMiddlewareRow
 		if err := rows.Scan(
@@ -238,7 +222,7 @@ func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg GetHttp
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -275,7 +259,7 @@ type ListHttpRoutersParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams) ([]HttpRouter, error) {
+func (q *Queries) ListHttpRouters(ctx context.Context, arg *ListHttpRoutersParams) ([]*HttpRouter, error) {
 	rows, err := q.query(ctx, q.listHttpRoutersStmt, listHttpRouters,
 		arg.ProfileID,
 		arg.AgentID,
@@ -286,7 +270,7 @@ func (q *Queries) ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpRouter
+	var items []*HttpRouter
 	for rows.Next() {
 		var i HttpRouter
 		if err := rows.Scan(
@@ -301,7 +285,7 @@ func (q *Queries) ListHttpRouters(ctx context.Context, arg ListHttpRoutersParams
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -322,13 +306,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListHttpRoutersEnabled(ctx context.Context, profileID int64) ([]HttpRouter, error) {
+func (q *Queries) ListHttpRoutersEnabled(ctx context.Context, profileID int64) ([]*HttpRouter, error) {
 	rows, err := q.query(ctx, q.listHttpRoutersEnabledStmt, listHttpRoutersEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpRouter
+	var items []*HttpRouter
 	for rows.Next() {
 		var i HttpRouter
 		if err := rows.Scan(
@@ -343,7 +327,7 @@ func (q *Queries) ListHttpRoutersEnabled(ctx context.Context, profileID int64) (
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -372,7 +356,7 @@ type UpdateHttpRouterParams struct {
 	ID      string             `json:"id"`
 }
 
-func (q *Queries) UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterParams) (HttpRouter, error) {
+func (q *Queries) UpdateHttpRouter(ctx context.Context, arg *UpdateHttpRouterParams) (*HttpRouter, error) {
 	row := q.queryRow(ctx, q.updateHttpRouterStmt, updateHttpRouter,
 		arg.Name,
 		arg.Config,
@@ -390,5 +374,5 @@ func (q *Queries) UpdateHttpRouter(ctx context.Context, arg UpdateHttpRouterPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

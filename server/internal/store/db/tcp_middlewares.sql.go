@@ -29,7 +29,7 @@ type CountTcpMiddlewaresParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountTcpMiddlewares(ctx context.Context, arg CountTcpMiddlewaresParams) (int64, error) {
+func (q *Queries) CountTcpMiddlewares(ctx context.Context, arg *CountTcpMiddlewaresParams) (int64, error) {
 	row := q.queryRow(ctx, q.countTcpMiddlewaresStmt, countTcpMiddlewares, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -44,21 +44,10 @@ INSERT INTO
     agent_id,
     name,
     config,
-    is_default,
-    created_at,
-    updated_at
+    is_default
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
+  (?, ?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
 `
 
 type CreateTcpMiddlewareParams struct {
@@ -70,7 +59,7 @@ type CreateTcpMiddlewareParams struct {
 	IsDefault bool                  `json:"isDefault"`
 }
 
-func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewareParams) (TcpMiddleware, error) {
+func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg *CreateTcpMiddlewareParams) (*TcpMiddleware, error) {
 	row := q.queryRow(ctx, q.createTcpMiddlewareStmt, createTcpMiddleware,
 		arg.ID,
 		arg.ProfileID,
@@ -91,7 +80,7 @@ func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg CreateTcpMiddlewa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteTcpMiddleware = `-- name: DeleteTcpMiddleware :exec
@@ -114,7 +103,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpMiddleware(ctx context.Context, id string) (TcpMiddleware, error) {
+func (q *Queries) GetTcpMiddleware(ctx context.Context, id string) (*TcpMiddleware, error) {
 	row := q.queryRow(ctx, q.getTcpMiddlewareStmt, getTcpMiddleware, id)
 	var i TcpMiddleware
 	err := row.Scan(
@@ -128,7 +117,7 @@ func (q *Queries) GetTcpMiddleware(ctx context.Context, id string) (TcpMiddlewar
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listTcpMiddlewares = `-- name: ListTcpMiddlewares :many
@@ -157,7 +146,7 @@ type ListTcpMiddlewaresParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListTcpMiddlewares(ctx context.Context, arg ListTcpMiddlewaresParams) ([]TcpMiddleware, error) {
+func (q *Queries) ListTcpMiddlewares(ctx context.Context, arg *ListTcpMiddlewaresParams) ([]*TcpMiddleware, error) {
 	rows, err := q.query(ctx, q.listTcpMiddlewaresStmt, listTcpMiddlewares,
 		arg.ProfileID,
 		arg.AgentID,
@@ -168,7 +157,7 @@ func (q *Queries) ListTcpMiddlewares(ctx context.Context, arg ListTcpMiddlewares
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpMiddleware
+	var items []*TcpMiddleware
 	for rows.Next() {
 		var i TcpMiddleware
 		if err := rows.Scan(
@@ -184,7 +173,7 @@ func (q *Queries) ListTcpMiddlewares(ctx context.Context, arg ListTcpMiddlewares
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -205,13 +194,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListTcpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]TcpMiddleware, error) {
+func (q *Queries) ListTcpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]*TcpMiddleware, error) {
 	rows, err := q.query(ctx, q.listTcpMiddlewaresEnabledStmt, listTcpMiddlewaresEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpMiddleware
+	var items []*TcpMiddleware
 	for rows.Next() {
 		var i TcpMiddleware
 		if err := rows.Scan(
@@ -227,7 +216,7 @@ func (q *Queries) ListTcpMiddlewaresEnabled(ctx context.Context, profileID int64
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -272,7 +261,7 @@ type UpdateTcpMiddlewareParams struct {
 	ID        string                `json:"id"`
 }
 
-func (q *Queries) UpdateTcpMiddleware(ctx context.Context, arg UpdateTcpMiddlewareParams) (TcpMiddleware, error) {
+func (q *Queries) UpdateTcpMiddleware(ctx context.Context, arg *UpdateTcpMiddlewareParams) (*TcpMiddleware, error) {
 	row := q.queryRow(ctx, q.updateTcpMiddlewareStmt, updateTcpMiddleware,
 		arg.Name,
 		arg.Config,
@@ -292,5 +281,5 @@ func (q *Queries) UpdateTcpMiddleware(ctx context.Context, arg UpdateTcpMiddlewa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

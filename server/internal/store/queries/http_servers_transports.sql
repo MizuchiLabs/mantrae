@@ -1,24 +1,8 @@
 -- name: CreateHttpServersTransport :one
 INSERT INTO
-  http_servers_transports (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  http_servers_transports (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetHttpServersTransport :one
 SELECT

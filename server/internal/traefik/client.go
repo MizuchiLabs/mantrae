@@ -43,7 +43,7 @@ func UpdateTraefikInstance(
 		return nil, nil
 	}
 
-	params := db.UpsertTraefikInstanceParams{
+	params := &db.UpsertTraefikInstanceParams{
 		ID:        uuid.New().String(),
 		ProfileID: profileID,
 		Name:      instanceName,
@@ -143,10 +143,10 @@ func UpdateTraefikInstance(
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
-func fetch(instance db.UpsertTraefikInstanceParams, endpoint string) (io.ReadCloser, error) {
+func fetch(instance *db.UpsertTraefikInstanceParams, endpoint string) (io.ReadCloser, error) {
 	if instance.Url == "" {
 		return nil, fmt.Errorf("invalid URL or endpoint")
 	}

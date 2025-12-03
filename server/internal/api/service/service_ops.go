@@ -64,7 +64,7 @@ func (s *HTTPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	var result db.HttpService
+	var result *db.HttpService
 	var err error
 
 	switch id := req.GetIdentifier().(type) {
@@ -74,7 +74,7 @@ func (s *HTTPServiceOps) Get(
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.GetQuery().GetHttpServiceByName(ctx, db.GetHttpServiceByNameParams{
+		result, err = s.app.Conn.GetQuery().GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -94,7 +94,7 @@ func (s *HTTPServiceOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
-	params := db.CreateHttpServiceParams{
+	params := &db.CreateHttpServiceParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -127,7 +127,7 @@ func (s *HTTPServiceOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateServiceRequest,
 ) (*mantraev1.UpdateServiceResponse, error) {
-	params := db.UpdateHttpServiceParams{
+	params := &db.UpdateHttpServiceParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -181,7 +181,7 @@ func (s *HTTPServiceOps) List(
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListHttpServices(ctx, db.ListHttpServicesParams{
+		ListHttpServices(ctx, &db.ListHttpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -190,7 +190,7 @@ func (s *HTTPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountHttpServices(ctx, db.CountHttpServicesParams{
+	totalCount, err := s.app.Conn.GetQuery().CountHttpServices(ctx, &db.CountHttpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -214,7 +214,7 @@ func (s *TCPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	var result db.TcpService
+	var result *db.TcpService
 	var err error
 
 	switch id := req.GetIdentifier().(type) {
@@ -224,7 +224,7 @@ func (s *TCPServiceOps) Get(
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.GetQuery().GetTcpServiceByName(ctx, db.GetTcpServiceByNameParams{
+		result, err = s.app.Conn.GetQuery().GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -244,7 +244,7 @@ func (s *TCPServiceOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
-	params := db.CreateTcpServiceParams{
+	params := &db.CreateTcpServiceParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -277,7 +277,7 @@ func (s *TCPServiceOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateServiceRequest,
 ) (*mantraev1.UpdateServiceResponse, error) {
-	params := db.UpdateTcpServiceParams{
+	params := &db.UpdateTcpServiceParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -331,7 +331,7 @@ func (s *TCPServiceOps) List(
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListTcpServices(ctx, db.ListTcpServicesParams{
+		ListTcpServices(ctx, &db.ListTcpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -340,7 +340,7 @@ func (s *TCPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountTcpServices(ctx, db.CountTcpServicesParams{
+	totalCount, err := s.app.Conn.GetQuery().CountTcpServices(ctx, &db.CountTcpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -364,7 +364,7 @@ func (s *UDPServiceOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServiceRequest,
 ) (*mantraev1.GetServiceResponse, error) {
-	var result db.UdpService
+	var result *db.UdpService
 	var err error
 
 	switch id := req.GetIdentifier().(type) {
@@ -374,7 +374,7 @@ func (s *UDPServiceOps) Get(
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.GetQuery().GetUdpServiceByName(ctx, db.GetUdpServiceByNameParams{
+		result, err = s.app.Conn.GetQuery().GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -394,7 +394,7 @@ func (s *UDPServiceOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateServiceRequest,
 ) (*mantraev1.CreateServiceResponse, error) {
-	params := db.CreateUdpServiceParams{
+	params := &db.CreateUdpServiceParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -427,7 +427,7 @@ func (s *UDPServiceOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateServiceRequest,
 ) (*mantraev1.UpdateServiceResponse, error) {
-	params := db.UpdateUdpServiceParams{
+	params := &db.UpdateUdpServiceParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -481,7 +481,7 @@ func (s *UDPServiceOps) List(
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListUdpServices(ctx, db.ListUdpServicesParams{
+		ListUdpServices(ctx, &db.ListUdpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -490,7 +490,7 @@ func (s *UDPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountUdpServices(ctx, db.CountUdpServicesParams{
+	totalCount, err := s.app.Conn.GetQuery().CountUdpServices(ctx, &db.CountUdpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})

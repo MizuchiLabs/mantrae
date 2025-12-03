@@ -30,7 +30,7 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 
 			// Only audit on successful operations
 			if err == nil {
-				var params db.CreateAuditLogParams
+				params := &db.CreateAuditLogParams{}
 				params.UserID = GetUserIDFromContext(ctx)
 				params.AgentID = GetAgentIDFromContext(ctx)
 				if auditEvent := extractAuditEvent(req, resp); auditEvent != nil {

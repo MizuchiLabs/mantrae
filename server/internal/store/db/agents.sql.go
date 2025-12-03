@@ -27,9 +27,9 @@ func (q *Queries) CountAgents(ctx context.Context, profileID int64) (int64, erro
 
 const createAgent = `-- name: CreateAgent :one
 INSERT INTO
-  agents (id, profile_id, token, created_at)
+  agents (id, profile_id, token)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP) RETURNING id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
+  (?, ?, ?) RETURNING id, profile_id, hostname, public_ip, containers, active_ip, private_ip, token, created_at, updated_at
 `
 
 type CreateAgentParams struct {
@@ -38,7 +38,7 @@ type CreateAgentParams struct {
 	Token     string `json:"token"`
 }
 
-func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent, error) {
+func (q *Queries) CreateAgent(ctx context.Context, arg *CreateAgentParams) (*Agent, error) {
 	row := q.queryRow(ctx, q.createAgentStmt, createAgent, arg.ID, arg.ProfileID, arg.Token)
 	var i Agent
 	err := row.Scan(
@@ -53,7 +53,7 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Agent
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteAgent = `-- name: DeleteAgent :exec
@@ -76,7 +76,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
+func (q *Queries) GetAgent(ctx context.Context, id string) (*Agent, error) {
 	row := q.queryRow(ctx, q.getAgentStmt, getAgent, id)
 	var i Agent
 	err := row.Scan(
@@ -91,7 +91,7 @@ func (q *Queries) GetAgent(ctx context.Context, id string) (Agent, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listAgents = `-- name: ListAgents :many
@@ -115,13 +115,13 @@ type ListAgentsParams struct {
 	Limit     *int64 `json:"limit"`
 }
 
-func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent, error) {
+func (q *Queries) ListAgents(ctx context.Context, arg *ListAgentsParams) ([]*Agent, error) {
 	rows, err := q.query(ctx, q.listAgentsStmt, listAgents, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Agent
+	var items []*Agent
 	for rows.Next() {
 		var i Agent
 		if err := rows.Scan(
@@ -138,7 +138,7 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]Agent
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ type UpdateAgentParams struct {
 	ID         string  `json:"id"`
 }
 
-func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent, error) {
+func (q *Queries) UpdateAgent(ctx context.Context, arg *UpdateAgentParams) (*Agent, error) {
 	row := q.queryRow(ctx, q.updateAgentStmt, updateAgent,
 		arg.Hostname,
 		arg.PublicIp,
@@ -196,5 +196,5 @@ func (q *Queries) UpdateAgent(ctx context.Context, arg UpdateAgentParams) (Agent
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

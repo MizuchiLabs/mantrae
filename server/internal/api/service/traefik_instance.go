@@ -55,7 +55,7 @@ func (s *TraefikInstanceService) ListTraefikInstances(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListTraefikInstancesRequest],
 ) (*connect.Response[mantraev1.ListTraefikInstancesResponse], error) {
-	params := db.ListTraefikInstancesParams{
+	params := &db.ListTraefikInstancesParams{
 		ProfileID: req.Msg.ProfileId,
 		Limit:     req.Msg.Limit,
 		Offset:    req.Msg.Offset,

@@ -2,10 +2,7 @@
 INSERT INTO
   errors (profile_id, category, message, details)
 VALUES
-  (?, ?, ?, ?) ON CONFLICT (profile_id, category, details) DO
-UPDATE
-SET
-  created_at = CURRENT_TIMESTAMP;
+  (?, ?, ?, ?);
 
 -- name: ListErrors :many
 SELECT

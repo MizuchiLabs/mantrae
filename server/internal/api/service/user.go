@@ -31,7 +31,7 @@ func (s *UserService) LoginUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.LoginUserRequest],
 ) (*connect.Response[mantraev1.LoginUserResponse], error) {
-	var user db.User
+	var user *db.User
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.LoginUserRequest_Username:
@@ -95,7 +95,7 @@ func (s *UserService) VerifyOTP(
 	ctx context.Context,
 	req *connect.Request[mantraev1.VerifyOTPRequest],
 ) (*connect.Response[mantraev1.VerifyOTPResponse], error) {
-	var user db.User
+	var user *db.User
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.VerifyOTPRequest_Username:
@@ -131,7 +131,7 @@ func (s *UserService) VerifyOTP(
 
 	// Delete OTP if it's set
 	if user.Otp != nil && user.OtpExpiry != nil {
-		if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, db.UpdateUserResetTokenParams{
+		if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 			ID:        user.ID,
 			Otp:       nil,
 			OtpExpiry: nil,
@@ -158,7 +158,7 @@ func (s *UserService) SendOTP(
 	ctx context.Context,
 	req *connect.Request[mantraev1.SendOTPRequest],
 ) (*connect.Response[mantraev1.SendOTPResponse], error) {
-	var user db.User
+	var user *db.User
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.SendOTPRequest_Username:
@@ -180,7 +180,7 @@ func (s *UserService) SendOTP(
 	}
 	hash := util.HashOTP(token)
 
-	if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, db.UpdateUserResetTokenParams{
+	if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 		ID:        user.ID,
 		Otp:       &hash,
 		OtpExpiry: &expiresAt,
@@ -203,7 +203,7 @@ func (s *UserService) GetUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetUserRequest],
 ) (*connect.Response[mantraev1.GetUserResponse], error) {
-	var user db.User
+	var user *db.User
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.GetUserRequest_Id:
@@ -232,7 +232,7 @@ func (s *UserService) CreateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateUserRequest],
 ) (*connect.Response[mantraev1.CreateUserResponse], error) {
-	params := db.CreateUserParams{
+	params := &db.CreateUserParams{
 		ID:       uuid.NewString(),
 		Username: req.Msg.Username,
 		Email:    req.Msg.Email,
@@ -264,7 +264,7 @@ func (s *UserService) UpdateUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateUserRequest],
 ) (*connect.Response[mantraev1.UpdateUserResponse], error) {
-	params := db.UpdateUserParams{
+	params := &db.UpdateUserParams{
 		ID:       req.Msg.Id,
 		Username: req.Msg.Username,
 		Email:    req.Msg.Email,
@@ -281,7 +281,7 @@ func (s *UserService) UpdateUser(
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		if err := s.app.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		if err := s.app.Conn.GetQuery().UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
 			ID:       result.ID,
 			Password: hash,
 		}); err != nil {
@@ -325,7 +325,7 @@ func (s *UserService) ListUsers(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListUsersRequest],
 ) (*connect.Response[mantraev1.ListUsersResponse], error) {
-	params := db.ListUsersParams{
+	params := &db.ListUsersParams{
 		Limit:  req.Msg.Limit,
 		Offset: req.Msg.Offset,
 	}

@@ -47,7 +47,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id string) (TraefikInstance, error) {
+func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id string) (*TraefikInstance, error) {
 	row := q.queryRow(ctx, q.getTraefikInstanceByIDStmt, getTraefikInstanceByID, id)
 	var i TraefikInstance
 	err := row.Scan(
@@ -65,7 +65,7 @@ func (q *Queries) GetTraefikInstanceByID(ctx context.Context, id string) (Traefi
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getTraefikInstanceByName = `-- name: GetTraefikInstanceByName :one
@@ -83,7 +83,7 @@ type GetTraefikInstanceByNameParams struct {
 	Name      string `json:"name"`
 }
 
-func (q *Queries) GetTraefikInstanceByName(ctx context.Context, arg GetTraefikInstanceByNameParams) (TraefikInstance, error) {
+func (q *Queries) GetTraefikInstanceByName(ctx context.Context, arg *GetTraefikInstanceByNameParams) (*TraefikInstance, error) {
 	row := q.queryRow(ctx, q.getTraefikInstanceByNameStmt, getTraefikInstanceByName, arg.ProfileID, arg.Name)
 	var i TraefikInstance
 	err := row.Scan(
@@ -101,7 +101,7 @@ func (q *Queries) GetTraefikInstanceByName(ctx context.Context, arg GetTraefikIn
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listTraefikInstances = `-- name: ListTraefikInstances :many
@@ -125,13 +125,13 @@ type ListTraefikInstancesParams struct {
 	Limit     *int64 `json:"limit"`
 }
 
-func (q *Queries) ListTraefikInstances(ctx context.Context, arg ListTraefikInstancesParams) ([]TraefikInstance, error) {
+func (q *Queries) ListTraefikInstances(ctx context.Context, arg *ListTraefikInstancesParams) ([]*TraefikInstance, error) {
 	rows, err := q.query(ctx, q.listTraefikInstancesStmt, listTraefikInstances, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TraefikInstance
+	var items []*TraefikInstance
 	for rows.Next() {
 		var i TraefikInstance
 		if err := rows.Scan(
@@ -151,7 +151,7 @@ func (q *Queries) ListTraefikInstances(ctx context.Context, arg ListTraefikInsta
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -186,26 +186,10 @@ INSERT INTO
     entrypoints,
     overview,
     config,
-    version,
-    created_at,
-    updated_at
+    version
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) ON CONFLICT (profile_id, name) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
 UPDATE
 SET
   url = EXCLUDED.url,
@@ -233,7 +217,7 @@ type UpsertTraefikInstanceParams struct {
 	Version     *schema.Version       `json:"version"`
 }
 
-func (q *Queries) UpsertTraefikInstance(ctx context.Context, arg UpsertTraefikInstanceParams) (TraefikInstance, error) {
+func (q *Queries) UpsertTraefikInstance(ctx context.Context, arg *UpsertTraefikInstanceParams) (*TraefikInstance, error) {
 	row := q.queryRow(ctx, q.upsertTraefikInstanceStmt, upsertTraefikInstance,
 		arg.ID,
 		arg.ProfileID,
@@ -263,5 +247,5 @@ func (q *Queries) UpsertTraefikInstance(ctx context.Context, arg UpsertTraefikIn
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

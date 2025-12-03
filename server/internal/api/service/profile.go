@@ -37,7 +37,7 @@ func (s *ProfileService) CreateProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateProfileRequest],
 ) (*connect.Response[mantraev1.CreateProfileResponse], error) {
-	params := db.CreateProfileParams{
+	params := &db.CreateProfileParams{
 		Name:        slug.Make(req.Msg.Name),
 		Description: req.Msg.Description,
 		Token:       util.GenerateToken(6),
@@ -63,7 +63,7 @@ func (s *ProfileService) UpdateProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateProfileRequest],
 ) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
-	params := db.UpdateProfileParams{
+	params := &db.UpdateProfileParams{
 		ID:          req.Msg.Id,
 		Name:        slug.Make(req.Msg.Name),
 		Description: req.Msg.Description,
@@ -119,7 +119,7 @@ func (s *ProfileService) ListProfiles(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListProfilesRequest],
 ) (*connect.Response[mantraev1.ListProfilesResponse], error) {
-	params := db.ListProfilesParams{
+	params := &db.ListProfilesParams{
 		Limit:  req.Msg.Limit,
 		Offset: req.Msg.Offset,
 	}

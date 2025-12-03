@@ -64,7 +64,7 @@ func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettin
 			return errors.New("failed to get password login setting")
 		}
 		if params.Value == "false" && !AsBool(pwLogin) {
-			return q.UpsertSetting(ctx, db.UpsertSettingParams{
+			return q.UpsertSetting(ctx, &db.UpsertSettingParams{
 				Key:   KeyPasswordLoginEnabled,
 				Value: "true",
 			})

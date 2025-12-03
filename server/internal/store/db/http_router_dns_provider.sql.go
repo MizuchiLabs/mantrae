@@ -23,7 +23,7 @@ type CreateHttpRouterDNSProviderParams struct {
 	DnsProviderID string `json:"dnsProviderId"`
 }
 
-func (q *Queries) CreateHttpRouterDNSProvider(ctx context.Context, arg CreateHttpRouterDNSProviderParams) error {
+func (q *Queries) CreateHttpRouterDNSProvider(ctx context.Context, arg *CreateHttpRouterDNSProviderParams) error {
 	_, err := q.exec(ctx, q.createHttpRouterDNSProviderStmt, createHttpRouterDNSProvider, arg.HttpRouterID, arg.DnsProviderID)
 	return err
 }
@@ -40,7 +40,7 @@ type DeleteHttpRouterDNSProviderParams struct {
 	DnsProviderID string `json:"dnsProviderId"`
 }
 
-func (q *Queries) DeleteHttpRouterDNSProvider(ctx context.Context, arg DeleteHttpRouterDNSProviderParams) error {
+func (q *Queries) DeleteHttpRouterDNSProvider(ctx context.Context, arg *DeleteHttpRouterDNSProviderParams) error {
 	_, err := q.exec(ctx, q.deleteHttpRouterDNSProviderStmt, deleteHttpRouterDNSProvider, arg.HttpRouterID, arg.DnsProviderID)
 	return err
 }
@@ -55,13 +55,13 @@ WHERE
   hrdp.http_router_id = ?
 `
 
-func (q *Queries) GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID string) ([]DnsProvider, error) {
+func (q *Queries) GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID string) ([]*DnsProvider, error) {
 	rows, err := q.query(ctx, q.getDnsProvidersByHttpRouterStmt, getDnsProvidersByHttpRouter, httpRouterID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DnsProvider
+	var items []*DnsProvider
 	for rows.Next() {
 		var i DnsProvider
 		if err := rows.Scan(
@@ -75,7 +75,7 @@ func (q *Queries) GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID 
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -110,13 +110,13 @@ type GetHttpRouterDomainsRow struct {
 	DnsProviderName *string            `json:"dnsProviderName"`
 }
 
-func (q *Queries) GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDomainsRow, error) {
+func (q *Queries) GetHttpRouterDomains(ctx context.Context) ([]*GetHttpRouterDomainsRow, error) {
 	rows, err := q.query(ctx, q.getHttpRouterDomainsStmt, getHttpRouterDomains)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetHttpRouterDomainsRow
+	var items []*GetHttpRouterDomainsRow
 	for rows.Next() {
 		var i GetHttpRouterDomainsRow
 		if err := rows.Scan(
@@ -129,7 +129,7 @@ func (q *Queries) GetHttpRouterDomains(ctx context.Context) ([]GetHttpRouterDoma
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

@@ -46,7 +46,7 @@ type CreateAuditLogParams struct {
 	Details   *string `json:"details"`
 }
 
-func (q *Queries) CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) error {
+func (q *Queries) CreateAuditLog(ctx context.Context, arg *CreateAuditLogParams) error {
 	_, err := q.exec(ctx, q.createAuditLogStmt, createAuditLog,
 		arg.ProfileID,
 		arg.UserID,
@@ -111,13 +111,13 @@ type ListAuditLogsRow struct {
 	CreatedAt   *time.Time `json:"createdAt"`
 }
 
-func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([]ListAuditLogsRow, error) {
+func (q *Queries) ListAuditLogs(ctx context.Context, arg *ListAuditLogsParams) ([]*ListAuditLogsRow, error) {
 	rows, err := q.query(ctx, q.listAuditLogsStmt, listAuditLogs, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListAuditLogsRow
+	var items []*ListAuditLogsRow
 	for rows.Next() {
 		var i ListAuditLogsRow
 		if err := rows.Scan(
@@ -134,7 +134,7 @@ func (q *Queries) ListAuditLogs(ctx context.Context, arg ListAuditLogsParams) ([
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

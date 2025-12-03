@@ -50,26 +50,10 @@ INSERT INTO
     entrypoints,
     overview,
     config,
-    version,
-    created_at,
-    updated_at
+    version
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) ON CONFLICT (profile_id, name) DO
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id, name) DO
 UPDATE
 SET
   url = EXCLUDED.url,

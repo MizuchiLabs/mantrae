@@ -347,7 +347,7 @@ func findOrCreateOIDCUser(
 		}
 
 		// Ensure username is unique
-		params := db.CreateUserParams{
+		params := &db.CreateUserParams{
 			ID:       id.String(),
 			Username: generateUniqueUsername(ctx, q, userInfo),
 			Email:    &userInfo.Email,
@@ -365,7 +365,7 @@ func findOrCreateOIDCUser(
 	} else {
 		// Update existing user's email if verified
 		if userInfo.Email != "" && userInfo.EmailVerified {
-			if _, err := q.UpdateUser(ctx, db.UpdateUserParams{
+			if _, err := q.UpdateUser(ctx, &db.UpdateUserParams{
 				ID:       user.ID,
 				Username: user.Username,
 				Email:    &userInfo.Email,

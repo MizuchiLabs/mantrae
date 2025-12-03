@@ -1,15 +1,8 @@
 -- name: CreateUser :one
 INSERT INTO
-  users (
-    id,
-    username,
-    password,
-    email,
-    updated_at,
-    created_at
-  )
+  users (id, username, password, email)
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
+  (?, ?, ?, ?) RETURNING *;
 
 -- name: GetUserByID :one
 SELECT

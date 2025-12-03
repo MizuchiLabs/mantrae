@@ -29,9 +29,9 @@
 		...restProps
 	}: Props = $props();
 
-	const items = Array.isArray(label) ? label : [label];
-	const visible = items.slice(0, limit);
-	const hidden = items.slice(limit);
+	const items = $derived(Array.isArray(label) ? label : [label]);
+	const visible = $derived(items.slice(0, limit));
+	const hidden = $derived(items.slice(limit));
 
 	function truncateText(text: string, maxLength: number): string {
 		return text?.length > maxLength ? `${text?.slice(0, maxLength)}...` : text;
@@ -58,10 +58,10 @@
 								{@const Icon = icon}
 								<Icon size={12} class="shrink-0" {...iconProps} />
 							{/if}
-							<span class="max-w-[8rem] truncate sm:max-w-none">{truncated}</span>
+							<span class="max-w-32 truncate sm:max-w-none">{truncated}</span>
 						</Badge>
 					</Tooltip.Trigger>
-					<Tooltip.Content side="top" class="max-w-xs break-words">
+					<Tooltip.Content side="top" class="max-w-xs wrap-break-word">
 						{item}
 					</Tooltip.Content>
 				</Tooltip.Root>
@@ -78,7 +78,7 @@
 					{@const Icon = icon}
 					<Icon size={12} class="shrink-0" {...iconProps} />
 				{/if}
-				<span class="max-w-[8rem] truncate sm:max-w-none">{item}</span>
+				<span class="max-w-32 truncate sm:max-w-none">{item}</span>
 			</Badge>
 		{/if}
 	{/each}

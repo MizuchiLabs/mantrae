@@ -79,7 +79,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		// Create or update traefik instance
 		scheduleUpdate(r, a, profile.ID)
 
-		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), profile)
+		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), *profile)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

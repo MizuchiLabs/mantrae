@@ -93,7 +93,7 @@ func (sm *SettingsManager) Start(ctx context.Context) {
 		}
 
 		if _, exists := dbMap[key]; !exists {
-			err = q.UpsertSetting(ctx, db.UpsertSettingParams{Key: key, Value: val})
+			err = q.UpsertSetting(ctx, &db.UpsertSettingParams{Key: key, Value: val})
 			if err != nil {
 				log.Fatal(fmt.Errorf("failed to upsert setting %s: %w", key, err))
 			}
@@ -140,7 +140,7 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 	}
 
 	// Update database
-	if err := sm.conn.GetQuery().UpsertSetting(ctx, *params); err != nil {
+	if err := sm.conn.GetQuery().UpsertSetting(ctx, params); err != nil {
 		return fmt.Errorf("failed to update setting in database: %w", err)
 	}
 

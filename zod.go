@@ -35,10 +35,10 @@ func main() {
 		builder.WriteString(fmt.Sprintf("%s\n", schema))
 	}
 
-	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(output), 0o750); err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile(output, []byte(builder.String()), 0o644); err != nil {
+	if err := os.WriteFile(output, []byte(builder.String()), 0o600); err != nil {
 		panic(err)
 	}
 

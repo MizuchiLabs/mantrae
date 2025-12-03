@@ -1,8 +1,8 @@
 -- name: CreateProfile :one
 INSERT INTO
-  profiles (name, description, token, created_at, updated_at)
+  profiles (name, description, token)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *;
+  (?, ?, ?) RETURNING *;
 
 -- name: GetProfile :one
 SELECT

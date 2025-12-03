@@ -34,7 +34,7 @@ func (s *SettingService) UpdateSetting(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateSettingRequest],
 ) (*connect.Response[mantraev1.UpdateSettingResponse], error) {
-	params := db.UpsertSettingParams{
+	params := &db.UpsertSettingParams{
 		Key:   req.Msg.Key,
 		Value: req.Msg.Value,
 	}

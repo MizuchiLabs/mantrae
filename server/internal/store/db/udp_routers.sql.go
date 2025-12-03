@@ -29,7 +29,7 @@ type CountUdpRoutersParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountUdpRouters(ctx context.Context, arg CountUdpRoutersParams) (int64, error) {
+func (q *Queries) CountUdpRouters(ctx context.Context, arg *CountUdpRoutersParams) (int64, error) {
 	row := q.queryRow(ctx, q.countUdpRoutersStmt, countUdpRouters, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountUdpRouters(ctx context.Context, arg CountUdpRoutersParams
 
 const createUdpRouter = `-- name: CreateUdpRouter :one
 INSERT INTO
-  udp_routers (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  udp_routers (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateUdpRouterParams struct {
@@ -67,7 +51,7 @@ type CreateUdpRouterParams struct {
 	Config    *schema.UDPRouter `json:"config"`
 }
 
-func (q *Queries) CreateUdpRouter(ctx context.Context, arg CreateUdpRouterParams) (UdpRouter, error) {
+func (q *Queries) CreateUdpRouter(ctx context.Context, arg *CreateUdpRouterParams) (*UdpRouter, error) {
 	row := q.queryRow(ctx, q.createUdpRouterStmt, createUdpRouter,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateUdpRouter(ctx context.Context, arg CreateUdpRouterParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteUdpRouter = `-- name: DeleteUdpRouter :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetUdpRouter(ctx context.Context, id string) (UdpRouter, error) {
+func (q *Queries) GetUdpRouter(ctx context.Context, id string) (*UdpRouter, error) {
 	row := q.queryRow(ctx, q.getUdpRouterStmt, getUdpRouter, id)
 	var i UdpRouter
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetUdpRouter(ctx context.Context, id string) (UdpRouter, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUdpRoutersUsingEntryPoint = `-- name: GetUdpRoutersUsingEntryPoint :many
@@ -159,13 +143,13 @@ type GetUdpRoutersUsingEntryPointRow struct {
 	Enabled bool              `json:"enabled"`
 }
 
-func (q *Queries) GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRoutersUsingEntryPointParams) ([]GetUdpRoutersUsingEntryPointRow, error) {
+func (q *Queries) GetUdpRoutersUsingEntryPoint(ctx context.Context, arg *GetUdpRoutersUsingEntryPointParams) ([]*GetUdpRoutersUsingEntryPointRow, error) {
 	rows, err := q.query(ctx, q.getUdpRoutersUsingEntryPointStmt, getUdpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUdpRoutersUsingEntryPointRow
+	var items []*GetUdpRoutersUsingEntryPointRow
 	for rows.Next() {
 		var i GetUdpRoutersUsingEntryPointRow
 		if err := rows.Scan(
@@ -176,7 +160,7 @@ func (q *Queries) GetUdpRoutersUsingEntryPoint(ctx context.Context, arg GetUdpRo
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -213,7 +197,7 @@ type ListUdpRoutersParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListUdpRouters(ctx context.Context, arg ListUdpRoutersParams) ([]UdpRouter, error) {
+func (q *Queries) ListUdpRouters(ctx context.Context, arg *ListUdpRoutersParams) ([]*UdpRouter, error) {
 	rows, err := q.query(ctx, q.listUdpRoutersStmt, listUdpRouters,
 		arg.ProfileID,
 		arg.AgentID,
@@ -224,7 +208,7 @@ func (q *Queries) ListUdpRouters(ctx context.Context, arg ListUdpRoutersParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UdpRouter
+	var items []*UdpRouter
 	for rows.Next() {
 		var i UdpRouter
 		if err := rows.Scan(
@@ -239,7 +223,7 @@ func (q *Queries) ListUdpRouters(ctx context.Context, arg ListUdpRoutersParams) 
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -260,13 +244,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListUdpRoutersEnabled(ctx context.Context, profileID int64) ([]UdpRouter, error) {
+func (q *Queries) ListUdpRoutersEnabled(ctx context.Context, profileID int64) ([]*UdpRouter, error) {
 	rows, err := q.query(ctx, q.listUdpRoutersEnabledStmt, listUdpRoutersEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []UdpRouter
+	var items []*UdpRouter
 	for rows.Next() {
 		var i UdpRouter
 		if err := rows.Scan(
@@ -281,7 +265,7 @@ func (q *Queries) ListUdpRoutersEnabled(ctx context.Context, profileID int64) ([
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -310,7 +294,7 @@ type UpdateUdpRouterParams struct {
 	ID      string            `json:"id"`
 }
 
-func (q *Queries) UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams) (UdpRouter, error) {
+func (q *Queries) UpdateUdpRouter(ctx context.Context, arg *UpdateUdpRouterParams) (*UdpRouter, error) {
 	row := q.queryRow(ctx, q.updateUdpRouterStmt, updateUdpRouter,
 		arg.Name,
 		arg.Config,
@@ -328,5 +312,5 @@ func (q *Queries) UpdateUdpRouter(ctx context.Context, arg UpdateUdpRouterParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

@@ -139,13 +139,13 @@ func BuildDynamicConfig(
 }
 
 func BackupDynamicConfigs(ctx context.Context, q *db.Queries, store storage.Backend) error {
-	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{})
+	profiles, err := q.ListProfiles(ctx, &db.ListProfilesParams{})
 	if err != nil {
 		return err
 	}
 
 	for _, profile := range profiles {
-		cfg, err := BuildDynamicConfig(ctx, q, profile)
+		cfg, err := BuildDynamicConfig(ctx, q, *profile)
 		if err != nil {
 			return err
 		}
@@ -195,13 +195,13 @@ func DynamicToDB(
 		return
 	}
 
-	entryPointSet := make(map[string]db.CreateEntryPointParams)
+	entryPointSet := make(map[string]*db.CreateEntryPointParams)
 	addEP := func(pts []string) {
 		for _, ep := range pts {
 			if ep == "" {
 				continue
 			}
-			entryPointSet[ep] = db.CreateEntryPointParams{
+			entryPointSet[ep] = &db.CreateEntryPointParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      ep,
@@ -216,7 +216,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateHttpRouter(ctx, db.CreateHttpRouterParams{
+			if _, err := q.CreateHttpRouter(ctx, &db.CreateHttpRouterParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -230,7 +230,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateHttpService(ctx, db.CreateHttpServiceParams{
+			if _, err := q.CreateHttpService(ctx, &db.CreateHttpServiceParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -243,7 +243,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateHttpMiddleware(ctx, db.CreateHttpMiddlewareParams{
+			if _, err := q.CreateHttpMiddleware(ctx, &db.CreateHttpMiddlewareParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -258,7 +258,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateTcpRouter(ctx, db.CreateTcpRouterParams{
+			if _, err := q.CreateTcpRouter(ctx, &db.CreateTcpRouterParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -272,7 +272,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateTcpService(ctx, db.CreateTcpServiceParams{
+			if _, err := q.CreateTcpService(ctx, &db.CreateTcpServiceParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -285,7 +285,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateTcpMiddleware(ctx, db.CreateTcpMiddlewareParams{
+			if _, err := q.CreateTcpMiddleware(ctx, &db.CreateTcpMiddlewareParams{
 				ProfileID: profileID,
 				Name:      k,
 				Config:    schema.WrapTCPMiddleware(v),
@@ -299,7 +299,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateUdpRouter(ctx, db.CreateUdpRouterParams{
+			if _, err := q.CreateUdpRouter(ctx, &db.CreateUdpRouterParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
@@ -313,7 +313,7 @@ func DynamicToDB(
 			if v == nil {
 				continue
 			}
-			if _, err := q.CreateUdpService(ctx, db.CreateUdpServiceParams{
+			if _, err := q.CreateUdpService(ctx, &db.CreateUdpServiceParams{
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,

@@ -31,7 +31,7 @@ func (a *App) ResetPassword(ctx context.Context, cmd *cli.Command) {
 		slog.Error("failed to hash password", "error", err)
 		os.Exit(1)
 	}
-	if err = a.Conn.GetQuery().UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+	if err = a.Conn.GetQuery().UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
 		ID:       user.ID,
 		Password: hash,
 	}); err != nil {

@@ -41,7 +41,7 @@ func (s *AgentService) CreateAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateAgentRequest],
 ) (*connect.Response[mantraev1.CreateAgentResponse], error) {
-	params := db.CreateAgentParams{
+	params := &db.CreateAgentParams{
 		ID:        uuid.NewString(),
 		ProfileID: req.Msg.ProfileId,
 	}
@@ -71,7 +71,7 @@ func (s *AgentService) UpdateAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateAgentRequest],
 ) (*connect.Response[mantraev1.UpdateAgentResponse], error) {
-	params := db.UpdateAgentParams{
+	params := &db.UpdateAgentParams{
 		ID:       req.Msg.Id,
 		ActiveIp: req.Msg.Ip,
 	}
@@ -127,7 +127,7 @@ func (s *AgentService) ListAgents(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListAgentsRequest],
 ) (*connect.Response[mantraev1.ListAgentsResponse], error) {
-	params := db.ListAgentsParams{
+	params := &db.ListAgentsParams{
 		ProfileID: req.Msg.ProfileId,
 		Limit:     req.Msg.Limit,
 		Offset:    req.Msg.Offset,
@@ -168,7 +168,7 @@ func (s *AgentService) HealthCheck(
 	}
 
 	// Update Agent
-	params := db.UpdateAgentParams{
+	params := &db.UpdateAgentParams{
 		ID:        agent.ID,
 		Hostname:  &req.Msg.Hostname,
 		PublicIp:  &req.Msg.PublicIp,

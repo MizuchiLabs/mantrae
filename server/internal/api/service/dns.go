@@ -43,7 +43,7 @@ func (s *DnsProviderService) CreateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.CreateDnsProviderRequest],
 ) (*connect.Response[mantraev1.CreateDnsProviderResponse], error) {
-	params := db.CreateDnsProviderParams{
+	params := &db.CreateDnsProviderParams{
 		ID:   uuid.New().String(),
 		Name: req.Msg.Name,
 		Type: int64(req.Msg.Type),
@@ -89,7 +89,7 @@ func (s *DnsProviderService) UpdateDnsProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.UpdateDnsProviderRequest],
 ) (*connect.Response[mantraev1.UpdateDnsProviderResponse], error) {
-	params := db.UpdateDnsProviderParams{
+	params := &db.UpdateDnsProviderParams{
 		ID:   req.Msg.Id,
 		Name: req.Msg.Name,
 		Type: int64(req.Msg.Type),
@@ -156,7 +156,7 @@ func (s *DnsProviderService) ListDnsProviders(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListDnsProvidersRequest],
 ) (*connect.Response[mantraev1.ListDnsProvidersResponse], error) {
-	params := db.ListDnsProvidersParams{
+	params := &db.ListDnsProvidersParams{
 		Limit:  req.Msg.Limit,
 		Offset: req.Msg.Offset,
 	}

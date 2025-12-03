@@ -23,7 +23,7 @@ type CreateTcpRouterDNSProviderParams struct {
 	DnsProviderID string `json:"dnsProviderId"`
 }
 
-func (q *Queries) CreateTcpRouterDNSProvider(ctx context.Context, arg CreateTcpRouterDNSProviderParams) error {
+func (q *Queries) CreateTcpRouterDNSProvider(ctx context.Context, arg *CreateTcpRouterDNSProviderParams) error {
 	_, err := q.exec(ctx, q.createTcpRouterDNSProviderStmt, createTcpRouterDNSProvider, arg.TcpRouterID, arg.DnsProviderID)
 	return err
 }
@@ -40,7 +40,7 @@ type DeleteTcpRouterDNSProviderParams struct {
 	DnsProviderID string `json:"dnsProviderId"`
 }
 
-func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg DeleteTcpRouterDNSProviderParams) error {
+func (q *Queries) DeleteTcpRouterDNSProvider(ctx context.Context, arg *DeleteTcpRouterDNSProviderParams) error {
 	_, err := q.exec(ctx, q.deleteTcpRouterDNSProviderStmt, deleteTcpRouterDNSProvider, arg.TcpRouterID, arg.DnsProviderID)
 	return err
 }
@@ -55,13 +55,13 @@ WHERE
   trdp.tcp_router_id = ?
 `
 
-func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID string) ([]DnsProvider, error) {
+func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID string) ([]*DnsProvider, error) {
 	rows, err := q.query(ctx, q.getDnsProvidersByTcpRouterStmt, getDnsProvidersByTcpRouter, tcpRouterID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DnsProvider
+	var items []*DnsProvider
 	for rows.Next() {
 		var i DnsProvider
 		if err := rows.Scan(
@@ -75,7 +75,7 @@ func (q *Queries) GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID st
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -110,13 +110,13 @@ type GetTcpRouterDomainsRow struct {
 	DnsProviderName *string           `json:"dnsProviderName"`
 }
 
-func (q *Queries) GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomainsRow, error) {
+func (q *Queries) GetTcpRouterDomains(ctx context.Context) ([]*GetTcpRouterDomainsRow, error) {
 	rows, err := q.query(ctx, q.getTcpRouterDomainsStmt, getTcpRouterDomains)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTcpRouterDomainsRow
+	var items []*GetTcpRouterDomainsRow
 	for rows.Next() {
 		var i GetTcpRouterDomainsRow
 		if err := rows.Scan(
@@ -129,7 +129,7 @@ func (q *Queries) GetTcpRouterDomains(ctx context.Context) ([]GetTcpRouterDomain
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

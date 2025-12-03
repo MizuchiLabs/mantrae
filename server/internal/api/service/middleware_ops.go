@@ -69,7 +69,7 @@ func (s *HTTPMiddlewareOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateMiddlewareRequest,
 ) (*mantraev1.CreateMiddlewareResponse, error) {
-	params := db.CreateHttpMiddlewareParams{
+	params := &db.CreateHttpMiddlewareParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
@@ -112,7 +112,7 @@ func (s *HTTPMiddlewareOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateMiddlewareRequest,
 ) (*mantraev1.UpdateMiddlewareResponse, error) {
-	params := db.UpdateHttpMiddlewareParams{
+	params := &db.UpdateHttpMiddlewareParams{
 		ID:        req.Id,
 		Name:      req.Name,
 		Enabled:   req.Enabled,
@@ -142,7 +142,7 @@ func (s *HTTPMiddlewareOps) Update(
 
 	// Make sure routers using this middleware use the new name
 	routers, err := s.app.Conn.GetQuery().
-		GetHttpRoutersUsingMiddleware(ctx, db.GetHttpRoutersUsingMiddlewareParams{
+		GetHttpRoutersUsingMiddleware(ctx, &db.GetHttpRoutersUsingMiddlewareParams{
 			ProfileID: middleware.ProfileID,
 			ID:        middleware.ID,
 		})
@@ -154,7 +154,7 @@ func (s *HTTPMiddlewareOps) Update(
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
 		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)
-		if _, err = s.app.Conn.GetQuery().UpdateHttpRouter(ctx, db.UpdateHttpRouterParams{
+		if _, err = s.app.Conn.GetQuery().UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -191,7 +191,7 @@ func (s *HTTPMiddlewareOps) Delete(
 
 	// Make sure to delete the middleware from related routers
 	routers, err := s.app.Conn.GetQuery().
-		GetHttpRoutersUsingMiddleware(ctx, db.GetHttpRoutersUsingMiddlewareParams{
+		GetHttpRoutersUsingMiddleware(ctx, &db.GetHttpRoutersUsingMiddlewareParams{
 			ProfileID: middleware.ProfileID,
 			ID:        middleware.ID,
 		})
@@ -202,7 +202,7 @@ func (s *HTTPMiddlewareOps) Delete(
 		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
-		if _, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, db.UpdateHttpRouterParams{
+		if _, err := s.app.Conn.GetQuery().UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -230,7 +230,7 @@ func (s *HTTPMiddlewareOps) List(
 	req *mantraev1.ListMiddlewaresRequest,
 ) (*mantraev1.ListMiddlewaresResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListHttpMiddlewares(ctx, db.ListHttpMiddlewaresParams{
+		ListHttpMiddlewares(ctx, &db.ListHttpMiddlewaresParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -240,7 +240,7 @@ func (s *HTTPMiddlewareOps) List(
 		return nil, err
 	}
 	totalCount, err := s.app.Conn.GetQuery().
-		CountHttpMiddlewares(ctx, db.CountHttpMiddlewaresParams{
+		CountHttpMiddlewares(ctx, &db.CountHttpMiddlewaresParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 		})
@@ -277,7 +277,7 @@ func (s *TCPMiddlewareOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateMiddlewareRequest,
 ) (*mantraev1.CreateMiddlewareResponse, error) {
-	params := db.CreateTcpMiddlewareParams{
+	params := &db.CreateTcpMiddlewareParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
@@ -317,7 +317,7 @@ func (s *TCPMiddlewareOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateMiddlewareRequest,
 ) (*mantraev1.UpdateMiddlewareResponse, error) {
-	params := db.UpdateTcpMiddlewareParams{
+	params := &db.UpdateTcpMiddlewareParams{
 		Name:      req.Name,
 		Enabled:   req.Enabled,
 		IsDefault: req.IsDefault,
@@ -344,7 +344,7 @@ func (s *TCPMiddlewareOps) Update(
 
 	// Make sure routers using this middleware use the new name
 	routers, err := s.app.Conn.GetQuery().
-		GetTcpRoutersUsingMiddleware(ctx, db.GetTcpRoutersUsingMiddlewareParams{
+		GetTcpRoutersUsingMiddleware(ctx, &db.GetTcpRoutersUsingMiddlewareParams{
 			ProfileID: middleware.ProfileID,
 			ID:        middleware.ID,
 		})
@@ -356,7 +356,7 @@ func (s *TCPMiddlewareOps) Update(
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
 		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)
-		if _, err = s.app.Conn.GetQuery().UpdateTcpRouter(ctx, db.UpdateTcpRouterParams{
+		if _, err = s.app.Conn.GetQuery().UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -393,7 +393,7 @@ func (s *TCPMiddlewareOps) Delete(
 
 	// Make sure to delete the middleware from related routers
 	routers, err := s.app.Conn.GetQuery().
-		GetTcpRoutersUsingMiddleware(ctx, db.GetTcpRoutersUsingMiddlewareParams{
+		GetTcpRoutersUsingMiddleware(ctx, &db.GetTcpRoutersUsingMiddlewareParams{
 			ProfileID: middleware.ProfileID,
 			ID:        middleware.ID,
 		})
@@ -404,7 +404,7 @@ func (s *TCPMiddlewareOps) Delete(
 		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
 			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
 		}
-		if _, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, db.UpdateTcpRouterParams{
+		if _, err := s.app.Conn.GetQuery().UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -432,7 +432,7 @@ func (s *TCPMiddlewareOps) List(
 	req *mantraev1.ListMiddlewaresRequest,
 ) (*mantraev1.ListMiddlewaresResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListTcpMiddlewares(ctx, db.ListTcpMiddlewaresParams{
+		ListTcpMiddlewares(ctx, &db.ListTcpMiddlewaresParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -441,7 +441,7 @@ func (s *TCPMiddlewareOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountTcpMiddlewares(ctx, db.CountTcpMiddlewaresParams{
+	totalCount, err := s.app.Conn.GetQuery().CountTcpMiddlewares(ctx, &db.CountTcpMiddlewaresParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})

@@ -27,25 +27,9 @@ func (q *Queries) CountDnsProviders(ctx context.Context) (int64, error) {
 
 const createDnsProvider = `-- name: CreateDnsProvider :one
 INSERT INTO
-  dns_providers (
-    id,
-    name,
-    type,
-    config,
-    is_default,
-    created_at,
-    updated_at
-  )
+  dns_providers (id, name, type, config, is_default)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, name, type, config, is_default, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, name, type, config, is_default, created_at, updated_at
 `
 
 type CreateDnsProviderParams struct {
@@ -56,7 +40,7 @@ type CreateDnsProviderParams struct {
 	IsDefault bool                      `json:"isDefault"`
 }
 
-func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderParams) (DnsProvider, error) {
+func (q *Queries) CreateDnsProvider(ctx context.Context, arg *CreateDnsProviderParams) (*DnsProvider, error) {
 	row := q.queryRow(ctx, q.createDnsProviderStmt, createDnsProvider,
 		arg.ID,
 		arg.Name,
@@ -74,7 +58,7 @@ func (q *Queries) CreateDnsProvider(ctx context.Context, arg CreateDnsProviderPa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteDnsProvider = `-- name: DeleteDnsProvider :exec
@@ -99,7 +83,7 @@ LIMIT
   1
 `
 
-func (q *Queries) GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error) {
+func (q *Queries) GetDefaultDNSProvider(ctx context.Context) (*DnsProvider, error) {
 	row := q.queryRow(ctx, q.getDefaultDNSProviderStmt, getDefaultDNSProvider)
 	var i DnsProvider
 	err := row.Scan(
@@ -111,7 +95,7 @@ func (q *Queries) GetDefaultDNSProvider(ctx context.Context) (DnsProvider, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getDnsProvider = `-- name: GetDnsProvider :one
@@ -123,7 +107,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetDnsProvider(ctx context.Context, id string) (DnsProvider, error) {
+func (q *Queries) GetDnsProvider(ctx context.Context, id string) (*DnsProvider, error) {
 	row := q.queryRow(ctx, q.getDnsProviderStmt, getDnsProvider, id)
 	var i DnsProvider
 	err := row.Scan(
@@ -135,7 +119,7 @@ func (q *Queries) GetDnsProvider(ctx context.Context, id string) (DnsProvider, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getDnsProviderByName = `-- name: GetDnsProviderByName :one
@@ -147,7 +131,7 @@ WHERE
   name = ?
 `
 
-func (q *Queries) GetDnsProviderByName(ctx context.Context, name string) (DnsProvider, error) {
+func (q *Queries) GetDnsProviderByName(ctx context.Context, name string) (*DnsProvider, error) {
 	row := q.queryRow(ctx, q.getDnsProviderByNameStmt, getDnsProviderByName, name)
 	var i DnsProvider
 	err := row.Scan(
@@ -159,7 +143,7 @@ func (q *Queries) GetDnsProviderByName(ctx context.Context, name string) (DnsPro
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listDnsProviders = `-- name: ListDnsProviders :many
@@ -180,13 +164,13 @@ type ListDnsProvidersParams struct {
 	Limit  *int64 `json:"limit"`
 }
 
-func (q *Queries) ListDnsProviders(ctx context.Context, arg ListDnsProvidersParams) ([]DnsProvider, error) {
+func (q *Queries) ListDnsProviders(ctx context.Context, arg *ListDnsProvidersParams) ([]*DnsProvider, error) {
 	rows, err := q.query(ctx, q.listDnsProvidersStmt, listDnsProviders, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DnsProvider
+	var items []*DnsProvider
 	for rows.Next() {
 		var i DnsProvider
 		if err := rows.Scan(
@@ -200,7 +184,7 @@ func (q *Queries) ListDnsProviders(ctx context.Context, arg ListDnsProvidersPara
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -244,7 +228,7 @@ type UpdateDnsProviderParams struct {
 	ID        string                    `json:"id"`
 }
 
-func (q *Queries) UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderParams) (DnsProvider, error) {
+func (q *Queries) UpdateDnsProvider(ctx context.Context, arg *UpdateDnsProviderParams) (*DnsProvider, error) {
 	row := q.queryRow(ctx, q.updateDnsProviderStmt, updateDnsProvider,
 		arg.Name,
 		arg.Type,
@@ -262,5 +246,5 @@ func (q *Queries) UpdateDnsProvider(ctx context.Context, arg UpdateDnsProviderPa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

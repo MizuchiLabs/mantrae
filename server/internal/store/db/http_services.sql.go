@@ -29,7 +29,7 @@ type CountHttpServicesParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountHttpServices(ctx context.Context, arg CountHttpServicesParams) (int64, error) {
+func (q *Queries) CountHttpServices(ctx context.Context, arg *CountHttpServicesParams) (int64, error) {
 	row := q.queryRow(ctx, q.countHttpServicesStmt, countHttpServices, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountHttpServices(ctx context.Context, arg CountHttpServicesPa
 
 const createHttpService = `-- name: CreateHttpService :one
 INSERT INTO
-  http_services (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  http_services (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpServiceParams struct {
@@ -67,7 +51,7 @@ type CreateHttpServiceParams struct {
 	Config    *schema.HTTPService `json:"config"`
 }
 
-func (q *Queries) CreateHttpService(ctx context.Context, arg CreateHttpServiceParams) (HttpService, error) {
+func (q *Queries) CreateHttpService(ctx context.Context, arg *CreateHttpServiceParams) (*HttpService, error) {
 	row := q.queryRow(ctx, q.createHttpServiceStmt, createHttpService,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateHttpService(ctx context.Context, arg CreateHttpServicePa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteHttpService = `-- name: DeleteHttpService :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpService(ctx context.Context, id string) (HttpService, error) {
+func (q *Queries) GetHttpService(ctx context.Context, id string) (*HttpService, error) {
 	row := q.queryRow(ctx, q.getHttpServiceStmt, getHttpService, id)
 	var i HttpService
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetHttpService(ctx context.Context, id string) (HttpService, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getHttpServiceByName = `-- name: GetHttpServiceByName :one
@@ -140,7 +124,7 @@ type GetHttpServiceByNameParams struct {
 	Name      string `json:"name"`
 }
 
-func (q *Queries) GetHttpServiceByName(ctx context.Context, arg GetHttpServiceByNameParams) (HttpService, error) {
+func (q *Queries) GetHttpServiceByName(ctx context.Context, arg *GetHttpServiceByNameParams) (*HttpService, error) {
 	row := q.queryRow(ctx, q.getHttpServiceByNameStmt, getHttpServiceByName, arg.ProfileID, arg.Name)
 	var i HttpService
 	err := row.Scan(
@@ -153,7 +137,7 @@ func (q *Queries) GetHttpServiceByName(ctx context.Context, arg GetHttpServiceBy
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listHttpServices = `-- name: ListHttpServices :many
@@ -182,7 +166,7 @@ type ListHttpServicesParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListHttpServices(ctx context.Context, arg ListHttpServicesParams) ([]HttpService, error) {
+func (q *Queries) ListHttpServices(ctx context.Context, arg *ListHttpServicesParams) ([]*HttpService, error) {
 	rows, err := q.query(ctx, q.listHttpServicesStmt, listHttpServices,
 		arg.ProfileID,
 		arg.AgentID,
@@ -193,7 +177,7 @@ func (q *Queries) ListHttpServices(ctx context.Context, arg ListHttpServicesPara
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpService
+	var items []*HttpService
 	for rows.Next() {
 		var i HttpService
 		if err := rows.Scan(
@@ -208,7 +192,7 @@ func (q *Queries) ListHttpServices(ctx context.Context, arg ListHttpServicesPara
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -229,13 +213,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListHttpServicesEnabled(ctx context.Context, profileID int64) ([]HttpService, error) {
+func (q *Queries) ListHttpServicesEnabled(ctx context.Context, profileID int64) ([]*HttpService, error) {
 	rows, err := q.query(ctx, q.listHttpServicesEnabledStmt, listHttpServicesEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpService
+	var items []*HttpService
 	for rows.Next() {
 		var i HttpService
 		if err := rows.Scan(
@@ -250,7 +234,7 @@ func (q *Queries) ListHttpServicesEnabled(ctx context.Context, profileID int64) 
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -279,7 +263,7 @@ type UpdateHttpServiceParams struct {
 	ID      string              `json:"id"`
 }
 
-func (q *Queries) UpdateHttpService(ctx context.Context, arg UpdateHttpServiceParams) (HttpService, error) {
+func (q *Queries) UpdateHttpService(ctx context.Context, arg *UpdateHttpServiceParams) (*HttpService, error) {
 	row := q.queryRow(ctx, q.updateHttpServiceStmt, updateHttpService,
 		arg.Name,
 		arg.Config,
@@ -297,5 +281,5 @@ func (q *Queries) UpdateHttpService(ctx context.Context, arg UpdateHttpServicePa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

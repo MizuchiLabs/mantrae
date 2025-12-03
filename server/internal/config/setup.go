@@ -72,7 +72,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	q := a.Conn.GetQuery()
 
 	// Ensure at least one user exists
-	users, err := q.ListUsers(ctx, db.ListUsersParams{})
+	users, err := q.ListUsers(ctx, &db.ListUsersParams{})
 	if err != nil {
 		return fmt.Errorf("failed to list admin users: %w", err)
 	}
@@ -100,7 +100,7 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 			return fmt.Errorf("failed to generate UUID: %w", err)
 		}
 
-		if _, err = q.CreateUser(ctx, db.CreateUserParams{
+		if _, err = q.CreateUser(ctx, &db.CreateUserParams{
 			ID:       id.String(),
 			Username: "admin",
 			Password: hash,
@@ -111,14 +111,14 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 	}
 
 	// Ensure default profile exists
-	profiles, err := q.ListProfiles(ctx, db.ListProfilesParams{})
+	profiles, err := q.ListProfiles(ctx, &db.ListProfilesParams{})
 	if err != nil {
 		return fmt.Errorf("failed to list profiles: %w", err)
 	}
 
 	if len(profiles) == 0 {
 		description := "Default profile"
-		if _, err = q.CreateProfile(ctx, db.CreateProfileParams{
+		if _, err = q.CreateProfile(ctx, &db.CreateProfileParams{
 			Name:        "default",
 			Description: &description,
 			Token:       util.GenerateToken(6),

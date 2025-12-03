@@ -6,21 +6,10 @@ INSERT INTO
     agent_id,
     name,
     config,
-    is_default,
-    created_at,
-    updated_at
+    is_default
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetTcpMiddleware :one
 SELECT

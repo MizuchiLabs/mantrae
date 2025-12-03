@@ -1,24 +1,8 @@
 -- name: CreateEntryPoint :one
 INSERT INTO
-  entry_points (
-    id,
-    profile_id,
-    name,
-    address,
-    is_default,
-    created_at,
-    updated_at
-  )
+  entry_points (id, profile_id, name, address, is_default)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING *;
+  (?, ?, ?, ?, ?) RETURNING *;
 
 -- name: GetEntryPoint :one
 SELECT

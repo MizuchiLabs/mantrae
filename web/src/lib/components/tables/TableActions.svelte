@@ -4,7 +4,7 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Button, type ButtonProps } from '$lib/components/ui/button/index.js';
 	import { type Component } from 'svelte';
-	import { AlertTriangle, Ellipsis, type IconProps } from '@lucide/svelte';
+	import { TriangleAlert, Ellipsis, type IconProps } from '@lucide/svelte';
 
 	type IconComponent = Component<IconProps, Record<string, never>, ''>;
 
@@ -31,10 +31,10 @@
 
 	let popoverOpen = $state(false);
 
-	const inlineActions = actions.filter(
-		(a) => ['button', 'popover'].includes(a.type) && !a.disabled
+	const inlineActions = $derived(
+		actions.filter((a) => ['button', 'popover'].includes(a.type) && !a.disabled)
 	);
-	const dropdownActions = actions.filter((a) => a.type === 'dropdown' && !a.disabled);
+	const dropdownActions = $derived(actions.filter((a) => a.type === 'dropdown' && !a.disabled));
 </script>
 
 <div class="flex flex-row items-center">
@@ -62,7 +62,7 @@
 							<div
 								class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-destructive/10"
 							>
-								<AlertTriangle class="h-4 w-4 text-destructive" />
+								<TriangleAlert class="h-4 w-4 text-destructive" />
 							</div>
 							<div class="flex-1 space-y-2">
 								<h4 class="text-sm leading-none font-semibold">

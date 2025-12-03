@@ -29,7 +29,7 @@ type CountTcpRoutersParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountTcpRouters(ctx context.Context, arg CountTcpRoutersParams) (int64, error) {
+func (q *Queries) CountTcpRouters(ctx context.Context, arg *CountTcpRoutersParams) (int64, error) {
 	row := q.queryRow(ctx, q.countTcpRoutersStmt, countTcpRouters, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountTcpRouters(ctx context.Context, arg CountTcpRoutersParams
 
 const createTcpRouter = `-- name: CreateTcpRouter :one
 INSERT INTO
-  tcp_routers (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  tcp_routers (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateTcpRouterParams struct {
@@ -67,7 +51,7 @@ type CreateTcpRouterParams struct {
 	Config    *schema.TCPRouter `json:"config"`
 }
 
-func (q *Queries) CreateTcpRouter(ctx context.Context, arg CreateTcpRouterParams) (TcpRouter, error) {
+func (q *Queries) CreateTcpRouter(ctx context.Context, arg *CreateTcpRouterParams) (*TcpRouter, error) {
 	row := q.queryRow(ctx, q.createTcpRouterStmt, createTcpRouter,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateTcpRouter(ctx context.Context, arg CreateTcpRouterParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteTcpRouter = `-- name: DeleteTcpRouter :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetTcpRouter(ctx context.Context, id string) (TcpRouter, error) {
+func (q *Queries) GetTcpRouter(ctx context.Context, id string) (*TcpRouter, error) {
 	row := q.queryRow(ctx, q.getTcpRouterStmt, getTcpRouter, id)
 	var i TcpRouter
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetTcpRouter(ctx context.Context, id string) (TcpRouter, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getTcpRoutersUsingEntryPoint = `-- name: GetTcpRoutersUsingEntryPoint :many
@@ -159,13 +143,13 @@ type GetTcpRoutersUsingEntryPointRow struct {
 	Enabled bool              `json:"enabled"`
 }
 
-func (q *Queries) GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRoutersUsingEntryPointParams) ([]GetTcpRoutersUsingEntryPointRow, error) {
+func (q *Queries) GetTcpRoutersUsingEntryPoint(ctx context.Context, arg *GetTcpRoutersUsingEntryPointParams) ([]*GetTcpRoutersUsingEntryPointRow, error) {
 	rows, err := q.query(ctx, q.getTcpRoutersUsingEntryPointStmt, getTcpRoutersUsingEntryPoint, arg.ID, arg.ProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTcpRoutersUsingEntryPointRow
+	var items []*GetTcpRoutersUsingEntryPointRow
 	for rows.Next() {
 		var i GetTcpRoutersUsingEntryPointRow
 		if err := rows.Scan(
@@ -176,7 +160,7 @@ func (q *Queries) GetTcpRoutersUsingEntryPoint(ctx context.Context, arg GetTcpRo
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -221,13 +205,13 @@ type GetTcpRoutersUsingMiddlewareRow struct {
 	Enabled bool              `json:"enabled"`
 }
 
-func (q *Queries) GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRoutersUsingMiddlewareParams) ([]GetTcpRoutersUsingMiddlewareRow, error) {
+func (q *Queries) GetTcpRoutersUsingMiddleware(ctx context.Context, arg *GetTcpRoutersUsingMiddlewareParams) ([]*GetTcpRoutersUsingMiddlewareRow, error) {
 	rows, err := q.query(ctx, q.getTcpRoutersUsingMiddlewareStmt, getTcpRoutersUsingMiddleware, arg.ID, arg.ProfileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTcpRoutersUsingMiddlewareRow
+	var items []*GetTcpRoutersUsingMiddlewareRow
 	for rows.Next() {
 		var i GetTcpRoutersUsingMiddlewareRow
 		if err := rows.Scan(
@@ -238,7 +222,7 @@ func (q *Queries) GetTcpRoutersUsingMiddleware(ctx context.Context, arg GetTcpRo
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -275,7 +259,7 @@ type ListTcpRoutersParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListTcpRouters(ctx context.Context, arg ListTcpRoutersParams) ([]TcpRouter, error) {
+func (q *Queries) ListTcpRouters(ctx context.Context, arg *ListTcpRoutersParams) ([]*TcpRouter, error) {
 	rows, err := q.query(ctx, q.listTcpRoutersStmt, listTcpRouters,
 		arg.ProfileID,
 		arg.AgentID,
@@ -286,7 +270,7 @@ func (q *Queries) ListTcpRouters(ctx context.Context, arg ListTcpRoutersParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpRouter
+	var items []*TcpRouter
 	for rows.Next() {
 		var i TcpRouter
 		if err := rows.Scan(
@@ -301,7 +285,7 @@ func (q *Queries) ListTcpRouters(ctx context.Context, arg ListTcpRoutersParams) 
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -322,13 +306,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListTcpRoutersEnabled(ctx context.Context, profileID int64) ([]TcpRouter, error) {
+func (q *Queries) ListTcpRoutersEnabled(ctx context.Context, profileID int64) ([]*TcpRouter, error) {
 	rows, err := q.query(ctx, q.listTcpRoutersEnabledStmt, listTcpRoutersEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []TcpRouter
+	var items []*TcpRouter
 	for rows.Next() {
 		var i TcpRouter
 		if err := rows.Scan(
@@ -343,7 +327,7 @@ func (q *Queries) ListTcpRoutersEnabled(ctx context.Context, profileID int64) ([
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -372,7 +356,7 @@ type UpdateTcpRouterParams struct {
 	ID      string            `json:"id"`
 }
 
-func (q *Queries) UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams) (TcpRouter, error) {
+func (q *Queries) UpdateTcpRouter(ctx context.Context, arg *UpdateTcpRouterParams) (*TcpRouter, error) {
 	row := q.queryRow(ctx, q.updateTcpRouterStmt, updateTcpRouter,
 		arg.Name,
 		arg.Config,
@@ -390,5 +374,5 @@ func (q *Queries) UpdateTcpRouter(ctx context.Context, arg UpdateTcpRouterParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

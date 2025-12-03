@@ -29,7 +29,7 @@ type CountHttpMiddlewaresParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountHttpMiddlewares(ctx context.Context, arg CountHttpMiddlewaresParams) (int64, error) {
+func (q *Queries) CountHttpMiddlewares(ctx context.Context, arg *CountHttpMiddlewaresParams) (int64, error) {
 	row := q.queryRow(ctx, q.countHttpMiddlewaresStmt, countHttpMiddlewares, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -44,21 +44,10 @@ INSERT INTO
     agent_id,
     name,
     config,
-    is_default,
-    created_at,
-    updated_at
+    is_default
   )
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
+  (?, ?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, is_default, created_at, updated_at
 `
 
 type CreateHttpMiddlewareParams struct {
@@ -70,7 +59,7 @@ type CreateHttpMiddlewareParams struct {
 	IsDefault bool                   `json:"isDefault"`
 }
 
-func (q *Queries) CreateHttpMiddleware(ctx context.Context, arg CreateHttpMiddlewareParams) (HttpMiddleware, error) {
+func (q *Queries) CreateHttpMiddleware(ctx context.Context, arg *CreateHttpMiddlewareParams) (*HttpMiddleware, error) {
 	row := q.queryRow(ctx, q.createHttpMiddlewareStmt, createHttpMiddleware,
 		arg.ID,
 		arg.ProfileID,
@@ -91,7 +80,7 @@ func (q *Queries) CreateHttpMiddleware(ctx context.Context, arg CreateHttpMiddle
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteHttpMiddleware = `-- name: DeleteHttpMiddleware :exec
@@ -114,7 +103,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpMiddleware(ctx context.Context, id string) (HttpMiddleware, error) {
+func (q *Queries) GetHttpMiddleware(ctx context.Context, id string) (*HttpMiddleware, error) {
 	row := q.queryRow(ctx, q.getHttpMiddlewareStmt, getHttpMiddleware, id)
 	var i HttpMiddleware
 	err := row.Scan(
@@ -128,7 +117,7 @@ func (q *Queries) GetHttpMiddleware(ctx context.Context, id string) (HttpMiddlew
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listHttpMiddlewares = `-- name: ListHttpMiddlewares :many
@@ -157,7 +146,7 @@ type ListHttpMiddlewaresParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListHttpMiddlewares(ctx context.Context, arg ListHttpMiddlewaresParams) ([]HttpMiddleware, error) {
+func (q *Queries) ListHttpMiddlewares(ctx context.Context, arg *ListHttpMiddlewaresParams) ([]*HttpMiddleware, error) {
 	rows, err := q.query(ctx, q.listHttpMiddlewaresStmt, listHttpMiddlewares,
 		arg.ProfileID,
 		arg.AgentID,
@@ -168,7 +157,7 @@ func (q *Queries) ListHttpMiddlewares(ctx context.Context, arg ListHttpMiddlewar
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpMiddleware
+	var items []*HttpMiddleware
 	for rows.Next() {
 		var i HttpMiddleware
 		if err := rows.Scan(
@@ -184,7 +173,7 @@ func (q *Queries) ListHttpMiddlewares(ctx context.Context, arg ListHttpMiddlewar
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -205,13 +194,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListHttpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]HttpMiddleware, error) {
+func (q *Queries) ListHttpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]*HttpMiddleware, error) {
 	rows, err := q.query(ctx, q.listHttpMiddlewaresEnabledStmt, listHttpMiddlewaresEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpMiddleware
+	var items []*HttpMiddleware
 	for rows.Next() {
 		var i HttpMiddleware
 		if err := rows.Scan(
@@ -227,7 +216,7 @@ func (q *Queries) ListHttpMiddlewaresEnabled(ctx context.Context, profileID int6
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -272,7 +261,7 @@ type UpdateHttpMiddlewareParams struct {
 	ID        string                 `json:"id"`
 }
 
-func (q *Queries) UpdateHttpMiddleware(ctx context.Context, arg UpdateHttpMiddlewareParams) (HttpMiddleware, error) {
+func (q *Queries) UpdateHttpMiddleware(ctx context.Context, arg *UpdateHttpMiddlewareParams) (*HttpMiddleware, error) {
 	row := q.queryRow(ctx, q.updateHttpMiddlewareStmt, updateHttpMiddleware,
 		arg.Name,
 		arg.Config,
@@ -292,5 +281,5 @@ func (q *Queries) UpdateHttpMiddleware(ctx context.Context, arg UpdateHttpMiddle
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

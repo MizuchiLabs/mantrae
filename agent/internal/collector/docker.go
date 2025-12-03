@@ -50,7 +50,8 @@ func GetContainers() ([]ContainerInfo, error) {
 
 	var result []ContainerInfo
 	for _, c := range containers {
-		if strings.Contains(c.Image, "traefik") {
+		name := strings.TrimPrefix(c.Names[0], "/")
+		if strings.Contains(c.Image, "traefik") && name != "whoami" {
 			slog.Debug("Skipping Traefik container", "name", c.Names[0])
 			continue
 		}
@@ -67,7 +68,7 @@ func GetContainers() ([]ContainerInfo, error) {
 
 		result = append(result, ContainerInfo{
 			ID:     c.ID,
-			Name:   c.Names[0],
+			Name:   name,
 			Labels: c.Labels,
 		})
 	}

@@ -12,6 +12,8 @@ sql:
         emit_interface: true # Output a Querier interface in the generated package
         emit_prepared_queries: true
         emit_pointers_for_null_types: true # Pointers for null types
+        emit_result_struct_pointers: true # Efficient for large result sets
+        emit_params_struct_pointers: true # Efficient parameter passing
         overrides:
           - column: "http_routers.config"
             go_type:
@@ -88,13 +90,3 @@ sql:
               import: "github.com/mizuchilabs/mantrae/server/internal/store/schema"
               type: "DNSProviderConfig"
               pointer: true
-          # - column: "agents.private_ips"
-          #   go_type:
-          #     import: "github.com/mizuchilabs/mantrae/server/internal/store/schema"
-          #     type: "AgentPrivateIPs"
-          #     pointer: true
-          # - column: "agents.containers"
-          #   go_type:
-          #     import: "github.com/mizuchilabs/mantrae/server/internal/store/schema"
-          #     type: "AgentContainers"
-          #     pointer: true

@@ -29,7 +29,7 @@ type CountHttpServersTransportsParams struct {
 	AgentID   *string `json:"agentId"`
 }
 
-func (q *Queries) CountHttpServersTransports(ctx context.Context, arg CountHttpServersTransportsParams) (int64, error) {
+func (q *Queries) CountHttpServersTransports(ctx context.Context, arg *CountHttpServersTransportsParams) (int64, error) {
 	row := q.queryRow(ctx, q.countHttpServersTransportsStmt, countHttpServersTransports, arg.ProfileID, arg.AgentID)
 	var count int64
 	err := row.Scan(&count)
@@ -38,25 +38,9 @@ func (q *Queries) CountHttpServersTransports(ctx context.Context, arg CountHttpS
 
 const createHttpServersTransport = `-- name: CreateHttpServersTransport :one
 INSERT INTO
-  http_servers_transports (
-    id,
-    profile_id,
-    agent_id,
-    name,
-    config,
-    created_at,
-    updated_at
-  )
+  http_servers_transports (id, profile_id, agent_id, name, config)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, agent_id, name, config, enabled, created_at, updated_at
 `
 
 type CreateHttpServersTransportParams struct {
@@ -67,7 +51,7 @@ type CreateHttpServersTransportParams struct {
 	Config    *schema.HTTPServersTransport `json:"config"`
 }
 
-func (q *Queries) CreateHttpServersTransport(ctx context.Context, arg CreateHttpServersTransportParams) (HttpServersTransport, error) {
+func (q *Queries) CreateHttpServersTransport(ctx context.Context, arg *CreateHttpServersTransportParams) (*HttpServersTransport, error) {
 	row := q.queryRow(ctx, q.createHttpServersTransportStmt, createHttpServersTransport,
 		arg.ID,
 		arg.ProfileID,
@@ -86,7 +70,7 @@ func (q *Queries) CreateHttpServersTransport(ctx context.Context, arg CreateHttp
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteHttpServersTransport = `-- name: DeleteHttpServersTransport :exec
@@ -109,7 +93,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetHttpServersTransport(ctx context.Context, id string) (HttpServersTransport, error) {
+func (q *Queries) GetHttpServersTransport(ctx context.Context, id string) (*HttpServersTransport, error) {
 	row := q.queryRow(ctx, q.getHttpServersTransportStmt, getHttpServersTransport, id)
 	var i HttpServersTransport
 	err := row.Scan(
@@ -122,7 +106,7 @@ func (q *Queries) GetHttpServersTransport(ctx context.Context, id string) (HttpS
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listHttpServersTransports = `-- name: ListHttpServersTransports :many
@@ -151,7 +135,7 @@ type ListHttpServersTransportsParams struct {
 	Limit     *int64  `json:"limit"`
 }
 
-func (q *Queries) ListHttpServersTransports(ctx context.Context, arg ListHttpServersTransportsParams) ([]HttpServersTransport, error) {
+func (q *Queries) ListHttpServersTransports(ctx context.Context, arg *ListHttpServersTransportsParams) ([]*HttpServersTransport, error) {
 	rows, err := q.query(ctx, q.listHttpServersTransportsStmt, listHttpServersTransports,
 		arg.ProfileID,
 		arg.AgentID,
@@ -162,7 +146,7 @@ func (q *Queries) ListHttpServersTransports(ctx context.Context, arg ListHttpSer
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpServersTransport
+	var items []*HttpServersTransport
 	for rows.Next() {
 		var i HttpServersTransport
 		if err := rows.Scan(
@@ -177,7 +161,7 @@ func (q *Queries) ListHttpServersTransports(ctx context.Context, arg ListHttpSer
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -198,13 +182,13 @@ WHERE
   AND enabled = TRUE
 `
 
-func (q *Queries) ListHttpServersTransportsEnabled(ctx context.Context, profileID int64) ([]HttpServersTransport, error) {
+func (q *Queries) ListHttpServersTransportsEnabled(ctx context.Context, profileID int64) ([]*HttpServersTransport, error) {
 	rows, err := q.query(ctx, q.listHttpServersTransportsEnabledStmt, listHttpServersTransportsEnabled, profileID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []HttpServersTransport
+	var items []*HttpServersTransport
 	for rows.Next() {
 		var i HttpServersTransport
 		if err := rows.Scan(
@@ -219,7 +203,7 @@ func (q *Queries) ListHttpServersTransportsEnabled(ctx context.Context, profileI
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -248,7 +232,7 @@ type UpdateHttpServersTransportParams struct {
 	ID      string                       `json:"id"`
 }
 
-func (q *Queries) UpdateHttpServersTransport(ctx context.Context, arg UpdateHttpServersTransportParams) (HttpServersTransport, error) {
+func (q *Queries) UpdateHttpServersTransport(ctx context.Context, arg *UpdateHttpServersTransportParams) (*HttpServersTransport, error) {
 	row := q.queryRow(ctx, q.updateHttpServersTransportStmt, updateHttpServersTransport,
 		arg.Name,
 		arg.Config,
@@ -266,5 +250,5 @@ func (q *Queries) UpdateHttpServersTransport(ctx context.Context, arg UpdateHttp
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

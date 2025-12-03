@@ -86,16 +86,16 @@ func (s *Scheduler) cleanupAgents() {
 			}
 
 			// List profiles
-			profiles, err := s.cfg.Conn.GetQuery().ListProfiles(s.ctx, db.ListProfilesParams{})
+			profiles, err := s.cfg.Conn.GetQuery().ListProfiles(s.ctx, &db.ListProfilesParams{})
 			if err != nil {
 				slog.Error("failed to list profiles", "error", err)
 				continue
 			}
 
-			var agents []db.Agent
+			var agents []*db.Agent
 			for _, profile := range profiles {
 				a, err := s.cfg.Conn.GetQuery().
-					ListAgents(s.ctx, db.ListAgentsParams{ProfileID: profile.ID})
+					ListAgents(s.ctx, &db.ListAgentsParams{ProfileID: profile.ID})
 				if err != nil {
 					slog.Error("failed to list agents", "error", err)
 					continue

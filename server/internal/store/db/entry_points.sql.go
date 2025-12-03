@@ -27,25 +27,9 @@ func (q *Queries) CountEntryPoints(ctx context.Context, profileID int64) (int64,
 
 const createEntryPoint = `-- name: CreateEntryPoint :one
 INSERT INTO
-  entry_points (
-    id,
-    profile_id,
-    name,
-    address,
-    is_default,
-    created_at,
-    updated_at
-  )
+  entry_points (id, profile_id, name, address, is_default)
 VALUES
-  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-  ) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
+  (?, ?, ?, ?, ?) RETURNING id, profile_id, name, address, is_default, created_at, updated_at
 `
 
 type CreateEntryPointParams struct {
@@ -56,7 +40,7 @@ type CreateEntryPointParams struct {
 	IsDefault bool    `json:"isDefault"`
 }
 
-func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointParams) (EntryPoint, error) {
+func (q *Queries) CreateEntryPoint(ctx context.Context, arg *CreateEntryPointParams) (*EntryPoint, error) {
 	row := q.queryRow(ctx, q.createEntryPointStmt, createEntryPoint,
 		arg.ID,
 		arg.ProfileID,
@@ -74,7 +58,7 @@ func (q *Queries) CreateEntryPoint(ctx context.Context, arg CreateEntryPointPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteEntryPointByID = `-- name: DeleteEntryPointByID :exec
@@ -99,7 +83,7 @@ LIMIT
   1
 `
 
-func (q *Queries) GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error) {
+func (q *Queries) GetDefaultEntryPoint(ctx context.Context) (*EntryPoint, error) {
 	row := q.queryRow(ctx, q.getDefaultEntryPointStmt, getDefaultEntryPoint)
 	var i EntryPoint
 	err := row.Scan(
@@ -111,7 +95,7 @@ func (q *Queries) GetDefaultEntryPoint(ctx context.Context) (EntryPoint, error) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getEntryPoint = `-- name: GetEntryPoint :one
@@ -123,7 +107,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetEntryPoint(ctx context.Context, id string) (EntryPoint, error) {
+func (q *Queries) GetEntryPoint(ctx context.Context, id string) (*EntryPoint, error) {
 	row := q.queryRow(ctx, q.getEntryPointStmt, getEntryPoint, id)
 	var i EntryPoint
 	err := row.Scan(
@@ -135,7 +119,7 @@ func (q *Queries) GetEntryPoint(ctx context.Context, id string) (EntryPoint, err
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listEntryPoints = `-- name: ListEntryPoints :many
@@ -159,13 +143,13 @@ type ListEntryPointsParams struct {
 	Limit     *int64 `json:"limit"`
 }
 
-func (q *Queries) ListEntryPoints(ctx context.Context, arg ListEntryPointsParams) ([]EntryPoint, error) {
+func (q *Queries) ListEntryPoints(ctx context.Context, arg *ListEntryPointsParams) ([]*EntryPoint, error) {
 	rows, err := q.query(ctx, q.listEntryPointsStmt, listEntryPoints, arg.ProfileID, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []EntryPoint
+	var items []*EntryPoint
 	for rows.Next() {
 		var i EntryPoint
 		if err := rows.Scan(
@@ -179,7 +163,7 @@ func (q *Queries) ListEntryPoints(ctx context.Context, arg ListEntryPointsParams
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -222,7 +206,7 @@ type UpdateEntryPointParams struct {
 	ID        string  `json:"id"`
 }
 
-func (q *Queries) UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointParams) (EntryPoint, error) {
+func (q *Queries) UpdateEntryPoint(ctx context.Context, arg *UpdateEntryPointParams) (*EntryPoint, error) {
 	row := q.queryRow(ctx, q.updateEntryPointStmt, updateEntryPoint,
 		arg.Name,
 		arg.Address,
@@ -239,5 +223,5 @@ func (q *Queries) UpdateEntryPoint(ctx context.Context, arg UpdateEntryPointPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

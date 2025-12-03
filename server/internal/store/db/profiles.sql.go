@@ -25,9 +25,9 @@ func (q *Queries) CountProfiles(ctx context.Context) (int64, error) {
 
 const createProfile = `-- name: CreateProfile :one
 INSERT INTO
-  profiles (name, description, token, created_at, updated_at)
+  profiles (name, description, token)
 VALUES
-  (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, name, description, token, created_at, updated_at
+  (?, ?, ?) RETURNING id, name, description, token, created_at, updated_at
 `
 
 type CreateProfileParams struct {
@@ -36,7 +36,7 @@ type CreateProfileParams struct {
 	Token       string  `json:"token"`
 }
 
-func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error) {
+func (q *Queries) CreateProfile(ctx context.Context, arg *CreateProfileParams) (*Profile, error) {
 	row := q.queryRow(ctx, q.createProfileStmt, createProfile, arg.Name, arg.Description, arg.Token)
 	var i Profile
 	err := row.Scan(
@@ -47,7 +47,7 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (P
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteProfile = `-- name: DeleteProfile :exec
@@ -70,7 +70,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
+func (q *Queries) GetProfile(ctx context.Context, id int64) (*Profile, error) {
 	row := q.queryRow(ctx, q.getProfileStmt, getProfile, id)
 	var i Profile
 	err := row.Scan(
@@ -81,7 +81,7 @@ func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getProfileByName = `-- name: GetProfileByName :one
@@ -93,7 +93,7 @@ WHERE
   name = ?
 `
 
-func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, error) {
+func (q *Queries) GetProfileByName(ctx context.Context, name string) (*Profile, error) {
 	row := q.queryRow(ctx, q.getProfileByNameStmt, getProfileByName, name)
 	var i Profile
 	err := row.Scan(
@@ -104,7 +104,7 @@ func (q *Queries) GetProfileByName(ctx context.Context, name string) (Profile, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listProfiles = `-- name: ListProfiles :many
@@ -125,13 +125,13 @@ type ListProfilesParams struct {
 	Limit  *int64 `json:"limit"`
 }
 
-func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error) {
+func (q *Queries) ListProfiles(ctx context.Context, arg *ListProfilesParams) ([]*Profile, error) {
 	rows, err := q.query(ctx, q.listProfilesStmt, listProfiles, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Profile
+	var items []*Profile
 	for rows.Next() {
 		var i Profile
 		if err := rows.Scan(
@@ -144,7 +144,7 @@ func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]P
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ type UpdateProfileParams struct {
 	ID          int64   `json:"id"`
 }
 
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
+func (q *Queries) UpdateProfile(ctx context.Context, arg *UpdateProfileParams) (*Profile, error) {
 	row := q.queryRow(ctx, q.updateProfileStmt, updateProfile,
 		arg.Name,
 		arg.Description,
@@ -189,5 +189,5 @@ func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (P
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }

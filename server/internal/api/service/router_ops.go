@@ -85,7 +85,7 @@ func (s *HTTPRouterOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
-	params := db.CreateHttpRouterParams{
+	params := &db.CreateHttpRouterParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -109,7 +109,7 @@ func (s *HTTPRouterOps) Create(
 
 	dnsProvider, err := s.app.Conn.GetQuery().GetDefaultDNSProvider(ctx)
 	if err == nil {
-		if err := s.app.Conn.GetQuery().CreateHttpRouterDNSProvider(ctx, db.CreateHttpRouterDNSProviderParams{
+		if err := s.app.Conn.GetQuery().CreateHttpRouterDNSProvider(ctx, &db.CreateHttpRouterDNSProviderParams{
 			HttpRouterID:  router.Id,
 			DnsProviderID: dnsProvider.ID,
 		}); err != nil {
@@ -139,7 +139,7 @@ func (s *HTTPRouterOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateRouterRequest,
 ) (*mantraev1.UpdateRouterResponse, error) {
-	params := db.UpdateHttpRouterParams{
+	params := &db.UpdateHttpRouterParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -172,7 +172,7 @@ func (s *HTTPRouterOps) Update(
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
 			if err = s.app.Conn.GetQuery().
-				CreateHttpRouterDNSProvider(ctx, db.CreateHttpRouterDNSProviderParams{
+				CreateHttpRouterDNSProvider(ctx, &db.CreateHttpRouterDNSProviderParams{
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
 				}); err != nil {
@@ -191,7 +191,7 @@ func (s *HTTPRouterOps) Update(
 			}()
 
 			if err = s.app.Conn.GetQuery().
-				DeleteHttpRouterDNSProvider(ctx, db.DeleteHttpRouterDNSProviderParams{
+				DeleteHttpRouterDNSProvider(ctx, &db.DeleteHttpRouterDNSProviderParams{
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
 				}); err != nil {
@@ -242,7 +242,7 @@ func (s *HTTPRouterOps) Delete(
 
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().
-			GetHttpServiceByName(ctx, db.GetHttpServiceByNameParams{
+			GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 				ProfileID: router.ProfileID,
 				Name:      router.Config.Service,
 			})
@@ -272,7 +272,7 @@ func (s *HTTPRouterOps) List(
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListHttpRouters(ctx, db.ListHttpRoutersParams{
+		ListHttpRouters(ctx, &db.ListHttpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -281,7 +281,7 @@ func (s *HTTPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountHttpRouters(ctx, db.CountHttpRoutersParams{
+	totalCount, err := s.app.Conn.GetQuery().CountHttpRouters(ctx, &db.CountHttpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -334,7 +334,7 @@ func (s *TCPRouterOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
-	params := db.CreateTcpRouterParams{
+	params := &db.CreateTcpRouterParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -368,7 +368,7 @@ func (s *TCPRouterOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateRouterRequest,
 ) (*mantraev1.UpdateRouterResponse, error) {
-	params := db.UpdateTcpRouterParams{
+	params := &db.UpdateTcpRouterParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -406,7 +406,7 @@ func (s *TCPRouterOps) Update(
 				}
 			}()
 			if err = s.app.Conn.GetQuery().
-				CreateTcpRouterDNSProvider(ctx, db.CreateTcpRouterDNSProviderParams{
+				CreateTcpRouterDNSProvider(ctx, &db.CreateTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
 				}); err != nil {
@@ -425,7 +425,7 @@ func (s *TCPRouterOps) Update(
 			}()
 
 			if err = s.app.Conn.GetQuery().
-				DeleteTcpRouterDNSProvider(ctx, db.DeleteTcpRouterDNSProviderParams{
+				DeleteTcpRouterDNSProvider(ctx, &db.DeleteTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
 				}); err != nil {
@@ -465,7 +465,7 @@ func (s *TCPRouterOps) Delete(
 	}()
 
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, db.GetTcpServiceByNameParams{
+		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 			ProfileID: router.ProfileID,
 			Name:      router.Config.Service,
 		})
@@ -495,7 +495,7 @@ func (s *TCPRouterOps) List(
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListTcpRouters(ctx, db.ListTcpRoutersParams{
+		ListTcpRouters(ctx, &db.ListTcpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -504,7 +504,7 @@ func (s *TCPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountTcpRouters(ctx, db.CountTcpRoutersParams{
+	totalCount, err := s.app.Conn.GetQuery().CountTcpRouters(ctx, &db.CountTcpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -549,7 +549,7 @@ func (s *UDPRouterOps) Create(
 	ctx context.Context,
 	req *mantraev1.CreateRouterRequest,
 ) (*mantraev1.CreateRouterResponse, error) {
-	params := db.CreateUdpRouterParams{
+	params := &db.CreateUdpRouterParams{
 		ID:        uuid.New().String(),
 		ProfileID: req.ProfileId,
 		Name:      req.Name,
@@ -583,7 +583,7 @@ func (s *UDPRouterOps) Update(
 	ctx context.Context,
 	req *mantraev1.UpdateRouterRequest,
 ) (*mantraev1.UpdateRouterResponse, error) {
-	params := db.UpdateUdpRouterParams{
+	params := &db.UpdateUdpRouterParams{
 		ID:      req.Id,
 		Name:    req.Name,
 		Enabled: req.Enabled,
@@ -621,7 +621,7 @@ func (s *UDPRouterOps) Delete(
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, db.GetUdpServiceByNameParams{
+		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 			ProfileID: router.ProfileID,
 			Name:      router.Config.Service,
 		})
@@ -651,7 +651,7 @@ func (s *UDPRouterOps) List(
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
 	result, err := s.app.Conn.GetQuery().
-		ListUdpRouters(ctx, db.ListUdpRoutersParams{
+		ListUdpRouters(ctx, &db.ListUdpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
 			Limit:     req.Limit,
@@ -660,7 +660,7 @@ func (s *UDPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountUdpRouters(ctx, db.CountUdpRoutersParams{
+	totalCount, err := s.app.Conn.GetQuery().CountUdpRouters(ctx, &db.CountUdpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})

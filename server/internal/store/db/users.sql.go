@@ -26,16 +26,9 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO
-  users (
-    id,
-    username,
-    password,
-    email,
-    updated_at,
-    created_at
-  )
+  users (id, username, password, email)
 VALUES
-  (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  (?, ?, ?, ?) RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -45,7 +38,7 @@ type CreateUserParams struct {
 	Email    *string `json:"email"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (*User, error) {
 	row := q.queryRow(ctx, q.createUserStmt, createUser,
 		arg.ID,
 		arg.Username,
@@ -64,7 +57,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -87,7 +80,7 @@ WHERE
   email = ?
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (User, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (*User, error) {
 	row := q.queryRow(ctx, q.getUserByEmailStmt, getUserByEmail, email)
 	var i User
 	err := row.Scan(
@@ -101,7 +94,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (User, erro
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
@@ -113,7 +106,7 @@ WHERE
   id = ?
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id string) (*User, error) {
 	row := q.queryRow(ctx, q.getUserByIDStmt, getUserByID, id)
 	var i User
 	err := row.Scan(
@@ -127,7 +120,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
@@ -139,7 +132,7 @@ WHERE
   username = ?
 `
 
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User, error) {
 	row := q.queryRow(ctx, q.getUserByUsernameStmt, getUserByUsername, username)
 	var i User
 	err := row.Scan(
@@ -153,7 +146,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listUsers = `-- name: ListUsers :many
@@ -174,13 +167,13 @@ type ListUsersParams struct {
 	Limit  *int64 `json:"limit"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+func (q *Queries) ListUsers(ctx context.Context, arg *ListUsersParams) ([]*User, error) {
 	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []*User
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(
@@ -196,7 +189,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -223,7 +216,7 @@ type UpdateUserParams struct {
 	ID       string  `json:"id"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error) {
 	row := q.queryRow(ctx, q.updateUserStmt, updateUser, arg.Username, arg.Email, arg.ID)
 	var i User
 	err := row.Scan(
@@ -237,7 +230,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const updateUserLastLogin = `-- name: UpdateUserLastLogin :exec
@@ -268,7 +261,7 @@ type UpdateUserPasswordParams struct {
 	ID       string `json:"id"`
 }
 
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg *UpdateUserPasswordParams) error {
 	_, err := q.exec(ctx, q.updateUserPasswordStmt, updateUserPassword, arg.Password, arg.ID)
 	return err
 }
@@ -288,7 +281,7 @@ type UpdateUserResetTokenParams struct {
 	ID        string     `json:"id"`
 }
 
-func (q *Queries) UpdateUserResetToken(ctx context.Context, arg UpdateUserResetTokenParams) error {
+func (q *Queries) UpdateUserResetToken(ctx context.Context, arg *UpdateUserResetTokenParams) error {
 	_, err := q.exec(ctx, q.updateUserResetTokenStmt, updateUserResetToken, arg.Otp, arg.OtpExpiry, arg.ID)
 	return err
 }

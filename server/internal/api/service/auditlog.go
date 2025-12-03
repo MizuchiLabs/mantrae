@@ -22,7 +22,7 @@ func (s *AuditLogService) ListAuditLogs(
 	ctx context.Context,
 	req *connect.Request[mantraev1.ListAuditLogsRequest],
 ) (*connect.Response[mantraev1.ListAuditLogsResponse], error) {
-	params := db.ListAuditLogsParams{
+	params := &db.ListAuditLogsParams{
 		Limit:  req.Msg.Limit,
 		Offset: req.Msg.Offset,
 	}

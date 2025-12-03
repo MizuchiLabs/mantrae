@@ -25,8 +25,8 @@
 		...restProps
 	}: Props = $props();
 
-	const shouldTruncate = truncate && label.length > maxLength;
-	const displayLabel = shouldTruncate ? `${label.slice(0, maxLength)}...` : label;
+	const shouldTruncate = $derived(truncate && label.length > maxLength);
+	const displayLabel = $derived(shouldTruncate ? `${label.slice(0, maxLength)}...` : label);
 </script>
 
 <div class="flex max-w-full min-w-0 items-center gap-2">
@@ -38,7 +38,7 @@
 						{displayLabel}
 					</Label>
 				</Tooltip.Trigger>
-				<Tooltip.Content side="top" class="max-w-xs break-words">
+				<Tooltip.Content side="top" class="max-w-xs wrap-break-word">
 					{label}
 				</Tooltip.Content>
 			</Tooltip.Root>

@@ -29,11 +29,11 @@ WHERE
   key = ?
 `
 
-func (q *Queries) GetSetting(ctx context.Context, key string) (Setting, error) {
+func (q *Queries) GetSetting(ctx context.Context, key string) (*Setting, error) {
 	row := q.queryRow(ctx, q.getSettingStmt, getSetting, key)
 	var i Setting
 	err := row.Scan(&i.Key, &i.Value, &i.UpdatedAt)
-	return i, err
+	return &i, err
 }
 
 const listSettings = `-- name: ListSettings :many
@@ -43,19 +43,19 @@ FROM
   settings
 `
 
-func (q *Queries) ListSettings(ctx context.Context) ([]Setting, error) {
+func (q *Queries) ListSettings(ctx context.Context) ([]*Setting, error) {
 	rows, err := q.query(ctx, q.listSettingsStmt, listSettings)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Setting
+	var items []*Setting
 	for rows.Next() {
 		var i Setting
 		if err := rows.Scan(&i.Key, &i.Value, &i.UpdatedAt); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ type UpsertSettingParams struct {
 	Value string `json:"value"`
 }
 
-func (q *Queries) UpsertSetting(ctx context.Context, arg UpsertSettingParams) error {
+func (q *Queries) UpsertSetting(ctx context.Context, arg *UpsertSettingParams) error {
 	_, err := q.exec(ctx, q.upsertSettingStmt, upsertSetting, arg.Key, arg.Value)
 	return err
 }

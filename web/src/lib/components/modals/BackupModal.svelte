@@ -34,10 +34,10 @@
 		try {
 			const stream = backupClient.downloadBackup({ name });
 
-			const chunks: Uint8Array[] = [];
+			const chunks: ArrayBuffer[] = [];
 			for await (const chunk of stream) {
 				if (chunk.data.length > 0) {
-					chunks.push(chunk.data);
+					chunks.push(new Uint8Array(chunk.data).buffer);
 				}
 			}
 
