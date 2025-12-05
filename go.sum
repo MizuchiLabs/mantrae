@@ -309,6 +309,8 @@ github.com/traefik/traefik/v3 v3.6.2 h1:nR6rGDV8R1kT1BB3n3sPN86d4D8F17ew6sQMVJlT
 github.com/traefik/traefik/v3 v3.6.2/go.mod h1:82/EIeYGZXjHvBfOizWI4VA1SV39fcVHRKNwDWHTD1w=
 github.com/traefik/traefik/v3 v3.6.3 h1:qVuptRtWWgfOAeX1MA8uGDeFR9N+kQ8kpj8cyaLYjGc=
 github.com/traefik/traefik/v3 v3.6.3/go.mod h1:zWCc8opV9GZqDsCRDB4/AKkOjdbZe+SPfgAAIZHmBos=
+github.com/traefik/traefik/v3 v3.6.4 h1:03xDnjdvQ51kLK6YyTJHIEPZ/4F9fSAcDS4lL69SuaE=
+github.com/traefik/traefik/v3 v3.6.4/go.mod h1:zWCc8opV9GZqDsCRDB4/AKkOjdbZe+SPfgAAIZHmBos=
 github.com/unrolled/render v1.7.0 h1:1yke01/tZiZpiXfUG+zqB+6fq3G4I+KDmnh0EhPq7So=
 github.com/unrolled/render v1.7.0/go.mod h1:LwQSeDhjml8NLjIO9GJO1/1qpFJxtfVIpzxXKjfVkoI=
 github.com/urfave/cli/v3 v3.6.1 h1:j8Qq8NyUawj/7rTYdBGrxcH7A/j7/G8Q5LhWEW4G3Mo=
