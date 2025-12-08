@@ -168,11 +168,6 @@ func (s *SyncJob) upsertResources(ctx context.Context, containerID, resourceType
 		if err != nil {
 			return err
 		}
-		if resourceType == "router" {
-			config.Fields["service"] = &structpb.Value{
-				Kind: &structpb.Value_StringValue{StringValue: name},
-			}
-		}
 
 		if err := s.upsertResource(ctx, resourceType, protocol, name, config); err != nil {
 			return err

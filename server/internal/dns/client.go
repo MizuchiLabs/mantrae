@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	mantraev1 "github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1"
@@ -44,11 +45,11 @@ func NewManager(conn *store.Connection, secret string) *DNSManager {
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
-func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
+func (d *DNSManager) UpdateDNS() (err error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	domainMap, err := d.getDomainConfig(ctx)
+	domainMap, err := d.getDomainConfig()
 	if err != nil {
 		return err
 	}
@@ -70,9 +71,12 @@ func (d *DNSManager) UpdateDNS(ctx context.Context) (err error) {
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func (d *DNSManager) DeleteDNS(ctx context.Context, proto, routerID string) error {
+func (d *DNSManager) DeleteDNS(proto, routerID string) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	switch proto {
 	case "http":
@@ -148,7 +152,10 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 		return nil, fmt.Errorf("invalid provider id")
 	}
 
-	provider, err := d.conn.GetQuery().GetDnsProvider(context.Background(), id)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	provider, err := d.conn.GetQuery().GetDnsProvider(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +200,7 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 }
 
 // Result: map from domain → slice of provider info
-func (d *DNSManager) getDomainConfig(ctx context.Context) (map[string][]DNSRouterInfo, error) {
+func (d *DNSManager) getDomainConfig() (map[string][]DNSRouterInfo, error) {
 	domainMap := make(map[string][]DNSRouterInfo)
 
 	process := func(
@@ -230,7 +237,7 @@ func (d *DNSManager) getDomainConfig(ctx context.Context) (map[string][]DNSRoute
 	}
 
 	// HTTP
-	if httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(ctx); err != nil {
+	if httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(context.Background()); err != nil {
 		return nil, err
 	} else {
 		for _, r := range httpRouters {
@@ -244,7 +251,7 @@ func (d *DNSManager) getDomainConfig(ctx context.Context) (map[string][]DNSRoute
 	}
 
 	// TCP
-	if tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(ctx); err != nil {
+	if tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(context.Background()); err != nil {
 		return nil, err
 	} else {
 		for _, r := range tcpRouters {

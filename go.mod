@@ -23,6 +23,9 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/hypersequent/zen v0.0.0-20250923135653-056103bb12ce
 	github.com/joeig/go-powerdns/v3 v3.19.0
+	github.com/lmittmann/tint v1.1.2
+	github.com/mattn/go-colorable v0.1.14
+	github.com/mattn/go-isatty v0.0.20
 	github.com/pressly/goose/v3 v3.26.0
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
@@ -104,8 +107,6 @@ require (
 	github.com/hashicorp/go-version v1.8.0 // indirect
 	github.com/http-wasm/http-wasm-host-go v0.7.0 // indirect
 	github.com/json-iterator/go v1.1.13-0.20220915233716-71ac16282d12 // indirect
-	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/miekg/dns v1.1.68 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect

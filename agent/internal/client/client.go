@@ -40,6 +40,8 @@ func NewAgent(cfg *Config) *Agent {
 }
 
 func (a *Agent) Run(ctx context.Context) {
+	slog.Info("Agent starting...", "version", meta.Version)
+
 	// Run initial health check
 	a.healthCheck(ctx)
 

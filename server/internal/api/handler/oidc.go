@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -220,7 +221,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 		}
 
 		if err := q.UpdateUserLastLogin(r.Context(), user.ID); err != nil {
-			fmt.Printf("Failed to update last login for user %s: %v\n", user.Username, err)
+			slog.Warn("Failed to update last login for user", "user", user.Username, "error", err)
 		}
 
 		http.SetCookie(w, &http.Cookie{

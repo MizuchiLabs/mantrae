@@ -2,12 +2,17 @@ package client
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-isatty"
 	"github.com/mizuchilabs/mantrae/pkg/util"
+	"github.com/urfave/cli/v3"
 )
 
 type Config struct {
@@ -22,9 +27,11 @@ type Config struct {
 	HealthTimeout       time.Duration
 }
 
-func Load() (*Config, error) {
-	token := os.Getenv("TOKEN")
-	host := os.Getenv("HOST")
+func Load(cmd *cli.Command) (*Config, error) {
+	Logger(cmd) // setup logger
+
+	token := cmd.String("token")
+	host := cmd.String("host")
 	if token == "" || host == "" {
 		return nil, errors.New("TOKEN and HOST must be set")
 	}
@@ -45,6 +52,21 @@ func Load() (*Config, error) {
 		ConnectionTimeout:   10 * time.Second,
 		HealthTimeout:       5 * time.Second,
 	}, nil
+}
+
+func Logger(cmd *cli.Command) {
+	level := slog.LevelInfo
+	if cmd.Bool("debug") {
+		level = slog.LevelDebug
+	}
+
+	slog.SetDefault(slog.New(
+		tint.NewHandler(colorable.NewColorable(os.Stderr), &tint.Options{
+			Level:      level,
+			TimeFormat: time.RFC3339,
+			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
+		}),
+	))
 }
 
 func parseToken(token string) (int64, string, error) {

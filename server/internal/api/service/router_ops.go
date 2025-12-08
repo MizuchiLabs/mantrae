@@ -97,7 +97,10 @@ func (s *HTTPRouterOps) Create(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	// Add default DNS provider
 
@@ -119,7 +122,7 @@ func (s *HTTPRouterOps) Create(
 	}
 
 	go func() {
-		if err := s.app.DNS.UpdateDNS(ctx); err != nil {
+		if err := s.app.DNS.UpdateDNS(); err != nil {
 			slog.Error("failed to update DNS record", "error", err)
 		}
 	}()
@@ -150,7 +153,10 @@ func (s *HTTPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, params.ID)
@@ -185,7 +191,7 @@ func (s *HTTPRouterOps) Update(
 	for id := range existingMap {
 		if !desiredMap[id] {
 			go func() {
-				if err := s.app.DNS.DeleteDNS(ctx, "http", params.ID); err != nil {
+				if err := s.app.DNS.DeleteDNS("http", params.ID); err != nil {
 					slog.Error("failed to delete DNS record", "error", err)
 				}
 			}()
@@ -235,7 +241,7 @@ func (s *HTTPRouterOps) Delete(
 		return nil, err
 	}
 	go func() {
-		if err := s.app.DNS.DeleteDNS(ctx, "http", req.Id); err != nil {
+		if err := s.app.DNS.DeleteDNS("http", req.Id); err != nil {
 			slog.Error("failed to delete DNS record", "error", err)
 		}
 	}()
@@ -346,7 +352,10 @@ func (s *TCPRouterOps) Create(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	result, err := s.app.Conn.GetQuery().CreateTcpRouter(ctx, params)
 	if err != nil {
@@ -379,7 +388,10 @@ func (s *TCPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, params.ID)
@@ -401,7 +413,7 @@ func (s *TCPRouterOps) Update(
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
 			go func() {
-				if err := s.app.DNS.UpdateDNS(ctx); err != nil {
+				if err := s.app.DNS.UpdateDNS(); err != nil {
 					slog.Error("failed to update DNS record", "error", err)
 				}
 			}()
@@ -419,7 +431,7 @@ func (s *TCPRouterOps) Update(
 	for id := range existingMap {
 		if !desiredMap[id] {
 			go func() {
-				if err := s.app.DNS.DeleteDNS(ctx, "tcp", params.ID); err != nil {
+				if err := s.app.DNS.DeleteDNS("tcp", params.ID); err != nil {
 					slog.Error("failed to delete DNS record", "error", err)
 				}
 			}()
@@ -459,16 +471,17 @@ func (s *TCPRouterOps) Delete(
 		return nil, err
 	}
 	go func() {
-		if err := s.app.DNS.DeleteDNS(ctx, "tcp", req.Id); err != nil {
+		if err := s.app.DNS.DeleteDNS("tcp", req.Id); err != nil {
 			slog.Error("failed to delete DNS record", "error", err)
 		}
 	}()
 
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
-			ProfileID: router.ProfileID,
-			Name:      router.Config.Service,
-		})
+		service, err := s.app.Conn.GetQuery().
+			GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
+				ProfileID: router.ProfileID,
+				Name:      router.Config.Service,
+			})
 		if err != nil {
 			slog.Error("failed to get tcp service", "err", err)
 		}
@@ -561,7 +574,10 @@ func (s *UDPRouterOps) Create(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	result, err := s.app.Conn.GetQuery().CreateUdpRouter(ctx, params)
 	if err != nil {
@@ -594,7 +610,10 @@ func (s *UDPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	params.Config.Service = params.Name
+	// Use router name as fallback
+	if params.Config.Service == "" {
+		params.Config.Service = params.Name
+	}
 
 	result, err := s.app.Conn.GetQuery().UpdateUdpRouter(ctx, params)
 	if err != nil {
@@ -621,10 +640,11 @@ func (s *UDPRouterOps) Delete(
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.GetQuery().GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
-			ProfileID: router.ProfileID,
-			Name:      router.Config.Service,
-		})
+		service, err := s.app.Conn.GetQuery().
+			GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
+				ProfileID: router.ProfileID,
+				Name:      router.Config.Service,
+			})
 		if err != nil {
 			slog.Error("failed to get udp service", "err", err)
 		}

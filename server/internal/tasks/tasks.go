@@ -38,7 +38,7 @@ func (s *Scheduler) syncDNS() {
 	defer ticker.Stop()
 
 	manager := dns.NewManager(s.cfg.Conn, s.cfg.Secret)
-	if err := manager.UpdateDNS(s.ctx); err != nil {
+	if err := manager.UpdateDNS(); err != nil {
 		slog.Error("Failed to update DNS", "error", err)
 	}
 	for {
@@ -46,7 +46,7 @@ func (s *Scheduler) syncDNS() {
 		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
-			if err := manager.UpdateDNS(s.ctx); err != nil {
+			if err := manager.UpdateDNS(); err != nil {
 				slog.Error("Failed to update DNS", "error", err)
 			}
 		}
