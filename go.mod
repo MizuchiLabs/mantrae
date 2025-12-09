@@ -3,16 +3,16 @@ module github.com/mizuchilabs/mantrae
 go 1.24.5
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20250912141014-52f32327d4b0.1
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20251209175733-2a1774d88802.1
 	connectrpc.com/connect v1.19.1
 	connectrpc.com/cors v0.1.0
 	connectrpc.com/grpchealth v1.4.0
 	connectrpc.com/grpcreflect v1.3.0
 	connectrpc.com/validate v0.6.0
 	github.com/aws/aws-sdk-go-v2 v1.41.0
-	github.com/aws/aws-sdk-go-v2/config v1.32.4
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.4
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.93.1
+	github.com/aws/aws-sdk-go-v2/config v1.32.5
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.5
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.93.2
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cloudflare/cloudflare-go/v6 v6.4.0
 	github.com/coreos/go-oidc/v3 v3.17.0
@@ -61,7 +61,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.41.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
