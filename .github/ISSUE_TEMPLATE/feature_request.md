@@ -1,39 +1,33 @@
 ---
 name: Feature request
 about: Suggest an idea or improvement for Mantrae.
-title: "\U0001F4A1"
-labels: ''
+title: "✨"
+labels: ""
 assignees: d34dscene
-
 ---
 
-### 💡 The problem
+<!-- ⚠️ STOP. READ THIS FIRST.
+Feature requests should be:
+- Small and well-scoped
+- Incremental improvements
+- Not a rewrite or major architectural change
 
-Is this feature solving a real pain point, or just a nice to have?
-Who benefits from this feature? (just you, most users, specific edge cases?)
-Explain the problem you’re running into.
+If this is a big idea, long-term direction, start a Discussion instead.
+-->
 
----
+### What’s missing?
 
-### 🚀 The pitch
+<!-- Describe the feature or improvement you'd like to see. Keep it concise. -->
 
-What do you want to happen?
-Be as specific as possible. Mockups, CLI flags, or pseudo-configs are welcome.
+### Why is this useful?
 
----
+<!-- Explain the problem this solves or the workflow it improves. -->
 
-### 🔄 Alternatives considered
+### Proposed solution (optional)
 
-If you hacked around this, what did you try? Why wasn’t it good enough?
+<!-- If you have an idea how this could work, outline it briefly.
+High-level is fine, no need for full design docs. -->
 
----
+### Mockups / Examples (optional)
 
-### 📸 Mockups / Examples
-
-(Optional) Share sketches, commands, config snippets, or links to other tools that do this well.
-
----
-
-### ➕ Additional context
-
-Anything else we should know? Roadblocks, memes, or related issues.
+<!-- Share sketches, commands, config snippets, or links to other tools that do this well. -->

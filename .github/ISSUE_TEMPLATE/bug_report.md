@@ -1,14 +1,13 @@
 ---
 name: Bug report
-about: Something’s not working as expected. Help us squash it.
+about: Something’s not working as expected.
 title: "\U0001F41B"
-labels: ''
+labels: ""
 assignees: d34dscene
-
 ---
 
-<!-- ⚠️ STOP. READ THIS FIRST. 
-If you’re just stuck (e.g. can’t log in, config confusion, Docker woes) — this is *not* a bug. 
+<!-- ⚠️ STOP. READ THIS FIRST.
+If you’re just stuck (e.g. can’t log in, config confusion, Docker woes) — this is *not* a bug.
 Go to Discussions instead. Issues are for reproducible code problems only.
 -->
 
@@ -22,9 +21,9 @@ Go to Discussions instead. Issues are for reproducible code problems only.
 
 ### Environment
 
-- OS:  
-- App version / commit:  
-- How you ran it: Docker / Binary / Other  
+- OS:
+- App version / commit:
+- How you ran it: Docker / Binary / Other
 
 ### Logs or errors
 
