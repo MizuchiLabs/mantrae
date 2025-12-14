@@ -121,12 +121,7 @@ func (s *HTTPRouterOps) Create(
 		router.DnsProviders = append(router.DnsProviders, dnsProvider.ToProto())
 	}
 
-	go func() {
-		if err := s.app.DNS.UpdateDNS(); err != nil {
-			slog.Error("failed to update DNS record", "error", err)
-		}
-	}()
-
+	go s.app.DNS.UpdateDNS()
 	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
 		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
 		Data: &mantraev1.EventStreamResponse_Router{
@@ -174,6 +169,7 @@ func (s *HTTPRouterOps) Update(
 		desiredMap[protoProvider.Id] = true
 		desiredIDs = append(desiredIDs, protoProvider.Id)
 	}
+
 	// Identify inserts
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
@@ -184,18 +180,13 @@ func (s *HTTPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
+			go s.app.DNS.UpdateDNS()
 		}
 	}
 
 	// Identify deletes
 	for id := range existingMap {
 		if !desiredMap[id] {
-			go func() {
-				if err := s.app.DNS.DeleteDNS("http", params.ID); err != nil {
-					slog.Error("failed to delete DNS record", "error", err)
-				}
-			}()
-
 			if err = s.app.Conn.GetQuery().
 				DeleteHttpRouterDNSProvider(ctx, &db.DeleteHttpRouterDNSProviderParams{
 					HttpRouterID:  params.ID,
@@ -203,6 +194,7 @@ func (s *HTTPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
+			go s.app.DNS.DeleteDNS(id, params.Config.Rule)
 		}
 	}
 
@@ -216,7 +208,7 @@ func (s *HTTPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-	router.DnsProviders = make([]*mantraev1.DnsProvider, 0, len(dnsProviders))
+	router.DnsProviders = make([]*mantraev1.DNSProvider, 0, len(dnsProviders))
 	for _, p := range dnsProviders {
 		router.DnsProviders = append(router.DnsProviders, p.ToProto())
 	}
@@ -240,11 +232,6 @@ func (s *HTTPRouterOps) Delete(
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		if err := s.app.DNS.DeleteDNS("http", req.Id); err != nil {
-			slog.Error("failed to delete DNS record", "error", err)
-		}
-	}()
 
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().
@@ -258,6 +245,15 @@ func (s *HTTPRouterOps) Delete(
 		if err := s.app.Conn.GetQuery().DeleteHttpService(ctx, service.ID); err != nil {
 			slog.Error("failed to delete http service", "err", err)
 		}
+	}
+
+	// Delete DNS entries
+	dnsProviders, err := s.app.Conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, router.ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range dnsProviders {
+		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
 	}
 
 	if err := s.app.Conn.GetQuery().DeleteHttpRouter(ctx, req.Id); err != nil {
@@ -412,11 +408,6 @@ func (s *TCPRouterOps) Update(
 	// Identify inserts
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
-			go func() {
-				if err := s.app.DNS.UpdateDNS(); err != nil {
-					slog.Error("failed to update DNS record", "error", err)
-				}
-			}()
 			if err = s.app.Conn.GetQuery().
 				CreateTcpRouterDNSProvider(ctx, &db.CreateTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
@@ -424,18 +415,13 @@ func (s *TCPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
+			go s.app.DNS.UpdateDNS()
 		}
 	}
 
 	// Identify deletes
 	for id := range existingMap {
 		if !desiredMap[id] {
-			go func() {
-				if err := s.app.DNS.DeleteDNS("tcp", params.ID); err != nil {
-					slog.Error("failed to delete DNS record", "error", err)
-				}
-			}()
-
 			if err = s.app.Conn.GetQuery().
 				DeleteTcpRouterDNSProvider(ctx, &db.DeleteTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
@@ -443,6 +429,7 @@ func (s *TCPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
+			go s.app.DNS.DeleteDNS(id, params.Config.Rule)
 		}
 	}
 
@@ -470,11 +457,6 @@ func (s *TCPRouterOps) Delete(
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		if err := s.app.DNS.DeleteDNS("tcp", req.Id); err != nil {
-			slog.Error("failed to delete DNS record", "error", err)
-		}
-	}()
 
 	if router.Config.Service != "" {
 		service, err := s.app.Conn.GetQuery().
@@ -488,6 +470,15 @@ func (s *TCPRouterOps) Delete(
 		if err := s.app.Conn.GetQuery().DeleteTcpService(ctx, service.ID); err != nil {
 			slog.Error("failed to delete tcp service", "err", err)
 		}
+	}
+
+	// Delete DNS entries
+	dnsProviders, err := s.app.Conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, router.ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range dnsProviders {
+		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
 	}
 
 	if err := s.app.Conn.GetQuery().DeleteTcpRouter(ctx, req.Id); err != nil {

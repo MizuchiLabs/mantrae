@@ -3,7 +3,6 @@ package dns
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/joeig/go-powerdns/v3"
 	"github.com/mizuchilabs/mantrae/pkg/util"
@@ -11,131 +10,91 @@ import (
 )
 
 type PowerDNSProvider struct {
-	Client     *powerdns.Client
-	ExternalIP string
+	client *powerdns.Client
+	ip     string
 }
 
 func NewPowerDNSProvider(d *schema.DNSProviderConfig) *PowerDNSProvider {
 	client := powerdns.New(d.APIUrl, "", powerdns.WithAPIKey(d.APIKey))
-
 	return &PowerDNSProvider{
-		Client:     client,
-		ExternalIP: d.IP,
+		client: client,
+		ip:     d.IP,
 	}
 }
 
-func (p *PowerDNSProvider) UpsertRecord(subdomain string) error {
-	var recordType powerdns.RRType
-	if util.IsValidIPv4(p.ExternalIP) {
-		recordType = powerdns.RRTypeA
-	} else if util.IsValidIPv6(p.ExternalIP) {
-		recordType = powerdns.RRTypeAAAA
-	} else {
-		return fmt.Errorf("invalid IP address: %s", p.ExternalIP)
-	}
-
-	// Check if the record is managed by us
-	if err := p.checkRecord(subdomain); err != nil {
-		return err
-	}
-
-	// Fetch existing records
-	records, err := p.ListRecords(subdomain)
+func (p *PowerDNSProvider) UpsertRecord(ctx context.Context, subdomain string) error {
+	rm, err := NewRecordManager(subdomain, p.ip)
 	if err != nil {
 		return err
 	}
 
-	shouldUpdate := verifyRecords(records, subdomain, p.ExternalIP)
-	if len(records) <= 1 {
-		if err := p.createRecord(subdomain, recordType); err != nil {
-			return err
-		}
-		slog.Info("Created record", "name", subdomain, "type", recordType, "content", p.ExternalIP)
-	} else if shouldUpdate {
-		for _, record := range records {
-			if record.Type != "TXT" {
-				if err := p.updateRecord(record.ID, recordType, subdomain); err != nil {
-					return err
-				}
-				slog.Info("Updated record", "name", record.Name, "type", record.Type, "content", record.Content)
-			}
-		}
+	records, err := p.ListRecords(ctx, subdomain)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	ops := UpsertOperation{
+		CreateDNSRecord: func(recordType string) error {
+			return p.createRecord(ctx, subdomain, recordType)
+		},
+		CreateTXTMarker: func() error {
+			return p.createTXTMarker(ctx, subdomain)
+		},
+		UpdateDNSRecord: func(_ string, recordType string) error {
+			return p.updateRecord(ctx, subdomain, recordType)
+		},
+	}
+
+	return rm.ExecuteUpsert(records, ops)
 }
 
-func (p *PowerDNSProvider) createRecord(subdomain string, recordType powerdns.RRType) error {
-	domain, err := util.ExtractBaseDomain(subdomain)
-	if err != nil {
-		return err
-	}
-
-	// Create the A/AAAA record
-	err = p.Client.Records.Add(
-		context.Background(),
-		domain,
-		subdomain,
-		recordType,
-		60,
-		[]string{p.ExternalIP},
-	)
-	if err != nil {
-		return err
-	}
-
-	// Create the TXT record
-	err = p.Client.Records.Add(
-		context.Background(),
-		domain,
-		"_mantrae-"+subdomain,
-		powerdns.RRTypeTXT,
-		60,
-		[]string{managedTXT},
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *PowerDNSProvider) updateRecord(
-	recordID string,
-	recordType powerdns.RRType,
+func (p *PowerDNSProvider) createRecord(
+	ctx context.Context,
 	subdomain string,
+	recordType string,
 ) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	err = p.Client.Records.Change(
-		context.Background(),
+	return p.client.Records.Add(
+		ctx,
 		domain,
 		subdomain,
-		recordType,
+		powerdns.RRType(recordType),
 		60,
-		[]string{p.ExternalIP},
+		[]string{p.ip},
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
+func (p *PowerDNSProvider) updateRecord(
+	ctx context.Context,
+	subdomain string,
+	recordType string,
+) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	if err = p.checkRecord(subdomain); err != nil {
+	return p.client.Records.Change(
+		ctx,
+		domain,
+		subdomain,
+		powerdns.RRType(recordType),
+		60,
+		[]string{p.ip},
+	)
+}
+
+func (p *PowerDNSProvider) DeleteRecord(ctx context.Context, subdomain string) error {
+	domain, err := util.ExtractBaseDomain(subdomain)
+	if err != nil {
 		return err
 	}
 
-	records, err := p.ListRecords(subdomain)
+	records, err := p.ListRecords(ctx, subdomain)
 	if err != nil {
 		return err
 	}
@@ -143,53 +102,48 @@ func (p *PowerDNSProvider) DeleteRecord(subdomain string) error {
 		return fmt.Errorf("no records found for %s", subdomain)
 	}
 
-	for _, record := range records {
-		err := p.Client.Records.Delete(
-			context.Background(),
+	rm, err := NewRecordManager(subdomain, p.ip)
+	if err != nil {
+		return err
+	}
+	if !rm.IsManagedByUs(records) {
+		return fmt.Errorf("record not managed by Mantrae")
+	}
+
+	dnsRecords, hasTXT := rm.SeparateRecords(records)
+
+	for _, record := range dnsRecords {
+		if err := p.client.Records.Delete(
+			ctx,
 			domain,
 			record.Name,
 			powerdns.RRType(record.Type),
-		)
-		if err != nil {
+		); err != nil {
 			return fmt.Errorf("failed to delete record %s: %w", record.Name, err)
 		}
+	}
 
-		err = p.Client.Records.Delete(
-			context.Background(),
+	if hasTXT {
+		if err := p.client.Records.Delete(
+			ctx,
 			domain,
-			"_mantrae-"+subdomain,
+			rm.MarkerName(),
 			powerdns.RRTypeTXT,
-		)
-		if err != nil {
-			return fmt.Errorf("failed to delete record %s: %w", "_mantrae-"+subdomain, err)
+		); err != nil {
+			return fmt.Errorf("failed to delete TXT marker %s: %w", rm.MarkerName(), err)
 		}
-
-		slog.Info(
-			"Deleted record",
-			"subdomain",
-			subdomain,
-			"type",
-			record.Type,
-			"content",
-			record.Content,
-		)
 	}
 
 	return nil
 }
 
-func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+func (p *PowerDNSProvider) ListRecords(ctx context.Context, subdomain string) ([]DNSRecord, error) {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
 	}
 
-	records, err := p.Client.Records.Get(
-		context.Background(),
-		domain,
-		subdomain,
-		nil,
-	)
+	records, err := p.client.Records.Get(ctx, domain, subdomain, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve records for %s: %w", subdomain, err)
 	}
@@ -203,39 +157,34 @@ func (p *PowerDNSProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
 		})
 	}
 
+	txtName := markerName(subdomain)
+	txtRecords, err := p.client.Records.Get(ctx, domain, txtName, nil)
+	if err == nil {
+		for _, record := range txtRecords {
+			dnsRecords = append(dnsRecords, DNSRecord{
+				Name:    *record.Name,
+				Type:    string(*record.Type),
+				Content: *record.Records[0].Content,
+			})
+		}
+	}
+
 	return dnsRecords, nil
 }
 
-func (p *PowerDNSProvider) checkRecord(subdomain string) error {
+func (p *PowerDNSProvider) createTXTMarker(ctx context.Context, subdomain string) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	records, err := p.Client.Records.Get(
-		context.Background(),
+	// PowerDNS generally expects TXT content in quoted presentation format.
+	return p.client.Records.Add(
+		ctx,
 		domain,
-		"_mantrae-"+subdomain,
-		powerdns.RRTypePtr(powerdns.RRTypeTXT),
+		markerName(subdomain),
+		powerdns.RRTypeTXT,
+		60,
+		[]string{quoteTXT(managedTXT)},
 	)
-	if err != nil {
-		return err
-	}
-
-	if len(records) == 0 {
-		return nil
-	}
-
-	name := "_mantrae-" + subdomain + "."
-	for _, rrset := range records {
-		if *rrset.Name == name {
-			for _, record := range rrset.Records {
-				if *record.Content == managedTXT {
-					return nil
-				}
-			}
-		}
-	}
-
-	return fmt.Errorf("record not managed by Mantrae")
 }

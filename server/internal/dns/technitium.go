@@ -9,40 +9,33 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"slices"
 
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
 type TechnitiumProvider struct {
-	BaseURL    string
-	APIKey     string
-	ExternalIP string
-	ZoneType   string // primary, forwarder
+	baseURL string
+	apiKey  string
+	ip      string
+	client  *http.Client
 }
-
-var ZoneTypes = []string{"primary", "forwarder"}
 
 func NewTechnitiumProvider(d *schema.DNSProviderConfig) *TechnitiumProvider {
-	if !slices.Contains(ZoneTypes, d.ZoneType) {
-		slog.Error("Invalid zone type", "type", d.ZoneType)
-	}
 	return &TechnitiumProvider{
-		BaseURL:    d.APIUrl,
-		APIKey:     d.APIKey,
-		ExternalIP: d.IP,
-		ZoneType:   d.ZoneType,
+		baseURL: d.APIUrl,
+		apiKey:  d.APIKey,
+		ip:      d.IP,
+		client:  http.DefaultClient,
 	}
 }
 
-// Generic HTTP request helper
 func (t *TechnitiumProvider) doRequest(
 	ctx context.Context,
 	method, endpoint string,
 	body any,
 ) (*http.Response, error) {
-	url := t.BaseURL + endpoint
+	fullURL := t.baseURL + endpoint
 
 	var jsonBody []byte
 	if body != nil {
@@ -53,99 +46,85 @@ func (t *TechnitiumProvider) doRequest(
 		}
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, method, fullURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+t.APIKey)
+	req.Header.Set("Authorization", "Bearer "+t.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	return client.Do(req)
+	return t.client.Do(req)
 }
 
-func (t *TechnitiumProvider) UpsertRecord(subdomain string) error {
-	var recordType string
-	if util.IsValidIPv4(t.ExternalIP) {
-		recordType = "A"
-	} else if util.IsValidIPv6(t.ExternalIP) {
-		recordType = "AAAA"
-	} else {
-		return fmt.Errorf("invalid IP address: %s", t.ExternalIP)
-	}
-
-	// Check if the record exists
-	records, err := t.ListRecords(subdomain)
+func (t *TechnitiumProvider) UpsertRecord(ctx context.Context, subdomain string) error {
+	rm, err := NewRecordManager(subdomain, t.ip)
 	if err != nil {
 		return err
 	}
 
-	if err := t.checkRecord(subdomain); err != nil {
+	records, err := t.ListRecords(ctx, subdomain)
+	if err != nil {
 		return err
 	}
 
-	shouldUpdate := verifyRecords(records, subdomain, t.ExternalIP)
-	if len(records) <= 1 { // At least 2 records must exist TXT+A/AAAA
-		if err := t.createRecord(subdomain, recordType); err != nil {
-			return err
-		}
-		slog.Info("Created record", "name", subdomain, "type", recordType, "content", t.ExternalIP)
-	} else if shouldUpdate {
-		for _, record := range records {
-			if record.Type != "TXT" {
-				if err := t.updateRecord(subdomain, recordType); err != nil {
-					return err
-				}
-				slog.Info("Updated record", "name", record.Name, "type", record.Type, "content", record.Content)
-			}
-		}
+	ops := UpsertOperation{
+		CreateDNSRecord: func(recordType string) error {
+			return t.createRecord(ctx, subdomain, recordType)
+		},
+		CreateTXTMarker: func() error {
+			return t.createTXTMarker(ctx, subdomain)
+		},
+		UpdateDNSRecord: func(_ string, recordType string) error {
+			return t.updateRecord(ctx, subdomain, recordType)
+		},
 	}
 
-	return nil
+	return rm.ExecuteUpsert(records, ops)
 }
 
-func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
+func (t *TechnitiumProvider) DeleteRecord(ctx context.Context, subdomain string) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	if err = t.checkRecord(subdomain); err != nil {
-		return err
-	}
-
-	records, err := t.ListRecords(subdomain)
+	records, err := t.ListRecords(ctx, subdomain)
 	if err != nil {
 		return err
+	}
+	if len(records) == 0 {
+		return nil
+	}
+
+	rm, err := NewRecordManager(subdomain, t.ip)
+	if err != nil {
+		return err
+	}
+	if !rm.IsManagedByUs(records) {
+		return fmt.Errorf("record not managed by Mantrae")
 	}
 
 	for _, record := range records {
 		endpoint := fmt.Sprintf(
 			"/api/zones/records/delete?token=%s&zone=%s&type=%s",
-			t.APIKey,
+			t.apiKey,
 			domain,
 			record.Type,
 		)
 
-		if t.ZoneType == "forwarder" {
-			endpoint = endpoint + "&forwarder=true"
-		}
-		if record.Type == "A" || record.Type == "AAAA" {
-			endpoint = endpoint + "&domain=" + subdomain + "&ipAddress=" + record.Content
-		}
-		if record.Type == "TXT" {
-			endpoint = endpoint + "&domain=_mantrae-" + subdomain + "&text=" + url.QueryEscape(
+		switch record.Type {
+		case "A", "AAAA":
+			endpoint += "&domain=" + subdomain + "&ipAddress=" + record.Content
+		case "TXT":
+			endpoint += "&domain=" + markerName(
+				subdomain,
+			) + "&text=" + url.QueryEscape(
 				record.Content,
 			)
 		}
 
-		resp, err := t.doRequest(
-			context.Background(),
-			http.MethodPost,
-			endpoint,
-			nil,
-		)
+		resp, err := t.doRequest(ctx, http.MethodPost, endpoint, nil)
 		if err != nil {
 			return err
 		}
@@ -159,49 +138,28 @@ func (t *TechnitiumProvider) DeleteRecord(subdomain string) error {
 			bodyBytes, _ := io.ReadAll(resp.Body)
 			return fmt.Errorf("failed to delete record: %s", string(bodyBytes))
 		}
-
-		if record.Type != "TXT" {
-			slog.Info(
-				"Deleted record",
-				"name",
-				record.Name,
-				"type",
-				record.Type,
-				"content",
-				record.Content,
-			)
-		}
 	}
 
 	return nil
 }
 
-func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
+func (t *TechnitiumProvider) createRecord(ctx context.Context, subdomain, recordType string) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	endpoint := fmt.Sprintf(
-		"/api/zones/records/add?token=%s&zone=%s",
-		t.APIKey,
-		domain,
-	)
+	endpoint := fmt.Sprintf("/api/zones/records/add?token=%s&zone=%s", t.apiKey, domain)
 
-	if t.ZoneType == "forwarder" {
-		endpoint = endpoint + "&forwarder=this-server"
-	}
-
-	// Create the A/AAAA record
 	resp, err := t.doRequest(
-		context.Background(),
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf(
 			"%s&type=%s&domain=%s&ipAddress=%s",
 			endpoint,
 			recordType,
 			subdomain,
-			t.ExternalIP,
+			t.ip,
 		),
 		nil,
 	)
@@ -219,35 +177,10 @@ func (t *TechnitiumProvider) createRecord(subdomain, recordType string) error {
 		return fmt.Errorf("failed to create record: %s", string(bodyBytes))
 	}
 
-	// Create the TXT record
-	resp, err = t.doRequest(
-		context.Background(),
-		http.MethodPost,
-		fmt.Sprintf(
-			"%s&type=TXT&domain=_mantrae-%s&text=%s",
-			endpoint,
-			subdomain,
-			url.QueryEscape(managedTXT),
-		),
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			slog.Error("failed to close response body", "error", err)
-		}
-	}()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("failed to create record: %s", string(bodyBytes))
-	}
 	return nil
 }
 
-func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
+func (t *TechnitiumProvider) updateRecord(ctx context.Context, subdomain, recordType string) error {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
@@ -255,21 +188,13 @@ func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
 
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/update?token=%s&zone=%s&type=%s&ipAddress=%s",
-		t.APIKey,
+		t.apiKey,
 		domain,
 		recordType,
-		t.ExternalIP,
+		t.ip,
 	)
-	if t.ZoneType == "forwarder" {
-		endpoint = endpoint + "&forwarder=this-server"
-	}
 
-	resp, err := t.doRequest(
-		context.Background(),
-		http.MethodPatch,
-		endpoint,
-		nil,
-	)
+	resp, err := t.doRequest(ctx, http.MethodPatch, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -286,7 +211,10 @@ func (t *TechnitiumProvider) updateRecord(subdomain, recordType string) error {
 	return nil
 }
 
-func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) {
+func (t *TechnitiumProvider) ListRecords(
+	ctx context.Context,
+	subdomain string,
+) ([]DNSRecord, error) {
 	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return nil, err
@@ -294,17 +222,12 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 
 	endpoint := fmt.Sprintf(
 		"/api/zones/records/get?token=%s&domain=%s&zone=%s&listZone=true",
-		t.APIKey,
+		t.apiKey,
 		subdomain,
 		domain,
 	)
 
-	resp, err := t.doRequest(
-		context.Background(),
-		http.MethodGet,
-		endpoint,
-		nil,
-	)
+	resp, err := t.doRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -336,24 +259,21 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 		return nil, fmt.Errorf("%s", tRecords.ErrorMessage)
 	}
 
+	marker := markerName(subdomain)
+
 	var records []DNSRecord
 	for _, record := range tRecords.Response.Records {
-		if record.Name == "_mantrae-"+subdomain && record.Type == "TXT" &&
-			record.RData.Text == managedTXT {
+		if record.Name == marker && record.Type == "TXT" &&
+			normalizeTXT(record.RData.Text) == managedTXT {
 			records = append(records, DNSRecord{
 				Name:    record.Name,
 				Type:    record.Type,
 				Content: record.RData.Text,
 			})
+			continue
 		}
-		if record.Name == subdomain && record.Type == "A" {
-			records = append(records, DNSRecord{
-				Name:    record.Name,
-				Type:    record.Type,
-				Content: record.RData.IP,
-			})
-		}
-		if record.Name == subdomain && record.Type == "AAAA" {
+
+		if record.Name == subdomain && (record.Type == "A" || record.Type == "AAAA") {
 			records = append(records, DNSRecord{
 				Name:    record.Name,
 				Type:    record.Type,
@@ -365,22 +285,33 @@ func (t *TechnitiumProvider) ListRecords(subdomain string) ([]DNSRecord, error) 
 	return records, nil
 }
 
-func (t *TechnitiumProvider) checkRecord(subdomain string) error {
-	records, err := t.ListRecords(subdomain)
+func (t *TechnitiumProvider) createTXTMarker(ctx context.Context, subdomain string) error {
+	domain, err := util.ExtractBaseDomain(subdomain)
 	if err != nil {
 		return err
 	}
 
-	if len(records) == 0 {
-		return nil
-	}
+	endpoint := fmt.Sprintf(
+		"/api/zones/records/add?token=%s&zone=%s&type=TXT&domain=%s&text=%s",
+		t.apiKey,
+		domain,
+		markerName(subdomain),
+		url.QueryEscape(managedTXT),
+	)
 
-	for _, record := range records {
-		if record.Name == "_mantrae-"+subdomain && record.Type == "TXT" &&
-			record.Content == managedTXT {
-			return nil
+	resp, err := t.doRequest(ctx, http.MethodPost, endpoint, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			slog.Error("failed to close response body", "error", cerr)
 		}
-	}
+	}()
 
-	return fmt.Errorf("record not managed by Mantrae")
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to create TXT marker: %s", string(bodyBytes))
+	}
+	return nil
 }

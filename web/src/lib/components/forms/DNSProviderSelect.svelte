@@ -23,7 +23,7 @@
 	async function handleDNSProviderChange(value: string[]) {
 		if (value.length === 0) item.dnsProviders = [];
 		try {
-			const result = await dnsClient.listDnsProviders({});
+			const result = await dnsClient.listDNSProviders({});
 			item.dnsProviders = result.dnsProviders.filter((p) => value.includes(p.id.toString()));
 			await routerClient.updateRouter({
 				id: item.id,

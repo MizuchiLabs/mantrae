@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"os"
 	"slices"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
-	"github.com/mizuchilabs/mantrae/pkg/logger"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-colorable"
+	"github.com/mattn/go-isatty"
 	"github.com/mizuchilabs/mantrae/pkg/util"
 	"github.com/mizuchilabs/mantrae/server/internal/backup"
 	"github.com/mizuchilabs/mantrae/server/internal/dns"
@@ -42,14 +46,13 @@ type App struct {
 }
 
 func Setup(ctx context.Context) (*App, error) {
-	// Setup fancy logger
-	logger.Setup()
-
 	// Read environment variables
 	app, err := env.ParseAs[App]()
 	if err != nil {
 		return nil, err
 	}
+	// Setup logger
+	app.Logger()
 
 	if !slices.Contains([]int{16, 24, 32}, len(app.Secret)) {
 		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes, is %d", len(app.Secret))
@@ -66,6 +69,21 @@ func Setup(ctx context.Context) (*App, error) {
 	app.DNS = dns.NewManager(app.Conn, app.Secret)
 
 	return &app, app.setupDefaultData(ctx)
+}
+
+func (a *App) Logger() {
+	level := slog.LevelInfo
+	if a.Debug {
+		level = slog.LevelDebug
+	}
+
+	slog.SetDefault(slog.New(
+		tint.NewHandler(colorable.NewColorable(os.Stderr), &tint.Options{
+			Level:      level,
+			TimeFormat: time.RFC3339,
+			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
+		}),
+	))
 }
 
 func (a *App) setupDefaultData(ctx context.Context) error {

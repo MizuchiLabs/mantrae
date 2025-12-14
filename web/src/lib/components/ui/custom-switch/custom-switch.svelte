@@ -1,12 +1,16 @@
 <script lang="ts">
-	import { Check, X } from '@lucide/svelte';
+	import { Check, X, type IconProps } from '@lucide/svelte';
+	import type { Component } from 'svelte';
 
+	type IconComponent = Component<IconProps, Record<string, never>, ''>;
 	interface props {
 		checked?: boolean;
 		disabled?: boolean;
 		size?: 'sm' | 'md' | 'lg';
 		variant?: 'default' | 'text';
 		textLabels?: { checked: string; unchecked: string };
+		checkedIcon?: IconComponent;
+		uncheckedIcon?: IconComponent;
 		onCheckedChange?: (checked: boolean) => void;
 	}
 
@@ -16,20 +20,22 @@
 		size = 'md',
 		onCheckedChange,
 		variant = 'default',
-		textLabels
+		textLabels,
+		checkedIcon = Check,
+		uncheckedIcon = X
 	}: props = $props();
 
-	const sizeClasses = {
+	const sizeClasses = $derived({
 		sm: variant === 'text' ? 'h-5' : 'h-5 w-9',
 		md: variant === 'text' ? 'h-6' : 'h-6 w-11',
 		lg: variant === 'text' ? 'h-8' : 'h-8 w-14'
-	};
+	});
 
-	const thumbSizeClasses = {
+	const thumbSizeClasses = $derived({
 		sm: variant === 'text' ? 'h-4 px-2 min-w-8' : 'h-4 w-4',
 		md: variant === 'text' ? 'h-5 px-2 min-w-10' : 'h-5 w-5',
 		lg: variant === 'text' ? 'h-7 px-3 min-w-12' : 'h-7 w-7'
-	};
+	});
 
 	const iconSizes = {
 		sm: 10,
@@ -106,14 +112,16 @@
 		"
 	>
 		{#if variant === 'default'}
+			{@const CheckedIcon = checkedIcon}
+			{@const UncheckedIcon = uncheckedIcon}
 			<div class="transition-opacity duration-150 {checked ? 'opacity-100' : 'opacity-0'}">
 				{#if checked}
-					<Check size={iconSizes[size]} class="stroke-[2.5] text-green-500" />
+					<CheckedIcon size={iconSizes[size]} class="stroke-[2.5] text-green-500" />
 				{/if}
 			</div>
 			<div class="absolute transition-opacity duration-150 {checked ? 'opacity-0' : 'opacity-100'}">
 				{#if !checked}
-					<X size={iconSizes[size]} class="stroke-[2.5] text-red-500" />
+					<UncheckedIcon size={iconSizes[size]} class="stroke-[2.5] text-red-500" />
 				{/if}
 			</div>
 		{:else if variant === 'text' && textLabels}

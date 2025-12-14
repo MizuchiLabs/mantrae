@@ -1,3 +1,4 @@
+// Package db provides functionality for interacting with the database.
 package db
 
 import (
@@ -216,18 +217,17 @@ func (a *Agent) ToProto() *mantraev1.Agent {
 	}
 }
 
-func (d *DnsProvider) ToProto() *mantraev1.DnsProvider {
-	return &mantraev1.DnsProvider{
+func (d *DnsProvider) ToProto() *mantraev1.DNSProvider {
+	return &mantraev1.DNSProvider{
 		Id:   d.ID,
 		Name: d.Name,
-		Type: mantraev1.DnsProviderType(d.Type),
-		Config: &mantraev1.DnsProviderConfig{
+		Type: mantraev1.DNSProviderType(d.Type), // #nosec G115
+		Config: &mantraev1.DNSProviderConfig{
 			ApiKey:     d.Config.APIKey,
 			ApiUrl:     d.Config.APIUrl,
 			Ip:         d.Config.IP,
 			Proxied:    d.Config.Proxied,
 			AutoUpdate: d.Config.AutoUpdate,
-			ZoneType:   d.Config.ZoneType,
 		},
 		IsDefault: d.IsDefault,
 		CreatedAt: SafeTimestamp(d.CreatedAt),

@@ -3,6 +3,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 	"connectrpc.com/grpchealth"
 	"connectrpc.com/grpcreflect"
 	"connectrpc.com/validate"
+	"github.com/go-chi/httplog/v3"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/mizuchilabs/mantrae/server/internal/api/handler"
 	"github.com/mizuchilabs/mantrae/server/internal/api/middlewares"
@@ -42,14 +44,29 @@ func (s *Server) Start(ctx context.Context) error {
 		}
 	}()
 
+	logOpts := &httplog.Options{
+		Level:           slog.LevelError,
+		Schema:          httplog.SchemaOTEL,
+		RecoverPanics:   true,
+		LogRequestBody:  func(r *http.Request) bool { return s.app.Debug },
+		LogResponseBody: func(r *http.Request) bool { return s.app.Debug },
+	}
+
+	// Create middleware chain
+	chain := middlewares.NewChain(
+		s.WithCORS,
+		httplog.RequestLogger(slog.Default(), logOpts),
+	)
+
 	server := &http.Server{
 		Addr:              "0.0.0.0:" + s.app.BasePort(),
-		Handler:           s.WithCORS(s.mux),
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
+		Handler:           chain.Then(s.mux),
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       120 * time.Second,
-		MaxHeaderBytes:    8 * 1024, // 8KiB
+		MaxHeaderBytes:    1 << 20, // 1MiB
+		TLSConfig:         &tls.Config{MinVersion: tls.VersionTLS13},
 	}
 
 	// Channel to catch server errors
@@ -89,8 +106,8 @@ func (s *Server) registerServices() {
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
-			middlewares.Logging(),
-			middlewares.TimeoutInterceptor(),
+			// middlewares.Logging(),
+			middlewares.NewTimeoutInterceptor(),
 			middlewares.NewAuthInterceptor(s.app),
 			middlewares.NewAuditInterceptor(s.app),
 			validate.NewInterceptor(),
@@ -119,7 +136,7 @@ func (s *Server) registerServices() {
 		mantraev1connect.UserServiceName,
 		mantraev1connect.EntryPointServiceName,
 		mantraev1connect.SettingServiceName,
-		mantraev1connect.DnsProviderServiceName,
+		mantraev1connect.DNSProviderServiceName,
 		mantraev1connect.AgentServiceName,
 		mantraev1connect.RouterServiceName,
 		mantraev1connect.ServiceServiceName,
@@ -164,8 +181,8 @@ func (s *Server) registerServices() {
 		service.NewSettingService(s.app),
 		opts...,
 	))
-	s.mux.Handle(mantraev1connect.NewDnsProviderServiceHandler(
-		service.NewDnsProviderService(s.app),
+	s.mux.Handle(mantraev1connect.NewDNSProviderServiceHandler(
+		service.NewDNSProviderService(s.app),
 		opts...,
 	))
 	s.mux.Handle(mantraev1connect.NewAgentServiceHandler(
@@ -206,20 +223,19 @@ func (s *Server) registerServices() {
 	))
 
 	// HTTP middlewares -------------------------------------------------------
-	mw := middlewares.NewMiddlewareHandler(s.app)
-	logChain := middlewares.Chain(mw.Logger)
-	jwtChain := middlewares.Chain(mw.Logger, mw.JWTAuth)
+	auth := middlewares.NewAuthInterceptor(s.app)
+	authChain := middlewares.NewChain(auth.WithAuth)
 
 	// Traefik endpoint (HTTP) ------------------------------------------------
-	s.mux.Handle("GET /api/{name}", logChain(handler.PublishTraefikConfig(s.app)))
+	s.mux.Handle("GET /api/{name}", handler.PublishTraefikConfig(s.app))
 
 	// Upload handler (HTTP) --------------------------------------------------
-	s.mux.Handle("POST /upload/avatar/{id}", jwtChain(handler.UploadAvatar(s.app)))
-	s.mux.Handle("POST /upload/backup/{id}", jwtChain(handler.UploadBackup(s.app)))
+	s.mux.Handle("POST /upload/avatar/{id}", authChain.ThenFunc(handler.UploadAvatar(s.app)))
+	s.mux.Handle("POST /upload/backup/{id}", authChain.ThenFunc(handler.UploadBackup(s.app)))
 
 	// OIDC handlers (HTTP) ---------------------------------------------------
-	s.mux.Handle("GET /oidc/login", logChain(handler.OIDCLogin(s.app)))
-	s.mux.Handle("GET /oidc/callback", logChain(handler.OIDCCallback(s.app)))
+	s.mux.Handle("GET /oidc/login", handler.OIDCLogin(s.app))
+	s.mux.Handle("GET /oidc/callback", handler.OIDCCallback(s.app))
 }
 
 func (s *Server) registerHealthAndReflection(serviceNames []string) {

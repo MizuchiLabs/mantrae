@@ -20,7 +20,7 @@ type LocalStorage struct {
 
 func NewLocalStorage(path string) (*LocalStorage, error) {
 	resolvedPath := util.ResolvePath(path)
-	if err := os.MkdirAll(resolvedPath, 0755); err != nil {
+	if err := os.MkdirAll(resolvedPath, 0o750); err != nil {
 		return nil, fmt.Errorf("failed to create storage directory: %w", err)
 	}
 	return &LocalStorage{basePath: resolvedPath}, nil

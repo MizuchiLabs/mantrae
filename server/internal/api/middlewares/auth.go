@@ -11,7 +11,6 @@ import (
 	"github.com/mizuchilabs/mantrae/pkg/meta"
 	"github.com/mizuchilabs/mantrae/proto/gen/mantrae/v1/mantraev1connect"
 	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type ctxKey string
@@ -27,82 +26,6 @@ type AuthInterceptor struct {
 
 func NewAuthInterceptor(app *config.App) *AuthInterceptor {
 	return &AuthInterceptor{app: app}
-}
-
-// BasicAuth middleware for http endpoints
-func (h *MiddlewareHandler) BasicAuth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username, password, ok := r.BasicAuth()
-		if !ok {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		user, err := h.app.Conn.GetQuery().GetUserByUsername(r.Context(), username)
-		if err != nil {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-// JWTAuth middleware for http endpoints
-func (h *MiddlewareHandler) JWTAuth(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if token := getCookieToken(r.Header); token != "" {
-			claims, err := meta.DecodeUserToken(token, h.app.Secret)
-			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			if claims.IsExpired() {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
-			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
-			next.ServeHTTP(w, r.WithContext(ctx))
-			return
-		}
-		if token := getBearerToken(r.Header); token != "" {
-			claims, err := meta.DecodeUserToken(token, h.app.Secret)
-			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			if claims.IsExpired() {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			user, err := h.app.Conn.GetQuery().GetUserByID(r.Context(), claims.UserID)
-			if err != nil {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			ctx := context.WithValue(r.Context(), AuthUserIDKey, user.ID)
-			next.ServeHTTP(w, r.WithContext(ctx))
-			return
-		}
-
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	})
 }
 
 func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
@@ -153,7 +76,24 @@ func (i *AuthInterceptor) WrapStreamingHandler(
 	)
 }
 
-// Authentication middleware for gRPC endpoints
+// HTTP wrappers --------------------------------------------------------------
+
+func (a *AuthInterceptor) WithAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Authenticate user using the same logic as Connect-RPC
+		authedCtx, err := a.authenticateRequest(r.Context(), r.Header)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Continue with authenticated context
+		next.ServeHTTP(w, r.WithContext(authedCtx))
+	})
+}
+
+// Authentication logic -------------------------------------------------------
+
 func (i *AuthInterceptor) authenticateRequest(
 	ctx context.Context,
 	header http.Header,

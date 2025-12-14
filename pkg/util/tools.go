@@ -59,7 +59,7 @@ func ResolvePath(path string) string {
 	}
 
 	// Create the base directory if it doesn't exist
-	if err := os.MkdirAll(basePath, 0755); err != nil {
+	if err := os.MkdirAll(basePath, 0o750); err != nil {
 		log.Printf("Warning: failed to create base directory: %v", err)
 	}
 

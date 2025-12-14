@@ -489,7 +489,7 @@
         "title": "CreateBackupResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.CreateDnsProviderRequest": {
+      "mantrae.v1.CreateDNSProviderRequest": {
         "type": "object",
         "properties": {
           "name": {
@@ -499,29 +499,29 @@
           },
           "type": {
             "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderType"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderType"
           },
           "config": {
             "title": "config",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderConfig"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderConfig"
           },
           "isDefault": {
             "type": "boolean",
             "title": "is_default"
           }
         },
-        "title": "CreateDnsProviderRequest",
+        "title": "CreateDNSProviderRequest",
         "additionalProperties": false
       },
-      "mantrae.v1.CreateDnsProviderResponse": {
+      "mantrae.v1.CreateDNSProviderResponse": {
         "type": "object",
         "properties": {
           "dnsProvider": {
             "title": "dns_provider",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
           }
         },
-        "title": "CreateDnsProviderResponse",
+        "title": "CreateDNSProviderResponse",
         "additionalProperties": false
       },
       "mantrae.v1.CreateEntryPointRequest": {
@@ -823,6 +823,79 @@
         "title": "CreateUserResponse",
         "additionalProperties": false
       },
+      "mantrae.v1.DNSProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "id"
+          },
+          "name": {
+            "type": "string",
+            "title": "name"
+          },
+          "type": {
+            "title": "type",
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderType"
+          },
+          "config": {
+            "title": "config",
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderConfig"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "title": "is_default"
+          },
+          "createdAt": {
+            "title": "created_at",
+            "$ref": "#/components/schemas/google.protobuf.Timestamp"
+          },
+          "updatedAt": {
+            "title": "updated_at",
+            "$ref": "#/components/schemas/google.protobuf.Timestamp"
+          }
+        },
+        "title": "DNSProvider",
+        "additionalProperties": false
+      },
+      "mantrae.v1.DNSProviderConfig": {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "string",
+            "title": "api_key"
+          },
+          "apiUrl": {
+            "type": "string",
+            "title": "api_url"
+          },
+          "ip": {
+            "type": "string",
+            "title": "ip"
+          },
+          "proxied": {
+            "type": "boolean",
+            "title": "proxied"
+          },
+          "autoUpdate": {
+            "type": "boolean",
+            "title": "auto_update"
+          }
+        },
+        "title": "DNSProviderConfig",
+        "additionalProperties": false
+      },
+      "mantrae.v1.DNSProviderType": {
+        "type": "string",
+        "title": "DNSProviderType",
+        "enum": [
+          "DNS_PROVIDER_TYPE_UNSPECIFIED",
+          "DNS_PROVIDER_TYPE_CLOUDFLARE",
+          "DNS_PROVIDER_TYPE_POWERDNS",
+          "DNS_PROVIDER_TYPE_TECHNITIUM",
+          "DNS_PROVIDER_TYPE_PIHOLE"
+        ]
+      },
       "mantrae.v1.DeleteAgentRequest": {
         "type": "object",
         "properties": {
@@ -857,7 +930,7 @@
         "title": "DeleteBackupResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.DeleteDnsProviderRequest": {
+      "mantrae.v1.DeleteDNSProviderRequest": {
         "type": "object",
         "properties": {
           "id": {
@@ -866,12 +939,12 @@
             "minLength": 1
           }
         },
-        "title": "DeleteDnsProviderRequest",
+        "title": "DeleteDNSProviderRequest",
         "additionalProperties": false
       },
-      "mantrae.v1.DeleteDnsProviderResponse": {
+      "mantrae.v1.DeleteDNSProviderResponse": {
         "type": "object",
-        "title": "DeleteDnsProviderResponse",
+        "title": "DeleteDNSProviderResponse",
         "additionalProperties": false
       },
       "mantrae.v1.DeleteEntryPointRequest": {
@@ -1030,82 +1103,6 @@
         "title": "DeleteUserResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.DnsProvider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "id"
-          },
-          "name": {
-            "type": "string",
-            "title": "name"
-          },
-          "type": {
-            "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderType"
-          },
-          "config": {
-            "title": "config",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderConfig"
-          },
-          "isDefault": {
-            "type": "boolean",
-            "title": "is_default"
-          },
-          "createdAt": {
-            "title": "created_at",
-            "$ref": "#/components/schemas/google.protobuf.Timestamp"
-          },
-          "updatedAt": {
-            "title": "updated_at",
-            "$ref": "#/components/schemas/google.protobuf.Timestamp"
-          }
-        },
-        "title": "DnsProvider",
-        "additionalProperties": false
-      },
-      "mantrae.v1.DnsProviderConfig": {
-        "type": "object",
-        "properties": {
-          "apiKey": {
-            "type": "string",
-            "title": "api_key"
-          },
-          "apiUrl": {
-            "type": "string",
-            "title": "api_url"
-          },
-          "ip": {
-            "type": "string",
-            "title": "ip"
-          },
-          "proxied": {
-            "type": "boolean",
-            "title": "proxied"
-          },
-          "autoUpdate": {
-            "type": "boolean",
-            "title": "auto_update"
-          },
-          "zoneType": {
-            "type": "string",
-            "title": "zone_type"
-          }
-        },
-        "title": "DnsProviderConfig",
-        "additionalProperties": false
-      },
-      "mantrae.v1.DnsProviderType": {
-        "type": "string",
-        "title": "DnsProviderType",
-        "enum": [
-          "DNS_PROVIDER_TYPE_UNSPECIFIED",
-          "DNS_PROVIDER_TYPE_CLOUDFLARE",
-          "DNS_PROVIDER_TYPE_POWERDNS",
-          "DNS_PROVIDER_TYPE_TECHNITIUM"
-        ]
-      },
       "mantrae.v1.DownloadBackupRequest": {
         "type": "object",
         "properties": {
@@ -1223,7 +1220,7 @@
                 "properties": {
                   "dnsProvider": {
                     "title": "dns_provider",
-                    "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+                    "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
                   }
                 },
                 "title": "dns_provider",
@@ -1356,7 +1353,7 @@
         "title": "GetAgentResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.GetDnsProviderRequest": {
+      "mantrae.v1.GetDNSProviderRequest": {
         "type": "object",
         "properties": {
           "id": {
@@ -1365,18 +1362,18 @@
             "minLength": 1
           }
         },
-        "title": "GetDnsProviderRequest",
+        "title": "GetDNSProviderRequest",
         "additionalProperties": false
       },
-      "mantrae.v1.GetDnsProviderResponse": {
+      "mantrae.v1.GetDNSProviderResponse": {
         "type": "object",
         "properties": {
           "dnsProvider": {
             "title": "dns_provider",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
           }
         },
-        "title": "GetDnsProviderResponse",
+        "title": "GetDNSProviderResponse",
         "additionalProperties": false
       },
       "mantrae.v1.GetEntryPointRequest": {
@@ -1923,7 +1920,7 @@
         "title": "ListBackupsResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.ListDnsProvidersRequest": {
+      "mantrae.v1.ListDNSProvidersRequest": {
         "type": "object",
         "properties": {
           "limit": {
@@ -1947,16 +1944,16 @@
             "nullable": true
           }
         },
-        "title": "ListDnsProvidersRequest",
+        "title": "ListDNSProvidersRequest",
         "additionalProperties": false
       },
-      "mantrae.v1.ListDnsProvidersResponse": {
+      "mantrae.v1.ListDNSProvidersResponse": {
         "type": "object",
         "properties": {
           "dnsProviders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+              "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
             },
             "title": "dns_providers"
           },
@@ -1969,7 +1966,7 @@
             "format": "int64"
           }
         },
-        "title": "ListDnsProvidersResponse",
+        "title": "ListDNSProvidersResponse",
         "additionalProperties": false
       },
       "mantrae.v1.ListEntryPointsRequest": {
@@ -2795,7 +2792,7 @@
           "dnsProviders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+              "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
             },
             "title": "dns_providers"
           },
@@ -3059,7 +3056,7 @@
         "title": "UpdateAgentResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.UpdateDnsProviderRequest": {
+      "mantrae.v1.UpdateDNSProviderRequest": {
         "type": "object",
         "properties": {
           "id": {
@@ -3074,29 +3071,29 @@
           },
           "type": {
             "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderType"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderType"
           },
           "config": {
             "title": "config",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProviderConfig"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProviderConfig"
           },
           "isDefault": {
             "type": "boolean",
             "title": "is_default"
           }
         },
-        "title": "UpdateDnsProviderRequest",
+        "title": "UpdateDNSProviderRequest",
         "additionalProperties": false
       },
-      "mantrae.v1.UpdateDnsProviderResponse": {
+      "mantrae.v1.UpdateDNSProviderResponse": {
         "type": "object",
         "properties": {
           "dnsProvider": {
             "title": "dns_provider",
-            "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+            "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
           }
         },
-        "title": "UpdateDnsProviderResponse",
+        "title": "UpdateDNSProviderResponse",
         "additionalProperties": false
       },
       "mantrae.v1.UpdateEntryPointRequest": {
@@ -3268,7 +3265,7 @@
           "dnsProviders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/mantrae.v1.DnsProvider"
+              "$ref": "#/components/schemas/mantrae.v1.DNSProvider"
             },
             "title": "dns_providers"
           }
@@ -4689,13 +4686,13 @@
         }
       }
     },
-    "/mantrae.v1.DnsProviderService/CreateDnsProvider": {
+    "/mantrae.v1.DNSProviderService/CreateDNSProvider": {
       "post": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "CreateDnsProvider",
-        "operationId": "mantrae.v1.DnsProviderService.CreateDnsProvider",
+        "summary": "CreateDNSProvider",
+        "operationId": "mantrae.v1.DNSProviderService.CreateDNSProvider",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -4717,7 +4714,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.CreateDnsProviderRequest"
+                "$ref": "#/components/schemas/mantrae.v1.CreateDNSProviderRequest"
               }
             }
           },
@@ -4739,7 +4736,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.CreateDnsProviderResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.CreateDNSProviderResponse"
                 }
               }
             }
@@ -4747,13 +4744,13 @@
         }
       }
     },
-    "/mantrae.v1.DnsProviderService/DeleteDnsProvider": {
+    "/mantrae.v1.DNSProviderService/DeleteDNSProvider": {
       "post": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "DeleteDnsProvider",
-        "operationId": "mantrae.v1.DnsProviderService.DeleteDnsProvider",
+        "summary": "DeleteDNSProvider",
+        "operationId": "mantrae.v1.DNSProviderService.DeleteDNSProvider",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -4775,7 +4772,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.DeleteDnsProviderRequest"
+                "$ref": "#/components/schemas/mantrae.v1.DeleteDNSProviderRequest"
               }
             }
           },
@@ -4797,7 +4794,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.DeleteDnsProviderResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.DeleteDNSProviderResponse"
                 }
               }
             }
@@ -4805,13 +4802,13 @@
         }
       }
     },
-    "/mantrae.v1.DnsProviderService/GetDnsProvider": {
+    "/mantrae.v1.DNSProviderService/GetDNSProvider": {
       "get": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "GetDnsProvider",
-        "operationId": "mantrae.v1.DnsProviderService.GetDnsProvider.get",
+        "summary": "GetDNSProvider",
+        "operationId": "mantrae.v1.DNSProviderService.GetDNSProvider.get",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -4834,7 +4831,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetDnsProviderRequest"
+                  "$ref": "#/components/schemas/mantrae.v1.GetDNSProviderRequest"
                 }
               }
             }
@@ -4885,7 +4882,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetDnsProviderResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.GetDNSProviderResponse"
                 }
               }
             }
@@ -4894,10 +4891,10 @@
       },
       "post": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "GetDnsProvider",
-        "operationId": "mantrae.v1.DnsProviderService.GetDnsProvider",
+        "summary": "GetDNSProvider",
+        "operationId": "mantrae.v1.DNSProviderService.GetDNSProvider",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -4919,7 +4916,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.GetDnsProviderRequest"
+                "$ref": "#/components/schemas/mantrae.v1.GetDNSProviderRequest"
               }
             }
           },
@@ -4941,7 +4938,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetDnsProviderResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.GetDNSProviderResponse"
                 }
               }
             }
@@ -4949,13 +4946,13 @@
         }
       }
     },
-    "/mantrae.v1.DnsProviderService/ListDnsProviders": {
+    "/mantrae.v1.DNSProviderService/ListDNSProviders": {
       "get": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "ListDnsProviders",
-        "operationId": "mantrae.v1.DnsProviderService.ListDnsProviders.get",
+        "summary": "ListDNSProviders",
+        "operationId": "mantrae.v1.DNSProviderService.ListDNSProviders.get",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -4978,7 +4975,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListDnsProvidersRequest"
+                  "$ref": "#/components/schemas/mantrae.v1.ListDNSProvidersRequest"
                 }
               }
             }
@@ -5029,7 +5026,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListDnsProvidersResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.ListDNSProvidersResponse"
                 }
               }
             }
@@ -5038,10 +5035,10 @@
       },
       "post": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "ListDnsProviders",
-        "operationId": "mantrae.v1.DnsProviderService.ListDnsProviders",
+        "summary": "ListDNSProviders",
+        "operationId": "mantrae.v1.DNSProviderService.ListDNSProviders",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -5063,7 +5060,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.ListDnsProvidersRequest"
+                "$ref": "#/components/schemas/mantrae.v1.ListDNSProvidersRequest"
               }
             }
           },
@@ -5085,7 +5082,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListDnsProvidersResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.ListDNSProvidersResponse"
                 }
               }
             }
@@ -5093,13 +5090,13 @@
         }
       }
     },
-    "/mantrae.v1.DnsProviderService/UpdateDnsProvider": {
+    "/mantrae.v1.DNSProviderService/UpdateDNSProvider": {
       "post": {
         "tags": [
-          "mantrae.v1.DnsProviderService"
+          "mantrae.v1.DNSProviderService"
         ],
-        "summary": "UpdateDnsProvider",
-        "operationId": "mantrae.v1.DnsProviderService.UpdateDnsProvider",
+        "summary": "UpdateDNSProvider",
+        "operationId": "mantrae.v1.DNSProviderService.UpdateDNSProvider",
         "parameters": [
           {
             "name": "Connect-Protocol-Version",
@@ -5121,7 +5118,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.UpdateDnsProviderRequest"
+                "$ref": "#/components/schemas/mantrae.v1.UpdateDNSProviderRequest"
               }
             }
           },
@@ -5143,7 +5140,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.UpdateDnsProviderResponse"
+                  "$ref": "#/components/schemas/mantrae.v1.UpdateDNSProviderResponse"
                 }
               }
             }
@@ -9802,7 +9799,7 @@
       "name": "mantrae.v1.BackupService"
     },
     {
-      "name": "mantrae.v1.DnsProviderService"
+      "name": "mantrae.v1.DNSProviderService"
     },
     {
       "name": "mantrae.v1.EntryPointService"

@@ -16,7 +16,7 @@ const (
 	KeyS3Bucket       = "s3_bucket"
 	KeyS3Region       = "s3_region"
 	KeyS3AccessKey    = "s3_access_key"
-	KeyS3SecretKey    = "s3_secret_key"
+	KeyS3SecretKey    = "s3_secret_key" // #nosec G101
 	KeyS3UsePathStyle = "s3_use_path_style"
 
 	// Email settings
@@ -29,7 +29,7 @@ const (
 	// OIDC settings
 	KeyOIDCEnabled          = "oidc_enabled"
 	KeyOIDCClientID         = "oidc_client_id"
-	KeyOIDCClientSecret     = "oidc_client_secret"
+	KeyOIDCClientSecret     = "oidc_client_secret" // #nosec G101
 	KeyOIDCProviderName     = "oidc_provider_name"
 	KeyOIDCIssuerURL        = "oidc_issuer_url"
 	KeyOIDCScopes           = "oidc_scopes"

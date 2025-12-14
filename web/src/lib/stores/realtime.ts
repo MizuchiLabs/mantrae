@@ -12,7 +12,7 @@ import {
 	utilClient
 } from '$lib/api';
 import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
-import type { DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
+import type { DNSProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
 import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
 import type { Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
 import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
@@ -34,7 +34,7 @@ export const routers = writable<Router[]>([]);
 export const services = writable<Service[]>([]);
 export const middlewares = writable<Middleware[]>([]);
 export const serversTransports = writable<ServersTransport[]>([]);
-export const dnsProviders = writable<DnsProvider[]>([]);
+export const dnsProviders = writable<DNSProvider[]>([]);
 export const traefikInstances = writable<TraefikInstance[]>([]);
 
 let currentStream: AbortController | null = null;
@@ -195,7 +195,7 @@ function handleEvent(event: EventStreamResponse) {
 					break;
 				}
 				case 'dnsProvider': {
-					dnsClient.listDnsProviders({}).then((response) => {
+					dnsClient.listDNSProviders({}).then((response) => {
 						dnsProviders.set(response.dnsProviders);
 					});
 					break;
@@ -284,7 +284,7 @@ async function preload() {
 	userClient.listUsers({}).then((response) => {
 		users.set(response.users);
 	});
-	dnsClient.listDnsProviders({}).then((response) => {
+	dnsClient.listDNSProviders({}).then((response) => {
 		dnsProviders.set(response.dnsProviders);
 	});
 

@@ -28,7 +28,7 @@ message Router {
   google.protobuf.Struct config = 5;
   bool enabled = 6;
   ProtocolType type = 7;
-  repeated DnsProvider dns_providers = 8;
+  repeated DNSProvider dns_providers = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }
@@ -59,7 +59,7 @@ message UpdateRouterRequest {
   ProtocolType type = 3 [(buf.validate.field).enum.defined_only = true];
   google.protobuf.Struct config = 4;
   bool enabled = 5;
-  repeated DnsProvider dns_providers = 6;
+  repeated DNSProvider dns_providers = 6;
 }
 message UpdateRouterResponse {
   Router router = 1;

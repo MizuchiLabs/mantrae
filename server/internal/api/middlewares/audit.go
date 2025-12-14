@@ -109,7 +109,7 @@ func getResourceType(service string) string {
 		return "middleware"
 	case strings.Contains(service, "EntryPointService"):
 		return "entrypoint"
-	case strings.Contains(service, "DnsProviderService"):
+	case strings.Contains(service, "DNSProviderService"):
 		return "dns_provider"
 	case strings.Contains(service, "AgentService"):
 		return "agent"
@@ -137,7 +137,7 @@ func extractProfileAndDetails(
 		return extractMiddlewareServiceDetails(method, req, resp)
 	case "mantrae.v1.EntryPointService":
 		return extractEntryPointServiceDetails(method, req, resp)
-	case "mantrae.v1.DnsProviderService":
+	case "mantrae.v1.DNSProviderService":
 		return extractDNSProviderServiceDetails(method, req, resp)
 	case "mantrae.v1.AgentService":
 		return extractAgentServiceDetails(method, req, resp)
@@ -315,12 +315,12 @@ func extractDNSProviderServiceDetails(
 ) (*int64, string) {
 	switch method {
 	case "CreateDnsProvider":
-		if createReq, ok := req.Any().(*mantraev1.CreateDnsProviderRequest); ok {
+		if createReq, ok := req.Any().(*mantraev1.CreateDNSProviderRequest); ok {
 			return nil, fmt.Sprintf("Created DNS provider '%s'", createReq.Name)
 		}
 	case "UpdateDnsProvider":
-		if updateReq, ok := req.Any().(*mantraev1.UpdateDnsProviderRequest); ok {
-			if updateResp, ok := resp.Any().(*mantraev1.UpdateDnsProviderResponse); ok {
+		if updateReq, ok := req.Any().(*mantraev1.UpdateDNSProviderRequest); ok {
+			if updateResp, ok := resp.Any().(*mantraev1.UpdateDNSProviderResponse); ok {
 				return nil, fmt.Sprintf(
 					"Updated DNS provider '%s' (ID: %s)",
 					updateReq.Name,
@@ -329,7 +329,7 @@ func extractDNSProviderServiceDetails(
 			}
 		}
 	case "DeleteDnsProvider":
-		if deleteReq, ok := req.Any().(*mantraev1.DeleteDnsProviderRequest); ok {
+		if deleteReq, ok := req.Any().(*mantraev1.DeleteDNSProviderRequest); ok {
 			return nil, fmt.Sprintf("Deleted DNS provider (ID: %s)", deleteReq.Id)
 		}
 	}

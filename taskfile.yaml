@@ -99,7 +99,7 @@ tasks:
   # 󰡨  Build container
   docker:build:
     desc: Build local test container with ko
-    # deps: [build:web]
+    deps: [build:web]
     cmds:
       - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./server/cmd --bare
       - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build ./agent/cmd --bare

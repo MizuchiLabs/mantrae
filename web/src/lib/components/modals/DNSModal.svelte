@@ -5,12 +5,11 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import {
-		DnsProviderType,
-		type DnsProvider,
-		type DnsProviderConfig
+		DNSProviderType,
+		type DNSProvider,
+		type DNSProviderConfig
 	} from '$lib/gen/mantrae/v1/dns_provider_pb';
 	import { dnsProviderTypes } from '$lib/types';
 	import { ConnectError } from '@connectrpc/connect';
@@ -23,7 +22,7 @@
 	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 
 	interface Props {
-		item: DnsProvider;
+		item: DNSProvider;
 		open?: boolean;
 	}
 
@@ -32,7 +31,7 @@
 	const handleSubmit = async () => {
 		try {
 			if (item.id) {
-				await dnsClient.updateDnsProvider({
+				await dnsClient.updateDNSProvider({
 					id: item.id,
 					name: item.name,
 					type: item.type,
@@ -41,7 +40,7 @@
 				});
 				toast.success('DNS Provider updated successfully');
 			} else {
-				await dnsClient.createDnsProvider({
+				await dnsClient.createDNSProvider({
 					name: item.name,
 					type: item.type,
 					config: item.config,
@@ -62,7 +61,7 @@
 		if (!item.id) return;
 
 		try {
-			await dnsClient.deleteDnsProvider({ id: item.id });
+			await dnsClient.deleteDNSProvider({ id: item.id });
 			toast.success('EntryPoint deleted successfully');
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -102,7 +101,7 @@
 							<Select.Trigger>
 								{dnsProviderTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
 							</Select.Trigger>
-							<Select.Content class="no-scrollbar max-h-[300px] overflow-y-auto">
+							<Select.Content class="no-scrollbar max-h-75 overflow-y-auto">
 								{#each dnsProviderTypes as t (t.value)}
 									<Select.Item value={t.value.toString()} label={t.label}>
 										{t.label}
@@ -170,7 +169,7 @@
 						<CustomSwitch
 							checked={item.config?.autoUpdate}
 							onCheckedChange={(value) => {
-								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								if (item.config === undefined) item.config = {} as DNSProviderConfig;
 								item.config.autoUpdate = value;
 							}}
 							size="md"
@@ -178,7 +177,7 @@
 					</div>
 
 					<!-- Cloudflare Proxy -->
-					{#if item.type === DnsProviderType.CLOUDFLARE}
+					{#if item.type === DNSProviderType.DNS_PROVIDER_TYPE_CLOUDFLARE}
 						<div class="flex items-center justify-between rounded-lg border p-3">
 							<div class="space-y-1">
 								<Label class="text-sm">Cloudflare Proxy</Label>
@@ -187,38 +186,11 @@
 							<CustomSwitch
 								checked={item.config?.proxied}
 								onCheckedChange={(value) => {
-									if (item.config === undefined) item.config = {} as DnsProviderConfig;
+									if (item.config === undefined) item.config = {} as DNSProviderConfig;
 									item.config.proxied = value;
 								}}
 								size="md"
 							/>
-						</div>
-					{/if}
-
-					<!-- Technitium Zone Type -->
-					{#if item.type === DnsProviderType.TECHNITIUM}
-						<div class="flex items-center justify-between rounded-lg border p-3">
-							<div class="space-y-1">
-								<Label class="text-sm">Zone Type</Label>
-								<p class="text-xs text-muted-foreground">DNS zone configuration type</p>
-							</div>
-							<ToggleGroup.Root
-								type="single"
-								size="sm"
-								value={item.config?.zoneType}
-								onValueChange={(value) => {
-									if (item.config === undefined) item.config = {} as DnsProviderConfig;
-									item.config.zoneType = value;
-								}}
-								class="border"
-							>
-								<ToggleGroup.Item value="primary" aria-label="Toggle primary">
-									<span class="text-xs">Primary</span>
-								</ToggleGroup.Item>
-								<ToggleGroup.Item value="forwarder" aria-label="Toggle forwarder" class="px-2">
-									<span class="text-xs">Forwarder</span>
-								</ToggleGroup.Item>
-							</ToggleGroup.Root>
 						</div>
 					{/if}
 				</div>
@@ -274,7 +246,7 @@
 							oninput={(e) => {
 								let input = e.target as HTMLInputElement;
 								if (!input.value) return;
-								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								if (item.config === undefined) item.config = {} as DNSProviderConfig;
 								item.config.ip = input.value;
 							}}
 							placeholder="Enter IP address for DNS records"
@@ -305,7 +277,7 @@
 							oninput={(e) => {
 								let input = e.target as HTMLInputElement;
 								if (!input.value) return;
-								if (item.config === undefined) item.config = {} as DnsProviderConfig;
+								if (item.config === undefined) item.config = {} as DNSProviderConfig;
 								item.config.apiKey = input.value;
 							}}
 							placeholder="Enter your API key"
@@ -313,7 +285,7 @@
 						<p class="text-xs text-muted-foreground">API key from your DNS provider</p>
 					</div>
 
-					{#if item.type === DnsProviderType.POWERDNS || item.type === DnsProviderType.TECHNITIUM}
+					{#if item.type === DNSProviderType.DNS_PROVIDER_TYPE_POWERDNS || item.type === DNSProviderType.DNS_PROVIDER_TYPE_TECHNITIUM || item.type === DNSProviderType.DNS_PROVIDER_TYPE_PIHOLE}
 						<div class="space-y-2">
 							<Label for="apiUrl" class="text-sm">API Endpoint</Label>
 							<Input
@@ -324,7 +296,7 @@
 								oninput={(e) => {
 									let input = e.target as HTMLInputElement;
 									if (!input.value) return;
-									if (item.config === undefined) item.config = {} as DnsProviderConfig;
+									if (item.config === undefined) item.config = {} as DNSProviderConfig;
 									item.config.apiUrl = input.value;
 								}}
 								placeholder="https://dns.example.com/api"

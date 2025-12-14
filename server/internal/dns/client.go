@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
 	"github.com/mizuchilabs/mantrae/pkg/util"
@@ -16,13 +15,12 @@ import (
 type DNSManager struct {
 	conn   *store.Connection
 	secret string
-	mu     sync.RWMutex
 }
 
 type DNSProvider interface {
-	UpsertRecord(subdomain string) error
-	DeleteRecord(subdomain string) error
-	ListRecords(subdomain string) ([]DNSRecord, error)
+	UpsertRecord(ctx context.Context, subdomain string) error
+	DeleteRecord(ctx context.Context, subdomain string) error
+	ListRecords(ctx context.Context, subdomain string) ([]DNSRecord, error)
 }
 
 type DNSRecord struct {
@@ -38,113 +36,51 @@ type DNSRouterInfo struct {
 	Provider    DNSProvider
 }
 
-var managedTXT = "\"managed-by=mantrae\""
-
 func NewManager(conn *store.Connection, secret string) *DNSManager {
 	return &DNSManager{conn: conn, secret: secret}
 }
 
 // UpdateDNS updates the DNS records for all locally managed domains
-func (d *DNSManager) UpdateDNS() (err error) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (d *DNSManager) UpdateDNS() {
+	subdomains := d.getSubdomains()
 
-	domainMap, err := d.getDomainConfig()
-	if err != nil {
-		return err
-	}
-
-	for domain, entries := range domainMap {
+	for sub, entries := range subdomains {
 		for _, entry := range entries {
-			if err := entry.Provider.UpsertRecord(domain); err != nil {
-				slog.Error("Failed to upsert DNS record",
-					"domain", domain,
-					"router", entry.RouterName,
-					"profile", entry.ProfileName,
-					"error", err,
-				)
+			if entry.Provider == nil {
+				continue
 			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			slog.Info("Updating DNS record", "domain", sub)
+			if err := entry.Provider.UpsertRecord(ctx, sub); err != nil {
+				slog.Error("Failed to update DNS record", "domain", sub, "error", err)
+			}
+			cancel()
 		}
 	}
-
-	return nil
 }
 
 // DeleteDNS deletes the DNS record for a router if it's managed by us
-func (d *DNSManager) DeleteDNS(proto, routerID string) error {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (d *DNSManager) DeleteDNS(providerID, rule string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	switch proto {
-	case "http":
-		router, err := d.conn.GetQuery().GetHttpRouter(ctx, routerID)
-		if err != nil {
-			return fmt.Errorf("failed to get traefik config: %w", err)
-		}
-		domains, err := util.ExtractDomainFromRule(router.Config.Rule)
-		if err != nil {
-			return fmt.Errorf("failed to extract domains: %w", err)
-		}
-
-		providers, err := d.conn.GetQuery().GetDnsProvidersByHttpRouter(ctx, routerID)
-		if err != nil {
-			return fmt.Errorf("failed to get DNS provider: %w", err)
-		}
-
-		for _, p := range providers {
-			provider, err := d.getProvider(p.ID)
-			if err != nil {
-				slog.Error("Failed to get provider", "error", err, "provider", p)
-				continue
-			}
-			for _, domain := range domains {
-				if err := provider.DeleteRecord(domain); err != nil {
-					slog.Error("Failed to delete DNS record",
-						"domain", domain,
-						"error", err,
-					)
-				}
-			}
-		}
-	case "tcp":
-		router, err := d.conn.GetQuery().GetTcpRouter(ctx, routerID)
-		if err != nil {
-			return fmt.Errorf("failed to get traefik config: %w", err)
-		}
-		domains, err := util.ExtractDomainFromRule(router.Config.Rule)
-		if err != nil {
-			return fmt.Errorf("failed to extract domains: %w", err)
-		}
-
-		providers, err := d.conn.GetQuery().GetDnsProvidersByTcpRouter(ctx, routerID)
-		if err != nil {
-			return fmt.Errorf("failed to get DNS provider: %w", err)
-		}
-
-		for _, p := range providers {
-			provider, err := d.getProvider(p.ID)
-			if err != nil {
-				slog.Error("Failed to get provider", "error", err, "provider", p)
-				continue
-			}
-			for _, domain := range domains {
-				if err := provider.DeleteRecord(domain); err != nil {
-					slog.Error("Failed to delete DNS record",
-						"domain", domain,
-						"error", err,
-					)
-				}
-			}
-		}
-
-	default:
-		return fmt.Errorf("invalid protocol: %s", proto)
+	domains, err := util.ExtractDomainFromRule(rule)
+	if err != nil {
+		slog.Error("Failed to extract domains", "error", err)
+		return
 	}
 
-	return nil
+	provider, err := d.getProvider(providerID)
+	if err != nil {
+		slog.Error("Failed to get provider", "error", err)
+		return
+	}
+	for _, domain := range domains {
+		if err := provider.DeleteRecord(ctx, domain); err != nil {
+			slog.Error("Failed to delete DNS record", "domain", domain, "error", err)
+		}
+	}
 }
 
 func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
@@ -182,12 +118,14 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 
 	var dnsProvider DNSProvider
 	switch provider.Type {
-	case int64(mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE):
+	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE):
 		dnsProvider = NewCloudflareProvider(provider.Config)
-	case int64(mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_POWERDNS):
+	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_POWERDNS):
 		dnsProvider = NewPowerDNSProvider(provider.Config)
-	case int64(mantraev1.DnsProviderType_DNS_PROVIDER_TYPE_TECHNITIUM):
+	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_TECHNITIUM):
 		dnsProvider = NewTechnitiumProvider(provider.Config)
+	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_PIHOLE):
+		dnsProvider = NewPiholeProvider(provider.Config)
 	default:
 		return nil, fmt.Errorf("invalid provider type")
 	}
@@ -199,16 +137,13 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 	return dnsProvider, nil
 }
 
-// Result: map from domain → slice of provider info
-func (d *DNSManager) getDomainConfig() (map[string][]DNSRouterInfo, error) {
-	domainMap := make(map[string][]DNSRouterInfo)
+// Result: map from subdomain → slice of provider info
+func (d *DNSManager) getSubdomains() map[string][]DNSRouterInfo {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	process := func(
-		routerName string,
-		profileName string,
-		rule string,
-		providerID string,
-	) error {
+	domainMap := make(map[string][]DNSRouterInfo)
+	process := func(routerName, profileName, rule, providerID string) error {
 		provider, err := d.getProvider(providerID)
 		if err != nil {
 			slog.Warn("Unable to load provider", "id", providerID, "err", err)
@@ -226,66 +161,41 @@ func (d *DNSManager) getDomainConfig() (map[string][]DNSRouterInfo, error) {
 				ProfileName: profileName,
 				Provider:    provider,
 			})
-
-			slog.Debug("Mapped domain to provider",
-				"domain", domain,
-				"router", routerName,
-				"profile", profileName,
-			)
 		}
 		return nil
 	}
 
 	// HTTP
-	if httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(context.Background()); err != nil {
-		return nil, err
-	} else {
-		for _, r := range httpRouters {
-			if r.DnsProviderID == nil {
-				continue
-			}
-			if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
-				return nil, err
-			}
+	httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(ctx)
+	if err != nil {
+		slog.Error("Failed to get HTTP routers", "error", err)
+		return nil
+	}
+	for _, r := range httpRouters {
+		if r.DnsProviderID == nil {
+			continue
+		}
+		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
+			slog.Error("Failed to process HTTP router", "router", r.RouterName, "error", err)
+			return nil
 		}
 	}
 
 	// TCP
-	if tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(context.Background()); err != nil {
-		return nil, err
-	} else {
-		for _, r := range tcpRouters {
-			if r.DnsProviderID == nil {
-				continue
-			}
-			if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
-				return nil, err
-			}
+	tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(ctx)
+	if err != nil {
+		slog.Error("Failed to get TCP routers", "error", err)
+		return nil
+	}
+	for _, r := range tcpRouters {
+		if r.DnsProviderID == nil {
+			continue
+		}
+		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
+			slog.Error("Failed to process TCP router", "router", r.RouterName, "error", err)
+			return nil
 		}
 	}
 
-	return domainMap, nil
-}
-
-func verifyRecords(records []DNSRecord, subdomain string, content string) bool {
-	for _, record := range records {
-		switch record.Type {
-		case "A":
-			if record.Content != content {
-				return true
-			}
-		case "AAAA":
-			if record.Content != content {
-				return true
-			}
-		case "TXT":
-			if record.Name != "_mantrae-"+subdomain {
-				return true
-			}
-		default:
-			return false
-		}
-	}
-
-	return false
+	return domainMap
 }

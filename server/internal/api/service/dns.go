@@ -13,18 +13,18 @@ import (
 	"github.com/mizuchilabs/mantrae/server/internal/store/schema"
 )
 
-type DnsProviderService struct {
+type DNSProviderService struct {
 	app *config.App
 }
 
-func NewDnsProviderService(app *config.App) *DnsProviderService {
-	return &DnsProviderService{app: app}
+func NewDNSProviderService(app *config.App) *DNSProviderService {
+	return &DNSProviderService{app: app}
 }
 
-func (s *DnsProviderService) GetDnsProvider(
+func (s *DNSProviderService) GetDNSProvider(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetDnsProviderRequest],
-) (*connect.Response[mantraev1.GetDnsProviderResponse], error) {
+	req *connect.Request[mantraev1.GetDNSProviderRequest],
+) (*connect.Response[mantraev1.GetDNSProviderResponse], error) {
 	result, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -34,15 +34,15 @@ func (s *DnsProviderService) GetDnsProvider(
 		return nil, err
 	}
 	result.Config.APIKey = decryptedAPIKey
-	return connect.NewResponse(&mantraev1.GetDnsProviderResponse{
+	return connect.NewResponse(&mantraev1.GetDNSProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
 }
 
-func (s *DnsProviderService) CreateDnsProvider(
+func (s *DNSProviderService) CreateDNSProvider(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateDnsProviderRequest],
-) (*connect.Response[mantraev1.CreateDnsProviderResponse], error) {
+	req *connect.Request[mantraev1.CreateDNSProviderRequest],
+) (*connect.Response[mantraev1.CreateDNSProviderResponse], error) {
 	params := &db.CreateDnsProviderParams{
 		ID:   uuid.New().String(),
 		Name: req.Msg.Name,
@@ -52,7 +52,6 @@ func (s *DnsProviderService) CreateDnsProvider(
 			IP:         req.Msg.Config.Ip,
 			Proxied:    req.Msg.Config.Proxied,
 			AutoUpdate: req.Msg.Config.AutoUpdate,
-			ZoneType:   req.Msg.Config.ZoneType,
 		},
 		IsDefault: req.Msg.IsDefault,
 	}
@@ -80,15 +79,15 @@ func (s *DnsProviderService) CreateDnsProvider(
 			DnsProvider: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.CreateDnsProviderResponse{
+	return connect.NewResponse(&mantraev1.CreateDNSProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
 }
 
-func (s *DnsProviderService) UpdateDnsProvider(
+func (s *DNSProviderService) UpdateDNSProvider(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateDnsProviderRequest],
-) (*connect.Response[mantraev1.UpdateDnsProviderResponse], error) {
+	req *connect.Request[mantraev1.UpdateDNSProviderRequest],
+) (*connect.Response[mantraev1.UpdateDNSProviderResponse], error) {
 	params := &db.UpdateDnsProviderParams{
 		ID:   req.Msg.Id,
 		Name: req.Msg.Name,
@@ -98,7 +97,6 @@ func (s *DnsProviderService) UpdateDnsProvider(
 			IP:         req.Msg.Config.Ip,
 			Proxied:    req.Msg.Config.Proxied,
 			AutoUpdate: req.Msg.Config.AutoUpdate,
-			ZoneType:   req.Msg.Config.ZoneType,
 		},
 		IsDefault: req.Msg.IsDefault,
 	}
@@ -126,15 +124,15 @@ func (s *DnsProviderService) UpdateDnsProvider(
 			DnsProvider: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.UpdateDnsProviderResponse{
+	return connect.NewResponse(&mantraev1.UpdateDNSProviderResponse{
 		DnsProvider: result.ToProto(),
 	}), nil
 }
 
-func (s *DnsProviderService) DeleteDnsProvider(
+func (s *DNSProviderService) DeleteDNSProvider(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteDnsProviderRequest],
-) (*connect.Response[mantraev1.DeleteDnsProviderResponse], error) {
+	req *connect.Request[mantraev1.DeleteDNSProviderRequest],
+) (*connect.Response[mantraev1.DeleteDNSProviderResponse], error) {
 	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -149,13 +147,13 @@ func (s *DnsProviderService) DeleteDnsProvider(
 			DnsProvider: dnsProvider.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.DeleteDnsProviderResponse{}), nil
+	return connect.NewResponse(&mantraev1.DeleteDNSProviderResponse{}), nil
 }
 
-func (s *DnsProviderService) ListDnsProviders(
+func (s *DNSProviderService) ListDNSProviders(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListDnsProvidersRequest],
-) (*connect.Response[mantraev1.ListDnsProvidersResponse], error) {
+	req *connect.Request[mantraev1.ListDNSProvidersRequest],
+) (*connect.Response[mantraev1.ListDNSProvidersResponse], error) {
 	params := &db.ListDnsProvidersParams{
 		Limit:  req.Msg.Limit,
 		Offset: req.Msg.Offset,
@@ -170,7 +168,7 @@ func (s *DnsProviderService) ListDnsProviders(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	dnsProviders := make([]*mantraev1.DnsProvider, 0, len(result))
+	dnsProviders := make([]*mantraev1.DNSProvider, 0, len(result))
 	for _, p := range result {
 		decryptedAPIKey, err := util.DecryptSecret(p.Config.APIKey, s.app.Secret)
 		if err != nil {
@@ -179,7 +177,7 @@ func (s *DnsProviderService) ListDnsProviders(
 		p.Config.APIKey = decryptedAPIKey
 		dnsProviders = append(dnsProviders, p.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListDnsProvidersResponse{
+	return connect.NewResponse(&mantraev1.ListDNSProvidersResponse{
 		DnsProviders: dnsProviders,
 		TotalCount:   totalCount,
 	}), nil

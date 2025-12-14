@@ -1,4 +1,4 @@
-// package tasks provides functionality for running periodic tasks.
+// Package tasks provides functionality for running periodic tasks.
 package tasks
 
 import (
@@ -38,17 +38,13 @@ func (s *Scheduler) syncDNS() {
 	defer ticker.Stop()
 
 	manager := dns.NewManager(s.cfg.Conn, s.cfg.Secret)
-	if err := manager.UpdateDNS(); err != nil {
-		slog.Error("Failed to update DNS", "error", err)
-	}
+	manager.UpdateDNS()
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
 		case <-ticker.C:
-			if err := manager.UpdateDNS(); err != nil {
-				slog.Error("Failed to update DNS", "error", err)
-			}
+			manager.UpdateDNS()
 		}
 	}
 }

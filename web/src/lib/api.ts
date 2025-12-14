@@ -9,7 +9,7 @@ import { MiddlewareService } from './gen/mantrae/v1/middleware_pb';
 import { SettingService } from './gen/mantrae/v1/setting_pb';
 import { BackupService } from './gen/mantrae/v1/backup_pb';
 import { EntryPointService } from './gen/mantrae/v1/entry_point_pb';
-import { DnsProviderService } from './gen/mantrae/v1/dns_provider_pb';
+import { DNSProviderService } from './gen/mantrae/v1/dns_provider_pb';
 import { UtilService } from './gen/mantrae/v1/util_pb';
 import { AgentService } from './gen/mantrae/v1/agent_pb';
 import { AuditLogService } from './gen/mantrae/v1/auditlog_pb';
@@ -112,7 +112,7 @@ export async function buildConnectionString(p: Profile) {
 export const profileClient = useClient(ProfileService);
 export const userClient = useClient(UserService);
 export const entryPointClient = useClient(EntryPointService);
-export const dnsClient = useClient(DnsProviderService);
+export const dnsClient = useClient(DNSProviderService);
 export const agentClient = useClient(AgentService);
 export const routerClient = useClient(RouterService);
 export const serviceClient = useClient(ServiceService);

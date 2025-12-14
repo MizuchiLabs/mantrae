@@ -7,7 +7,7 @@
 	import TableActions from '$lib/components/tables/TableActions.svelte';
 	import type { BulkAction } from '$lib/components/tables/types';
 	import { renderComponent } from '$lib/components/ui/data-table';
-	import { DnsProviderType, type DnsProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
+	import { DNSProviderType, type DNSProvider } from '$lib/gen/mantrae/v1/dns_provider_pb';
 	import { dnsProviders } from '$lib/stores/realtime';
 	import { ConnectError } from '@connectrpc/connect';
 	import { CircleCheck, CircleSlash, Globe, Pencil, Trash } from '@lucide/svelte';
@@ -15,10 +15,10 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
-	let item = $state({} as DnsProvider);
+	let item = $state({} as DNSProvider);
 	let open = $state(false);
 
-	const columns: ColumnDef<DnsProvider>[] = [
+	const columns: ColumnDef<DNSProvider>[] = [
 		{
 			header: 'Name',
 			accessorKey: 'name',
@@ -32,19 +32,23 @@
 			enableGlobalFilter: false,
 			cell: ({ row }) => {
 				let type = row.getValue('type') as
-					| DnsProviderType.CLOUDFLARE
-					| DnsProviderType.POWERDNS
-					| DnsProviderType.TECHNITIUM;
+					| DNSProviderType.DNS_PROVIDER_TYPE_CLOUDFLARE
+					| DNSProviderType.DNS_PROVIDER_TYPE_POWERDNS
+					| DNSProviderType.DNS_PROVIDER_TYPE_TECHNITIUM
+					| DNSProviderType.DNS_PROVIDER_TYPE_PIHOLE;
 				let label = 'Unspecified';
 				switch (type) {
-					case DnsProviderType.CLOUDFLARE:
+					case DNSProviderType.DNS_PROVIDER_TYPE_CLOUDFLARE:
 						label = 'Cloudflare';
 						break;
-					case DnsProviderType.POWERDNS:
+					case DNSProviderType.DNS_PROVIDER_TYPE_POWERDNS:
 						label = 'PowerDNS';
 						break;
-					case DnsProviderType.TECHNITIUM:
+					case DNSProviderType.DNS_PROVIDER_TYPE_TECHNITIUM:
 						label = 'Technitium';
+						break;
+					case DNSProviderType.DNS_PROVIDER_TYPE_PIHOLE:
+						label = 'PiHole';
 						break;
 				}
 				return renderComponent(ColumnBadge, {
@@ -142,7 +146,7 @@
 		}
 	];
 
-	const bulkActions: BulkAction<DnsProvider>[] = [
+	const bulkActions: BulkAction<DNSProvider>[] = [
 		{
 			type: 'button',
 			label: 'Delete',
@@ -152,9 +156,9 @@
 		}
 	];
 
-	const deleteItem = async (item: DnsProvider) => {
+	const deleteItem = async (item: DNSProvider) => {
 		try {
-			await dnsClient.deleteDnsProvider({ id: item.id });
+			await dnsClient.deleteDNSProvider({ id: item.id });
 			toast.success(`DNS Provider ${item.name} deleted`);
 		} catch (err) {
 			const e = ConnectError.from(err);
@@ -162,9 +166,9 @@
 		}
 	};
 
-	async function toggleItem(item: DnsProvider, isDefault: boolean) {
+	async function toggleItem(item: DNSProvider, isDefault: boolean) {
 		try {
-			await dnsClient.updateDnsProvider({
+			await dnsClient.updateDNSProvider({
 				id: item.id,
 				name: item.name,
 				type: item.type,
@@ -180,13 +184,13 @@
 		}
 	}
 
-	async function bulkDelete(rows: DnsProvider[]) {
+	async function bulkDelete(rows: DNSProvider[]) {
 		try {
 			const confirmed = confirm(`Are you sure you want to delete ${rows.length} DNS Providers?`);
 			if (!confirmed) return;
 
 			for (const row of rows) {
-				await dnsClient.deleteDnsProvider({ id: row.id });
+				await dnsClient.deleteDNSProvider({ id: row.id });
 			}
 			toast.success(`Successfully deleted ${rows.length} DNS Providers`);
 		} catch (err) {
@@ -196,7 +200,7 @@
 	}
 
 	onMount(async () => {
-		const response = await dnsClient.listDnsProviders({});
+		const response = await dnsClient.listDNSProviders({});
 		dnsProviders.set(response.dnsProviders);
 	});
 </script>
@@ -229,7 +233,7 @@
 		createButton={{
 			label: 'Add Provider',
 			onClick: () => {
-				item = {} as DnsProvider;
+				item = {} as DNSProvider;
 				open = true;
 			}
 		}}

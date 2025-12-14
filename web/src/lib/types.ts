@@ -1,7 +1,7 @@
 import type { JsonObject } from '@bufbuild/protobuf';
 import type { IconProps } from '@lucide/svelte';
 import type { Component } from 'svelte';
-import { DnsProviderType } from './gen/mantrae/v1/dns_provider_pb';
+import { DNSProviderType } from './gen/mantrae/v1/dns_provider_pb';
 import { ProtocolType } from './gen/mantrae/v1/protocol_pb';
 
 export type IconComponent = Component<IconProps, Record<string, never>, ''>;
@@ -25,12 +25,12 @@ export const protocolTypes = Object.keys(ProtocolType)
 		value: ProtocolType[key as keyof typeof ProtocolType]
 	}));
 
-export const dnsProviderTypes = Object.keys(DnsProviderType)
+export const dnsProviderTypes = Object.keys(DNSProviderType)
 	.filter((key) => isNaN(Number(key)) && key !== 'UNSPECIFIED')
 	.map((key) => ({
 		label: key
 			.replace('DNS_PROVIDER_TYPE_', '')
 			.toLowerCase()
 			.replace(/^\w/, (c) => c.toUpperCase()),
-		value: DnsProviderType[key as keyof typeof DnsProviderType]
+		value: DNSProviderType[key as keyof typeof DNSProviderType]
 	}));
