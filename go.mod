@@ -10,8 +10,8 @@ require (
 	connectrpc.com/grpcreflect v1.3.0
 	connectrpc.com/validate v0.6.0
 	github.com/aws/aws-sdk-go-v2 v1.41.0
-	github.com/aws/aws-sdk-go-v2/config v1.32.5
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.5
+	github.com/aws/aws-sdk-go-v2/config v1.32.6
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.94.0
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/cloudflare/cloudflare-go/v6 v6.4.0
@@ -32,7 +32,7 @@ require (
 	github.com/ryanwholey/go-pihole v1.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/traefik/paerser v0.2.2
-	github.com/traefik/traefik/v3 v3.6.4
+	github.com/traefik/traefik/v3 v3.6.5
 	github.com/urfave/cli/v3 v3.6.1
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.46.0
@@ -61,7 +61,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.30.7 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.30.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.41.5 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
