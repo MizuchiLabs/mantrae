@@ -97,6 +97,10 @@ release:
 
 archives:
   - formats: ["binary"]
+    name_template: >-
+      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
+      {{- if eq .Arch "arm" }}v{{ .Arm }}{{ end -}}
+      {{- if and (eq .Arch "amd64") (ne .Amd64 "v1") }}{{ .Amd64 }}{{ end -}}
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
