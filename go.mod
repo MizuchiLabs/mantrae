@@ -32,7 +32,7 @@ require (
 	github.com/ryanwholey/go-pihole v1.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/traefik/paerser v0.2.2
-	github.com/traefik/traefik/v3 v3.6.5
+	github.com/traefik/traefik/v3 v3.6.6
 	github.com/urfave/cli/v3 v3.6.1
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.46.0
@@ -79,7 +79,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
-	github.com/go-acme/lego/v4 v4.29.0 // indirect
+	github.com/go-acme/lego/v4 v4.30.1 // indirect
 	github.com/go-chi/chi/v5 v5.2.3 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
