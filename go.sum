@@ -113,6 +113,8 @@ github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sa
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
 github.com/go-acme/lego/v4 v4.29.0 h1:vKMEtvoKb0gOO9rWO9zMBwE4CgI5A5CWDsK4QEeBqzo=
 github.com/go-acme/lego/v4 v4.29.0/go.mod h1:rnYyDj1NdDd9y1dHkVuUS97j7bfe9I61+oY9odKaHM8=
+github.com/go-acme/lego/v4 v4.30.1 h1:tmb6U0lvy8Mc3lQbqKwTat7oAhE8FUYNJ3D0gSg6pJU=
+github.com/go-acme/lego/v4 v4.30.1/go.mod h1:V7m/Ip+EeFkjOe028+zeH+SwWtESxw1LHelwMIfAjm4=
 github.com/go-chi/chi/v5 v5.2.3 h1:WQIt9uxdsAbgIYgid+BpYc+liqQZGMHRaUwp0JUcvdE=
 github.com/go-chi/chi/v5 v5.2.3/go.mod h1:L2yAIGWB3H+phAw1NxKwWM+7eUH/lU8pOMm5hHcoops=
 github.com/go-chi/httplog/v3 v3.3.0 h1:Gr6Y7nSzbpyCyRwKPOVKjDH3BH6TH5uvRNDsTZWDpvU=
@@ -275,6 +277,8 @@ github.com/traefik/traefik/v3 v3.6.4 h1:03xDnjdvQ51kLK6YyTJHIEPZ/4F9fSAcDS4lL69S
 github.com/traefik/traefik/v3 v3.6.4/go.mod h1:zWCc8opV9GZqDsCRDB4/AKkOjdbZe+SPfgAAIZHmBos=
 github.com/traefik/traefik/v3 v3.6.5 h1:80X9sjy0JjLcFRXUqFUUmG1suoPLBlN8Khlaca/M2lM=
 github.com/traefik/traefik/v3 v3.6.5/go.mod h1:zWCc8opV9GZqDsCRDB4/AKkOjdbZe+SPfgAAIZHmBos=
+github.com/traefik/traefik/v3 v3.6.6 h1:fN+p9DUfFoHWsoY4pee3XWQG4kQBebLTyUFDNobKJVo=
+github.com/traefik/traefik/v3 v3.6.6/go.mod h1:5YL3QkG0M3NqkCwOOYprz332wHX8iF1uAYevH7caRXk=
 github.com/unrolled/render v1.7.0 h1:1yke01/tZiZpiXfUG+zqB+6fq3G4I+KDmnh0EhPq7So=
 github.com/unrolled/render v1.7.0/go.mod h1:LwQSeDhjml8NLjIO9GJO1/1qpFJxtfVIpzxXKjfVkoI=
 github.com/urfave/cli/v3 v3.6.1 h1:j8Qq8NyUawj/7rTYdBGrxcH7A/j7/G8Q5LhWEW4G3Mo=
