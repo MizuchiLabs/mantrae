@@ -37,8 +37,8 @@ main() {
    *) echo "Unsupported architecture: $arch" && exit 1 ;;
    esac
 
-   # The filename matches goreleaser binary format: binary_platform_arch
-   filename="${binary}_${platform}_${arch}"
+   # The filename matches goreleaser binary format: binary_version_platform_arch
+   filename="${binary}_${latest#v}_${platform}_${arch}"
    [ "$platform" = "windows" ] && filename="${filename}.exe"
    url="${REPO}/${latest}/${filename}"
 
