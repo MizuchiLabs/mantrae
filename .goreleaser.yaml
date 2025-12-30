@@ -50,6 +50,7 @@ kos:
     main: ./server/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae]
+    sbom: none
     bare: true
     preserve_import_paths: false
     tags:
@@ -64,6 +65,7 @@ kos:
     main: ./agent/cmd/
     base_image: alpine
     repositories: [ghcr.io/mizuchilabs/mantrae-agent]
+    sbom: none
     bare: true
     preserve_import_paths: false
     tags:

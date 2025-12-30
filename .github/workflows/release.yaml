@@ -75,9 +75,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COSIGN_YES: "true"
-
-      - name: ghcr.io cleanup
-        uses: dataaxiom/ghcr-cleanup-action@v1
-        with:
-          delete-untagged: true
-          token: ${{ secrets.GITHUB_TOKEN }}
