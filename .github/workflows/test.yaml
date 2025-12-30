@@ -55,6 +55,7 @@ jobs:
       - name: ghcr.io cleanup
         uses: dataaxiom/ghcr-cleanup-action@v1
         with:
+          packages: mantrae,mantrae-agent
           keep-n-tagged: 20
           delete-untagged: true
           delete-ghost-images: true
