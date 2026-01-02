@@ -23,7 +23,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/hypersequent/zen v0.0.0-20250923135653-056103bb12ce
-	github.com/joeig/go-powerdns/v3 v3.19.0
+	github.com/joeig/go-powerdns/v3 v3.20.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/mattn/go-colorable v0.1.14
 	github.com/mattn/go-isatty v0.0.20
