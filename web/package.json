@@ -22,7 +22,7 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/node": "^25.0.3",
-		"bits-ui": "2.14.4",
+		"bits-ui": "2.15.1",
 		"clsx": "^2.1.1",
 		"formsnap": "^2.0.1",
 		"globals": "^17.0.0",
