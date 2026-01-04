@@ -14,11 +14,11 @@
 
 ## Features
 
-- **🎨 Clean Interface**: Manage your Traefik configuration through a simple web UI
-- **🔀 Router Management**: Create and configure routers with custom rules, entrypoints, and middleware
-- **⚙️ Middleware Support**: Add rate limiting, authentication, headers, and other middleware
-- **🏷️ Agent Mode**: Label your containers with standard Traefik labels and let the agent automatically sync them
-- **🌐 DNS Integration**: Automatic DNS record management for Cloudflare, PowerDNS, and Technitium
+- **Clean Interface**: Manage your Traefik configuration through a simple web UI
+- **Router Management**: Create and configure routers with custom rules, entrypoints, and middleware
+- **Middleware Support**: Add rate limiting, authentication, headers, and other middleware
+- **Agent Mode**: Label your containers with standard Traefik labels and let the agent automatically sync them
+- **DNS Integration**: Automatic DNS record management for Cloudflare, PowerDNS, Technitium and PiHole DNS
 
 ## How It Works
 
@@ -33,6 +33,7 @@ This project is in active development and not yet production-ready. Expect break
 ### Installation
 
 **Using the install script:**
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mizuchilabs/mantrae/main/install.sh | sh
 ```
@@ -67,22 +68,22 @@ mantrae reset --user username --password newpassword
 
 ## Command Reference
 
-| Command | Description |
-| ------- | ----------- |
-| `mantrae` | Start the Mantræ server |
-| `mantrae update` | Check for available updates |
+| Command                    | Description                             |
+| -------------------------- | --------------------------------------- |
+| `mantrae`                  | Start the Mantræ server                 |
+| `mantrae update`           | Check for available updates             |
 | `mantrae update --install` | Download and install the latest version |
-| `mantrae reset` | Reset user password (admin by default) |
-| `mantrae --version` | Display version information |
+| `mantrae reset`            | Reset user password (admin by default)  |
+| `mantrae --version`        | Display version information             |
 
 ### Flags
 
-| Flag | Aliases | Default | Description |
-| ---- | ------- | ------- | ----------- |
-| `--version` | `-v` | | Display version and exit |
-| `--password` | `-p` | | New password (used with reset) |
-| `--user` | `-u` | `admin` | Username for password reset |
-| `--install` | | `false` | Install update (used with update command) |
+| Flag         | Aliases | Default | Description                               |
+| ------------ | ------- | ------- | ----------------------------------------- |
+| `--version`  | `-v`    |         | Display version and exit                  |
+| `--password` | `-p`    |         | New password (used with reset)            |
+| `--user`     | `-u`    | `admin` | Username for password reset               |
+| `--install`  |         | `false` | Install update (used with update command) |
 
 ## Documentation
 
@@ -105,4 +106,3 @@ MIT License - See [LICENSE](LICENSE)
 - [**Traefik**](https://traefik.io/) - The powerful reverse proxy that this project manages
 - [**Nginx Proxy Manager**](https://github.com/NginxProxyManager/nginx-proxy-manager) - Inspiration for the UI approach
 - [**External-DNS**](https://github.com/kubernetes-sigs/external-dns) - Inspiration for DNS management
-
