@@ -28,7 +28,7 @@
 		"globals": "^17.0.0",
 		"mode-watcher": "^1.1.0",
 		"oxlint": "^1.36.0",
-		"oxlint-tsgolint": "^0.10.0",
+		"oxlint-tsgolint": "^0.11.0",
 		"prettier": "^3.7.4",
 		"prettier-plugin-svelte": "^3.4.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
