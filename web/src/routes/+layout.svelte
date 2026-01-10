@@ -12,6 +12,7 @@
 	import { onDestroy } from 'svelte';
 	import { subscribe, unsubscribe } from '$lib/stores/realtime';
 	import { profile } from '$lib/stores/profile';
+	import logo from '$lib/assets/logo.svg';
 
 	interface Props {
 		children?: import('svelte').Snippet;
@@ -27,6 +28,10 @@
 		unsubscribe();
 	});
 </script>
+
+<svelte:head>
+	<link rel="icon" href={logo} />
+</svelte:head>
 
 <ModeWatcher />
 <Toaster />

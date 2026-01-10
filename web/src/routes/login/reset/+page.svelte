@@ -61,7 +61,7 @@
 	/>
 </svelte:head>
 
-<Card.Root class="w-[400px]">
+<Card.Root class="w-100">
 	<Card.Header>
 		<Card.Title>Reset Token</Card.Title>
 		<Card.Description>Please enter the one-time password sent to your email</Card.Description>

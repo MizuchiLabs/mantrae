@@ -2,7 +2,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import logo from '$lib/images/logo-white.svg';
+	import { LogoLight } from '$lib/assets';
 	import type { Component, ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
@@ -94,7 +94,7 @@
 								<div
 									class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
 								>
-									<img src={logo} alt="Mantrae Logo" width="18" />
+									<LogoLight class="size-5" />
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">

@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import logo from '$lib/images/logo.svg';
+	import logo from '$lib/assets/logo.svg';
 	import { profile } from '$lib/stores/profile';
 	import { user } from '$lib/stores/user';
 	import { ConnectError } from '@connectrpc/connect';

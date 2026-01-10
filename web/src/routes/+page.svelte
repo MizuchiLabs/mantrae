@@ -25,7 +25,6 @@
 		middlewares,
 		profiles,
 		routers,
-		services,
 		traefikInstances,
 		users
 	} from '$lib/stores/realtime';
@@ -49,7 +48,6 @@
 		TrendingUp,
 		Users
 	} from '@lucide/svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 
 	let onlineAgents = $derived.by(() => {
 		let activeAgents = $agents.reduce((count, agent) => {
@@ -251,7 +249,7 @@
 			<!-- Total Users -->
 			<Card.Root class="relative overflow-hidden">
 				<Card.Header class="flex flex-row items-center justify-between pb-2">
-					<Card.Title class="text-sm font-medium text-muted-foreground">System Users</Card.Title>
+					<Card.Title class="text-sm font-medium text-muted-foreground">Total Users</Card.Title>
 					<Users class="h-4 w-4 text-muted-foreground" />
 				</Card.Header>
 				<Card.Content>
