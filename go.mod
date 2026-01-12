@@ -35,8 +35,8 @@ require (
 	github.com/traefik/traefik/v3 v3.6.6
 	github.com/urfave/cli/v3 v3.6.1
 	github.com/vearutop/statigz v1.5.0
-	golang.org/x/crypto v0.46.0
-	golang.org/x/net v0.48.0
+	golang.org/x/crypto v0.47.0
+	golang.org/x/net v0.49.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/sync v0.19.0
 	google.golang.org/protobuf v1.36.11
