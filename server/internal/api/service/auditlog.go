@@ -27,11 +27,11 @@ func (s *AuditLogService) ListAuditLogs(
 		Offset: req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListAuditLogs(ctx, params)
+	result, err := s.app.Conn.Query.ListAuditLogs(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountAuditLogs(ctx)
+	totalCount, err := s.app.Conn.Query.CountAuditLogs(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

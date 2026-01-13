@@ -58,7 +58,7 @@ func Setup(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes, is %d", len(app.Secret))
 	}
 
-	app.Conn = store.NewConnection("")
+	app.Conn = store.NewConnection(ctx, "")
 	app.SM = settings.NewManager(app.Conn)
 	app.SM.Start(ctx)
 
@@ -87,7 +87,7 @@ func (a *App) Logger() {
 }
 
 func (a *App) setupDefaultData(ctx context.Context) error {
-	q := a.Conn.GetQuery()
+	q := a.Conn.Query
 
 	// Ensure at least one user exists
 	users, err := q.ListUsers(ctx, &db.ListUsersParams{})

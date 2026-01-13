@@ -193,7 +193,7 @@ func OIDCCallback(a *config.App) http.HandlerFunc {
 		}
 
 		// Find or create user
-		q := a.Conn.GetQuery()
+		q := a.Conn.Query
 		user, err := findOrCreateOIDCUser(r.Context(), q, &userInfo)
 		if err != nil {
 			http.Error(

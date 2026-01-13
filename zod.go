@@ -24,14 +24,14 @@ func main() {
 	builder.WriteString("// Do not edit manually.\n\n")
 	builder.WriteString("import { z } from 'zod';\n\n")
 
-	withDesc := map[string]zen.CustomFn{
-		"zodDesc": func(c *zen.Converter, t reflect.Type, desc string, indent int) string {
-			return fmt.Sprintf(".describe(%q)", desc)
+	customTypeHandlers := map[string]zen.CustomFn{
+		"github.com/traefik/paerser/types.Duration": func(c *zen.Converter, t reflect.Type, v string, indent int) string {
+			return "z.string()"
 		},
 	}
 
 	for _, strct := range types {
-		schema := zen.StructToZodSchema(strct, zen.WithCustomTags(withDesc))
+		schema := zen.StructToZodSchema(strct, zen.WithCustomTypes(customTypeHandlers))
 		builder.WriteString(fmt.Sprintf("%s\n", schema))
 	}
 

@@ -11,34 +11,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupTest() (*SettingsManager, func()) {
-	conn := store.NewConnection(":memory:")
-	sm := NewManager(conn)
-
-	return sm, func() {
-		if err := conn.Close(); err != nil {
-			panic(err)
-		}
-	}
-}
-
 func TestNewManager(t *testing.T) {
-	conn := store.NewConnection(":memory:")
-	// defer conn.Close()
-	defer func() {
-		if err := conn.Close(); err != nil {
-			t.Errorf("failed to close connection: %v", err)
-		}
-	}()
-
+	conn := store.NewConnection(t.Context(), ":memory:")
 	sm := NewManager(conn)
 	assert.NotNil(t, sm)
 	assert.NotNil(t, sm.conn)
 }
 
 func TestGetAndSet(t *testing.T) {
-	sm, teardown := setupTest()
-	defer teardown()
+	conn := store.NewConnection(t.Context(), ":memory:")
+	sm := NewManager(conn)
 
 	ctx := context.Background()
 
@@ -56,8 +38,8 @@ func TestGetAndSet(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	sm, teardown := setupTest()
-	defer teardown()
+	conn := store.NewConnection(t.Context(), ":memory:")
+	sm := NewManager(conn)
 
 	ctx := context.Background()
 	sm.Start(ctx)
@@ -69,8 +51,8 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestGetMany(t *testing.T) {
-	sm, teardown := setupTest()
-	defer teardown()
+	conn := store.NewConnection(t.Context(), ":memory:")
+	sm := NewManager(conn)
 
 	ctx := context.Background()
 	sm.Start(ctx)
@@ -84,8 +66,8 @@ func TestGetMany(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
-	sm, teardown := setupTest()
-	defer teardown()
+	conn := store.NewConnection(t.Context(), ":memory:")
+	sm := NewManager(conn)
 
 	ctx := context.Background()
 
@@ -100,7 +82,7 @@ func TestStart(t *testing.T) {
 	}()
 
 	// Add a value to the database
-	err := sm.conn.GetQuery().UpsertSetting(ctx, &db.UpsertSettingParams{
+	err := sm.conn.Query.UpsertSetting(ctx, &db.UpsertSettingParams{
 		Key:   KeyStorage,
 		Value: "db_value",
 	})
@@ -125,8 +107,8 @@ func TestStart(t *testing.T) {
 }
 
 func TestValidation(t *testing.T) {
-	sm, teardown := setupTest()
-	defer teardown()
+	conn := store.NewConnection(t.Context(), ":memory:")
+	sm := NewManager(conn)
 
 	ctx := context.Background()
 

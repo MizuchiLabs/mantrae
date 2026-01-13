@@ -45,7 +45,7 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 						if auditEvent.Details != "" {
 							params.Details = &auditEvent.Details
 						}
-						if err = app.Conn.GetQuery().CreateAuditLog(context.Background(), params); err != nil {
+						if err = app.Conn.Query.CreateAuditLog(context.Background(), params); err != nil {
 							slog.Error("failed to create audit log", "error", err)
 						}
 					}()

@@ -11,7 +11,7 @@ import (
 )
 
 func (sm *SettingsManager) validate(ctx context.Context, params *db.UpsertSettingParams) error {
-	q := sm.conn.GetQuery()
+	q := sm.conn.Query
 
 	// Trim whitespace
 	params.Value = strings.TrimSpace(params.Value)

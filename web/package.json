@@ -1,14 +1,21 @@
 {
 	"name": "mantrae",
 	"version": "0.1.0",
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "oxlint --fix",
-		"format": "prettier --write ."
+		"format": "oxfmt --write .",
+		"lint": "oxlint --fix"
+	},
+	"dependencies": {
+		"@fontsource-variable/manrope": "^5.2.8",
+		"@fontsource-variable/victor-mono": "^5.2.8",
+		"@tanstack/match-sorter-utils": "^8.19.4",
+		"@tanstack/table-core": "^8.21.3"
 	},
 	"devDependencies": {
 		"@bufbuild/protobuf": "^2.10.2",
@@ -47,12 +54,5 @@
 		"vite-plugin-compression2": "^2.4.0",
 		"yaml": "^2.8.2",
 		"zod": "^4.3.5"
-	},
-	"type": "module",
-	"dependencies": {
-		"@fontsource-variable/manrope": "^5.2.8",
-		"@fontsource-variable/victor-mono": "^5.2.8",
-		"@tanstack/match-sorter-utils": "^8.19.4",
-		"@tanstack/table-core": "^8.21.3"
 	}
 }

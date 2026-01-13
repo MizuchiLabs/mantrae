@@ -25,7 +25,7 @@ func (s *DNSProviderService) GetDNSProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetDNSProviderRequest],
 ) (*connect.Response[mantraev1.GetDNSProviderResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
+	result, err := s.app.Conn.Query.GetDnsProvider(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -63,12 +63,12 @@ func (s *DNSProviderService) CreateDNSProvider(
 		params.Config.APIKey = apiKeyHash
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
+		if err := s.app.Conn.Query.UnsetDefaultDNSProvider(ctx); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
-	result, err := s.app.Conn.GetQuery().CreateDnsProvider(ctx, params)
+	result, err := s.app.Conn.Query.CreateDnsProvider(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -108,12 +108,12 @@ func (s *DNSProviderService) UpdateDNSProvider(
 		params.Config.APIKey = apiKeyHash
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultDNSProvider(ctx); err != nil {
+		if err := s.app.Conn.Query.UnsetDefaultDNSProvider(ctx); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
-	result, err := s.app.Conn.GetQuery().UpdateDnsProvider(ctx, params)
+	result, err := s.app.Conn.Query.UpdateDnsProvider(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -133,11 +133,11 @@ func (s *DNSProviderService) DeleteDNSProvider(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteDNSProviderRequest],
 ) (*connect.Response[mantraev1.DeleteDNSProviderResponse], error) {
-	dnsProvider, err := s.app.Conn.GetQuery().GetDnsProvider(ctx, req.Msg.Id)
+	dnsProvider, err := s.app.Conn.Query.GetDnsProvider(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.GetQuery().DeleteDnsProvider(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteDnsProvider(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -159,11 +159,11 @@ func (s *DNSProviderService) ListDNSProviders(
 		Offset: req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListDnsProviders(ctx, params)
+	result, err := s.app.Conn.Query.ListDnsProviders(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountDnsProviders(ctx)
+	totalCount, err := s.app.Conn.Query.CountDnsProviders(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

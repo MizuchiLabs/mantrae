@@ -100,7 +100,7 @@ func (i *AuthInterceptor) authenticateRequest(
 ) (context.Context, error) {
 	// Agent request (Bearer) -------------------------------------------------
 	if agentID := header.Get(meta.HeaderAgentID); agentID != "" {
-		agent, err := i.app.Conn.GetQuery().GetAgent(ctx, agentID)
+		agent, err := i.app.Conn.Query.GetAgent(ctx, agentID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeNotFound,
@@ -132,7 +132,7 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("unauthorized"),
 			)
 		}
-		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
+		user, err := i.app.Conn.Query.GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
@@ -155,7 +155,7 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("unauthorized"),
 			)
 		}
-		user, err := i.app.Conn.GetQuery().GetUserByID(ctx, claims.UserID)
+		user, err := i.app.Conn.Query.GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,

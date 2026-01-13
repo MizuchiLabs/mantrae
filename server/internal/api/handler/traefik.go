@@ -40,7 +40,7 @@ func scheduleUpdate(r *http.Request, app *config.App, profileID int64) {
 	go func() {
 		_, _, _ = updateGroup.Do(instanceName, func() (any, error) {
 			lastUpdateTime.Store(instanceName, time.Now())
-			result, err := traefik.UpdateTraefikInstance(r, app.Conn.GetQuery(), profileID)
+			result, err := traefik.UpdateTraefikInstance(r, app.Conn.Query, profileID)
 			if err != nil {
 				slog.Error("failed to update traefik instance", "error", err)
 				return nil, nil
@@ -66,7 +66,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		headerToken := r.Header.Get(meta.HeaderTraefikToken)
 		accept := r.Header.Get("Accept")
 
-		profile, err := a.Conn.GetQuery().GetProfileByName(r.Context(), r.PathValue("name"))
+		profile, err := a.Conn.Query.GetProfileByName(r.Context(), r.PathValue("name"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -79,7 +79,7 @@ func PublishTraefikConfig(a *config.App) http.HandlerFunc {
 		// Create or update traefik instance
 		scheduleUpdate(r, a, profile.ID)
 
-		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.GetQuery(), *profile)
+		cfg, err := traefik.BuildDynamicConfig(r.Context(), a.Conn.Query, *profile)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

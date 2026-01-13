@@ -21,7 +21,7 @@ func (s *TraefikInstanceService) GetTraefikInstance(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetTraefikInstanceRequest],
 ) (*connect.Response[mantraev1.GetTraefikInstanceResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetTraefikInstanceByID(ctx, req.Msg.Id)
+	result, err := s.app.Conn.Query.GetTraefikInstanceByID(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,11 +34,11 @@ func (s *TraefikInstanceService) DeleteTraefikInstance(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteTraefikInstanceRequest],
 ) (*connect.Response[mantraev1.DeleteTraefikInstanceResponse], error) {
-	instance, err := s.app.Conn.GetQuery().GetTraefikInstanceByID(ctx, req.Msg.Id)
+	instance, err := s.app.Conn.Query.GetTraefikInstanceByID(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.GetQuery().DeleteTraefikInstance(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteTraefikInstance(ctx, req.Msg.Id); err != nil {
 		return nil, err
 	}
 
@@ -61,11 +61,11 @@ func (s *TraefikInstanceService) ListTraefikInstances(
 		Offset:    req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListTraefikInstances(ctx, params)
+	result, err := s.app.Conn.Query.ListTraefikInstances(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountTraefikInstances(ctx, req.Msg.ProfileId)
+	totalCount, err := s.app.Conn.Query.CountTraefikInstances(ctx, req.Msg.ProfileId)
 	if err != nil {
 		return nil, err
 	}

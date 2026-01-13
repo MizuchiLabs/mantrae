@@ -91,7 +91,7 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	provider, err := d.conn.GetQuery().GetDnsProvider(ctx, id)
+	provider, err := d.conn.Query.GetDnsProvider(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (d *DNSManager) getSubdomains() map[string][]DNSRouterInfo {
 	}
 
 	// HTTP
-	httpRouters, err := d.conn.GetQuery().GetHttpRouterDomains(ctx)
+	httpRouters, err := d.conn.Query.GetHttpRouterDomains(ctx)
 	if err != nil {
 		slog.Error("Failed to get HTTP routers", "error", err)
 		return nil
@@ -182,7 +182,7 @@ func (d *DNSManager) getSubdomains() map[string][]DNSRouterInfo {
 	}
 
 	// TCP
-	tcpRouters, err := d.conn.GetQuery().GetTcpRouterDomains(ctx)
+	tcpRouters, err := d.conn.Query.GetTcpRouterDomains(ctx)
 	if err != nil {
 		slog.Error("Failed to get TCP routers", "error", err)
 		return nil

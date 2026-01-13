@@ -546,9 +546,11 @@
             "title": "is_default"
           },
           "address": {
-            "type": "string",
-            "title": "address",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "address"
           }
         },
         "title": "CreateEntryPointRequest",
@@ -578,9 +580,11 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
-            "title": "agent_id",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "agent_id"
           },
           "name": {
             "type": "string",
@@ -623,9 +627,11 @@
             "minLength": 1
           },
           "description": {
-            "type": "string",
-            "title": "description",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "description"
           }
         },
         "title": "CreateProfileRequest",
@@ -655,9 +661,11 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
-            "title": "agent_id",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "agent_id"
           },
           "name": {
             "type": "string",
@@ -704,9 +712,11 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
-            "title": "agent_id",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "agent_id"
           },
           "name": {
             "type": "string",
@@ -753,9 +763,11 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
-            "title": "agent_id",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "agent_id"
           },
           "name": {
             "type": "string",
@@ -803,10 +815,12 @@
             "minLength": 8
           },
           "email": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "email",
-            "format": "email",
-            "nullable": true
+            "format": "email"
           }
         },
         "title": "CreateUserRequest",
@@ -1809,22 +1823,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListAgentsRequest",
@@ -1858,22 +1872,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListAuditLogsRequest",
@@ -1926,22 +1940,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListDNSProvidersRequest",
@@ -1984,22 +1998,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListEntryPointsRequest",
@@ -2040,35 +2054,36 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "agent_id",
-            "minLength": 1,
-            "nullable": true
+            "minLength": 1
           },
           "type": {
             "title": "type",
-            "nullable": true,
             "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
           },
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListMiddlewaresRequest",
@@ -2102,22 +2117,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListProfilesRequest",
@@ -2158,35 +2173,36 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "agent_id",
-            "minLength": 1,
-            "nullable": true
+            "minLength": 1
           },
           "type": {
             "title": "type",
-            "nullable": true,
             "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
           },
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListRoutersRequest",
@@ -2227,35 +2243,36 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "agent_id",
-            "minLength": 1,
-            "nullable": true
+            "minLength": 1
           },
           "type": {
             "title": "type",
-            "nullable": true,
             "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
           },
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListServersTransportsRequest",
@@ -2296,35 +2313,36 @@
             "format": "int64"
           },
           "agentId": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "agent_id",
-            "minLength": 1,
-            "nullable": true
+            "minLength": 1
           },
           "type": {
             "title": "type",
-            "nullable": true,
             "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
           },
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListServicesRequest",
@@ -2386,22 +2404,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListTraefikInstancesRequest",
@@ -2435,22 +2453,22 @@
           "limit": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "limit",
             "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n",
-            "nullable": true
+            "description": "limit.valid // limit must be either -1 or greater than 0\n"
           },
           "offset": {
             "type": [
               "integer",
-              "string"
+              "string",
+              "null"
             ],
             "title": "offset",
             "minimum": 0,
-            "format": "int64",
-            "nullable": true
+            "format": "int64"
           }
         },
         "title": "ListUsersRequest",
@@ -3031,15 +3049,19 @@
             "minLength": 1
           },
           "ip": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "ip",
-            "format": "ip",
-            "nullable": true
+            "format": "ip"
           },
           "rotateToken": {
-            "type": "boolean",
-            "title": "rotate_token",
-            "nullable": true
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "title": "rotate_token"
           }
         },
         "title": "UpdateAgentRequest",
@@ -3123,9 +3145,11 @@
             "title": "is_default"
           },
           "address": {
-            "type": "string",
-            "title": "address",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "address"
           }
         },
         "title": "UpdateEntryPointRequest",
@@ -3213,14 +3237,18 @@
             "minLength": 1
           },
           "description": {
-            "type": "string",
-            "title": "description",
-            "nullable": true
+            "type": [
+              "string",
+              "null"
+            ],
+            "title": "description"
           },
           "regenerateToken": {
-            "type": "boolean",
-            "title": "regenerate_token",
-            "nullable": true
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "title": "regenerate_token"
           }
         },
         "title": "UpdateProfileRequest",
@@ -3405,16 +3433,20 @@
             "minLength": 3
           },
           "email": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "email",
-            "format": "email",
-            "nullable": true
+            "format": "email"
           },
           "password": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "title": "password",
-            "minLength": 8,
-            "nullable": true
+            "minLength": 8
           }
         },
         "title": "UpdateUserRequest",

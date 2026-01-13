@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/mizuchilabs/mantrae/server/internal/config"
-	"github.com/mizuchilabs/mantrae/server/internal/storage"
 	"github.com/mizuchilabs/mantrae/server/internal/traefik"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"gopkg.in/yaml.v3"
@@ -21,64 +20,6 @@ import (
 
 func sanitizeFilename(name string) string {
 	return filepath.Base(strings.ReplaceAll(name, "..", ""))
-}
-
-func UploadAvatar(a *config.App) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// 25MB limit
-		if err := r.ParseMultipartForm(25 << 20); err != nil {
-			http.Error(w, "File too large or invalid form data", http.StatusBadRequest)
-			return
-		}
-		defer func() {
-			if err := r.MultipartForm.RemoveAll(); err != nil {
-				slog.Error("failed to close request body", "error", err)
-			}
-		}()
-
-		userID := r.PathValue("id")
-		if userID == "" {
-			http.Error(w, "Missing user_id query parameter", http.StatusBadRequest)
-			return
-		}
-
-		file, header, err := r.FormFile("file")
-		if err != nil {
-			http.Error(w, "Failed to get uploaded file", http.StatusBadRequest)
-			return
-		}
-		defer func() {
-			if err = file.Close(); err != nil {
-				slog.Error("failed to close uploaded file", "error", err)
-			}
-		}()
-
-		extension := filepath.Ext(sanitizeFilename(header.Filename))
-		allowedExtensions := []string{".png", ".jpg", ".jpeg"}
-		if !slices.Contains(allowedExtensions, extension) {
-			http.Error(w, "Invalid file type", http.StatusBadRequest)
-			return
-		}
-
-		_, err = a.Conn.GetQuery().GetUserByID(r.Context(), userID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		storePath, err := storage.GetBackend(r.Context(), a.SM, "uploads")
-		if err != nil {
-			http.Error(w, "Failed to get storage backend", http.StatusInternalServerError)
-			return
-		}
-		filename := fmt.Sprintf("avatar_%s%s", userID, extension)
-		if err := storePath.Store(r.Context(), filename, file); err != nil {
-			http.Error(w, "Failed to store file", http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-	}
 }
 
 func UploadBackup(a *config.App) http.HandlerFunc {
@@ -169,7 +110,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 			}
 
 			// Write to database
-			traefik.DynamicToDB(r.Context(), a.Conn.GetQuery(), profileID, dynamic)
+			traefik.DynamicToDB(r.Context(), a.Conn.Query, profileID, dynamic)
 		}
 
 		w.WriteHeader(http.StatusNoContent)

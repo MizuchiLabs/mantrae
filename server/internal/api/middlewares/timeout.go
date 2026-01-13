@@ -7,11 +7,6 @@ import (
 	"connectrpc.com/connect"
 )
 
-const (
-	// Timeout is the default timeout for all RPC calls
-	Timeout = 5 * time.Second
-)
-
 // NewTimeoutInterceptor adds a timeout to all RPC calls
 func NewTimeoutInterceptor() connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {

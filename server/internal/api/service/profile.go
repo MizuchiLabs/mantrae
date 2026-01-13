@@ -24,7 +24,7 @@ func (s *ProfileService) GetProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetProfileRequest],
 ) (*connect.Response[mantraev1.GetProfileResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
+	result, err := s.app.Conn.Query.GetProfile(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -43,7 +43,7 @@ func (s *ProfileService) CreateProfile(
 		Token:       util.GenerateToken(6),
 	}
 
-	result, err := s.app.Conn.GetQuery().CreateProfile(ctx, params)
+	result, err := s.app.Conn.Query.CreateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -71,14 +71,14 @@ func (s *ProfileService) UpdateProfile(
 	if req.Msg.GetRegenerateToken() {
 		params.Token = util.GenerateToken(6)
 	} else {
-		profile, err := s.app.Conn.GetQuery().GetProfile(ctx, params.ID)
+		profile, err := s.app.Conn.Query.GetProfile(ctx, params.ID)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 		params.Token = profile.Token
 	}
 
-	result, err := s.app.Conn.GetQuery().UpdateProfile(ctx, params)
+	result, err := s.app.Conn.Query.UpdateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -98,11 +98,11 @@ func (s *ProfileService) DeleteProfile(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteProfileRequest],
 ) (*connect.Response[mantraev1.DeleteProfileResponse], error) {
-	profile, err := s.app.Conn.GetQuery().GetProfile(ctx, req.Msg.Id)
+	profile, err := s.app.Conn.Query.GetProfile(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.GetQuery().DeleteProfile(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteProfile(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -124,12 +124,12 @@ func (s *ProfileService) ListProfiles(
 		Offset: req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListProfiles(ctx, params)
+	result, err := s.app.Conn.Query.ListProfiles(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	totalCount, err := s.app.Conn.GetQuery().CountProfiles(ctx)
+	totalCount, err := s.app.Conn.Query.CountProfiles(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

@@ -28,7 +28,7 @@ func (s *AgentService) GetAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetAgentRequest],
 ) (*connect.Response[mantraev1.GetAgentResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Msg.Id)
+	result, err := s.app.Conn.Query.GetAgent(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -51,7 +51,7 @@ func (s *AgentService) CreateAgent(
 		params.ID,
 	)
 
-	result, err := s.app.Conn.GetQuery().CreateAgent(ctx, params)
+	result, err := s.app.Conn.Query.CreateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -77,7 +77,7 @@ func (s *AgentService) UpdateAgent(
 	}
 
 	if req.Msg.RotateToken != nil && *req.Msg.RotateToken {
-		agent, err := s.app.Conn.GetQuery().GetAgent(ctx, params.ID)
+		agent, err := s.app.Conn.Query.GetAgent(ctx, params.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func (s *AgentService) UpdateAgent(
 		params.Token = &token
 	}
 
-	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
+	result, err := s.app.Conn.Query.UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -105,12 +105,12 @@ func (s *AgentService) DeleteAgent(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteAgentRequest],
 ) (*connect.Response[mantraev1.DeleteAgentResponse], error) {
-	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, req.Msg.Id)
+	agent, err := s.app.Conn.Query.GetAgent(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.GetQuery().DeleteAgent(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteAgent(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -133,11 +133,11 @@ func (s *AgentService) ListAgents(
 		Offset:    req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListAgents(ctx, params)
+	result, err := s.app.Conn.Query.ListAgents(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountAgents(ctx, req.Msg.ProfileId)
+	totalCount, err := s.app.Conn.Query.CountAgents(ctx, req.Msg.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -162,7 +162,7 @@ func (s *AgentService) HealthCheck(
 			errors.New("agent id is required"),
 		)
 	}
-	agent, err := s.app.Conn.GetQuery().GetAgent(ctx, agentID)
+	agent, err := s.app.Conn.Query.GetAgent(ctx, agentID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -188,7 +188,7 @@ func (s *AgentService) HealthCheck(
 		params.Containers = &containers
 	}
 
-	result, err := s.app.Conn.GetQuery().UpdateAgent(ctx, params)
+	result, err := s.app.Conn.Query.UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

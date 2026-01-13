@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import { LogoLight } from '$lib/assets';
 	import type { Component, ComponentProps } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -36,6 +35,7 @@
 	import { goto } from '$app/navigation';
 	import { profiles } from '$lib/stores/realtime';
 	import { BackendURL } from '$lib/stores/common';
+	import RandomAvatar from '../utils/RandomAvatar.svelte';
 
 	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -228,12 +228,9 @@
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								{...props}
 							>
-								<Avatar.Root class="h-10 w-10 rounded-full bg-muted">
-									<!-- <Avatar.Image src={user.avatar} alt={'@' + $user?.username} /> -->
-									<Avatar.Fallback class="text-muted-foreground uppercase">
-										{user.username?.slice(0, 2)}
-									</Avatar.Fallback>
-								</Avatar.Root>
+								<div class="relative">
+									<RandomAvatar name={user?.username} />
+								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{user?.username}</span>
 									<span class="truncate text-xs">{user?.email}</span>
@@ -250,12 +247,7 @@
 					>
 						<DropdownMenu.Label class="p-0 font-normal">
 							<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-								<Avatar.Root class="h-10 w-10 rounded-full bg-muted">
-									<!-- <Avatar.Image src={user?.avatar} alt={'@' + $user?.username} /> -->
-									<Avatar.Fallback class="text-muted-foreground uppercase">
-										{user.username?.slice(0, 2)}
-									</Avatar.Fallback>
-								</Avatar.Root>
+								<RandomAvatar name={user?.username} />
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{user?.username}</span>
 									<span class="truncate text-xs">{user?.email}</span>

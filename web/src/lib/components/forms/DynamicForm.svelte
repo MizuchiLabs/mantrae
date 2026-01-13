@@ -70,7 +70,7 @@
 	}
 
 	function getFieldValue(path: string): unknown {
-		return path.split('.').reduce((obj, key) => obj?.[key], data);
+		return path.split('.').reduce((obj, key) => obj?.[key], data as any);
 	}
 
 	function addArrayItem(path: string, itemType: string = 'string'): void {

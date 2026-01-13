@@ -57,7 +57,7 @@
 
 		const middlewares = data.http?.middlewares;
 		if (!middlewares) return;
-		const pluginContent = Object.values(middlewares)[0];
+		const pluginContent = Object.values(middlewares)[0] as { plugin?: Record<string, any> };
 		const name = Object.keys(pluginContent?.plugin || {})[0];
 
 		try {

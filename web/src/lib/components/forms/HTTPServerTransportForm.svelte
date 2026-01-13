@@ -74,7 +74,7 @@
 		<div class="flex items-center justify-between rounded-lg border p-3">
 			<div class="space-y-1">
 				<Label class="text-sm">Skip TLS verification (insecure)</Label>
-				<!-- <p class="text-muted-foreground text-xs">Skip TLS verification</p> -->
+				<p class="text-xs text-muted-foreground">Skip TLS verification</p>
 			</div>
 
 			<CustomSwitch
@@ -86,7 +86,7 @@
 		<div class="flex items-center justify-between rounded-lg border p-3">
 			<div class="space-y-1">
 				<Label class="text-sm">Disable HTTP/2</Label>
-				<!-- <p class="text-muted-foreground text-xs">Disable HTTP/2</p> -->
+				<p class="text-xs text-muted-foreground">Disable HTTP/2</p>
 			</div>
 			<CustomSwitch
 				checked={config.disableHTTP2}

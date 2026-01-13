@@ -146,7 +146,7 @@ func (m *BackupManager) Create(ctx context.Context) error {
 	}
 
 	// Perform YAML backup
-	if err = traefik.BackupDynamicConfigs(ctx, m.Conn.GetQuery(), m.Storage); err != nil {
+	if err = traefik.BackupDynamicConfigs(ctx, m.Conn.Query, m.Storage); err != nil {
 		return fmt.Errorf("failed to backup dynamic configs: %w", err)
 	}
 

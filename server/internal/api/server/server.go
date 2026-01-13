@@ -38,12 +38,6 @@ func NewServer(app *config.App) *Server {
 func (s *Server) Start(ctx context.Context) error {
 	s.registerServices()
 
-	defer func() {
-		if err := s.app.Conn.Close(); err != nil {
-			slog.Error("failed to close database connection", "error", err)
-		}
-	}()
-
 	logOpts := &httplog.Options{
 		Level:           slog.LevelError,
 		Schema:          httplog.SchemaOTEL,
@@ -58,15 +52,22 @@ func (s *Server) Start(ctx context.Context) error {
 		httplog.RequestLogger(slog.Default(), logOpts),
 	)
 
+	protocols := new(http.Protocols)
+	protocols.SetHTTP1(true)
+	protocols.SetUnencryptedHTTP2(true)
 	server := &http.Server{
 		Addr:              "0.0.0.0:" + s.app.BasePort(),
 		Handler:           chain.Then(s.mux),
+		Protocols:         protocols,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       120 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1MiB
-		TLSConfig:         &tls.Config{MinVersion: tls.VersionTLS13},
+		TLSConfig: &tls.Config{
+			MinVersion: tls.VersionTLS13,
+			NextProtos: []string{"h2", "http/1.1"},
+		},
 	}
 
 	// Channel to catch server errors
@@ -88,15 +89,11 @@ func (s *Server) Start(ctx context.Context) error {
 	// Wait for context cancellation or server error
 	select {
 	case <-ctx.Done():
-		slog.Info("Shutting down server gracefully...")
+		slog.Debug("Shutting down server gracefully...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("server shutdown error: %w", err)
-		}
-		return nil
-
+		return server.Shutdown(shutdownCtx)
 	case err := <-serverErr:
 		return fmt.Errorf("server error: %w", err)
 	}
@@ -106,7 +103,6 @@ func (s *Server) registerServices() {
 	opts := []connect.HandlerOption{
 		connect.WithCompressMinBytes(1024),
 		connect.WithInterceptors(
-			// middlewares.Logging(),
 			middlewares.NewTimeoutInterceptor(),
 			middlewares.NewAuthInterceptor(s.app),
 			middlewares.NewAuditInterceptor(s.app),
@@ -230,7 +226,6 @@ func (s *Server) registerServices() {
 	s.mux.Handle("GET /api/{name}", handler.PublishTraefikConfig(s.app))
 
 	// Upload handler (HTTP) --------------------------------------------------
-	s.mux.Handle("POST /upload/avatar/{id}", authChain.ThenFunc(handler.UploadAvatar(s.app)))
 	s.mux.Handle("POST /upload/backup/{id}", authChain.ThenFunc(handler.UploadBackup(s.app)))
 
 	// OIDC handlers (HTTP) ---------------------------------------------------

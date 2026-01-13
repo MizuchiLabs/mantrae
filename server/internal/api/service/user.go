@@ -35,9 +35,9 @@ func (s *UserService) LoginUser(
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.LoginUserRequest_Username:
-		user, err = s.app.Conn.GetQuery().GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.LoginUserRequest_Email:
-		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -55,7 +55,7 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.GetQuery().UpdateUserLastLogin(ctx, user.ID); err != nil {
+	if err := s.app.Conn.Query.UpdateUserLastLogin(ctx, user.ID); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -99,9 +99,9 @@ func (s *UserService) VerifyOTP(
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.VerifyOTPRequest_Username:
-		user, err = s.app.Conn.GetQuery().GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.VerifyOTPRequest_Email:
-		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -125,13 +125,13 @@ func (s *UserService) VerifyOTP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.GetQuery().UpdateUserLastLogin(ctx, user.ID); err != nil {
+	if err := s.app.Conn.Query.UpdateUserLastLogin(ctx, user.ID); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	// Delete OTP if it's set
 	if user.Otp != nil && user.OtpExpiry != nil {
-		if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
+		if err := s.app.Conn.Query.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 			ID:        user.ID,
 			Otp:       nil,
 			OtpExpiry: nil,
@@ -162,9 +162,9 @@ func (s *UserService) SendOTP(
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.SendOTPRequest_Username:
-		user, err = s.app.Conn.GetQuery().GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.SendOTPRequest_Email:
-		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -180,7 +180,7 @@ func (s *UserService) SendOTP(
 	}
 	hash := util.HashOTP(token)
 
-	if err := s.app.Conn.GetQuery().UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
+	if err := s.app.Conn.Query.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 		ID:        user.ID,
 		Otp:       &hash,
 		OtpExpiry: &expiresAt,
@@ -207,17 +207,17 @@ func (s *UserService) GetUser(
 	var err error
 	switch id := req.Msg.GetIdentifier().(type) {
 	case *mantraev1.GetUserRequest_Id:
-		user, err = s.app.Conn.GetQuery().GetUserByID(ctx, id.Id)
+		user, err = s.app.Conn.Query.GetUserByID(ctx, id.Id)
 	case *mantraev1.GetUserRequest_Username:
-		user, err = s.app.Conn.GetQuery().GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.GetUserRequest_Email:
-		user, err = s.app.Conn.GetQuery().GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
 	default:
 		userID := middlewares.GetUserIDFromContext(ctx)
 		if userID == nil {
 			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 		}
-		user, err = s.app.Conn.GetQuery().GetUserByID(ctx, *userID)
+		user, err = s.app.Conn.Query.GetUserByID(ctx, *userID)
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -244,7 +244,7 @@ func (s *UserService) CreateUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	result, err := s.app.Conn.GetQuery().CreateUser(ctx, params)
+	result, err := s.app.Conn.Query.CreateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -269,7 +269,7 @@ func (s *UserService) UpdateUser(
 		Username: req.Msg.Username,
 		Email:    req.Msg.Email,
 	}
-	result, err := s.app.Conn.GetQuery().UpdateUser(ctx, params)
+	result, err := s.app.Conn.Query.UpdateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -281,7 +281,7 @@ func (s *UserService) UpdateUser(
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		if err := s.app.Conn.GetQuery().UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
+		if err := s.app.Conn.Query.UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
 			ID:       result.ID,
 			Password: hash,
 		}); err != nil {
@@ -304,11 +304,11 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteUserRequest],
 ) (*connect.Response[mantraev1.DeleteUserResponse], error) {
-	user, err := s.app.Conn.GetQuery().GetUserByID(ctx, req.Msg.Id)
+	user, err := s.app.Conn.Query.GetUserByID(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.GetQuery().DeleteUser(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteUser(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -330,11 +330,11 @@ func (s *UserService) ListUsers(
 		Offset: req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListUsers(ctx, params)
+	result, err := s.app.Conn.Query.ListUsers(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountUsers(ctx)
+	totalCount, err := s.app.Conn.Query.CountUsers(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

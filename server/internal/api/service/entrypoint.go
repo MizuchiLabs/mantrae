@@ -24,7 +24,7 @@ func (s *EntryPointService) GetEntryPoint(
 	ctx context.Context,
 	req *connect.Request[mantraev1.GetEntryPointRequest],
 ) (*connect.Response[mantraev1.GetEntryPointResponse], error) {
-	result, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, req.Msg.Id)
+	result, err := s.app.Conn.Query.GetEntryPoint(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -45,12 +45,12 @@ func (s *EntryPointService) CreateEntryPoint(
 		IsDefault: req.Msg.IsDefault,
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
+		if err := s.app.Conn.Query.UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
-	result, err := s.app.Conn.GetQuery().CreateEntryPoint(ctx, params)
+	result, err := s.app.Conn.Query.CreateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -77,7 +77,7 @@ func (s *EntryPointService) UpdateEntryPoint(
 		IsDefault: req.Msg.IsDefault,
 	}
 	if req.Msg.IsDefault {
-		if err := s.app.Conn.GetQuery().UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
+		if err := s.app.Conn.Query.UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
@@ -87,7 +87,7 @@ func (s *EntryPointService) UpdateEntryPoint(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	result, err := s.app.Conn.GetQuery().UpdateEntryPoint(ctx, params)
+	result, err := s.app.Conn.Query.UpdateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -107,14 +107,14 @@ func (s *EntryPointService) DeleteEntryPoint(
 	ctx context.Context,
 	req *connect.Request[mantraev1.DeleteEntryPointRequest],
 ) (*connect.Response[mantraev1.DeleteEntryPointResponse], error) {
-	entryPoint, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, req.Msg.Id)
+	entryPoint, err := s.app.Conn.Query.GetEntryPoint(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := s.updateRouterEntrypoints(ctx, req.Msg.Id, ""); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.GetQuery().DeleteEntryPointByID(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Query.DeleteEntryPointByID(ctx, req.Msg.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
@@ -136,11 +136,11 @@ func (s *EntryPointService) ListEntryPoints(
 		Offset:    req.Msg.Offset,
 	}
 
-	result, err := s.app.Conn.GetQuery().ListEntryPoints(ctx, params)
+	result, err := s.app.Conn.Query.ListEntryPoints(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.GetQuery().CountEntryPoints(ctx, req.Msg.ProfileId)
+	totalCount, err := s.app.Conn.Query.CountEntryPoints(ctx, req.Msg.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -161,11 +161,11 @@ func (s *EntryPointService) updateRouterEntrypoints(
 	id,
 	newEntrypoint string,
 ) error {
-	entrypoint, err := s.app.Conn.GetQuery().GetEntryPoint(ctx, id)
+	entrypoint, err := s.app.Conn.Query.GetEntryPoint(ctx, id)
 	if err != nil {
 		return err
 	}
-	httpRouters, err := s.app.Conn.GetQuery().
+	httpRouters, err := s.app.Conn.Query.
 		GetHttpRoutersUsingEntryPoint(ctx, &db.GetHttpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -180,7 +180,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.GetQuery().UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
+		if _, err = s.app.Conn.Query.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -189,7 +189,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 			return connect.NewError(connect.CodeInternal, err)
 		}
 	}
-	tcpRouters, err := s.app.Conn.GetQuery().
+	tcpRouters, err := s.app.Conn.Query.
 		GetTcpRoutersUsingEntryPoint(ctx, &db.GetTcpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -204,7 +204,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.GetQuery().UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
+		if _, err = s.app.Conn.Query.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -213,7 +213,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 			return connect.NewError(connect.CodeInternal, err)
 		}
 	}
-	udpRouters, err := s.app.Conn.GetQuery().
+	udpRouters, err := s.app.Conn.Query.
 		GetUdpRoutersUsingEntryPoint(ctx, &db.GetUdpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -228,7 +228,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.GetQuery().UpdateUdpRouter(ctx, &db.UpdateUdpRouterParams{
+		if _, err = s.app.Conn.Query.UpdateUdpRouter(ctx, &db.UpdateUdpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,

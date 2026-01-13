@@ -20,38 +20,56 @@ import (
 )
 
 //go:embed migrations
-var migrations embed.FS
+var migrationFS embed.FS
 
 type Connection struct {
-	mu sync.RWMutex
-	db *sql.DB
+	mu    sync.RWMutex
+	ctx   context.Context
+	db    *sql.DB
+	Query *db.Queries
 }
 
 // NewConnection opens a SQLite connection.
 // If `path` is empty, it defaults to "mantrae.db" in the data dir.
 // If `path` is ":memory:" or "file::memory:?cache=shared", opens in-memory.
-func NewConnection(path string) *Connection {
-	dataSource := fmt.Sprintf("file:%s", filepath.ToSlash(util.ResolvePath("mantrae.db")))
+func NewConnection(ctx context.Context, path string) *Connection {
+	dataSource := fmt.Sprintf(
+		"file:%s?_txlock=immediate",
+		filepath.ToSlash(util.ResolvePath("mantrae.db")),
+	)
 	if path != "" {
 		dataSource = path
 	}
 
-	db, err := sql.Open("sqlite", dataSource)
+	sqliteDB, err := sql.Open("sqlite", dataSource)
 	if err != nil {
 		log.Fatalf("failed to open db: %v", err)
 	}
 
-	if err := configureSQLite(db); err != nil {
+	if err := setupSQLite(sqliteDB); err != nil {
 		log.Fatalf("failed to configure db: %v", err)
 	}
+	migrate(sqliteDB)
 
-	conn := &Connection{db: db}
-	conn.Migrate()
+	conn := &Connection{
+		ctx:   ctx,
+		db:    sqliteDB,
+		Query: db.New(sqliteDB),
+	}
+
+	// Wait for shutdown signal
+	go func() {
+		<-ctx.Done()
+		if err := sqliteDB.Close(); err != nil {
+			slog.Error("Failed to close database", "error", err)
+		}
+	}()
+
 	return conn
 }
 
-// configureSQLite applies performance and safety pragmas.
-func configureSQLite(db *sql.DB) error {
+// setupSQLite applies performance and safety pragmas.
+func setupSQLite(db *sql.DB) error {
 	pragmas := `
 	PRAGMA busy_timeout = 5000;
 	PRAGMA journal_mode = WAL;
@@ -60,7 +78,6 @@ func configureSQLite(db *sql.DB) error {
 	PRAGMA foreign_keys = ON;
 	PRAGMA temp_store = MEMORY;
 	PRAGMA mmap_size = 300000000;
-	PRAGMA page_size = 32768;
 	PRAGMA cache_size = -16000;`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -70,10 +87,9 @@ func configureSQLite(db *sql.DB) error {
 		return fmt.Errorf("executing pragmas: %w", err)
 	}
 
-	db.SetMaxOpenConns(1)    // Single connection
-	db.SetMaxIdleConns(1)    // Keep some connections alive
-	db.SetConnMaxLifetime(0) // Reuse connections indefinitely
-
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+	db.SetConnMaxLifetime(0)
 	return nil
 }
 
@@ -81,24 +97,6 @@ func (c *Connection) Get() *sql.DB {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.db
-}
-
-func (c *Connection) Close() error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.db.Close()
-}
-
-func (c *Connection) Ping() error {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.db.Ping()
-}
-
-func (c *Connection) GetQuery() *db.Queries {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return db.New(c.db)
 }
 
 // Replace replaces the on‐disk DB with srcPath, then reopens it.
@@ -124,25 +122,47 @@ func (c *Connection) Replace(srcPath string) error {
 	if err := os.Remove(dst); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("remove old db file: %w", err)
 	}
+
+	// Also remove WAL and SHM files
+	_ = os.Remove(dst + "-wal")
+	_ = os.Remove(dst + "-shm")
+
 	if err := util.CopyFile(srcPath, dst); err != nil {
 		return fmt.Errorf("copy new db file: %w", err)
 	}
 
-	// Reinitialize the database connection
-	conn := NewConnection("")
-	c.db = conn.db
+	// Reopen the database with the same data source
+	dataSource := fmt.Sprintf(
+		"file:%s?_txlock=immediate",
+		filepath.ToSlash(dst),
+	)
+
+	sqliteDB, err := sql.Open("sqlite", dataSource)
+	if err != nil {
+		return fmt.Errorf("failed to reopen db: %w", err)
+	}
+
+	if err := setupSQLite(sqliteDB); err != nil {
+		return fmt.Errorf("failed to configure db: %w", err)
+	}
+
+	// Run migrations on the restored database
+	migrate(sqliteDB)
+
+	// Update connection fields
+	c.db = sqliteDB
+	c.Query = db.New(sqliteDB)
 	return nil
 }
 
-func (c *Connection) Migrate() {
-	goose.SetBaseFS(migrations)
+func migrate(db *sql.DB) {
+	goose.SetBaseFS(migrationFS)
 	goose.SetLogger(goose.NopLogger())
 
 	if err := goose.SetDialect("sqlite3"); err != nil {
 		log.Fatal(err)
 	}
-
-	if err := goose.Up(c.db, "migrations"); err != nil {
+	if err := goose.Up(db, "migrations"); err != nil {
 		log.Fatal(err)
 	}
 }
