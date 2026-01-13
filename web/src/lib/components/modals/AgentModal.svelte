@@ -14,10 +14,10 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { timestampDate } from '@bufbuild/protobuf/wkt';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
-	import CopyInput from '../ui/copy-input/copy-input.svelte';
 	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte';
 	import { scale } from 'svelte/transition';
 	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { CopyInput } from '../ui/input-group';
 
 	interface Props {
 		item: Agent;

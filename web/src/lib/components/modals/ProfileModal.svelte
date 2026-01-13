@@ -9,9 +9,9 @@
 	import { ConnectError } from '@connectrpc/connect';
 	import { RotateCcw, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
-	import CopyInput from '../ui/copy-input/copy-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
 	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { CopyInput } from '../ui/input-group';
 
 	interface Props {
 		item: Profile;
@@ -88,7 +88,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-100 overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>{item?.id ? 'Edit' : 'Create'} Profile</Dialog.Title>
 			<Dialog.Description>Configure your profile settings</Dialog.Description>
@@ -116,7 +116,7 @@
 				<div class="space-y-2">
 					<Label for="token" class="text-sm font-medium">Connection Token</Label>
 					<div class="flex gap-2">
-						<CopyInput id="token" value={item.token} readonly />
+						<CopyInput value={item.token} readonly />
 						<Button variant="outline" size="icon" onclick={regenerate} title="Regenerate token">
 							<RotateCcw class="h-4 w-4" />
 						</Button>
