@@ -1,0 +1,19 @@
+package server
+
+import (
+	"net/http"
+
+	web "github.com/mizuchilabs/mantrae/web/ui"
+	"github.com/vearutop/statigz"
+	"github.com/vearutop/statigz/brotli"
+)
+
+func (s *Server) WithStatic() {
+	uploadsContent := http.FileServer(http.Dir("./data/uploads"))
+	s.mux.Handle("/uploads/", http.StripPrefix("/uploads/", uploadsContent))
+	s.mux.Handle("/", statigz.FileServer(
+		web.StaticFS,
+		brotli.AddEncoding,
+		statigz.FSPrefix("build"),
+	))
+}

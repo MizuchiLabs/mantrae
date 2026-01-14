@@ -10,7 +10,7 @@ services:
     volumes:
       - ./mantrae:/data # base directory used
     ports:
-      - 3000:3000 # remove this if you want to use traefik
+      - 3000:3000 # remove this if you use traefik
     labels:
       - traefik.enable=true
       - traefik.http.routers.mantrae.rule=Host(`mantrae.example.com`)
@@ -18,9 +18,9 @@ services:
       - proxy
     restart: unless-stopped
 
-  mantrae-agent: # agent for running on other machines
-    image: ghcr.io/mizuchilabs/mantrae-agent:latest
-    container_name: mantrae-agent
+  mantraed: # agent for running on other machines
+    image: ghcr.io/mizuchilabs/mantraed:latest
+    container_name: mantraed
     network_mode: host # for detecting the hostname of the machine
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # needed if running as container

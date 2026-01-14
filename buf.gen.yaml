@@ -4,23 +4,23 @@ managed:
   enabled: true
   override:
     - file_option: go_package_prefix
-      value: github.com/mizuchilabs/mantrae/proto/gen
+      value: github.com/mizuchilabs/mantrae/internal/gen
   disable:
     - file_option: go_package
       module: buf.build/bufbuild/protovalidate
 plugins:
   - protoc_builtin: go
-    out: proto/gen
+    out: internal/gen
     opt: paths=source_relative
   - local: protoc-gen-connect-go
-    out: proto/gen
+    out: internal/gen
     opt: paths=source_relative
   - local: protoc-gen-es
     out: web/src/lib/gen
     opt: target=ts
     include_imports: true
   - local: protoc-gen-connect-openapi
-    out: server/internal/api/server/openapi
+    out: internal/api/server/openapi
     strategy: all
     opt:
       - features=connectrpc;google.api.http;protovalidate
@@ -29,5 +29,8 @@ plugins:
       - format=json
       - path=openapi.json
       - base=openapi.yaml
+
 inputs:
-  - directory: proto
+  - git_repo: https://github.com/mizuchilabs/protos.git
+    branch: main
+    subdir: mantrae

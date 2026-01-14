@@ -1,4 +1,3 @@
-
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
@@ -11,7 +10,6 @@
 *.dylib
 bin/
 builds/
-.idea
 
 # Test binary, built with `go test -c`
 *.test
@@ -22,12 +20,21 @@ cover.html
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+dist/
+data/
 
 # Go workspace file
 go.work
-*.db
-*.db-shm
-*.db-wal
+
+### direnv ###
+.direnv
 .envrc
-dist/
-data/
+
+### dotenv ###
+.env
+
+### VisualStudioCode ###
+.vscode/*
+
+### IntelliJ IDEA ###
+.idea/

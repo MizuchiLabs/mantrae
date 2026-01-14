@@ -12,6 +12,8 @@
 
 > **Important**: Mantræ is **not** a dashboard for Traefik. It operates independently and does not monitor Traefik's status. Instead, Traefik connects to Mantræ to fetch its dynamic configuration.
 
+> **Note**: The Mantræ agent has moved to a separate repository: [mantraed](https://github.com/MizuchiLabs/mantraed). The agent is now called `mantraed` (Mantræ daemon) and has its own container image at `ghcr.io/mizuchilabs/mantraed`. The old `mantrae-agent` image will remain available for compatibility but is deprecated.
+
 ## Features
 
 - **Clean Interface**: Manage your Traefik configuration through a simple web UI
@@ -19,10 +21,6 @@
 - **Middleware Support**: Add rate limiting, authentication, headers, and other middleware
 - **Agent Mode**: Label your containers with standard Traefik labels and let the agent automatically sync them
 - **DNS Integration**: Automatic DNS record management for Cloudflare, PowerDNS, Technitium and PiHole DNS
-
-## How It Works
-
-Mantræ generates and serves Traefik's dynamic configuration file. Configure Traefik to fetch its configuration from Mantræ's HTTP provider endpoint, and your changes will be applied automatically.
 
 ## 🚧 Development Status
 
@@ -53,12 +51,6 @@ mantrae
 # Display version
 mantrae --version
 
-# Check for updates
-mantrae update
-
-# Update to latest version (not available in Docker)
-mantrae update --install
-
 # Reset admin password
 mantrae reset --password newpassword
 
@@ -68,22 +60,19 @@ mantrae reset --user username --password newpassword
 
 ## Command Reference
 
-| Command                    | Description                             |
-| -------------------------- | --------------------------------------- |
-| `mantrae`                  | Start the Mantræ server                 |
-| `mantrae update`           | Check for available updates             |
-| `mantrae update --install` | Download and install the latest version |
-| `mantrae reset`            | Reset user password (admin by default)  |
-| `mantrae --version`        | Display version information             |
+| Command             | Description                            |
+| ------------------- | -------------------------------------- |
+| `mantrae`           | Start the Mantræ server                |
+| `mantrae reset`     | Reset user password (admin by default) |
+| `mantrae --version` | Display version information            |
 
 ### Flags
 
-| Flag         | Aliases | Default | Description                               |
-| ------------ | ------- | ------- | ----------------------------------------- |
-| `--version`  | `-v`    |         | Display version and exit                  |
-| `--password` | `-p`    |         | New password (used with reset)            |
-| `--user`     | `-u`    | `admin` | Username for password reset               |
-| `--install`  |         | `false` | Install update (used with update command) |
+| Flag         | Aliases | Default | Description                    |
+| ------------ | ------- | ------- | ------------------------------ |
+| `--version`  | `-v`    |         | Display version and exit       |
+| `--password` | `-p`    |         | New password (used with reset) |
+| `--user`     | `-u`    | `admin` | Username for password reset    |
 
 ## Documentation
 

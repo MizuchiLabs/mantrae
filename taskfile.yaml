@@ -5,9 +5,7 @@ output: prefixed
 env:
   CGO_ENABLED: 0
   IMAGE_SERVER_DEV: ko.local/mantrae
-  IMAGE_AGENT_DEV: ko.local/mantrae-agent
   IMAGE_SERVER_PROD: ghcr.io/mizuchilabs/mantrae
-  IMAGE_AGENT_PROD: ghcr.io/mizuchilabs/mantrae-agent
 
 tasks:
   dev:
@@ -17,27 +15,21 @@ tasks:
   backend:
     desc: Run Go backend
     cmds:
-      - go run server/cmd/main.go
+      - go run cmd/main.go
     silent: false
 
   web:
     desc: Run frontend
     cmds:
       - pnpm run dev
-    dir: web
-    silent: false
-
-  agent:
-    desc: Run agent
-    cmds:
-      - go run agent/cmd/main.go
+    dir: web/ui
     silent: false
 
   docs:
     desc: Run docs
     cmds:
       - pnpm run start
-    dir: docs
+    dir: web/docs
     silent: false
 
   # 󰉠  Lint / static checks
@@ -53,8 +45,8 @@ tasks:
     desc: Update dependencies
     cmds:
       - go get -u ./...
-      - cd web && pnpm update --latest
-      - cd docs && pnpm update --latest
+      - cd web/ui && pnpm update --latest
+      - cd web/docs && pnpm update --latest
 
   #  Generate code
   gen:
@@ -67,7 +59,7 @@ tasks:
   # 🏗 Build frontend
   build:web:
     desc: Build Frontend
-    dir: web
+    dir: web/ui
     cmds:
       - pnpm install
       - pnpm build
@@ -101,14 +93,11 @@ tasks:
     desc: Build local test container with ko
     deps: [build:web]
     cmds:
-      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./server/cmd --bare
-      - KO_DOCKER_REPO=$IMAGE_AGENT_DEV ko build ./agent/cmd --bare
+      - KO_DOCKER_REPO=$IMAGE_SERVER_DEV ko build ./cmd --bare
       - grype $IMAGE_SERVER_DEV
-      - grype $IMAGE_AGENT_DEV
 
   docker:release:
     desc: Build and push container to registry
     deps: [build:web]
     cmds:
-      - KO_DOCKER_REPO=$IMAGE_SERVER_PROD ko build ./server/cmd --bare
-      - KO_DOCKER_REPO=$IMAGE_AGENT_PROD ko build ./agent/cmd --bare
+      - KO_DOCKER_REPO=$IMAGE_SERVER_PROD ko build ./cmd --bare

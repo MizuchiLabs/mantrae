@@ -12,26 +12,8 @@ before:
     - go mod verify
 
 builds:
-  - id: server
-    main: ./server/cmd/
-    binary: mantrae
-    env: [CGO_ENABLED=0]
-    ldflags:
-      - -s -w
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Version={{.Version}}
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.Commit}}
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Date={{.Date}}
-    goos:
-      - linux
-      - darwin
-      # - windows # too much too handle for gh runner :/
-    goarch:
-      - amd64
-      - arm64
-
-  - id: agent
-    main: ./agent/cmd/
-    binary: mantrae_agent
+  - binary: mantrae
+    dir: cmd
     env: [CGO_ENABLED=0]
     ldflags:
       - -s -w
@@ -45,26 +27,8 @@ builds:
       - arm64
 
 kos:
-  - id: server
-    build: server
-    main: ./server/cmd/
+  - repositories: [ghcr.io/mizuchilabs/mantrae]
     base_image: alpine
-    repositories: [ghcr.io/mizuchilabs/mantrae]
-    sbom: none
-    bare: true
-    preserve_import_paths: false
-    tags:
-      - "{{.Version}}"
-      - latest
-    platforms:
-      - linux/amd64
-      - linux/arm64
-
-  - id: agent
-    build: agent
-    main: ./agent/cmd/
-    base_image: alpine
-    repositories: [ghcr.io/mizuchilabs/mantrae-agent]
     sbom: none
     bare: true
     preserve_import_paths: false

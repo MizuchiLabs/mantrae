@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - "docs/**"
+      - "web/docs/**"
   pull_request:
     branches:
       - main
     paths:
-      - "docs/**"
+      - "web/docs/**"
   create:
     tags:
       - "*"
@@ -42,20 +42,20 @@ jobs:
         with:
           node-version: 24
           cache: "pnpm"
-          cache-dependency-path: "docs/pnpm-lock.yaml"
+          cache-dependency-path: "web/docs/pnpm-lock.yaml"
 
       - name: Install dependencies
-        working-directory: ./docs
+        working-directory: ./web/docs
         run: pnpm install
 
       - name: Build
-        working-directory: ./docs
+        working-directory: ./web/docs
         run: pnpm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./docs/build
+          path: ./web/docs/build
 
   deploy:
     environment:
