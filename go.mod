@@ -31,7 +31,7 @@ require (
 	github.com/ryanwholey/go-pihole v1.2.0
 	github.com/stretchr/testify v1.11.1
 	github.com/traefik/traefik/v3 v3.6.7
-	github.com/urfave/cli/v3 v3.6.1
+	github.com/urfave/cli/v3 v3.6.2
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.47.0
 	golang.org/x/net v0.49.0
