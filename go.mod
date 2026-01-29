@@ -18,7 +18,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/go-chi/httplog/v3 v3.3.0
-	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/hypersequent/zen v0.0.0-20250923135653-056103bb12ce
