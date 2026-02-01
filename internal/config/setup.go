@@ -22,6 +22,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
+	"github.com/urfave/cli/v3"
 )
 
 type EnvConfig struct {
@@ -31,6 +32,7 @@ type EnvConfig struct {
 	BaseURL       string `env:"BASE_URL"       envDefault:"http://localhost:3000"`
 	FrontendURL   string `env:"FRONTEND_URL"   envDefault:"http://localhost:5173"`
 	Debug         bool   `env:"DEBUG"          envDefault:"false"`
+	Version       string
 }
 
 type App struct {
@@ -45,14 +47,19 @@ type App struct {
 	DNS   *dns.DNSManager
 }
 
-func Setup(ctx context.Context) (*App, error) {
-	// Read environment variables
+func New(ctx context.Context, cmd *cli.Command) (*App, error) {
 	app, err := env.ParseAs[App]()
 	if err != nil {
 		return nil, err
 	}
-	// Setup logger
-	app.Logger()
+
+	// Merge command line flags (can override environment variables)
+	if cmd != nil {
+		app.Debug = cmd.Bool("debug")
+		app.Version = cmd.Root().Version
+	}
+
+	app.initLogger()
 
 	if !slices.Contains([]int{16, 24, 32}, len(app.Secret)) {
 		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes, is %d", len(app.Secret))
@@ -71,7 +78,7 @@ func Setup(ctx context.Context) (*App, error) {
 	return &app, app.setupDefaultData(ctx)
 }
 
-func (a *App) Logger() {
+func (a App) initLogger() {
 	level := slog.LevelInfo
 	if a.Debug {
 		level = slog.LevelDebug
@@ -173,18 +180,18 @@ func (a *App) setupDefaultData(ctx context.Context) error {
 
 // --- BaseURL helpers ---
 
-func (c App) BaseHost() string {
-	host, _ := util.ParseHostPort(c.BaseURL)
+func (a App) BaseHost() string {
+	host, _ := util.ParseHostPort(a.BaseURL)
 	return host
 }
 
-func (c App) BasePort() string {
-	_, port := util.ParseHostPort(c.BaseURL)
+func (a App) BasePort() string {
+	_, port := util.ParseHostPort(a.BaseURL)
 	return port
 }
 
-func (c App) BaseDomain() string {
-	u, err := url.Parse(c.BaseURL)
+func (a App) BaseDomain() string {
+	u, err := url.Parse(a.BaseURL)
 	if err != nil {
 		return ""
 	}
@@ -193,18 +200,18 @@ func (c App) BaseDomain() string {
 
 // --- FrontendURL helpers ---
 
-func (c App) FrontendHost() string {
-	host, _ := util.ParseHostPort(c.FrontendURL)
+func (a App) FrontendHost() string {
+	host, _ := util.ParseHostPort(a.FrontendURL)
 	return host
 }
 
-func (c App) FrontendPort() string {
-	_, port := util.ParseHostPort(c.FrontendURL)
+func (a App) FrontendPort() string {
+	_, port := util.ParseHostPort(a.FrontendURL)
 	return port
 }
 
-func (c App) FrontendDomain() string {
-	u, err := url.Parse(c.FrontendURL)
+func (a App) FrontendDomain() string {
+	u, err := url.Parse(a.FrontendURL)
 	if err != nil {
 		return ""
 	}

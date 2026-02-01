@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	output = "./web/src/lib/gen/zen/traefik-schemas.ts"
+	output = "./web/ui/src/lib/gen/zen/traefik-schemas.ts"
 )
 
 func main() {

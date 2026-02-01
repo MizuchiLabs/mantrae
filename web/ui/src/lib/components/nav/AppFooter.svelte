@@ -32,7 +32,7 @@
 		>
 			Mantrae
 			{#await utilClient.getVersion({}) then result}
-				{#if result.version && result.version !== 'unknown'}
+				{#if result.version && result.version !== 'debug'}
 					{result.version}
 				{:else}
 					<span class="italic">latest</span>

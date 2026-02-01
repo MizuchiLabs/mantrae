@@ -7,7 +7,6 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
-	"github.com/mizuchilabs/mantrae/internal/meta"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -24,7 +23,7 @@ func (s *UtilService) GetVersion(
 	req *connect.Request[mantraev1.GetVersionRequest],
 ) (*connect.Response[mantraev1.GetVersionResponse], error) {
 	return connect.NewResponse(&mantraev1.GetVersionResponse{
-		Version: meta.Version,
+		Version: s.app.Version,
 	}), nil
 }
 

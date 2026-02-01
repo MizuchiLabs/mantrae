@@ -2,71 +2,92 @@
 version: 2
 project_name: mantrae
 report_sizes: true
-pro: false
 
 before:
   hooks:
     - go fmt ./...
     - go vet ./...
+    - go test ./...
     - go mod tidy
     - go mod verify
 
+gomod:
+  proxy: true
+
 builds:
-  - binary: mantrae
-    dir: cmd
+  - binary: "{{ .ProjectName }}"
     env: [CGO_ENABLED=0]
+    flags:
+      - -trimpath
+    mod_timestamp: "{{ .CommitTimestamp }}"
     ldflags:
       - -s -w
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Version={{.Version}}
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Commit={{.Commit}}
-      - -X github.com/mizuchilabs/mantrae/pkg/meta.Date={{.Date}}
+      - -X main.Version={{.Version}}
+      - -X main.Commit={{.Commit}}
+      - -X main.Date={{ .CommitDate }}
     goos:
       - linux
+      - darwin
+      - windows
     goarch:
       - amd64
       - arm64
-
-kos:
-  - repositories: [ghcr.io/mizuchilabs/mantrae]
-    base_image: alpine
-    sbom: none
-    bare: true
-    preserve_import_paths: false
-    tags:
-      - "{{.Version}}"
-      - latest
-    platforms:
-      - linux/amd64
-      - linux/arm64
-
-sboms:
-  - cmd: syft
-    documents:
-      - "{{ .Binary }}_{{ .Os }}_{{ .Arch }}.sbom.json"
-    args: ["$artifact", "--output", "cyclonedx-json=$document"]
-    artifacts: binary
-    disable: false
+    ignore:
+      - goos: windows
+        goarch: arm64
 
 upx:
   - enabled: true
     lzma: true
     compress: best
+    goos: [linux]
+
+kos:
+  - base_image: alpine
+    repositories: [ghcr.io/mizuchilabs/mantrae]
+    bare: true
+    preserve_import_paths: false
+    sbom: none
+    creation_time: "{{ .CommitTimestamp }}"
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .Prerelease }}latest{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    args:
+      - "sign-blob"
+      - "--yes"
+      - "${artifact}"
+      - "--bundle=${signature}"
+
+sboms:
+  - cmd: syft
+    documents:
+      - "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}.sbom.json"
+    args: ["$artifact", "--output", "cyclonedx-json=$document"]
+    artifacts: binary
 
 source:
   enabled: true
+
+archives:
+  - formats: [binary]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
 
 release:
   draft: false
   replace_existing_draft: true
   replace_existing_artifacts: true
   mode: keep-existing
-
-archives:
-  - formats: ["binary"]
-    name_template: >-
-      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
-      {{- if eq .Arch "arm" }}v{{ .Arm }}{{ end -}}
-      {{- if and (eq .Arch "amd64") (ne .Amd64 "v1") }}{{ .Amd64 }}{{ end -}}
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
@@ -75,29 +96,30 @@ changelog:
   sort: asc
   filters:
     include:
-      - "^feat:"
-      - "^fix:"
-      - "^sec:"
-      - "^docs:"
-      - "^wip:"
+      - "^feat"
+      - "^fix"
+      - "^sec"
+      - "^perf"
+      - "^refactor"
+      - "^docs"
   groups:
-    - title: "🚀 Features"
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+    - title: Features
+      regexp: '^feat(\(.+\))?!?:'
       order: 0
-    - title: "🔒 Security"
-      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+    - title: Security
+      regexp: '^sec(\(.+\))?!?:'
       order: 1
-    - title: "🐛 Bug fixes"
-      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+    - title: Bug Fixes
+      regexp: '^fix(\(.+\))?!?:'
       order: 2
-    - title: "📚 Documentation"
-      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+    - title: Performance
+      regexp: '^perf(\(.+\))?!?:'
       order: 3
-    - title: "🚧 Work in progress"
-      regexp: '^.*?wip(\([[:word:]]+\))??!?:.+$'
+    - title: Refactor
+      regexp: '^refactor(\(.+\))?!?:'
       order: 4
-    - title: "🏷️ Other changes"
-      regexp: '^.*?chore(\([[:word:]]+\))??!?:.+$'
+    - title: Documentation
+      regexp: '^docs(\(.+\))?!?:'
       order: 5
-    - title: Misc
+    - title: Other
       order: 999

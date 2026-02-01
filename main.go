@@ -10,9 +10,15 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/api/server"
 	"github.com/mizuchilabs/mantrae/internal/config"
-	"github.com/mizuchilabs/mantrae/internal/meta"
 	"github.com/mizuchilabs/mantrae/internal/tasks"
 	"github.com/urfave/cli/v3"
+)
+
+var (
+	Version = "debug"
+	Commit  string
+	Date    string
+	Dirty   string
 )
 
 func main() {
@@ -20,13 +26,13 @@ func main() {
 		EnableShellCompletion: true,
 		Suggest:               true,
 		Name:                  "mantrae",
-		Version:               meta.Version,
+		Version:               Version,
 		Usage:                 "mantrae [command]",
 		Description: `Mantrae simplifies the management of Traefik reverse proxy configurations through an intuitive web interface. Manage routers, middleware, services, and DNS providers with ease.
 
 See https://github.com/mizuchilabs/mantrae for more information.`,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			app, err := config.Setup(ctx)
+			app, err := config.New(ctx, cmd)
 			if err != nil {
 				slog.Error("Setup failed", "error", err)
 				return err
@@ -44,7 +50,7 @@ See https://github.com/mizuchilabs/mantrae for more information.`,
 By default, resets the admin user's password. Use the --user flag
 to specify a different username.`,
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					app, err := config.Setup(ctx)
+					app, err := config.New(ctx, cmd)
 					if err != nil {
 						slog.Error("Setup failed", "error", err)
 						return err

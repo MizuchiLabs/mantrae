@@ -15,15 +15,13 @@ tasks:
   backend:
     desc: Run Go backend
     cmds:
-      - go run cmd/main.go
-    silent: false
+      - go run .
 
   web:
     desc: Run frontend
     cmds:
       - pnpm run dev
     dir: web/ui
-    silent: false
 
   docs:
     desc: Run docs
@@ -39,6 +37,7 @@ tasks:
       - go mod tidy
       - go fmt ./...
       - go vet ./...
+      - go test -cover ./...
 
   # 󰚰 Update deps
   update:
@@ -54,7 +53,7 @@ tasks:
     cmds:
       - buf generate
       - sqlc generate
-      - go run zod.go
+      - go run ./cmd/genzod/zod.go
 
   # 🏗 Build frontend
   build:web:

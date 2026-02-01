@@ -2062,8 +2062,15 @@
             "minLength": 1
           },
           "type": {
-            "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "type"
           },
           "limit": {
             "type": [
@@ -2181,8 +2188,15 @@
             "minLength": 1
           },
           "type": {
-            "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "type"
           },
           "limit": {
             "type": [
@@ -2251,8 +2265,15 @@
             "minLength": 1
           },
           "type": {
-            "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "type"
           },
           "limit": {
             "type": [
@@ -2321,8 +2342,15 @@
             "minLength": 1
           },
           "type": {
-            "title": "type",
-            "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/mantrae.v1.ProtocolType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "type"
           },
           "limit": {
             "type": [
