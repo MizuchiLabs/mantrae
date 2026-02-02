@@ -64,11 +64,11 @@ func (s *HTTPRouterOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetRouterRequest,
 ) (*mantraev1.GetRouterResponse, error) {
-	result, err := s.app.Conn.Query.GetHttpRouter(ctx, req.Id)
+	result, err := s.app.Conn.Q.GetHttpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	dnsProvider, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, result.ID)
+	dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, result.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -104,15 +104,15 @@ func (s *HTTPRouterOps) Create(
 
 	// Add default DNS provider
 
-	result, err := s.app.Conn.Query.CreateHttpRouter(ctx, params)
+	result, err := s.app.Conn.Q.CreateHttpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	router := result.ToProto()
 
-	dnsProvider, err := s.app.Conn.Query.GetDefaultDNSProvider(ctx)
+	dnsProvider, err := s.app.Conn.Q.GetDefaultDNSProvider(ctx)
 	if err == nil {
-		if err := s.app.Conn.Query.CreateHttpRouterDNSProvider(ctx, &db.CreateHttpRouterDNSProviderParams{
+		if err := s.app.Conn.Q.CreateHttpRouterDNSProvider(ctx, &db.CreateHttpRouterDNSProviderParams{
 			HttpRouterID:  router.Id,
 			DnsProviderID: dnsProvider.ID,
 		}); err != nil {
@@ -154,7 +154,7 @@ func (s *HTTPRouterOps) Update(
 	}
 
 	// Update DNS Providers
-	existing, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, params.ID)
+	existing, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, params.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func (s *HTTPRouterOps) Update(
 	// Identify inserts
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
-			if err = s.app.Conn.Query.
+			if err = s.app.Conn.Q.
 				CreateHttpRouterDNSProvider(ctx, &db.CreateHttpRouterDNSProviderParams{
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
@@ -187,7 +187,7 @@ func (s *HTTPRouterOps) Update(
 	// Identify deletes
 	for id := range existingMap {
 		if !desiredMap[id] {
-			if err = s.app.Conn.Query.
+			if err = s.app.Conn.Q.
 				DeleteHttpRouterDNSProvider(ctx, &db.DeleteHttpRouterDNSProviderParams{
 					HttpRouterID:  params.ID,
 					DnsProviderID: id,
@@ -198,13 +198,13 @@ func (s *HTTPRouterOps) Update(
 		}
 	}
 
-	result, err := s.app.Conn.Query.UpdateHttpRouter(ctx, params)
+	result, err := s.app.Conn.Q.UpdateHttpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	router := result.ToProto()
 
-	dnsProviders, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, result.ID)
+	dnsProviders, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, result.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -228,13 +228,13 @@ func (s *HTTPRouterOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteRouterRequest,
 ) (*mantraev1.DeleteRouterResponse, error) {
-	router, err := s.app.Conn.Query.GetHttpRouter(ctx, req.Id)
+	router, err := s.app.Conn.Q.GetHttpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.Query.
+		service, err := s.app.Conn.Q.
 			GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 				ProfileID: router.ProfileID,
 				Name:      router.Config.Service,
@@ -242,13 +242,13 @@ func (s *HTTPRouterOps) Delete(
 		if err != nil {
 			slog.Error("failed to get http service", "err", err)
 		}
-		if err := s.app.Conn.Query.DeleteHttpService(ctx, service.ID); err != nil {
+		if err := s.app.Conn.Q.DeleteHttpService(ctx, service.ID); err != nil {
 			slog.Error("failed to delete http service", "err", err)
 		}
 	}
 
 	// Delete DNS entries
-	dnsProviders, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, router.ID)
+	dnsProviders, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, router.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (s *HTTPRouterOps) Delete(
 		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
 	}
 
-	if err := s.app.Conn.Query.DeleteHttpRouter(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteHttpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -273,7 +273,7 @@ func (s *HTTPRouterOps) List(
 	ctx context.Context,
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListHttpRouters(ctx, &db.ListHttpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -283,7 +283,7 @@ func (s *HTTPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountHttpRouters(ctx, &db.CountHttpRoutersParams{
+	totalCount, err := s.app.Conn.Q.CountHttpRouters(ctx, &db.CountHttpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -293,7 +293,7 @@ func (s *HTTPRouterOps) List(
 
 	routers := make([]*mantraev1.Router, 0, len(result))
 	for _, r := range result {
-		dnsProvider, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, r.ID)
+		dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, r.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -315,11 +315,11 @@ func (s *TCPRouterOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetRouterRequest,
 ) (*mantraev1.GetRouterResponse, error) {
-	result, err := s.app.Conn.Query.GetTcpRouter(ctx, req.Id)
+	result, err := s.app.Conn.Q.GetTcpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	dnsProvider, err := s.app.Conn.Query.GetDnsProvidersByHttpRouter(ctx, result.ID)
+	dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, result.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -353,7 +353,7 @@ func (s *TCPRouterOps) Create(
 		params.Config.Service = params.Name
 	}
 
-	result, err := s.app.Conn.Query.CreateTcpRouter(ctx, params)
+	result, err := s.app.Conn.Q.CreateTcpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +390,7 @@ func (s *TCPRouterOps) Update(
 	}
 
 	// Update DNS Providers
-	existing, err := s.app.Conn.Query.GetDnsProvidersByTcpRouter(ctx, params.ID)
+	existing, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, params.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +408,7 @@ func (s *TCPRouterOps) Update(
 	// Identify inserts
 	for _, id := range desiredIDs {
 		if !existingMap[id] {
-			if err = s.app.Conn.Query.
+			if err = s.app.Conn.Q.
 				CreateTcpRouterDNSProvider(ctx, &db.CreateTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
@@ -422,7 +422,7 @@ func (s *TCPRouterOps) Update(
 	// Identify deletes
 	for id := range existingMap {
 		if !desiredMap[id] {
-			if err = s.app.Conn.Query.
+			if err = s.app.Conn.Q.
 				DeleteTcpRouterDNSProvider(ctx, &db.DeleteTcpRouterDNSProviderParams{
 					TcpRouterID:   params.ID,
 					DnsProviderID: id,
@@ -433,7 +433,7 @@ func (s *TCPRouterOps) Update(
 		}
 	}
 
-	result, err := s.app.Conn.Query.UpdateTcpRouter(ctx, params)
+	result, err := s.app.Conn.Q.UpdateTcpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -453,13 +453,13 @@ func (s *TCPRouterOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteRouterRequest,
 ) (*mantraev1.DeleteRouterResponse, error) {
-	router, err := s.app.Conn.Query.GetTcpRouter(ctx, req.Id)
+	router, err := s.app.Conn.Q.GetTcpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.Query.
+		service, err := s.app.Conn.Q.
 			GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 				ProfileID: router.ProfileID,
 				Name:      router.Config.Service,
@@ -467,13 +467,13 @@ func (s *TCPRouterOps) Delete(
 		if err != nil {
 			slog.Error("failed to get tcp service", "err", err)
 		}
-		if err := s.app.Conn.Query.DeleteTcpService(ctx, service.ID); err != nil {
+		if err := s.app.Conn.Q.DeleteTcpService(ctx, service.ID); err != nil {
 			slog.Error("failed to delete tcp service", "err", err)
 		}
 	}
 
 	// Delete DNS entries
-	dnsProviders, err := s.app.Conn.Query.GetDnsProvidersByTcpRouter(ctx, router.ID)
+	dnsProviders, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, router.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +481,7 @@ func (s *TCPRouterOps) Delete(
 		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
 	}
 
-	if err := s.app.Conn.Query.DeleteTcpRouter(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteTcpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -498,7 +498,7 @@ func (s *TCPRouterOps) List(
 	ctx context.Context,
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListTcpRouters(ctx, &db.ListTcpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -508,7 +508,7 @@ func (s *TCPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountTcpRouters(ctx, &db.CountTcpRoutersParams{
+	totalCount, err := s.app.Conn.Q.CountTcpRouters(ctx, &db.CountTcpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -518,7 +518,7 @@ func (s *TCPRouterOps) List(
 
 	routers := make([]*mantraev1.Router, 0, len(result))
 	for _, r := range result {
-		dnsProvider, err := s.app.Conn.Query.GetDnsProvidersByTcpRouter(ctx, r.ID)
+		dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, r.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -540,7 +540,7 @@ func (s *UDPRouterOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetRouterRequest,
 ) (*mantraev1.GetRouterResponse, error) {
-	result, err := s.app.Conn.Query.GetUdpRouter(ctx, req.Id)
+	result, err := s.app.Conn.Q.GetUdpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -570,7 +570,7 @@ func (s *UDPRouterOps) Create(
 		params.Config.Service = params.Name
 	}
 
-	result, err := s.app.Conn.Query.CreateUdpRouter(ctx, params)
+	result, err := s.app.Conn.Q.CreateUdpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -606,7 +606,7 @@ func (s *UDPRouterOps) Update(
 		params.Config.Service = params.Name
 	}
 
-	result, err := s.app.Conn.Query.UpdateUdpRouter(ctx, params)
+	result, err := s.app.Conn.Q.UpdateUdpRouter(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -626,12 +626,12 @@ func (s *UDPRouterOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteRouterRequest,
 ) (*mantraev1.DeleteRouterResponse, error) {
-	router, err := s.app.Conn.Query.GetUdpRouter(ctx, req.Id)
+	router, err := s.app.Conn.Q.GetUdpRouter(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
 	if router.Config.Service != "" {
-		service, err := s.app.Conn.Query.
+		service, err := s.app.Conn.Q.
 			GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 				ProfileID: router.ProfileID,
 				Name:      router.Config.Service,
@@ -639,12 +639,12 @@ func (s *UDPRouterOps) Delete(
 		if err != nil {
 			slog.Error("failed to get udp service", "err", err)
 		}
-		if err := s.app.Conn.Query.DeleteUdpService(ctx, service.ID); err != nil {
+		if err := s.app.Conn.Q.DeleteUdpService(ctx, service.ID); err != nil {
 			slog.Error("failed to delete udp service", "err", err)
 		}
 	}
 
-	if err := s.app.Conn.Query.DeleteUdpRouter(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteUdpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -661,7 +661,7 @@ func (s *UDPRouterOps) List(
 	ctx context.Context,
 	req *mantraev1.ListRoutersRequest,
 ) (*mantraev1.ListRoutersResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListUdpRouters(ctx, &db.ListUdpRoutersParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -671,7 +671,7 @@ func (s *UDPRouterOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountUdpRouters(ctx, &db.CountUdpRoutersParams{
+	totalCount, err := s.app.Conn.Q.CountUdpRouters(ctx, &db.CountUdpRoutersParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})

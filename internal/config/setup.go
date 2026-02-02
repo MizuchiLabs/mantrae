@@ -94,7 +94,7 @@ func (a App) initLogger() {
 }
 
 func (a *App) setupDefaultData(ctx context.Context) error {
-	q := a.Conn.Query
+	q := a.Conn.Q
 
 	// Ensure at least one user exists
 	users, err := q.ListUsers(ctx, &db.ListUsersParams{})

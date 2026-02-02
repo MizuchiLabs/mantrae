@@ -53,12 +53,12 @@ const (
 
 // AgentServiceClient is a client for the mantrae.v1.AgentService service.
 type AgentServiceClient interface {
-	GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error)
-	CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error)
-	UpdateAgent(context.Context, *connect.Request[v1.UpdateAgentRequest]) (*connect.Response[v1.UpdateAgentResponse], error)
-	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
-	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
-	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
+	GetAgent(context.Context, *v1.GetAgentRequest) (*v1.GetAgentResponse, error)
+	CreateAgent(context.Context, *v1.CreateAgentRequest) (*v1.CreateAgentResponse, error)
+	UpdateAgent(context.Context, *v1.UpdateAgentRequest) (*v1.UpdateAgentResponse, error)
+	DeleteAgent(context.Context, *v1.DeleteAgentRequest) (*v1.DeleteAgentResponse, error)
+	ListAgents(context.Context, *v1.ListAgentsRequest) (*v1.ListAgentsResponse, error)
+	HealthCheck(context.Context, *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error)
 }
 
 // NewAgentServiceClient constructs a client for the mantrae.v1.AgentService service. By default, it
@@ -124,43 +124,67 @@ type agentServiceClient struct {
 }
 
 // GetAgent calls mantrae.v1.AgentService.GetAgent.
-func (c *agentServiceClient) GetAgent(ctx context.Context, req *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error) {
-	return c.getAgent.CallUnary(ctx, req)
+func (c *agentServiceClient) GetAgent(ctx context.Context, req *v1.GetAgentRequest) (*v1.GetAgentResponse, error) {
+	response, err := c.getAgent.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateAgent calls mantrae.v1.AgentService.CreateAgent.
-func (c *agentServiceClient) CreateAgent(ctx context.Context, req *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error) {
-	return c.createAgent.CallUnary(ctx, req)
+func (c *agentServiceClient) CreateAgent(ctx context.Context, req *v1.CreateAgentRequest) (*v1.CreateAgentResponse, error) {
+	response, err := c.createAgent.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateAgent calls mantrae.v1.AgentService.UpdateAgent.
-func (c *agentServiceClient) UpdateAgent(ctx context.Context, req *connect.Request[v1.UpdateAgentRequest]) (*connect.Response[v1.UpdateAgentResponse], error) {
-	return c.updateAgent.CallUnary(ctx, req)
+func (c *agentServiceClient) UpdateAgent(ctx context.Context, req *v1.UpdateAgentRequest) (*v1.UpdateAgentResponse, error) {
+	response, err := c.updateAgent.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteAgent calls mantrae.v1.AgentService.DeleteAgent.
-func (c *agentServiceClient) DeleteAgent(ctx context.Context, req *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error) {
-	return c.deleteAgent.CallUnary(ctx, req)
+func (c *agentServiceClient) DeleteAgent(ctx context.Context, req *v1.DeleteAgentRequest) (*v1.DeleteAgentResponse, error) {
+	response, err := c.deleteAgent.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListAgents calls mantrae.v1.AgentService.ListAgents.
-func (c *agentServiceClient) ListAgents(ctx context.Context, req *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
-	return c.listAgents.CallUnary(ctx, req)
+func (c *agentServiceClient) ListAgents(ctx context.Context, req *v1.ListAgentsRequest) (*v1.ListAgentsResponse, error) {
+	response, err := c.listAgents.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // HealthCheck calls mantrae.v1.AgentService.HealthCheck.
-func (c *agentServiceClient) HealthCheck(ctx context.Context, req *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
-	return c.healthCheck.CallUnary(ctx, req)
+func (c *agentServiceClient) HealthCheck(ctx context.Context, req *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error) {
+	response, err := c.healthCheck.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AgentServiceHandler is an implementation of the mantrae.v1.AgentService service.
 type AgentServiceHandler interface {
-	GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error)
-	CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error)
-	UpdateAgent(context.Context, *connect.Request[v1.UpdateAgentRequest]) (*connect.Response[v1.UpdateAgentResponse], error)
-	DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error)
-	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
-	HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error)
+	GetAgent(context.Context, *v1.GetAgentRequest) (*v1.GetAgentResponse, error)
+	CreateAgent(context.Context, *v1.CreateAgentRequest) (*v1.CreateAgentResponse, error)
+	UpdateAgent(context.Context, *v1.UpdateAgentRequest) (*v1.UpdateAgentResponse, error)
+	DeleteAgent(context.Context, *v1.DeleteAgentRequest) (*v1.DeleteAgentResponse, error)
+	ListAgents(context.Context, *v1.ListAgentsRequest) (*v1.ListAgentsResponse, error)
+	HealthCheck(context.Context, *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error)
 }
 
 // NewAgentServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -170,39 +194,39 @@ type AgentServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	agentServiceMethods := v1.File_mantrae_v1_agent_proto.Services().ByName("AgentService").Methods()
-	agentServiceGetAgentHandler := connect.NewUnaryHandler(
+	agentServiceGetAgentHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceGetAgentProcedure,
 		svc.GetAgent,
 		connect.WithSchema(agentServiceMethods.ByName("GetAgent")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceCreateAgentHandler := connect.NewUnaryHandler(
+	agentServiceCreateAgentHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceCreateAgentProcedure,
 		svc.CreateAgent,
 		connect.WithSchema(agentServiceMethods.ByName("CreateAgent")),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceUpdateAgentHandler := connect.NewUnaryHandler(
+	agentServiceUpdateAgentHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceUpdateAgentProcedure,
 		svc.UpdateAgent,
 		connect.WithSchema(agentServiceMethods.ByName("UpdateAgent")),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceDeleteAgentHandler := connect.NewUnaryHandler(
+	agentServiceDeleteAgentHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceDeleteAgentProcedure,
 		svc.DeleteAgent,
 		connect.WithSchema(agentServiceMethods.ByName("DeleteAgent")),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceListAgentsHandler := connect.NewUnaryHandler(
+	agentServiceListAgentsHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceListAgentsProcedure,
 		svc.ListAgents,
 		connect.WithSchema(agentServiceMethods.ByName("ListAgents")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	agentServiceHealthCheckHandler := connect.NewUnaryHandler(
+	agentServiceHealthCheckHandler := connect.NewUnaryHandlerSimple(
 		AgentServiceHealthCheckProcedure,
 		svc.HealthCheck,
 		connect.WithSchema(agentServiceMethods.ByName("HealthCheck")),
@@ -231,26 +255,26 @@ func NewAgentServiceHandler(svc AgentServiceHandler, opts ...connect.HandlerOpti
 // UnimplementedAgentServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAgentServiceHandler struct{}
 
-func (UnimplementedAgentServiceHandler) GetAgent(context.Context, *connect.Request[v1.GetAgentRequest]) (*connect.Response[v1.GetAgentResponse], error) {
+func (UnimplementedAgentServiceHandler) GetAgent(context.Context, *v1.GetAgentRequest) (*v1.GetAgentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.GetAgent is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) CreateAgent(context.Context, *connect.Request[v1.CreateAgentRequest]) (*connect.Response[v1.CreateAgentResponse], error) {
+func (UnimplementedAgentServiceHandler) CreateAgent(context.Context, *v1.CreateAgentRequest) (*v1.CreateAgentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.CreateAgent is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) UpdateAgent(context.Context, *connect.Request[v1.UpdateAgentRequest]) (*connect.Response[v1.UpdateAgentResponse], error) {
+func (UnimplementedAgentServiceHandler) UpdateAgent(context.Context, *v1.UpdateAgentRequest) (*v1.UpdateAgentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.UpdateAgent is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) DeleteAgent(context.Context, *connect.Request[v1.DeleteAgentRequest]) (*connect.Response[v1.DeleteAgentResponse], error) {
+func (UnimplementedAgentServiceHandler) DeleteAgent(context.Context, *v1.DeleteAgentRequest) (*v1.DeleteAgentResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.DeleteAgent is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
+func (UnimplementedAgentServiceHandler) ListAgents(context.Context, *v1.ListAgentsRequest) (*v1.ListAgentsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.ListAgents is not implemented"))
 }
 
-func (UnimplementedAgentServiceHandler) HealthCheck(context.Context, *connect.Request[v1.HealthCheckRequest]) (*connect.Response[v1.HealthCheckResponse], error) {
+func (UnimplementedAgentServiceHandler) HealthCheck(context.Context, *v1.HealthCheckRequest) (*v1.HealthCheckResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AgentService.HealthCheck is not implemented"))
 }

@@ -46,9 +46,9 @@ const (
 
 // TraefikInstanceServiceClient is a client for the mantrae.v1.TraefikInstanceService service.
 type TraefikInstanceServiceClient interface {
-	GetTraefikInstance(context.Context, *connect.Request[v1.GetTraefikInstanceRequest]) (*connect.Response[v1.GetTraefikInstanceResponse], error)
-	DeleteTraefikInstance(context.Context, *connect.Request[v1.DeleteTraefikInstanceRequest]) (*connect.Response[v1.DeleteTraefikInstanceResponse], error)
-	ListTraefikInstances(context.Context, *connect.Request[v1.ListTraefikInstancesRequest]) (*connect.Response[v1.ListTraefikInstancesResponse], error)
+	GetTraefikInstance(context.Context, *v1.GetTraefikInstanceRequest) (*v1.GetTraefikInstanceResponse, error)
+	DeleteTraefikInstance(context.Context, *v1.DeleteTraefikInstanceRequest) (*v1.DeleteTraefikInstanceResponse, error)
+	ListTraefikInstances(context.Context, *v1.ListTraefikInstancesRequest) (*v1.ListTraefikInstancesResponse, error)
 }
 
 // NewTraefikInstanceServiceClient constructs a client for the mantrae.v1.TraefikInstanceService
@@ -93,26 +93,38 @@ type traefikInstanceServiceClient struct {
 }
 
 // GetTraefikInstance calls mantrae.v1.TraefikInstanceService.GetTraefikInstance.
-func (c *traefikInstanceServiceClient) GetTraefikInstance(ctx context.Context, req *connect.Request[v1.GetTraefikInstanceRequest]) (*connect.Response[v1.GetTraefikInstanceResponse], error) {
-	return c.getTraefikInstance.CallUnary(ctx, req)
+func (c *traefikInstanceServiceClient) GetTraefikInstance(ctx context.Context, req *v1.GetTraefikInstanceRequest) (*v1.GetTraefikInstanceResponse, error) {
+	response, err := c.getTraefikInstance.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteTraefikInstance calls mantrae.v1.TraefikInstanceService.DeleteTraefikInstance.
-func (c *traefikInstanceServiceClient) DeleteTraefikInstance(ctx context.Context, req *connect.Request[v1.DeleteTraefikInstanceRequest]) (*connect.Response[v1.DeleteTraefikInstanceResponse], error) {
-	return c.deleteTraefikInstance.CallUnary(ctx, req)
+func (c *traefikInstanceServiceClient) DeleteTraefikInstance(ctx context.Context, req *v1.DeleteTraefikInstanceRequest) (*v1.DeleteTraefikInstanceResponse, error) {
+	response, err := c.deleteTraefikInstance.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListTraefikInstances calls mantrae.v1.TraefikInstanceService.ListTraefikInstances.
-func (c *traefikInstanceServiceClient) ListTraefikInstances(ctx context.Context, req *connect.Request[v1.ListTraefikInstancesRequest]) (*connect.Response[v1.ListTraefikInstancesResponse], error) {
-	return c.listTraefikInstances.CallUnary(ctx, req)
+func (c *traefikInstanceServiceClient) ListTraefikInstances(ctx context.Context, req *v1.ListTraefikInstancesRequest) (*v1.ListTraefikInstancesResponse, error) {
+	response, err := c.listTraefikInstances.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // TraefikInstanceServiceHandler is an implementation of the mantrae.v1.TraefikInstanceService
 // service.
 type TraefikInstanceServiceHandler interface {
-	GetTraefikInstance(context.Context, *connect.Request[v1.GetTraefikInstanceRequest]) (*connect.Response[v1.GetTraefikInstanceResponse], error)
-	DeleteTraefikInstance(context.Context, *connect.Request[v1.DeleteTraefikInstanceRequest]) (*connect.Response[v1.DeleteTraefikInstanceResponse], error)
-	ListTraefikInstances(context.Context, *connect.Request[v1.ListTraefikInstancesRequest]) (*connect.Response[v1.ListTraefikInstancesResponse], error)
+	GetTraefikInstance(context.Context, *v1.GetTraefikInstanceRequest) (*v1.GetTraefikInstanceResponse, error)
+	DeleteTraefikInstance(context.Context, *v1.DeleteTraefikInstanceRequest) (*v1.DeleteTraefikInstanceResponse, error)
+	ListTraefikInstances(context.Context, *v1.ListTraefikInstancesRequest) (*v1.ListTraefikInstancesResponse, error)
 }
 
 // NewTraefikInstanceServiceHandler builds an HTTP handler from the service implementation. It
@@ -122,20 +134,20 @@ type TraefikInstanceServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTraefikInstanceServiceHandler(svc TraefikInstanceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	traefikInstanceServiceMethods := v1.File_mantrae_v1_traefik_instance_proto.Services().ByName("TraefikInstanceService").Methods()
-	traefikInstanceServiceGetTraefikInstanceHandler := connect.NewUnaryHandler(
+	traefikInstanceServiceGetTraefikInstanceHandler := connect.NewUnaryHandlerSimple(
 		TraefikInstanceServiceGetTraefikInstanceProcedure,
 		svc.GetTraefikInstance,
 		connect.WithSchema(traefikInstanceServiceMethods.ByName("GetTraefikInstance")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	traefikInstanceServiceDeleteTraefikInstanceHandler := connect.NewUnaryHandler(
+	traefikInstanceServiceDeleteTraefikInstanceHandler := connect.NewUnaryHandlerSimple(
 		TraefikInstanceServiceDeleteTraefikInstanceProcedure,
 		svc.DeleteTraefikInstance,
 		connect.WithSchema(traefikInstanceServiceMethods.ByName("DeleteTraefikInstance")),
 		connect.WithHandlerOptions(opts...),
 	)
-	traefikInstanceServiceListTraefikInstancesHandler := connect.NewUnaryHandler(
+	traefikInstanceServiceListTraefikInstancesHandler := connect.NewUnaryHandlerSimple(
 		TraefikInstanceServiceListTraefikInstancesProcedure,
 		svc.ListTraefikInstances,
 		connect.WithSchema(traefikInstanceServiceMethods.ByName("ListTraefikInstances")),
@@ -159,14 +171,14 @@ func NewTraefikInstanceServiceHandler(svc TraefikInstanceServiceHandler, opts ..
 // UnimplementedTraefikInstanceServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTraefikInstanceServiceHandler struct{}
 
-func (UnimplementedTraefikInstanceServiceHandler) GetTraefikInstance(context.Context, *connect.Request[v1.GetTraefikInstanceRequest]) (*connect.Response[v1.GetTraefikInstanceResponse], error) {
+func (UnimplementedTraefikInstanceServiceHandler) GetTraefikInstance(context.Context, *v1.GetTraefikInstanceRequest) (*v1.GetTraefikInstanceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.TraefikInstanceService.GetTraefikInstance is not implemented"))
 }
 
-func (UnimplementedTraefikInstanceServiceHandler) DeleteTraefikInstance(context.Context, *connect.Request[v1.DeleteTraefikInstanceRequest]) (*connect.Response[v1.DeleteTraefikInstanceResponse], error) {
+func (UnimplementedTraefikInstanceServiceHandler) DeleteTraefikInstance(context.Context, *v1.DeleteTraefikInstanceRequest) (*v1.DeleteTraefikInstanceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.TraefikInstanceService.DeleteTraefikInstance is not implemented"))
 }
 
-func (UnimplementedTraefikInstanceServiceHandler) ListTraefikInstances(context.Context, *connect.Request[v1.ListTraefikInstancesRequest]) (*connect.Response[v1.ListTraefikInstancesResponse], error) {
+func (UnimplementedTraefikInstanceServiceHandler) ListTraefikInstances(context.Context, *v1.ListTraefikInstancesRequest) (*v1.ListTraefikInstancesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.TraefikInstanceService.ListTraefikInstances is not implemented"))
 }

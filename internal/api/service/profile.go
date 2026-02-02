@@ -22,28 +22,26 @@ func NewProfileService(app *config.App) *ProfileService {
 
 func (s *ProfileService) GetProfile(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetProfileRequest],
-) (*connect.Response[mantraev1.GetProfileResponse], error) {
-	result, err := s.app.Conn.Query.GetProfile(ctx, req.Msg.Id)
+	req *mantraev1.GetProfileRequest,
+) (*mantraev1.GetProfileResponse, error) {
+	result, err := s.app.Conn.Q.GetProfile(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.GetProfileResponse{
-		Profile: result.ToProto(),
-	}), nil
+	return &mantraev1.GetProfileResponse{Profile: result.ToProto()}, nil
 }
 
 func (s *ProfileService) CreateProfile(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateProfileRequest],
-) (*connect.Response[mantraev1.CreateProfileResponse], error) {
+	req *mantraev1.CreateProfileRequest,
+) (*mantraev1.CreateProfileResponse, error) {
 	params := &db.CreateProfileParams{
-		Name:        slug.Make(req.Msg.Name),
-		Description: req.Msg.Description,
+		Name:        slug.Make(req.Name),
+		Description: req.Description,
 		Token:       util.GenerateToken(6),
 	}
 
-	result, err := s.app.Conn.Query.CreateProfile(ctx, params)
+	result, err := s.app.Conn.Q.CreateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -54,31 +52,29 @@ func (s *ProfileService) CreateProfile(
 			Profile: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.CreateProfileResponse{
-		Profile: result.ToProto(),
-	}), nil
+	return &mantraev1.CreateProfileResponse{Profile: result.ToProto()}, nil
 }
 
 func (s *ProfileService) UpdateProfile(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateProfileRequest],
-) (*connect.Response[mantraev1.UpdateProfileResponse], error) {
+	req *mantraev1.UpdateProfileRequest,
+) (*mantraev1.UpdateProfileResponse, error) {
 	params := &db.UpdateProfileParams{
-		ID:          req.Msg.Id,
-		Name:        slug.Make(req.Msg.Name),
-		Description: req.Msg.Description,
+		ID:          req.Id,
+		Name:        slug.Make(req.Name),
+		Description: req.Description,
 	}
-	if req.Msg.GetRegenerateToken() {
+	if req.GetRegenerateToken() {
 		params.Token = util.GenerateToken(6)
 	} else {
-		profile, err := s.app.Conn.Query.GetProfile(ctx, params.ID)
+		profile, err := s.app.Conn.Q.GetProfile(ctx, params.ID)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 		params.Token = profile.Token
 	}
 
-	result, err := s.app.Conn.Query.UpdateProfile(ctx, params)
+	result, err := s.app.Conn.Q.UpdateProfile(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -89,20 +85,18 @@ func (s *ProfileService) UpdateProfile(
 			Profile: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.UpdateProfileResponse{
-		Profile: result.ToProto(),
-	}), nil
+	return &mantraev1.UpdateProfileResponse{Profile: result.ToProto()}, nil
 }
 
 func (s *ProfileService) DeleteProfile(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteProfileRequest],
-) (*connect.Response[mantraev1.DeleteProfileResponse], error) {
-	profile, err := s.app.Conn.Query.GetProfile(ctx, req.Msg.Id)
+	req *mantraev1.DeleteProfileRequest,
+) (*mantraev1.DeleteProfileResponse, error) {
+	profile, err := s.app.Conn.Q.GetProfile(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.Query.DeleteProfile(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteProfile(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -112,24 +106,24 @@ func (s *ProfileService) DeleteProfile(
 			Profile: profile.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.DeleteProfileResponse{}), nil
+	return &mantraev1.DeleteProfileResponse{}, nil
 }
 
 func (s *ProfileService) ListProfiles(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListProfilesRequest],
-) (*connect.Response[mantraev1.ListProfilesResponse], error) {
+	req *mantraev1.ListProfilesRequest,
+) (*mantraev1.ListProfilesResponse, error) {
 	params := &db.ListProfilesParams{
-		Limit:  req.Msg.Limit,
-		Offset: req.Msg.Offset,
+		Limit:  req.Limit,
+		Offset: req.Offset,
 	}
 
-	result, err := s.app.Conn.Query.ListProfiles(ctx, params)
+	result, err := s.app.Conn.Q.ListProfiles(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	totalCount, err := s.app.Conn.Query.CountProfiles(ctx)
+	totalCount, err := s.app.Conn.Q.CountProfiles(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -138,8 +132,8 @@ func (s *ProfileService) ListProfiles(
 	for _, p := range result {
 		profiles = append(profiles, p.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListProfilesResponse{
+	return &mantraev1.ListProfilesResponse{
 		Profiles:   profiles,
 		TotalCount: totalCount,
-	}), nil
+	}, nil
 }

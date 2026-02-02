@@ -40,7 +40,7 @@ const (
 
 // AuditLogServiceClient is a client for the mantrae.v1.AuditLogService service.
 type AuditLogServiceClient interface {
-	ListAuditLogs(context.Context, *connect.Request[v1.ListAuditLogsRequest]) (*connect.Response[v1.ListAuditLogsResponse], error)
+	ListAuditLogs(context.Context, *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error)
 }
 
 // NewAuditLogServiceClient constructs a client for the mantrae.v1.AuditLogService service. By
@@ -70,13 +70,17 @@ type auditLogServiceClient struct {
 }
 
 // ListAuditLogs calls mantrae.v1.AuditLogService.ListAuditLogs.
-func (c *auditLogServiceClient) ListAuditLogs(ctx context.Context, req *connect.Request[v1.ListAuditLogsRequest]) (*connect.Response[v1.ListAuditLogsResponse], error) {
-	return c.listAuditLogs.CallUnary(ctx, req)
+func (c *auditLogServiceClient) ListAuditLogs(ctx context.Context, req *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error) {
+	response, err := c.listAuditLogs.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // AuditLogServiceHandler is an implementation of the mantrae.v1.AuditLogService service.
 type AuditLogServiceHandler interface {
-	ListAuditLogs(context.Context, *connect.Request[v1.ListAuditLogsRequest]) (*connect.Response[v1.ListAuditLogsResponse], error)
+	ListAuditLogs(context.Context, *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error)
 }
 
 // NewAuditLogServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -86,7 +90,7 @@ type AuditLogServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAuditLogServiceHandler(svc AuditLogServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	auditLogServiceMethods := v1.File_mantrae_v1_auditlog_proto.Services().ByName("AuditLogService").Methods()
-	auditLogServiceListAuditLogsHandler := connect.NewUnaryHandler(
+	auditLogServiceListAuditLogsHandler := connect.NewUnaryHandlerSimple(
 		AuditLogServiceListAuditLogsProcedure,
 		svc.ListAuditLogs,
 		connect.WithSchema(auditLogServiceMethods.ByName("ListAuditLogs")),
@@ -106,6 +110,6 @@ func NewAuditLogServiceHandler(svc AuditLogServiceHandler, opts ...connect.Handl
 // UnimplementedAuditLogServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAuditLogServiceHandler struct{}
 
-func (UnimplementedAuditLogServiceHandler) ListAuditLogs(context.Context, *connect.Request[v1.ListAuditLogsRequest]) (*connect.Response[v1.ListAuditLogsResponse], error) {
+func (UnimplementedAuditLogServiceHandler) ListAuditLogs(context.Context, *v1.ListAuditLogsRequest) (*v1.ListAuditLogsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.AuditLogService.ListAuditLogs is not implemented"))
 }

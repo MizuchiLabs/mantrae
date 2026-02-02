@@ -52,11 +52,11 @@ const (
 
 // EntryPointServiceClient is a client for the mantrae.v1.EntryPointService service.
 type EntryPointServiceClient interface {
-	GetEntryPoint(context.Context, *connect.Request[v1.GetEntryPointRequest]) (*connect.Response[v1.GetEntryPointResponse], error)
-	CreateEntryPoint(context.Context, *connect.Request[v1.CreateEntryPointRequest]) (*connect.Response[v1.CreateEntryPointResponse], error)
-	UpdateEntryPoint(context.Context, *connect.Request[v1.UpdateEntryPointRequest]) (*connect.Response[v1.UpdateEntryPointResponse], error)
-	DeleteEntryPoint(context.Context, *connect.Request[v1.DeleteEntryPointRequest]) (*connect.Response[v1.DeleteEntryPointResponse], error)
-	ListEntryPoints(context.Context, *connect.Request[v1.ListEntryPointsRequest]) (*connect.Response[v1.ListEntryPointsResponse], error)
+	GetEntryPoint(context.Context, *v1.GetEntryPointRequest) (*v1.GetEntryPointResponse, error)
+	CreateEntryPoint(context.Context, *v1.CreateEntryPointRequest) (*v1.CreateEntryPointResponse, error)
+	UpdateEntryPoint(context.Context, *v1.UpdateEntryPointRequest) (*v1.UpdateEntryPointResponse, error)
+	DeleteEntryPoint(context.Context, *v1.DeleteEntryPointRequest) (*v1.DeleteEntryPointResponse, error)
+	ListEntryPoints(context.Context, *v1.ListEntryPointsRequest) (*v1.ListEntryPointsResponse, error)
 }
 
 // NewEntryPointServiceClient constructs a client for the mantrae.v1.EntryPointService service. By
@@ -115,37 +115,57 @@ type entryPointServiceClient struct {
 }
 
 // GetEntryPoint calls mantrae.v1.EntryPointService.GetEntryPoint.
-func (c *entryPointServiceClient) GetEntryPoint(ctx context.Context, req *connect.Request[v1.GetEntryPointRequest]) (*connect.Response[v1.GetEntryPointResponse], error) {
-	return c.getEntryPoint.CallUnary(ctx, req)
+func (c *entryPointServiceClient) GetEntryPoint(ctx context.Context, req *v1.GetEntryPointRequest) (*v1.GetEntryPointResponse, error) {
+	response, err := c.getEntryPoint.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateEntryPoint calls mantrae.v1.EntryPointService.CreateEntryPoint.
-func (c *entryPointServiceClient) CreateEntryPoint(ctx context.Context, req *connect.Request[v1.CreateEntryPointRequest]) (*connect.Response[v1.CreateEntryPointResponse], error) {
-	return c.createEntryPoint.CallUnary(ctx, req)
+func (c *entryPointServiceClient) CreateEntryPoint(ctx context.Context, req *v1.CreateEntryPointRequest) (*v1.CreateEntryPointResponse, error) {
+	response, err := c.createEntryPoint.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateEntryPoint calls mantrae.v1.EntryPointService.UpdateEntryPoint.
-func (c *entryPointServiceClient) UpdateEntryPoint(ctx context.Context, req *connect.Request[v1.UpdateEntryPointRequest]) (*connect.Response[v1.UpdateEntryPointResponse], error) {
-	return c.updateEntryPoint.CallUnary(ctx, req)
+func (c *entryPointServiceClient) UpdateEntryPoint(ctx context.Context, req *v1.UpdateEntryPointRequest) (*v1.UpdateEntryPointResponse, error) {
+	response, err := c.updateEntryPoint.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteEntryPoint calls mantrae.v1.EntryPointService.DeleteEntryPoint.
-func (c *entryPointServiceClient) DeleteEntryPoint(ctx context.Context, req *connect.Request[v1.DeleteEntryPointRequest]) (*connect.Response[v1.DeleteEntryPointResponse], error) {
-	return c.deleteEntryPoint.CallUnary(ctx, req)
+func (c *entryPointServiceClient) DeleteEntryPoint(ctx context.Context, req *v1.DeleteEntryPointRequest) (*v1.DeleteEntryPointResponse, error) {
+	response, err := c.deleteEntryPoint.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListEntryPoints calls mantrae.v1.EntryPointService.ListEntryPoints.
-func (c *entryPointServiceClient) ListEntryPoints(ctx context.Context, req *connect.Request[v1.ListEntryPointsRequest]) (*connect.Response[v1.ListEntryPointsResponse], error) {
-	return c.listEntryPoints.CallUnary(ctx, req)
+func (c *entryPointServiceClient) ListEntryPoints(ctx context.Context, req *v1.ListEntryPointsRequest) (*v1.ListEntryPointsResponse, error) {
+	response, err := c.listEntryPoints.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // EntryPointServiceHandler is an implementation of the mantrae.v1.EntryPointService service.
 type EntryPointServiceHandler interface {
-	GetEntryPoint(context.Context, *connect.Request[v1.GetEntryPointRequest]) (*connect.Response[v1.GetEntryPointResponse], error)
-	CreateEntryPoint(context.Context, *connect.Request[v1.CreateEntryPointRequest]) (*connect.Response[v1.CreateEntryPointResponse], error)
-	UpdateEntryPoint(context.Context, *connect.Request[v1.UpdateEntryPointRequest]) (*connect.Response[v1.UpdateEntryPointResponse], error)
-	DeleteEntryPoint(context.Context, *connect.Request[v1.DeleteEntryPointRequest]) (*connect.Response[v1.DeleteEntryPointResponse], error)
-	ListEntryPoints(context.Context, *connect.Request[v1.ListEntryPointsRequest]) (*connect.Response[v1.ListEntryPointsResponse], error)
+	GetEntryPoint(context.Context, *v1.GetEntryPointRequest) (*v1.GetEntryPointResponse, error)
+	CreateEntryPoint(context.Context, *v1.CreateEntryPointRequest) (*v1.CreateEntryPointResponse, error)
+	UpdateEntryPoint(context.Context, *v1.UpdateEntryPointRequest) (*v1.UpdateEntryPointResponse, error)
+	DeleteEntryPoint(context.Context, *v1.DeleteEntryPointRequest) (*v1.DeleteEntryPointResponse, error)
+	ListEntryPoints(context.Context, *v1.ListEntryPointsRequest) (*v1.ListEntryPointsResponse, error)
 }
 
 // NewEntryPointServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -155,32 +175,32 @@ type EntryPointServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewEntryPointServiceHandler(svc EntryPointServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	entryPointServiceMethods := v1.File_mantrae_v1_entry_point_proto.Services().ByName("EntryPointService").Methods()
-	entryPointServiceGetEntryPointHandler := connect.NewUnaryHandler(
+	entryPointServiceGetEntryPointHandler := connect.NewUnaryHandlerSimple(
 		EntryPointServiceGetEntryPointProcedure,
 		svc.GetEntryPoint,
 		connect.WithSchema(entryPointServiceMethods.ByName("GetEntryPoint")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	entryPointServiceCreateEntryPointHandler := connect.NewUnaryHandler(
+	entryPointServiceCreateEntryPointHandler := connect.NewUnaryHandlerSimple(
 		EntryPointServiceCreateEntryPointProcedure,
 		svc.CreateEntryPoint,
 		connect.WithSchema(entryPointServiceMethods.ByName("CreateEntryPoint")),
 		connect.WithHandlerOptions(opts...),
 	)
-	entryPointServiceUpdateEntryPointHandler := connect.NewUnaryHandler(
+	entryPointServiceUpdateEntryPointHandler := connect.NewUnaryHandlerSimple(
 		EntryPointServiceUpdateEntryPointProcedure,
 		svc.UpdateEntryPoint,
 		connect.WithSchema(entryPointServiceMethods.ByName("UpdateEntryPoint")),
 		connect.WithHandlerOptions(opts...),
 	)
-	entryPointServiceDeleteEntryPointHandler := connect.NewUnaryHandler(
+	entryPointServiceDeleteEntryPointHandler := connect.NewUnaryHandlerSimple(
 		EntryPointServiceDeleteEntryPointProcedure,
 		svc.DeleteEntryPoint,
 		connect.WithSchema(entryPointServiceMethods.ByName("DeleteEntryPoint")),
 		connect.WithHandlerOptions(opts...),
 	)
-	entryPointServiceListEntryPointsHandler := connect.NewUnaryHandler(
+	entryPointServiceListEntryPointsHandler := connect.NewUnaryHandlerSimple(
 		EntryPointServiceListEntryPointsProcedure,
 		svc.ListEntryPoints,
 		connect.WithSchema(entryPointServiceMethods.ByName("ListEntryPoints")),
@@ -208,22 +228,22 @@ func NewEntryPointServiceHandler(svc EntryPointServiceHandler, opts ...connect.H
 // UnimplementedEntryPointServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedEntryPointServiceHandler struct{}
 
-func (UnimplementedEntryPointServiceHandler) GetEntryPoint(context.Context, *connect.Request[v1.GetEntryPointRequest]) (*connect.Response[v1.GetEntryPointResponse], error) {
+func (UnimplementedEntryPointServiceHandler) GetEntryPoint(context.Context, *v1.GetEntryPointRequest) (*v1.GetEntryPointResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EntryPointService.GetEntryPoint is not implemented"))
 }
 
-func (UnimplementedEntryPointServiceHandler) CreateEntryPoint(context.Context, *connect.Request[v1.CreateEntryPointRequest]) (*connect.Response[v1.CreateEntryPointResponse], error) {
+func (UnimplementedEntryPointServiceHandler) CreateEntryPoint(context.Context, *v1.CreateEntryPointRequest) (*v1.CreateEntryPointResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EntryPointService.CreateEntryPoint is not implemented"))
 }
 
-func (UnimplementedEntryPointServiceHandler) UpdateEntryPoint(context.Context, *connect.Request[v1.UpdateEntryPointRequest]) (*connect.Response[v1.UpdateEntryPointResponse], error) {
+func (UnimplementedEntryPointServiceHandler) UpdateEntryPoint(context.Context, *v1.UpdateEntryPointRequest) (*v1.UpdateEntryPointResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EntryPointService.UpdateEntryPoint is not implemented"))
 }
 
-func (UnimplementedEntryPointServiceHandler) DeleteEntryPoint(context.Context, *connect.Request[v1.DeleteEntryPointRequest]) (*connect.Response[v1.DeleteEntryPointResponse], error) {
+func (UnimplementedEntryPointServiceHandler) DeleteEntryPoint(context.Context, *v1.DeleteEntryPointRequest) (*v1.DeleteEntryPointResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EntryPointService.DeleteEntryPoint is not implemented"))
 }
 
-func (UnimplementedEntryPointServiceHandler) ListEntryPoints(context.Context, *connect.Request[v1.ListEntryPointsRequest]) (*connect.Response[v1.ListEntryPointsResponse], error) {
+func (UnimplementedEntryPointServiceHandler) ListEntryPoints(context.Context, *v1.ListEntryPointsRequest) (*v1.ListEntryPointsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.EntryPointService.ListEntryPoints is not implemented"))
 }

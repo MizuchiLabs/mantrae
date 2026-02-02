@@ -26,24 +26,22 @@ func NewAgentService(app *config.App) *AgentService {
 
 func (s *AgentService) GetAgent(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetAgentRequest],
-) (*connect.Response[mantraev1.GetAgentResponse], error) {
-	result, err := s.app.Conn.Query.GetAgent(ctx, req.Msg.Id)
+	req *mantraev1.GetAgentRequest,
+) (*mantraev1.GetAgentResponse, error) {
+	result, err := s.app.Conn.Q.GetAgent(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.GetAgentResponse{
-		Agent: result.ToProto(),
-	}), nil
+	return &mantraev1.GetAgentResponse{Agent: result.ToProto()}, nil
 }
 
 func (s *AgentService) CreateAgent(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateAgentRequest],
-) (*connect.Response[mantraev1.CreateAgentResponse], error) {
+	req *mantraev1.CreateAgentRequest,
+) (*mantraev1.CreateAgentResponse, error) {
 	params := &db.CreateAgentParams{
 		ID:        uuid.NewString(),
-		ProfileID: req.Msg.ProfileId,
+		ProfileID: req.ProfileId,
 	}
 
 	params.Token = util.GenerateAgentToken(
@@ -51,7 +49,7 @@ func (s *AgentService) CreateAgent(
 		params.ID,
 	)
 
-	result, err := s.app.Conn.Query.CreateAgent(ctx, params)
+	result, err := s.app.Conn.Q.CreateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -62,22 +60,20 @@ func (s *AgentService) CreateAgent(
 			Agent: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.CreateAgentResponse{
-		Agent: result.ToProto(),
-	}), nil
+	return &mantraev1.CreateAgentResponse{Agent: result.ToProto()}, nil
 }
 
 func (s *AgentService) UpdateAgent(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateAgentRequest],
-) (*connect.Response[mantraev1.UpdateAgentResponse], error) {
+	req *mantraev1.UpdateAgentRequest,
+) (*mantraev1.UpdateAgentResponse, error) {
 	params := &db.UpdateAgentParams{
-		ID:       req.Msg.Id,
-		ActiveIp: req.Msg.Ip,
+		ID:       req.Id,
+		ActiveIp: req.Ip,
 	}
 
-	if req.Msg.RotateToken != nil && *req.Msg.RotateToken {
-		agent, err := s.app.Conn.Query.GetAgent(ctx, params.ID)
+	if req.RotateToken != nil && *req.RotateToken {
+		agent, err := s.app.Conn.Q.GetAgent(ctx, params.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +81,7 @@ func (s *AgentService) UpdateAgent(
 		params.Token = &token
 	}
 
-	result, err := s.app.Conn.Query.UpdateAgent(ctx, params)
+	result, err := s.app.Conn.Q.UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -96,21 +92,19 @@ func (s *AgentService) UpdateAgent(
 			Agent: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.UpdateAgentResponse{
-		Agent: result.ToProto(),
-	}), nil
+	return &mantraev1.UpdateAgentResponse{Agent: result.ToProto()}, nil
 }
 
 func (s *AgentService) DeleteAgent(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteAgentRequest],
-) (*connect.Response[mantraev1.DeleteAgentResponse], error) {
-	agent, err := s.app.Conn.Query.GetAgent(ctx, req.Msg.Id)
+	req *mantraev1.DeleteAgentRequest,
+) (*mantraev1.DeleteAgentResponse, error) {
+	agent, err := s.app.Conn.Q.GetAgent(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.Query.DeleteAgent(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteAgent(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -120,24 +114,24 @@ func (s *AgentService) DeleteAgent(
 			Agent: agent.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.DeleteAgentResponse{}), nil
+	return &mantraev1.DeleteAgentResponse{}, nil
 }
 
 func (s *AgentService) ListAgents(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListAgentsRequest],
-) (*connect.Response[mantraev1.ListAgentsResponse], error) {
+	req *mantraev1.ListAgentsRequest,
+) (*mantraev1.ListAgentsResponse, error) {
 	params := &db.ListAgentsParams{
-		ProfileID: req.Msg.ProfileId,
-		Limit:     req.Msg.Limit,
-		Offset:    req.Msg.Offset,
+		ProfileID: req.ProfileId,
+		Limit:     req.Limit,
+		Offset:    req.Offset,
 	}
 
-	result, err := s.app.Conn.Query.ListAgents(ctx, params)
+	result, err := s.app.Conn.Q.ListAgents(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.Query.CountAgents(ctx, req.Msg.ProfileId)
+	totalCount, err := s.app.Conn.Q.CountAgents(ctx, req.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -145,24 +139,29 @@ func (s *AgentService) ListAgents(
 	for _, a := range result {
 		agents = append(agents, a.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListAgentsResponse{
+	return &mantraev1.ListAgentsResponse{
 		Agents:     agents,
 		TotalCount: totalCount,
-	}), nil
+	}, nil
 }
 
 func (s *AgentService) HealthCheck(
 	ctx context.Context,
-	req *connect.Request[mantraev1.HealthCheckRequest],
-) (*connect.Response[mantraev1.HealthCheckResponse], error) {
-	agentID := req.Header().Get(meta.HeaderAgentID)
+	req *mantraev1.HealthCheckRequest,
+) (*mantraev1.HealthCheckResponse, error) {
+	ci, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to get call info"))
+	}
+
+	agentID := ci.RequestHeader().Get(meta.HeaderAgentID)
 	if agentID == "" {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("agent id is required"),
 		)
 	}
-	agent, err := s.app.Conn.Query.GetAgent(ctx, agentID)
+	agent, err := s.app.Conn.Q.GetAgent(ctx, agentID)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -170,17 +169,17 @@ func (s *AgentService) HealthCheck(
 	// Update Agent
 	params := &db.UpdateAgentParams{
 		ID:        agent.ID,
-		Hostname:  &req.Msg.Hostname,
-		PublicIp:  &req.Msg.PublicIp,
-		PrivateIp: &req.Msg.PrivateIp,
+		Hostname:  &req.Hostname,
+		PublicIp:  &req.PublicIp,
+		PrivateIp: &req.PrivateIp,
 	}
 	// Update ip if it's not set
-	if agent.ActiveIp == nil && req.Msg.PrivateIp != "" {
-		params.ActiveIp = &req.Msg.PrivateIp
+	if agent.ActiveIp == nil && req.PrivateIp != "" {
+		params.ActiveIp = &req.PrivateIp
 	}
 
-	if req.Msg.Containers != nil {
-		jsonBytes, err := json.Marshal(req.Msg.Containers)
+	if req.Containers != nil {
+		jsonBytes, err := json.Marshal(req.Containers)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
@@ -188,7 +187,7 @@ func (s *AgentService) HealthCheck(
 		params.Containers = &containers
 	}
 
-	result, err := s.app.Conn.Query.UpdateAgent(ctx, params)
+	result, err := s.app.Conn.Q.UpdateAgent(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -199,7 +198,5 @@ func (s *AgentService) HealthCheck(
 			Agent: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.HealthCheckResponse{
-		Agent: result.ToProto(),
-	}), nil
+	return &mantraev1.HealthCheckResponse{Agent: result.ToProto()}, nil
 }

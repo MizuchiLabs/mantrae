@@ -29,15 +29,20 @@ func NewUserService(app *config.App) *UserService {
 
 func (s *UserService) LoginUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.LoginUserRequest],
-) (*connect.Response[mantraev1.LoginUserResponse], error) {
+	req *mantraev1.LoginUserRequest,
+) (*mantraev1.LoginUserResponse, error) {
+	ci, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to get call info"))
+	}
+
 	var user *db.User
 	var err error
-	switch id := req.Msg.GetIdentifier().(type) {
+	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.LoginUserRequest_Username:
-		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.LoginUserRequest_Email:
-		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -45,7 +50,7 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if ok := util.VerifyPassword(req.Msg.Password, user.Password); !ok {
+	if ok := util.VerifyPassword(req.Password, user.Password); !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid password"))
 	}
 
@@ -55,7 +60,7 @@ func (s *UserService) LoginUser(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.Query.UpdateUserLastLogin(ctx, user.ID); err != nil {
+	if err := s.app.Conn.Q.UpdateUserLastLogin(ctx, user.ID); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -65,43 +70,51 @@ func (s *UserService) LoginUser(
 		Path:     "/",
 		HttpOnly: true,
 		MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
-		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		Secure:   ci.RequestHeader().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.LoginUserResponse{User: user.ToProto()})
-	res.Header().Set("Set-Cookie", cookie.String())
-	return res, nil
+	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
+	return &mantraev1.LoginUserResponse{User: user.ToProto()}, nil
 }
 
 func (s *UserService) LogoutUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.LogoutUserRequest],
-) (*connect.Response[mantraev1.LogoutUserResponse], error) {
+	req *mantraev1.LogoutUserRequest,
+) (*mantraev1.LogoutUserResponse, error) {
+	ci, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to get call info"))
+	}
+
 	cookie := http.Cookie{
 		Name:     meta.CookieName,
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
 		MaxAge:   -1,
-		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		Secure:   ci.RequestHeader().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.LogoutUserResponse{})
-	res.Header().Set("Set-Cookie", cookie.String())
-	return res, nil
+	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
+	return &mantraev1.LogoutUserResponse{}, nil
 }
 
 func (s *UserService) VerifyOTP(
 	ctx context.Context,
-	req *connect.Request[mantraev1.VerifyOTPRequest],
-) (*connect.Response[mantraev1.VerifyOTPResponse], error) {
+	req *mantraev1.VerifyOTPRequest,
+) (*mantraev1.VerifyOTPResponse, error) {
+	ci, ok := connect.CallInfoForHandlerContext(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to get call info"))
+	}
+
 	var user *db.User
 	var err error
-	switch id := req.Msg.GetIdentifier().(type) {
+	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.VerifyOTPRequest_Username:
-		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.VerifyOTPRequest_Email:
-		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -112,7 +125,7 @@ func (s *UserService) VerifyOTP(
 	if user.Otp == nil || user.OtpExpiry == nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
 	}
-	if *user.Otp != util.HashOTP(req.Msg.Otp) {
+	if *user.Otp != util.HashOTP(req.Otp) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
 	}
 	if time.Now().After(*user.OtpExpiry) {
@@ -125,13 +138,13 @@ func (s *UserService) VerifyOTP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	if err := s.app.Conn.Query.UpdateUserLastLogin(ctx, user.ID); err != nil {
+	if err := s.app.Conn.Q.UpdateUserLastLogin(ctx, user.ID); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	// Delete OTP if it's set
 	if user.Otp != nil && user.OtpExpiry != nil {
-		if err := s.app.Conn.Query.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
+		if err := s.app.Conn.Q.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 			ID:        user.ID,
 			Otp:       nil,
 			OtpExpiry: nil,
@@ -146,25 +159,24 @@ func (s *UserService) VerifyOTP(
 		Path:     "/",
 		HttpOnly: true,
 		MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
-		Secure:   req.Header().Get("X-Forwarded-Proto") == "https",
+		Secure:   ci.RequestHeader().Get("X-Forwarded-Proto") == "https",
 		SameSite: http.SameSiteLaxMode,
 	}
-	res := connect.NewResponse(&mantraev1.VerifyOTPResponse{User: user.ToProto()})
-	res.Header().Set("Set-Cookie", cookie.String())
-	return res, nil
+	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
+	return &mantraev1.VerifyOTPResponse{User: user.ToProto()}, nil
 }
 
 func (s *UserService) SendOTP(
 	ctx context.Context,
-	req *connect.Request[mantraev1.SendOTPRequest],
-) (*connect.Response[mantraev1.SendOTPResponse], error) {
+	req *mantraev1.SendOTPRequest,
+) (*mantraev1.SendOTPResponse, error) {
 	var user *db.User
 	var err error
-	switch id := req.Msg.GetIdentifier().(type) {
+	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.SendOTPRequest_Username:
-		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.SendOTPRequest_Email:
-		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
 	default:
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
 	}
@@ -180,7 +192,7 @@ func (s *UserService) SendOTP(
 	}
 	hash := util.HashOTP(token)
 
-	if err := s.app.Conn.Query.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
+	if err := s.app.Conn.Q.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
 		ID:        user.ID,
 		Otp:       &hash,
 		OtpExpiry: &expiresAt,
@@ -196,55 +208,53 @@ func (s *UserService) SendOTP(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.SendOTPResponse{}), nil
+	return &mantraev1.SendOTPResponse{}, nil
 }
 
 func (s *UserService) GetUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetUserRequest],
-) (*connect.Response[mantraev1.GetUserResponse], error) {
+	req *mantraev1.GetUserRequest,
+) (*mantraev1.GetUserResponse, error) {
 	var user *db.User
 	var err error
-	switch id := req.Msg.GetIdentifier().(type) {
+	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetUserRequest_Id:
-		user, err = s.app.Conn.Query.GetUserByID(ctx, id.Id)
+		user, err = s.app.Conn.Q.GetUserByID(ctx, id.Id)
 	case *mantraev1.GetUserRequest_Username:
-		user, err = s.app.Conn.Query.GetUserByUsername(ctx, id.Username)
+		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
 	case *mantraev1.GetUserRequest_Email:
-		user, err = s.app.Conn.Query.GetUserByEmail(ctx, &id.Email)
+		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
 	default:
 		userID := middlewares.GetUserIDFromContext(ctx)
 		if userID == nil {
 			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("unauthenticated"))
 		}
-		user, err = s.app.Conn.Query.GetUserByID(ctx, *userID)
+		user, err = s.app.Conn.Q.GetUserByID(ctx, *userID)
 	}
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.GetUserResponse{
-		User: user.ToProto(),
-	}), nil
+	return &mantraev1.GetUserResponse{User: user.ToProto()}, nil
 }
 
 func (s *UserService) CreateUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateUserRequest],
-) (*connect.Response[mantraev1.CreateUserResponse], error) {
+	req *mantraev1.CreateUserRequest,
+) (*mantraev1.CreateUserResponse, error) {
 	params := &db.CreateUserParams{
 		ID:       uuid.NewString(),
-		Username: req.Msg.Username,
-		Email:    req.Msg.Email,
+		Username: req.Username,
+		Email:    req.Email,
 	}
 
 	var err error
-	params.Password, err = util.HashPassword(req.Msg.Password)
+	params.Password, err = util.HashPassword(req.Password)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	result, err := s.app.Conn.Query.CreateUser(ctx, params)
+	result, err := s.app.Conn.Q.CreateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -255,33 +265,31 @@ func (s *UserService) CreateUser(
 			User: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.CreateUserResponse{
-		User: result.ToProto(),
-	}), nil
+	return &mantraev1.CreateUserResponse{User: result.ToProto()}, nil
 }
 
 func (s *UserService) UpdateUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateUserRequest],
-) (*connect.Response[mantraev1.UpdateUserResponse], error) {
+	req *mantraev1.UpdateUserRequest,
+) (*mantraev1.UpdateUserResponse, error) {
 	params := &db.UpdateUserParams{
-		ID:       req.Msg.Id,
-		Username: req.Msg.Username,
-		Email:    req.Msg.Email,
+		ID:       req.Id,
+		Username: req.Username,
+		Email:    req.Email,
 	}
-	result, err := s.app.Conn.Query.UpdateUser(ctx, params)
+	result, err := s.app.Conn.Q.UpdateUser(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	// Update password if provided
-	if req.Msg.Password != nil {
-		hash, err := util.HashPassword(req.Msg.GetPassword())
+	if req.Password != nil {
+		hash, err := util.HashPassword(req.GetPassword())
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 
-		if err := s.app.Conn.Query.UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
+		if err := s.app.Conn.Q.UpdateUserPassword(ctx, &db.UpdateUserPasswordParams{
 			ID:       result.ID,
 			Password: hash,
 		}); err != nil {
@@ -295,20 +303,18 @@ func (s *UserService) UpdateUser(
 			User: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.UpdateUserResponse{
-		User: result.ToProto(),
-	}), nil
+	return &mantraev1.UpdateUserResponse{User: result.ToProto()}, nil
 }
 
 func (s *UserService) DeleteUser(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteUserRequest],
-) (*connect.Response[mantraev1.DeleteUserResponse], error) {
-	user, err := s.app.Conn.Query.GetUserByID(ctx, req.Msg.Id)
+	req *mantraev1.DeleteUserRequest,
+) (*mantraev1.DeleteUserResponse, error) {
+	user, err := s.app.Conn.Q.GetUserByID(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.Query.DeleteUser(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteUser(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
@@ -318,23 +324,23 @@ func (s *UserService) DeleteUser(
 			User: user.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.DeleteUserResponse{}), nil
+	return &mantraev1.DeleteUserResponse{}, nil
 }
 
 func (s *UserService) ListUsers(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListUsersRequest],
-) (*connect.Response[mantraev1.ListUsersResponse], error) {
+	req *mantraev1.ListUsersRequest,
+) (*mantraev1.ListUsersResponse, error) {
 	params := &db.ListUsersParams{
-		Limit:  req.Msg.Limit,
-		Offset: req.Msg.Offset,
+		Limit:  req.Limit,
+		Offset: req.Offset,
 	}
 
-	result, err := s.app.Conn.Query.ListUsers(ctx, params)
+	result, err := s.app.Conn.Q.ListUsers(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.Query.CountUsers(ctx)
+	totalCount, err := s.app.Conn.Q.CountUsers(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -343,16 +349,16 @@ func (s *UserService) ListUsers(
 	for _, u := range result {
 		users = append(users, u.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListUsersResponse{
+	return &mantraev1.ListUsersResponse{
 		Users:      users,
 		TotalCount: totalCount,
-	}), nil
+	}, nil
 }
 
 func (s *UserService) GetOIDCStatus(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetOIDCStatusRequest],
-) (*connect.Response[mantraev1.GetOIDCStatusResponse], error) {
+	req *mantraev1.GetOIDCStatusRequest,
+) (*mantraev1.GetOIDCStatusResponse, error) {
 	sets := s.app.SM.GetMany(
 		ctx,
 		[]string{
@@ -361,9 +367,9 @@ func (s *UserService) GetOIDCStatus(
 			settings.KeyOIDCProviderName,
 		},
 	)
-	return connect.NewResponse(&mantraev1.GetOIDCStatusResponse{
+	return &mantraev1.GetOIDCStatusResponse{
 		OidcEnabled:  sets[settings.KeyOIDCEnabled] == "true",
 		LoginEnabled: sets[settings.KeyPasswordLoginEnabled] == "true",
 		Provider:     sets[settings.KeyOIDCProviderName],
-	}), nil
+	}, nil
 }

@@ -26,9 +26,9 @@ func NewServersTransportService(app *config.App) *ServersTransportService {
 
 func (s *ServersTransportService) GetServersTransport(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetServersTransportRequest],
-) (*connect.Response[mantraev1.GetServersTransportResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.GetServersTransportRequest,
+) (*mantraev1.GetServersTransportResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -36,18 +36,18 @@ func (s *ServersTransportService) GetServersTransport(
 		)
 	}
 
-	result, err := ops.Get(ctx, req.Msg)
+	result, err := ops.Get(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *ServersTransportService) CreateServersTransport(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateServersTransportRequest],
-) (*connect.Response[mantraev1.CreateServersTransportResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.CreateServersTransportRequest,
+) (*mantraev1.CreateServersTransportResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -55,18 +55,18 @@ func (s *ServersTransportService) CreateServersTransport(
 		)
 	}
 
-	result, err := ops.Create(ctx, req.Msg)
+	result, err := ops.Create(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *ServersTransportService) UpdateServersTransport(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateServersTransportRequest],
-) (*connect.Response[mantraev1.UpdateServersTransportResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.UpdateServersTransportRequest,
+) (*mantraev1.UpdateServersTransportResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -74,18 +74,18 @@ func (s *ServersTransportService) UpdateServersTransport(
 		)
 	}
 
-	result, err := ops.Update(ctx, req.Msg)
+	result, err := ops.Update(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *ServersTransportService) DeleteServersTransport(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteServersTransportRequest],
-) (*connect.Response[mantraev1.DeleteServersTransportResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.DeleteServersTransportRequest,
+) (*mantraev1.DeleteServersTransportResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -93,19 +93,19 @@ func (s *ServersTransportService) DeleteServersTransport(
 		)
 	}
 
-	result, err := ops.Delete(ctx, req.Msg)
+	result, err := ops.Delete(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *ServersTransportService) ListServersTransports(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListServersTransportsRequest],
-) (*connect.Response[mantraev1.ListServersTransportsResponse], error) {
-	if req.Msg.Type != nil {
-		ops, ok := s.dispatch[*req.Msg.Type]
+	req *mantraev1.ListServersTransportsRequest,
+) (*mantraev1.ListServersTransportsResponse, error) {
+	if req.Type != nil {
+		ops, ok := s.dispatch[*req.Type]
 		if !ok {
 			return nil, connect.NewError(
 				connect.CodeInvalidArgument,
@@ -113,33 +113,33 @@ func (s *ServersTransportService) ListServersTransports(
 			)
 		}
 
-		result, err := ops.List(ctx, req.Msg)
+		result, err := ops.List(ctx, req)
 		if err != nil {
 			return nil, err
 		}
-		return connect.NewResponse(result), nil
-	} else {
-		// Get HTTP servers transports
-		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
-		httpResult, err := httpOps.List(ctx, req.Msg)
-		if err != nil {
-			return nil, err
-		}
-
-		// Get TCP servers transports
-		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
-		tcpResult, err := tcpOps.List(ctx, req.Msg)
-		if err != nil {
-			return nil, err
-		}
-
-		// Combine results
-		allServersTransports := append(httpResult.ServersTransports, tcpResult.ServersTransports...)
-		totalCount := httpResult.TotalCount + tcpResult.TotalCount
-
-		return connect.NewResponse(&mantraev1.ListServersTransportsResponse{
-			ServersTransports: allServersTransports,
-			TotalCount:        totalCount,
-		}), nil
+		return result, nil
 	}
+
+	// Get HTTP servers transports
+	httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
+	httpResult, err := httpOps.List(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get TCP servers transports
+	tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
+	tcpResult, err := tcpOps.List(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Combine results
+	allServersTransports := append(httpResult.ServersTransports, tcpResult.ServersTransports...)
+	totalCount := httpResult.TotalCount + tcpResult.TotalCount
+
+	return &mantraev1.ListServersTransportsResponse{
+		ServersTransports: allServersTransports,
+		TotalCount:        totalCount,
+	}, nil
 }

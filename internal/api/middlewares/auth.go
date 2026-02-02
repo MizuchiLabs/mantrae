@@ -40,7 +40,6 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			if err != nil {
 				return nil, err
 			}
-
 			return next(authedCtx, req)
 		},
 	)
@@ -49,11 +48,7 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 func (i *AuthInterceptor) WrapStreamingClient(
 	next connect.StreamingClientFunc,
 ) connect.StreamingClientFunc {
-	return connect.StreamingClientFunc(
-		func(ctx context.Context, spec connect.Spec) connect.StreamingClientConn {
-			return next(ctx, spec)
-		},
-	)
+	return next
 }
 
 func (i *AuthInterceptor) WrapStreamingHandler(
@@ -61,7 +56,7 @@ func (i *AuthInterceptor) WrapStreamingHandler(
 ) connect.StreamingHandlerFunc {
 	return connect.StreamingHandlerFunc(
 		func(ctx context.Context, conn connect.StreamingHandlerConn) error {
-			// Skip authentication for public endpoints (if any streaming endpoints are public)
+			// Skip authentication for public endpoints
 			if isPublicEndpoint(conn.Spec().Procedure) {
 				return next(ctx, conn)
 			}
@@ -70,7 +65,6 @@ func (i *AuthInterceptor) WrapStreamingHandler(
 			if err != nil {
 				return err
 			}
-
 			return next(authedCtx, conn)
 		},
 	)
@@ -100,7 +94,7 @@ func (i *AuthInterceptor) authenticateRequest(
 ) (context.Context, error) {
 	// Agent request (Bearer) -------------------------------------------------
 	if agentID := header.Get(meta.HeaderAgentID); agentID != "" {
-		agent, err := i.app.Conn.Query.GetAgent(ctx, agentID)
+		agent, err := i.app.Conn.Q.GetAgent(ctx, agentID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeNotFound,
@@ -132,7 +126,7 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("unauthorized"),
 			)
 		}
-		user, err := i.app.Conn.Query.GetUserByID(ctx, claims.UserID)
+		user, err := i.app.Conn.Q.GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,
@@ -155,7 +149,7 @@ func (i *AuthInterceptor) authenticateRequest(
 				errors.New("unauthorized"),
 			)
 		}
-		user, err := i.app.Conn.Query.GetUserByID(ctx, claims.UserID)
+		user, err := i.app.Conn.Q.GetUserByID(ctx, claims.UserID)
 		if err != nil {
 			return nil, connect.NewError(
 				connect.CodeUnauthenticated,

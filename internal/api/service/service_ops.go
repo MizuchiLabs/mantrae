@@ -69,12 +69,12 @@ func (s *HTTPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.Query.GetHttpService(ctx, id.Id)
+		result, err = s.app.Conn.Q.GetHttpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.Query.GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
+		result, err = s.app.Conn.Q.GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -107,7 +107,7 @@ func (s *HTTPServiceOps) Create(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.CreateHttpService(ctx, params)
+	result, err := s.app.Conn.Q.CreateHttpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (s *HTTPServiceOps) Update(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.UpdateHttpService(ctx, params)
+	result, err := s.app.Conn.Q.UpdateHttpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -159,11 +159,11 @@ func (s *HTTPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Query.GetHttpService(ctx, req.Id)
+	service, err := s.app.Conn.Q.GetHttpService(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.Query.DeleteHttpService(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteHttpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -180,7 +180,7 @@ func (s *HTTPServiceOps) List(
 	ctx context.Context,
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListHttpServices(ctx, &db.ListHttpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -190,7 +190,7 @@ func (s *HTTPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountHttpServices(ctx, &db.CountHttpServicesParams{
+	totalCount, err := s.app.Conn.Q.CountHttpServices(ctx, &db.CountHttpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -219,12 +219,12 @@ func (s *TCPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.Query.GetTcpService(ctx, id.Id)
+		result, err = s.app.Conn.Q.GetTcpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.Query.GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
+		result, err = s.app.Conn.Q.GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -257,7 +257,7 @@ func (s *TCPServiceOps) Create(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.CreateTcpService(ctx, params)
+	result, err := s.app.Conn.Q.CreateTcpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (s *TCPServiceOps) Update(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.UpdateTcpService(ctx, params)
+	result, err := s.app.Conn.Q.UpdateTcpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -309,11 +309,11 @@ func (s *TCPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Query.GetTcpService(ctx, req.Id)
+	service, err := s.app.Conn.Q.GetTcpService(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.Query.DeleteTcpService(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteTcpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -330,7 +330,7 @@ func (s *TCPServiceOps) List(
 	ctx context.Context,
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListTcpServices(ctx, &db.ListTcpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -340,7 +340,7 @@ func (s *TCPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountTcpServices(ctx, &db.CountTcpServicesParams{
+	totalCount, err := s.app.Conn.Q.CountTcpServices(ctx, &db.CountTcpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})
@@ -369,12 +369,12 @@ func (s *UDPServiceOps) Get(
 
 	switch id := req.GetIdentifier().(type) {
 	case *mantraev1.GetServiceRequest_Id:
-		result, err = s.app.Conn.Query.GetUdpService(ctx, id.Id)
+		result, err = s.app.Conn.Q.GetUdpService(ctx, id.Id)
 		if err != nil {
 			return nil, err
 		}
 	case *mantraev1.GetServiceRequest_Name:
-		result, err = s.app.Conn.Query.GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
+		result, err = s.app.Conn.Q.GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 			ProfileID: req.ProfileId,
 			Name:      id.Name,
 		})
@@ -407,7 +407,7 @@ func (s *UDPServiceOps) Create(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.CreateUdpService(ctx, params)
+	result, err := s.app.Conn.Q.CreateUdpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +439,7 @@ func (s *UDPServiceOps) Update(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.UpdateUdpService(ctx, params)
+	result, err := s.app.Conn.Q.UpdateUdpService(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -459,11 +459,11 @@ func (s *UDPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Query.GetUdpService(ctx, req.Id)
+	service, err := s.app.Conn.Q.GetUdpService(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.Query.DeleteUdpService(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteUdpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -480,7 +480,7 @@ func (s *UDPServiceOps) List(
 	ctx context.Context,
 	req *mantraev1.ListServicesRequest,
 ) (*mantraev1.ListServicesResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListUdpServices(ctx, &db.ListUdpServicesParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -490,7 +490,7 @@ func (s *UDPServiceOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.CountUdpServices(ctx, &db.CountUdpServicesParams{
+	totalCount, err := s.app.Conn.Q.CountUdpServices(ctx, &db.CountUdpServicesParams{
 		ProfileID: req.ProfileId,
 		AgentID:   req.AgentId,
 	})

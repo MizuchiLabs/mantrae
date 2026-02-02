@@ -52,11 +52,11 @@ const (
 
 // DNSProviderServiceClient is a client for the mantrae.v1.DNSProviderService service.
 type DNSProviderServiceClient interface {
-	GetDNSProvider(context.Context, *connect.Request[v1.GetDNSProviderRequest]) (*connect.Response[v1.GetDNSProviderResponse], error)
-	CreateDNSProvider(context.Context, *connect.Request[v1.CreateDNSProviderRequest]) (*connect.Response[v1.CreateDNSProviderResponse], error)
-	UpdateDNSProvider(context.Context, *connect.Request[v1.UpdateDNSProviderRequest]) (*connect.Response[v1.UpdateDNSProviderResponse], error)
-	DeleteDNSProvider(context.Context, *connect.Request[v1.DeleteDNSProviderRequest]) (*connect.Response[v1.DeleteDNSProviderResponse], error)
-	ListDNSProviders(context.Context, *connect.Request[v1.ListDNSProvidersRequest]) (*connect.Response[v1.ListDNSProvidersResponse], error)
+	GetDNSProvider(context.Context, *v1.GetDNSProviderRequest) (*v1.GetDNSProviderResponse, error)
+	CreateDNSProvider(context.Context, *v1.CreateDNSProviderRequest) (*v1.CreateDNSProviderResponse, error)
+	UpdateDNSProvider(context.Context, *v1.UpdateDNSProviderRequest) (*v1.UpdateDNSProviderResponse, error)
+	DeleteDNSProvider(context.Context, *v1.DeleteDNSProviderRequest) (*v1.DeleteDNSProviderResponse, error)
+	ListDNSProviders(context.Context, *v1.ListDNSProvidersRequest) (*v1.ListDNSProvidersResponse, error)
 }
 
 // NewDNSProviderServiceClient constructs a client for the mantrae.v1.DNSProviderService service. By
@@ -115,37 +115,57 @@ type dNSProviderServiceClient struct {
 }
 
 // GetDNSProvider calls mantrae.v1.DNSProviderService.GetDNSProvider.
-func (c *dNSProviderServiceClient) GetDNSProvider(ctx context.Context, req *connect.Request[v1.GetDNSProviderRequest]) (*connect.Response[v1.GetDNSProviderResponse], error) {
-	return c.getDNSProvider.CallUnary(ctx, req)
+func (c *dNSProviderServiceClient) GetDNSProvider(ctx context.Context, req *v1.GetDNSProviderRequest) (*v1.GetDNSProviderResponse, error) {
+	response, err := c.getDNSProvider.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateDNSProvider calls mantrae.v1.DNSProviderService.CreateDNSProvider.
-func (c *dNSProviderServiceClient) CreateDNSProvider(ctx context.Context, req *connect.Request[v1.CreateDNSProviderRequest]) (*connect.Response[v1.CreateDNSProviderResponse], error) {
-	return c.createDNSProvider.CallUnary(ctx, req)
+func (c *dNSProviderServiceClient) CreateDNSProvider(ctx context.Context, req *v1.CreateDNSProviderRequest) (*v1.CreateDNSProviderResponse, error) {
+	response, err := c.createDNSProvider.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateDNSProvider calls mantrae.v1.DNSProviderService.UpdateDNSProvider.
-func (c *dNSProviderServiceClient) UpdateDNSProvider(ctx context.Context, req *connect.Request[v1.UpdateDNSProviderRequest]) (*connect.Response[v1.UpdateDNSProviderResponse], error) {
-	return c.updateDNSProvider.CallUnary(ctx, req)
+func (c *dNSProviderServiceClient) UpdateDNSProvider(ctx context.Context, req *v1.UpdateDNSProviderRequest) (*v1.UpdateDNSProviderResponse, error) {
+	response, err := c.updateDNSProvider.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteDNSProvider calls mantrae.v1.DNSProviderService.DeleteDNSProvider.
-func (c *dNSProviderServiceClient) DeleteDNSProvider(ctx context.Context, req *connect.Request[v1.DeleteDNSProviderRequest]) (*connect.Response[v1.DeleteDNSProviderResponse], error) {
-	return c.deleteDNSProvider.CallUnary(ctx, req)
+func (c *dNSProviderServiceClient) DeleteDNSProvider(ctx context.Context, req *v1.DeleteDNSProviderRequest) (*v1.DeleteDNSProviderResponse, error) {
+	response, err := c.deleteDNSProvider.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListDNSProviders calls mantrae.v1.DNSProviderService.ListDNSProviders.
-func (c *dNSProviderServiceClient) ListDNSProviders(ctx context.Context, req *connect.Request[v1.ListDNSProvidersRequest]) (*connect.Response[v1.ListDNSProvidersResponse], error) {
-	return c.listDNSProviders.CallUnary(ctx, req)
+func (c *dNSProviderServiceClient) ListDNSProviders(ctx context.Context, req *v1.ListDNSProvidersRequest) (*v1.ListDNSProvidersResponse, error) {
+	response, err := c.listDNSProviders.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DNSProviderServiceHandler is an implementation of the mantrae.v1.DNSProviderService service.
 type DNSProviderServiceHandler interface {
-	GetDNSProvider(context.Context, *connect.Request[v1.GetDNSProviderRequest]) (*connect.Response[v1.GetDNSProviderResponse], error)
-	CreateDNSProvider(context.Context, *connect.Request[v1.CreateDNSProviderRequest]) (*connect.Response[v1.CreateDNSProviderResponse], error)
-	UpdateDNSProvider(context.Context, *connect.Request[v1.UpdateDNSProviderRequest]) (*connect.Response[v1.UpdateDNSProviderResponse], error)
-	DeleteDNSProvider(context.Context, *connect.Request[v1.DeleteDNSProviderRequest]) (*connect.Response[v1.DeleteDNSProviderResponse], error)
-	ListDNSProviders(context.Context, *connect.Request[v1.ListDNSProvidersRequest]) (*connect.Response[v1.ListDNSProvidersResponse], error)
+	GetDNSProvider(context.Context, *v1.GetDNSProviderRequest) (*v1.GetDNSProviderResponse, error)
+	CreateDNSProvider(context.Context, *v1.CreateDNSProviderRequest) (*v1.CreateDNSProviderResponse, error)
+	UpdateDNSProvider(context.Context, *v1.UpdateDNSProviderRequest) (*v1.UpdateDNSProviderResponse, error)
+	DeleteDNSProvider(context.Context, *v1.DeleteDNSProviderRequest) (*v1.DeleteDNSProviderResponse, error)
+	ListDNSProviders(context.Context, *v1.ListDNSProvidersRequest) (*v1.ListDNSProvidersResponse, error)
 }
 
 // NewDNSProviderServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -155,32 +175,32 @@ type DNSProviderServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewDNSProviderServiceHandler(svc DNSProviderServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	dNSProviderServiceMethods := v1.File_mantrae_v1_dns_provider_proto.Services().ByName("DNSProviderService").Methods()
-	dNSProviderServiceGetDNSProviderHandler := connect.NewUnaryHandler(
+	dNSProviderServiceGetDNSProviderHandler := connect.NewUnaryHandlerSimple(
 		DNSProviderServiceGetDNSProviderProcedure,
 		svc.GetDNSProvider,
 		connect.WithSchema(dNSProviderServiceMethods.ByName("GetDNSProvider")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	dNSProviderServiceCreateDNSProviderHandler := connect.NewUnaryHandler(
+	dNSProviderServiceCreateDNSProviderHandler := connect.NewUnaryHandlerSimple(
 		DNSProviderServiceCreateDNSProviderProcedure,
 		svc.CreateDNSProvider,
 		connect.WithSchema(dNSProviderServiceMethods.ByName("CreateDNSProvider")),
 		connect.WithHandlerOptions(opts...),
 	)
-	dNSProviderServiceUpdateDNSProviderHandler := connect.NewUnaryHandler(
+	dNSProviderServiceUpdateDNSProviderHandler := connect.NewUnaryHandlerSimple(
 		DNSProviderServiceUpdateDNSProviderProcedure,
 		svc.UpdateDNSProvider,
 		connect.WithSchema(dNSProviderServiceMethods.ByName("UpdateDNSProvider")),
 		connect.WithHandlerOptions(opts...),
 	)
-	dNSProviderServiceDeleteDNSProviderHandler := connect.NewUnaryHandler(
+	dNSProviderServiceDeleteDNSProviderHandler := connect.NewUnaryHandlerSimple(
 		DNSProviderServiceDeleteDNSProviderProcedure,
 		svc.DeleteDNSProvider,
 		connect.WithSchema(dNSProviderServiceMethods.ByName("DeleteDNSProvider")),
 		connect.WithHandlerOptions(opts...),
 	)
-	dNSProviderServiceListDNSProvidersHandler := connect.NewUnaryHandler(
+	dNSProviderServiceListDNSProvidersHandler := connect.NewUnaryHandlerSimple(
 		DNSProviderServiceListDNSProvidersProcedure,
 		svc.ListDNSProviders,
 		connect.WithSchema(dNSProviderServiceMethods.ByName("ListDNSProviders")),
@@ -208,22 +228,22 @@ func NewDNSProviderServiceHandler(svc DNSProviderServiceHandler, opts ...connect
 // UnimplementedDNSProviderServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedDNSProviderServiceHandler struct{}
 
-func (UnimplementedDNSProviderServiceHandler) GetDNSProvider(context.Context, *connect.Request[v1.GetDNSProviderRequest]) (*connect.Response[v1.GetDNSProviderResponse], error) {
+func (UnimplementedDNSProviderServiceHandler) GetDNSProvider(context.Context, *v1.GetDNSProviderRequest) (*v1.GetDNSProviderResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.DNSProviderService.GetDNSProvider is not implemented"))
 }
 
-func (UnimplementedDNSProviderServiceHandler) CreateDNSProvider(context.Context, *connect.Request[v1.CreateDNSProviderRequest]) (*connect.Response[v1.CreateDNSProviderResponse], error) {
+func (UnimplementedDNSProviderServiceHandler) CreateDNSProvider(context.Context, *v1.CreateDNSProviderRequest) (*v1.CreateDNSProviderResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.DNSProviderService.CreateDNSProvider is not implemented"))
 }
 
-func (UnimplementedDNSProviderServiceHandler) UpdateDNSProvider(context.Context, *connect.Request[v1.UpdateDNSProviderRequest]) (*connect.Response[v1.UpdateDNSProviderResponse], error) {
+func (UnimplementedDNSProviderServiceHandler) UpdateDNSProvider(context.Context, *v1.UpdateDNSProviderRequest) (*v1.UpdateDNSProviderResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.DNSProviderService.UpdateDNSProvider is not implemented"))
 }
 
-func (UnimplementedDNSProviderServiceHandler) DeleteDNSProvider(context.Context, *connect.Request[v1.DeleteDNSProviderRequest]) (*connect.Response[v1.DeleteDNSProviderResponse], error) {
+func (UnimplementedDNSProviderServiceHandler) DeleteDNSProvider(context.Context, *v1.DeleteDNSProviderRequest) (*v1.DeleteDNSProviderResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.DNSProviderService.DeleteDNSProvider is not implemented"))
 }
 
-func (UnimplementedDNSProviderServiceHandler) ListDNSProviders(context.Context, *connect.Request[v1.ListDNSProvidersRequest]) (*connect.Response[v1.ListDNSProvidersResponse], error) {
+func (UnimplementedDNSProviderServiceHandler) ListDNSProviders(context.Context, *v1.ListDNSProvidersRequest) (*v1.ListDNSProvidersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.DNSProviderService.ListDNSProviders is not implemented"))
 }

@@ -22,35 +22,33 @@ func NewEntryPointService(app *config.App) *EntryPointService {
 
 func (s *EntryPointService) GetEntryPoint(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetEntryPointRequest],
-) (*connect.Response[mantraev1.GetEntryPointResponse], error) {
-	result, err := s.app.Conn.Query.GetEntryPoint(ctx, req.Msg.Id)
+	req *mantraev1.GetEntryPointRequest,
+) (*mantraev1.GetEntryPointResponse, error) {
+	result, err := s.app.Conn.Q.GetEntryPoint(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.GetEntryPointResponse{
-		EntryPoint: result.ToProto(),
-	}), nil
+	return &mantraev1.GetEntryPointResponse{EntryPoint: result.ToProto()}, nil
 }
 
 func (s *EntryPointService) CreateEntryPoint(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateEntryPointRequest],
-) (*connect.Response[mantraev1.CreateEntryPointResponse], error) {
+	req *mantraev1.CreateEntryPointRequest,
+) (*mantraev1.CreateEntryPointResponse, error) {
 	params := &db.CreateEntryPointParams{
 		ID:        uuid.New().String(),
-		ProfileID: req.Msg.ProfileId,
-		Name:      req.Msg.Name,
-		Address:   req.Msg.Address,
-		IsDefault: req.Msg.IsDefault,
+		ProfileID: req.ProfileId,
+		Name:      req.Name,
+		Address:   req.Address,
+		IsDefault: req.IsDefault,
 	}
-	if req.Msg.IsDefault {
-		if err := s.app.Conn.Query.UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
+	if req.IsDefault {
+		if err := s.app.Conn.Q.UnsetDefaultEntryPoint(ctx, req.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
-	result, err := s.app.Conn.Query.CreateEntryPoint(ctx, params)
+	result, err := s.app.Conn.Q.CreateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -61,33 +59,31 @@ func (s *EntryPointService) CreateEntryPoint(
 			EntryPoint: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.CreateEntryPointResponse{
-		EntryPoint: result.ToProto(),
-	}), nil
+	return &mantraev1.CreateEntryPointResponse{EntryPoint: result.ToProto()}, nil
 }
 
 func (s *EntryPointService) UpdateEntryPoint(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateEntryPointRequest],
-) (*connect.Response[mantraev1.UpdateEntryPointResponse], error) {
+	req *mantraev1.UpdateEntryPointRequest,
+) (*mantraev1.UpdateEntryPointResponse, error) {
 	params := &db.UpdateEntryPointParams{
-		ID:        req.Msg.Id,
-		Name:      req.Msg.Name,
-		Address:   req.Msg.Address,
-		IsDefault: req.Msg.IsDefault,
+		ID:        req.Id,
+		Name:      req.Name,
+		Address:   req.Address,
+		IsDefault: req.IsDefault,
 	}
-	if req.Msg.IsDefault {
-		if err := s.app.Conn.Query.UnsetDefaultEntryPoint(ctx, req.Msg.ProfileId); err != nil {
+	if req.IsDefault {
+		if err := s.app.Conn.Q.UnsetDefaultEntryPoint(ctx, req.ProfileId); err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 
 	// Remove old EntryPoint name and replace with new one (Order is important!)
-	if err := s.updateRouterEntrypoints(ctx, req.Msg.Id, req.Msg.Name); err != nil {
+	if err := s.updateRouterEntrypoints(ctx, req.Id, req.Name); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	result, err := s.app.Conn.Query.UpdateEntryPoint(ctx, params)
+	result, err := s.app.Conn.Q.UpdateEntryPoint(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -98,23 +94,21 @@ func (s *EntryPointService) UpdateEntryPoint(
 			EntryPoint: result.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.UpdateEntryPointResponse{
-		EntryPoint: result.ToProto(),
-	}), nil
+	return &mantraev1.UpdateEntryPointResponse{EntryPoint: result.ToProto()}, nil
 }
 
 func (s *EntryPointService) DeleteEntryPoint(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteEntryPointRequest],
-) (*connect.Response[mantraev1.DeleteEntryPointResponse], error) {
-	entryPoint, err := s.app.Conn.Query.GetEntryPoint(ctx, req.Msg.Id)
+	req *mantraev1.DeleteEntryPointRequest,
+) (*mantraev1.DeleteEntryPointResponse, error) {
+	entryPoint, err := s.app.Conn.Q.GetEntryPoint(ctx, req.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.updateRouterEntrypoints(ctx, req.Msg.Id, ""); err != nil {
+	if err := s.updateRouterEntrypoints(ctx, req.Id, ""); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if err := s.app.Conn.Query.DeleteEntryPointByID(ctx, req.Msg.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteEntryPointByID(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
@@ -123,24 +117,24 @@ func (s *EntryPointService) DeleteEntryPoint(
 			EntryPoint: entryPoint.ToProto(),
 		},
 	})
-	return connect.NewResponse(&mantraev1.DeleteEntryPointResponse{}), nil
+	return &mantraev1.DeleteEntryPointResponse{}, nil
 }
 
 func (s *EntryPointService) ListEntryPoints(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListEntryPointsRequest],
-) (*connect.Response[mantraev1.ListEntryPointsResponse], error) {
+	req *mantraev1.ListEntryPointsRequest,
+) (*mantraev1.ListEntryPointsResponse, error) {
 	params := &db.ListEntryPointsParams{
-		ProfileID: req.Msg.ProfileId,
-		Limit:     req.Msg.Limit,
-		Offset:    req.Msg.Offset,
+		ProfileID: req.ProfileId,
+		Limit:     req.Limit,
+		Offset:    req.Offset,
 	}
 
-	result, err := s.app.Conn.Query.ListEntryPoints(ctx, params)
+	result, err := s.app.Conn.Q.ListEntryPoints(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.Query.CountEntryPoints(ctx, req.Msg.ProfileId)
+	totalCount, err := s.app.Conn.Q.CountEntryPoints(ctx, req.ProfileId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -149,10 +143,10 @@ func (s *EntryPointService) ListEntryPoints(
 	for _, e := range result {
 		entryPoints = append(entryPoints, e.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListEntryPointsResponse{
+	return &mantraev1.ListEntryPointsResponse{
 		EntryPoints: entryPoints,
 		TotalCount:  totalCount,
-	}), nil
+	}, nil
 }
 
 // Helper functions
@@ -161,11 +155,11 @@ func (s *EntryPointService) updateRouterEntrypoints(
 	id,
 	newEntrypoint string,
 ) error {
-	entrypoint, err := s.app.Conn.Query.GetEntryPoint(ctx, id)
+	entrypoint, err := s.app.Conn.Q.GetEntryPoint(ctx, id)
 	if err != nil {
 		return err
 	}
-	httpRouters, err := s.app.Conn.Query.
+	httpRouters, err := s.app.Conn.Q.
 		GetHttpRoutersUsingEntryPoint(ctx, &db.GetHttpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -180,7 +174,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.Query.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
+		if _, err = s.app.Conn.Q.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -189,7 +183,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 			return connect.NewError(connect.CodeInternal, err)
 		}
 	}
-	tcpRouters, err := s.app.Conn.Query.
+	tcpRouters, err := s.app.Conn.Q.
 		GetTcpRoutersUsingEntryPoint(ctx, &db.GetTcpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -204,7 +198,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.Query.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
+		if _, err = s.app.Conn.Q.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,
@@ -213,7 +207,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 			return connect.NewError(connect.CodeInternal, err)
 		}
 	}
-	udpRouters, err := s.app.Conn.Query.
+	udpRouters, err := s.app.Conn.Q.
 		GetUdpRoutersUsingEntryPoint(ctx, &db.GetUdpRoutersUsingEntryPointParams{
 			ProfileID: entrypoint.ProfileID,
 			ID:        entrypoint.ID,
@@ -228,7 +222,7 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		if newEntrypoint != "" {
 			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
 		}
-		if _, err = s.app.Conn.Query.UpdateUdpRouter(ctx, &db.UpdateUdpRouterParams{
+		if _, err = s.app.Conn.Q.UpdateUdpRouter(ctx, &db.UpdateUdpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
 			Config:  r.Config,

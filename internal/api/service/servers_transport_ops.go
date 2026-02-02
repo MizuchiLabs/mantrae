@@ -55,7 +55,7 @@ func (s *HTTPServersTransportOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServersTransportRequest,
 ) (*mantraev1.GetServersTransportResponse, error) {
-	result, err := s.app.Conn.Query.GetHttpServersTransport(ctx, req.Id)
+	result, err := s.app.Conn.Q.GetHttpServersTransport(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (s *HTTPServersTransportOps) Create(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.CreateHttpServersTransport(ctx, params)
+	result, err := s.app.Conn.Q.CreateHttpServersTransport(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s *HTTPServersTransportOps) Update(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.UpdateHttpServersTransport(ctx, params)
+	result, err := s.app.Conn.Q.UpdateHttpServersTransport(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -133,11 +133,11 @@ func (s *HTTPServersTransportOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServersTransportRequest,
 ) (*mantraev1.DeleteServersTransportResponse, error) {
-	serversTransport, err := s.app.Conn.Query.GetHttpServersTransport(ctx, req.Id)
+	serversTransport, err := s.app.Conn.Q.GetHttpServersTransport(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.Query.DeleteHttpServersTransport(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteHttpServersTransport(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -154,7 +154,7 @@ func (s *HTTPServersTransportOps) List(
 	ctx context.Context,
 	req *mantraev1.ListServersTransportsRequest,
 ) (*mantraev1.ListServersTransportsResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListHttpServersTransports(ctx, &db.ListHttpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -164,7 +164,7 @@ func (s *HTTPServersTransportOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.
+	totalCount, err := s.app.Conn.Q.
 		CountHttpServersTransports(ctx, &db.CountHttpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -189,7 +189,7 @@ func (s *TCPServersTransportOps) Get(
 	ctx context.Context,
 	req *mantraev1.GetServersTransportRequest,
 ) (*mantraev1.GetServersTransportResponse, error) {
-	result, err := s.app.Conn.Query.GetTcpServersTransport(ctx, req.Id)
+	result, err := s.app.Conn.Q.GetTcpServersTransport(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +215,7 @@ func (s *TCPServersTransportOps) Create(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.CreateTcpServersTransport(ctx, params)
+	result, err := s.app.Conn.Q.CreateTcpServersTransport(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (s *TCPServersTransportOps) Update(
 		return nil, err
 	}
 
-	result, err := s.app.Conn.Query.UpdateTcpServersTransport(ctx, params)
+	result, err := s.app.Conn.Q.UpdateTcpServersTransport(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -267,11 +267,11 @@ func (s *TCPServersTransportOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServersTransportRequest,
 ) (*mantraev1.DeleteServersTransportResponse, error) {
-	serversTransport, err := s.app.Conn.Query.GetTcpServersTransport(ctx, req.Id)
+	serversTransport, err := s.app.Conn.Q.GetTcpServersTransport(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.app.Conn.Query.DeleteTcpServersTransport(ctx, req.Id); err != nil {
+	if err := s.app.Conn.Q.DeleteTcpServersTransport(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -288,7 +288,7 @@ func (s *TCPServersTransportOps) List(
 	ctx context.Context,
 	req *mantraev1.ListServersTransportsRequest,
 ) (*mantraev1.ListServersTransportsResponse, error) {
-	result, err := s.app.Conn.Query.
+	result, err := s.app.Conn.Q.
 		ListTcpServersTransports(ctx, &db.ListTcpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,
@@ -298,7 +298,7 @@ func (s *TCPServersTransportOps) List(
 	if err != nil {
 		return nil, err
 	}
-	totalCount, err := s.app.Conn.Query.
+	totalCount, err := s.app.Conn.Q.
 		CountTcpServersTransports(ctx, &db.CountTcpServersTransportsParams{
 			ProfileID: req.ProfileId,
 			AgentID:   req.AgentId,

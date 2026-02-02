@@ -110,7 +110,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 			}
 
 			// Write to database
-			traefik.DynamicToDB(r.Context(), a.Conn.Query, profileID, dynamic)
+			traefik.DynamicToDB(r.Context(), a.Conn.Q, profileID, dynamic)
 		}
 
 		w.WriteHeader(http.StatusNoContent)

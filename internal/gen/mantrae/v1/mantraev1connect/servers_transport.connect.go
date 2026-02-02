@@ -52,11 +52,11 @@ const (
 
 // ServersTransportServiceClient is a client for the mantrae.v1.ServersTransportService service.
 type ServersTransportServiceClient interface {
-	GetServersTransport(context.Context, *connect.Request[v1.GetServersTransportRequest]) (*connect.Response[v1.GetServersTransportResponse], error)
-	CreateServersTransport(context.Context, *connect.Request[v1.CreateServersTransportRequest]) (*connect.Response[v1.CreateServersTransportResponse], error)
-	UpdateServersTransport(context.Context, *connect.Request[v1.UpdateServersTransportRequest]) (*connect.Response[v1.UpdateServersTransportResponse], error)
-	DeleteServersTransport(context.Context, *connect.Request[v1.DeleteServersTransportRequest]) (*connect.Response[v1.DeleteServersTransportResponse], error)
-	ListServersTransports(context.Context, *connect.Request[v1.ListServersTransportsRequest]) (*connect.Response[v1.ListServersTransportsResponse], error)
+	GetServersTransport(context.Context, *v1.GetServersTransportRequest) (*v1.GetServersTransportResponse, error)
+	CreateServersTransport(context.Context, *v1.CreateServersTransportRequest) (*v1.CreateServersTransportResponse, error)
+	UpdateServersTransport(context.Context, *v1.UpdateServersTransportRequest) (*v1.UpdateServersTransportResponse, error)
+	DeleteServersTransport(context.Context, *v1.DeleteServersTransportRequest) (*v1.DeleteServersTransportResponse, error)
+	ListServersTransports(context.Context, *v1.ListServersTransportsRequest) (*v1.ListServersTransportsResponse, error)
 }
 
 // NewServersTransportServiceClient constructs a client for the mantrae.v1.ServersTransportService
@@ -115,38 +115,58 @@ type serversTransportServiceClient struct {
 }
 
 // GetServersTransport calls mantrae.v1.ServersTransportService.GetServersTransport.
-func (c *serversTransportServiceClient) GetServersTransport(ctx context.Context, req *connect.Request[v1.GetServersTransportRequest]) (*connect.Response[v1.GetServersTransportResponse], error) {
-	return c.getServersTransport.CallUnary(ctx, req)
+func (c *serversTransportServiceClient) GetServersTransport(ctx context.Context, req *v1.GetServersTransportRequest) (*v1.GetServersTransportResponse, error) {
+	response, err := c.getServersTransport.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateServersTransport calls mantrae.v1.ServersTransportService.CreateServersTransport.
-func (c *serversTransportServiceClient) CreateServersTransport(ctx context.Context, req *connect.Request[v1.CreateServersTransportRequest]) (*connect.Response[v1.CreateServersTransportResponse], error) {
-	return c.createServersTransport.CallUnary(ctx, req)
+func (c *serversTransportServiceClient) CreateServersTransport(ctx context.Context, req *v1.CreateServersTransportRequest) (*v1.CreateServersTransportResponse, error) {
+	response, err := c.createServersTransport.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateServersTransport calls mantrae.v1.ServersTransportService.UpdateServersTransport.
-func (c *serversTransportServiceClient) UpdateServersTransport(ctx context.Context, req *connect.Request[v1.UpdateServersTransportRequest]) (*connect.Response[v1.UpdateServersTransportResponse], error) {
-	return c.updateServersTransport.CallUnary(ctx, req)
+func (c *serversTransportServiceClient) UpdateServersTransport(ctx context.Context, req *v1.UpdateServersTransportRequest) (*v1.UpdateServersTransportResponse, error) {
+	response, err := c.updateServersTransport.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteServersTransport calls mantrae.v1.ServersTransportService.DeleteServersTransport.
-func (c *serversTransportServiceClient) DeleteServersTransport(ctx context.Context, req *connect.Request[v1.DeleteServersTransportRequest]) (*connect.Response[v1.DeleteServersTransportResponse], error) {
-	return c.deleteServersTransport.CallUnary(ctx, req)
+func (c *serversTransportServiceClient) DeleteServersTransport(ctx context.Context, req *v1.DeleteServersTransportRequest) (*v1.DeleteServersTransportResponse, error) {
+	response, err := c.deleteServersTransport.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListServersTransports calls mantrae.v1.ServersTransportService.ListServersTransports.
-func (c *serversTransportServiceClient) ListServersTransports(ctx context.Context, req *connect.Request[v1.ListServersTransportsRequest]) (*connect.Response[v1.ListServersTransportsResponse], error) {
-	return c.listServersTransports.CallUnary(ctx, req)
+func (c *serversTransportServiceClient) ListServersTransports(ctx context.Context, req *v1.ListServersTransportsRequest) (*v1.ListServersTransportsResponse, error) {
+	response, err := c.listServersTransports.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ServersTransportServiceHandler is an implementation of the mantrae.v1.ServersTransportService
 // service.
 type ServersTransportServiceHandler interface {
-	GetServersTransport(context.Context, *connect.Request[v1.GetServersTransportRequest]) (*connect.Response[v1.GetServersTransportResponse], error)
-	CreateServersTransport(context.Context, *connect.Request[v1.CreateServersTransportRequest]) (*connect.Response[v1.CreateServersTransportResponse], error)
-	UpdateServersTransport(context.Context, *connect.Request[v1.UpdateServersTransportRequest]) (*connect.Response[v1.UpdateServersTransportResponse], error)
-	DeleteServersTransport(context.Context, *connect.Request[v1.DeleteServersTransportRequest]) (*connect.Response[v1.DeleteServersTransportResponse], error)
-	ListServersTransports(context.Context, *connect.Request[v1.ListServersTransportsRequest]) (*connect.Response[v1.ListServersTransportsResponse], error)
+	GetServersTransport(context.Context, *v1.GetServersTransportRequest) (*v1.GetServersTransportResponse, error)
+	CreateServersTransport(context.Context, *v1.CreateServersTransportRequest) (*v1.CreateServersTransportResponse, error)
+	UpdateServersTransport(context.Context, *v1.UpdateServersTransportRequest) (*v1.UpdateServersTransportResponse, error)
+	DeleteServersTransport(context.Context, *v1.DeleteServersTransportRequest) (*v1.DeleteServersTransportResponse, error)
+	ListServersTransports(context.Context, *v1.ListServersTransportsRequest) (*v1.ListServersTransportsResponse, error)
 }
 
 // NewServersTransportServiceHandler builds an HTTP handler from the service implementation. It
@@ -156,32 +176,32 @@ type ServersTransportServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewServersTransportServiceHandler(svc ServersTransportServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	serversTransportServiceMethods := v1.File_mantrae_v1_servers_transport_proto.Services().ByName("ServersTransportService").Methods()
-	serversTransportServiceGetServersTransportHandler := connect.NewUnaryHandler(
+	serversTransportServiceGetServersTransportHandler := connect.NewUnaryHandlerSimple(
 		ServersTransportServiceGetServersTransportProcedure,
 		svc.GetServersTransport,
 		connect.WithSchema(serversTransportServiceMethods.ByName("GetServersTransport")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	serversTransportServiceCreateServersTransportHandler := connect.NewUnaryHandler(
+	serversTransportServiceCreateServersTransportHandler := connect.NewUnaryHandlerSimple(
 		ServersTransportServiceCreateServersTransportProcedure,
 		svc.CreateServersTransport,
 		connect.WithSchema(serversTransportServiceMethods.ByName("CreateServersTransport")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serversTransportServiceUpdateServersTransportHandler := connect.NewUnaryHandler(
+	serversTransportServiceUpdateServersTransportHandler := connect.NewUnaryHandlerSimple(
 		ServersTransportServiceUpdateServersTransportProcedure,
 		svc.UpdateServersTransport,
 		connect.WithSchema(serversTransportServiceMethods.ByName("UpdateServersTransport")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serversTransportServiceDeleteServersTransportHandler := connect.NewUnaryHandler(
+	serversTransportServiceDeleteServersTransportHandler := connect.NewUnaryHandlerSimple(
 		ServersTransportServiceDeleteServersTransportProcedure,
 		svc.DeleteServersTransport,
 		connect.WithSchema(serversTransportServiceMethods.ByName("DeleteServersTransport")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serversTransportServiceListServersTransportsHandler := connect.NewUnaryHandler(
+	serversTransportServiceListServersTransportsHandler := connect.NewUnaryHandlerSimple(
 		ServersTransportServiceListServersTransportsProcedure,
 		svc.ListServersTransports,
 		connect.WithSchema(serversTransportServiceMethods.ByName("ListServersTransports")),
@@ -209,22 +229,22 @@ func NewServersTransportServiceHandler(svc ServersTransportServiceHandler, opts 
 // UnimplementedServersTransportServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedServersTransportServiceHandler struct{}
 
-func (UnimplementedServersTransportServiceHandler) GetServersTransport(context.Context, *connect.Request[v1.GetServersTransportRequest]) (*connect.Response[v1.GetServersTransportResponse], error) {
+func (UnimplementedServersTransportServiceHandler) GetServersTransport(context.Context, *v1.GetServersTransportRequest) (*v1.GetServersTransportResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServersTransportService.GetServersTransport is not implemented"))
 }
 
-func (UnimplementedServersTransportServiceHandler) CreateServersTransport(context.Context, *connect.Request[v1.CreateServersTransportRequest]) (*connect.Response[v1.CreateServersTransportResponse], error) {
+func (UnimplementedServersTransportServiceHandler) CreateServersTransport(context.Context, *v1.CreateServersTransportRequest) (*v1.CreateServersTransportResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServersTransportService.CreateServersTransport is not implemented"))
 }
 
-func (UnimplementedServersTransportServiceHandler) UpdateServersTransport(context.Context, *connect.Request[v1.UpdateServersTransportRequest]) (*connect.Response[v1.UpdateServersTransportResponse], error) {
+func (UnimplementedServersTransportServiceHandler) UpdateServersTransport(context.Context, *v1.UpdateServersTransportRequest) (*v1.UpdateServersTransportResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServersTransportService.UpdateServersTransport is not implemented"))
 }
 
-func (UnimplementedServersTransportServiceHandler) DeleteServersTransport(context.Context, *connect.Request[v1.DeleteServersTransportRequest]) (*connect.Response[v1.DeleteServersTransportResponse], error) {
+func (UnimplementedServersTransportServiceHandler) DeleteServersTransport(context.Context, *v1.DeleteServersTransportRequest) (*v1.DeleteServersTransportResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServersTransportService.DeleteServersTransport is not implemented"))
 }
 
-func (UnimplementedServersTransportServiceHandler) ListServersTransports(context.Context, *connect.Request[v1.ListServersTransportsRequest]) (*connect.Response[v1.ListServersTransportsResponse], error) {
+func (UnimplementedServersTransportServiceHandler) ListServersTransports(context.Context, *v1.ListServersTransportsRequest) (*v1.ListServersTransportsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServersTransportService.ListServersTransports is not implemented"))
 }

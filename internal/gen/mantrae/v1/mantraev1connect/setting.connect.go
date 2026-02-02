@@ -46,9 +46,9 @@ const (
 
 // SettingServiceClient is a client for the mantrae.v1.SettingService service.
 type SettingServiceClient interface {
-	GetSetting(context.Context, *connect.Request[v1.GetSettingRequest]) (*connect.Response[v1.GetSettingResponse], error)
-	UpdateSetting(context.Context, *connect.Request[v1.UpdateSettingRequest]) (*connect.Response[v1.UpdateSettingResponse], error)
-	ListSettings(context.Context, *connect.Request[v1.ListSettingsRequest]) (*connect.Response[v1.ListSettingsResponse], error)
+	GetSetting(context.Context, *v1.GetSettingRequest) (*v1.GetSettingResponse, error)
+	UpdateSetting(context.Context, *v1.UpdateSettingRequest) (*v1.UpdateSettingResponse, error)
+	ListSettings(context.Context, *v1.ListSettingsRequest) (*v1.ListSettingsResponse, error)
 }
 
 // NewSettingServiceClient constructs a client for the mantrae.v1.SettingService service. By
@@ -93,25 +93,37 @@ type settingServiceClient struct {
 }
 
 // GetSetting calls mantrae.v1.SettingService.GetSetting.
-func (c *settingServiceClient) GetSetting(ctx context.Context, req *connect.Request[v1.GetSettingRequest]) (*connect.Response[v1.GetSettingResponse], error) {
-	return c.getSetting.CallUnary(ctx, req)
+func (c *settingServiceClient) GetSetting(ctx context.Context, req *v1.GetSettingRequest) (*v1.GetSettingResponse, error) {
+	response, err := c.getSetting.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateSetting calls mantrae.v1.SettingService.UpdateSetting.
-func (c *settingServiceClient) UpdateSetting(ctx context.Context, req *connect.Request[v1.UpdateSettingRequest]) (*connect.Response[v1.UpdateSettingResponse], error) {
-	return c.updateSetting.CallUnary(ctx, req)
+func (c *settingServiceClient) UpdateSetting(ctx context.Context, req *v1.UpdateSettingRequest) (*v1.UpdateSettingResponse, error) {
+	response, err := c.updateSetting.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListSettings calls mantrae.v1.SettingService.ListSettings.
-func (c *settingServiceClient) ListSettings(ctx context.Context, req *connect.Request[v1.ListSettingsRequest]) (*connect.Response[v1.ListSettingsResponse], error) {
-	return c.listSettings.CallUnary(ctx, req)
+func (c *settingServiceClient) ListSettings(ctx context.Context, req *v1.ListSettingsRequest) (*v1.ListSettingsResponse, error) {
+	response, err := c.listSettings.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // SettingServiceHandler is an implementation of the mantrae.v1.SettingService service.
 type SettingServiceHandler interface {
-	GetSetting(context.Context, *connect.Request[v1.GetSettingRequest]) (*connect.Response[v1.GetSettingResponse], error)
-	UpdateSetting(context.Context, *connect.Request[v1.UpdateSettingRequest]) (*connect.Response[v1.UpdateSettingResponse], error)
-	ListSettings(context.Context, *connect.Request[v1.ListSettingsRequest]) (*connect.Response[v1.ListSettingsResponse], error)
+	GetSetting(context.Context, *v1.GetSettingRequest) (*v1.GetSettingResponse, error)
+	UpdateSetting(context.Context, *v1.UpdateSettingRequest) (*v1.UpdateSettingResponse, error)
+	ListSettings(context.Context, *v1.ListSettingsRequest) (*v1.ListSettingsResponse, error)
 }
 
 // NewSettingServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -121,20 +133,20 @@ type SettingServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewSettingServiceHandler(svc SettingServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	settingServiceMethods := v1.File_mantrae_v1_setting_proto.Services().ByName("SettingService").Methods()
-	settingServiceGetSettingHandler := connect.NewUnaryHandler(
+	settingServiceGetSettingHandler := connect.NewUnaryHandlerSimple(
 		SettingServiceGetSettingProcedure,
 		svc.GetSetting,
 		connect.WithSchema(settingServiceMethods.ByName("GetSetting")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	settingServiceUpdateSettingHandler := connect.NewUnaryHandler(
+	settingServiceUpdateSettingHandler := connect.NewUnaryHandlerSimple(
 		SettingServiceUpdateSettingProcedure,
 		svc.UpdateSetting,
 		connect.WithSchema(settingServiceMethods.ByName("UpdateSetting")),
 		connect.WithHandlerOptions(opts...),
 	)
-	settingServiceListSettingsHandler := connect.NewUnaryHandler(
+	settingServiceListSettingsHandler := connect.NewUnaryHandlerSimple(
 		SettingServiceListSettingsProcedure,
 		svc.ListSettings,
 		connect.WithSchema(settingServiceMethods.ByName("ListSettings")),
@@ -158,14 +170,14 @@ func NewSettingServiceHandler(svc SettingServiceHandler, opts ...connect.Handler
 // UnimplementedSettingServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedSettingServiceHandler struct{}
 
-func (UnimplementedSettingServiceHandler) GetSetting(context.Context, *connect.Request[v1.GetSettingRequest]) (*connect.Response[v1.GetSettingResponse], error) {
+func (UnimplementedSettingServiceHandler) GetSetting(context.Context, *v1.GetSettingRequest) (*v1.GetSettingResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.SettingService.GetSetting is not implemented"))
 }
 
-func (UnimplementedSettingServiceHandler) UpdateSetting(context.Context, *connect.Request[v1.UpdateSettingRequest]) (*connect.Response[v1.UpdateSettingResponse], error) {
+func (UnimplementedSettingServiceHandler) UpdateSetting(context.Context, *v1.UpdateSettingRequest) (*v1.UpdateSettingResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.SettingService.UpdateSetting is not implemented"))
 }
 
-func (UnimplementedSettingServiceHandler) ListSettings(context.Context, *connect.Request[v1.ListSettingsRequest]) (*connect.Response[v1.ListSettingsResponse], error) {
+func (UnimplementedSettingServiceHandler) ListSettings(context.Context, *v1.ListSettingsRequest) (*v1.ListSettingsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.SettingService.ListSettings is not implemented"))
 }

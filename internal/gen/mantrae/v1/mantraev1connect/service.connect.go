@@ -52,11 +52,11 @@ const (
 
 // ServiceServiceClient is a client for the mantrae.v1.ServiceService service.
 type ServiceServiceClient interface {
-	GetService(context.Context, *connect.Request[v1.GetServiceRequest]) (*connect.Response[v1.GetServiceResponse], error)
-	CreateService(context.Context, *connect.Request[v1.CreateServiceRequest]) (*connect.Response[v1.CreateServiceResponse], error)
-	UpdateService(context.Context, *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error)
-	DeleteService(context.Context, *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error)
-	ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error)
+	GetService(context.Context, *v1.GetServiceRequest) (*v1.GetServiceResponse, error)
+	CreateService(context.Context, *v1.CreateServiceRequest) (*v1.CreateServiceResponse, error)
+	UpdateService(context.Context, *v1.UpdateServiceRequest) (*v1.UpdateServiceResponse, error)
+	DeleteService(context.Context, *v1.DeleteServiceRequest) (*v1.DeleteServiceResponse, error)
+	ListServices(context.Context, *v1.ListServicesRequest) (*v1.ListServicesResponse, error)
 }
 
 // NewServiceServiceClient constructs a client for the mantrae.v1.ServiceService service. By
@@ -115,37 +115,57 @@ type serviceServiceClient struct {
 }
 
 // GetService calls mantrae.v1.ServiceService.GetService.
-func (c *serviceServiceClient) GetService(ctx context.Context, req *connect.Request[v1.GetServiceRequest]) (*connect.Response[v1.GetServiceResponse], error) {
-	return c.getService.CallUnary(ctx, req)
+func (c *serviceServiceClient) GetService(ctx context.Context, req *v1.GetServiceRequest) (*v1.GetServiceResponse, error) {
+	response, err := c.getService.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateService calls mantrae.v1.ServiceService.CreateService.
-func (c *serviceServiceClient) CreateService(ctx context.Context, req *connect.Request[v1.CreateServiceRequest]) (*connect.Response[v1.CreateServiceResponse], error) {
-	return c.createService.CallUnary(ctx, req)
+func (c *serviceServiceClient) CreateService(ctx context.Context, req *v1.CreateServiceRequest) (*v1.CreateServiceResponse, error) {
+	response, err := c.createService.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateService calls mantrae.v1.ServiceService.UpdateService.
-func (c *serviceServiceClient) UpdateService(ctx context.Context, req *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error) {
-	return c.updateService.CallUnary(ctx, req)
+func (c *serviceServiceClient) UpdateService(ctx context.Context, req *v1.UpdateServiceRequest) (*v1.UpdateServiceResponse, error) {
+	response, err := c.updateService.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteService calls mantrae.v1.ServiceService.DeleteService.
-func (c *serviceServiceClient) DeleteService(ctx context.Context, req *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error) {
-	return c.deleteService.CallUnary(ctx, req)
+func (c *serviceServiceClient) DeleteService(ctx context.Context, req *v1.DeleteServiceRequest) (*v1.DeleteServiceResponse, error) {
+	response, err := c.deleteService.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListServices calls mantrae.v1.ServiceService.ListServices.
-func (c *serviceServiceClient) ListServices(ctx context.Context, req *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error) {
-	return c.listServices.CallUnary(ctx, req)
+func (c *serviceServiceClient) ListServices(ctx context.Context, req *v1.ListServicesRequest) (*v1.ListServicesResponse, error) {
+	response, err := c.listServices.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ServiceServiceHandler is an implementation of the mantrae.v1.ServiceService service.
 type ServiceServiceHandler interface {
-	GetService(context.Context, *connect.Request[v1.GetServiceRequest]) (*connect.Response[v1.GetServiceResponse], error)
-	CreateService(context.Context, *connect.Request[v1.CreateServiceRequest]) (*connect.Response[v1.CreateServiceResponse], error)
-	UpdateService(context.Context, *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error)
-	DeleteService(context.Context, *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error)
-	ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error)
+	GetService(context.Context, *v1.GetServiceRequest) (*v1.GetServiceResponse, error)
+	CreateService(context.Context, *v1.CreateServiceRequest) (*v1.CreateServiceResponse, error)
+	UpdateService(context.Context, *v1.UpdateServiceRequest) (*v1.UpdateServiceResponse, error)
+	DeleteService(context.Context, *v1.DeleteServiceRequest) (*v1.DeleteServiceResponse, error)
+	ListServices(context.Context, *v1.ListServicesRequest) (*v1.ListServicesResponse, error)
 }
 
 // NewServiceServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -155,32 +175,32 @@ type ServiceServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewServiceServiceHandler(svc ServiceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	serviceServiceMethods := v1.File_mantrae_v1_service_proto.Services().ByName("ServiceService").Methods()
-	serviceServiceGetServiceHandler := connect.NewUnaryHandler(
+	serviceServiceGetServiceHandler := connect.NewUnaryHandlerSimple(
 		ServiceServiceGetServiceProcedure,
 		svc.GetService,
 		connect.WithSchema(serviceServiceMethods.ByName("GetService")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	serviceServiceCreateServiceHandler := connect.NewUnaryHandler(
+	serviceServiceCreateServiceHandler := connect.NewUnaryHandlerSimple(
 		ServiceServiceCreateServiceProcedure,
 		svc.CreateService,
 		connect.WithSchema(serviceServiceMethods.ByName("CreateService")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serviceServiceUpdateServiceHandler := connect.NewUnaryHandler(
+	serviceServiceUpdateServiceHandler := connect.NewUnaryHandlerSimple(
 		ServiceServiceUpdateServiceProcedure,
 		svc.UpdateService,
 		connect.WithSchema(serviceServiceMethods.ByName("UpdateService")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serviceServiceDeleteServiceHandler := connect.NewUnaryHandler(
+	serviceServiceDeleteServiceHandler := connect.NewUnaryHandlerSimple(
 		ServiceServiceDeleteServiceProcedure,
 		svc.DeleteService,
 		connect.WithSchema(serviceServiceMethods.ByName("DeleteService")),
 		connect.WithHandlerOptions(opts...),
 	)
-	serviceServiceListServicesHandler := connect.NewUnaryHandler(
+	serviceServiceListServicesHandler := connect.NewUnaryHandlerSimple(
 		ServiceServiceListServicesProcedure,
 		svc.ListServices,
 		connect.WithSchema(serviceServiceMethods.ByName("ListServices")),
@@ -208,22 +228,22 @@ func NewServiceServiceHandler(svc ServiceServiceHandler, opts ...connect.Handler
 // UnimplementedServiceServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedServiceServiceHandler struct{}
 
-func (UnimplementedServiceServiceHandler) GetService(context.Context, *connect.Request[v1.GetServiceRequest]) (*connect.Response[v1.GetServiceResponse], error) {
+func (UnimplementedServiceServiceHandler) GetService(context.Context, *v1.GetServiceRequest) (*v1.GetServiceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.GetService is not implemented"))
 }
 
-func (UnimplementedServiceServiceHandler) CreateService(context.Context, *connect.Request[v1.CreateServiceRequest]) (*connect.Response[v1.CreateServiceResponse], error) {
+func (UnimplementedServiceServiceHandler) CreateService(context.Context, *v1.CreateServiceRequest) (*v1.CreateServiceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.CreateService is not implemented"))
 }
 
-func (UnimplementedServiceServiceHandler) UpdateService(context.Context, *connect.Request[v1.UpdateServiceRequest]) (*connect.Response[v1.UpdateServiceResponse], error) {
+func (UnimplementedServiceServiceHandler) UpdateService(context.Context, *v1.UpdateServiceRequest) (*v1.UpdateServiceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.UpdateService is not implemented"))
 }
 
-func (UnimplementedServiceServiceHandler) DeleteService(context.Context, *connect.Request[v1.DeleteServiceRequest]) (*connect.Response[v1.DeleteServiceResponse], error) {
+func (UnimplementedServiceServiceHandler) DeleteService(context.Context, *v1.DeleteServiceRequest) (*v1.DeleteServiceResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.DeleteService is not implemented"))
 }
 
-func (UnimplementedServiceServiceHandler) ListServices(context.Context, *connect.Request[v1.ListServicesRequest]) (*connect.Response[v1.ListServicesResponse], error) {
+func (UnimplementedServiceServiceHandler) ListServices(context.Context, *v1.ListServicesRequest) (*v1.ListServicesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ServiceService.ListServices is not implemented"))
 }

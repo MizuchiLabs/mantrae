@@ -32,9 +32,9 @@ func NewMiddlewareService(app *config.App) *MiddlewareService {
 
 func (s *MiddlewareService) GetMiddleware(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetMiddlewareRequest],
-) (*connect.Response[mantraev1.GetMiddlewareResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.GetMiddlewareRequest,
+) (*mantraev1.GetMiddlewareResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -42,18 +42,18 @@ func (s *MiddlewareService) GetMiddleware(
 		)
 	}
 
-	result, err := ops.Get(ctx, req.Msg)
+	result, err := ops.Get(ctx, req)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *MiddlewareService) CreateMiddleware(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateMiddlewareRequest],
-) (*connect.Response[mantraev1.CreateMiddlewareResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.CreateMiddlewareRequest,
+) (*mantraev1.CreateMiddlewareResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -61,18 +61,18 @@ func (s *MiddlewareService) CreateMiddleware(
 		)
 	}
 
-	result, err := ops.Create(ctx, req.Msg)
+	result, err := ops.Create(ctx, req)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *MiddlewareService) UpdateMiddleware(
 	ctx context.Context,
-	req *connect.Request[mantraev1.UpdateMiddlewareRequest],
-) (*connect.Response[mantraev1.UpdateMiddlewareResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.UpdateMiddlewareRequest,
+) (*mantraev1.UpdateMiddlewareResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -80,18 +80,18 @@ func (s *MiddlewareService) UpdateMiddleware(
 		)
 	}
 
-	result, err := ops.Update(ctx, req.Msg)
+	result, err := ops.Update(ctx, req)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *MiddlewareService) DeleteMiddleware(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteMiddlewareRequest],
-) (*connect.Response[mantraev1.DeleteMiddlewareResponse], error) {
-	ops, ok := s.dispatch[req.Msg.Type]
+	req *mantraev1.DeleteMiddlewareRequest,
+) (*mantraev1.DeleteMiddlewareResponse, error) {
+	ops, ok := s.dispatch[req.Type]
 	if !ok {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
@@ -99,19 +99,19 @@ func (s *MiddlewareService) DeleteMiddleware(
 		)
 	}
 
-	result, err := ops.Delete(ctx, req.Msg)
+	result, err := ops.Delete(ctx, req)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(result), nil
+	return result, nil
 }
 
 func (s *MiddlewareService) ListMiddlewares(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListMiddlewaresRequest],
-) (*connect.Response[mantraev1.ListMiddlewaresResponse], error) {
-	if req.Msg.Type != nil {
-		ops, ok := s.dispatch[*req.Msg.Type]
+	req *mantraev1.ListMiddlewaresRequest,
+) (*mantraev1.ListMiddlewaresResponse, error) {
+	if req.Type != nil {
+		ops, ok := s.dispatch[*req.Type]
 		if !ok {
 			return nil, connect.NewError(
 				connect.CodeInvalidArgument,
@@ -119,41 +119,41 @@ func (s *MiddlewareService) ListMiddlewares(
 			)
 		}
 
-		result, err := ops.List(ctx, req.Msg)
+		result, err := ops.List(ctx, req)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		return connect.NewResponse(result), nil
-	} else {
-		// Get HTTP middlewares
-		httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
-		httpResult, err := httpOps.List(ctx, req.Msg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		// Get TCP middlewares
-		tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
-		tcpResult, err := tcpOps.List(ctx, req.Msg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-
-		// Combine results
-		allMiddlewares := append(httpResult.Middlewares, tcpResult.Middlewares...)
-		totalCount := httpResult.TotalCount + tcpResult.TotalCount
-
-		return connect.NewResponse(&mantraev1.ListMiddlewaresResponse{
-			Middlewares: allMiddlewares,
-			TotalCount:  totalCount,
-		}), nil
+		return result, nil
 	}
+
+	// Get HTTP middlewares
+	httpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_HTTP]
+	httpResult, err := httpOps.List(ctx, req)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Get TCP middlewares
+	tcpOps := s.dispatch[mantraev1.ProtocolType_PROTOCOL_TYPE_TCP]
+	tcpResult, err := tcpOps.List(ctx, req)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Combine results
+	allMiddlewares := append(httpResult.Middlewares, tcpResult.Middlewares...)
+	totalCount := httpResult.TotalCount + tcpResult.TotalCount
+
+	return &mantraev1.ListMiddlewaresResponse{
+		Middlewares: allMiddlewares,
+		TotalCount:  totalCount,
+	}, nil
 }
 
 func (s *MiddlewareService) GetMiddlewarePlugins(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetMiddlewarePluginsRequest],
-) (*connect.Response[mantraev1.GetMiddlewarePluginsResponse], error) {
+	req *mantraev1.GetMiddlewarePluginsRequest,
+) (*mantraev1.GetMiddlewarePluginsResponse, error) {
 	resp, err := http.Get("https://plugins.traefik.io/api/services/plugins")
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -196,5 +196,5 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 		})
 	}
 
-	return connect.NewResponse(&mantraev1.GetMiddlewarePluginsResponse{Plugins: plugins}), nil
+	return &mantraev1.GetMiddlewarePluginsResponse{Plugins: plugins}, nil
 }

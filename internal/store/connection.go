@@ -23,10 +23,10 @@ import (
 var migrationFS embed.FS
 
 type Connection struct {
-	mu    sync.RWMutex
-	ctx   context.Context
-	db    *sql.DB
-	Query *db.Queries
+	mu  sync.RWMutex
+	ctx context.Context
+	db  *sql.DB
+	Q   *db.Queries
 }
 
 // NewConnection opens a SQLite connection.
@@ -52,9 +52,9 @@ func NewConnection(ctx context.Context, path string) *Connection {
 	migrate(sqliteDB)
 
 	conn := &Connection{
-		ctx:   ctx,
-		db:    sqliteDB,
-		Query: db.New(sqliteDB),
+		ctx: ctx,
+		db:  sqliteDB,
+		Q:   db.New(sqliteDB),
 	}
 
 	// Wait for shutdown signal
@@ -151,7 +151,7 @@ func (c *Connection) Replace(srcPath string) error {
 
 	// Update connection fields
 	c.db = sqliteDB
-	c.Query = db.New(sqliteDB)
+	c.Q = db.New(sqliteDB)
 	return nil
 }
 

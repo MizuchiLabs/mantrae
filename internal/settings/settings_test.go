@@ -82,7 +82,7 @@ func TestStart(t *testing.T) {
 	}()
 
 	// Add a value to the database
-	err := sm.conn.Query.UpsertSetting(ctx, &db.UpsertSettingParams{
+	err := sm.conn.Q.UpsertSetting(ctx, &db.UpsertSettingParams{
 		Key:   KeyStorage,
 		Value: "db_value",
 	})

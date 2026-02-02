@@ -58,16 +58,16 @@ const (
 
 // UserServiceClient is a client for the mantrae.v1.UserService service.
 type UserServiceClient interface {
-	LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error)
-	LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error)
-	VerifyOTP(context.Context, *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error)
-	SendOTP(context.Context, *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error)
-	GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error)
-	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
-	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
-	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
-	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
-	GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error)
+	LoginUser(context.Context, *v1.LoginUserRequest) (*v1.LoginUserResponse, error)
+	LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error)
+	VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error)
+	SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error)
+	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
+	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
+	UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error)
+	DeleteUser(context.Context, *v1.DeleteUserRequest) (*v1.DeleteUserResponse, error)
+	ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error)
+	GetOIDCStatus(context.Context, *v1.GetOIDCStatusRequest) (*v1.GetOIDCStatusResponse, error)
 }
 
 // NewUserServiceClient constructs a client for the mantrae.v1.UserService service. By default, it
@@ -161,67 +161,107 @@ type userServiceClient struct {
 }
 
 // LoginUser calls mantrae.v1.UserService.LoginUser.
-func (c *userServiceClient) LoginUser(ctx context.Context, req *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error) {
-	return c.loginUser.CallUnary(ctx, req)
+func (c *userServiceClient) LoginUser(ctx context.Context, req *v1.LoginUserRequest) (*v1.LoginUserResponse, error) {
+	response, err := c.loginUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // LogoutUser calls mantrae.v1.UserService.LogoutUser.
-func (c *userServiceClient) LogoutUser(ctx context.Context, req *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error) {
-	return c.logoutUser.CallUnary(ctx, req)
+func (c *userServiceClient) LogoutUser(ctx context.Context, req *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error) {
+	response, err := c.logoutUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // VerifyOTP calls mantrae.v1.UserService.VerifyOTP.
-func (c *userServiceClient) VerifyOTP(ctx context.Context, req *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error) {
-	return c.verifyOTP.CallUnary(ctx, req)
+func (c *userServiceClient) VerifyOTP(ctx context.Context, req *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error) {
+	response, err := c.verifyOTP.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // SendOTP calls mantrae.v1.UserService.SendOTP.
-func (c *userServiceClient) SendOTP(ctx context.Context, req *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error) {
-	return c.sendOTP.CallUnary(ctx, req)
+func (c *userServiceClient) SendOTP(ctx context.Context, req *v1.SendOTPRequest) (*v1.SendOTPResponse, error) {
+	response, err := c.sendOTP.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetUser calls mantrae.v1.UserService.GetUser.
-func (c *userServiceClient) GetUser(ctx context.Context, req *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error) {
-	return c.getUser.CallUnary(ctx, req)
+func (c *userServiceClient) GetUser(ctx context.Context, req *v1.GetUserRequest) (*v1.GetUserResponse, error) {
+	response, err := c.getUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateUser calls mantrae.v1.UserService.CreateUser.
-func (c *userServiceClient) CreateUser(ctx context.Context, req *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error) {
-	return c.createUser.CallUnary(ctx, req)
+func (c *userServiceClient) CreateUser(ctx context.Context, req *v1.CreateUserRequest) (*v1.CreateUserResponse, error) {
+	response, err := c.createUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateUser calls mantrae.v1.UserService.UpdateUser.
-func (c *userServiceClient) UpdateUser(ctx context.Context, req *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error) {
-	return c.updateUser.CallUnary(ctx, req)
+func (c *userServiceClient) UpdateUser(ctx context.Context, req *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error) {
+	response, err := c.updateUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteUser calls mantrae.v1.UserService.DeleteUser.
-func (c *userServiceClient) DeleteUser(ctx context.Context, req *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error) {
-	return c.deleteUser.CallUnary(ctx, req)
+func (c *userServiceClient) DeleteUser(ctx context.Context, req *v1.DeleteUserRequest) (*v1.DeleteUserResponse, error) {
+	response, err := c.deleteUser.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListUsers calls mantrae.v1.UserService.ListUsers.
-func (c *userServiceClient) ListUsers(ctx context.Context, req *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
-	return c.listUsers.CallUnary(ctx, req)
+func (c *userServiceClient) ListUsers(ctx context.Context, req *v1.ListUsersRequest) (*v1.ListUsersResponse, error) {
+	response, err := c.listUsers.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetOIDCStatus calls mantrae.v1.UserService.GetOIDCStatus.
-func (c *userServiceClient) GetOIDCStatus(ctx context.Context, req *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error) {
-	return c.getOIDCStatus.CallUnary(ctx, req)
+func (c *userServiceClient) GetOIDCStatus(ctx context.Context, req *v1.GetOIDCStatusRequest) (*v1.GetOIDCStatusResponse, error) {
+	response, err := c.getOIDCStatus.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UserServiceHandler is an implementation of the mantrae.v1.UserService service.
 type UserServiceHandler interface {
-	LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error)
-	LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error)
-	VerifyOTP(context.Context, *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error)
-	SendOTP(context.Context, *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error)
-	GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error)
-	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
-	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
-	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
-	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
-	GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error)
+	LoginUser(context.Context, *v1.LoginUserRequest) (*v1.LoginUserResponse, error)
+	LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error)
+	VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error)
+	SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error)
+	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
+	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
+	UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error)
+	DeleteUser(context.Context, *v1.DeleteUserRequest) (*v1.DeleteUserResponse, error)
+	ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error)
+	GetOIDCStatus(context.Context, *v1.GetOIDCStatusRequest) (*v1.GetOIDCStatusResponse, error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -231,63 +271,63 @@ type UserServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	userServiceMethods := v1.File_mantrae_v1_user_proto.Services().ByName("UserService").Methods()
-	userServiceLoginUserHandler := connect.NewUnaryHandler(
+	userServiceLoginUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceLoginUserProcedure,
 		svc.LoginUser,
 		connect.WithSchema(userServiceMethods.ByName("LoginUser")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceLogoutUserHandler := connect.NewUnaryHandler(
+	userServiceLogoutUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceLogoutUserProcedure,
 		svc.LogoutUser,
 		connect.WithSchema(userServiceMethods.ByName("LogoutUser")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceVerifyOTPHandler := connect.NewUnaryHandler(
+	userServiceVerifyOTPHandler := connect.NewUnaryHandlerSimple(
 		UserServiceVerifyOTPProcedure,
 		svc.VerifyOTP,
 		connect.WithSchema(userServiceMethods.ByName("VerifyOTP")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceSendOTPHandler := connect.NewUnaryHandler(
+	userServiceSendOTPHandler := connect.NewUnaryHandlerSimple(
 		UserServiceSendOTPProcedure,
 		svc.SendOTP,
 		connect.WithSchema(userServiceMethods.ByName("SendOTP")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceGetUserHandler := connect.NewUnaryHandler(
+	userServiceGetUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceGetUserProcedure,
 		svc.GetUser,
 		connect.WithSchema(userServiceMethods.ByName("GetUser")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceCreateUserHandler := connect.NewUnaryHandler(
+	userServiceCreateUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceCreateUserProcedure,
 		svc.CreateUser,
 		connect.WithSchema(userServiceMethods.ByName("CreateUser")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceUpdateUserHandler := connect.NewUnaryHandler(
+	userServiceUpdateUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceUpdateUserProcedure,
 		svc.UpdateUser,
 		connect.WithSchema(userServiceMethods.ByName("UpdateUser")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceDeleteUserHandler := connect.NewUnaryHandler(
+	userServiceDeleteUserHandler := connect.NewUnaryHandlerSimple(
 		UserServiceDeleteUserProcedure,
 		svc.DeleteUser,
 		connect.WithSchema(userServiceMethods.ByName("DeleteUser")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceListUsersHandler := connect.NewUnaryHandler(
+	userServiceListUsersHandler := connect.NewUnaryHandlerSimple(
 		UserServiceListUsersProcedure,
 		svc.ListUsers,
 		connect.WithSchema(userServiceMethods.ByName("ListUsers")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceGetOIDCStatusHandler := connect.NewUnaryHandler(
+	userServiceGetOIDCStatusHandler := connect.NewUnaryHandlerSimple(
 		UserServiceGetOIDCStatusProcedure,
 		svc.GetOIDCStatus,
 		connect.WithSchema(userServiceMethods.ByName("GetOIDCStatus")),
@@ -324,42 +364,42 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 // UnimplementedUserServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUserServiceHandler struct{}
 
-func (UnimplementedUserServiceHandler) LoginUser(context.Context, *connect.Request[v1.LoginUserRequest]) (*connect.Response[v1.LoginUserResponse], error) {
+func (UnimplementedUserServiceHandler) LoginUser(context.Context, *v1.LoginUserRequest) (*v1.LoginUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.LoginUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) LogoutUser(context.Context, *connect.Request[v1.LogoutUserRequest]) (*connect.Response[v1.LogoutUserResponse], error) {
+func (UnimplementedUserServiceHandler) LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.LogoutUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) VerifyOTP(context.Context, *connect.Request[v1.VerifyOTPRequest]) (*connect.Response[v1.VerifyOTPResponse], error) {
+func (UnimplementedUserServiceHandler) VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.VerifyOTP is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) SendOTP(context.Context, *connect.Request[v1.SendOTPRequest]) (*connect.Response[v1.SendOTPResponse], error) {
+func (UnimplementedUserServiceHandler) SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.SendOTP is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) GetUser(context.Context, *connect.Request[v1.GetUserRequest]) (*connect.Response[v1.GetUserResponse], error) {
+func (UnimplementedUserServiceHandler) GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.GetUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error) {
+func (UnimplementedUserServiceHandler) CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.CreateUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error) {
+func (UnimplementedUserServiceHandler) UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.UpdateUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error) {
+func (UnimplementedUserServiceHandler) DeleteUser(context.Context, *v1.DeleteUserRequest) (*v1.DeleteUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.DeleteUser is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
+func (UnimplementedUserServiceHandler) ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.ListUsers is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) GetOIDCStatus(context.Context, *connect.Request[v1.GetOIDCStatusRequest]) (*connect.Response[v1.GetOIDCStatusResponse], error) {
+func (UnimplementedUserServiceHandler) GetOIDCStatus(context.Context, *v1.GetOIDCStatusRequest) (*v1.GetOIDCStatusResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.GetOIDCStatus is not implemented"))
 }

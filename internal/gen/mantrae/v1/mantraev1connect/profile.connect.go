@@ -52,11 +52,11 @@ const (
 
 // ProfileServiceClient is a client for the mantrae.v1.ProfileService service.
 type ProfileServiceClient interface {
-	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
-	CreateProfile(context.Context, *connect.Request[v1.CreateProfileRequest]) (*connect.Response[v1.CreateProfileResponse], error)
-	UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error)
-	DeleteProfile(context.Context, *connect.Request[v1.DeleteProfileRequest]) (*connect.Response[v1.DeleteProfileResponse], error)
-	ListProfiles(context.Context, *connect.Request[v1.ListProfilesRequest]) (*connect.Response[v1.ListProfilesResponse], error)
+	GetProfile(context.Context, *v1.GetProfileRequest) (*v1.GetProfileResponse, error)
+	CreateProfile(context.Context, *v1.CreateProfileRequest) (*v1.CreateProfileResponse, error)
+	UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error)
+	DeleteProfile(context.Context, *v1.DeleteProfileRequest) (*v1.DeleteProfileResponse, error)
+	ListProfiles(context.Context, *v1.ListProfilesRequest) (*v1.ListProfilesResponse, error)
 }
 
 // NewProfileServiceClient constructs a client for the mantrae.v1.ProfileService service. By
@@ -115,37 +115,57 @@ type profileServiceClient struct {
 }
 
 // GetProfile calls mantrae.v1.ProfileService.GetProfile.
-func (c *profileServiceClient) GetProfile(ctx context.Context, req *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error) {
-	return c.getProfile.CallUnary(ctx, req)
+func (c *profileServiceClient) GetProfile(ctx context.Context, req *v1.GetProfileRequest) (*v1.GetProfileResponse, error) {
+	response, err := c.getProfile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateProfile calls mantrae.v1.ProfileService.CreateProfile.
-func (c *profileServiceClient) CreateProfile(ctx context.Context, req *connect.Request[v1.CreateProfileRequest]) (*connect.Response[v1.CreateProfileResponse], error) {
-	return c.createProfile.CallUnary(ctx, req)
+func (c *profileServiceClient) CreateProfile(ctx context.Context, req *v1.CreateProfileRequest) (*v1.CreateProfileResponse, error) {
+	response, err := c.createProfile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateProfile calls mantrae.v1.ProfileService.UpdateProfile.
-func (c *profileServiceClient) UpdateProfile(ctx context.Context, req *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error) {
-	return c.updateProfile.CallUnary(ctx, req)
+func (c *profileServiceClient) UpdateProfile(ctx context.Context, req *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error) {
+	response, err := c.updateProfile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteProfile calls mantrae.v1.ProfileService.DeleteProfile.
-func (c *profileServiceClient) DeleteProfile(ctx context.Context, req *connect.Request[v1.DeleteProfileRequest]) (*connect.Response[v1.DeleteProfileResponse], error) {
-	return c.deleteProfile.CallUnary(ctx, req)
+func (c *profileServiceClient) DeleteProfile(ctx context.Context, req *v1.DeleteProfileRequest) (*v1.DeleteProfileResponse, error) {
+	response, err := c.deleteProfile.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListProfiles calls mantrae.v1.ProfileService.ListProfiles.
-func (c *profileServiceClient) ListProfiles(ctx context.Context, req *connect.Request[v1.ListProfilesRequest]) (*connect.Response[v1.ListProfilesResponse], error) {
-	return c.listProfiles.CallUnary(ctx, req)
+func (c *profileServiceClient) ListProfiles(ctx context.Context, req *v1.ListProfilesRequest) (*v1.ListProfilesResponse, error) {
+	response, err := c.listProfiles.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ProfileServiceHandler is an implementation of the mantrae.v1.ProfileService service.
 type ProfileServiceHandler interface {
-	GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error)
-	CreateProfile(context.Context, *connect.Request[v1.CreateProfileRequest]) (*connect.Response[v1.CreateProfileResponse], error)
-	UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error)
-	DeleteProfile(context.Context, *connect.Request[v1.DeleteProfileRequest]) (*connect.Response[v1.DeleteProfileResponse], error)
-	ListProfiles(context.Context, *connect.Request[v1.ListProfilesRequest]) (*connect.Response[v1.ListProfilesResponse], error)
+	GetProfile(context.Context, *v1.GetProfileRequest) (*v1.GetProfileResponse, error)
+	CreateProfile(context.Context, *v1.CreateProfileRequest) (*v1.CreateProfileResponse, error)
+	UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error)
+	DeleteProfile(context.Context, *v1.DeleteProfileRequest) (*v1.DeleteProfileResponse, error)
+	ListProfiles(context.Context, *v1.ListProfilesRequest) (*v1.ListProfilesResponse, error)
 }
 
 // NewProfileServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -155,32 +175,32 @@ type ProfileServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewProfileServiceHandler(svc ProfileServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	profileServiceMethods := v1.File_mantrae_v1_profile_proto.Services().ByName("ProfileService").Methods()
-	profileServiceGetProfileHandler := connect.NewUnaryHandler(
+	profileServiceGetProfileHandler := connect.NewUnaryHandlerSimple(
 		ProfileServiceGetProfileProcedure,
 		svc.GetProfile,
 		connect.WithSchema(profileServiceMethods.ByName("GetProfile")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	profileServiceCreateProfileHandler := connect.NewUnaryHandler(
+	profileServiceCreateProfileHandler := connect.NewUnaryHandlerSimple(
 		ProfileServiceCreateProfileProcedure,
 		svc.CreateProfile,
 		connect.WithSchema(profileServiceMethods.ByName("CreateProfile")),
 		connect.WithHandlerOptions(opts...),
 	)
-	profileServiceUpdateProfileHandler := connect.NewUnaryHandler(
+	profileServiceUpdateProfileHandler := connect.NewUnaryHandlerSimple(
 		ProfileServiceUpdateProfileProcedure,
 		svc.UpdateProfile,
 		connect.WithSchema(profileServiceMethods.ByName("UpdateProfile")),
 		connect.WithHandlerOptions(opts...),
 	)
-	profileServiceDeleteProfileHandler := connect.NewUnaryHandler(
+	profileServiceDeleteProfileHandler := connect.NewUnaryHandlerSimple(
 		ProfileServiceDeleteProfileProcedure,
 		svc.DeleteProfile,
 		connect.WithSchema(profileServiceMethods.ByName("DeleteProfile")),
 		connect.WithHandlerOptions(opts...),
 	)
-	profileServiceListProfilesHandler := connect.NewUnaryHandler(
+	profileServiceListProfilesHandler := connect.NewUnaryHandlerSimple(
 		ProfileServiceListProfilesProcedure,
 		svc.ListProfiles,
 		connect.WithSchema(profileServiceMethods.ByName("ListProfiles")),
@@ -208,22 +228,22 @@ func NewProfileServiceHandler(svc ProfileServiceHandler, opts ...connect.Handler
 // UnimplementedProfileServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedProfileServiceHandler struct{}
 
-func (UnimplementedProfileServiceHandler) GetProfile(context.Context, *connect.Request[v1.GetProfileRequest]) (*connect.Response[v1.GetProfileResponse], error) {
+func (UnimplementedProfileServiceHandler) GetProfile(context.Context, *v1.GetProfileRequest) (*v1.GetProfileResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ProfileService.GetProfile is not implemented"))
 }
 
-func (UnimplementedProfileServiceHandler) CreateProfile(context.Context, *connect.Request[v1.CreateProfileRequest]) (*connect.Response[v1.CreateProfileResponse], error) {
+func (UnimplementedProfileServiceHandler) CreateProfile(context.Context, *v1.CreateProfileRequest) (*v1.CreateProfileResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ProfileService.CreateProfile is not implemented"))
 }
 
-func (UnimplementedProfileServiceHandler) UpdateProfile(context.Context, *connect.Request[v1.UpdateProfileRequest]) (*connect.Response[v1.UpdateProfileResponse], error) {
+func (UnimplementedProfileServiceHandler) UpdateProfile(context.Context, *v1.UpdateProfileRequest) (*v1.UpdateProfileResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ProfileService.UpdateProfile is not implemented"))
 }
 
-func (UnimplementedProfileServiceHandler) DeleteProfile(context.Context, *connect.Request[v1.DeleteProfileRequest]) (*connect.Response[v1.DeleteProfileResponse], error) {
+func (UnimplementedProfileServiceHandler) DeleteProfile(context.Context, *v1.DeleteProfileRequest) (*v1.DeleteProfileResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ProfileService.DeleteProfile is not implemented"))
 }
 
-func (UnimplementedProfileServiceHandler) ListProfiles(context.Context, *connect.Request[v1.ListProfilesRequest]) (*connect.Response[v1.ListProfilesResponse], error) {
+func (UnimplementedProfileServiceHandler) ListProfiles(context.Context, *v1.ListProfilesRequest) (*v1.ListProfilesResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.ProfileService.ListProfiles is not implemented"))
 }

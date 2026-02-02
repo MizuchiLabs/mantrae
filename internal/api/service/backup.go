@@ -22,18 +22,18 @@ func NewBackupService(app *config.App) *BackupService {
 
 func (s *BackupService) CreateBackup(
 	ctx context.Context,
-	req *connect.Request[mantraev1.CreateBackupRequest],
-) (*connect.Response[mantraev1.CreateBackupResponse], error) {
+	req *mantraev1.CreateBackupRequest,
+) (*mantraev1.CreateBackupResponse, error) {
 	if err := s.app.BM.Create(ctx); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.CreateBackupResponse{}), nil
+	return &mantraev1.CreateBackupResponse{}, nil
 }
 
 func (s *BackupService) ListBackups(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListBackupsRequest],
-) (*connect.Response[mantraev1.ListBackupsResponse], error) {
+	req *mantraev1.ListBackupsRequest,
+) (*mantraev1.ListBackupsResponse, error) {
 	files, err := s.app.BM.List(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -47,43 +47,43 @@ func (s *BackupService) ListBackups(
 			CreatedAt: db.SafeTimestamp(file.Timestamp),
 		})
 	}
-	return connect.NewResponse(&mantraev1.ListBackupsResponse{Backups: backups}), nil
+	return &mantraev1.ListBackupsResponse{Backups: backups}, nil
 }
 
 func (s *BackupService) DeleteBackup(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DeleteBackupRequest],
-) (*connect.Response[mantraev1.DeleteBackupResponse], error) {
-	if err := s.app.BM.Delete(ctx, req.Msg.Name); err != nil {
+	req *mantraev1.DeleteBackupRequest,
+) (*mantraev1.DeleteBackupResponse, error) {
+	if err := s.app.BM.Delete(ctx, req.Name); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.DeleteBackupResponse{}), nil
+	return &mantraev1.DeleteBackupResponse{}, nil
 }
 
 func (s *BackupService) RestoreBackup(
 	ctx context.Context,
-	req *connect.Request[mantraev1.RestoreBackupRequest],
-) (*connect.Response[mantraev1.RestoreBackupResponse], error) {
-	if !s.app.BM.IsValidBackupFile(req.Msg.Name) {
+	req *mantraev1.RestoreBackupRequest,
+) (*mantraev1.RestoreBackupResponse, error) {
+	if !s.app.BM.IsValidBackupFile(req.Name) {
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,
 			errors.New("invalid backup file name"),
 		)
 	}
-	if err := s.app.BM.Restore(ctx, req.Msg.Name); err != nil {
+	if err := s.app.BM.Restore(ctx, req.Name); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	return connect.NewResponse(&mantraev1.RestoreBackupResponse{}), nil
+	return &mantraev1.RestoreBackupResponse{}, nil
 }
 
 func (s *BackupService) DownloadBackup(
 	ctx context.Context,
-	req *connect.Request[mantraev1.DownloadBackupRequest],
+	req *mantraev1.DownloadBackupRequest,
 	stream *connect.ServerStream[mantraev1.DownloadBackupResponse],
 ) error {
-	filename := req.Msg.Name
-	if req.Msg.Name == "" {
+	filename := req.Name
+	if req.Name == "" {
 		files, err := s.app.BM.Storage.List(ctx)
 		if err != nil {
 			return connect.NewError(connect.CodeInternal, err)

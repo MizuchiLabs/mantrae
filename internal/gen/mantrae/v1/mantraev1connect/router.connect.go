@@ -51,11 +51,11 @@ const (
 
 // RouterServiceClient is a client for the mantrae.v1.RouterService service.
 type RouterServiceClient interface {
-	GetRouter(context.Context, *connect.Request[v1.GetRouterRequest]) (*connect.Response[v1.GetRouterResponse], error)
-	CreateRouter(context.Context, *connect.Request[v1.CreateRouterRequest]) (*connect.Response[v1.CreateRouterResponse], error)
-	UpdateRouter(context.Context, *connect.Request[v1.UpdateRouterRequest]) (*connect.Response[v1.UpdateRouterResponse], error)
-	DeleteRouter(context.Context, *connect.Request[v1.DeleteRouterRequest]) (*connect.Response[v1.DeleteRouterResponse], error)
-	ListRouters(context.Context, *connect.Request[v1.ListRoutersRequest]) (*connect.Response[v1.ListRoutersResponse], error)
+	GetRouter(context.Context, *v1.GetRouterRequest) (*v1.GetRouterResponse, error)
+	CreateRouter(context.Context, *v1.CreateRouterRequest) (*v1.CreateRouterResponse, error)
+	UpdateRouter(context.Context, *v1.UpdateRouterRequest) (*v1.UpdateRouterResponse, error)
+	DeleteRouter(context.Context, *v1.DeleteRouterRequest) (*v1.DeleteRouterResponse, error)
+	ListRouters(context.Context, *v1.ListRoutersRequest) (*v1.ListRoutersResponse, error)
 }
 
 // NewRouterServiceClient constructs a client for the mantrae.v1.RouterService service. By default,
@@ -114,37 +114,57 @@ type routerServiceClient struct {
 }
 
 // GetRouter calls mantrae.v1.RouterService.GetRouter.
-func (c *routerServiceClient) GetRouter(ctx context.Context, req *connect.Request[v1.GetRouterRequest]) (*connect.Response[v1.GetRouterResponse], error) {
-	return c.getRouter.CallUnary(ctx, req)
+func (c *routerServiceClient) GetRouter(ctx context.Context, req *v1.GetRouterRequest) (*v1.GetRouterResponse, error) {
+	response, err := c.getRouter.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateRouter calls mantrae.v1.RouterService.CreateRouter.
-func (c *routerServiceClient) CreateRouter(ctx context.Context, req *connect.Request[v1.CreateRouterRequest]) (*connect.Response[v1.CreateRouterResponse], error) {
-	return c.createRouter.CallUnary(ctx, req)
+func (c *routerServiceClient) CreateRouter(ctx context.Context, req *v1.CreateRouterRequest) (*v1.CreateRouterResponse, error) {
+	response, err := c.createRouter.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateRouter calls mantrae.v1.RouterService.UpdateRouter.
-func (c *routerServiceClient) UpdateRouter(ctx context.Context, req *connect.Request[v1.UpdateRouterRequest]) (*connect.Response[v1.UpdateRouterResponse], error) {
-	return c.updateRouter.CallUnary(ctx, req)
+func (c *routerServiceClient) UpdateRouter(ctx context.Context, req *v1.UpdateRouterRequest) (*v1.UpdateRouterResponse, error) {
+	response, err := c.updateRouter.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteRouter calls mantrae.v1.RouterService.DeleteRouter.
-func (c *routerServiceClient) DeleteRouter(ctx context.Context, req *connect.Request[v1.DeleteRouterRequest]) (*connect.Response[v1.DeleteRouterResponse], error) {
-	return c.deleteRouter.CallUnary(ctx, req)
+func (c *routerServiceClient) DeleteRouter(ctx context.Context, req *v1.DeleteRouterRequest) (*v1.DeleteRouterResponse, error) {
+	response, err := c.deleteRouter.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListRouters calls mantrae.v1.RouterService.ListRouters.
-func (c *routerServiceClient) ListRouters(ctx context.Context, req *connect.Request[v1.ListRoutersRequest]) (*connect.Response[v1.ListRoutersResponse], error) {
-	return c.listRouters.CallUnary(ctx, req)
+func (c *routerServiceClient) ListRouters(ctx context.Context, req *v1.ListRoutersRequest) (*v1.ListRoutersResponse, error) {
+	response, err := c.listRouters.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // RouterServiceHandler is an implementation of the mantrae.v1.RouterService service.
 type RouterServiceHandler interface {
-	GetRouter(context.Context, *connect.Request[v1.GetRouterRequest]) (*connect.Response[v1.GetRouterResponse], error)
-	CreateRouter(context.Context, *connect.Request[v1.CreateRouterRequest]) (*connect.Response[v1.CreateRouterResponse], error)
-	UpdateRouter(context.Context, *connect.Request[v1.UpdateRouterRequest]) (*connect.Response[v1.UpdateRouterResponse], error)
-	DeleteRouter(context.Context, *connect.Request[v1.DeleteRouterRequest]) (*connect.Response[v1.DeleteRouterResponse], error)
-	ListRouters(context.Context, *connect.Request[v1.ListRoutersRequest]) (*connect.Response[v1.ListRoutersResponse], error)
+	GetRouter(context.Context, *v1.GetRouterRequest) (*v1.GetRouterResponse, error)
+	CreateRouter(context.Context, *v1.CreateRouterRequest) (*v1.CreateRouterResponse, error)
+	UpdateRouter(context.Context, *v1.UpdateRouterRequest) (*v1.UpdateRouterResponse, error)
+	DeleteRouter(context.Context, *v1.DeleteRouterRequest) (*v1.DeleteRouterResponse, error)
+	ListRouters(context.Context, *v1.ListRoutersRequest) (*v1.ListRoutersResponse, error)
 }
 
 // NewRouterServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -154,32 +174,32 @@ type RouterServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewRouterServiceHandler(svc RouterServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	routerServiceMethods := v1.File_mantrae_v1_router_proto.Services().ByName("RouterService").Methods()
-	routerServiceGetRouterHandler := connect.NewUnaryHandler(
+	routerServiceGetRouterHandler := connect.NewUnaryHandlerSimple(
 		RouterServiceGetRouterProcedure,
 		svc.GetRouter,
 		connect.WithSchema(routerServiceMethods.ByName("GetRouter")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	routerServiceCreateRouterHandler := connect.NewUnaryHandler(
+	routerServiceCreateRouterHandler := connect.NewUnaryHandlerSimple(
 		RouterServiceCreateRouterProcedure,
 		svc.CreateRouter,
 		connect.WithSchema(routerServiceMethods.ByName("CreateRouter")),
 		connect.WithHandlerOptions(opts...),
 	)
-	routerServiceUpdateRouterHandler := connect.NewUnaryHandler(
+	routerServiceUpdateRouterHandler := connect.NewUnaryHandlerSimple(
 		RouterServiceUpdateRouterProcedure,
 		svc.UpdateRouter,
 		connect.WithSchema(routerServiceMethods.ByName("UpdateRouter")),
 		connect.WithHandlerOptions(opts...),
 	)
-	routerServiceDeleteRouterHandler := connect.NewUnaryHandler(
+	routerServiceDeleteRouterHandler := connect.NewUnaryHandlerSimple(
 		RouterServiceDeleteRouterProcedure,
 		svc.DeleteRouter,
 		connect.WithSchema(routerServiceMethods.ByName("DeleteRouter")),
 		connect.WithHandlerOptions(opts...),
 	)
-	routerServiceListRoutersHandler := connect.NewUnaryHandler(
+	routerServiceListRoutersHandler := connect.NewUnaryHandlerSimple(
 		RouterServiceListRoutersProcedure,
 		svc.ListRouters,
 		connect.WithSchema(routerServiceMethods.ByName("ListRouters")),
@@ -207,22 +227,22 @@ func NewRouterServiceHandler(svc RouterServiceHandler, opts ...connect.HandlerOp
 // UnimplementedRouterServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedRouterServiceHandler struct{}
 
-func (UnimplementedRouterServiceHandler) GetRouter(context.Context, *connect.Request[v1.GetRouterRequest]) (*connect.Response[v1.GetRouterResponse], error) {
+func (UnimplementedRouterServiceHandler) GetRouter(context.Context, *v1.GetRouterRequest) (*v1.GetRouterResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.RouterService.GetRouter is not implemented"))
 }
 
-func (UnimplementedRouterServiceHandler) CreateRouter(context.Context, *connect.Request[v1.CreateRouterRequest]) (*connect.Response[v1.CreateRouterResponse], error) {
+func (UnimplementedRouterServiceHandler) CreateRouter(context.Context, *v1.CreateRouterRequest) (*v1.CreateRouterResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.RouterService.CreateRouter is not implemented"))
 }
 
-func (UnimplementedRouterServiceHandler) UpdateRouter(context.Context, *connect.Request[v1.UpdateRouterRequest]) (*connect.Response[v1.UpdateRouterResponse], error) {
+func (UnimplementedRouterServiceHandler) UpdateRouter(context.Context, *v1.UpdateRouterRequest) (*v1.UpdateRouterResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.RouterService.UpdateRouter is not implemented"))
 }
 
-func (UnimplementedRouterServiceHandler) DeleteRouter(context.Context, *connect.Request[v1.DeleteRouterRequest]) (*connect.Response[v1.DeleteRouterResponse], error) {
+func (UnimplementedRouterServiceHandler) DeleteRouter(context.Context, *v1.DeleteRouterRequest) (*v1.DeleteRouterResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.RouterService.DeleteRouter is not implemented"))
 }
 
-func (UnimplementedRouterServiceHandler) ListRouters(context.Context, *connect.Request[v1.ListRoutersRequest]) (*connect.Response[v1.ListRoutersResponse], error) {
+func (UnimplementedRouterServiceHandler) ListRouters(context.Context, *v1.ListRoutersRequest) (*v1.ListRoutersResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.RouterService.ListRouters is not implemented"))
 }

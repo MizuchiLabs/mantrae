@@ -55,12 +55,12 @@ const (
 
 // MiddlewareServiceClient is a client for the mantrae.v1.MiddlewareService service.
 type MiddlewareServiceClient interface {
-	GetMiddleware(context.Context, *connect.Request[v1.GetMiddlewareRequest]) (*connect.Response[v1.GetMiddlewareResponse], error)
-	CreateMiddleware(context.Context, *connect.Request[v1.CreateMiddlewareRequest]) (*connect.Response[v1.CreateMiddlewareResponse], error)
-	UpdateMiddleware(context.Context, *connect.Request[v1.UpdateMiddlewareRequest]) (*connect.Response[v1.UpdateMiddlewareResponse], error)
-	DeleteMiddleware(context.Context, *connect.Request[v1.DeleteMiddlewareRequest]) (*connect.Response[v1.DeleteMiddlewareResponse], error)
-	ListMiddlewares(context.Context, *connect.Request[v1.ListMiddlewaresRequest]) (*connect.Response[v1.ListMiddlewaresResponse], error)
-	GetMiddlewarePlugins(context.Context, *connect.Request[v1.GetMiddlewarePluginsRequest]) (*connect.Response[v1.GetMiddlewarePluginsResponse], error)
+	GetMiddleware(context.Context, *v1.GetMiddlewareRequest) (*v1.GetMiddlewareResponse, error)
+	CreateMiddleware(context.Context, *v1.CreateMiddlewareRequest) (*v1.CreateMiddlewareResponse, error)
+	UpdateMiddleware(context.Context, *v1.UpdateMiddlewareRequest) (*v1.UpdateMiddlewareResponse, error)
+	DeleteMiddleware(context.Context, *v1.DeleteMiddlewareRequest) (*v1.DeleteMiddlewareResponse, error)
+	ListMiddlewares(context.Context, *v1.ListMiddlewaresRequest) (*v1.ListMiddlewaresResponse, error)
+	GetMiddlewarePlugins(context.Context, *v1.GetMiddlewarePluginsRequest) (*v1.GetMiddlewarePluginsResponse, error)
 }
 
 // NewMiddlewareServiceClient constructs a client for the mantrae.v1.MiddlewareService service. By
@@ -127,43 +127,67 @@ type middlewareServiceClient struct {
 }
 
 // GetMiddleware calls mantrae.v1.MiddlewareService.GetMiddleware.
-func (c *middlewareServiceClient) GetMiddleware(ctx context.Context, req *connect.Request[v1.GetMiddlewareRequest]) (*connect.Response[v1.GetMiddlewareResponse], error) {
-	return c.getMiddleware.CallUnary(ctx, req)
+func (c *middlewareServiceClient) GetMiddleware(ctx context.Context, req *v1.GetMiddlewareRequest) (*v1.GetMiddlewareResponse, error) {
+	response, err := c.getMiddleware.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateMiddleware calls mantrae.v1.MiddlewareService.CreateMiddleware.
-func (c *middlewareServiceClient) CreateMiddleware(ctx context.Context, req *connect.Request[v1.CreateMiddlewareRequest]) (*connect.Response[v1.CreateMiddlewareResponse], error) {
-	return c.createMiddleware.CallUnary(ctx, req)
+func (c *middlewareServiceClient) CreateMiddleware(ctx context.Context, req *v1.CreateMiddlewareRequest) (*v1.CreateMiddlewareResponse, error) {
+	response, err := c.createMiddleware.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // UpdateMiddleware calls mantrae.v1.MiddlewareService.UpdateMiddleware.
-func (c *middlewareServiceClient) UpdateMiddleware(ctx context.Context, req *connect.Request[v1.UpdateMiddlewareRequest]) (*connect.Response[v1.UpdateMiddlewareResponse], error) {
-	return c.updateMiddleware.CallUnary(ctx, req)
+func (c *middlewareServiceClient) UpdateMiddleware(ctx context.Context, req *v1.UpdateMiddlewareRequest) (*v1.UpdateMiddlewareResponse, error) {
+	response, err := c.updateMiddleware.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // DeleteMiddleware calls mantrae.v1.MiddlewareService.DeleteMiddleware.
-func (c *middlewareServiceClient) DeleteMiddleware(ctx context.Context, req *connect.Request[v1.DeleteMiddlewareRequest]) (*connect.Response[v1.DeleteMiddlewareResponse], error) {
-	return c.deleteMiddleware.CallUnary(ctx, req)
+func (c *middlewareServiceClient) DeleteMiddleware(ctx context.Context, req *v1.DeleteMiddlewareRequest) (*v1.DeleteMiddlewareResponse, error) {
+	response, err := c.deleteMiddleware.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // ListMiddlewares calls mantrae.v1.MiddlewareService.ListMiddlewares.
-func (c *middlewareServiceClient) ListMiddlewares(ctx context.Context, req *connect.Request[v1.ListMiddlewaresRequest]) (*connect.Response[v1.ListMiddlewaresResponse], error) {
-	return c.listMiddlewares.CallUnary(ctx, req)
+func (c *middlewareServiceClient) ListMiddlewares(ctx context.Context, req *v1.ListMiddlewaresRequest) (*v1.ListMiddlewaresResponse, error) {
+	response, err := c.listMiddlewares.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // GetMiddlewarePlugins calls mantrae.v1.MiddlewareService.GetMiddlewarePlugins.
-func (c *middlewareServiceClient) GetMiddlewarePlugins(ctx context.Context, req *connect.Request[v1.GetMiddlewarePluginsRequest]) (*connect.Response[v1.GetMiddlewarePluginsResponse], error) {
-	return c.getMiddlewarePlugins.CallUnary(ctx, req)
+func (c *middlewareServiceClient) GetMiddlewarePlugins(ctx context.Context, req *v1.GetMiddlewarePluginsRequest) (*v1.GetMiddlewarePluginsResponse, error) {
+	response, err := c.getMiddlewarePlugins.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // MiddlewareServiceHandler is an implementation of the mantrae.v1.MiddlewareService service.
 type MiddlewareServiceHandler interface {
-	GetMiddleware(context.Context, *connect.Request[v1.GetMiddlewareRequest]) (*connect.Response[v1.GetMiddlewareResponse], error)
-	CreateMiddleware(context.Context, *connect.Request[v1.CreateMiddlewareRequest]) (*connect.Response[v1.CreateMiddlewareResponse], error)
-	UpdateMiddleware(context.Context, *connect.Request[v1.UpdateMiddlewareRequest]) (*connect.Response[v1.UpdateMiddlewareResponse], error)
-	DeleteMiddleware(context.Context, *connect.Request[v1.DeleteMiddlewareRequest]) (*connect.Response[v1.DeleteMiddlewareResponse], error)
-	ListMiddlewares(context.Context, *connect.Request[v1.ListMiddlewaresRequest]) (*connect.Response[v1.ListMiddlewaresResponse], error)
-	GetMiddlewarePlugins(context.Context, *connect.Request[v1.GetMiddlewarePluginsRequest]) (*connect.Response[v1.GetMiddlewarePluginsResponse], error)
+	GetMiddleware(context.Context, *v1.GetMiddlewareRequest) (*v1.GetMiddlewareResponse, error)
+	CreateMiddleware(context.Context, *v1.CreateMiddlewareRequest) (*v1.CreateMiddlewareResponse, error)
+	UpdateMiddleware(context.Context, *v1.UpdateMiddlewareRequest) (*v1.UpdateMiddlewareResponse, error)
+	DeleteMiddleware(context.Context, *v1.DeleteMiddlewareRequest) (*v1.DeleteMiddlewareResponse, error)
+	ListMiddlewares(context.Context, *v1.ListMiddlewaresRequest) (*v1.ListMiddlewaresResponse, error)
+	GetMiddlewarePlugins(context.Context, *v1.GetMiddlewarePluginsRequest) (*v1.GetMiddlewarePluginsResponse, error)
 }
 
 // NewMiddlewareServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -173,39 +197,39 @@ type MiddlewareServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewMiddlewareServiceHandler(svc MiddlewareServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	middlewareServiceMethods := v1.File_mantrae_v1_middleware_proto.Services().ByName("MiddlewareService").Methods()
-	middlewareServiceGetMiddlewareHandler := connect.NewUnaryHandler(
+	middlewareServiceGetMiddlewareHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceGetMiddlewareProcedure,
 		svc.GetMiddleware,
 		connect.WithSchema(middlewareServiceMethods.ByName("GetMiddleware")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	middlewareServiceCreateMiddlewareHandler := connect.NewUnaryHandler(
+	middlewareServiceCreateMiddlewareHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceCreateMiddlewareProcedure,
 		svc.CreateMiddleware,
 		connect.WithSchema(middlewareServiceMethods.ByName("CreateMiddleware")),
 		connect.WithHandlerOptions(opts...),
 	)
-	middlewareServiceUpdateMiddlewareHandler := connect.NewUnaryHandler(
+	middlewareServiceUpdateMiddlewareHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceUpdateMiddlewareProcedure,
 		svc.UpdateMiddleware,
 		connect.WithSchema(middlewareServiceMethods.ByName("UpdateMiddleware")),
 		connect.WithHandlerOptions(opts...),
 	)
-	middlewareServiceDeleteMiddlewareHandler := connect.NewUnaryHandler(
+	middlewareServiceDeleteMiddlewareHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceDeleteMiddlewareProcedure,
 		svc.DeleteMiddleware,
 		connect.WithSchema(middlewareServiceMethods.ByName("DeleteMiddleware")),
 		connect.WithHandlerOptions(opts...),
 	)
-	middlewareServiceListMiddlewaresHandler := connect.NewUnaryHandler(
+	middlewareServiceListMiddlewaresHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceListMiddlewaresProcedure,
 		svc.ListMiddlewares,
 		connect.WithSchema(middlewareServiceMethods.ByName("ListMiddlewares")),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
-	middlewareServiceGetMiddlewarePluginsHandler := connect.NewUnaryHandler(
+	middlewareServiceGetMiddlewarePluginsHandler := connect.NewUnaryHandlerSimple(
 		MiddlewareServiceGetMiddlewarePluginsProcedure,
 		svc.GetMiddlewarePlugins,
 		connect.WithSchema(middlewareServiceMethods.ByName("GetMiddlewarePlugins")),
@@ -235,26 +259,26 @@ func NewMiddlewareServiceHandler(svc MiddlewareServiceHandler, opts ...connect.H
 // UnimplementedMiddlewareServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedMiddlewareServiceHandler struct{}
 
-func (UnimplementedMiddlewareServiceHandler) GetMiddleware(context.Context, *connect.Request[v1.GetMiddlewareRequest]) (*connect.Response[v1.GetMiddlewareResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) GetMiddleware(context.Context, *v1.GetMiddlewareRequest) (*v1.GetMiddlewareResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.GetMiddleware is not implemented"))
 }
 
-func (UnimplementedMiddlewareServiceHandler) CreateMiddleware(context.Context, *connect.Request[v1.CreateMiddlewareRequest]) (*connect.Response[v1.CreateMiddlewareResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) CreateMiddleware(context.Context, *v1.CreateMiddlewareRequest) (*v1.CreateMiddlewareResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.CreateMiddleware is not implemented"))
 }
 
-func (UnimplementedMiddlewareServiceHandler) UpdateMiddleware(context.Context, *connect.Request[v1.UpdateMiddlewareRequest]) (*connect.Response[v1.UpdateMiddlewareResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) UpdateMiddleware(context.Context, *v1.UpdateMiddlewareRequest) (*v1.UpdateMiddlewareResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.UpdateMiddleware is not implemented"))
 }
 
-func (UnimplementedMiddlewareServiceHandler) DeleteMiddleware(context.Context, *connect.Request[v1.DeleteMiddlewareRequest]) (*connect.Response[v1.DeleteMiddlewareResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) DeleteMiddleware(context.Context, *v1.DeleteMiddlewareRequest) (*v1.DeleteMiddlewareResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.DeleteMiddleware is not implemented"))
 }
 
-func (UnimplementedMiddlewareServiceHandler) ListMiddlewares(context.Context, *connect.Request[v1.ListMiddlewaresRequest]) (*connect.Response[v1.ListMiddlewaresResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) ListMiddlewares(context.Context, *v1.ListMiddlewaresRequest) (*v1.ListMiddlewaresResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.ListMiddlewares is not implemented"))
 }
 
-func (UnimplementedMiddlewareServiceHandler) GetMiddlewarePlugins(context.Context, *connect.Request[v1.GetMiddlewarePluginsRequest]) (*connect.Response[v1.GetMiddlewarePluginsResponse], error) {
+func (UnimplementedMiddlewareServiceHandler) GetMiddlewarePlugins(context.Context, *v1.GetMiddlewarePluginsRequest) (*v1.GetMiddlewarePluginsResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.MiddlewareService.GetMiddlewarePlugins is not implemented"))
 }

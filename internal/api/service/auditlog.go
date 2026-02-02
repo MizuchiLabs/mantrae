@@ -20,18 +20,18 @@ func NewAuditLogService(app *config.App) *AuditLogService {
 
 func (s *AuditLogService) ListAuditLogs(
 	ctx context.Context,
-	req *connect.Request[mantraev1.ListAuditLogsRequest],
-) (*connect.Response[mantraev1.ListAuditLogsResponse], error) {
+	req *mantraev1.ListAuditLogsRequest,
+) (*mantraev1.ListAuditLogsResponse, error) {
 	params := &db.ListAuditLogsParams{
-		Limit:  req.Msg.Limit,
-		Offset: req.Msg.Offset,
+		Limit:  req.Limit,
+		Offset: req.Offset,
 	}
 
-	result, err := s.app.Conn.Query.ListAuditLogs(ctx, params)
+	result, err := s.app.Conn.Q.ListAuditLogs(ctx, params)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	totalCount, err := s.app.Conn.Query.CountAuditLogs(ctx)
+	totalCount, err := s.app.Conn.Q.CountAuditLogs(ctx)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -40,8 +40,8 @@ func (s *AuditLogService) ListAuditLogs(
 	for _, l := range result {
 		auditLogs = append(auditLogs, l.ToProto())
 	}
-	return connect.NewResponse(&mantraev1.ListAuditLogsResponse{
+	return &mantraev1.ListAuditLogsResponse{
 		AuditLogs:  auditLogs,
 		TotalCount: totalCount,
-	}), nil
+	}, nil
 }

@@ -89,10 +89,9 @@ func (s *Server) Start(ctx context.Context) error {
 	// Wait for context cancellation or server error
 	select {
 	case <-ctx.Done():
-		slog.Debug("Shutting down server gracefully...")
+		slog.Debug("Shutting down server...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
-
 		return server.Shutdown(shutdownCtx)
 	case err := <-serverErr:
 		return fmt.Errorf("server error: %w", err)

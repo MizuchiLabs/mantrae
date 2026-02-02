@@ -20,33 +20,31 @@ func NewUtilService(app *config.App) *UtilService {
 
 func (s *UtilService) GetVersion(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetVersionRequest],
-) (*connect.Response[mantraev1.GetVersionResponse], error) {
-	return connect.NewResponse(&mantraev1.GetVersionResponse{
-		Version: s.app.Version,
-	}), nil
+	req *mantraev1.GetVersionRequest,
+) (*mantraev1.GetVersionResponse, error) {
+	return &mantraev1.GetVersionResponse{Version: s.app.Version}, nil
 }
 
 func (s *UtilService) GetPublicIP(
 	ctx context.Context,
-	req *connect.Request[mantraev1.GetPublicIPRequest],
-) (*connect.Response[mantraev1.GetPublicIPResponse], error) {
+	req *mantraev1.GetPublicIPRequest,
+) (*mantraev1.GetPublicIPResponse, error) {
 	ips, err := util.GetPublicIPs()
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&mantraev1.GetPublicIPResponse{
+	return &mantraev1.GetPublicIPResponse{
 		Ipv4: ips.IPv4,
 		Ipv6: ips.IPv6,
-	}), nil
+	}, nil
 }
 
 func (s *UtilService) EventStream(
 	ctx context.Context,
-	req *connect.Request[mantraev1.EventStreamRequest],
+	req *mantraev1.EventStreamRequest,
 	stream *connect.ServerStream[mantraev1.EventStreamResponse],
 ) error {
-	id, ch := s.app.Event.Subscribe(req.Msg.ProfileId)
+	id, ch := s.app.Event.Subscribe(req.ProfileId)
 	defer s.app.Event.Unsubscribe(id)
 
 	for {

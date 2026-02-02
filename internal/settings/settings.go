@@ -66,7 +66,7 @@ func NewManager(conn *store.Connection) *SettingsManager {
 
 // Start loads settings from ENV > DB > default tags
 func (sm *SettingsManager) Start(ctx context.Context) {
-	q := sm.conn.Query
+	q := sm.conn.Q
 	existing, err := q.ListSettings(ctx)
 	if err != nil {
 		log.Fatal(err)
@@ -122,7 +122,7 @@ func (sm *SettingsManager) validKeys() map[string]struct{} {
 }
 
 func (sm *SettingsManager) Get(ctx context.Context, key string) (string, bool) {
-	setting, err := sm.conn.Query.GetSetting(ctx, key)
+	setting, err := sm.conn.Q.GetSetting(ctx, key)
 	if err != nil {
 		return "", false
 	}
@@ -140,7 +140,7 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 	}
 
 	// Update database
-	if err := sm.conn.Query.UpsertSetting(ctx, params); err != nil {
+	if err := sm.conn.Q.UpsertSetting(ctx, params); err != nil {
 		return fmt.Errorf("failed to update setting in database: %w", err)
 	}
 
@@ -148,7 +148,7 @@ func (sm *SettingsManager) Set(ctx context.Context, key, val string) error {
 }
 
 func (sm *SettingsManager) GetAll(ctx context.Context) map[string]string {
-	settings, err := sm.conn.Query.ListSettings(ctx)
+	settings, err := sm.conn.Q.ListSettings(ctx)
 	if err != nil {
 		return make(map[string]string)
 	}

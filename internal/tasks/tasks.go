@@ -82,7 +82,7 @@ func (s *Scheduler) cleanupAgents() {
 			}
 
 			// List profiles
-			profiles, err := s.cfg.Conn.Query.ListProfiles(s.ctx, &db.ListProfilesParams{})
+			profiles, err := s.cfg.Conn.Q.ListProfiles(s.ctx, &db.ListProfilesParams{})
 			if err != nil {
 				slog.Error("failed to list profiles", "error", err)
 				continue
@@ -90,7 +90,7 @@ func (s *Scheduler) cleanupAgents() {
 
 			var agents []*db.Agent
 			for _, profile := range profiles {
-				a, err := s.cfg.Conn.Query.
+				a, err := s.cfg.Conn.Q.
 					ListAgents(s.ctx, &db.ListAgentsParams{ProfileID: profile.ID})
 				if err != nil {
 					slog.Error("failed to list agents", "error", err)
@@ -105,7 +105,7 @@ func (s *Scheduler) cleanupAgents() {
 				}
 
 				if time.Since(*agent.UpdatedAt) > settings.AsDuration(timeout) {
-					if err := s.cfg.Conn.Query.DeleteAgent(s.ctx, agent.ID); err != nil {
+					if err := s.cfg.Conn.Q.DeleteAgent(s.ctx, agent.ID); err != nil {
 						slog.Error(
 							"failed to delete disconnected agent",
 							"id",
