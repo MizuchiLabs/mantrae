@@ -2,6 +2,8 @@ import { PersistedState } from 'runed';
 
 export const NS = 'mantrae';
 
+export const profileID = new PersistedState<bigint>(`${NS}:profile:id`, 0n);
+
 // Table
 export const pageIndex = new PersistedState<number>(`${NS}:page:index`, 0);
 export const pageSize = new PersistedState<number>(`${NS}:page:size`, 10);
