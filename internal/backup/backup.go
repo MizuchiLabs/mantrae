@@ -3,6 +3,8 @@ package backup
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -19,6 +22,8 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
+	"gopkg.in/yaml.v3"
 )
 
 const BackupPath = "backups"
@@ -168,8 +173,8 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return fmt.Errorf("failed to set storage: %w", err)
 	}
 
-	// Validate backup name for security
-	if !m.IsValidBackupFile(backupName) {
+	// Validate backup name
+	if ok, _ := filepath.Match("*.db", backupName); !ok {
 		return fmt.Errorf("invalid backup file name")
 	}
 
@@ -208,6 +213,60 @@ func (m *BackupManager) Restore(ctx context.Context, backupName string) error {
 		return err
 	}
 
+	return nil
+}
+
+func (m *BackupManager) RestoreViaConfig(
+	ctx context.Context,
+	profileID int64,
+	backupName string,
+) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Set storage
+	if err := m.SetStorage(ctx); err != nil {
+		return fmt.Errorf("failed to set storage: %w", err)
+	}
+
+	// Validate backup name
+	ext := strings.ToLower(filepath.Ext(backupName))
+	if !slices.Contains([]string{".yaml", ".yml", ".json"}, ext) {
+		return fmt.Errorf("invalid backup file name")
+	}
+
+	// Get the backup from storage
+	reader, err := m.Storage.Retrieve(ctx, backupName)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve backup: %w", err)
+	}
+	defer func() {
+		if err = reader.Close(); err != nil {
+			slog.Error("failed to close backup reader", "error", err)
+		}
+	}()
+
+	dynamic := &dynamic.Configuration{}
+	content, err := io.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	switch ext {
+	case ".yaml", ".yml":
+		if err = yaml.Unmarshal(content, dynamic); err != nil {
+			return err
+		}
+	case ".json":
+		if err = json.Unmarshal(content, dynamic); err != nil {
+			return err
+		}
+	default:
+		return errors.New("invalid backup file type")
+	}
+
+	// Write to database
+	traefik.DynamicToDB(ctx, m.Conn.Q, profileID, dynamic)
 	return nil
 }
 

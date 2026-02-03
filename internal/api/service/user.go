@@ -145,13 +145,6 @@ func (s *UserService) CreateUser(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_User{
-			User: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateUserResponse{User: result.ToProto()}, nil
 }
 
@@ -183,13 +176,6 @@ func (s *UserService) UpdateUser(
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_User{
-			User: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateUserResponse{User: result.ToProto()}, nil
 }
 
@@ -197,20 +183,9 @@ func (s *UserService) DeleteUser(
 	ctx context.Context,
 	req *mantraev1.DeleteUserRequest,
 ) (*mantraev1.DeleteUserResponse, error) {
-	user, err := s.app.Conn.Q.GetUserByID(ctx, req.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
 	if err := s.app.Conn.Q.DeleteUser(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_User{
-			User: user.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteUserResponse{}, nil
 }
 

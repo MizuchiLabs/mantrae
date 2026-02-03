@@ -2,14 +2,15 @@ import { toast } from 'svelte-sonner';
 import { useMutation, useQuery } from '$lib/query';
 import { profileID } from '$lib/store.svelte';
 import { ServiceService } from '$lib/gen/mantrae/v1/service_pb';
+import type { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 export const service = {
 	// Queries
-	get: (name: string) =>
+	get: (name: string, type: ProtocolType) =>
 		useQuery(
 			ServiceService.method.getService,
-			{ identifier: { case: 'name', value: name }, profileId: profileID.current },
-			{ enabled: !!profileID.current, select: (res) => res.service }
+			{ identifier: { case: 'name', value: name }, type, profileId: profileID.current },
+			{ enabled: !!profileID.current && !!name && !!type, select: (res) => res.service }
 		),
 	list: (pid?: bigint) =>
 		useQuery(

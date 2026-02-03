@@ -2,6 +2,7 @@ import { toast } from 'svelte-sonner';
 import { useMutation, useQuery } from '$lib/query';
 import { profileID } from '$lib/store.svelte';
 import { ServersTransportService } from '$lib/gen/mantrae/v1/servers_transport_pb';
+import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 
 export const transport = {
 	// Queries
@@ -11,10 +12,10 @@ export const transport = {
 			{ id },
 			{ enabled: !!profileID.current, select: (res) => res.serversTransport }
 		),
-	list: (pid?: bigint) =>
+	list: (pid?: bigint, type = ProtocolType.HTTP) =>
 		useQuery(
 			ServersTransportService.method.listServersTransports,
-			{ profileId: pid ?? profileID.current },
+			{ profileId: pid ?? profileID.current, type },
 			{ enabled: !!profileID.current, select: (res) => res.serversTransports }
 		),
 

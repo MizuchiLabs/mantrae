@@ -111,13 +111,6 @@ func (s *HTTPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -143,13 +136,6 @@ func (s *HTTPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -159,20 +145,9 @@ func (s *HTTPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Q.GetHttpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
 	if err := s.app.Conn.Q.DeleteHttpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: service.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 
@@ -261,13 +236,6 @@ func (s *TCPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -293,13 +261,6 @@ func (s *TCPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -309,20 +270,9 @@ func (s *TCPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Q.GetTcpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
 	if err := s.app.Conn.Q.DeleteTcpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: service.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 
@@ -411,13 +361,6 @@ func (s *UDPServiceOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -443,13 +386,6 @@ func (s *UDPServiceOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateServiceResponse{
 		Service: result.ToProto(),
 	}, nil
@@ -459,20 +395,9 @@ func (s *UDPServiceOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServiceRequest,
 ) (*mantraev1.DeleteServiceResponse, error) {
-	service, err := s.app.Conn.Q.GetUdpService(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
 	if err := s.app.Conn.Q.DeleteUdpService(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Service{
-			Service: service.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteServiceResponse{}, nil
 }
 

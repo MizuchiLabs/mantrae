@@ -5,7 +5,7 @@ import { SettingService } from '$lib/gen/mantrae/v1/setting_pb';
 export const setting = {
 	// Queries
 	get: (key: string) => useQuery(SettingService.method.getSetting, { key }, {}),
-	list: () => useQuery(SettingService.method.listSettings, {}, {}),
+	list: () => useQuery(SettingService.method.listSettings, {}, { select: (res) => res.settings }),
 
 	// Mutations
 	update: () =>

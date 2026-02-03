@@ -219,8 +219,9 @@ func (s *Server) registerServices() {
 	// Traefik endpoint (HTTP) ------------------------------------------------
 	s.mux.Handle("GET /api/{name}", handler.PublishTraefikConfig(s.app))
 
-	// Upload handler (HTTP) --------------------------------------------------
-	s.mux.Handle("POST /upload/backup/{id}", authChain.ThenFunc(handler.UploadBackup(s.app)))
+	// File handler (HTTP) --------------------------------------------------
+	s.mux.Handle("GET /backups/download", authChain.ThenFunc(handler.DownloadBackup(s.app)))
+	s.mux.Handle("POST /backups/upload/{id}", authChain.ThenFunc(handler.UploadBackup(s.app)))
 
 	// OIDC handlers (HTTP) ---------------------------------------------------
 	s.mux.Handle("GET /oidc/login", handler.OIDCLogin(s.app))

@@ -2,327 +2,143 @@
 // @generated from file mantrae/v1/util.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { enumDesc, fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Agent } from './agent_pb';
-import { file_mantrae_v1_agent } from './agent_pb';
-import type { DNSProvider } from './dns_provider_pb';
-import { file_mantrae_v1_dns_provider } from './dns_provider_pb';
-import type { EntryPoint } from './entry_point_pb';
-import { file_mantrae_v1_entry_point } from './entry_point_pb';
-import type { Middleware } from './middleware_pb';
-import { file_mantrae_v1_middleware } from './middleware_pb';
-import type { Profile } from './profile_pb';
-import { file_mantrae_v1_profile } from './profile_pb';
-import type { Router } from './router_pb';
-import { file_mantrae_v1_router } from './router_pb';
-import type { ServersTransport } from './servers_transport_pb';
-import { file_mantrae_v1_servers_transport } from './servers_transport_pb';
-import type { Service } from './service_pb';
-import { file_mantrae_v1_service } from './service_pb';
-import type { User } from './user_pb';
-import { file_mantrae_v1_user } from './user_pb';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/util.proto.
  */
-export const file_mantrae_v1_util: GenFile /*@__PURE__*/ = fileDesc(
-	'ChVtYW50cmFlL3YxL3V0aWwucHJvdG8SCm1hbnRyYWUudjEiEwoRR2V0VmVyc2lvblJlcXVlc3QiJQoSR2V0VmVyc2lvblJlc3BvbnNlEg8KB3ZlcnNpb24YASABKAkiLQoXR2V0RHluYW1pY0NvbmZpZ1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoAyIqChhHZXREeW5hbWljQ29uZmlnUmVzcG9uc2USDgoGY29uZmlnGAEgASgJIhQKEkdldFB1YmxpY0lQUmVxdWVzdCIxChNHZXRQdWJsaWNJUFJlc3BvbnNlEgwKBGlwdjQYASABKAkSDAoEaXB2NhgCIAEoCSIxChJFdmVudFN0cmVhbVJlcXVlc3QSGwoKcHJvZmlsZV9pZBgBIAEoA0IHukgEIgIgACLLAwoTRXZlbnRTdHJlYW1SZXNwb25zZRInCgZhY3Rpb24YASABKA4yFy5tYW50cmFlLnYxLkV2ZW50QWN0aW9uEiYKB3Byb2ZpbGUYAiABKAsyEy5tYW50cmFlLnYxLlByb2ZpbGVIABIgCgR1c2VyGAMgASgLMhAubWFudHJhZS52MS5Vc2VySAASIgoFYWdlbnQYBCABKAsyES5tYW50cmFlLnYxLkFnZW50SAASLwoMZG5zX3Byb3ZpZGVyGAUgASgLMhcubWFudHJhZS52MS5ETlNQcm92aWRlckgAEiQKBnJvdXRlchgGIAEoCzISLm1hbnRyYWUudjEuUm91dGVySAASJgoHc2VydmljZRgHIAEoCzITLm1hbnRyYWUudjEuU2VydmljZUgAEiwKCm1pZGRsZXdhcmUYCCABKAsyFi5tYW50cmFlLnYxLk1pZGRsZXdhcmVIABI5ChFzZXJ2ZXJzX3RyYW5zcG9ydBgJIAEoCzIcLm1hbnRyYWUudjEuU2VydmVyc1RyYW5zcG9ydEgAEi0KC2VudHJ5X3BvaW50GAogASgLMhYubWFudHJhZS52MS5FbnRyeVBvaW50SABCBgoEZGF0YSp5CgtFdmVudEFjdGlvbhIcChhFVkVOVF9BQ1RJT05fVU5TUEVDSUZJRUQQABIYChRFVkVOVF9BQ1RJT05fQ1JFQVRFRBABEhgKFEVWRU5UX0FDVElPTl9VUERBVEVEEAISGAoURVZFTlRfQUNUSU9OX0RFTEVURUQQAzLbAgoLVXRpbFNlcnZpY2USSwoKR2V0VmVyc2lvbhIdLm1hbnRyYWUudjEuR2V0VmVyc2lvblJlcXVlc3QaHi5tYW50cmFlLnYxLkdldFZlcnNpb25SZXNwb25zZRJdChBHZXREeW5hbWljQ29uZmlnEiMubWFudHJhZS52MS5HZXREeW5hbWljQ29uZmlnUmVxdWVzdBokLm1hbnRyYWUudjEuR2V0RHluYW1pY0NvbmZpZ1Jlc3BvbnNlEk4KC0dldFB1YmxpY0lQEh4ubWFudHJhZS52MS5HZXRQdWJsaWNJUFJlcXVlc3QaHy5tYW50cmFlLnYxLkdldFB1YmxpY0lQUmVzcG9uc2USUAoLRXZlbnRTdHJlYW0SHi5tYW50cmFlLnYxLkV2ZW50U3RyZWFtUmVxdWVzdBofLm1hbnRyYWUudjEuRXZlbnRTdHJlYW1SZXNwb25zZTABQqYBCg5jb20ubWFudHJhZS52MUIJVXRpbFByb3RvUAFaQGdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9pbnRlcm5hbC9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z',
-	[
-		file_buf_validate_validate,
-		file_mantrae_v1_agent,
-		file_mantrae_v1_dns_provider,
-		file_mantrae_v1_entry_point,
-		file_mantrae_v1_middleware,
-		file_mantrae_v1_profile,
-		file_mantrae_v1_router,
-		file_mantrae_v1_servers_transport,
-		file_mantrae_v1_service,
-		file_mantrae_v1_user
-	]
-);
+export const file_mantrae_v1_util: GenFile = /*@__PURE__*/
+  fileDesc("ChVtYW50cmFlL3YxL3V0aWwucHJvdG8SCm1hbnRyYWUudjEiEwoRR2V0VmVyc2lvblJlcXVlc3QiJQoSR2V0VmVyc2lvblJlc3BvbnNlEg8KB3ZlcnNpb24YASABKAkiLQoXR2V0RHluYW1pY0NvbmZpZ1JlcXVlc3QSEgoKcHJvZmlsZV9pZBgBIAEoAyIqChhHZXREeW5hbWljQ29uZmlnUmVzcG9uc2USDgoGY29uZmlnGAEgASgJIhQKEkdldFB1YmxpY0lQUmVxdWVzdCIxChNHZXRQdWJsaWNJUFJlc3BvbnNlEgwKBGlwdjQYASABKAkSDAoEaXB2NhgCIAEoCTKJAgoLVXRpbFNlcnZpY2USSwoKR2V0VmVyc2lvbhIdLm1hbnRyYWUudjEuR2V0VmVyc2lvblJlcXVlc3QaHi5tYW50cmFlLnYxLkdldFZlcnNpb25SZXNwb25zZRJdChBHZXREeW5hbWljQ29uZmlnEiMubWFudHJhZS52MS5HZXREeW5hbWljQ29uZmlnUmVxdWVzdBokLm1hbnRyYWUudjEuR2V0RHluYW1pY0NvbmZpZ1Jlc3BvbnNlEk4KC0dldFB1YmxpY0lQEh4ubWFudHJhZS52MS5HZXRQdWJsaWNJUFJlcXVlc3QaHy5tYW50cmFlLnYxLkdldFB1YmxpY0lQUmVzcG9uc2VCpgEKDmNvbS5tYW50cmFlLnYxQglVdGlsUHJvdG9QAVpAZ2l0aHViLmNvbS9taXp1Y2hpbGFicy9tYW50cmFlL2ludGVybmFsL2dlbi9tYW50cmFlL3YxO21hbnRyYWV2MaICA01YWKoCCk1hbnRyYWUuVjHKAgpNYW50cmFlXFYx4gIWTWFudHJhZVxWMVxHUEJNZXRhZGF0YeoCC01hbnRyYWU6OlYxYgZwcm90bzM");
 
 /**
  * @generated from message mantrae.v1.GetVersionRequest
  */
-export type GetVersionRequest = Message<'mantrae.v1.GetVersionRequest'> & {};
+export type GetVersionRequest = Message<"mantrae.v1.GetVersionRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.GetVersionRequest.
  * Use `create(GetVersionRequestSchema)` to create a new message.
  */
-export const GetVersionRequestSchema: GenMessage<GetVersionRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	0
-);
+export const GetVersionRequestSchema: GenMessage<GetVersionRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 0);
 
 /**
  * @generated from message mantrae.v1.GetVersionResponse
  */
-export type GetVersionResponse = Message<'mantrae.v1.GetVersionResponse'> & {
-	/**
-	 * @generated from field: string version = 1;
-	 */
-	version: string;
+export type GetVersionResponse = Message<"mantrae.v1.GetVersionResponse"> & {
+  /**
+   * @generated from field: string version = 1;
+   */
+  version: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetVersionResponse.
  * Use `create(GetVersionResponseSchema)` to create a new message.
  */
-export const GetVersionResponseSchema: GenMessage<GetVersionResponse> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	1
-);
+export const GetVersionResponseSchema: GenMessage<GetVersionResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 1);
 
 /**
  * @generated from message mantrae.v1.GetDynamicConfigRequest
  */
-export type GetDynamicConfigRequest = Message<'mantrae.v1.GetDynamicConfigRequest'> & {
-	/**
-	 * @generated from field: int64 profile_id = 1;
-	 */
-	profileId: bigint;
+export type GetDynamicConfigRequest = Message<"mantrae.v1.GetDynamicConfigRequest"> & {
+  /**
+   * @generated from field: int64 profile_id = 1;
+   */
+  profileId: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.GetDynamicConfigRequest.
  * Use `create(GetDynamicConfigRequestSchema)` to create a new message.
  */
-export const GetDynamicConfigRequestSchema: GenMessage<GetDynamicConfigRequest> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_util, 2);
+export const GetDynamicConfigRequestSchema: GenMessage<GetDynamicConfigRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 2);
 
 /**
  * @generated from message mantrae.v1.GetDynamicConfigResponse
  */
-export type GetDynamicConfigResponse = Message<'mantrae.v1.GetDynamicConfigResponse'> & {
-	/**
-	 * @generated from field: string config = 1;
-	 */
-	config: string;
+export type GetDynamicConfigResponse = Message<"mantrae.v1.GetDynamicConfigResponse"> & {
+  /**
+   * @generated from field: string config = 1;
+   */
+  config: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetDynamicConfigResponse.
  * Use `create(GetDynamicConfigResponseSchema)` to create a new message.
  */
-export const GetDynamicConfigResponseSchema: GenMessage<GetDynamicConfigResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_util, 3);
+export const GetDynamicConfigResponseSchema: GenMessage<GetDynamicConfigResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 3);
 
 /**
  * @generated from message mantrae.v1.GetPublicIPRequest
  */
-export type GetPublicIPRequest = Message<'mantrae.v1.GetPublicIPRequest'> & {};
+export type GetPublicIPRequest = Message<"mantrae.v1.GetPublicIPRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.GetPublicIPRequest.
  * Use `create(GetPublicIPRequestSchema)` to create a new message.
  */
-export const GetPublicIPRequestSchema: GenMessage<GetPublicIPRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	4
-);
+export const GetPublicIPRequestSchema: GenMessage<GetPublicIPRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 4);
 
 /**
  * @generated from message mantrae.v1.GetPublicIPResponse
  */
-export type GetPublicIPResponse = Message<'mantrae.v1.GetPublicIPResponse'> & {
-	/**
-	 * @generated from field: string ipv4 = 1;
-	 */
-	ipv4: string;
+export type GetPublicIPResponse = Message<"mantrae.v1.GetPublicIPResponse"> & {
+  /**
+   * @generated from field: string ipv4 = 1;
+   */
+  ipv4: string;
 
-	/**
-	 * @generated from field: string ipv6 = 2;
-	 */
-	ipv6: string;
+  /**
+   * @generated from field: string ipv6 = 2;
+   */
+  ipv6: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetPublicIPResponse.
  * Use `create(GetPublicIPResponseSchema)` to create a new message.
  */
-export const GetPublicIPResponseSchema: GenMessage<GetPublicIPResponse> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	5
-);
-
-/**
- * @generated from message mantrae.v1.EventStreamRequest
- */
-export type EventStreamRequest = Message<'mantrae.v1.EventStreamRequest'> & {
-	/**
-	 * @generated from field: int64 profile_id = 1;
-	 */
-	profileId: bigint;
-};
-
-/**
- * Describes the message mantrae.v1.EventStreamRequest.
- * Use `create(EventStreamRequestSchema)` to create a new message.
- */
-export const EventStreamRequestSchema: GenMessage<EventStreamRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	6
-);
-
-/**
- * @generated from message mantrae.v1.EventStreamResponse
- */
-export type EventStreamResponse = Message<'mantrae.v1.EventStreamResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.EventAction action = 1;
-	 */
-	action: EventAction;
-
-	/**
-	 * @generated from oneof mantrae.v1.EventStreamResponse.data
-	 */
-	data:
-		| {
-				/**
-				 * @generated from field: mantrae.v1.Profile profile = 2;
-				 */
-				value: Profile;
-				case: 'profile';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.User user = 3;
-				 */
-				value: User;
-				case: 'user';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.Agent agent = 4;
-				 */
-				value: Agent;
-				case: 'agent';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.DNSProvider dns_provider = 5;
-				 */
-				value: DNSProvider;
-				case: 'dnsProvider';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.Router router = 6;
-				 */
-				value: Router;
-				case: 'router';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.Service service = 7;
-				 */
-				value: Service;
-				case: 'service';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.Middleware middleware = 8;
-				 */
-				value: Middleware;
-				case: 'middleware';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.ServersTransport servers_transport = 9;
-				 */
-				value: ServersTransport;
-				case: 'serversTransport';
-		  }
-		| {
-				/**
-				 * @generated from field: mantrae.v1.EntryPoint entry_point = 10;
-				 */
-				value: EntryPoint;
-				case: 'entryPoint';
-		  }
-		| { case: undefined; value?: undefined };
-};
-
-/**
- * Describes the message mantrae.v1.EventStreamResponse.
- * Use `create(EventStreamResponseSchema)` to create a new message.
- */
-export const EventStreamResponseSchema: GenMessage<EventStreamResponse> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_util,
-	7
-);
-
-/**
- * @generated from enum mantrae.v1.EventAction
- */
-export enum EventAction {
-	/**
-	 * @generated from enum value: EVENT_ACTION_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
-
-	/**
-	 * @generated from enum value: EVENT_ACTION_CREATED = 1;
-	 */
-	CREATED = 1,
-
-	/**
-	 * @generated from enum value: EVENT_ACTION_UPDATED = 2;
-	 */
-	UPDATED = 2,
-
-	/**
-	 * @generated from enum value: EVENT_ACTION_DELETED = 3;
-	 */
-	DELETED = 3
-}
-
-/**
- * Describes the enum mantrae.v1.EventAction.
- */
-export const EventActionSchema: GenEnum<EventAction> /*@__PURE__*/ = enumDesc(
-	file_mantrae_v1_util,
-	0
-);
+export const GetPublicIPResponseSchema: GenMessage<GetPublicIPResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_util, 5);
 
 /**
  * @generated from service mantrae.v1.UtilService
  */
 export const UtilService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.GetVersion
-	 */
-	getVersion: {
-		methodKind: 'unary';
-		input: typeof GetVersionRequestSchema;
-		output: typeof GetVersionResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.GetDynamicConfig
-	 */
-	getDynamicConfig: {
-		methodKind: 'unary';
-		input: typeof GetDynamicConfigRequestSchema;
-		output: typeof GetDynamicConfigResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.GetPublicIP
-	 */
-	getPublicIP: {
-		methodKind: 'unary';
-		input: typeof GetPublicIPRequestSchema;
-		output: typeof GetPublicIPResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.UtilService.EventStream
-	 */
-	eventStream: {
-		methodKind: 'server_streaming';
-		input: typeof EventStreamRequestSchema;
-		output: typeof EventStreamResponseSchema;
-	};
-}> /*@__PURE__*/ = serviceDesc(file_mantrae_v1_util, 0);
+  /**
+   * @generated from rpc mantrae.v1.UtilService.GetVersion
+   */
+  getVersion: {
+    methodKind: "unary";
+    input: typeof GetVersionRequestSchema;
+    output: typeof GetVersionResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.UtilService.GetDynamicConfig
+   */
+  getDynamicConfig: {
+    methodKind: "unary";
+    input: typeof GetDynamicConfigRequestSchema;
+    output: typeof GetDynamicConfigResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.UtilService.GetPublicIP
+   */
+  getPublicIP: {
+    methodKind: "unary";
+    input: typeof GetPublicIPRequestSchema;
+    output: typeof GetPublicIPResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_util, 0);
+

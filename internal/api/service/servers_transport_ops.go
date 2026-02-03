@@ -85,13 +85,6 @@ func (s *HTTPServersTransportOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateServersTransportResponse{
 		ServersTransport: result.ToProto(),
 	}, nil
@@ -117,13 +110,6 @@ func (s *HTTPServersTransportOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateServersTransportResponse{
 		ServersTransport: result.ToProto(),
 	}, nil
@@ -133,20 +119,9 @@ func (s *HTTPServersTransportOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServersTransportRequest,
 ) (*mantraev1.DeleteServersTransportResponse, error) {
-	serversTransport, err := s.app.Conn.Q.GetHttpServersTransport(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
 	if err := s.app.Conn.Q.DeleteHttpServersTransport(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: serversTransport.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteServersTransportResponse{}, nil
 }
 
@@ -219,13 +194,6 @@ func (s *TCPServersTransportOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateServersTransportResponse{
 		ServersTransport: result.ToProto(),
 	}, nil
@@ -251,13 +219,6 @@ func (s *TCPServersTransportOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateServersTransportResponse{
 		ServersTransport: result.ToProto(),
 	}, nil
@@ -267,20 +228,9 @@ func (s *TCPServersTransportOps) Delete(
 	ctx context.Context,
 	req *mantraev1.DeleteServersTransportRequest,
 ) (*mantraev1.DeleteServersTransportResponse, error) {
-	serversTransport, err := s.app.Conn.Q.GetTcpServersTransport(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
 	if err := s.app.Conn.Q.DeleteTcpServersTransport(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_ServersTransport{
-			ServersTransport: serversTransport.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteServersTransportResponse{}, nil
 }
 

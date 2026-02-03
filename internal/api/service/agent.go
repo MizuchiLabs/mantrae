@@ -53,13 +53,6 @@ func (s *AgentService) CreateAgent(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Agent{
-			Agent: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateAgentResponse{Agent: result.ToProto()}, nil
 }
 
@@ -86,12 +79,6 @@ func (s *AgentService) UpdateAgent(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Agent{
-			Agent: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateAgentResponse{Agent: result.ToProto()}, nil
 }
 
@@ -99,21 +86,9 @@ func (s *AgentService) DeleteAgent(
 	ctx context.Context,
 	req *mantraev1.DeleteAgentRequest,
 ) (*mantraev1.DeleteAgentResponse, error) {
-	agent, err := s.app.Conn.Q.GetAgent(ctx, req.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
 	if err := s.app.Conn.Q.DeleteAgent(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Agent{
-			Agent: agent.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteAgentResponse{}, nil
 }
 
@@ -191,12 +166,5 @@ func (s *AgentService) HealthCheck(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Agent{
-			Agent: result.ToProto(),
-		},
-	})
 	return &mantraev1.HealthCheckResponse{Agent: result.ToProto()}, nil
 }

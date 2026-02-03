@@ -61,27 +61,3 @@ func (s *UtilService) GetPublicIP(
 		Ipv6: ips.IPv6,
 	}, nil
 }
-
-func (s *UtilService) EventStream(
-	ctx context.Context,
-	req *mantraev1.EventStreamRequest,
-	stream *connect.ServerStream[mantraev1.EventStreamResponse],
-) error {
-	id, ch := s.app.Event.Subscribe(req.ProfileId)
-	defer s.app.Event.Unsubscribe(id)
-
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-
-		case event, ok := <-ch:
-			if !ok {
-				return nil
-			}
-			if err := stream.Send(event); err != nil {
-				return err
-			}
-		}
-	}
-}

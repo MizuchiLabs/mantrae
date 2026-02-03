@@ -45,9 +45,6 @@ const (
 	// BackupServiceDeleteBackupProcedure is the fully-qualified name of the BackupService's
 	// DeleteBackup RPC.
 	BackupServiceDeleteBackupProcedure = "/mantrae.v1.BackupService/DeleteBackup"
-	// BackupServiceDownloadBackupProcedure is the fully-qualified name of the BackupService's
-	// DownloadBackup RPC.
-	BackupServiceDownloadBackupProcedure = "/mantrae.v1.BackupService/DownloadBackup"
 )
 
 // BackupServiceClient is a client for the mantrae.v1.BackupService service.
@@ -56,7 +53,6 @@ type BackupServiceClient interface {
 	RestoreBackup(context.Context, *v1.RestoreBackupRequest) (*v1.RestoreBackupResponse, error)
 	ListBackups(context.Context, *v1.ListBackupsRequest) (*v1.ListBackupsResponse, error)
 	DeleteBackup(context.Context, *v1.DeleteBackupRequest) (*v1.DeleteBackupResponse, error)
-	DownloadBackup(context.Context, *v1.DownloadBackupRequest) (*connect.ServerStreamForClient[v1.DownloadBackupResponse], error)
 }
 
 // NewBackupServiceClient constructs a client for the mantrae.v1.BackupService service. By default,
@@ -95,22 +91,15 @@ func NewBackupServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(backupServiceMethods.ByName("DeleteBackup")),
 			connect.WithClientOptions(opts...),
 		),
-		downloadBackup: connect.NewClient[v1.DownloadBackupRequest, v1.DownloadBackupResponse](
-			httpClient,
-			baseURL+BackupServiceDownloadBackupProcedure,
-			connect.WithSchema(backupServiceMethods.ByName("DownloadBackup")),
-			connect.WithClientOptions(opts...),
-		),
 	}
 }
 
 // backupServiceClient implements BackupServiceClient.
 type backupServiceClient struct {
-	createBackup   *connect.Client[v1.CreateBackupRequest, v1.CreateBackupResponse]
-	restoreBackup  *connect.Client[v1.RestoreBackupRequest, v1.RestoreBackupResponse]
-	listBackups    *connect.Client[v1.ListBackupsRequest, v1.ListBackupsResponse]
-	deleteBackup   *connect.Client[v1.DeleteBackupRequest, v1.DeleteBackupResponse]
-	downloadBackup *connect.Client[v1.DownloadBackupRequest, v1.DownloadBackupResponse]
+	createBackup  *connect.Client[v1.CreateBackupRequest, v1.CreateBackupResponse]
+	restoreBackup *connect.Client[v1.RestoreBackupRequest, v1.RestoreBackupResponse]
+	listBackups   *connect.Client[v1.ListBackupsRequest, v1.ListBackupsResponse]
+	deleteBackup  *connect.Client[v1.DeleteBackupRequest, v1.DeleteBackupResponse]
 }
 
 // CreateBackup calls mantrae.v1.BackupService.CreateBackup.
@@ -149,18 +138,12 @@ func (c *backupServiceClient) DeleteBackup(ctx context.Context, req *v1.DeleteBa
 	return nil, err
 }
 
-// DownloadBackup calls mantrae.v1.BackupService.DownloadBackup.
-func (c *backupServiceClient) DownloadBackup(ctx context.Context, req *v1.DownloadBackupRequest) (*connect.ServerStreamForClient[v1.DownloadBackupResponse], error) {
-	return c.downloadBackup.CallServerStream(ctx, connect.NewRequest(req))
-}
-
 // BackupServiceHandler is an implementation of the mantrae.v1.BackupService service.
 type BackupServiceHandler interface {
 	CreateBackup(context.Context, *v1.CreateBackupRequest) (*v1.CreateBackupResponse, error)
 	RestoreBackup(context.Context, *v1.RestoreBackupRequest) (*v1.RestoreBackupResponse, error)
 	ListBackups(context.Context, *v1.ListBackupsRequest) (*v1.ListBackupsResponse, error)
 	DeleteBackup(context.Context, *v1.DeleteBackupRequest) (*v1.DeleteBackupResponse, error)
-	DownloadBackup(context.Context, *v1.DownloadBackupRequest, *connect.ServerStream[v1.DownloadBackupResponse]) error
 }
 
 // NewBackupServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -195,12 +178,6 @@ func NewBackupServiceHandler(svc BackupServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(backupServiceMethods.ByName("DeleteBackup")),
 		connect.WithHandlerOptions(opts...),
 	)
-	backupServiceDownloadBackupHandler := connect.NewServerStreamHandlerSimple(
-		BackupServiceDownloadBackupProcedure,
-		svc.DownloadBackup,
-		connect.WithSchema(backupServiceMethods.ByName("DownloadBackup")),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/mantrae.v1.BackupService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BackupServiceCreateBackupProcedure:
@@ -211,8 +188,6 @@ func NewBackupServiceHandler(svc BackupServiceHandler, opts ...connect.HandlerOp
 			backupServiceListBackupsHandler.ServeHTTP(w, r)
 		case BackupServiceDeleteBackupProcedure:
 			backupServiceDeleteBackupHandler.ServeHTTP(w, r)
-		case BackupServiceDownloadBackupProcedure:
-			backupServiceDownloadBackupHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -236,8 +211,4 @@ func (UnimplementedBackupServiceHandler) ListBackups(context.Context, *v1.ListBa
 
 func (UnimplementedBackupServiceHandler) DeleteBackup(context.Context, *v1.DeleteBackupRequest) (*v1.DeleteBackupResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.BackupService.DeleteBackup is not implemented"))
-}
-
-func (UnimplementedBackupServiceHandler) DownloadBackup(context.Context, *v1.DownloadBackupRequest, *connect.ServerStream[v1.DownloadBackupResponse]) error {
-	return connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.BackupService.DownloadBackup is not implemented"))
 }

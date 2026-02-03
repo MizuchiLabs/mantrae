@@ -5,20 +5,23 @@
 	import type { UDPRouter } from '$lib/gen/zen/traefik-schemas';
 	import { Star } from '@lucide/svelte';
 	import { unmarshalConfig, marshalConfig } from '$lib/types';
-	import { onMount } from 'svelte';
-	import { entryPoints } from '$lib/stores/realtime';
+	import { entrypoint } from '$lib/api/entrypoints.svelte';
 
-	let { router = $bindable() }: { router: Router } = $props();
+	interface Props {
+		data: Router;
+	}
+	let { data = $bindable() }: Props = $props();
 
-	let config = $state(unmarshalConfig(router.config) as UDPRouter);
+	let config = $state(unmarshalConfig(data.config) as UDPRouter);
+	const epList = entrypoint.list();
 
 	$effect(() => {
-		if (config) router.config = marshalConfig(config);
+		if (config) data.config = marshalConfig(config);
 	});
-
-	onMount(async () => {
-		let defaultEntryPoint = $entryPoints.find((e) => e.isDefault);
-		if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
+	$effect(() => {
+		if (epList.isSuccess && epList.data && !data.id) {
+			config.entryPoints = [epList.data.find((ep) => ep.isDefault)?.name ?? ''];
+		}
 	});
 </script>
 
@@ -31,7 +34,7 @@
 				{config.entryPoints?.join(', ') || 'Select entrypoints'}
 			</Select.Trigger>
 			<Select.Content>
-				{#each $entryPoints || [] as e (e.id)}
+				{#each epList.data || [] as e (e.id)}
 					<Select.Item value={e.name}>
 						<div class="flex items-center gap-2">
 							{e.name}

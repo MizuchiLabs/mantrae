@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { utilClient } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -18,6 +17,7 @@
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
 	import { dns } from '$lib/api/dns.svelte';
+	import { util } from '$lib/api/util.svelte';
 
 	interface Props {
 		data?: DNSProvider;
@@ -33,6 +33,7 @@
 		if (!open) dnsData = {} as DNSProvider;
 	});
 
+	const currentIP = $derived(util.ip());
 	const createMutation = dns.create();
 	const updateMutation = dns.update();
 	function onsubmit() {
@@ -196,17 +197,17 @@
 					<div class="rounded-lg border p-3">
 						<div class="space-y-2">
 							<Label class="text-sm">Detected Public IP</Label>
-							{#await utilClient.getPublicIP({}) then value}
+							{#if currentIP.isSuccess}
 								<div class="flex items-center gap-2">
-									{#if value?.ipv4}
-										<Badge variant="secondary">{value?.ipv4}</Badge>
+									{#if currentIP.data?.ipv4}
+										<Badge variant="secondary">{currentIP.data?.ipv4}</Badge>
 									{/if}
-									{#if value?.ipv6}
-										<Badge variant="secondary">{value?.ipv6}</Badge>
+									{#if currentIP.data?.ipv6}
+										<Badge variant="secondary">{currentIP.data?.ipv6}</Badge>
 									{/if}
 								</div>
 								<p class="text-xs text-muted-foreground">Automatically detected and updated</p>
-							{/await}
+							{/if}
 						</div>
 					</div>
 				{:else}

@@ -2,184 +2,177 @@
 // @generated from file mantrae/v1/setting.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/setting.proto.
  */
-export const file_mantrae_v1_setting: GenFile /*@__PURE__*/ = fileDesc(
-	'ChhtYW50cmFlL3YxL3NldHRpbmcucHJvdG8SCm1hbnRyYWUudjEiVQoHU2V0dGluZxILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkSLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiKQoRR2V0U2V0dGluZ1JlcXVlc3QSFAoDa2V5GAEgASgJQge6SARyAhABIiMKEkdldFNldHRpbmdSZXNwb25zZRINCgV2YWx1ZRgBIAEoCSI7ChRVcGRhdGVTZXR0aW5nUmVxdWVzdBIUCgNrZXkYASABKAlCB7pIBHICEAESDQoFdmFsdWUYAiABKAkiPQoVVXBkYXRlU2V0dGluZ1Jlc3BvbnNlEiQKB3NldHRpbmcYASABKAsyEy5tYW50cmFlLnYxLlNldHRpbmciFQoTTGlzdFNldHRpbmdzUmVxdWVzdCI9ChRMaXN0U2V0dGluZ3NSZXNwb25zZRIlCghzZXR0aW5ncxgBIAMoCzITLm1hbnRyYWUudjEuU2V0dGluZzKQAgoOU2V0dGluZ1NlcnZpY2USUAoKR2V0U2V0dGluZxIdLm1hbnRyYWUudjEuR2V0U2V0dGluZ1JlcXVlc3QaHi5tYW50cmFlLnYxLkdldFNldHRpbmdSZXNwb25zZSIDkAIBElQKDVVwZGF0ZVNldHRpbmcSIC5tYW50cmFlLnYxLlVwZGF0ZVNldHRpbmdSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVTZXR0aW5nUmVzcG9uc2USVgoMTGlzdFNldHRpbmdzEh8ubWFudHJhZS52MS5MaXN0U2V0dGluZ3NSZXF1ZXN0GiAubWFudHJhZS52MS5MaXN0U2V0dGluZ3NSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIMU2V0dGluZ1Byb3RvUAFaQGdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9pbnRlcm5hbC9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z',
-	[file_buf_validate_validate, file_google_protobuf_timestamp]
-);
+export const file_mantrae_v1_setting: GenFile = /*@__PURE__*/
+  fileDesc("ChhtYW50cmFlL3YxL3NldHRpbmcucHJvdG8SCm1hbnRyYWUudjEiVQoHU2V0dGluZxILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkSLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiKQoRR2V0U2V0dGluZ1JlcXVlc3QSFAoDa2V5GAEgASgJQge6SARyAhABIiMKEkdldFNldHRpbmdSZXNwb25zZRINCgV2YWx1ZRgBIAEoCSI7ChRVcGRhdGVTZXR0aW5nUmVxdWVzdBIUCgNrZXkYASABKAlCB7pIBHICEAESDQoFdmFsdWUYAiABKAkiPQoVVXBkYXRlU2V0dGluZ1Jlc3BvbnNlEiQKB3NldHRpbmcYASABKAsyEy5tYW50cmFlLnYxLlNldHRpbmciFQoTTGlzdFNldHRpbmdzUmVxdWVzdCI9ChRMaXN0U2V0dGluZ3NSZXNwb25zZRIlCghzZXR0aW5ncxgBIAMoCzITLm1hbnRyYWUudjEuU2V0dGluZzKQAgoOU2V0dGluZ1NlcnZpY2USUAoKR2V0U2V0dGluZxIdLm1hbnRyYWUudjEuR2V0U2V0dGluZ1JlcXVlc3QaHi5tYW50cmFlLnYxLkdldFNldHRpbmdSZXNwb25zZSIDkAIBElQKDVVwZGF0ZVNldHRpbmcSIC5tYW50cmFlLnYxLlVwZGF0ZVNldHRpbmdSZXF1ZXN0GiEubWFudHJhZS52MS5VcGRhdGVTZXR0aW5nUmVzcG9uc2USVgoMTGlzdFNldHRpbmdzEh8ubWFudHJhZS52MS5MaXN0U2V0dGluZ3NSZXF1ZXN0GiAubWFudHJhZS52MS5MaXN0U2V0dGluZ3NSZXNwb25zZSIDkAIBQqkBCg5jb20ubWFudHJhZS52MUIMU2V0dGluZ1Byb3RvUAFaQGdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9pbnRlcm5hbC9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Setting
  */
-export type Setting = Message<'mantrae.v1.Setting'> & {
-	/**
-	 * @generated from field: string key = 1;
-	 */
-	key: string;
+export type Setting = Message<"mantrae.v1.Setting"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
 
-	/**
-	 * @generated from field: string value = 2;
-	 */
-	value: string;
+  /**
+   * @generated from field: string value = 2;
+   */
+  value: string;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp updated_at = 3;
-	 */
-	updatedAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp updated_at = 3;
+   */
+  updatedAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.Setting.
  * Use `create(SettingSchema)` to create a new message.
  */
-export const SettingSchema: GenMessage<Setting> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_setting,
-	0
-);
+export const SettingSchema: GenMessage<Setting> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 0);
 
 /**
  * @generated from message mantrae.v1.GetSettingRequest
  */
-export type GetSettingRequest = Message<'mantrae.v1.GetSettingRequest'> & {
-	/**
-	 * @generated from field: string key = 1;
-	 */
-	key: string;
+export type GetSettingRequest = Message<"mantrae.v1.GetSettingRequest"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetSettingRequest.
  * Use `create(GetSettingRequestSchema)` to create a new message.
  */
-export const GetSettingRequestSchema: GenMessage<GetSettingRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_setting,
-	1
-);
+export const GetSettingRequestSchema: GenMessage<GetSettingRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 1);
 
 /**
  * @generated from message mantrae.v1.GetSettingResponse
  */
-export type GetSettingResponse = Message<'mantrae.v1.GetSettingResponse'> & {
-	/**
-	 * @generated from field: string value = 1;
-	 */
-	value: string;
+export type GetSettingResponse = Message<"mantrae.v1.GetSettingResponse"> & {
+  /**
+   * @generated from field: string value = 1;
+   */
+  value: string;
 };
 
 /**
  * Describes the message mantrae.v1.GetSettingResponse.
  * Use `create(GetSettingResponseSchema)` to create a new message.
  */
-export const GetSettingResponseSchema: GenMessage<GetSettingResponse> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_setting,
-	2
-);
+export const GetSettingResponseSchema: GenMessage<GetSettingResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 2);
 
 /**
  * @generated from message mantrae.v1.UpdateSettingRequest
  */
-export type UpdateSettingRequest = Message<'mantrae.v1.UpdateSettingRequest'> & {
-	/**
-	 * @generated from field: string key = 1;
-	 */
-	key: string;
+export type UpdateSettingRequest = Message<"mantrae.v1.UpdateSettingRequest"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
 
-	/**
-	 * @generated from field: string value = 2;
-	 */
-	value: string;
+  /**
+   * @generated from field: string value = 2;
+   */
+  value: string;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateSettingRequest.
  * Use `create(UpdateSettingRequestSchema)` to create a new message.
  */
-export const UpdateSettingRequestSchema: GenMessage<UpdateSettingRequest> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_setting, 3);
+export const UpdateSettingRequestSchema: GenMessage<UpdateSettingRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 3);
 
 /**
  * @generated from message mantrae.v1.UpdateSettingResponse
  */
-export type UpdateSettingResponse = Message<'mantrae.v1.UpdateSettingResponse'> & {
-	/**
-	 * @generated from field: mantrae.v1.Setting setting = 1;
-	 */
-	setting?: Setting;
+export type UpdateSettingResponse = Message<"mantrae.v1.UpdateSettingResponse"> & {
+  /**
+   * @generated from field: mantrae.v1.Setting setting = 1;
+   */
+  setting?: Setting;
 };
 
 /**
  * Describes the message mantrae.v1.UpdateSettingResponse.
  * Use `create(UpdateSettingResponseSchema)` to create a new message.
  */
-export const UpdateSettingResponseSchema: GenMessage<UpdateSettingResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_setting, 4);
+export const UpdateSettingResponseSchema: GenMessage<UpdateSettingResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 4);
 
 /**
  * @generated from message mantrae.v1.ListSettingsRequest
  */
-export type ListSettingsRequest = Message<'mantrae.v1.ListSettingsRequest'> & {};
+export type ListSettingsRequest = Message<"mantrae.v1.ListSettingsRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.ListSettingsRequest.
  * Use `create(ListSettingsRequestSchema)` to create a new message.
  */
-export const ListSettingsRequestSchema: GenMessage<ListSettingsRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_setting,
-	5
-);
+export const ListSettingsRequestSchema: GenMessage<ListSettingsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 5);
 
 /**
  * @generated from message mantrae.v1.ListSettingsResponse
  */
-export type ListSettingsResponse = Message<'mantrae.v1.ListSettingsResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.Setting settings = 1;
-	 */
-	settings: Setting[];
+export type ListSettingsResponse = Message<"mantrae.v1.ListSettingsResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.Setting settings = 1;
+   */
+  settings: Setting[];
 };
 
 /**
  * Describes the message mantrae.v1.ListSettingsResponse.
  * Use `create(ListSettingsResponseSchema)` to create a new message.
  */
-export const ListSettingsResponseSchema: GenMessage<ListSettingsResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_setting, 6);
+export const ListSettingsResponseSchema: GenMessage<ListSettingsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_setting, 6);
 
 /**
  * @generated from service mantrae.v1.SettingService
  */
 export const SettingService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.SettingService.GetSetting
-	 */
-	getSetting: {
-		methodKind: 'unary';
-		input: typeof GetSettingRequestSchema;
-		output: typeof GetSettingResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.SettingService.UpdateSetting
-	 */
-	updateSetting: {
-		methodKind: 'unary';
-		input: typeof UpdateSettingRequestSchema;
-		output: typeof UpdateSettingResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.SettingService.ListSettings
-	 */
-	listSettings: {
-		methodKind: 'unary';
-		input: typeof ListSettingsRequestSchema;
-		output: typeof ListSettingsResponseSchema;
-	};
-}> /*@__PURE__*/ = serviceDesc(file_mantrae_v1_setting, 0);
+  /**
+   * @generated from rpc mantrae.v1.SettingService.GetSetting
+   */
+  getSetting: {
+    methodKind: "unary";
+    input: typeof GetSettingRequestSchema;
+    output: typeof GetSettingResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.SettingService.UpdateSetting
+   */
+  updateSetting: {
+    methodKind: "unary";
+    input: typeof UpdateSettingRequestSchema;
+    output: typeof UpdateSettingResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.SettingService.ListSettings
+   */
+  listSettings: {
+    methodKind: "unary";
+    input: typeof ListSettingsRequestSchema;
+    output: typeof ListSettingsResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_setting, 0);
+

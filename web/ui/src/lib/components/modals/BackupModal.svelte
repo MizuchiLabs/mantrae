@@ -5,11 +5,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 	import { CalendarDays, DatabaseBackup, Download, Trash2 } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { backupClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
 	import { formatTs } from '$lib/utils';
 	import { backup } from '$lib/api/util.svelte';
+	import { BackendURL } from '$lib/config';
 
 	let { open = $bindable(false) } = $props();
 
@@ -21,30 +19,30 @@
 	let sqliteBackups = $derived(backupList.data?.filter((b) => b.name.endsWith('.db')) || []);
 	let yamlBackups = $derived(backupList.data?.filter((b) => b.name.endsWith('.yaml')) || []);
 
-	async function downloadBackup(name?: string) {
-		try {
-			const stream = backupClient.downloadBackup({ name });
-
-			const chunks: ArrayBuffer[] = [];
-			for await (const chunk of stream) {
-				if (chunk.data.length > 0) {
-					chunks.push(new Uint8Array(chunk.data).buffer);
-				}
-			}
-
-			const blob = new Blob(chunks, { type: 'application/octet-stream' });
-			const url = URL.createObjectURL(blob);
-
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = name || 'backup.db';
-			a.click();
-
-			URL.revokeObjectURL(url);
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to download backup', { description: e.message });
+	async function downloadBackup(filename = '') {
+		const params = filename ? `?name=${encodeURIComponent(filename)}` : '';
+		const response = await fetch(`${BackendURL}/backups/download${params}`, {
+			credentials: 'include'
+		});
+		if (!response.ok) {
+			throw new Error(await response.text());
 		}
+
+		const disposition = response.headers.get('Content-Disposition');
+		const name = disposition?.match(/filename="?([^"]+)"?/i)?.[1];
+		if (!name) {
+			throw new Error('Server did not provide filename');
+		}
+
+		const blob = await response.blob();
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		a.click();
+
+		URL.revokeObjectURL(url);
 	}
 </script>
 

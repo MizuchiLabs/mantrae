@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -20,6 +21,62 @@ import (
 
 func sanitizeFilename(name string) string {
 	return filepath.Base(strings.ReplaceAll(name, "..", ""))
+}
+
+func DownloadBackup(a *config.App) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		filename := r.URL.Query().Get("name")
+
+		if filename == "" {
+			files, err := a.BM.Storage.List(r.Context())
+			if err != nil {
+				http.Error(w, "Failed to list backups", http.StatusInternalServerError)
+				return
+			}
+			if len(files) == 0 {
+				if err = a.BM.Create(r.Context()); err != nil {
+					http.Error(w, "Failed to create backup", http.StatusInternalServerError)
+					return
+				}
+				files, err = a.BM.Storage.List(r.Context())
+				if err != nil {
+					http.Error(w, "Failed to list backups", http.StatusInternalServerError)
+					return
+				}
+			}
+			filename = files[0].Name
+		}
+
+		if !a.BM.IsValidBackupFile(filename) {
+			http.Error(w, "Invalid backup file name", http.StatusBadRequest)
+			return
+		}
+
+		reader, err := a.BM.Storage.Retrieve(r.Context(), filename)
+		if err != nil {
+			http.Error(w, "Failed to retrieve backup", http.StatusInternalServerError)
+			return
+		}
+		defer func() {
+			if err := reader.Close(); err != nil {
+				slog.Error("failed to close backup reader", "error", err)
+			}
+		}()
+
+		contentType := mime.TypeByExtension(filepath.Ext(filename))
+		if contentType == "" {
+			contentType = "application/octet-stream"
+		}
+
+		w.Header().Set("Access-Control-Expose-Headers", "Content-Disposition")
+		w.Header().Set("Content-Type", contentType)
+		w.Header().
+			Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, sanitizeFilename(filename)))
+
+		if _, err := io.Copy(w, reader); err != nil {
+			slog.Error("failed to write backup to response", "error", err)
+		}
+	}
 }
 
 func UploadBackup(a *config.App) http.HandlerFunc {
@@ -83,6 +140,11 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 					fmt.Sprintf("Failed to parse profile_id: %v", err),
 					http.StatusBadRequest,
 				)
+				return
+			}
+
+			if profileID <= 0 {
+				http.Error(w, "Invalid profile_id", http.StatusBadRequest)
 				return
 			}
 

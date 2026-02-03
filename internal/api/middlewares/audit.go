@@ -35,7 +35,6 @@ func NewAuditInterceptor(app *config.App) connect.UnaryInterceptorFunc {
 				params.AgentID = GetAgentIDFromContext(ctx)
 				if auditEvent := extractAuditEvent(req, resp); auditEvent != nil {
 					if auditEvent.Details == "" || auditEvent.Event == "" {
-						slog.Warn("audit event is missing details or event", "event", auditEvent)
 						return resp, err
 					}
 					// Log audit event asynchronously to avoid blocking the response

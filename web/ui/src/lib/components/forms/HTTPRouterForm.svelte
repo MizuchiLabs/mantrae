@@ -8,44 +8,58 @@
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { Router as HTTPRouter, RouterTLSConfig } from '$lib/gen/zen/traefik-schemas';
-	import { entryPoints, middlewares, routers } from '$lib/stores/realtime';
 	import { marshalConfig, unmarshalConfig } from '$lib/types';
 	import { formatArrayDisplay } from '$lib/utils';
 	import { CircleAlert, ExternalLink, Plus, Star } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import { CustomSwitch } from '../ui/custom-switch';
+	import { router } from '$lib/api/router.svelte';
+	import { entrypoint } from '$lib/api/entrypoints.svelte';
+	import { middleware } from '$lib/api/middleware.svelte';
 
-	let { router = $bindable() }: { router: Router } = $props();
+	interface Props {
+		data: Router;
+	}
+	let { data = $bindable() }: Props = $props();
 
-	let config = $state<HTTPRouter>(unmarshalConfig(router.config) as HTTPRouter);
+	let config = $state<HTTPRouter>(unmarshalConfig(data.config) as HTTPRouter);
 	let certResolvers = new SvelteSet();
 
+	const routerList = router.list();
+	const epList = entrypoint.list();
+	const mwList = middleware.list();
+
 	$effect(() => {
-		if (config) router.config = marshalConfig(config);
+		if (config) data.config = marshalConfig(config);
 	});
-
-	onMount(async () => {
-		$routers.forEach((r) => {
-			if (r.type === router.type) {
-				let tmp = unmarshalConfig(r.config) as HTTPRouter;
-				if (tmp?.tls?.certResolver) certResolvers.add(tmp.tls?.certResolver);
-			}
-		});
-
-		// Set defaults
-		let defaultEntryPoint = $entryPoints.find((e) => e.isDefault);
-		if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
-
-		let defaultMiddleware = $middlewares.find((m) => m.isDefault && m.type === ProtocolType.HTTP);
-		if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
+	$effect(() => {
+		if (routerList.isSuccess && routerList.data) {
+			routerList.data.forEach((r) => {
+				if (r.type === ProtocolType.HTTP) {
+					let tmp = unmarshalConfig(r.config) as HTTPRouter;
+					if (tmp?.tls?.certResolver) certResolvers.add(tmp.tls?.certResolver);
+				}
+			});
+		}
+	});
+	$effect(() => {
+		if (epList.isSuccess && epList.data && !data.id) {
+			config.entryPoints = [epList.data.find((ep) => ep.isDefault)?.name ?? ''];
+		}
+	});
+	$effect(() => {
+		if (mwList.isSuccess && mwList.data && !data.id) {
+			config.middlewares = [
+				mwList.data.find((mw) => mw.isDefault && mw.type === data.type)?.name ?? ''
+			];
+		}
 	});
 </script>
 
 <div class="flex flex-col gap-3">
 	<!-- Entrypoints -->
-	{#if !$entryPoints.length}
+	{#if epList.data?.length === 0}
 		<Alert.Root class="border-dashed">
 			<CircleAlert class="h-4 w-4" />
 			<Alert.Title>No entrypoints found</Alert.Title>
@@ -73,7 +87,7 @@
 					</span>
 				</Select.Trigger>
 				<Select.Content>
-					{#each $entryPoints || [] as e (e.id)}
+					{#each epList.data || [] as e (e.id)}
 						<Select.Item value={e.name}>
 							<div class="flex items-center gap-2">
 								<span class="truncate">{e.name}</span>
@@ -89,7 +103,7 @@
 	{/if}
 
 	<!-- Middlewares -->
-	{#if !$middlewares.length}
+	{#if mwList.data?.length === 0}
 		<Alert.Root class="border-dashed">
 			<CircleAlert class="h-4 w-4" />
 			<Alert.Title>No middlewares found</Alert.Title>
@@ -111,13 +125,13 @@
 		<div class="flex flex-col gap-2">
 			<Label class="mr-2">Middlewares</Label>
 			<Select.Root type="multiple" bind:value={config.middlewares}>
-				<Select.Trigger class="w-full" disabled={!$middlewares.length}>
+				<Select.Trigger class="w-full" disabled={mwList.data?.length === 0}>
 					<span class="truncate text-left">
 						{formatArrayDisplay(config.middlewares) || 'Select middlewares'}
 					</span>
 				</Select.Trigger>
 				<Select.Content>
-					{#each $middlewares || [] as middleware (middleware.id)}
+					{#each mwList.data || [] as middleware (middleware.id)}
 						<Select.Item value={middleware.name}>
 							<span class="truncate">{middleware.name}</span>
 						</Select.Item>
@@ -196,7 +210,7 @@
 	</div>
 
 	<!-- Rule -->
-	{#if router.type === ProtocolType.HTTP}
-		<RuleEditor bind:rule={config.rule} bind:type={router.type} />
+	{#if data.type === ProtocolType.HTTP}
+		<RuleEditor bind:rule={config.rule} bind:type={data.type} />
 	{/if}
 </div>

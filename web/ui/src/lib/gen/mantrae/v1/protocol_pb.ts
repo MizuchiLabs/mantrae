@@ -2,45 +2,43 @@
 // @generated from file mantrae/v1/protocol.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile } from '@bufbuild/protobuf/codegenv2';
-import { enumDesc, fileDesc } from '@bufbuild/protobuf/codegenv2';
+import type { GenEnum, GenFile } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc } from "@bufbuild/protobuf/codegenv2";
 
 /**
  * Describes the file mantrae/v1/protocol.proto.
  */
-export const file_mantrae_v1_protocol: GenFile /*@__PURE__*/ = fileDesc(
-	'ChltYW50cmFlL3YxL3Byb3RvY29sLnByb3RvEgptYW50cmFlLnYxKnMKDFByb3RvY29sVHlwZRIdChlQUk9UT0NPTF9UWVBFX1VOU1BFQ0lGSUVEEAASFgoSUFJPVE9DT0xfVFlQRV9IVFRQEAESFQoRUFJPVE9DT0xfVFlQRV9UQ1AQAhIVChFQUk9UT0NPTF9UWVBFX1VEUBADQqoBCg5jb20ubWFudHJhZS52MUINUHJvdG9jb2xQcm90b1ABWkBnaXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvaW50ZXJuYWwvZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw'
-);
+export const file_mantrae_v1_protocol: GenFile = /*@__PURE__*/
+  fileDesc("ChltYW50cmFlL3YxL3Byb3RvY29sLnByb3RvEgptYW50cmFlLnYxKnMKDFByb3RvY29sVHlwZRIdChlQUk9UT0NPTF9UWVBFX1VOU1BFQ0lGSUVEEAASFgoSUFJPVE9DT0xfVFlQRV9IVFRQEAESFQoRUFJPVE9DT0xfVFlQRV9UQ1AQAhIVChFQUk9UT0NPTF9UWVBFX1VEUBADQqoBCg5jb20ubWFudHJhZS52MUINUHJvdG9jb2xQcm90b1ABWkBnaXRodWIuY29tL21penVjaGlsYWJzL21hbnRyYWUvaW50ZXJuYWwvZ2VuL21hbnRyYWUvdjE7bWFudHJhZXYxogIDTVhYqgIKTWFudHJhZS5WMcoCCk1hbnRyYWVcVjHiAhZNYW50cmFlXFYxXEdQQk1ldGFkYXRh6gILTWFudHJhZTo6VjFiBnByb3RvMw");
 
 /**
  * @generated from enum mantrae.v1.ProtocolType
  */
 export enum ProtocolType {
-	/**
-	 * @generated from enum value: PROTOCOL_TYPE_UNSPECIFIED = 0;
-	 */
-	UNSPECIFIED = 0,
+  /**
+   * @generated from enum value: PROTOCOL_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
 
-	/**
-	 * @generated from enum value: PROTOCOL_TYPE_HTTP = 1;
-	 */
-	HTTP = 1,
+  /**
+   * @generated from enum value: PROTOCOL_TYPE_HTTP = 1;
+   */
+  HTTP = 1,
 
-	/**
-	 * @generated from enum value: PROTOCOL_TYPE_TCP = 2;
-	 */
-	TCP = 2,
+  /**
+   * @generated from enum value: PROTOCOL_TYPE_TCP = 2;
+   */
+  TCP = 2,
 
-	/**
-	 * @generated from enum value: PROTOCOL_TYPE_UDP = 3;
-	 */
-	UDP = 3
+  /**
+   * @generated from enum value: PROTOCOL_TYPE_UDP = 3;
+   */
+  UDP = 3,
 }
 
 /**
  * Describes the enum mantrae.v1.ProtocolType.
  */
-export const ProtocolTypeSchema: GenEnum<ProtocolType> /*@__PURE__*/ = enumDesc(
-	file_mantrae_v1_protocol,
-	0
-);
+export const ProtocolTypeSchema: GenEnum<ProtocolType> = /*@__PURE__*/
+  enumDesc(file_mantrae_v1_protocol, 0);
+

@@ -45,13 +45,6 @@ func (s *ProfileService) CreateProfile(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Profile{
-			Profile: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateProfileResponse{Profile: result.ToProto()}, nil
 }
 
@@ -78,13 +71,6 @@ func (s *ProfileService) UpdateProfile(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Profile{
-			Profile: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateProfileResponse{Profile: result.ToProto()}, nil
 }
 
@@ -92,20 +78,9 @@ func (s *ProfileService) DeleteProfile(
 	ctx context.Context,
 	req *mantraev1.DeleteProfileRequest,
 ) (*mantraev1.DeleteProfileResponse, error) {
-	profile, err := s.app.Conn.Q.GetProfile(ctx, req.Id)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
 	if err := s.app.Conn.Q.DeleteProfile(ctx, req.Id); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Profile{
-			Profile: profile.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteProfileResponse{}, nil
 }
 

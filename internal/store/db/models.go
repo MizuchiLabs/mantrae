@@ -62,13 +62,6 @@ type Error struct {
 	CreatedAt *time.Time `json:"createdAt"`
 }
 
-type GooseDbVersion struct {
-	ID        int64      `json:"id"`
-	VersionID int64      `json:"versionId"`
-	IsApplied int64      `json:"isApplied"`
-	Tstamp    *time.Time `json:"tstamp"`
-}
-
 type HttpMiddleware struct {
 	ID        string                 `json:"id"`
 	ProfileID int64                  `json:"profileId"`

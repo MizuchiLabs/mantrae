@@ -15,14 +15,14 @@
 	} from '$lib/gen/zen/traefik-schemas';
 	import { CustomSwitch } from '../ui/custom-switch';
 	import { Separator } from '../ui/separator';
-	import { serversTransportClient } from '$lib/api';
-	import { profile } from '$lib/stores/profile';
-	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
+	import { transport } from '$lib/api/transport.svelte';
 
 	interface Props {
 		service: Service;
 	}
 	let { service = $bindable() }: Props = $props();
+
+	const transports = transport.list(undefined, service.type);
 
 	let servers = $state([{ address: '' }] as TCPServer[]);
 	let serversTransport = $state('');
@@ -142,26 +142,24 @@
 				<Separator />
 
 				<!-- Servers Transport -->
-				{#await serversTransportClient.listServersTransports( { profileId: profile.id, type: ProtocolType.TCP } ) then value}
-					<div class="flex flex-col gap-2">
-						<Label class="text-sm">Servers Transport</Label>
-						<Select.Root type="single" bind:value={serversTransport} onValueChange={updateConfig}>
-							<Select.Trigger class="w-full">
-								<span class="truncate text-left text-sm">
-									{serversTransport || 'Default'}
-								</span>
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="">Default</Select.Item>
-								{#each value.serversTransports || [] as transport (transport.id)}
-									<Select.Item value={transport.name}>
-										<span class="truncate">{transport.name}</span>
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
-				{/await}
+				<div class="flex flex-col gap-2">
+					<Label class="text-sm">Servers Transport</Label>
+					<Select.Root type="single" bind:value={serversTransport} onValueChange={updateConfig}>
+						<Select.Trigger class="w-full">
+							<span class="truncate text-left text-sm">
+								{serversTransport || 'Default'}
+							</span>
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Item value="">Default</Select.Item>
+							{#each transports.data || [] as t (t.id)}
+								<Select.Item value={t.name}>
+									<span class="truncate">{t.name}</span>
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+				</div>
 			</div>
 		</Collapsible.Content>
 	</Collapsible.Root>

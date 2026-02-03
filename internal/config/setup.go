@@ -17,7 +17,6 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/mizuchilabs/mantrae/internal/backup"
 	"github.com/mizuchilabs/mantrae/internal/dns"
-	"github.com/mizuchilabs/mantrae/internal/event"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -40,11 +39,10 @@ type App struct {
 	EnvConfig
 
 	// App state
-	Conn  *store.Connection
-	BM    *backup.BackupManager
-	SM    *settings.SettingsManager
-	Event *event.Broadcaster
-	DNS   *dns.DNSManager
+	Conn *store.Connection
+	BM   *backup.BackupManager
+	SM   *settings.SettingsManager
+	DNS  *dns.DNSManager
 }
 
 func New(ctx context.Context, cmd *cli.Command) (*App, error) {
@@ -72,7 +70,6 @@ func New(ctx context.Context, cmd *cli.Command) (*App, error) {
 	app.BM = backup.NewManager(app.Conn, app.SM)
 	app.BM.Start(ctx)
 
-	app.Event = event.NewBroadcaster(ctx)
 	app.DNS = dns.NewManager(app.Conn, app.Secret)
 
 	return &app, app.setupDefaultData(ctx)

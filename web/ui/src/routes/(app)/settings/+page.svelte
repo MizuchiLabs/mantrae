@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { backupClient, settingClient, upload } from '$lib/api';
-	import { profile } from '$lib/api/profiles.svelte';
 	import BackupModal from '$lib/components/modals/BackupModal.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -13,14 +11,18 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { ConnectError } from '@connectrpc/connect';
 	import { Download, List, SaveIcon, Settings, Upload } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { settingGroups, storageTypes } from './settings';
+	import { BackendURL } from '$lib/config';
+	import { profileID } from '$lib/store.svelte';
+	import { setting } from '$lib/api/settings.svelte';
 
-	let settingsMap = $state<Record<string, string>>({});
-	let originalSettings: Record<string, string> = {};
+	const settings = $derived(setting.list());
+	const updateSettings = setting.update();
+
+	let settingsMap = $derived(Object.fromEntries(settings.data?.map((s) => [s.key, s.value]) || []));
+	let originalSettings: Record<string, string> = $state({});
 	let changedSettings = $state<Record<string, string>>({});
-	let currentProfile = profile.get();
 
 	// Helper function to check if an entire group should be visible
 	function shouldShowGroup(groupKey: string): boolean {
@@ -75,9 +77,7 @@
 
 		try {
 			await Promise.all(
-				Object.entries(changedSettings).map(([key, value]) =>
-					settingClient.updateSetting({ key, value })
-				)
+				Object.entries(changedSettings).map(([key, value]) => updateSettings.mutate({ key, value }))
 			);
 
 			// merge deltas into original and clear
@@ -122,38 +122,48 @@
 	let showBackupList = $state(false);
 	let uploadBackupFile: HTMLInputElement | null = $state(null);
 
-	async function downloadBackup(name?: string) {
-		try {
-			const stream = backupClient.downloadBackup({ name });
-
-			const chunks: ArrayBuffer[] = [];
-			for await (const chunk of stream) {
-				if (chunk.data.length > 0) {
-					chunks.push(new Uint8Array(chunk.data).buffer);
-				}
-			}
-
-			const blob = new Blob(chunks, { type: 'application/octet-stream' });
-			const url = URL.createObjectURL(blob);
-
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = name || 'backup.db';
-			a.click();
-
-			URL.revokeObjectURL(url);
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to download backup', { description: e.message });
+	async function downloadBackup(filename = '') {
+		const params = filename ? `?name=${encodeURIComponent(filename)}` : '';
+		const response = await fetch(`${BackendURL}/backups/download${params}`, {
+			credentials: 'include'
+		});
+		if (!response.ok) {
+			throw new Error(await response.text());
 		}
+
+		const disposition = response.headers.get('Content-Disposition');
+		const name = disposition?.match(/filename="?([^"]+)"?/i)?.[1];
+		if (!name) {
+			throw new Error('Server did not provide filename');
+		}
+
+		const blob = await response.blob();
+		const url = URL.createObjectURL(blob);
+
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = name;
+		a.click();
+
+		URL.revokeObjectURL(url);
 	}
 
-	onMount(async () => {
-		const response = await settingClient.listSettings({});
-		settingsMap = Object.fromEntries(response.settings.map((s) => [s.key, s.value]));
-		originalSettings = { ...settingsMap };
-		changedSettings = {};
-	});
+	async function upload(input: HTMLInputElement | null) {
+		if (!input?.files?.length) return;
+
+		const body = new FormData();
+		body.append('file', input.files[0]);
+
+		const response = await fetch(`${BackendURL}/backups/upload/${profileID.current}`, {
+			method: 'POST',
+			body,
+			credentials: 'include'
+		});
+		if (!response.ok) {
+			throw new Error('Failed to upload');
+		}
+		toast.success('Uploaded successfully');
+	}
 </script>
 
 <svelte:head>
@@ -180,7 +190,7 @@
 						accept=".db,.yaml,.yml,.json"
 						class="hidden"
 						bind:this={uploadBackupFile}
-						onchange={() => upload(uploadBackupFile, `backup/${currentProfile.data?.id}`)}
+						onchange={() => upload(uploadBackupFile)}
 					/>
 
 					<div class="grid grid-cols-1 gap-2 sm:grid-cols-6">

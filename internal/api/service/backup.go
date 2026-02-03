@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"io"
-	"log/slog"
+	"path/filepath"
+	"strings"
 
 	"connectrpc.com/connect"
 	"github.com/mizuchilabs/mantrae/internal/config"
@@ -70,60 +70,19 @@ func (s *BackupService) RestoreBackup(
 			errors.New("invalid backup file name"),
 		)
 	}
-	if err := s.app.BM.Restore(ctx, req.Name); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+	extension := strings.ToLower(filepath.Ext(req.Name))
+	switch extension {
+	case ".db":
+		if err := s.app.BM.Restore(ctx, req.Name); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	case ".yaml", ".yml", ".json":
+		s.app.BM.RestoreViaConfig(ctx, req.ProfileId, req.Name)
+	default:
+		return nil, connect.NewError(
+			connect.CodeInvalidArgument,
+			errors.New("invalid backup file type"),
+		)
 	}
-
 	return &mantraev1.RestoreBackupResponse{}, nil
-}
-
-func (s *BackupService) DownloadBackup(
-	ctx context.Context,
-	req *mantraev1.DownloadBackupRequest,
-	stream *connect.ServerStream[mantraev1.DownloadBackupResponse],
-) error {
-	filename := req.Name
-	if req.Name == "" {
-		files, err := s.app.BM.Storage.List(ctx)
-		if err != nil {
-			return connect.NewError(connect.CodeInternal, err)
-		}
-		if len(files) == 0 {
-			// Create a new backup if none exist
-			if err = s.app.BM.Create(ctx); err != nil {
-				return connect.NewError(connect.CodeInternal, err)
-			}
-			files, err = s.app.BM.Storage.List(ctx)
-			if err != nil {
-				return connect.NewError(connect.CodeInternal, err)
-			}
-		}
-		filename = files[0].Name // Use latest backup
-	}
-
-	reader, err := s.app.BM.Storage.Retrieve(ctx, filename)
-	if err != nil {
-		return connect.NewError(connect.CodeInternal, err)
-	}
-	defer func() {
-		if err = reader.Close(); err != nil {
-			slog.Error("failed to close backup reader", "error", err)
-		}
-	}()
-
-	buf := make([]byte, 32*1024)
-	for {
-		n, err := reader.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return connect.NewError(connect.CodeInternal, err)
-		}
-		if err := stream.Send(&mantraev1.DownloadBackupResponse{Data: buf[:n]}); err != nil {
-			return connect.NewError(connect.CodeInternal, err)
-		}
-	}
-
-	return nil
 }

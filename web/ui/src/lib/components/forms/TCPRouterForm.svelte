@@ -6,37 +6,51 @@
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import type { RouterTCPTLSConfig, TCPRouter } from '$lib/gen/zen/traefik-schemas';
-	import { entryPoints, middlewares, routers } from '$lib/stores/realtime';
 	import { marshalConfig, unmarshalConfig } from '$lib/types';
 	import { Star } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import RuleEditor from '../utils/ruleEditor.svelte';
 	import { CustomSwitch } from '../ui/custom-switch';
+	import { router } from '$lib/api/router.svelte';
+	import { entrypoint } from '$lib/api/entrypoints.svelte';
+	import { middleware } from '$lib/api/middleware.svelte';
 
-	let { router = $bindable() }: { router: Router } = $props();
+	interface Props {
+		data: Router;
+	}
+	let { data = $bindable() }: Props = $props();
 
-	let config = $state(unmarshalConfig(router.config) as TCPRouter);
+	let config = $state(unmarshalConfig(data.config) as TCPRouter);
 	let certResolvers = new SvelteSet();
 
+	const routerList = router.list();
+	const epList = entrypoint.list();
+	const mwList = middleware.list();
+
 	$effect(() => {
-		if (config) router.config = marshalConfig(config);
+		if (config) data.config = marshalConfig(config);
 	});
-
-	onMount(async () => {
-		$routers.forEach((r) => {
-			if (r.type === router.type) {
-				let tmp = unmarshalConfig(r.config) as TCPRouter;
-				if (tmp?.tls?.certResolver) certResolvers.add(tmp.tls?.certResolver);
-			}
-		});
-
-		// Set default entrypoint
-		let defaultEntryPoint = $entryPoints.find((e) => e.isDefault);
-		if (defaultEntryPoint) config.entryPoints = [defaultEntryPoint.name];
-
-		let defaultMiddleware = $middlewares.find((m) => m.isDefault && m.type === ProtocolType.TCP);
-		if (defaultMiddleware) config.middlewares = [defaultMiddleware.name];
+	$effect(() => {
+		if (routerList.isSuccess && routerList.data) {
+			routerList.data.forEach((r) => {
+				if (r.type === ProtocolType.TCP) {
+					let tmp = unmarshalConfig(r.config) as TCPRouter;
+					if (tmp?.tls?.certResolver) certResolvers.add(tmp.tls?.certResolver);
+				}
+			});
+		}
+	});
+	$effect(() => {
+		if (epList.isSuccess && epList.data && !data.id) {
+			config.entryPoints = [epList.data.find((ep) => ep.isDefault)?.name ?? ''];
+		}
+	});
+	$effect(() => {
+		if (mwList.isSuccess && mwList.data && !data.id) {
+			config.middlewares = [
+				mwList.data.find((mw) => mw.isDefault && mw.type === data.type)?.name ?? ''
+			];
+		}
 	});
 </script>
 
@@ -49,7 +63,7 @@
 				{config.entryPoints?.join(', ') || 'Select entrypoints'}
 			</Select.Trigger>
 			<Select.Content>
-				{#each $entryPoints || [] as e (e.id)}
+				{#each epList.data || [] as e (e.id)}
 					<Select.Item value={e.name}>
 						<div class="flex items-center gap-2">
 							{e.name}
@@ -71,7 +85,7 @@
 				{config.middlewares?.join(', ') || 'Select middlewares'}
 			</Select.Trigger>
 			<Select.Content>
-				{#each $middlewares || [] as middleware (middleware.id)}
+				{#each mwList.data || [] as middleware (middleware.id)}
 					<Select.Item value={middleware.name}>
 						{middleware.name}
 					</Select.Item>
@@ -149,7 +163,7 @@
 	</div>
 
 	<!-- Rule -->
-	{#if router.type === ProtocolType.TCP}
-		<RuleEditor bind:rule={config.rule} bind:type={router.type} />
+	{#if data.type === ProtocolType.TCP}
+		<RuleEditor bind:rule={config.rule} bind:type={data.type} />
 	{/if}
 </div>

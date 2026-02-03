@@ -158,6 +158,7 @@ func (*CreateBackupResponse) Descriptor() ([]byte, []int) {
 type RestoreBackupRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ProfileId     int64                  `protobuf:"varint,2,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -197,6 +198,13 @@ func (x *RestoreBackupRequest) GetName() string {
 		return x.Name
 	}
 	return ""
+}
+
+func (x *RestoreBackupRequest) GetProfileId() int64 {
+	if x != nil {
+		return x.ProfileId
+	}
+	return 0
 }
 
 type RestoreBackupResponse struct {
@@ -395,94 +403,6 @@ func (*DeleteBackupResponse) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_backup_proto_rawDescGZIP(), []int{8}
 }
 
-type DownloadBackupRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DownloadBackupRequest) Reset() {
-	*x = DownloadBackupRequest{}
-	mi := &file_mantrae_v1_backup_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DownloadBackupRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DownloadBackupRequest) ProtoMessage() {}
-
-func (x *DownloadBackupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_backup_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DownloadBackupRequest.ProtoReflect.Descriptor instead.
-func (*DownloadBackupRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_backup_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DownloadBackupRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-type DownloadBackupResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Data          []byte                 `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DownloadBackupResponse) Reset() {
-	*x = DownloadBackupResponse{}
-	mi := &file_mantrae_v1_backup_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DownloadBackupResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DownloadBackupResponse) ProtoMessage() {}
-
-func (x *DownloadBackupResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_backup_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DownloadBackupResponse.ProtoReflect.Descriptor instead.
-func (*DownloadBackupResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_backup_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *DownloadBackupResponse) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
 var File_mantrae_v1_backup_proto protoreflect.FileDescriptor
 
 const file_mantrae_v1_backup_proto_rawDesc = "" +
@@ -495,26 +415,23 @@ const file_mantrae_v1_backup_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x15\n" +
 	"\x13CreateBackupRequest\"\x16\n" +
-	"\x14CreateBackupResponse\"3\n" +
+	"\x14CreateBackupResponse\"R\n" +
 	"\x14RestoreBackupRequest\x12\x1b\n" +
-	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\"\x17\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12\x1d\n" +
+	"\n" +
+	"profile_id\x18\x02 \x01(\x03R\tprofileId\"\x17\n" +
 	"\x15RestoreBackupResponse\"\x14\n" +
 	"\x12ListBackupsRequest\"C\n" +
 	"\x13ListBackupsResponse\x12,\n" +
 	"\abackups\x18\x01 \x03(\v2\x12.mantrae.v1.BackupR\abackups\"2\n" +
 	"\x13DeleteBackupRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\"\x16\n" +
-	"\x14DeleteBackupResponse\"+\n" +
-	"\x15DownloadBackupRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\",\n" +
-	"\x16DownloadBackupResponse\x12\x12\n" +
-	"\x04data\x18\x01 \x01(\fR\x04data2\xbb\x03\n" +
+	"\x14DeleteBackupResponse2\xe0\x02\n" +
 	"\rBackupService\x12Q\n" +
 	"\fCreateBackup\x12\x1f.mantrae.v1.CreateBackupRequest\x1a .mantrae.v1.CreateBackupResponse\x12T\n" +
 	"\rRestoreBackup\x12 .mantrae.v1.RestoreBackupRequest\x1a!.mantrae.v1.RestoreBackupResponse\x12S\n" +
 	"\vListBackups\x12\x1e.mantrae.v1.ListBackupsRequest\x1a\x1f.mantrae.v1.ListBackupsResponse\"\x03\x90\x02\x01\x12Q\n" +
-	"\fDeleteBackup\x12\x1f.mantrae.v1.DeleteBackupRequest\x1a .mantrae.v1.DeleteBackupResponse\x12Y\n" +
-	"\x0eDownloadBackup\x12!.mantrae.v1.DownloadBackupRequest\x1a\".mantrae.v1.DownloadBackupResponse0\x01B\xa8\x01\n" +
+	"\fDeleteBackup\x12\x1f.mantrae.v1.DeleteBackupRequest\x1a .mantrae.v1.DeleteBackupResponseB\xa8\x01\n" +
 	"\x0ecom.mantrae.v1B\vBackupProtoP\x01Z@github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1;mantraev1\xa2\x02\x03MXX\xaa\x02\n" +
 	"Mantrae.V1\xca\x02\n" +
 	"Mantrae\\V1\xe2\x02\x16Mantrae\\V1\\GPBMetadata\xea\x02\vMantrae::V1b\x06proto3"
@@ -531,39 +448,35 @@ func file_mantrae_v1_backup_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_backup_proto_rawDescData
 }
 
-var file_mantrae_v1_backup_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_mantrae_v1_backup_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_mantrae_v1_backup_proto_goTypes = []any{
-	(*Backup)(nil),                 // 0: mantrae.v1.Backup
-	(*CreateBackupRequest)(nil),    // 1: mantrae.v1.CreateBackupRequest
-	(*CreateBackupResponse)(nil),   // 2: mantrae.v1.CreateBackupResponse
-	(*RestoreBackupRequest)(nil),   // 3: mantrae.v1.RestoreBackupRequest
-	(*RestoreBackupResponse)(nil),  // 4: mantrae.v1.RestoreBackupResponse
-	(*ListBackupsRequest)(nil),     // 5: mantrae.v1.ListBackupsRequest
-	(*ListBackupsResponse)(nil),    // 6: mantrae.v1.ListBackupsResponse
-	(*DeleteBackupRequest)(nil),    // 7: mantrae.v1.DeleteBackupRequest
-	(*DeleteBackupResponse)(nil),   // 8: mantrae.v1.DeleteBackupResponse
-	(*DownloadBackupRequest)(nil),  // 9: mantrae.v1.DownloadBackupRequest
-	(*DownloadBackupResponse)(nil), // 10: mantrae.v1.DownloadBackupResponse
-	(*timestamppb.Timestamp)(nil),  // 11: google.protobuf.Timestamp
+	(*Backup)(nil),                // 0: mantrae.v1.Backup
+	(*CreateBackupRequest)(nil),   // 1: mantrae.v1.CreateBackupRequest
+	(*CreateBackupResponse)(nil),  // 2: mantrae.v1.CreateBackupResponse
+	(*RestoreBackupRequest)(nil),  // 3: mantrae.v1.RestoreBackupRequest
+	(*RestoreBackupResponse)(nil), // 4: mantrae.v1.RestoreBackupResponse
+	(*ListBackupsRequest)(nil),    // 5: mantrae.v1.ListBackupsRequest
+	(*ListBackupsResponse)(nil),   // 6: mantrae.v1.ListBackupsResponse
+	(*DeleteBackupRequest)(nil),   // 7: mantrae.v1.DeleteBackupRequest
+	(*DeleteBackupResponse)(nil),  // 8: mantrae.v1.DeleteBackupResponse
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_mantrae_v1_backup_proto_depIdxs = []int32{
-	11, // 0: mantrae.v1.Backup.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 1: mantrae.v1.ListBackupsResponse.backups:type_name -> mantrae.v1.Backup
-	1,  // 2: mantrae.v1.BackupService.CreateBackup:input_type -> mantrae.v1.CreateBackupRequest
-	3,  // 3: mantrae.v1.BackupService.RestoreBackup:input_type -> mantrae.v1.RestoreBackupRequest
-	5,  // 4: mantrae.v1.BackupService.ListBackups:input_type -> mantrae.v1.ListBackupsRequest
-	7,  // 5: mantrae.v1.BackupService.DeleteBackup:input_type -> mantrae.v1.DeleteBackupRequest
-	9,  // 6: mantrae.v1.BackupService.DownloadBackup:input_type -> mantrae.v1.DownloadBackupRequest
-	2,  // 7: mantrae.v1.BackupService.CreateBackup:output_type -> mantrae.v1.CreateBackupResponse
-	4,  // 8: mantrae.v1.BackupService.RestoreBackup:output_type -> mantrae.v1.RestoreBackupResponse
-	6,  // 9: mantrae.v1.BackupService.ListBackups:output_type -> mantrae.v1.ListBackupsResponse
-	8,  // 10: mantrae.v1.BackupService.DeleteBackup:output_type -> mantrae.v1.DeleteBackupResponse
-	10, // 11: mantrae.v1.BackupService.DownloadBackup:output_type -> mantrae.v1.DownloadBackupResponse
-	7,  // [7:12] is the sub-list for method output_type
-	2,  // [2:7] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	9, // 0: mantrae.v1.Backup.created_at:type_name -> google.protobuf.Timestamp
+	0, // 1: mantrae.v1.ListBackupsResponse.backups:type_name -> mantrae.v1.Backup
+	1, // 2: mantrae.v1.BackupService.CreateBackup:input_type -> mantrae.v1.CreateBackupRequest
+	3, // 3: mantrae.v1.BackupService.RestoreBackup:input_type -> mantrae.v1.RestoreBackupRequest
+	5, // 4: mantrae.v1.BackupService.ListBackups:input_type -> mantrae.v1.ListBackupsRequest
+	7, // 5: mantrae.v1.BackupService.DeleteBackup:input_type -> mantrae.v1.DeleteBackupRequest
+	2, // 6: mantrae.v1.BackupService.CreateBackup:output_type -> mantrae.v1.CreateBackupResponse
+	4, // 7: mantrae.v1.BackupService.RestoreBackup:output_type -> mantrae.v1.RestoreBackupResponse
+	6, // 8: mantrae.v1.BackupService.ListBackups:output_type -> mantrae.v1.ListBackupsResponse
+	8, // 9: mantrae.v1.BackupService.DeleteBackup:output_type -> mantrae.v1.DeleteBackupResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_backup_proto_init() }
@@ -577,7 +490,7 @@ func file_mantrae_v1_backup_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_backup_proto_rawDesc), len(file_mantrae_v1_backup_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

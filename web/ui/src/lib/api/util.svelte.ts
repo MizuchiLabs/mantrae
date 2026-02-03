@@ -7,6 +7,7 @@ import { toast } from 'svelte-sonner';
 
 export const util = {
 	// Queries
+	ip: () => useQuery(UtilService.method.getPublicIP, {}, {}),
 	version: () => useQuery(UtilService.method.getVersion, {}, { select: (res) => res.version }),
 	config: () =>
 		useQuery(
@@ -41,6 +42,7 @@ export const backup = {
 		}),
 	restore: () =>
 		useMutation(BackupService.method.restoreBackup, {
-			onSuccess: () => toast.success('Backup restored!')
+			onSuccess: () => toast.success('Backup restored!'),
+			transform: (variables) => ({ ...variables, profileId: profileID.current })
 		})
 };

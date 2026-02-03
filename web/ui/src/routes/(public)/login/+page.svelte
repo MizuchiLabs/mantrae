@@ -1,13 +1,12 @@
 <script lang="ts">
-	import { handleOIDCLogin } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import logo from '$lib/assets/logo.svg';
-
 	import { user } from '$lib/api/users.svelte';
+	import { BackendURL } from '$lib/config';
 
 	let username = $state('');
 	let password = $state('');
@@ -30,6 +29,9 @@
 			handleLogin();
 		}
 	};
+	function handleOIDCLogin() {
+		window.location.href = `${BackendURL}/oidc/login`;
+	}
 </script>
 
 <svelte:head>

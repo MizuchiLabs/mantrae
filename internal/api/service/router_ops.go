@@ -122,12 +122,6 @@ func (s *HTTPRouterOps) Create(
 	}
 
 	go s.app.DNS.UpdateDNS()
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: router,
-		},
-	})
 	return &mantraev1.CreateRouterResponse{
 		Router: router,
 	}, nil
@@ -212,13 +206,6 @@ func (s *HTTPRouterOps) Update(
 	for _, p := range dnsProviders {
 		router.DnsProviders = append(router.DnsProviders, p.ToProto())
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: router,
-		},
-	})
 	return &mantraev1.UpdateRouterResponse{
 		Router: router,
 	}, nil
@@ -259,13 +246,6 @@ func (s *HTTPRouterOps) Delete(
 	if err := s.app.Conn.Q.DeleteHttpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: router.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
 
@@ -357,13 +337,6 @@ func (s *TCPRouterOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
@@ -437,13 +410,6 @@ func (s *TCPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
@@ -484,13 +450,6 @@ func (s *TCPRouterOps) Delete(
 	if err := s.app.Conn.Q.DeleteTcpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: router.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
 
@@ -574,13 +533,6 @@ func (s *UDPRouterOps) Create(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_CREATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: result.ToProto(),
-		},
-	})
 	return &mantraev1.CreateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
@@ -610,13 +562,6 @@ func (s *UDPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_UPDATED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: result.ToProto(),
-		},
-	})
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
@@ -647,13 +592,6 @@ func (s *UDPRouterOps) Delete(
 	if err := s.app.Conn.Q.DeleteUdpRouter(ctx, req.Id); err != nil {
 		return nil, err
 	}
-
-	s.app.Event.Broadcast(&mantraev1.EventStreamResponse{
-		Action: mantraev1.EventAction_EVENT_ACTION_DELETED,
-		Data: &mantraev1.EventStreamResponse_Router{
-			Router: router.ToProto(),
-		},
-	})
 	return &mantraev1.DeleteRouterResponse{}, nil
 }
 

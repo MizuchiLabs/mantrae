@@ -2,248 +2,206 @@
 // @generated from file mantrae/v1/backup.proto (package mantrae.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { fileDesc, messageDesc, serviceDesc } from '@bufbuild/protobuf/codegenv2';
-import { file_buf_validate_validate } from '../../buf/validate/validate_pb';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt';
-import type { Message } from '@bufbuild/protobuf';
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import { file_buf_validate_validate } from "../../buf/validate/validate_pb";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file mantrae/v1/backup.proto.
  */
-export const file_mantrae_v1_backup: GenFile /*@__PURE__*/ = fileDesc(
-	'ChdtYW50cmFlL3YxL2JhY2t1cC5wcm90bxIKbWFudHJhZS52MSJUCgZCYWNrdXASDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhUKE0NyZWF0ZUJhY2t1cFJlcXVlc3QiFgoUQ3JlYXRlQmFja3VwUmVzcG9uc2UiLQoUUmVzdG9yZUJhY2t1cFJlcXVlc3QSFQoEbmFtZRgBIAEoCUIHukgEcgIQASIXChVSZXN0b3JlQmFja3VwUmVzcG9uc2UiFAoSTGlzdEJhY2t1cHNSZXF1ZXN0IjoKE0xpc3RCYWNrdXBzUmVzcG9uc2USIwoHYmFja3VwcxgBIAMoCzISLm1hbnRyYWUudjEuQmFja3VwIiwKE0RlbGV0ZUJhY2t1cFJlcXVlc3QSFQoEbmFtZRgBIAEoCUIHukgEcgIQASIWChREZWxldGVCYWNrdXBSZXNwb25zZSIlChVEb3dubG9hZEJhY2t1cFJlcXVlc3QSDAoEbmFtZRgBIAEoCSImChZEb3dubG9hZEJhY2t1cFJlc3BvbnNlEgwKBGRhdGEYASABKAwyuwMKDUJhY2t1cFNlcnZpY2USUQoMQ3JlYXRlQmFja3VwEh8ubWFudHJhZS52MS5DcmVhdGVCYWNrdXBSZXF1ZXN0GiAubWFudHJhZS52MS5DcmVhdGVCYWNrdXBSZXNwb25zZRJUCg1SZXN0b3JlQmFja3VwEiAubWFudHJhZS52MS5SZXN0b3JlQmFja3VwUmVxdWVzdBohLm1hbnRyYWUudjEuUmVzdG9yZUJhY2t1cFJlc3BvbnNlElMKC0xpc3RCYWNrdXBzEh4ubWFudHJhZS52MS5MaXN0QmFja3Vwc1JlcXVlc3QaHy5tYW50cmFlLnYxLkxpc3RCYWNrdXBzUmVzcG9uc2UiA5ACARJRCgxEZWxldGVCYWNrdXASHy5tYW50cmFlLnYxLkRlbGV0ZUJhY2t1cFJlcXVlc3QaIC5tYW50cmFlLnYxLkRlbGV0ZUJhY2t1cFJlc3BvbnNlElkKDkRvd25sb2FkQmFja3VwEiEubWFudHJhZS52MS5Eb3dubG9hZEJhY2t1cFJlcXVlc3QaIi5tYW50cmFlLnYxLkRvd25sb2FkQmFja3VwUmVzcG9uc2UwAUKoAQoOY29tLm1hbnRyYWUudjFCC0JhY2t1cFByb3RvUAFaQGdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9pbnRlcm5hbC9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z',
-	[file_buf_validate_validate, file_google_protobuf_timestamp]
-);
+export const file_mantrae_v1_backup: GenFile = /*@__PURE__*/
+  fileDesc("ChdtYW50cmFlL3YxL2JhY2t1cC5wcm90bxIKbWFudHJhZS52MSJUCgZCYWNrdXASDAoEbmFtZRgBIAEoCRIMCgRzaXplGAIgASgDEi4KCmNyZWF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhUKE0NyZWF0ZUJhY2t1cFJlcXVlc3QiFgoUQ3JlYXRlQmFja3VwUmVzcG9uc2UiQQoUUmVzdG9yZUJhY2t1cFJlcXVlc3QSFQoEbmFtZRgBIAEoCUIHukgEcgIQARISCgpwcm9maWxlX2lkGAIgASgDIhcKFVJlc3RvcmVCYWNrdXBSZXNwb25zZSIUChJMaXN0QmFja3Vwc1JlcXVlc3QiOgoTTGlzdEJhY2t1cHNSZXNwb25zZRIjCgdiYWNrdXBzGAEgAygLMhIubWFudHJhZS52MS5CYWNrdXAiLAoTRGVsZXRlQmFja3VwUmVxdWVzdBIVCgRuYW1lGAEgASgJQge6SARyAhABIhYKFERlbGV0ZUJhY2t1cFJlc3BvbnNlMuACCg1CYWNrdXBTZXJ2aWNlElEKDENyZWF0ZUJhY2t1cBIfLm1hbnRyYWUudjEuQ3JlYXRlQmFja3VwUmVxdWVzdBogLm1hbnRyYWUudjEuQ3JlYXRlQmFja3VwUmVzcG9uc2USVAoNUmVzdG9yZUJhY2t1cBIgLm1hbnRyYWUudjEuUmVzdG9yZUJhY2t1cFJlcXVlc3QaIS5tYW50cmFlLnYxLlJlc3RvcmVCYWNrdXBSZXNwb25zZRJTCgtMaXN0QmFja3VwcxIeLm1hbnRyYWUudjEuTGlzdEJhY2t1cHNSZXF1ZXN0Gh8ubWFudHJhZS52MS5MaXN0QmFja3Vwc1Jlc3BvbnNlIgOQAgESUQoMRGVsZXRlQmFja3VwEh8ubWFudHJhZS52MS5EZWxldGVCYWNrdXBSZXF1ZXN0GiAubWFudHJhZS52MS5EZWxldGVCYWNrdXBSZXNwb25zZUKoAQoOY29tLm1hbnRyYWUudjFCC0JhY2t1cFByb3RvUAFaQGdpdGh1Yi5jb20vbWl6dWNoaWxhYnMvbWFudHJhZS9pbnRlcm5hbC9nZW4vbWFudHJhZS92MTttYW50cmFldjGiAgNNWFiqAgpNYW50cmFlLlYxygIKTWFudHJhZVxWMeICFk1hbnRyYWVcVjFcR1BCTWV0YWRhdGHqAgtNYW50cmFlOjpWMWIGcHJvdG8z", [file_buf_validate_validate, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message mantrae.v1.Backup
  */
-export type Backup = Message<'mantrae.v1.Backup'> & {
-	/**
-	 * @generated from field: string name = 1;
-	 */
-	name: string;
+export type Backup = Message<"mantrae.v1.Backup"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
 
-	/**
-	 * @generated from field: int64 size = 2;
-	 */
-	size: bigint;
+  /**
+   * @generated from field: int64 size = 2;
+   */
+  size: bigint;
 
-	/**
-	 * @generated from field: google.protobuf.Timestamp created_at = 3;
-	 */
-	createdAt?: Timestamp;
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 3;
+   */
+  createdAt?: Timestamp;
 };
 
 /**
  * Describes the message mantrae.v1.Backup.
  * Use `create(BackupSchema)` to create a new message.
  */
-export const BackupSchema: GenMessage<Backup> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_backup,
-	0
-);
+export const BackupSchema: GenMessage<Backup> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 0);
 
 /**
  * @generated from message mantrae.v1.CreateBackupRequest
  */
-export type CreateBackupRequest = Message<'mantrae.v1.CreateBackupRequest'> & {};
+export type CreateBackupRequest = Message<"mantrae.v1.CreateBackupRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.CreateBackupRequest.
  * Use `create(CreateBackupRequestSchema)` to create a new message.
  */
-export const CreateBackupRequestSchema: GenMessage<CreateBackupRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_backup,
-	1
-);
+export const CreateBackupRequestSchema: GenMessage<CreateBackupRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 1);
 
 /**
  * @generated from message mantrae.v1.CreateBackupResponse
  */
-export type CreateBackupResponse = Message<'mantrae.v1.CreateBackupResponse'> & {};
+export type CreateBackupResponse = Message<"mantrae.v1.CreateBackupResponse"> & {
+};
 
 /**
  * Describes the message mantrae.v1.CreateBackupResponse.
  * Use `create(CreateBackupResponseSchema)` to create a new message.
  */
-export const CreateBackupResponseSchema: GenMessage<CreateBackupResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 2);
+export const CreateBackupResponseSchema: GenMessage<CreateBackupResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 2);
 
 /**
  * @generated from message mantrae.v1.RestoreBackupRequest
  */
-export type RestoreBackupRequest = Message<'mantrae.v1.RestoreBackupRequest'> & {
-	/**
-	 * @generated from field: string name = 1;
-	 */
-	name: string;
+export type RestoreBackupRequest = Message<"mantrae.v1.RestoreBackupRequest"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: int64 profile_id = 2;
+   */
+  profileId: bigint;
 };
 
 /**
  * Describes the message mantrae.v1.RestoreBackupRequest.
  * Use `create(RestoreBackupRequestSchema)` to create a new message.
  */
-export const RestoreBackupRequestSchema: GenMessage<RestoreBackupRequest> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 3);
+export const RestoreBackupRequestSchema: GenMessage<RestoreBackupRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 3);
 
 /**
  * @generated from message mantrae.v1.RestoreBackupResponse
  */
-export type RestoreBackupResponse = Message<'mantrae.v1.RestoreBackupResponse'> & {};
+export type RestoreBackupResponse = Message<"mantrae.v1.RestoreBackupResponse"> & {
+};
 
 /**
  * Describes the message mantrae.v1.RestoreBackupResponse.
  * Use `create(RestoreBackupResponseSchema)` to create a new message.
  */
-export const RestoreBackupResponseSchema: GenMessage<RestoreBackupResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 4);
+export const RestoreBackupResponseSchema: GenMessage<RestoreBackupResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 4);
 
 /**
  * @generated from message mantrae.v1.ListBackupsRequest
  */
-export type ListBackupsRequest = Message<'mantrae.v1.ListBackupsRequest'> & {};
+export type ListBackupsRequest = Message<"mantrae.v1.ListBackupsRequest"> & {
+};
 
 /**
  * Describes the message mantrae.v1.ListBackupsRequest.
  * Use `create(ListBackupsRequestSchema)` to create a new message.
  */
-export const ListBackupsRequestSchema: GenMessage<ListBackupsRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_backup,
-	5
-);
+export const ListBackupsRequestSchema: GenMessage<ListBackupsRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 5);
 
 /**
  * @generated from message mantrae.v1.ListBackupsResponse
  */
-export type ListBackupsResponse = Message<'mantrae.v1.ListBackupsResponse'> & {
-	/**
-	 * @generated from field: repeated mantrae.v1.Backup backups = 1;
-	 */
-	backups: Backup[];
+export type ListBackupsResponse = Message<"mantrae.v1.ListBackupsResponse"> & {
+  /**
+   * @generated from field: repeated mantrae.v1.Backup backups = 1;
+   */
+  backups: Backup[];
 };
 
 /**
  * Describes the message mantrae.v1.ListBackupsResponse.
  * Use `create(ListBackupsResponseSchema)` to create a new message.
  */
-export const ListBackupsResponseSchema: GenMessage<ListBackupsResponse> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_backup,
-	6
-);
+export const ListBackupsResponseSchema: GenMessage<ListBackupsResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 6);
 
 /**
  * @generated from message mantrae.v1.DeleteBackupRequest
  */
-export type DeleteBackupRequest = Message<'mantrae.v1.DeleteBackupRequest'> & {
-	/**
-	 * @generated from field: string name = 1;
-	 */
-	name: string;
+export type DeleteBackupRequest = Message<"mantrae.v1.DeleteBackupRequest"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
 };
 
 /**
  * Describes the message mantrae.v1.DeleteBackupRequest.
  * Use `create(DeleteBackupRequestSchema)` to create a new message.
  */
-export const DeleteBackupRequestSchema: GenMessage<DeleteBackupRequest> /*@__PURE__*/ = messageDesc(
-	file_mantrae_v1_backup,
-	7
-);
+export const DeleteBackupRequestSchema: GenMessage<DeleteBackupRequest> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 7);
 
 /**
  * @generated from message mantrae.v1.DeleteBackupResponse
  */
-export type DeleteBackupResponse = Message<'mantrae.v1.DeleteBackupResponse'> & {};
+export type DeleteBackupResponse = Message<"mantrae.v1.DeleteBackupResponse"> & {
+};
 
 /**
  * Describes the message mantrae.v1.DeleteBackupResponse.
  * Use `create(DeleteBackupResponseSchema)` to create a new message.
  */
-export const DeleteBackupResponseSchema: GenMessage<DeleteBackupResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 8);
-
-/**
- * @generated from message mantrae.v1.DownloadBackupRequest
- */
-export type DownloadBackupRequest = Message<'mantrae.v1.DownloadBackupRequest'> & {
-	/**
-	 * @generated from field: string name = 1;
-	 */
-	name: string;
-};
-
-/**
- * Describes the message mantrae.v1.DownloadBackupRequest.
- * Use `create(DownloadBackupRequestSchema)` to create a new message.
- */
-export const DownloadBackupRequestSchema: GenMessage<DownloadBackupRequest> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 9);
-
-/**
- * @generated from message mantrae.v1.DownloadBackupResponse
- */
-export type DownloadBackupResponse = Message<'mantrae.v1.DownloadBackupResponse'> & {
-	/**
-	 * @generated from field: bytes data = 1;
-	 */
-	data: Uint8Array;
-};
-
-/**
- * Describes the message mantrae.v1.DownloadBackupResponse.
- * Use `create(DownloadBackupResponseSchema)` to create a new message.
- */
-export const DownloadBackupResponseSchema: GenMessage<DownloadBackupResponse> /*@__PURE__*/ =
-	messageDesc(file_mantrae_v1_backup, 10);
+export const DeleteBackupResponseSchema: GenMessage<DeleteBackupResponse> = /*@__PURE__*/
+  messageDesc(file_mantrae_v1_backup, 8);
 
 /**
  * @generated from service mantrae.v1.BackupService
  */
 export const BackupService: GenService<{
-	/**
-	 * @generated from rpc mantrae.v1.BackupService.CreateBackup
-	 */
-	createBackup: {
-		methodKind: 'unary';
-		input: typeof CreateBackupRequestSchema;
-		output: typeof CreateBackupResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.BackupService.RestoreBackup
-	 */
-	restoreBackup: {
-		methodKind: 'unary';
-		input: typeof RestoreBackupRequestSchema;
-		output: typeof RestoreBackupResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.BackupService.ListBackups
-	 */
-	listBackups: {
-		methodKind: 'unary';
-		input: typeof ListBackupsRequestSchema;
-		output: typeof ListBackupsResponseSchema;
-	};
-	/**
-	 * @generated from rpc mantrae.v1.BackupService.DeleteBackup
-	 */
-	deleteBackup: {
-		methodKind: 'unary';
-		input: typeof DeleteBackupRequestSchema;
-		output: typeof DeleteBackupResponseSchema;
-	};
-	/**
-	 * See: https://github.com/connectrpc/connect-es/issues/669
-	 * rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse); // stream doesn't work with connect-es
-	 *
-	 * @generated from rpc mantrae.v1.BackupService.DownloadBackup
-	 */
-	downloadBackup: {
-		methodKind: 'server_streaming';
-		input: typeof DownloadBackupRequestSchema;
-		output: typeof DownloadBackupResponseSchema;
-	};
-}> /*@__PURE__*/ = serviceDesc(file_mantrae_v1_backup, 0);
+  /**
+   * @generated from rpc mantrae.v1.BackupService.CreateBackup
+   */
+  createBackup: {
+    methodKind: "unary";
+    input: typeof CreateBackupRequestSchema;
+    output: typeof CreateBackupResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.BackupService.RestoreBackup
+   */
+  restoreBackup: {
+    methodKind: "unary";
+    input: typeof RestoreBackupRequestSchema;
+    output: typeof RestoreBackupResponseSchema;
+  },
+  /**
+   * @generated from rpc mantrae.v1.BackupService.ListBackups
+   */
+  listBackups: {
+    methodKind: "unary";
+    input: typeof ListBackupsRequestSchema;
+    output: typeof ListBackupsResponseSchema;
+  },
+  /**
+   * See: https://github.com/connectrpc/connect-es/issues/669
+   * rpc UploadBackup(stream UploadBackupRequest) returns (UploadBackupResponse); // stream doesn't work with connect-es
+   *
+   * @generated from rpc mantrae.v1.BackupService.DeleteBackup
+   */
+  deleteBackup: {
+    methodKind: "unary";
+    input: typeof DeleteBackupRequestSchema;
+    output: typeof DeleteBackupResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_mantrae_v1_backup, 0);
+
