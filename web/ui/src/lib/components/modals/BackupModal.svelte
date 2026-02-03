@@ -5,30 +5,22 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
 	import { CalendarDays, DatabaseBackup, Download, Trash2 } from '@lucide/svelte';
-	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { backupClient } from '$lib/api';
 	import { ConnectError } from '@connectrpc/connect';
-	import type { Backup } from '$lib/gen/mantrae/v1/backup_pb';
 	import { formatTs } from '$lib/utils';
+	import { backup } from '$lib/api/util.svelte';
 
 	let { open = $bindable(false) } = $props();
 
-	let sqliteBackups = $state<Backup[]>([]);
-	let yamlBackups = $state<Backup[]>([]);
+	const backupList = $derived(backup.list());
+	const createMutation = backup.create();
+	const deleteMutation = backup.delete();
+	const restoreMutation = backup.restore();
 
-	async function deleteBackup(name: string) {
-		await backupClient.deleteBackup({ name });
-		const response = await backupClient.listBackups({});
-		sqliteBackups = response.backups.filter((b) => b.name.endsWith('.db'));
-		yamlBackups = response.backups.filter((b) => b.name.endsWith('.yaml'));
-	}
-	async function createBackup() {
-		await backupClient.createBackup({});
-		const response = await backupClient.listBackups({});
-		sqliteBackups = response.backups.filter((b) => b.name.endsWith('.db'));
-		yamlBackups = response.backups.filter((b) => b.name.endsWith('.yaml'));
-	}
+	let sqliteBackups = $derived(backupList.data?.filter((b) => b.name.endsWith('.db')) || []);
+	let yamlBackups = $derived(backupList.data?.filter((b) => b.name.endsWith('.yaml')) || []);
+
 	async function downloadBackup(name?: string) {
 		try {
 			const stream = backupClient.downloadBackup({ name });
@@ -54,14 +46,6 @@
 			toast.error('Failed to download backup', { description: e.message });
 		}
 	}
-
-	onMount(async () => {
-		const response = await backupClient.listBackups({});
-		sqliteBackups = response.backups.filter((b) => b.name.endsWith('.db'));
-		yamlBackups = response.backups.filter(
-			(b) => b.name.endsWith('.yaml') || b.name.endsWith('.yml')
-		);
-	});
 </script>
 
 <svelte:head>
@@ -69,13 +53,13 @@
 </svelte:head>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="flex max-w-[700px] flex-col gap-4">
+	<Dialog.Content class="flex max-w-150 flex-col gap-4">
 		<Dialog.Header>
 			<Dialog.Title>Latest Backups</Dialog.Title>
 			<Dialog.Description class="flex items-start justify-between gap-2">
 				Click on a backup to download it or use the buttons to either quickly restore a backup or
 				delete it.
-				<Button variant="default" onclick={createBackup}>Create Backup</Button>
+				<Button variant="default" onclick={() => createMutation.mutate({})}>Create Backup</Button>
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -119,7 +103,7 @@
 								size="icon"
 								class="rounded-full hover:bg-green-300/50 dark:hover:bg-green-700/50"
 								onclick={() => {
-									backupClient.restoreBackup({ name: b.name });
+									restoreMutation.mutate({ name: b.name });
 									open = false;
 								}}
 							>
@@ -129,7 +113,7 @@
 								variant="ghost"
 								size="icon"
 								class="rounded-full hover:bg-red-300/50 dark:hover:bg-red-700/50"
-								onclick={() => deleteBackup(b.name)}
+								onclick={() => deleteMutation.mutate({ name: b.name })}
 							>
 								<Trash2 />
 							</Button>
@@ -173,7 +157,7 @@
 								size="icon"
 								class="rounded-full hover:bg-green-300/50 dark:hover:bg-green-700/50"
 								onclick={() => {
-									backupClient.restoreBackup({ name: b.name });
+									restoreMutation.mutate({ name: b.name });
 									open = false;
 								}}
 							>
@@ -183,7 +167,7 @@
 								variant="ghost"
 								size="icon"
 								class="rounded-full hover:bg-red-300/50 dark:hover:bg-red-700/50"
-								onclick={() => deleteBackup(b.name)}
+								onclick={() => deleteMutation.mutate({ name: b.name })}
 							>
 								<Trash2 />
 							</Button>

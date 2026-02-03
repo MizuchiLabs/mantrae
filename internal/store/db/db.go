@@ -63,9 +63,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.countTcpServicesStmt, err = db.PrepareContext(ctx, countTcpServices); err != nil {
 		return nil, fmt.Errorf("error preparing query CountTcpServices: %w", err)
 	}
-	if q.countTraefikInstancesStmt, err = db.PrepareContext(ctx, countTraefikInstances); err != nil {
-		return nil, fmt.Errorf("error preparing query CountTraefikInstances: %w", err)
-	}
 	if q.countUdpRoutersStmt, err = db.PrepareContext(ctx, countUdpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query CountUdpRouters: %w", err)
 	}
@@ -186,9 +183,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteTcpServiceStmt, err = db.PrepareContext(ctx, deleteTcpService); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteTcpService: %w", err)
 	}
-	if q.deleteTraefikInstanceStmt, err = db.PrepareContext(ctx, deleteTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteTraefikInstance: %w", err)
-	}
 	if q.deleteUdpRouterStmt, err = db.PrepareContext(ctx, deleteUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUdpRouter: %w", err)
 	}
@@ -282,12 +276,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getTcpServiceByNameStmt, err = db.PrepareContext(ctx, getTcpServiceByName); err != nil {
 		return nil, fmt.Errorf("error preparing query GetTcpServiceByName: %w", err)
 	}
-	if q.getTraefikInstanceByIDStmt, err = db.PrepareContext(ctx, getTraefikInstanceByID); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTraefikInstanceByID: %w", err)
-	}
-	if q.getTraefikInstanceByNameStmt, err = db.PrepareContext(ctx, getTraefikInstanceByName); err != nil {
-		return nil, fmt.Errorf("error preparing query GetTraefikInstanceByName: %w", err)
-	}
 	if q.getUdpRouterStmt, err = db.PrepareContext(ctx, getUdpRouter); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUdpRouter: %w", err)
 	}
@@ -378,9 +366,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listTcpServicesEnabledStmt, err = db.PrepareContext(ctx, listTcpServicesEnabled); err != nil {
 		return nil, fmt.Errorf("error preparing query ListTcpServicesEnabled: %w", err)
 	}
-	if q.listTraefikInstancesStmt, err = db.PrepareContext(ctx, listTraefikInstances); err != nil {
-		return nil, fmt.Errorf("error preparing query ListTraefikInstances: %w", err)
-	}
 	if q.listUdpRoutersStmt, err = db.PrepareContext(ctx, listUdpRouters); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUdpRouters: %w", err)
 	}
@@ -398,9 +383,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.logErrorStmt, err = db.PrepareContext(ctx, logError); err != nil {
 		return nil, fmt.Errorf("error preparing query LogError: %w", err)
-	}
-	if q.purgeTraefikInstancesStmt, err = db.PrepareContext(ctx, purgeTraefikInstances); err != nil {
-		return nil, fmt.Errorf("error preparing query PurgeTraefikInstances: %w", err)
 	}
 	if q.unsetDefaultDNSProviderStmt, err = db.PrepareContext(ctx, unsetDefaultDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UnsetDefaultDNSProvider: %w", err)
@@ -465,14 +447,8 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.updateUserPasswordStmt, err = db.PrepareContext(ctx, updateUserPassword); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUserPassword: %w", err)
 	}
-	if q.updateUserResetTokenStmt, err = db.PrepareContext(ctx, updateUserResetToken); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateUserResetToken: %w", err)
-	}
 	if q.upsertSettingStmt, err = db.PrepareContext(ctx, upsertSetting); err != nil {
 		return nil, fmt.Errorf("error preparing query UpsertSetting: %w", err)
-	}
-	if q.upsertTraefikInstanceStmt, err = db.PrepareContext(ctx, upsertTraefikInstance); err != nil {
-		return nil, fmt.Errorf("error preparing query UpsertTraefikInstance: %w", err)
 	}
 	return &q, nil
 }
@@ -542,11 +518,6 @@ func (q *Queries) Close() error {
 	if q.countTcpServicesStmt != nil {
 		if cerr := q.countTcpServicesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing countTcpServicesStmt: %w", cerr)
-		}
-	}
-	if q.countTraefikInstancesStmt != nil {
-		if cerr := q.countTraefikInstancesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing countTraefikInstancesStmt: %w", cerr)
 		}
 	}
 	if q.countUdpRoutersStmt != nil {
@@ -749,11 +720,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteTcpServiceStmt: %w", cerr)
 		}
 	}
-	if q.deleteTraefikInstanceStmt != nil {
-		if cerr := q.deleteTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteTraefikInstanceStmt: %w", cerr)
-		}
-	}
 	if q.deleteUdpRouterStmt != nil {
 		if cerr := q.deleteUdpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteUdpRouterStmt: %w", cerr)
@@ -909,16 +875,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getTcpServiceByNameStmt: %w", cerr)
 		}
 	}
-	if q.getTraefikInstanceByIDStmt != nil {
-		if cerr := q.getTraefikInstanceByIDStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTraefikInstanceByIDStmt: %w", cerr)
-		}
-	}
-	if q.getTraefikInstanceByNameStmt != nil {
-		if cerr := q.getTraefikInstanceByNameStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getTraefikInstanceByNameStmt: %w", cerr)
-		}
-	}
 	if q.getUdpRouterStmt != nil {
 		if cerr := q.getUdpRouterStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUdpRouterStmt: %w", cerr)
@@ -1069,11 +1025,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listTcpServicesEnabledStmt: %w", cerr)
 		}
 	}
-	if q.listTraefikInstancesStmt != nil {
-		if cerr := q.listTraefikInstancesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listTraefikInstancesStmt: %w", cerr)
-		}
-	}
 	if q.listUdpRoutersStmt != nil {
 		if cerr := q.listUdpRoutersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUdpRoutersStmt: %w", cerr)
@@ -1102,11 +1053,6 @@ func (q *Queries) Close() error {
 	if q.logErrorStmt != nil {
 		if cerr := q.logErrorStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing logErrorStmt: %w", cerr)
-		}
-	}
-	if q.purgeTraefikInstancesStmt != nil {
-		if cerr := q.purgeTraefikInstancesStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing purgeTraefikInstancesStmt: %w", cerr)
 		}
 	}
 	if q.unsetDefaultDNSProviderStmt != nil {
@@ -1214,19 +1160,9 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing updateUserPasswordStmt: %w", cerr)
 		}
 	}
-	if q.updateUserResetTokenStmt != nil {
-		if cerr := q.updateUserResetTokenStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateUserResetTokenStmt: %w", cerr)
-		}
-	}
 	if q.upsertSettingStmt != nil {
 		if cerr := q.upsertSettingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing upsertSettingStmt: %w", cerr)
-		}
-	}
-	if q.upsertTraefikInstanceStmt != nil {
-		if cerr := q.upsertTraefikInstanceStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing upsertTraefikInstanceStmt: %w", cerr)
 		}
 	}
 	return err
@@ -1281,7 +1217,6 @@ type Queries struct {
 	countTcpRoutersStmt                  *sql.Stmt
 	countTcpServersTransportsStmt        *sql.Stmt
 	countTcpServicesStmt                 *sql.Stmt
-	countTraefikInstancesStmt            *sql.Stmt
 	countUdpRoutersStmt                  *sql.Stmt
 	countUdpServicesStmt                 *sql.Stmt
 	countUsersStmt                       *sql.Stmt
@@ -1322,7 +1257,6 @@ type Queries struct {
 	deleteTcpRouterDNSProviderStmt       *sql.Stmt
 	deleteTcpServersTransportStmt        *sql.Stmt
 	deleteTcpServiceStmt                 *sql.Stmt
-	deleteTraefikInstanceStmt            *sql.Stmt
 	deleteUdpRouterStmt                  *sql.Stmt
 	deleteUdpServiceStmt                 *sql.Stmt
 	deleteUserStmt                       *sql.Stmt
@@ -1354,8 +1288,6 @@ type Queries struct {
 	getTcpServersTransportStmt           *sql.Stmt
 	getTcpServiceStmt                    *sql.Stmt
 	getTcpServiceByNameStmt              *sql.Stmt
-	getTraefikInstanceByIDStmt           *sql.Stmt
-	getTraefikInstanceByNameStmt         *sql.Stmt
 	getUdpRouterStmt                     *sql.Stmt
 	getUdpRoutersUsingEntryPointStmt     *sql.Stmt
 	getUdpServiceStmt                    *sql.Stmt
@@ -1386,14 +1318,12 @@ type Queries struct {
 	listTcpServersTransportsEnabledStmt  *sql.Stmt
 	listTcpServicesStmt                  *sql.Stmt
 	listTcpServicesEnabledStmt           *sql.Stmt
-	listTraefikInstancesStmt             *sql.Stmt
 	listUdpRoutersStmt                   *sql.Stmt
 	listUdpRoutersEnabledStmt            *sql.Stmt
 	listUdpServicesStmt                  *sql.Stmt
 	listUdpServicesEnabledStmt           *sql.Stmt
 	listUsersStmt                        *sql.Stmt
 	logErrorStmt                         *sql.Stmt
-	purgeTraefikInstancesStmt            *sql.Stmt
 	unsetDefaultDNSProviderStmt          *sql.Stmt
 	unsetDefaultEntryPointStmt           *sql.Stmt
 	unsetDefaultHttpMiddlewareStmt       *sql.Stmt
@@ -1415,9 +1345,7 @@ type Queries struct {
 	updateUserStmt                       *sql.Stmt
 	updateUserLastLoginStmt              *sql.Stmt
 	updateUserPasswordStmt               *sql.Stmt
-	updateUserResetTokenStmt             *sql.Stmt
 	upsertSettingStmt                    *sql.Stmt
-	upsertTraefikInstanceStmt            *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
@@ -1437,7 +1365,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		countTcpRoutersStmt:                  q.countTcpRoutersStmt,
 		countTcpServersTransportsStmt:        q.countTcpServersTransportsStmt,
 		countTcpServicesStmt:                 q.countTcpServicesStmt,
-		countTraefikInstancesStmt:            q.countTraefikInstancesStmt,
 		countUdpRoutersStmt:                  q.countUdpRoutersStmt,
 		countUdpServicesStmt:                 q.countUdpServicesStmt,
 		countUsersStmt:                       q.countUsersStmt,
@@ -1478,7 +1405,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteTcpRouterDNSProviderStmt:       q.deleteTcpRouterDNSProviderStmt,
 		deleteTcpServersTransportStmt:        q.deleteTcpServersTransportStmt,
 		deleteTcpServiceStmt:                 q.deleteTcpServiceStmt,
-		deleteTraefikInstanceStmt:            q.deleteTraefikInstanceStmt,
 		deleteUdpRouterStmt:                  q.deleteUdpRouterStmt,
 		deleteUdpServiceStmt:                 q.deleteUdpServiceStmt,
 		deleteUserStmt:                       q.deleteUserStmt,
@@ -1510,8 +1436,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getTcpServersTransportStmt:           q.getTcpServersTransportStmt,
 		getTcpServiceStmt:                    q.getTcpServiceStmt,
 		getTcpServiceByNameStmt:              q.getTcpServiceByNameStmt,
-		getTraefikInstanceByIDStmt:           q.getTraefikInstanceByIDStmt,
-		getTraefikInstanceByNameStmt:         q.getTraefikInstanceByNameStmt,
 		getUdpRouterStmt:                     q.getUdpRouterStmt,
 		getUdpRoutersUsingEntryPointStmt:     q.getUdpRoutersUsingEntryPointStmt,
 		getUdpServiceStmt:                    q.getUdpServiceStmt,
@@ -1542,14 +1466,12 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listTcpServersTransportsEnabledStmt:  q.listTcpServersTransportsEnabledStmt,
 		listTcpServicesStmt:                  q.listTcpServicesStmt,
 		listTcpServicesEnabledStmt:           q.listTcpServicesEnabledStmt,
-		listTraefikInstancesStmt:             q.listTraefikInstancesStmt,
 		listUdpRoutersStmt:                   q.listUdpRoutersStmt,
 		listUdpRoutersEnabledStmt:            q.listUdpRoutersEnabledStmt,
 		listUdpServicesStmt:                  q.listUdpServicesStmt,
 		listUdpServicesEnabledStmt:           q.listUdpServicesEnabledStmt,
 		listUsersStmt:                        q.listUsersStmt,
 		logErrorStmt:                         q.logErrorStmt,
-		purgeTraefikInstancesStmt:            q.purgeTraefikInstancesStmt,
 		unsetDefaultDNSProviderStmt:          q.unsetDefaultDNSProviderStmt,
 		unsetDefaultEntryPointStmt:           q.unsetDefaultEntryPointStmt,
 		unsetDefaultHttpMiddlewareStmt:       q.unsetDefaultHttpMiddlewareStmt,
@@ -1571,8 +1493,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		updateUserStmt:                       q.updateUserStmt,
 		updateUserLastLoginStmt:              q.updateUserLastLoginStmt,
 		updateUserPasswordStmt:               q.updateUserPasswordStmt,
-		updateUserResetTokenStmt:             q.updateUserResetTokenStmt,
 		upsertSettingStmt:                    q.upsertSettingStmt,
-		upsertTraefikInstanceStmt:            q.upsertTraefikInstanceStmt,
 	}
 }

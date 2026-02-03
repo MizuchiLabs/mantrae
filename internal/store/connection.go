@@ -15,12 +15,13 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/store/db"
 	"github.com/mizuchilabs/mantrae/internal/util"
-	"github.com/pressly/goose/v3"
+	"github.com/mizuchilabs/sqlite-schema-diff/pkg/diff"
+	"github.com/mizuchilabs/sqlite-schema-diff/pkg/parser"
 	_ "modernc.org/sqlite"
 )
 
-//go:embed migrations
-var migrationFS embed.FS
+//go:embed schemas/*.sql
+var schemaFS embed.FS
 
 type Connection struct {
 	mu  sync.RWMutex
@@ -156,13 +157,9 @@ func (c *Connection) Replace(srcPath string) error {
 }
 
 func migrate(db *sql.DB) {
-	goose.SetBaseFS(migrationFS)
-	goose.SetLogger(goose.NopLogger())
-
-	if err := goose.SetDialect("sqlite3"); err != nil {
-		log.Fatal(err)
-	}
-	if err := goose.Up(db, "migrations"); err != nil {
-		log.Fatal(err)
+	parser.SetBaseFS(schemaFS)
+	if err := diff.Apply(db, "schemas", diff.ApplyOptions{}); err != nil {
+		slog.Error("failed to apply schema changes", "error", err)
+		return
 	}
 }

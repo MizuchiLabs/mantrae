@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { BookText } from '@lucide/svelte';
-	import { Button } from '../ui/button';
-	import { utilClient } from '$lib/api';
-	import Separator from '../ui/separator/separator.svelte';
+	import { util } from '$lib/api/util.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Separator } from '$lib/components/ui/separator';
 	import { DocsURL } from '$lib/config';
+	import { BookText } from '@lucide/svelte';
+
+	const version = util.version();
 </script>
 
 <footer
@@ -31,13 +33,11 @@
 			class="flex items-center gap-1 text-xs "
 		>
 			Mantrae
-			{#await utilClient.getVersion({}) then result}
-				{#if result.version && result.version !== 'debug'}
-					{result.version}
-				{:else}
-					<span class="italic">latest</span>
-				{/if}
-			{/await}
+			{#if version.isSuccess && version.data !== 'debug'}
+				{version.data}
+			{:else}
+				<span class="italic">latest</span>
+			{/if}
 		</Button>
 	</div>
 </footer>

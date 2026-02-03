@@ -167,8 +167,6 @@ func (i *AuthInterceptor) authenticateRequest(
 func isPublicEndpoint(procedure string) bool {
 	publicEndpoints := map[string]bool{
 		mantraev1connect.UserServiceLoginUserProcedure:     true,
-		mantraev1connect.UserServiceVerifyOTPProcedure:     true,
-		mantraev1connect.UserServiceSendOTPProcedure:       true,
 		mantraev1connect.UserServiceGetOIDCStatusProcedure: true,
 	}
 	return publicEndpoints[procedure]

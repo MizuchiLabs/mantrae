@@ -7,7 +7,6 @@ import {
 	routerClient,
 	serversTransportClient,
 	serviceClient,
-	traefikClient,
 	userClient,
 	utilClient
 } from '$lib/api';
@@ -19,7 +18,6 @@ import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 import type { Router } from '$lib/gen/mantrae/v1/router_pb';
 import type { ServersTransport } from '$lib/gen/mantrae/v1/servers_transport_pb';
 import type { Service } from '$lib/gen/mantrae/v1/service_pb';
-import type { TraefikInstance } from '$lib/gen/mantrae/v1/traefik_instance_pb';
 import type { User } from '$lib/gen/mantrae/v1/user_pb';
 import { EventAction, type EventStreamResponse } from '$lib/gen/mantrae/v1/util_pb';
 import type { ConnectError } from '@connectrpc/connect';
@@ -35,7 +33,6 @@ export const services = writable<Service[]>([]);
 export const middlewares = writable<Middleware[]>([]);
 export const serversTransports = writable<ServersTransport[]>([]);
 export const dnsProviders = writable<DNSProvider[]>([]);
-export const traefikInstances = writable<TraefikInstance[]>([]);
 
 let currentStream: AbortController | null = null;
 
@@ -135,12 +132,6 @@ function handleEvent(event: EventStreamResponse) {
 					dnsProviders.update((d) => d.concat(data));
 					break;
 				}
-				case 'traefikInstance': {
-					const data = event.data.value;
-					if (!data) return;
-					traefikInstances.update((t) => t.concat(data));
-					break;
-				}
 			}
 			break;
 		case EventAction.UPDATED:
@@ -198,12 +189,6 @@ function handleEvent(event: EventStreamResponse) {
 					dnsClient.listDNSProviders({}).then((response) => {
 						dnsProviders.set(response.dnsProviders);
 					});
-					break;
-				}
-				case 'traefikInstance': {
-					const data = event.data.value;
-					if (!data) return;
-					traefikInstances.update((t) => t.map((t) => (t.id === data.id ? data : t)));
 					break;
 				}
 			}
@@ -264,12 +249,6 @@ function handleEvent(event: EventStreamResponse) {
 					dnsProviders.update((d) => d.filter((d) => d.id !== data.id));
 					break;
 				}
-				case 'traefikInstance': {
-					const data = event.data.value;
-					if (!data) return;
-					traefikInstances.update((t) => t.filter((t) => t.id !== data.id));
-					break;
-				}
 			}
 			break;
 	}
@@ -306,8 +285,5 @@ async function preload() {
 	});
 	serversTransportClient.listServersTransports({ profileId: profile.id }).then((response) => {
 		serversTransports.set(response.serversTransports);
-	});
-	traefikClient.listTraefikInstances({ profileId: profile.id }).then((response) => {
-		traefikInstances.set(response.traefikInstances);
 	});
 }

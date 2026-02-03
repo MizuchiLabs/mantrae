@@ -41,7 +41,7 @@
 	import { pageIndex, pageSize } from '$lib/store.svelte';
 
 	type DataTableProps<TData, TValue> = {
-		data: TData[];
+		data?: TData[];
 		columns: ColumnDef<TData, TValue>[];
 		onPaginationChange?: (pagination: PaginationState) => void;
 		onSortingChange?: (sorting: SortingState) => void;
@@ -56,7 +56,7 @@
 	};
 
 	let {
-		data,
+		data = [],
 		columns,
 		onPaginationChange,
 		onSortingChange,

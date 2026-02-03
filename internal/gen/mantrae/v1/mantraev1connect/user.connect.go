@@ -37,10 +37,6 @@ const (
 	UserServiceLoginUserProcedure = "/mantrae.v1.UserService/LoginUser"
 	// UserServiceLogoutUserProcedure is the fully-qualified name of the UserService's LogoutUser RPC.
 	UserServiceLogoutUserProcedure = "/mantrae.v1.UserService/LogoutUser"
-	// UserServiceVerifyOTPProcedure is the fully-qualified name of the UserService's VerifyOTP RPC.
-	UserServiceVerifyOTPProcedure = "/mantrae.v1.UserService/VerifyOTP"
-	// UserServiceSendOTPProcedure is the fully-qualified name of the UserService's SendOTP RPC.
-	UserServiceSendOTPProcedure = "/mantrae.v1.UserService/SendOTP"
 	// UserServiceGetUserProcedure is the fully-qualified name of the UserService's GetUser RPC.
 	UserServiceGetUserProcedure = "/mantrae.v1.UserService/GetUser"
 	// UserServiceCreateUserProcedure is the fully-qualified name of the UserService's CreateUser RPC.
@@ -60,8 +56,6 @@ const (
 type UserServiceClient interface {
 	LoginUser(context.Context, *v1.LoginUserRequest) (*v1.LoginUserResponse, error)
 	LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error)
-	VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error)
-	SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error)
 	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
 	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
 	UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error)
@@ -91,18 +85,6 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+UserServiceLogoutUserProcedure,
 			connect.WithSchema(userServiceMethods.ByName("LogoutUser")),
-			connect.WithClientOptions(opts...),
-		),
-		verifyOTP: connect.NewClient[v1.VerifyOTPRequest, v1.VerifyOTPResponse](
-			httpClient,
-			baseURL+UserServiceVerifyOTPProcedure,
-			connect.WithSchema(userServiceMethods.ByName("VerifyOTP")),
-			connect.WithClientOptions(opts...),
-		),
-		sendOTP: connect.NewClient[v1.SendOTPRequest, v1.SendOTPResponse](
-			httpClient,
-			baseURL+UserServiceSendOTPProcedure,
-			connect.WithSchema(userServiceMethods.ByName("SendOTP")),
 			connect.WithClientOptions(opts...),
 		),
 		getUser: connect.NewClient[v1.GetUserRequest, v1.GetUserResponse](
@@ -150,8 +132,6 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type userServiceClient struct {
 	loginUser     *connect.Client[v1.LoginUserRequest, v1.LoginUserResponse]
 	logoutUser    *connect.Client[v1.LogoutUserRequest, v1.LogoutUserResponse]
-	verifyOTP     *connect.Client[v1.VerifyOTPRequest, v1.VerifyOTPResponse]
-	sendOTP       *connect.Client[v1.SendOTPRequest, v1.SendOTPResponse]
 	getUser       *connect.Client[v1.GetUserRequest, v1.GetUserResponse]
 	createUser    *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
 	updateUser    *connect.Client[v1.UpdateUserRequest, v1.UpdateUserResponse]
@@ -172,24 +152,6 @@ func (c *userServiceClient) LoginUser(ctx context.Context, req *v1.LoginUserRequ
 // LogoutUser calls mantrae.v1.UserService.LogoutUser.
 func (c *userServiceClient) LogoutUser(ctx context.Context, req *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error) {
 	response, err := c.logoutUser.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// VerifyOTP calls mantrae.v1.UserService.VerifyOTP.
-func (c *userServiceClient) VerifyOTP(ctx context.Context, req *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error) {
-	response, err := c.verifyOTP.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
-}
-
-// SendOTP calls mantrae.v1.UserService.SendOTP.
-func (c *userServiceClient) SendOTP(ctx context.Context, req *v1.SendOTPRequest) (*v1.SendOTPResponse, error) {
-	response, err := c.sendOTP.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -254,8 +216,6 @@ func (c *userServiceClient) GetOIDCStatus(ctx context.Context, req *v1.GetOIDCSt
 type UserServiceHandler interface {
 	LoginUser(context.Context, *v1.LoginUserRequest) (*v1.LoginUserResponse, error)
 	LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error)
-	VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error)
-	SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error)
 	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
 	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
 	UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error)
@@ -281,18 +241,6 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		UserServiceLogoutUserProcedure,
 		svc.LogoutUser,
 		connect.WithSchema(userServiceMethods.ByName("LogoutUser")),
-		connect.WithHandlerOptions(opts...),
-	)
-	userServiceVerifyOTPHandler := connect.NewUnaryHandlerSimple(
-		UserServiceVerifyOTPProcedure,
-		svc.VerifyOTP,
-		connect.WithSchema(userServiceMethods.ByName("VerifyOTP")),
-		connect.WithHandlerOptions(opts...),
-	)
-	userServiceSendOTPHandler := connect.NewUnaryHandlerSimple(
-		UserServiceSendOTPProcedure,
-		svc.SendOTP,
-		connect.WithSchema(userServiceMethods.ByName("SendOTP")),
 		connect.WithHandlerOptions(opts...),
 	)
 	userServiceGetUserHandler := connect.NewUnaryHandlerSimple(
@@ -339,10 +287,6 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceLoginUserHandler.ServeHTTP(w, r)
 		case UserServiceLogoutUserProcedure:
 			userServiceLogoutUserHandler.ServeHTTP(w, r)
-		case UserServiceVerifyOTPProcedure:
-			userServiceVerifyOTPHandler.ServeHTTP(w, r)
-		case UserServiceSendOTPProcedure:
-			userServiceSendOTPHandler.ServeHTTP(w, r)
 		case UserServiceGetUserProcedure:
 			userServiceGetUserHandler.ServeHTTP(w, r)
 		case UserServiceCreateUserProcedure:
@@ -370,14 +314,6 @@ func (UnimplementedUserServiceHandler) LoginUser(context.Context, *v1.LoginUserR
 
 func (UnimplementedUserServiceHandler) LogoutUser(context.Context, *v1.LogoutUserRequest) (*v1.LogoutUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.LogoutUser is not implemented"))
-}
-
-func (UnimplementedUserServiceHandler) VerifyOTP(context.Context, *v1.VerifyOTPRequest) (*v1.VerifyOTPResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.VerifyOTP is not implemented"))
-}
-
-func (UnimplementedUserServiceHandler) SendOTP(context.Context, *v1.SendOTPRequest) (*v1.SendOTPResponse, error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UserService.SendOTP is not implemented"))
 }
 
 func (UnimplementedUserServiceHandler) GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error) {

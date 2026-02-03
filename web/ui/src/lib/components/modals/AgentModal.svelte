@@ -5,73 +5,42 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import { Check, Container, Copy, RotateCcw, Trash2, X } from '@lucide/svelte';
-	import { agentClient, settingClient } from '$lib/api';
-	import { profile } from '$lib/stores/profile';
-	import { ConnectError } from '@connectrpc/connect';
+	import { Check, Container, Copy, RotateCcw, X } from '@lucide/svelte';
 	import type { Agent } from '$lib/gen/mantrae/v1/agent_pb';
 	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte';
 	import { scale } from 'svelte/transition';
-	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
 	import { CopyInput } from '../ui/input-group';
 	import { formatTs } from '$lib/utils';
+	import { agent } from '$lib/api/agents.svelte';
+	import { setting } from '$lib/api/settings.svelte';
 
 	interface Props {
-		item: Agent;
+		data?: Agent;
 		open?: boolean;
 	}
+	let { data, open = $bindable(false) }: Props = $props();
 
-	let { item = $bindable(), open = $bindable(false) }: Props = $props();
+	let agentData = $state({} as Agent);
+	$effect(() => {
+		if (data) agentData = { ...data };
+	});
+	$effect(() => {
+		if (!open) agentData = {} as Agent;
+	});
 
-	let newIP = $state('');
-
-	const handleSubmit = async (ip: string | undefined) => {
-		try {
-			if (item.id) {
-				const response = await agentClient.updateAgent({ id: item.id, ip });
-				if (!response.agent) throw new Error('Failed to create agent');
-				item = response.agent;
-				toast.success(`Agent ${item.hostname} updated successfully`);
-			} else {
-				await agentClient.createAgent({ profileId: profile.id });
-				toast.success(`Agent ${item.hostname} created successfully`);
-				open = false;
-			}
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to save agent', { description: e.message });
+	const serverURL = setting.get('server_url');
+	const createMutation = agent.create();
+	const updateMutation = agent.update();
+	async function onsubmit() {
+		if (agentData.id) {
+			updateMutation.mutate({ ...agentData });
+		} else {
+			createMutation.mutate({});
 		}
-	};
-	const handleDelete = async () => {
-		if (!item.id) return;
-
-		try {
-			await agentClient.deleteAgent({ id: item.id });
-			toast.success('Agent deleted successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to delete agent', { description: e.message });
-		}
-		open = false;
-	};
-
-	const handleRotate = async () => {
-		try {
-			const response = await agentClient.updateAgent({ id: item.id, rotateToken: true });
-			if (!response.agent) throw new Error('Failed to rotate token');
-			item.token = response.agent.token;
-			toast.success('Token rotated successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to rotate token', { description: e.message });
-		}
-	};
+	}
 
 	const dockerComposeText = $derived.by(async () => {
-		const response = await settingClient.getSetting({ key: 'server_url' });
-		const serverURL = response.value ?? 'http://127.0.0.1:3000';
 		return `services:
   mantrae-agent:
     image: ghcr.io/mizuchilabs/mantrae-agent:latest
@@ -80,15 +49,13 @@
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      - TOKEN=${item.token}
-      - HOST=${serverURL}
+      - TOKEN=${agentData.token}
+      - HOST=${serverURL.data?.value}
     restart: unless-stopped`;
 	});
 
 	const dockerRunText = $derived.by(async () => {
-		const response = await settingClient.getSetting({ key: 'server_url' });
-		const serverURL = response.value ?? 'http://127.0.0.1:3000';
-		return `docker run -d --name mantrae-agent --network host -v /var/run/docker.sock:/var/run/docker.sock:ro -e TOKEN=${item.token} -e HOST=${serverURL} ghcr.io/mizuchilabs/mantrae-agent:latest`;
+		return `docker run -d --name mantrae-agent --network host -v /var/run/docker.sock:/var/run/docker.sock:ro -e TOKEN=${agentData.token} -e HOST=${serverURL.data?.value} ghcr.io/mizuchilabs/mantrae-agent:latest`;
 	});
 
 	const dockerComposeClipboard = new UseClipboard();
@@ -97,25 +64,32 @@
 	const handleCopyCompose = async () => {
 		await dockerComposeClipboard.copy(await dockerComposeText);
 	};
-
 	const handleCopyRun = async () => {
 		await dockerRunClipboard.copy(await dockerRunText);
 	};
+
+	let newAgent = $derived(agent.get(agentData.id));
+	function rotate() {
+		updateMutation.mutate({ ...agentData, rotateToken: true });
+		if (newAgent.isSuccess && newAgent.data?.token) {
+			agentData.token = newAgent.data.token;
+		}
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{item.hostname ? 'Manage' : 'Connect'} Agent</Dialog.Title>
+			<Dialog.Title>{agentData.hostname ? 'Manage' : 'Connect'} Agent</Dialog.Title>
 			<Dialog.Description>
-				{item.hostname
+				{agentData.hostname
 					? 'Configure agent settings and manage network connections'
 					: 'Copy the token below to connect your agent'}
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="space-y-4">
-			{#if item.hostname}
+		<form {onsubmit} class="space-y-6">
+			{#if agentData.hostname}
 				<!-- Agent Information -->
 				<div class="space-y-4">
 					<div class="space-y-2">
@@ -124,33 +98,33 @@
 							<div class="space-y-1">
 								<p class="text-xs text-muted-foreground">Hostname</p>
 								<Badge variant="secondary" class="w-full justify-center">
-									{item.hostname}
+									{agentData.hostname}
 								</Badge>
 							</div>
-							{#if item.containers?.length > 0}
+							{#if agentData.containers?.length > 0}
 								<div class="space-y-1">
 									<p class="text-xs text-muted-foreground">Containers</p>
 									<Badge variant="secondary" class="w-full justify-center">
-										{item.containers.length}
+										{agentData.containers.length}
 									</Badge>
 								</div>
 							{/if}
-							{#if item.updatedAt}
+							{#if agentData.updatedAt}
 								<div class="space-y-1">
 									<p class="text-xs text-muted-foreground">Last Seen</p>
 									<Badge variant="secondary" class="justify-center text-xs">
-										{formatTs(item.updatedAt, 'relative')}
+										{formatTs(agentData.updatedAt, 'relative')}
 									</Badge>
 								</div>
 							{/if}
 						</div>
 					</div>
 
-					{#if item.containers?.length > 0}
+					{#if agentData.containers?.length > 0}
 						<div class="space-y-2">
 							<Label class="text-sm font-medium">Running Containers</Label>
 							<div class="flex flex-wrap gap-2">
-								{#each item.containers as container (container.id)}
+								{#each agentData.containers as container (container.id)}
 									{#if container.name}
 										<Badge variant="outline" class="text-xs">
 											{typeof container.name === 'string' ? container.name.slice(1) : ''}
@@ -174,42 +148,46 @@
 					</div>
 
 					<div class="space-y-3">
-						{#if item.publicIp}
+						{#if agentData.publicIp}
 							<div class="flex items-center justify-between rounded-lg border p-3">
 								<div class="space-y-1">
 									<Label class="text-sm">Public IP</Label>
 									<p class="text-xs text-muted-foreground">External network address</p>
 								</div>
 								<div class="flex items-center gap-2">
-									{#if item.activeIp === item.publicIp || !item.activeIp}
+									{#if agentData.activeIp === agentData.publicIp || !agentData.activeIp}
 										<Badge variant="default">Active</Badge>
-										<Badge variant="secondary">{item.publicIp}</Badge>
+										<Badge variant="secondary">{agentData.publicIp}</Badge>
 									{:else}
-										<Button variant="outline" size="sm" onclick={() => handleSubmit(item.publicIp)}>
-											Use {item.publicIp}
+										<Button
+											variant="outline"
+											size="sm"
+											onclick={() => (agentData.activeIp = agentData.publicIp)}
+										>
+											Use {agentData.publicIp}
 										</Button>
 									{/if}
 								</div>
 							</div>
 						{/if}
 
-						{#if item.privateIp}
+						{#if agentData.privateIp}
 							<div class="flex items-center justify-between rounded-lg border p-3">
 								<div class="space-y-1">
 									<Label class="text-sm">Private IP</Label>
 									<p class="text-xs text-muted-foreground">Internal network address</p>
 								</div>
 								<div class="flex items-center gap-2">
-									{#if item.activeIp === item.privateIp}
+									{#if agentData.activeIp === agentData.privateIp}
 										<Badge variant="default">Active</Badge>
-										<Badge variant="secondary">{item.privateIp}</Badge>
+										<Badge variant="secondary">{agentData.privateIp}</Badge>
 									{:else}
 										<Button
 											variant="outline"
 											size="sm"
-											onclick={() => handleSubmit(item.privateIp)}
+											onclick={() => (agentData.activeIp = agentData.privateIp)}
 										>
-											Use {item.privateIp}
+											Use {agentData.privateIp}
 										</Button>
 									{/if}
 								</div>
@@ -222,13 +200,10 @@
 							<div class="flex gap-2">
 								<Input
 									id="customip"
-									bind:value={newIP}
+									bind:value={agentData.activeIp}
 									placeholder="Enter custom IP address"
 									class="flex-1"
 								/>
-								{#if newIP}
-									<Button onclick={() => handleSubmit(newIP)} size="sm">Use</Button>
-								{/if}
 							</div>
 							<p class="text-xs text-muted-foreground">
 								Specify a custom IP address for this agent
@@ -242,11 +217,11 @@
 
 			<!-- Token Management -->
 			<div class="space-y-2">
-				{#if item.hostname}
+				{#if agentData.hostname}
 					<div class="space-y-2">
 						<Label class="text-sm font-medium">Agent Token</Label>
 						<p class="text-xs text-muted-foreground">
-							{item.hostname
+							{agentData.hostname
 								? 'Secure token for agent authentication'
 								: 'Copy this token to connect your agent'}
 						</p>
@@ -254,13 +229,13 @@
 				{/if}
 
 				<div class="flex gap-2">
-					<CopyInput value={item.token} />
-					<Button variant="outline" size="icon" onclick={handleRotate} title="Rotate token">
+					<CopyInput bind:value={agentData.token} />
+					<Button variant="outline" size="icon" onclick={rotate} title="Rotate token">
 						<RotateCcw class="h-4 w-4" />
 					</Button>
 				</div>
 
-				{#if item.hostname}
+				{#if agentData.hostname}
 					<div class="rounded-lg border border-amber-200 bg-amber-50 p-3">
 						<p class="text-xs text-amber-800">
 							<strong>Warning:</strong> Rotating the token will invalidate the current token and require
@@ -390,17 +365,7 @@
 						</div>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
-
-				<ConfirmButton
-					title="Delete Agent"
-					description="This agent and all associated data will be permanently deleted."
-					confirmLabel="Delete"
-					cancelLabel="Cancel"
-					icon={Trash2}
-					class="text-destructive"
-					onclick={handleDelete}
-				/>
 			</div>
-		</div>
+		</form>
 	</Dialog.Content>
 </Dialog.Root>

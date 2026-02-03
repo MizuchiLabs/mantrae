@@ -4,79 +4,52 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
 	import { type Middleware } from '$lib/gen/mantrae/v1/middleware_pb';
-	import { middlewareClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
-	import { profile } from '$lib/stores/profile';
 	import HTTPMiddlewareForm from '../forms/HTTPMiddlewareForm.svelte';
 	import TCPMiddlewareForm from '../forms/TCPMiddlewareForm.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
 	import { protocolTypes } from '$lib/types';
-	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
-	import { Trash2 } from '@lucide/svelte';
+	import { middleware } from '$lib/api/middleware.svelte';
 
 	interface Props {
-		item: Middleware;
+		data?: Middleware;
 		open?: boolean;
 	}
-	let { item = $bindable(), open = $bindable(false) }: Props = $props();
+	let { data, open = $bindable(false) }: Props = $props();
 
-	const handleSubmit = async () => {
-		try {
-			if (item.id) {
-				await middlewareClient.updateMiddleware({
-					id: item.id,
-					profileId: item.profileId,
-					name: item.name,
-					config: item.config,
-					type: item.type,
-					enabled: item.enabled
-				});
-				toast.success('Middleware updated successfully');
-			} else {
-				await middlewareClient.createMiddleware({
-					profileId: profile.id,
-					name: item.name,
-					config: item.config,
-					type: item.type
-				});
-				toast.success('Middleware created successfully');
-			}
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to save item', { description: e.message });
+	let mwData = $state({} as Middleware);
+	$effect(() => {
+		if (data) mwData = { ...data };
+	});
+	$effect(() => {
+		if (!open) mwData = {} as Middleware;
+	});
+
+	const createMutation = middleware.create();
+	const updateMutation = middleware.update();
+	function onsubmit() {
+		if (mwData.id) {
+			updateMutation.mutate({ ...mwData });
+		} else {
+			createMutation.mutate({ ...mwData });
 		}
 		open = false;
-	};
-
-	const handleDelete = async () => {
-		if (!item.id || !item.type) return;
-
-		try {
-			await middlewareClient.deleteMiddleware({ id: item.id, type: item.type });
-			toast.success('Middleware deleted successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to delete item', { description: e.message });
-		}
-		open = false;
-	};
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[80vh] max-w-2xl overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{item.id ? 'Edit' : 'Create'} Middleware</Dialog.Title>
+			<Dialog.Title>{mwData.id ? 'Edit' : 'Create'} Middleware</Dialog.Title>
 			<Dialog.Description>Configure your Traefik middleware</Dialog.Description>
 		</Dialog.Header>
 
-		<form class="flex flex-col gap-4">
+		<form {onsubmit} class="flex flex-col gap-4">
 			<div class="grid w-full grid-cols-3 gap-2">
 				<div class="col-span-2 flex flex-col gap-2">
 					<Label for="name">Name</Label>
-					<Input id="name" bind:value={item.name} required placeholder="Middleware Name" />
+					<Input id="name" bind:value={mwData.name} required placeholder="Middleware Name" />
 				</div>
 
 				<div class="col-span-1 flex flex-col gap-2">
@@ -84,11 +57,11 @@
 					<Select.Root
 						type="single"
 						name="type"
-						value={item.type?.toString()}
-						onValueChange={(value) => (item.type = parseInt(value, 10))}
+						value={mwData.type?.toString()}
+						onValueChange={(value) => (mwData.type = parseInt(value, 10))}
 					>
 						<Select.Trigger class="w-full">
-							{protocolTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+							{protocolTypes.find((t) => t.value === mwData.type)?.label ?? 'Select type'}
 						</Select.Trigger>
 						<Select.Content>
 							<Select.Group>
@@ -107,31 +80,16 @@
 				</div>
 			</div>
 
-			{#if item.type === ProtocolType.HTTP}
-				<HTTPMiddlewareForm bind:middleware={item} />
+			{#if mwData.type === ProtocolType.HTTP}
+				<HTTPMiddlewareForm bind:middleware={mwData} />
 			{/if}
-			{#if item.type === ProtocolType.TCP}
-				<TCPMiddlewareForm bind:middleware={item} />
+			{#if mwData.type === ProtocolType.TCP}
+				<TCPMiddlewareForm bind:middleware={mwData} />
 			{/if}
 
 			<Separator />
 
-			<div class="flex w-full flex-row gap-2">
-				{#if item.id}
-					<ConfirmButton
-						title="Delete Middleware"
-						description="This middleware will be permanently deleted."
-						confirmLabel="Delete"
-						cancelLabel="Cancel"
-						icon={Trash2}
-						class="text-destructive"
-						onclick={handleDelete}
-					/>
-				{/if}
-				<Button type="submit" class="flex-1" onclick={handleSubmit}>
-					{item.id ? 'Update' : 'Create'}
-				</Button>
-			</div>
+			<Button type="submit" class="w-full">{mwData.id ? 'Update' : 'Create'}</Button>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

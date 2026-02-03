@@ -40,7 +40,7 @@
 	--sidebar-accent-foreground: oklch(0.3791 0.1378 265.5222);
 	--sidebar-border: oklch(0.9276 0.0058 264.5313);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
-	--radius: 0.5rem;
+	--radius: 0.6rem;
 	--shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
@@ -51,11 +51,6 @@
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 	--tracking-normal: 0em;
 	--spacing: 0.25rem;
-
-	/* Fonts */
-	--font-sans: 'Manrope Variable', sans-serif;
-	--font-serif: Georgia, serif;
-	--font-mono: 'Victor Mono Variable', monospace;
 }
 
 .dark {
@@ -69,7 +64,7 @@
 	--primary-foreground: oklch(1 0 0);
 	--secondary: oklch(0.2686 0 0);
 	--secondary-foreground: oklch(0.9219 0 0);
-	--muted: oklch(0.2686 0 0);
+	--muted: oklch(0.2 0 0);
 	--muted-foreground: oklch(0.7155 0 0);
 	--accent: oklch(0.3791 0.1378 265.5222);
 	--accent-foreground: oklch(0.8823 0.0571 254.1284);
@@ -91,7 +86,7 @@
 	--sidebar-accent-foreground: oklch(0.8823 0.0571 254.1284);
 	--sidebar-border: oklch(0.3715 0 0);
 	--sidebar-ring: oklch(0.6231 0.188 259.8145);
-	--radius: 0.5rem;
+	--radius: 0.6rem;
 	--shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
 	--shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
@@ -100,11 +95,6 @@
 	--shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
 	--shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
 	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-
-	/* Fonts */
-	--font-sans: 'Manrope Variable', sans-serif;
-	--font-serif: Georgia, serif;
-	--font-mono: 'Victor Mono Variable', monospace;
 }
 
 @theme inline {
@@ -141,9 +131,9 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 
-	--font-sans: var(--font-sans);
-	--font-mono: var(--font-mono);
-	--font-serif: var(--font-serif);
+	--font-sans: 'Manrope Variable', sans-serif;
+	--font-serif: Georgia, serif;
+	--font-mono: 'Victor Mono Variable', monospace;
 
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);

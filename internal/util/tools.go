@@ -62,7 +62,7 @@ func ResolvePath(path string) string {
 
 // CopyFile copies a file from src to dst safely
 func CopyFile(src, dst string) error {
-	srcFile, err := os.Open(src)
+	srcFile, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func CopyFile(src, dst string) error {
 		}
 	}()
 
-	dstFile, err := os.Create(dst)
+	dstFile, err := os.Create(filepath.Clean(dst))
 	if err != nil {
 		return err
 	}

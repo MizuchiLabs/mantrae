@@ -1,0 +1,239 @@
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  email TEXT,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  token TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS agents (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  hostname TEXT,
+  public_ip TEXT,
+  containers TEXT,
+  active_ip TEXT,
+  private_ip TEXT,
+  token TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dns_providers (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  type INTEGER NOT NULL,
+  config TEXT NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key VARCHAR(255) PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id INTEGER PRIMARY KEY,
+  profile_id INTEGER,
+  user_id TEXT,
+  agent_id TEXT,
+  event TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS entry_points (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  address TEXT,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS errors (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  profile_id INTEGER NOT NULL,
+  category TEXT NOT NULL,
+  message TEXT NOT NULL,
+  details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS http_middlewares (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS http_router_dns_providers (
+  http_router_id TEXT NOT NULL,
+  dns_provider_id TEXT NOT NULL,
+  PRIMARY KEY (http_router_id, dns_provider_id),
+  FOREIGN KEY (http_router_id) REFERENCES http_routers (id) ON DELETE CASCADE,
+  FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS http_routers (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS http_servers_transports (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS http_services (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS tcp_middlewares (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS tcp_router_dns_providers (
+  tcp_router_id TEXT NOT NULL,
+  dns_provider_id TEXT NOT NULL,
+  PRIMARY KEY (tcp_router_id, dns_provider_id),
+  FOREIGN KEY (tcp_router_id) REFERENCES tcp_routers (id) ON DELETE CASCADE,
+  FOREIGN KEY (dns_provider_id) REFERENCES dns_providers (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tcp_routers (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS tcp_servers_transports (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS tcp_services (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS udp_routers (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS udp_services (
+  id TEXT PRIMARY KEY,
+  profile_id INTEGER NOT NULL,
+  agent_id TEXT,
+  name TEXT NOT NULL,
+  config TEXT NOT NULL,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE,
+  FOREIGN KEY (agent_id) REFERENCES agents (id) ON DELETE CASCADE,
+  UNIQUE (profile_id, name)
+);

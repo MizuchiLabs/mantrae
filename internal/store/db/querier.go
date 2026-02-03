@@ -22,7 +22,6 @@ type Querier interface {
 	CountTcpRouters(ctx context.Context, arg *CountTcpRoutersParams) (int64, error)
 	CountTcpServersTransports(ctx context.Context, arg *CountTcpServersTransportsParams) (int64, error)
 	CountTcpServices(ctx context.Context, arg *CountTcpServicesParams) (int64, error)
-	CountTraefikInstances(ctx context.Context, profileID int64) (int64, error)
 	CountUdpRouters(ctx context.Context, arg *CountUdpRoutersParams) (int64, error)
 	CountUdpServices(ctx context.Context, arg *CountUdpServicesParams) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
@@ -63,7 +62,6 @@ type Querier interface {
 	DeleteTcpRouterDNSProvider(ctx context.Context, arg *DeleteTcpRouterDNSProviderParams) error
 	DeleteTcpServersTransport(ctx context.Context, id string) error
 	DeleteTcpService(ctx context.Context, id string) error
-	DeleteTraefikInstance(ctx context.Context, id string) error
 	DeleteUdpRouter(ctx context.Context, id string) error
 	DeleteUdpService(ctx context.Context, id string) error
 	DeleteUser(ctx context.Context, id string) error
@@ -95,8 +93,6 @@ type Querier interface {
 	GetTcpServersTransport(ctx context.Context, id string) (*TcpServersTransport, error)
 	GetTcpService(ctx context.Context, id string) (*TcpService, error)
 	GetTcpServiceByName(ctx context.Context, arg *GetTcpServiceByNameParams) (*TcpService, error)
-	GetTraefikInstanceByID(ctx context.Context, id string) (*TraefikInstance, error)
-	GetTraefikInstanceByName(ctx context.Context, arg *GetTraefikInstanceByNameParams) (*TraefikInstance, error)
 	GetUdpRouter(ctx context.Context, id string) (*UdpRouter, error)
 	GetUdpRoutersUsingEntryPoint(ctx context.Context, arg *GetUdpRoutersUsingEntryPointParams) ([]*GetUdpRoutersUsingEntryPointRow, error)
 	GetUdpService(ctx context.Context, id string) (*UdpService, error)
@@ -127,14 +123,12 @@ type Querier interface {
 	ListTcpServersTransportsEnabled(ctx context.Context, profileID int64) ([]*TcpServersTransport, error)
 	ListTcpServices(ctx context.Context, arg *ListTcpServicesParams) ([]*TcpService, error)
 	ListTcpServicesEnabled(ctx context.Context, profileID int64) ([]*TcpService, error)
-	ListTraefikInstances(ctx context.Context, arg *ListTraefikInstancesParams) ([]*TraefikInstance, error)
 	ListUdpRouters(ctx context.Context, arg *ListUdpRoutersParams) ([]*UdpRouter, error)
 	ListUdpRoutersEnabled(ctx context.Context, profileID int64) ([]*UdpRouter, error)
 	ListUdpServices(ctx context.Context, arg *ListUdpServicesParams) ([]*UdpService, error)
 	ListUdpServicesEnabled(ctx context.Context, profileID int64) ([]*UdpService, error)
 	ListUsers(ctx context.Context, arg *ListUsersParams) ([]*User, error)
 	LogError(ctx context.Context, arg *LogErrorParams) error
-	PurgeTraefikInstances(ctx context.Context) error
 	UnsetDefaultDNSProvider(ctx context.Context) error
 	UnsetDefaultEntryPoint(ctx context.Context, profileID int64) error
 	UnsetDefaultHttpMiddleware(ctx context.Context, profileID int64) error
@@ -156,9 +150,7 @@ type Querier interface {
 	UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error)
 	UpdateUserLastLogin(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg *UpdateUserPasswordParams) error
-	UpdateUserResetToken(ctx context.Context, arg *UpdateUserResetTokenParams) error
 	UpsertSetting(ctx context.Context, arg *UpsertSettingParams) error
-	UpsertTraefikInstance(ctx context.Context, arg *UpsertTraefikInstanceParams) (*TraefikInstance, error)
 }
 
 var _ Querier = (*Queries)(nil)

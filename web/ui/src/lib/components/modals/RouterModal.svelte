@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { routerClient, serviceClient } from '$lib/api';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -11,11 +10,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import { type Router } from '$lib/gen/mantrae/v1/router_pb';
 	import { type Service } from '$lib/gen/mantrae/v1/service_pb';
-	import { profile } from '$lib/stores/profile';
-	import { protocolTypes, unmarshalConfig } from '$lib/types';
-	import { ConnectError } from '@connectrpc/connect';
-	import { Bot, Server, Trash2 } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
+	import { protocolTypes } from '$lib/types';
+	import { Bot, Server, StarIcon } from '@lucide/svelte';
 	import type {
 		Service as HTTPService,
 		Router as HTTPRouter,
@@ -30,152 +26,152 @@
 	import HTTPServiceForm from '../forms/HTTPServiceForm.svelte';
 	import TCPServiceForm from '../forms/TCPServiceForm.svelte';
 	import UDPServiceForm from '../forms/UDPServiceForm.svelte';
-	import DnsProviderSelect from '../forms/DNSProviderSelect.svelte';
 	import { ProtocolType } from '$lib/gen/mantrae/v1/protocol_pb';
-	import { dnsProviders } from '$lib/stores/realtime';
-	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { router } from '$lib/api/router.svelte';
+	import { dns } from '$lib/api/dns.svelte';
+	import { service } from '$lib/api/service.svelte';
 
 	interface Props {
-		item: Router;
+		data?: Router;
 		open?: boolean;
 	}
+	let { data, open = $bindable(false) }: Props = $props();
 
-	let { item = $bindable(), open = $bindable(false) }: Props = $props();
-	let service = $state({} as Service);
-	let hasLoadedService = $state(false);
-
-	// Reset state when modal closes
+	let routerData = $state({} as Router);
+	let serviceData = $state({} as Service);
+	$effect(() => {
+		if (data) routerData = { ...data };
+	});
 	$effect(() => {
 		if (!open) {
-			service = {} as Service;
-			hasLoadedService = false;
+			routerData = {} as Router;
+			serviceData = {} as Service;
 		}
 	});
+
+	const dnsList = dns.list();
+	const createMutation = router.create();
+	const updateMutation = router.update();
+	function onsubmit() {
+		if (routerData.id) {
+			updateMutation.mutate({ ...routerData });
+		} else {
+			createMutation.mutate({ ...routerData });
+		}
+		open = false;
+	}
 
 	// Only fetch service when modal opens with existing router (once)
-	$effect(() => {
-		if (item.id && open && !hasLoadedService) {
-			hasLoadedService = true;
-			serviceClient
-				.getService({
-					profileId: profile.id,
-					type: item.type,
-					identifier: {
-						value: item.name,
-						case: 'name'
-					}
-				})
-				.then((data) => {
-					service = data.service ?? ({} as Service);
-				})
-				.catch(() => {
-					service = {} as Service;
-				});
-		}
-	});
-	$effect(() => {
-		if (item.profileId) {
-			service.profileId = item.profileId;
-		}
-		if (item.name) {
-			service.name = item.name;
-		}
-		if (item.enabled) {
-			service.enabled = item.enabled;
-		}
-		if (item.type) {
-			service.type = item.type;
-		}
-	});
+	// $effect(() => {
+	// 	if (routerData.id && open && !hasLoadedService) {
+	// 		hasLoadedService = true;
+	// 		serviceClient
+	// 			.getService({
+	// 				profileId: profile.id,
+	// 				type: routerData.type,
+	// 				identifier: {
+	// 					value: routerData.name,
+	// 					case: 'name'
+	// 				}
+	// 			})
+	// 			.then((data) => {
+	// 				service = data.service ?? ({} as Service);
+	// 			})
+	// 			.catch(() => {
+	// 				service = {} as Service;
+	// 			});
+	// 	}
+	// });
+	// $effect(() => {
+	// 	if (routerData.profileId) {
+	// 		service.profileId = routerData.profileId;
+	// 	}
+	// 	if (routerData.name) {
+	// 		service.name = routerData.name;
+	// 	}
+	// 	if (routerData.enabled) {
+	// 		service.enabled = routerData.enabled;
+	// 	}
+	// 	if (routerData.type) {
+	// 		service.type = routerData.type;
+	// 	}
+	// });
 
-	const handleSubmit = async () => {
-		if (!profile.id) return;
+	// const handleSubmit = async () => {
+	// 	if (!profile.id) return;
 
-		try {
-			if (item.id) {
-				await routerClient.updateRouter({
-					id: item.id,
-					name: item.name,
-					config: item.config,
-					enabled: item.enabled,
-					type: item.type,
-					dnsProviders: item.dnsProviders
-				});
-				toast.success(`Router ${item.name} updated successfully`);
-			} else {
-				await routerClient.createRouter({
-					profileId: profile.id,
-					name: item.name,
-					config: item.config,
-					enabled: item.enabled,
-					type: item.type
-				});
-				toast.success(`Router ${item.name} created successfully`);
-			}
+	// 	try {
+	// 		if (routerData.id) {
+	// 			await routerClient.updateRouter({
+	// 				id: routerData.id,
+	// 				name: routerData.name,
+	// 				config: routerData.config,
+	// 				enabled: routerData.enabled,
+	// 				type: routerData.type,
+	// 				dnsProviders: routerData.dnsProviders
+	// 			});
+	// 			toast.success(`Router ${routerData.name} updated successfully`);
+	// 		} else {
+	// 			await routerClient.createRouter({
+	// 				profileId: profile.id,
+	// 				name: routerData.name,
+	// 				config: routerData.config,
+	// 				enabled: routerData.enabled,
+	// 				type: routerData.type
+	// 			});
+	// 			toast.success(`Router ${routerData.name} created successfully`);
+	// 		}
 
-			if (service.id) {
-				await serviceClient.updateService({
-					id: service.id,
-					name: service.name,
-					config: service.config,
-					type: service.type,
-					enabled: service.enabled
-				});
-			} else {
-				await serviceClient.createService({
-					profileId: profile.id,
-					name: service.name,
-					config: service.config,
-					type: service.type,
-					enabled: service.enabled
-				});
-			}
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error(`Failed to ${item.id ? 'update' : 'save'} router`, {
-				description: e.message
-			});
-		}
-		open = false;
-	};
-
-	const handleDelete = async () => {
-		if (!item.id || !item.type) return;
-
-		try {
-			await routerClient.deleteRouter({ id: item.id, type: item.type });
-			toast.success('Router deleted successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to delete router', { description: e.message });
-		}
-		open = false;
-	};
+	// 		if (service.id) {
+	// 			await serviceClient.updateService({
+	// 				id: service.id,
+	// 				name: service.name,
+	// 				config: service.config,
+	// 				type: service.type,
+	// 				enabled: service.enabled
+	// 			});
+	// 		} else {
+	// 			await serviceClient.createService({
+	// 				profileId: profile.id,
+	// 				name: service.name,
+	// 				config: service.config,
+	// 				type: service.type,
+	// 				enabled: service.enabled
+	// 			});
+	// 		}
+	// 	} catch (err) {
+	// 		const e = ConnectError.from(err);
+	// 		toast.error(`Failed to ${routerData.id ? 'update' : 'save'} router`, {
+	// 			description: e.message
+	// 		});
+	// 	}
+	// 	open = false;
+	// };
 
 	// Get service preview for agent-managed router
-	const getServicePreview = () => {
-		if (!service?.config) return 'No service configured';
+	// const getServicePreview = () => {
+	// 	if (!service?.config) return 'No service configured';
 
-		if (service.type === ProtocolType.HTTP) {
-			const config = unmarshalConfig(service.config) as HTTPService;
-			const servers = config.loadBalancer?.servers || [];
-			return servers.length > 0 ? servers[0].url : 'No servers';
-		} else if (service.type === ProtocolType.TCP) {
-			const config = unmarshalConfig(service.config) as TCPService;
-			const servers = config.loadBalancer?.servers || [];
-			return servers.length > 0 ? servers[0].address : 'No servers';
-		} else if (service.type === ProtocolType.UDP) {
-			const config = unmarshalConfig(service.config) as UDPService;
-			const servers = config.loadBalancer?.servers || [];
-			return servers.length > 0 ? servers[0].address : 'No servers';
-		}
-		return 'No service configured';
-	};
+	// 	if (service.type === ProtocolType.HTTP) {
+	// 		const config = unmarshalConfig(service.config) as HTTPService;
+	// 		const servers = config.loadBalancer?.servers || [];
+	// 		return servers.length > 0 ? servers[0].url : 'No servers';
+	// 	} else if (service.type === ProtocolType.TCP) {
+	// 		const config = unmarshalConfig(service.config) as TCPService;
+	// 		const servers = config.loadBalancer?.servers || [];
+	// 		return servers.length > 0 ? servers[0].address : 'No servers';
+	// 	} else if (service.type === ProtocolType.UDP) {
+	// 		const config = unmarshalConfig(service.config) as UDPService;
+	// 		const servers = config.loadBalancer?.servers || [];
+	// 		return servers.length > 0 ? servers[0].address : 'No servers';
+	// 	}
+	// 	return 'No service configured';
+	// };
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] max-w-xl overflow-y-auto">
-		{#if item.agentId}
+		{#if routerData.agentId}
 			<div class="space-y-4">
 				<div>
 					<h2 class="text-l font-semibold tracking-tight">Agent-Managed Router</h2>
@@ -192,7 +188,7 @@
 				</Alert.Root>
 
 				<!-- DNS Providers (Editable) -->
-				{#if $dnsProviders.length > 0}
+				{#if dnsList.isSuccess && dnsList.data.length}
 					<Card.Root>
 						<Card.Header>
 							<div class="flex items-center justify-between">
@@ -200,16 +196,40 @@
 									<Card.Title class="flex items-center gap-2">DNS Providers</Card.Title>
 									<Card.Description>Manage DNS providers for this router</Card.Description>
 								</div>
-								<DnsProviderSelect
-									bind:item
-									disabled={item.type === ProtocolType.UDP || !item.id}
-								/>
+
+								{#if routerData.type !== ProtocolType.UDP && dnsList.isSuccess}
+									<Select.Root
+										type="multiple"
+										value={routerData.dnsProviders?.map((item) => item.id.toString())}
+										onValueChange={(value) => {
+											let providers =
+												dnsList.data?.filter((p) => value.includes(p.id.toString())) ?? [];
+											routerData.dnsProviders = providers;
+										}}
+									>
+										<Select.Trigger>
+											{routerData.dnsProviders?.length > 0
+												? routerData.dnsProviders.length + ' Selected'
+												: 'None'}
+										</Select.Trigger>
+										<Select.Content align="end">
+											{#each dnsList.data || [] as dns (dns.id)}
+												<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
+													<span class="truncate">{dns.name}</span>
+													{#if dns.isDefault}
+														<StarIcon class="text-yellow-400" />
+													{/if}
+												</Select.Item>
+											{/each}
+										</Select.Content>
+									</Select.Root>
+								{/if}
 							</div>
 						</Card.Header>
-						{#if item.dnsProviders?.length > 0}
+						{#if routerData.dnsProviders?.length > 0}
 							<Card.Content>
 								<div class="flex flex-wrap gap-2">
-									{#each item.dnsProviders as provider (provider.id)}
+									{#each routerData.dnsProviders as provider (provider.id)}
 										<Badge variant="secondary">
 											{provider.name}
 										</Badge>
@@ -233,22 +253,22 @@
 						<div class="grid grid-cols-2 gap-6">
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Router Name</Label>
-								<p class="font-medium">{item.name || 'Not set'}</p>
+								<p class="font-medium">{routerData.name || 'Not set'}</p>
 							</div>
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Protocol</Label>
 								<Badge variant="outline">
-									{protocolTypes.find((t) => t.value === item.type)?.label || 'Unknown'}
+									{protocolTypes.find((t) => t.value === routerData.type)?.label || 'Unknown'}
 								</Badge>
 							</div>
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Service Endpoint</Label>
-								<p class="text-sm font-medium">{getServicePreview()}</p>
+								<!-- <p class="text-sm font-medium">{getServicePreview()}</p> -->
 							</div>
 							<div class="space-y-1">
 								<Label class="text-muted-foreground">Status</Label>
-								<Badge variant={item.enabled ? 'default' : 'secondary'}>
-									{item.enabled ? 'Enabled' : 'Disabled'}
+								<Badge variant={routerData.enabled ? 'default' : 'secondary'}>
+									{routerData.enabled ? 'Enabled' : 'Disabled'}
 								</Badge>
 							</div>
 						</div>
@@ -276,47 +296,75 @@
 							</div>
 
 							<!-- DNS Providers -->
-							<DnsProviderSelect bind:item disabled={item.type === ProtocolType.UDP || !item.id} />
+							{#if routerData.type !== ProtocolType.UDP && dnsList.isSuccess}
+								<Select.Root
+									type="multiple"
+									value={routerData.dnsProviders?.map((item) => item.id.toString())}
+									onValueChange={(value) => {
+										let providers =
+											dnsList.data?.filter((p) => value.includes(p.id.toString())) ?? [];
+										routerData.dnsProviders = providers;
+									}}
+								>
+									<Select.Trigger>
+										{routerData.dnsProviders?.length > 0
+											? routerData.dnsProviders.length + ' Selected'
+											: 'None'}
+									</Select.Trigger>
+									<Select.Content align="end">
+										{#each dnsList.data || [] as dns (dns.id)}
+											<Select.Item value={dns.id.toString()} class="flex items-center gap-2">
+												<span class="truncate">{dns.name}</span>
+												{#if dns.isDefault}
+													<StarIcon class="text-yellow-400" />
+												{/if}
+											</Select.Item>
+										{/each}
+									</Select.Content>
+								</Select.Root>
+							{/if}
 						</Card.Header>
 						<Card.Content class="space-y-4">
 							<div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-2">
-								<div class="flex flex-col gap-2 {item.id ? 'sm:col-span-3' : 'sm:col-span-2'}">
+								<div
+									class="flex flex-col gap-2 {routerData.id ? 'sm:col-span-3' : 'sm:col-span-2'}"
+								>
 									<Label for="name">Name</Label>
 									<Input
 										id="name"
-										bind:value={item.name}
+										bind:value={routerData.name}
 										required
 										placeholder="Router Name"
 										class="truncate"
 									/>
 								</div>
 
-								{#if !item.id}
+								{#if !routerData.id}
 									<div class="flex flex-col gap-2 sm:col-span-1">
 										<Label for="type">Protocol</Label>
 										<Select.Root
 											type="single"
 											name="type"
-											value={item.type?.toString()}
+											value={routerData.type?.toString()}
 											onValueChange={(value) => {
 												// Reset config
-												item.type = parseInt(value, 10);
-												switch (item.type) {
+												routerData.type = parseInt(value, 10);
+												switch (routerData.type) {
 													case ProtocolType.HTTP:
-														item.config = {} as HTTPRouter;
+														routerData.config = {} as HTTPRouter;
 														break;
 													case ProtocolType.TCP:
-														item.config = {} as TCPRouter;
+														routerData.config = {} as TCPRouter;
 														break;
 													case ProtocolType.UDP:
-														item.config = {} as UDPRouter;
+														routerData.config = {} as UDPRouter;
 														break;
 												}
 											}}
 										>
 											<Select.Trigger class="w-full">
 												<span class="truncate">
-													{protocolTypes.find((t) => t.value === item.type)?.label ??
+													{protocolTypes.find((t) => t.value === routerData.type)?.label ??
 														'Select protocol'}
 												</span>
 											</Select.Trigger>
@@ -332,14 +380,14 @@
 								{/if}
 							</div>
 
-							{#if item.type === ProtocolType.HTTP}
-								<HTTPRouterForm bind:router={item} />
+							{#if routerData.type === ProtocolType.HTTP}
+								<HTTPRouterForm bind:router={routerData} />
 							{/if}
-							{#if item.type === ProtocolType.TCP}
-								<TCPRouterForm bind:router={item} />
+							{#if routerData.type === ProtocolType.TCP}
+								<TCPRouterForm bind:router={routerData} />
 							{/if}
-							{#if item.type === ProtocolType.UDP}
-								<UDPRouterForm bind:router={item} />
+							{#if routerData.type === ProtocolType.UDP}
+								<UDPRouterForm bind:router={routerData} />
 							{/if}
 						</Card.Content>
 					</Card.Root>
@@ -351,36 +399,23 @@
 							<Card.Description>Configure backend servers and load balancing</Card.Description>
 						</Card.Header>
 						<Card.Content class="flex flex-col gap-3">
-							{#if item.type === ProtocolType.HTTP}
-								<HTTPServiceForm bind:service />
-							{/if}
-							{#if item.type === ProtocolType.TCP}
-								<TCPServiceForm bind:service />
-							{/if}
-							{#if item.type === ProtocolType.UDP}
-								<UDPServiceForm bind:service />
-							{/if}
+							<!-- {#if routerData.type === ProtocolType.HTTP} -->
+							<!-- 	<HTTPServiceForm bind:service /> -->
+							<!-- {/if} -->
+							<!-- {#if routerData.type === ProtocolType.TCP} -->
+							<!-- 	<TCPServiceForm bind:service /> -->
+							<!-- {/if} -->
+							<!-- {#if routerData.type === ProtocolType.UDP} -->
+							<!-- 	<UDPServiceForm bind:service /> -->
+							<!-- {/if} -->
 						</Card.Content>
 					</Card.Root>
 				</Tabs.Content>
 			</Tabs.Root>
 
-			<div class="flex w-full flex-col gap-2 sm:flex-row">
-				{#if item.id}
-					<ConfirmButton
-						title="Delete Router"
-						description="This router will be permanently deleted."
-						confirmLabel="Delete"
-						cancelLabel="Cancel"
-						icon={Trash2}
-						class="text-destructive"
-						onclick={handleDelete}
-					/>
-				{/if}
-				<Button type="submit" class="flex-1 text-sm" onclick={handleSubmit}>
-					{item.id ? 'Update' : 'Create'}
-				</Button>
-			</div>
+			<Button type="submit" class="w-full" onclick={onsubmit}
+				>{routerData.id ? 'Update' : 'Create'}</Button
+			>
 		{/if}
 	</Dialog.Content>
 </Dialog.Root>

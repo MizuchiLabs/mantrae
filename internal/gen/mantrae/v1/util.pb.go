@@ -154,6 +154,94 @@ func (x *GetVersionResponse) GetVersion() string {
 	return ""
 }
 
+type GetDynamicConfigRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProfileId     int64                  `protobuf:"varint,1,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDynamicConfigRequest) Reset() {
+	*x = GetDynamicConfigRequest{}
+	mi := &file_mantrae_v1_util_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDynamicConfigRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDynamicConfigRequest) ProtoMessage() {}
+
+func (x *GetDynamicConfigRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mantrae_v1_util_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDynamicConfigRequest.ProtoReflect.Descriptor instead.
+func (*GetDynamicConfigRequest) Descriptor() ([]byte, []int) {
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetDynamicConfigRequest) GetProfileId() int64 {
+	if x != nil {
+		return x.ProfileId
+	}
+	return 0
+}
+
+type GetDynamicConfigResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Config        string                 `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDynamicConfigResponse) Reset() {
+	*x = GetDynamicConfigResponse{}
+	mi := &file_mantrae_v1_util_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDynamicConfigResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDynamicConfigResponse) ProtoMessage() {}
+
+func (x *GetDynamicConfigResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mantrae_v1_util_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDynamicConfigResponse.ProtoReflect.Descriptor instead.
+func (*GetDynamicConfigResponse) Descriptor() ([]byte, []int) {
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetDynamicConfigResponse) GetConfig() string {
+	if x != nil {
+		return x.Config
+	}
+	return ""
+}
+
 type GetPublicIPRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -162,7 +250,7 @@ type GetPublicIPRequest struct {
 
 func (x *GetPublicIPRequest) Reset() {
 	*x = GetPublicIPRequest{}
-	mi := &file_mantrae_v1_util_proto_msgTypes[2]
+	mi := &file_mantrae_v1_util_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -174,7 +262,7 @@ func (x *GetPublicIPRequest) String() string {
 func (*GetPublicIPRequest) ProtoMessage() {}
 
 func (x *GetPublicIPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_util_proto_msgTypes[2]
+	mi := &file_mantrae_v1_util_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -187,7 +275,7 @@ func (x *GetPublicIPRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPublicIPRequest.ProtoReflect.Descriptor instead.
 func (*GetPublicIPRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{2}
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{4}
 }
 
 type GetPublicIPResponse struct {
@@ -200,7 +288,7 @@ type GetPublicIPResponse struct {
 
 func (x *GetPublicIPResponse) Reset() {
 	*x = GetPublicIPResponse{}
-	mi := &file_mantrae_v1_util_proto_msgTypes[3]
+	mi := &file_mantrae_v1_util_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -212,7 +300,7 @@ func (x *GetPublicIPResponse) String() string {
 func (*GetPublicIPResponse) ProtoMessage() {}
 
 func (x *GetPublicIPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_util_proto_msgTypes[3]
+	mi := &file_mantrae_v1_util_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -225,7 +313,7 @@ func (x *GetPublicIPResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPublicIPResponse.ProtoReflect.Descriptor instead.
 func (*GetPublicIPResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{3}
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetPublicIPResponse) GetIpv4() string {
@@ -251,7 +339,7 @@ type EventStreamRequest struct {
 
 func (x *EventStreamRequest) Reset() {
 	*x = EventStreamRequest{}
-	mi := &file_mantrae_v1_util_proto_msgTypes[4]
+	mi := &file_mantrae_v1_util_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -263,7 +351,7 @@ func (x *EventStreamRequest) String() string {
 func (*EventStreamRequest) ProtoMessage() {}
 
 func (x *EventStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_util_proto_msgTypes[4]
+	mi := &file_mantrae_v1_util_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -276,7 +364,7 @@ func (x *EventStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventStreamRequest.ProtoReflect.Descriptor instead.
 func (*EventStreamRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{4}
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *EventStreamRequest) GetProfileId() int64 {
@@ -295,7 +383,6 @@ type EventStreamResponse struct {
 	//	*EventStreamResponse_User
 	//	*EventStreamResponse_Agent
 	//	*EventStreamResponse_DnsProvider
-	//	*EventStreamResponse_TraefikInstance
 	//	*EventStreamResponse_Router
 	//	*EventStreamResponse_Service
 	//	*EventStreamResponse_Middleware
@@ -308,7 +395,7 @@ type EventStreamResponse struct {
 
 func (x *EventStreamResponse) Reset() {
 	*x = EventStreamResponse{}
-	mi := &file_mantrae_v1_util_proto_msgTypes[5]
+	mi := &file_mantrae_v1_util_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -320,7 +407,7 @@ func (x *EventStreamResponse) String() string {
 func (*EventStreamResponse) ProtoMessage() {}
 
 func (x *EventStreamResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_util_proto_msgTypes[5]
+	mi := &file_mantrae_v1_util_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -333,7 +420,7 @@ func (x *EventStreamResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EventStreamResponse.ProtoReflect.Descriptor instead.
 func (*EventStreamResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{5}
+	return file_mantrae_v1_util_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *EventStreamResponse) GetAction() EventAction {
@@ -381,15 +468,6 @@ func (x *EventStreamResponse) GetDnsProvider() *DNSProvider {
 	if x != nil {
 		if x, ok := x.Data.(*EventStreamResponse_DnsProvider); ok {
 			return x.DnsProvider
-		}
-	}
-	return nil
-}
-
-func (x *EventStreamResponse) GetTraefikInstance() *TraefikInstance {
-	if x != nil {
-		if x, ok := x.Data.(*EventStreamResponse_TraefikInstance); ok {
-			return x.TraefikInstance
 		}
 	}
 	return nil
@@ -460,28 +538,24 @@ type EventStreamResponse_DnsProvider struct {
 	DnsProvider *DNSProvider `protobuf:"bytes,5,opt,name=dns_provider,json=dnsProvider,proto3,oneof"`
 }
 
-type EventStreamResponse_TraefikInstance struct {
-	TraefikInstance *TraefikInstance `protobuf:"bytes,6,opt,name=traefik_instance,json=traefikInstance,proto3,oneof"`
-}
-
 type EventStreamResponse_Router struct {
-	Router *Router `protobuf:"bytes,7,opt,name=router,proto3,oneof"`
+	Router *Router `protobuf:"bytes,6,opt,name=router,proto3,oneof"`
 }
 
 type EventStreamResponse_Service struct {
-	Service *Service `protobuf:"bytes,8,opt,name=service,proto3,oneof"`
+	Service *Service `protobuf:"bytes,7,opt,name=service,proto3,oneof"`
 }
 
 type EventStreamResponse_Middleware struct {
-	Middleware *Middleware `protobuf:"bytes,9,opt,name=middleware,proto3,oneof"`
+	Middleware *Middleware `protobuf:"bytes,8,opt,name=middleware,proto3,oneof"`
 }
 
 type EventStreamResponse_ServersTransport struct {
-	ServersTransport *ServersTransport `protobuf:"bytes,10,opt,name=servers_transport,json=serversTransport,proto3,oneof"`
+	ServersTransport *ServersTransport `protobuf:"bytes,9,opt,name=servers_transport,json=serversTransport,proto3,oneof"`
 }
 
 type EventStreamResponse_EntryPoint struct {
-	EntryPoint *EntryPoint `protobuf:"bytes,11,opt,name=entry_point,json=entryPoint,proto3,oneof"`
+	EntryPoint *EntryPoint `protobuf:"bytes,10,opt,name=entry_point,json=entryPoint,proto3,oneof"`
 }
 
 func (*EventStreamResponse_Profile) isEventStreamResponse_Data() {}
@@ -491,8 +565,6 @@ func (*EventStreamResponse_User) isEventStreamResponse_Data() {}
 func (*EventStreamResponse_Agent) isEventStreamResponse_Data() {}
 
 func (*EventStreamResponse_DnsProvider) isEventStreamResponse_Data() {}
-
-func (*EventStreamResponse_TraefikInstance) isEventStreamResponse_Data() {}
 
 func (*EventStreamResponse_Router) isEventStreamResponse_Data() {}
 
@@ -509,42 +581,47 @@ var File_mantrae_v1_util_proto protoreflect.FileDescriptor
 const file_mantrae_v1_util_proto_rawDesc = "" +
 	"\n" +
 	"\x15mantrae/v1/util.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x16mantrae/v1/agent.proto\x1a\x1dmantrae/v1/dns_provider.proto\x1a\x1cmantrae/v1/entry_point.proto\x1a\x1bmantrae/v1/middleware.proto\x1a\x18mantrae/v1/profile.proto\x1a\x17mantrae/v1/router.proto\x1a\"mantrae/v1/servers_transport.proto\x1a\x18mantrae/v1/service.proto\x1a!mantrae/v1/traefik_instance.proto\x1a\x15mantrae/v1/user.proto\"\x13\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x16mantrae/v1/agent.proto\x1a\x1dmantrae/v1/dns_provider.proto\x1a\x1cmantrae/v1/entry_point.proto\x1a\x1bmantrae/v1/middleware.proto\x1a\x18mantrae/v1/profile.proto\x1a\x17mantrae/v1/router.proto\x1a\"mantrae/v1/servers_transport.proto\x1a\x18mantrae/v1/service.proto\x1a\x15mantrae/v1/user.proto\"\x13\n" +
 	"\x11GetVersionRequest\".\n" +
 	"\x12GetVersionResponse\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\tR\aversion\"\x14\n" +
+	"\aversion\x18\x01 \x01(\tR\aversion\"8\n" +
+	"\x17GetDynamicConfigRequest\x12\x1d\n" +
+	"\n" +
+	"profile_id\x18\x01 \x01(\x03R\tprofileId\"2\n" +
+	"\x18GetDynamicConfigResponse\x12\x16\n" +
+	"\x06config\x18\x01 \x01(\tR\x06config\"\x14\n" +
 	"\x12GetPublicIPRequest\"=\n" +
 	"\x13GetPublicIPResponse\x12\x12\n" +
 	"\x04ipv4\x18\x01 \x01(\tR\x04ipv4\x12\x12\n" +
 	"\x04ipv6\x18\x02 \x01(\tR\x04ipv6\"<\n" +
 	"\x12EventStreamRequest\x12&\n" +
 	"\n" +
-	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\"\xfb\x04\n" +
+	"profile_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\tprofileId\"\xb1\x04\n" +
 	"\x13EventStreamResponse\x12/\n" +
 	"\x06action\x18\x01 \x01(\x0e2\x17.mantrae.v1.EventActionR\x06action\x12/\n" +
 	"\aprofile\x18\x02 \x01(\v2\x13.mantrae.v1.ProfileH\x00R\aprofile\x12&\n" +
 	"\x04user\x18\x03 \x01(\v2\x10.mantrae.v1.UserH\x00R\x04user\x12)\n" +
 	"\x05agent\x18\x04 \x01(\v2\x11.mantrae.v1.AgentH\x00R\x05agent\x12<\n" +
-	"\fdns_provider\x18\x05 \x01(\v2\x17.mantrae.v1.DNSProviderH\x00R\vdnsProvider\x12H\n" +
-	"\x10traefik_instance\x18\x06 \x01(\v2\x1b.mantrae.v1.TraefikInstanceH\x00R\x0ftraefikInstance\x12,\n" +
-	"\x06router\x18\a \x01(\v2\x12.mantrae.v1.RouterH\x00R\x06router\x12/\n" +
-	"\aservice\x18\b \x01(\v2\x13.mantrae.v1.ServiceH\x00R\aservice\x128\n" +
+	"\fdns_provider\x18\x05 \x01(\v2\x17.mantrae.v1.DNSProviderH\x00R\vdnsProvider\x12,\n" +
+	"\x06router\x18\x06 \x01(\v2\x12.mantrae.v1.RouterH\x00R\x06router\x12/\n" +
+	"\aservice\x18\a \x01(\v2\x13.mantrae.v1.ServiceH\x00R\aservice\x128\n" +
 	"\n" +
-	"middleware\x18\t \x01(\v2\x16.mantrae.v1.MiddlewareH\x00R\n" +
+	"middleware\x18\b \x01(\v2\x16.mantrae.v1.MiddlewareH\x00R\n" +
 	"middleware\x12K\n" +
-	"\x11servers_transport\x18\n" +
-	" \x01(\v2\x1c.mantrae.v1.ServersTransportH\x00R\x10serversTransport\x129\n" +
-	"\ventry_point\x18\v \x01(\v2\x16.mantrae.v1.EntryPointH\x00R\n" +
+	"\x11servers_transport\x18\t \x01(\v2\x1c.mantrae.v1.ServersTransportH\x00R\x10serversTransport\x129\n" +
+	"\ventry_point\x18\n" +
+	" \x01(\v2\x16.mantrae.v1.EntryPointH\x00R\n" +
 	"entryPointB\x06\n" +
 	"\x04data*y\n" +
 	"\vEventAction\x12\x1c\n" +
 	"\x18EVENT_ACTION_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14EVENT_ACTION_CREATED\x10\x01\x12\x18\n" +
 	"\x14EVENT_ACTION_UPDATED\x10\x02\x12\x18\n" +
-	"\x14EVENT_ACTION_DELETED\x10\x032\xfc\x01\n" +
+	"\x14EVENT_ACTION_DELETED\x10\x032\xdb\x02\n" +
 	"\vUtilService\x12K\n" +
 	"\n" +
-	"GetVersion\x12\x1d.mantrae.v1.GetVersionRequest\x1a\x1e.mantrae.v1.GetVersionResponse\x12N\n" +
+	"GetVersion\x12\x1d.mantrae.v1.GetVersionRequest\x1a\x1e.mantrae.v1.GetVersionResponse\x12]\n" +
+	"\x10GetDynamicConfig\x12#.mantrae.v1.GetDynamicConfigRequest\x1a$.mantrae.v1.GetDynamicConfigResponse\x12N\n" +
 	"\vGetPublicIP\x12\x1e.mantrae.v1.GetPublicIPRequest\x1a\x1f.mantrae.v1.GetPublicIPResponse\x12P\n" +
 	"\vEventStream\x12\x1e.mantrae.v1.EventStreamRequest\x1a\x1f.mantrae.v1.EventStreamResponse0\x01B\xa6\x01\n" +
 	"\x0ecom.mantrae.v1B\tUtilProtoP\x01Z@github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1;mantraev1\xa2\x02\x03MXX\xaa\x02\n" +
@@ -564,49 +641,51 @@ func file_mantrae_v1_util_proto_rawDescGZIP() []byte {
 }
 
 var file_mantrae_v1_util_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_mantrae_v1_util_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_mantrae_v1_util_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_mantrae_v1_util_proto_goTypes = []any{
-	(EventAction)(0),            // 0: mantrae.v1.EventAction
-	(*GetVersionRequest)(nil),   // 1: mantrae.v1.GetVersionRequest
-	(*GetVersionResponse)(nil),  // 2: mantrae.v1.GetVersionResponse
-	(*GetPublicIPRequest)(nil),  // 3: mantrae.v1.GetPublicIPRequest
-	(*GetPublicIPResponse)(nil), // 4: mantrae.v1.GetPublicIPResponse
-	(*EventStreamRequest)(nil),  // 5: mantrae.v1.EventStreamRequest
-	(*EventStreamResponse)(nil), // 6: mantrae.v1.EventStreamResponse
-	(*Profile)(nil),             // 7: mantrae.v1.Profile
-	(*User)(nil),                // 8: mantrae.v1.User
-	(*Agent)(nil),               // 9: mantrae.v1.Agent
-	(*DNSProvider)(nil),         // 10: mantrae.v1.DNSProvider
-	(*TraefikInstance)(nil),     // 11: mantrae.v1.TraefikInstance
-	(*Router)(nil),              // 12: mantrae.v1.Router
-	(*Service)(nil),             // 13: mantrae.v1.Service
-	(*Middleware)(nil),          // 14: mantrae.v1.Middleware
-	(*ServersTransport)(nil),    // 15: mantrae.v1.ServersTransport
-	(*EntryPoint)(nil),          // 16: mantrae.v1.EntryPoint
+	(EventAction)(0),                 // 0: mantrae.v1.EventAction
+	(*GetVersionRequest)(nil),        // 1: mantrae.v1.GetVersionRequest
+	(*GetVersionResponse)(nil),       // 2: mantrae.v1.GetVersionResponse
+	(*GetDynamicConfigRequest)(nil),  // 3: mantrae.v1.GetDynamicConfigRequest
+	(*GetDynamicConfigResponse)(nil), // 4: mantrae.v1.GetDynamicConfigResponse
+	(*GetPublicIPRequest)(nil),       // 5: mantrae.v1.GetPublicIPRequest
+	(*GetPublicIPResponse)(nil),      // 6: mantrae.v1.GetPublicIPResponse
+	(*EventStreamRequest)(nil),       // 7: mantrae.v1.EventStreamRequest
+	(*EventStreamResponse)(nil),      // 8: mantrae.v1.EventStreamResponse
+	(*Profile)(nil),                  // 9: mantrae.v1.Profile
+	(*User)(nil),                     // 10: mantrae.v1.User
+	(*Agent)(nil),                    // 11: mantrae.v1.Agent
+	(*DNSProvider)(nil),              // 12: mantrae.v1.DNSProvider
+	(*Router)(nil),                   // 13: mantrae.v1.Router
+	(*Service)(nil),                  // 14: mantrae.v1.Service
+	(*Middleware)(nil),               // 15: mantrae.v1.Middleware
+	(*ServersTransport)(nil),         // 16: mantrae.v1.ServersTransport
+	(*EntryPoint)(nil),               // 17: mantrae.v1.EntryPoint
 }
 var file_mantrae_v1_util_proto_depIdxs = []int32{
 	0,  // 0: mantrae.v1.EventStreamResponse.action:type_name -> mantrae.v1.EventAction
-	7,  // 1: mantrae.v1.EventStreamResponse.profile:type_name -> mantrae.v1.Profile
-	8,  // 2: mantrae.v1.EventStreamResponse.user:type_name -> mantrae.v1.User
-	9,  // 3: mantrae.v1.EventStreamResponse.agent:type_name -> mantrae.v1.Agent
-	10, // 4: mantrae.v1.EventStreamResponse.dns_provider:type_name -> mantrae.v1.DNSProvider
-	11, // 5: mantrae.v1.EventStreamResponse.traefik_instance:type_name -> mantrae.v1.TraefikInstance
-	12, // 6: mantrae.v1.EventStreamResponse.router:type_name -> mantrae.v1.Router
-	13, // 7: mantrae.v1.EventStreamResponse.service:type_name -> mantrae.v1.Service
-	14, // 8: mantrae.v1.EventStreamResponse.middleware:type_name -> mantrae.v1.Middleware
-	15, // 9: mantrae.v1.EventStreamResponse.servers_transport:type_name -> mantrae.v1.ServersTransport
-	16, // 10: mantrae.v1.EventStreamResponse.entry_point:type_name -> mantrae.v1.EntryPoint
-	1,  // 11: mantrae.v1.UtilService.GetVersion:input_type -> mantrae.v1.GetVersionRequest
-	3,  // 12: mantrae.v1.UtilService.GetPublicIP:input_type -> mantrae.v1.GetPublicIPRequest
-	5,  // 13: mantrae.v1.UtilService.EventStream:input_type -> mantrae.v1.EventStreamRequest
+	9,  // 1: mantrae.v1.EventStreamResponse.profile:type_name -> mantrae.v1.Profile
+	10, // 2: mantrae.v1.EventStreamResponse.user:type_name -> mantrae.v1.User
+	11, // 3: mantrae.v1.EventStreamResponse.agent:type_name -> mantrae.v1.Agent
+	12, // 4: mantrae.v1.EventStreamResponse.dns_provider:type_name -> mantrae.v1.DNSProvider
+	13, // 5: mantrae.v1.EventStreamResponse.router:type_name -> mantrae.v1.Router
+	14, // 6: mantrae.v1.EventStreamResponse.service:type_name -> mantrae.v1.Service
+	15, // 7: mantrae.v1.EventStreamResponse.middleware:type_name -> mantrae.v1.Middleware
+	16, // 8: mantrae.v1.EventStreamResponse.servers_transport:type_name -> mantrae.v1.ServersTransport
+	17, // 9: mantrae.v1.EventStreamResponse.entry_point:type_name -> mantrae.v1.EntryPoint
+	1,  // 10: mantrae.v1.UtilService.GetVersion:input_type -> mantrae.v1.GetVersionRequest
+	3,  // 11: mantrae.v1.UtilService.GetDynamicConfig:input_type -> mantrae.v1.GetDynamicConfigRequest
+	5,  // 12: mantrae.v1.UtilService.GetPublicIP:input_type -> mantrae.v1.GetPublicIPRequest
+	7,  // 13: mantrae.v1.UtilService.EventStream:input_type -> mantrae.v1.EventStreamRequest
 	2,  // 14: mantrae.v1.UtilService.GetVersion:output_type -> mantrae.v1.GetVersionResponse
-	4,  // 15: mantrae.v1.UtilService.GetPublicIP:output_type -> mantrae.v1.GetPublicIPResponse
-	6,  // 16: mantrae.v1.UtilService.EventStream:output_type -> mantrae.v1.EventStreamResponse
-	14, // [14:17] is the sub-list for method output_type
-	11, // [11:14] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 15: mantrae.v1.UtilService.GetDynamicConfig:output_type -> mantrae.v1.GetDynamicConfigResponse
+	6,  // 16: mantrae.v1.UtilService.GetPublicIP:output_type -> mantrae.v1.GetPublicIPResponse
+	8,  // 17: mantrae.v1.UtilService.EventStream:output_type -> mantrae.v1.EventStreamResponse
+	14, // [14:18] is the sub-list for method output_type
+	10, // [10:14] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_util_proto_init() }
@@ -622,14 +701,12 @@ func file_mantrae_v1_util_proto_init() {
 	file_mantrae_v1_router_proto_init()
 	file_mantrae_v1_servers_transport_proto_init()
 	file_mantrae_v1_service_proto_init()
-	file_mantrae_v1_traefik_instance_proto_init()
 	file_mantrae_v1_user_proto_init()
-	file_mantrae_v1_util_proto_msgTypes[5].OneofWrappers = []any{
+	file_mantrae_v1_util_proto_msgTypes[7].OneofWrappers = []any{
 		(*EventStreamResponse_Profile)(nil),
 		(*EventStreamResponse_User)(nil),
 		(*EventStreamResponse_Agent)(nil),
 		(*EventStreamResponse_DnsProvider)(nil),
-		(*EventStreamResponse_TraefikInstance)(nil),
 		(*EventStreamResponse_Router)(nil),
 		(*EventStreamResponse_Service)(nil),
 		(*EventStreamResponse_Middleware)(nil),
@@ -642,7 +719,7 @@ func file_mantrae_v1_util_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_util_proto_rawDesc), len(file_mantrae_v1_util_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

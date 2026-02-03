@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"time"
 )
 
 const countUsers = `-- name: CountUsers :one
@@ -28,7 +27,7 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO
   users (id, username, password, email)
 VALUES
-  (?, ?, ?, ?) RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  (?, ?, ?, ?) RETURNING id, username, password, email, last_login, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -51,8 +50,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg *CreateUserParams) (*User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Otp,
-		&i.OtpExpiry,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -73,7 +70,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) error {
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT
-  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -88,8 +85,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (*User, err
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Otp,
-		&i.OtpExpiry,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -99,7 +94,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email *string) (*User, err
 
 const getUserByID = `-- name: GetUserByID :one
 SELECT
-  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -114,8 +109,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (*User, error) {
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Otp,
-		&i.OtpExpiry,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -125,7 +118,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (*User, error) {
 
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT
-  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, last_login, created_at, updated_at
 FROM
   users
 WHERE
@@ -140,8 +133,6 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Otp,
-		&i.OtpExpiry,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -151,7 +142,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (*User
 
 const listUsers = `-- name: ListUsers :many
 SELECT
-  id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  id, username, password, email, last_login, created_at, updated_at
 FROM
   users
 ORDER BY
@@ -181,8 +172,6 @@ func (q *Queries) ListUsers(ctx context.Context, arg *ListUsersParams) ([]*User,
 			&i.Username,
 			&i.Password,
 			&i.Email,
-			&i.Otp,
-			&i.OtpExpiry,
 			&i.LastLogin,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -207,7 +196,7 @@ SET
   email = ?,
   updated_at = CURRENT_TIMESTAMP
 WHERE
-  id = ? RETURNING id, username, password, email, otp, otp_expiry, last_login, created_at, updated_at
+  id = ? RETURNING id, username, password, email, last_login, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -224,8 +213,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User,
 		&i.Username,
 		&i.Password,
 		&i.Email,
-		&i.Otp,
-		&i.OtpExpiry,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -249,9 +236,7 @@ func (q *Queries) UpdateUserLastLogin(ctx context.Context, id string) error {
 const updateUserPassword = `-- name: UpdateUserPassword :exec
 UPDATE users
 SET
-  password = ?,
-  otp = '',
-  otp_expiry = NULL
+  password = ?
 WHERE
   id = ?
 `
@@ -263,25 +248,5 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg *UpdateUserPasswordParams) error {
 	_, err := q.exec(ctx, q.updateUserPasswordStmt, updateUserPassword, arg.Password, arg.ID)
-	return err
-}
-
-const updateUserResetToken = `-- name: UpdateUserResetToken :exec
-UPDATE users
-SET
-  otp = ?,
-  otp_expiry = ?
-WHERE
-  id = ?
-`
-
-type UpdateUserResetTokenParams struct {
-	Otp       *string    `json:"otp"`
-	OtpExpiry *time.Time `json:"otpExpiry"`
-	ID        string     `json:"id"`
-}
-
-func (q *Queries) UpdateUserResetToken(ctx context.Context, arg *UpdateUserResetTokenParams) error {
-	_, err := q.exec(ctx, q.updateUserResetTokenStmt, updateUserResetToken, arg.Otp, arg.OtpExpiry, arg.ID)
 	return err
 }

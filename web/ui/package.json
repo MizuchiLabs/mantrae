@@ -36,7 +36,7 @@
 		"formsnap": "^2.0.1",
 		"globals": "^17.3.0",
 		"mode-watcher": "^1.1.0",
-		"oxlint": "^1.42.0",
+		"oxlint": "^1.43.0",
 		"oxlint-tsgolint": "^0.11.4",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",

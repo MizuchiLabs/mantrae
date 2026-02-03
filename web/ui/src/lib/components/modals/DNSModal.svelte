@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dnsClient, utilClient } from '$lib/api';
+	import { utilClient } from '$lib/api';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -12,81 +12,55 @@
 		type DNSProviderConfig
 	} from '$lib/gen/mantrae/v1/dns_provider_pb';
 	import { dnsProviderTypes } from '$lib/types';
-	import { ConnectError } from '@connectrpc/connect';
-	import { CircleQuestionMark, Trash2 } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
+	import { CircleQuestionMark } from '@lucide/svelte';
 	import Badge from '../ui/badge/badge.svelte';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
 	import PasswordInput from '../ui/password-input/password-input.svelte';
 	import Separator from '../ui/separator/separator.svelte';
-	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { dns } from '$lib/api/dns.svelte';
 
 	interface Props {
-		item: DNSProvider;
+		data?: DNSProvider;
 		open?: boolean;
 	}
+	let { data, open = $bindable(false) }: Props = $props();
 
-	let { item = $bindable(), open = $bindable(false) }: Props = $props();
+	let dnsData = $state({} as DNSProvider);
+	$effect(() => {
+		if (data) dnsData = { ...data };
+	});
+	$effect(() => {
+		if (!open) dnsData = {} as DNSProvider;
+	});
 
-	const handleSubmit = async () => {
-		try {
-			if (item.id) {
-				await dnsClient.updateDNSProvider({
-					id: item.id,
-					name: item.name,
-					type: item.type,
-					config: item.config,
-					isDefault: item.isDefault
-				});
-				toast.success('DNS Provider updated successfully');
-			} else {
-				await dnsClient.createDNSProvider({
-					name: item.name,
-					type: item.type,
-					config: item.config,
-					isDefault: item.isDefault
-				});
-				toast.success('DNS Provider created successfully');
-			}
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to save dnsProvider', {
-				description: e.message
-			});
+	const createMutation = dns.create();
+	const updateMutation = dns.update();
+	function onsubmit() {
+		if (dnsData.id) {
+			updateMutation.mutate({ ...dnsData });
+		} else {
+			createMutation.mutate({ ...dnsData });
 		}
 		open = false;
-	};
-
-	const handleDelete = async () => {
-		if (!item.id) return;
-
-		try {
-			await dnsClient.deleteDNSProvider({ id: item.id });
-			toast.success('EntryPoint deleted successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to delete entry point', { description: e.message });
-		}
-		open = false;
-	};
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{item?.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
+			<Dialog.Title>{dnsData?.id ? 'Edit' : 'Add'} DNS Provider</Dialog.Title>
 			<Dialog.Description>
 				Configure automated DNS record management for your domains
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<form onsubmit={handleSubmit} class="space-y-4">
+		<form {onsubmit} class="space-y-4">
 			<!-- Basic Configuration -->
 			<div class="space-y-4">
 				<div class="grid grid-cols-3 gap-2">
 					<div class="col-span-2 space-y-2">
 						<Label for="name" class="text-sm">Provider Name</Label>
-						<Input id="name" bind:value={item.name} required placeholder="e.g., Cloudflare" />
+						<Input id="name" bind:value={dnsData.name} required placeholder="e.g., Cloudflare" />
 						<p class="text-xs text-muted-foreground">Friendly name for this provider</p>
 					</div>
 
@@ -95,11 +69,11 @@
 						<Select.Root
 							type="single"
 							name="type"
-							value={item.type?.toString()}
-							onValueChange={(value) => (item.type = parseInt(value, 10))}
+							value={dnsData.type?.toString()}
+							onValueChange={(value) => (dnsData.type = parseInt(value, 10))}
 						>
 							<Select.Trigger>
-								{dnsProviderTypes.find((t) => t.value === item.type)?.label ?? 'Select type'}
+								{dnsProviderTypes.find((t) => t.value === dnsData.type)?.label ?? 'Select type'}
 							</Select.Trigger>
 							<Select.Content class="no-scrollbar max-h-75 overflow-y-auto">
 								{#each dnsProviderTypes as t (t.value)}
@@ -142,7 +116,7 @@
 							</Label>
 							<p class="text-xs text-muted-foreground">Use for new routers by default</p>
 						</div>
-						<CustomSwitch bind:checked={item.isDefault} size="md" />
+						<CustomSwitch bind:checked={dnsData.isDefault} size="md" />
 					</div>
 
 					<!-- Auto Update IP -->
@@ -167,27 +141,27 @@
 							<p class="text-xs text-muted-foreground">Automatically sync with public IP</p>
 						</div>
 						<CustomSwitch
-							checked={item.config?.autoUpdate}
+							checked={dnsData.config?.autoUpdate}
 							onCheckedChange={(value) => {
-								if (item.config === undefined) item.config = {} as DNSProviderConfig;
-								item.config.autoUpdate = value;
+								if (dnsData.config === undefined) dnsData.config = {} as DNSProviderConfig;
+								dnsData.config.autoUpdate = value;
 							}}
 							size="md"
 						/>
 					</div>
 
 					<!-- Cloudflare Proxy -->
-					{#if item.type === DNSProviderType.DNS_PROVIDER_TYPE_CLOUDFLARE}
+					{#if dnsData.type === DNSProviderType.DNS_PROVIDER_TYPE_CLOUDFLARE}
 						<div class="flex items-center justify-between rounded-lg border p-3">
 							<div class="space-y-1">
 								<Label class="text-sm">Cloudflare Proxy</Label>
 								<p class="text-xs text-muted-foreground">Enable Cloudflare's proxy service</p>
 							</div>
 							<CustomSwitch
-								checked={item.config?.proxied}
+								checked={dnsData.config?.proxied}
 								onCheckedChange={(value) => {
-									if (item.config === undefined) item.config = {} as DNSProviderConfig;
-									item.config.proxied = value;
+									if (dnsData.config === undefined) dnsData.config = {} as DNSProviderConfig;
+									dnsData.config.proxied = value;
 								}}
 								size="md"
 							/>
@@ -218,7 +192,7 @@
 					</p>
 				</div>
 
-				{#if item.config?.autoUpdate}
+				{#if dnsData.config?.autoUpdate}
 					<div class="rounded-lg border p-3">
 						<div class="space-y-2">
 							<Label class="text-sm">Detected Public IP</Label>
@@ -242,12 +216,12 @@
 							id="ip"
 							name="ip"
 							type="text"
-							value={item.config?.ip}
+							value={dnsData.config?.ip}
 							oninput={(e) => {
 								let input = e.target as HTMLInputElement;
 								if (!input.value) return;
-								if (item.config === undefined) item.config = {} as DNSProviderConfig;
-								item.config.ip = input.value;
+								if (dnsData.config === undefined) dnsData.config = {} as DNSProviderConfig;
+								dnsData.config.ip = input.value;
 							}}
 							placeholder="Enter IP address for DNS records"
 							required
@@ -273,37 +247,37 @@
 						<Label for="apiKey" class="text-sm">API Key</Label>
 						<PasswordInput
 							id="apiKey"
-							value={item.config?.apiKey}
+							value={dnsData.config?.apiKey}
 							oninput={(e) => {
 								let input = e.target as HTMLInputElement;
 								if (!input.value) return;
-								if (item.config === undefined) item.config = {} as DNSProviderConfig;
-								item.config.apiKey = input.value;
+								if (dnsData.config === undefined) dnsData.config = {} as DNSProviderConfig;
+								dnsData.config.apiKey = input.value;
 							}}
 							placeholder="Enter your API key"
 						/>
 						<p class="text-xs text-muted-foreground">API key from your DNS provider</p>
 					</div>
 
-					{#if item.type === DNSProviderType.DNS_PROVIDER_TYPE_POWERDNS || item.type === DNSProviderType.DNS_PROVIDER_TYPE_TECHNITIUM || item.type === DNSProviderType.DNS_PROVIDER_TYPE_PIHOLE}
+					{#if dnsData.type === DNSProviderType.DNS_PROVIDER_TYPE_POWERDNS || dnsData.type === DNSProviderType.DNS_PROVIDER_TYPE_TECHNITIUM || dnsData.type === DNSProviderType.DNS_PROVIDER_TYPE_PIHOLE}
 						<div class="space-y-2">
 							<Label for="apiUrl" class="text-sm">API Endpoint</Label>
 							<Input
 								id="apiUrl"
 								name="apiUrl"
 								type="text"
-								value={item.config?.apiUrl}
+								value={dnsData.config?.apiUrl}
 								oninput={(e) => {
 									let input = e.target as HTMLInputElement;
 									if (!input.value) return;
-									if (item.config === undefined) item.config = {} as DNSProviderConfig;
-									item.config.apiUrl = input.value;
+									if (dnsData.config === undefined) dnsData.config = {} as DNSProviderConfig;
+									dnsData.config.apiUrl = input.value;
 								}}
 								placeholder="https://dns.example.com/api"
 								required
 							/>
 							<p class="text-xs text-muted-foreground">
-								{dnsProviderTypes.find((t) => t.value === item.type)?.label} server endpoint
+								{dnsProviderTypes.find((t) => t.value === dnsData.type)?.label} server endpoint
 							</p>
 						</div>
 					{/if}
@@ -312,22 +286,7 @@
 
 			<Separator />
 
-			<div class="flex w-full flex-row gap-2">
-				{#if item.id}
-					<ConfirmButton
-						title="Delete DNS Provider"
-						description="This DNS provider and all associated data will be permanently deleted."
-						confirmLabel="Delete"
-						cancelLabel="Cancel"
-						icon={Trash2}
-						class="text-destructive"
-						onclick={handleDelete}
-					/>
-				{/if}
-				<Button type="submit" class="flex-1">
-					{item.id ? 'Update' : 'Create'}
-				</Button>
-			</div>
+			<Button type="submit" class="w-full">{dnsData.id ? 'Update' : 'Create'}</Button>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

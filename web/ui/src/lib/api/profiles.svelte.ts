@@ -1,15 +1,14 @@
 import { toast } from 'svelte-sonner';
 import { useMutation, useQuery } from '$lib/query';
 import { ProfileService } from '$lib/gen/mantrae/v1/profile_pb';
-import { UtilService } from '$lib/gen/mantrae/v1/util_pb';
 import { profileID } from '$lib/store.svelte';
 
 export const profile = {
 	// Queries
-	get: () =>
+	get: (id?: bigint) =>
 		useQuery(
 			ProfileService.method.getProfile,
-			{ id: profileID.current },
+			{ id: id ?? profileID.current },
 			{ enabled: !!profileID.current, select: (res) => res.profile }
 		),
 	list: () =>
@@ -47,14 +46,5 @@ export const profile = {
 				}
 				toast.success('Profile deleted');
 			}
-		})
-};
-
-export const util = {
-	// Queries
-	getVersion: () =>
-		useQuery(UtilService.method.getVersion, undefined, {
-			enabled: !!profileID.current,
-			select: (res) => res.version
 		})
 };

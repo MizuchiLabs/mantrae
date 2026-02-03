@@ -18,7 +18,7 @@ plugins:
       - paths=source_relative
       - simple
   - local: protoc-gen-es
-    out: web/src/lib/gen
+    out: web/ui/src/lib/gen
     opt: target=ts
     include_imports: true
   - local: protoc-gen-connect-openapi

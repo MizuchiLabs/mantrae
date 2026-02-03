@@ -1083,23 +1083,6 @@
         "title": "DeleteServiceResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.DeleteTraefikInstanceRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "id",
-            "minLength": 1
-          }
-        },
-        "title": "DeleteTraefikInstanceRequest",
-        "additionalProperties": false
-      },
-      "mantrae.v1.DeleteTraefikInstanceResponse": {
-        "type": "object",
-        "title": "DeleteTraefikInstanceResponse",
-        "additionalProperties": false
-      },
       "mantrae.v1.DeleteUserRequest": {
         "type": "object",
         "properties": {
@@ -1316,18 +1299,6 @@
               },
               {
                 "properties": {
-                  "traefikInstance": {
-                    "title": "traefik_instance",
-                    "$ref": "#/components/schemas/mantrae.v1.TraefikInstance"
-                  }
-                },
-                "title": "traefik_instance",
-                "required": [
-                  "traefikInstance"
-                ]
-              },
-              {
-                "properties": {
                   "user": {
                     "title": "user",
                     "$ref": "#/components/schemas/mantrae.v1.User"
@@ -1388,6 +1359,32 @@
           }
         },
         "title": "GetDNSProviderResponse",
+        "additionalProperties": false
+      },
+      "mantrae.v1.GetDynamicConfigRequest": {
+        "type": "object",
+        "properties": {
+          "profileId": {
+            "type": [
+              "integer",
+              "string"
+            ],
+            "title": "profile_id",
+            "format": "int64"
+          }
+        },
+        "title": "GetDynamicConfigRequest",
+        "additionalProperties": false
+      },
+      "mantrae.v1.GetDynamicConfigResponse": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "string",
+            "title": "config"
+          }
+        },
+        "title": "GetDynamicConfigResponse",
         "additionalProperties": false
       },
       "mantrae.v1.GetEntryPointRequest": {
@@ -1670,29 +1667,6 @@
           }
         },
         "title": "GetSettingResponse",
-        "additionalProperties": false
-      },
-      "mantrae.v1.GetTraefikInstanceRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "id",
-            "minLength": 1
-          }
-        },
-        "title": "GetTraefikInstanceRequest",
-        "additionalProperties": false
-      },
-      "mantrae.v1.GetTraefikInstanceResponse": {
-        "type": "object",
-        "properties": {
-          "traefikInstance": {
-            "title": "traefik_instance",
-            "$ref": "#/components/schemas/mantrae.v1.TraefikInstance"
-          }
-        },
-        "title": "GetTraefikInstanceResponse",
         "additionalProperties": false
       },
       "mantrae.v1.GetUserRequest": {
@@ -2417,64 +2391,6 @@
         "title": "ListSettingsResponse",
         "additionalProperties": false
       },
-      "mantrae.v1.ListTraefikInstancesRequest": {
-        "type": "object",
-        "properties": {
-          "profileId": {
-            "exclusiveMinimum": 0,
-            "type": [
-              "integer",
-              "string"
-            ],
-            "title": "profile_id",
-            "format": "int64"
-          },
-          "limit": {
-            "type": [
-              "integer",
-              "string",
-              "null"
-            ],
-            "title": "limit",
-            "format": "int64",
-            "description": "limit.valid // limit must be either -1 or greater than 0\n"
-          },
-          "offset": {
-            "type": [
-              "integer",
-              "string",
-              "null"
-            ],
-            "title": "offset",
-            "minimum": 0,
-            "format": "int64"
-          }
-        },
-        "title": "ListTraefikInstancesRequest",
-        "additionalProperties": false
-      },
-      "mantrae.v1.ListTraefikInstancesResponse": {
-        "type": "object",
-        "properties": {
-          "traefikInstances": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/mantrae.v1.TraefikInstance"
-            },
-            "title": "traefik_instances"
-          },
-          "totalCount": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "title": "total_count",
-            "format": "int64"
-          }
-        },
-        "title": "ListTraefikInstancesResponse",
-        "additionalProperties": false
-      },
       "mantrae.v1.ListUsersRequest": {
         "type": "object",
         "properties": {
@@ -2854,44 +2770,6 @@
         "title": "Router",
         "additionalProperties": false
       },
-      "mantrae.v1.SendOTPRequest": {
-        "type": "object",
-        "oneOf": [
-          {
-            "properties": {
-              "email": {
-                "type": "string",
-                "title": "email",
-                "format": "email"
-              }
-            },
-            "title": "email",
-            "required": [
-              "email"
-            ]
-          },
-          {
-            "properties": {
-              "username": {
-                "type": "string",
-                "title": "username",
-                "minLength": 3
-              }
-            },
-            "title": "username",
-            "required": [
-              "username"
-            ]
-          }
-        ],
-        "title": "SendOTPRequest",
-        "additionalProperties": false
-      },
-      "mantrae.v1.SendOTPResponse": {
-        "type": "object",
-        "title": "SendOTPResponse",
-        "additionalProperties": false
-      },
       "mantrae.v1.ServersTransport": {
         "type": "object",
         "properties": {
@@ -3003,69 +2881,6 @@
           }
         },
         "title": "Setting",
-        "additionalProperties": false
-      },
-      "mantrae.v1.TraefikInstance": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "id"
-          },
-          "profileId": {
-            "type": [
-              "integer",
-              "string"
-            ],
-            "title": "profile_id",
-            "format": "int64"
-          },
-          "name": {
-            "type": "string",
-            "title": "name"
-          },
-          "url": {
-            "type": "string",
-            "title": "url"
-          },
-          "username": {
-            "type": "string",
-            "title": "username"
-          },
-          "password": {
-            "type": "string",
-            "title": "password"
-          },
-          "tls": {
-            "type": "boolean",
-            "title": "tls"
-          },
-          "entryPoints": {
-            "title": "entry_points",
-            "$ref": "#/components/schemas/google.protobuf.ListValue"
-          },
-          "overview": {
-            "title": "overview",
-            "$ref": "#/components/schemas/google.protobuf.Struct"
-          },
-          "config": {
-            "title": "config",
-            "$ref": "#/components/schemas/google.protobuf.Struct"
-          },
-          "version": {
-            "title": "version",
-            "$ref": "#/components/schemas/google.protobuf.Struct"
-          },
-          "createdAt": {
-            "title": "created_at",
-            "$ref": "#/components/schemas/google.protobuf.Timestamp"
-          },
-          "updatedAt": {
-            "title": "updated_at",
-            "$ref": "#/components/schemas/google.protobuf.Timestamp"
-          }
-        },
-        "title": "TraefikInstance",
         "additionalProperties": false
       },
       "mantrae.v1.UpdateAgentRequest": {
@@ -3532,64 +3347,6 @@
           }
         },
         "title": "User",
-        "additionalProperties": false
-      },
-      "mantrae.v1.VerifyOTPRequest": {
-        "type": "object",
-        "allOf": [
-          {
-            "properties": {
-              "otp": {
-                "type": "string",
-                "title": "otp",
-                "maxLength": 6,
-                "minLength": 6
-              }
-            }
-          },
-          {
-            "oneOf": [
-              {
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "title": "email",
-                    "format": "email"
-                  }
-                },
-                "title": "email",
-                "required": [
-                  "email"
-                ]
-              },
-              {
-                "properties": {
-                  "username": {
-                    "type": "string",
-                    "title": "username",
-                    "minLength": 3
-                  }
-                },
-                "title": "username",
-                "required": [
-                  "username"
-                ]
-              }
-            ]
-          }
-        ],
-        "title": "VerifyOTPRequest",
-        "additionalProperties": false
-      },
-      "mantrae.v1.VerifyOTPResponse": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "title": "user",
-            "$ref": "#/components/schemas/mantrae.v1.User"
-          }
-        },
-        "title": "VerifyOTPResponse",
         "additionalProperties": false
       }
     }
@@ -8470,352 +8227,6 @@
         }
       }
     },
-    "/mantrae.v1.TraefikInstanceService/DeleteTraefikInstance": {
-      "post": {
-        "tags": [
-          "mantrae.v1.TraefikInstanceService"
-        ],
-        "summary": "DeleteTraefikInstance",
-        "operationId": "mantrae.v1.TraefikInstanceService.DeleteTraefikInstance",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.DeleteTraefikInstanceRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.DeleteTraefikInstanceResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/mantrae.v1.TraefikInstanceService/GetTraefikInstance": {
-      "get": {
-        "tags": [
-          "mantrae.v1.TraefikInstanceService"
-        ],
-        "summary": "GetTraefikInstance",
-        "operationId": "mantrae.v1.TraefikInstanceService.GetTraefikInstance.get",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          },
-          {
-            "name": "message",
-            "in": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetTraefikInstanceRequest"
-                }
-              }
-            }
-          },
-          {
-            "name": "encoding",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/encoding"
-            }
-          },
-          {
-            "name": "base64",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/base64"
-            }
-          },
-          {
-            "name": "compression",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/compression"
-            }
-          },
-          {
-            "name": "connect",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/connect"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetTraefikInstanceResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "mantrae.v1.TraefikInstanceService"
-        ],
-        "summary": "GetTraefikInstance",
-        "operationId": "mantrae.v1.TraefikInstanceService.GetTraefikInstance",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.GetTraefikInstanceRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.GetTraefikInstanceResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/mantrae.v1.TraefikInstanceService/ListTraefikInstances": {
-      "get": {
-        "tags": [
-          "mantrae.v1.TraefikInstanceService"
-        ],
-        "summary": "ListTraefikInstances",
-        "operationId": "mantrae.v1.TraefikInstanceService.ListTraefikInstances.get",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          },
-          {
-            "name": "message",
-            "in": "query",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListTraefikInstancesRequest"
-                }
-              }
-            }
-          },
-          {
-            "name": "encoding",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/encoding"
-            }
-          },
-          {
-            "name": "base64",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/base64"
-            }
-          },
-          {
-            "name": "compression",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/compression"
-            }
-          },
-          {
-            "name": "connect",
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/connect"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListTraefikInstancesResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "mantrae.v1.TraefikInstanceService"
-        ],
-        "summary": "ListTraefikInstances",
-        "operationId": "mantrae.v1.TraefikInstanceService.ListTraefikInstances",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.ListTraefikInstancesRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.ListTraefikInstancesResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/mantrae.v1.UserService/CreateUser": {
       "post": {
         "tags": [
@@ -9394,64 +8805,6 @@
         }
       }
     },
-    "/mantrae.v1.UserService/SendOTP": {
-      "post": {
-        "tags": [
-          "mantrae.v1.UserService"
-        ],
-        "summary": "SendOTP",
-        "operationId": "mantrae.v1.UserService.SendOTP",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.SendOTPRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.SendOTPResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/mantrae.v1.UserService/UpdateUser": {
       "post": {
         "tags": [
@@ -9503,64 +8856,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/mantrae.v1.UpdateUserResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/mantrae.v1.UserService/VerifyOTP": {
-      "post": {
-        "tags": [
-          "mantrae.v1.UserService"
-        ],
-        "summary": "VerifyOTP",
-        "operationId": "mantrae.v1.UserService.VerifyOTP",
-        "parameters": [
-          {
-            "name": "Connect-Protocol-Version",
-            "in": "header",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/connect-protocol-version"
-            }
-          },
-          {
-            "name": "Connect-Timeout-Ms",
-            "in": "header",
-            "schema": {
-              "$ref": "#/components/schemas/connect-timeout-header"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/mantrae.v1.VerifyOTPRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/connect.error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/mantrae.v1.VerifyOTPResponse"
                 }
               }
             }
@@ -9731,6 +9026,64 @@
         }
       }
     },
+    "/mantrae.v1.UtilService/GetDynamicConfig": {
+      "post": {
+        "tags": [
+          "mantrae.v1.UtilService"
+        ],
+        "summary": "GetDynamicConfig",
+        "operationId": "mantrae.v1.UtilService.GetDynamicConfig",
+        "parameters": [
+          {
+            "name": "Connect-Protocol-Version",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/connect-protocol-version"
+            }
+          },
+          {
+            "name": "Connect-Timeout-Ms",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/connect-timeout-header"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/mantrae.v1.GetDynamicConfigRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/connect.error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mantrae.v1.GetDynamicConfigResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/mantrae.v1.UtilService/GetPublicIP": {
       "post": {
         "tags": [
@@ -9881,9 +9234,6 @@
     },
     {
       "name": "mantrae.v1.SettingService"
-    },
-    {
-      "name": "mantrae.v1.TraefikInstanceService"
     },
     {
       "name": "mantrae.v1.UserService"

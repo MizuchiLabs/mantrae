@@ -35,6 +35,9 @@ const (
 const (
 	// UtilServiceGetVersionProcedure is the fully-qualified name of the UtilService's GetVersion RPC.
 	UtilServiceGetVersionProcedure = "/mantrae.v1.UtilService/GetVersion"
+	// UtilServiceGetDynamicConfigProcedure is the fully-qualified name of the UtilService's
+	// GetDynamicConfig RPC.
+	UtilServiceGetDynamicConfigProcedure = "/mantrae.v1.UtilService/GetDynamicConfig"
 	// UtilServiceGetPublicIPProcedure is the fully-qualified name of the UtilService's GetPublicIP RPC.
 	UtilServiceGetPublicIPProcedure = "/mantrae.v1.UtilService/GetPublicIP"
 	// UtilServiceEventStreamProcedure is the fully-qualified name of the UtilService's EventStream RPC.
@@ -44,6 +47,7 @@ const (
 // UtilServiceClient is a client for the mantrae.v1.UtilService service.
 type UtilServiceClient interface {
 	GetVersion(context.Context, *v1.GetVersionRequest) (*v1.GetVersionResponse, error)
+	GetDynamicConfig(context.Context, *v1.GetDynamicConfigRequest) (*v1.GetDynamicConfigResponse, error)
 	GetPublicIP(context.Context, *v1.GetPublicIPRequest) (*v1.GetPublicIPResponse, error)
 	EventStream(context.Context, *v1.EventStreamRequest) (*connect.ServerStreamForClient[v1.EventStreamResponse], error)
 }
@@ -65,6 +69,12 @@ func NewUtilServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(utilServiceMethods.ByName("GetVersion")),
 			connect.WithClientOptions(opts...),
 		),
+		getDynamicConfig: connect.NewClient[v1.GetDynamicConfigRequest, v1.GetDynamicConfigResponse](
+			httpClient,
+			baseURL+UtilServiceGetDynamicConfigProcedure,
+			connect.WithSchema(utilServiceMethods.ByName("GetDynamicConfig")),
+			connect.WithClientOptions(opts...),
+		),
 		getPublicIP: connect.NewClient[v1.GetPublicIPRequest, v1.GetPublicIPResponse](
 			httpClient,
 			baseURL+UtilServiceGetPublicIPProcedure,
@@ -82,14 +92,24 @@ func NewUtilServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // utilServiceClient implements UtilServiceClient.
 type utilServiceClient struct {
-	getVersion  *connect.Client[v1.GetVersionRequest, v1.GetVersionResponse]
-	getPublicIP *connect.Client[v1.GetPublicIPRequest, v1.GetPublicIPResponse]
-	eventStream *connect.Client[v1.EventStreamRequest, v1.EventStreamResponse]
+	getVersion       *connect.Client[v1.GetVersionRequest, v1.GetVersionResponse]
+	getDynamicConfig *connect.Client[v1.GetDynamicConfigRequest, v1.GetDynamicConfigResponse]
+	getPublicIP      *connect.Client[v1.GetPublicIPRequest, v1.GetPublicIPResponse]
+	eventStream      *connect.Client[v1.EventStreamRequest, v1.EventStreamResponse]
 }
 
 // GetVersion calls mantrae.v1.UtilService.GetVersion.
 func (c *utilServiceClient) GetVersion(ctx context.Context, req *v1.GetVersionRequest) (*v1.GetVersionResponse, error) {
 	response, err := c.getVersion.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// GetDynamicConfig calls mantrae.v1.UtilService.GetDynamicConfig.
+func (c *utilServiceClient) GetDynamicConfig(ctx context.Context, req *v1.GetDynamicConfigRequest) (*v1.GetDynamicConfigResponse, error) {
+	response, err := c.getDynamicConfig.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
 	}
@@ -113,6 +133,7 @@ func (c *utilServiceClient) EventStream(ctx context.Context, req *v1.EventStream
 // UtilServiceHandler is an implementation of the mantrae.v1.UtilService service.
 type UtilServiceHandler interface {
 	GetVersion(context.Context, *v1.GetVersionRequest) (*v1.GetVersionResponse, error)
+	GetDynamicConfig(context.Context, *v1.GetDynamicConfigRequest) (*v1.GetDynamicConfigResponse, error)
 	GetPublicIP(context.Context, *v1.GetPublicIPRequest) (*v1.GetPublicIPResponse, error)
 	EventStream(context.Context, *v1.EventStreamRequest, *connect.ServerStream[v1.EventStreamResponse]) error
 }
@@ -128,6 +149,12 @@ func NewUtilServiceHandler(svc UtilServiceHandler, opts ...connect.HandlerOption
 		UtilServiceGetVersionProcedure,
 		svc.GetVersion,
 		connect.WithSchema(utilServiceMethods.ByName("GetVersion")),
+		connect.WithHandlerOptions(opts...),
+	)
+	utilServiceGetDynamicConfigHandler := connect.NewUnaryHandlerSimple(
+		UtilServiceGetDynamicConfigProcedure,
+		svc.GetDynamicConfig,
+		connect.WithSchema(utilServiceMethods.ByName("GetDynamicConfig")),
 		connect.WithHandlerOptions(opts...),
 	)
 	utilServiceGetPublicIPHandler := connect.NewUnaryHandlerSimple(
@@ -146,6 +173,8 @@ func NewUtilServiceHandler(svc UtilServiceHandler, opts ...connect.HandlerOption
 		switch r.URL.Path {
 		case UtilServiceGetVersionProcedure:
 			utilServiceGetVersionHandler.ServeHTTP(w, r)
+		case UtilServiceGetDynamicConfigProcedure:
+			utilServiceGetDynamicConfigHandler.ServeHTTP(w, r)
 		case UtilServiceGetPublicIPProcedure:
 			utilServiceGetPublicIPHandler.ServeHTTP(w, r)
 		case UtilServiceEventStreamProcedure:
@@ -161,6 +190,10 @@ type UnimplementedUtilServiceHandler struct{}
 
 func (UnimplementedUtilServiceHandler) GetVersion(context.Context, *v1.GetVersionRequest) (*v1.GetVersionResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UtilService.GetVersion is not implemented"))
+}
+
+func (UnimplementedUtilServiceHandler) GetDynamicConfig(context.Context, *v1.GetDynamicConfigRequest) (*v1.GetDynamicConfigResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mantrae.v1.UtilService.GetDynamicConfig is not implemented"))
 }
 
 func (UnimplementedUtilServiceHandler) GetPublicIP(context.Context, *v1.GetPublicIPRequest) (*v1.GetPublicIPResponse, error) {

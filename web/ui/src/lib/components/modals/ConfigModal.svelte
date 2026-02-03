@@ -3,29 +3,37 @@
 	import CopyButton from '$lib/components/ui/copy-button/copy-button.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { createHighlighter } from 'shiki';
-	import { getConfig } from '$lib/api';
-	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
+	import { util } from '$lib/api/util.svelte';
+	import YAML from 'yaml';
 
 	type Props = {
 		open?: boolean;
-		item: Profile;
 	};
+	let { open = $bindable(false) }: Props = $props();
 
-	let { open = $bindable(false), item = $bindable() }: Props = $props();
+	const config = $derived(util.config());
+	let lang: 'json' | 'yaml' = $state('json');
 
-	let lang: 'json' | 'yaml' = $state('yaml');
-	let config = $derived(getConfig(lang, item));
+	const formatted = $derived.by(() => {
+		if (!config.data) return '';
+		return lang === 'json'
+			? JSON.stringify(JSON.parse(config.data), null, 2)
+			: YAML.stringify(JSON.parse(config.data), {
+					indent: 2,
+					lineWidth: 0, // no forced wrapping
+					collectionStyle: 'block' // no inline `{}` or `[]`
+				});
+	});
 
 	let code = $derived.by(async () => {
 		const currentLang = lang;
-		const currentConfig = await config;
 
 		let highlighter = await createHighlighter({
 			themes: ['catppuccin-latte', 'catppuccin-mocha'],
 			langs: ['json', 'yaml']
 		});
 
-		return highlighter.codeToHtml(currentConfig, {
+		return highlighter.codeToHtml(formatted, {
 			lang: currentLang,
 			themes: {
 				light: 'catppuccin-latte',
@@ -52,19 +60,19 @@
 			{lang === 'json' ? 'Show YAML' : 'Show JSON'}
 		</Button>
 
-		<div class="relative overflow-x-auto rounded-xl">
-			{#await config then value}
-				<CopyButton text={value} class="absolute top-1 right-4" />
-			{/await}
+		{#if config.isSuccess && config.data !== ''}
+			<div class="relative overflow-x-auto rounded-xl">
+				<CopyButton text={formatted} class="absolute top-1 right-4" />
 
-			{#await code then value}
-				<div class="w-full overflow-x-auto">
-					<div class="min-w-fit whitespace-pre">
-						{@html value}
+				{#await code then value}
+					<div class="w-full overflow-x-auto">
+						<div class="min-w-fit whitespace-pre">
+							{@html value}
+						</div>
 					</div>
-				</div>
-			{/await}
-		</div>
+				{/await}
+			</div>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 

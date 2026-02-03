@@ -1,20 +1,20 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { timestampDate, type Timestamp } from '@bufbuild/protobuf/wkt';
-	import { auditLogClient } from '$lib/api';
 	import { Search, User, Bot, TriangleAlert } from '@lucide/svelte';
 	import type { AuditLog } from '$lib/gen/mantrae/v1/auditlog_pb';
+	import { audit } from '$lib/api/util.svelte';
 
 	interface Props {
 		open?: boolean;
 	}
 	let { open = $bindable(false) }: Props = $props();
 
+	const logs = audit.logs(100n);
 	let searchQuery = $state('');
 
 	function timeAgo(date: Timestamp) {
@@ -50,20 +50,19 @@
 		return 'bg-orange-100 text-orange-700 border-orange-200';
 	}
 
-	function filteredLogs(logs: AuditLog[]) {
-		if (!searchQuery) return logs;
-		return logs.filter(
+	let filteredLogs = $derived(
+		logs.data?.filter(
 			(log) =>
 				log.details?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				log.agentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				log.userName?.toLowerCase().includes(searchQuery.toLowerCase())
-		);
-	}
+		)
+	);
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content
-		class="no-scrollbar max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-[50rem]"
+		class="no-scrollbar max-h-[90vh] w-fit max-w-[90vw] overflow-y-auto px-4 py-2 sm:min-w-200"
 	>
 		<Dialog.Header class="space-y-3 py-2">
 			<div class="flex items-center justify-between">
@@ -93,88 +92,69 @@
 		<Separator />
 
 		<div class="space-y-1 py-2">
-			{#await auditLogClient.listAuditLogs({ limit: 1000n, offset: 0n }) then result}
-				{@const logs = filteredLogs(result.auditLogs || [])}
-				{#if logs.length === 0}
-					<div class="flex items-center justify-center py-12">
-						<div class="space-y-2 text-center">
-							<TriangleAlert class="mx-auto h-8 w-8 text-muted-foreground" />
-							<p class="text-sm text-muted-foreground">
-								{searchQuery ? 'No logs match your search criteria' : 'No audit logs found'}
-							</p>
-						</div>
+			{#if filteredLogs === undefined}
+				<div class="flex items-center justify-center py-12">
+					<div class="space-y-2 text-center">
+						<TriangleAlert class="mx-auto h-8 w-8 text-muted-foreground" />
+						<p class="text-sm text-muted-foreground">
+							{searchQuery ? 'No logs match your search criteria' : 'No audit logs found'}
+						</p>
 					</div>
-				{:else}
-					{#each logs as log (log.id)}
-						<div class="group rounded-lg border p-4 transition-colors hover:bg-muted/30">
-							<div class="flex items-start gap-3">
-								<!-- Activity Indicator -->
-								<div class="flex flex-col items-center gap-1 pt-1">
-									<div class="h-2 w-2 rounded-full {getActivityColor(log)}"></div>
-									{#if log !== logs[logs.length - 1]}
-										<div class="h-8 w-px bg-border"></div>
-									{/if}
-								</div>
+				</div>
+			{:else}
+				{#each filteredLogs as log (log.id)}
+					<div class="group rounded-lg border p-4 transition-colors hover:bg-muted/30">
+						<div class="flex items-start gap-3">
+							<!-- Activity Indicator -->
+							<div class="flex flex-col items-center gap-1 pt-1">
+								<div class="h-2 w-2 rounded-full {getActivityColor(log)}"></div>
+								<div class="h-8 w-px bg-border"></div>
+							</div>
 
-								<div class="flex-1 space-y-2">
-									<!-- Activity Details -->
-									<div class="space-y-1">
-										<p class="text-sm leading-relaxed font-medium">{log.details}</p>
+							<div class="flex-1 space-y-2">
+								<!-- Activity Details -->
+								<div class="space-y-1">
+									<p class="text-sm leading-relaxed font-medium">{log.details}</p>
 
-										<div class="flex items-center gap-2 text-xs text-muted-foreground">
-											{#if log.createdAt}
-												<span>{timeAgo(log.createdAt)}</span>
-											{/if}
+									<div class="flex items-center gap-2 text-xs text-muted-foreground">
+										{#if log.createdAt}
+											<span>{timeAgo(log.createdAt)}</span>
+										{/if}
 
-											{#if log.agentId || log.userId}
-												<span>•</span>
-											{/if}
+										{#if log.agentId || log.userId}
+											<span>•</span>
+										{/if}
 
-											{#if log.agentId}
-												<div class="flex items-center gap-1">
-													<Bot class="h-3 w-3" />
-													<Badge
-														variant="outline"
-														class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
-														title={log.agentId}
-													>
-														{log.agentName || `...${log.agentId.slice(-8)}`}
-													</Badge>
-												</div>
-											{:else if log.userId}
-												<div class="flex items-center gap-1">
-													<User class="h-3 w-3" />
-													<Badge
-														variant="outline"
-														class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
-														title={log.userId}
-													>
-														{log.userName || `...${log.userId.slice(-8)}`}
-													</Badge>
-												</div>
-											{/if}
-										</div>
+										{#if log.agentId}
+											<div class="flex items-center gap-1">
+												<Bot class="h-3 w-3" />
+												<Badge
+													variant="outline"
+													class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
+													title={log.agentId}
+												>
+													{log.agentName || `...${log.agentId.slice(-8)}`}
+												</Badge>
+											</div>
+										{:else if log.userId}
+											<div class="flex items-center gap-1">
+												<User class="h-3 w-3" />
+												<Badge
+													variant="outline"
+													class="h-5 px-2 text-xs font-medium {getActivityBadgeColor(log)}"
+													title={log.userId}
+												>
+													{log.userName || `...${log.userId.slice(-8)}`}
+												</Badge>
+											</div>
+										{/if}
 									</div>
 								</div>
 							</div>
 						</div>
-					{/each}
-				{/if}
-			{:catch error}
-				<div class="flex items-center justify-center py-12">
-					<div class="space-y-2 text-center">
-						<TriangleAlert class="mx-auto h-8 w-8 text-destructive" />
-						<p class="text-sm text-destructive">Failed to load audit logs</p>
-						<p class="text-xs text-muted-foreground">{error.message}</p>
 					</div>
-				</div>
-			{/await}
-		</div>
-
-		<Separator />
-
-		<div class="flex justify-end pt-4">
-			<Button variant="outline" onclick={() => (open = false)}>Close</Button>
+				{/each}
+			{/if}
 		</div>
 	</Dialog.Content>
 </Dialog.Root>

@@ -22,8 +22,8 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
     ldflags:
       - -s -w
-      - -X main.Version={{.Version}}
-      - -X main.Commit={{.Commit}}
+      - -X main.Version={{ .Version }}
+      - -X main.Commit={{ .Commit }}
       - -X main.Date={{ .CommitDate }}
     goos:
       - linux

@@ -187,8 +187,6 @@ func (u *User) ToProto() *mantraev1.User {
 		Username:  u.Username,
 		Password:  u.Password,
 		Email:     SafeString(u.Email),
-		Otp:       SafeString(u.Otp),
-		OtpExpiry: SafeTimestamp(u.OtpExpiry),
 		LastLogin: SafeTimestamp(u.LastLogin),
 		CreatedAt: SafeTimestamp(u.CreatedAt),
 		UpdatedAt: SafeTimestamp(u.UpdatedAt),
@@ -232,21 +230,6 @@ func (d *DnsProvider) ToProto() *mantraev1.DNSProvider {
 		IsDefault: d.IsDefault,
 		CreatedAt: SafeTimestamp(d.CreatedAt),
 		UpdatedAt: SafeTimestamp(d.UpdatedAt),
-	}
-}
-
-func (t *TraefikInstance) ToProto() *mantraev1.TraefikInstance {
-	return &mantraev1.TraefikInstance{
-		Id:          t.ID,
-		Name:        t.Name,
-		Url:         t.Url,
-		Tls:         t.Tls,
-		EntryPoints: MustMarshalSlice(*t.Entrypoints),
-		Overview:    MustMarshalStruct(t.Overview),
-		Config:      MustMarshalStruct(t.Config),
-		Version:     MustMarshalStruct(t.Version),
-		CreatedAt:   SafeTimestamp(t.CreatedAt),
-		UpdatedAt:   SafeTimestamp(t.UpdatedAt),
 	}
 }
 

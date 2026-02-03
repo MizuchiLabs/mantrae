@@ -12,7 +12,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/api/middlewares"
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
-	"github.com/mizuchilabs/mantrae/internal/mail"
 	"github.com/mizuchilabs/mantrae/internal/meta"
 	"github.com/mizuchilabs/mantrae/internal/settings"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
@@ -97,118 +96,6 @@ func (s *UserService) LogoutUser(
 	}
 	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
 	return &mantraev1.LogoutUserResponse{}, nil
-}
-
-func (s *UserService) VerifyOTP(
-	ctx context.Context,
-	req *mantraev1.VerifyOTPRequest,
-) (*mantraev1.VerifyOTPResponse, error) {
-	ci, ok := connect.CallInfoForHandlerContext(ctx)
-	if !ok {
-		return nil, connect.NewError(connect.CodeInternal, errors.New("failed to get call info"))
-	}
-
-	var user *db.User
-	var err error
-	switch id := req.GetIdentifier().(type) {
-	case *mantraev1.VerifyOTPRequest_Username:
-		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
-	case *mantraev1.VerifyOTPRequest_Email:
-		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
-	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
-	}
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	if user.Otp == nil || user.OtpExpiry == nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
-	}
-	if *user.Otp != util.HashOTP(req.Otp) {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid token"))
-	}
-	if time.Now().After(*user.OtpExpiry) {
-		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("token expired"))
-	}
-
-	expirationTime := time.Now().Add(1 * time.Hour)
-	token, err := meta.EncodeUserToken(user.ID, s.app.Secret, expirationTime)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	if err := s.app.Conn.Q.UpdateUserLastLogin(ctx, user.ID); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	// Delete OTP if it's set
-	if user.Otp != nil && user.OtpExpiry != nil {
-		if err := s.app.Conn.Q.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
-			ID:        user.ID,
-			Otp:       nil,
-			OtpExpiry: nil,
-		}); err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-	}
-
-	cookie := http.Cookie{
-		Name:     meta.CookieName,
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		MaxAge:   int(expirationTime.Unix() - time.Now().Unix()),
-		Secure:   ci.RequestHeader().Get("X-Forwarded-Proto") == "https",
-		SameSite: http.SameSiteLaxMode,
-	}
-	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
-	return &mantraev1.VerifyOTPResponse{User: user.ToProto()}, nil
-}
-
-func (s *UserService) SendOTP(
-	ctx context.Context,
-	req *mantraev1.SendOTPRequest,
-) (*mantraev1.SendOTPResponse, error) {
-	var user *db.User
-	var err error
-	switch id := req.GetIdentifier().(type) {
-	case *mantraev1.SendOTPRequest_Username:
-		user, err = s.app.Conn.Q.GetUserByUsername(ctx, id.Username)
-	case *mantraev1.SendOTPRequest_Email:
-		user, err = s.app.Conn.Q.GetUserByEmail(ctx, &id.Email)
-	default:
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("username or email must be set"))
-	}
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	// Generate OTP
-	expiresAt := time.Now().Add(15 * time.Minute)
-	token, err := util.GenerateOTP()
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	hash := util.HashOTP(token)
-
-	if err := s.app.Conn.Q.UpdateUserResetToken(ctx, &db.UpdateUserResetTokenParams{
-		ID:        user.ID,
-		Otp:       &hash,
-		OtpExpiry: &expiresAt,
-	}); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	data := map[string]any{
-		"Token": token,
-		"Date":  expiresAt.Format("Jan 2, 2006 at 15:04"),
-	}
-	if err := mail.Send(s.app.SM, *user.Email, "reset-password", data); err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	return &mantraev1.SendOTPResponse{}, nil
 }
 
 func (s *UserService) GetUser(

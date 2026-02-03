@@ -3,79 +3,52 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { toast } from 'svelte-sonner';
 	import Separator from '../ui/separator/separator.svelte';
-	import { entryPointClient } from '$lib/api';
-	import { ConnectError } from '@connectrpc/connect';
 	import type { EntryPoint } from '$lib/gen/mantrae/v1/entry_point_pb';
-	import { profile } from '$lib/stores/profile';
 	import CustomSwitch from '../ui/custom-switch/custom-switch.svelte';
-	import { Trash2 } from '@lucide/svelte';
-	import ConfirmButton from '../ui/confirm-button/confirm-button.svelte';
+	import { entrypoint } from '$lib/api/entrypoints.svelte';
 
 	interface Props {
-		item: EntryPoint;
+		data?: EntryPoint;
 		open?: boolean;
 	}
+	let { data, open = $bindable(false) }: Props = $props();
 
-	let { item = $bindable(), open = $bindable(false) }: Props = $props();
+	let epData = $state({} as EntryPoint);
+	$effect(() => {
+		if (data) epData = { ...data };
+	});
+	$effect(() => {
+		if (!open) epData = {} as EntryPoint;
+	});
 
-	const handleSubmit = async () => {
-		try {
-			if (item.id) {
-				await entryPointClient.updateEntryPoint({
-					id: item.id,
-					profileId: item.profileId,
-					name: item.name,
-					address: item.address,
-					isDefault: item.isDefault
-				});
-				toast.success('EntryPoint updated successfully');
-			} else {
-				await entryPointClient.createEntryPoint({
-					profileId: profile.id,
-					name: item.name,
-					address: item.address,
-					isDefault: item.isDefault
-				});
-				toast.success('EntryPoint created successfully');
-			}
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to save entry point', { description: e.message });
+	const createMutation = entrypoint.create();
+	const updateMutation = entrypoint.update();
+	function onsubmit() {
+		if (epData.id) {
+			updateMutation.mutate({ ...epData });
+		} else {
+			createMutation.mutate({ ...epData });
 		}
 		open = false;
-	};
-
-	const handleDelete = async () => {
-		if (!item.id) return;
-
-		try {
-			await entryPointClient.deleteEntryPoint({ id: item.id });
-			toast.success('EntryPoint deleted successfully');
-		} catch (err) {
-			const e = ConnectError.from(err);
-			toast.error('Failed to delete entry point', { description: e.message });
-		}
-		open = false;
-	};
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title>{item.id ? 'Edit' : 'Create'} EntryPoint</Dialog.Title>
+			<Dialog.Title>{epData.id ? 'Edit' : 'Create'} EntryPoint</Dialog.Title>
 			<Dialog.Description>Configure how external traffic reaches your services</Dialog.Description>
 		</Dialog.Header>
 
-		<form class="space-y-6" onsubmit={handleSubmit}>
+		<form class="space-y-6" {onsubmit}>
 			<!-- Main Configuration -->
 			<div class="space-y-4">
 				<div class="space-y-2">
 					<Label for="name" class="flex items-center gap-2 text-sm font-medium">Name</Label>
 					<Input
 						id="name"
-						bind:value={item.name}
+						bind:value={epData.name}
 						placeholder="e.g., web, api, postgres"
 						class="transition-colors"
 					/>
@@ -86,7 +59,7 @@
 					<Label for="address" class="flex items-center gap-2 text-sm font-medium">Port</Label>
 					<Input
 						id="address"
-						bind:value={item.address}
+						bind:value={epData.address}
 						placeholder="80, 443, 8080..."
 						min="1"
 						max="65535"
@@ -108,10 +81,10 @@
 								Use this as the primary entry point for new routers
 							</p>
 						</div>
-						<CustomSwitch bind:checked={item.isDefault} size="md" />
+						<CustomSwitch bind:checked={epData.isDefault} size="md" />
 					</div>
 
-					{#if item.isDefault}
+					{#if epData.isDefault}
 						<div class="rounded-lg border-l-2 border-primary bg-muted/50 p-3">
 							<p class="text-xs text-muted-foreground">
 								<strong>Note:</strong> Setting this as default will remove the default status from other
@@ -123,22 +96,7 @@
 
 				<Separator />
 
-				<div class="flex w-full flex-row gap-2">
-					{#if item.id}
-						<ConfirmButton
-							title="Delete EntryPoint"
-							description="This entry point will be permanently deleted."
-							confirmLabel="Delete"
-							cancelLabel="Cancel"
-							icon={Trash2}
-							class="text-destructive"
-							onclick={handleDelete}
-						/>
-					{/if}
-					<Button type="submit" class="flex-1">
-						{item.id ? 'Update' : 'Create'}
-					</Button>
-				</div>
+				<Button type="submit" class="w-full">{epData.id ? 'Update' : 'Create'}</Button>
 			</div>
 		</form>
 	</Dialog.Content>

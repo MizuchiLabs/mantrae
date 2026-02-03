@@ -337,258 +337,6 @@ func (*LogoutUserResponse) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{4}
 }
 
-type VerifyOTPRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Identifier:
-	//
-	//	*VerifyOTPRequest_Username
-	//	*VerifyOTPRequest_Email
-	Identifier    isVerifyOTPRequest_Identifier `protobuf_oneof:"identifier"`
-	Otp           string                        `protobuf:"bytes,3,opt,name=otp,proto3" json:"otp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *VerifyOTPRequest) Reset() {
-	*x = VerifyOTPRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *VerifyOTPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VerifyOTPRequest) ProtoMessage() {}
-
-func (x *VerifyOTPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VerifyOTPRequest.ProtoReflect.Descriptor instead.
-func (*VerifyOTPRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *VerifyOTPRequest) GetIdentifier() isVerifyOTPRequest_Identifier {
-	if x != nil {
-		return x.Identifier
-	}
-	return nil
-}
-
-func (x *VerifyOTPRequest) GetUsername() string {
-	if x != nil {
-		if x, ok := x.Identifier.(*VerifyOTPRequest_Username); ok {
-			return x.Username
-		}
-	}
-	return ""
-}
-
-func (x *VerifyOTPRequest) GetEmail() string {
-	if x != nil {
-		if x, ok := x.Identifier.(*VerifyOTPRequest_Email); ok {
-			return x.Email
-		}
-	}
-	return ""
-}
-
-func (x *VerifyOTPRequest) GetOtp() string {
-	if x != nil {
-		return x.Otp
-	}
-	return ""
-}
-
-type isVerifyOTPRequest_Identifier interface {
-	isVerifyOTPRequest_Identifier()
-}
-
-type VerifyOTPRequest_Username struct {
-	Username string `protobuf:"bytes,1,opt,name=username,proto3,oneof"`
-}
-
-type VerifyOTPRequest_Email struct {
-	Email string `protobuf:"bytes,2,opt,name=email,proto3,oneof"`
-}
-
-func (*VerifyOTPRequest_Username) isVerifyOTPRequest_Identifier() {}
-
-func (*VerifyOTPRequest_Email) isVerifyOTPRequest_Identifier() {}
-
-type VerifyOTPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *VerifyOTPResponse) Reset() {
-	*x = VerifyOTPResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *VerifyOTPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VerifyOTPResponse) ProtoMessage() {}
-
-func (x *VerifyOTPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VerifyOTPResponse.ProtoReflect.Descriptor instead.
-func (*VerifyOTPResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *VerifyOTPResponse) GetUser() *User {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-type SendOTPRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// Types that are valid to be assigned to Identifier:
-	//
-	//	*SendOTPRequest_Username
-	//	*SendOTPRequest_Email
-	Identifier    isSendOTPRequest_Identifier `protobuf_oneof:"identifier"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SendOTPRequest) Reset() {
-	*x = SendOTPRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SendOTPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendOTPRequest) ProtoMessage() {}
-
-func (x *SendOTPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendOTPRequest.ProtoReflect.Descriptor instead.
-func (*SendOTPRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *SendOTPRequest) GetIdentifier() isSendOTPRequest_Identifier {
-	if x != nil {
-		return x.Identifier
-	}
-	return nil
-}
-
-func (x *SendOTPRequest) GetUsername() string {
-	if x != nil {
-		if x, ok := x.Identifier.(*SendOTPRequest_Username); ok {
-			return x.Username
-		}
-	}
-	return ""
-}
-
-func (x *SendOTPRequest) GetEmail() string {
-	if x != nil {
-		if x, ok := x.Identifier.(*SendOTPRequest_Email); ok {
-			return x.Email
-		}
-	}
-	return ""
-}
-
-type isSendOTPRequest_Identifier interface {
-	isSendOTPRequest_Identifier()
-}
-
-type SendOTPRequest_Username struct {
-	Username string `protobuf:"bytes,1,opt,name=username,proto3,oneof"`
-}
-
-type SendOTPRequest_Email struct {
-	Email string `protobuf:"bytes,2,opt,name=email,proto3,oneof"`
-}
-
-func (*SendOTPRequest_Username) isSendOTPRequest_Identifier() {}
-
-func (*SendOTPRequest_Email) isSendOTPRequest_Identifier() {}
-
-type SendOTPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SendOTPResponse) Reset() {
-	*x = SendOTPResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SendOTPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SendOTPResponse) ProtoMessage() {}
-
-func (x *SendOTPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SendOTPResponse.ProtoReflect.Descriptor instead.
-func (*SendOTPResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{8}
-}
-
 type GetUserRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Identifier:
@@ -603,7 +351,7 @@ type GetUserRequest struct {
 
 func (x *GetUserRequest) Reset() {
 	*x = GetUserRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[9]
+	mi := &file_mantrae_v1_user_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -615,7 +363,7 @@ func (x *GetUserRequest) String() string {
 func (*GetUserRequest) ProtoMessage() {}
 
 func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[9]
+	mi := &file_mantrae_v1_user_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +376,7 @@ func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
 func (*GetUserRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{9}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetUserRequest) GetIdentifier() isGetUserRequest_Identifier {
@@ -696,7 +444,7 @@ type GetUserResponse struct {
 
 func (x *GetUserResponse) Reset() {
 	*x = GetUserResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[10]
+	mi := &file_mantrae_v1_user_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -708,7 +456,7 @@ func (x *GetUserResponse) String() string {
 func (*GetUserResponse) ProtoMessage() {}
 
 func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[10]
+	mi := &file_mantrae_v1_user_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -721,7 +469,7 @@ func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserResponse.ProtoReflect.Descriptor instead.
 func (*GetUserResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{10}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetUserResponse) GetUser() *User {
@@ -742,7 +490,7 @@ type CreateUserRequest struct {
 
 func (x *CreateUserRequest) Reset() {
 	*x = CreateUserRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[11]
+	mi := &file_mantrae_v1_user_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -754,7 +502,7 @@ func (x *CreateUserRequest) String() string {
 func (*CreateUserRequest) ProtoMessage() {}
 
 func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[11]
+	mi := &file_mantrae_v1_user_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -767,7 +515,7 @@ func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
 func (*CreateUserRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{11}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateUserRequest) GetUsername() string {
@@ -800,7 +548,7 @@ type CreateUserResponse struct {
 
 func (x *CreateUserResponse) Reset() {
 	*x = CreateUserResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[12]
+	mi := &file_mantrae_v1_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -812,7 +560,7 @@ func (x *CreateUserResponse) String() string {
 func (*CreateUserResponse) ProtoMessage() {}
 
 func (x *CreateUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[12]
+	mi := &file_mantrae_v1_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -825,7 +573,7 @@ func (x *CreateUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateUserResponse.ProtoReflect.Descriptor instead.
 func (*CreateUserResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{12}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateUserResponse) GetUser() *User {
@@ -847,7 +595,7 @@ type UpdateUserRequest struct {
 
 func (x *UpdateUserRequest) Reset() {
 	*x = UpdateUserRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[13]
+	mi := &file_mantrae_v1_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -859,7 +607,7 @@ func (x *UpdateUserRequest) String() string {
 func (*UpdateUserRequest) ProtoMessage() {}
 
 func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[13]
+	mi := &file_mantrae_v1_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -872,7 +620,7 @@ func (x *UpdateUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserRequest.ProtoReflect.Descriptor instead.
 func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{13}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *UpdateUserRequest) GetId() string {
@@ -912,7 +660,7 @@ type UpdateUserResponse struct {
 
 func (x *UpdateUserResponse) Reset() {
 	*x = UpdateUserResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[14]
+	mi := &file_mantrae_v1_user_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -924,7 +672,7 @@ func (x *UpdateUserResponse) String() string {
 func (*UpdateUserResponse) ProtoMessage() {}
 
 func (x *UpdateUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[14]
+	mi := &file_mantrae_v1_user_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -937,7 +685,7 @@ func (x *UpdateUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateUserResponse.ProtoReflect.Descriptor instead.
 func (*UpdateUserResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{14}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateUserResponse) GetUser() *User {
@@ -956,7 +704,7 @@ type DeleteUserRequest struct {
 
 func (x *DeleteUserRequest) Reset() {
 	*x = DeleteUserRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[15]
+	mi := &file_mantrae_v1_user_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -968,7 +716,7 @@ func (x *DeleteUserRequest) String() string {
 func (*DeleteUserRequest) ProtoMessage() {}
 
 func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[15]
+	mi := &file_mantrae_v1_user_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +729,7 @@ func (x *DeleteUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserRequest.ProtoReflect.Descriptor instead.
 func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{15}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteUserRequest) GetId() string {
@@ -999,7 +747,7 @@ type DeleteUserResponse struct {
 
 func (x *DeleteUserResponse) Reset() {
 	*x = DeleteUserResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[16]
+	mi := &file_mantrae_v1_user_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1011,7 +759,7 @@ func (x *DeleteUserResponse) String() string {
 func (*DeleteUserResponse) ProtoMessage() {}
 
 func (x *DeleteUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[16]
+	mi := &file_mantrae_v1_user_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1024,7 +772,7 @@ func (x *DeleteUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteUserResponse.ProtoReflect.Descriptor instead.
 func (*DeleteUserResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{16}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{12}
 }
 
 type ListUsersRequest struct {
@@ -1037,7 +785,7 @@ type ListUsersRequest struct {
 
 func (x *ListUsersRequest) Reset() {
 	*x = ListUsersRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[17]
+	mi := &file_mantrae_v1_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1049,7 +797,7 @@ func (x *ListUsersRequest) String() string {
 func (*ListUsersRequest) ProtoMessage() {}
 
 func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[17]
+	mi := &file_mantrae_v1_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1062,7 +810,7 @@ func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
 func (*ListUsersRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{17}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListUsersRequest) GetLimit() int64 {
@@ -1089,7 +837,7 @@ type ListUsersResponse struct {
 
 func (x *ListUsersResponse) Reset() {
 	*x = ListUsersResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[18]
+	mi := &file_mantrae_v1_user_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1101,7 +849,7 @@ func (x *ListUsersResponse) String() string {
 func (*ListUsersResponse) ProtoMessage() {}
 
 func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[18]
+	mi := &file_mantrae_v1_user_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1114,7 +862,7 @@ func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
 func (*ListUsersResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{18}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListUsersResponse) GetUsers() []*User {
@@ -1139,7 +887,7 @@ type GetOIDCStatusRequest struct {
 
 func (x *GetOIDCStatusRequest) Reset() {
 	*x = GetOIDCStatusRequest{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[19]
+	mi := &file_mantrae_v1_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1151,7 +899,7 @@ func (x *GetOIDCStatusRequest) String() string {
 func (*GetOIDCStatusRequest) ProtoMessage() {}
 
 func (x *GetOIDCStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[19]
+	mi := &file_mantrae_v1_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1164,7 +912,7 @@ func (x *GetOIDCStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOIDCStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetOIDCStatusRequest) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{19}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{15}
 }
 
 type GetOIDCStatusResponse struct {
@@ -1178,7 +926,7 @@ type GetOIDCStatusResponse struct {
 
 func (x *GetOIDCStatusResponse) Reset() {
 	*x = GetOIDCStatusResponse{}
-	mi := &file_mantrae_v1_user_proto_msgTypes[20]
+	mi := &file_mantrae_v1_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1190,7 +938,7 @@ func (x *GetOIDCStatusResponse) String() string {
 func (*GetOIDCStatusResponse) ProtoMessage() {}
 
 func (x *GetOIDCStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mantrae_v1_user_proto_msgTypes[20]
+	mi := &file_mantrae_v1_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1203,7 +951,7 @@ func (x *GetOIDCStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOIDCStatusResponse.ProtoReflect.Descriptor instead.
 func (*GetOIDCStatusResponse) Descriptor() ([]byte, []int) {
-	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{20}
+	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetOIDCStatusResponse) GetOidcEnabled() bool {
@@ -1258,21 +1006,7 @@ const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\x11LoginUserResponse\x12$\n" +
 	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\x13\n" +
 	"\x11LogoutUserRequest\"\x14\n" +
-	"\x12LogoutUserResponse\"\x8b\x01\n" +
-	"\x10VerifyOTPRequest\x12%\n" +
-	"\busername\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x03H\x00R\busername\x12\x1f\n" +
-	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01H\x00R\x05email\x12\x1a\n" +
-	"\x03otp\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x98\x01\x06R\x03otpB\x13\n" +
-	"\n" +
-	"identifier\x12\x05\xbaH\x02\b\x01\"9\n" +
-	"\x11VerifyOTPResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"m\n" +
-	"\x0eSendOTPRequest\x12%\n" +
-	"\busername\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x03H\x00R\busername\x12\x1f\n" +
-	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01H\x00R\x05emailB\x13\n" +
-	"\n" +
-	"identifier\x12\x05\xbaH\x02\b\x01\"\x11\n" +
-	"\x0fSendOTPResponse\"\x81\x01\n" +
+	"\x12LogoutUserResponse\"\x81\x01\n" +
 	"\x0eGetUserRequest\x12\x19\n" +
 	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01H\x00R\x02id\x12%\n" +
 	"\busername\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x03H\x00R\busername\x12\x1f\n" +
@@ -1317,13 +1051,11 @@ const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\x15GetOIDCStatusResponse\x12!\n" +
 	"\foidc_enabled\x18\x01 \x01(\bR\voidcEnabled\x12#\n" +
 	"\rlogin_enabled\x18\x02 \x01(\bR\floginEnabled\x12\x1a\n" +
-	"\bprovider\x18\x03 \x01(\tR\bprovider2\x87\x06\n" +
+	"\bprovider\x18\x03 \x01(\tR\bprovider2\xf9\x04\n" +
 	"\vUserService\x12H\n" +
 	"\tLoginUser\x12\x1c.mantrae.v1.LoginUserRequest\x1a\x1d.mantrae.v1.LoginUserResponse\x12K\n" +
 	"\n" +
-	"LogoutUser\x12\x1d.mantrae.v1.LogoutUserRequest\x1a\x1e.mantrae.v1.LogoutUserResponse\x12H\n" +
-	"\tVerifyOTP\x12\x1c.mantrae.v1.VerifyOTPRequest\x1a\x1d.mantrae.v1.VerifyOTPResponse\x12B\n" +
-	"\aSendOTP\x12\x1a.mantrae.v1.SendOTPRequest\x1a\x1b.mantrae.v1.SendOTPResponse\x12G\n" +
+	"LogoutUser\x12\x1d.mantrae.v1.LogoutUserRequest\x1a\x1e.mantrae.v1.LogoutUserResponse\x12G\n" +
 	"\aGetUser\x12\x1a.mantrae.v1.GetUserRequest\x1a\x1b.mantrae.v1.GetUserResponse\"\x03\x90\x02\x01\x12K\n" +
 	"\n" +
 	"CreateUser\x12\x1d.mantrae.v1.CreateUserRequest\x1a\x1e.mantrae.v1.CreateUserResponse\x12K\n" +
@@ -1349,67 +1081,58 @@ func file_mantrae_v1_user_proto_rawDescGZIP() []byte {
 	return file_mantrae_v1_user_proto_rawDescData
 }
 
-var file_mantrae_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_mantrae_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_mantrae_v1_user_proto_goTypes = []any{
 	(*User)(nil),                  // 0: mantrae.v1.User
 	(*LoginUserRequest)(nil),      // 1: mantrae.v1.LoginUserRequest
 	(*LoginUserResponse)(nil),     // 2: mantrae.v1.LoginUserResponse
 	(*LogoutUserRequest)(nil),     // 3: mantrae.v1.LogoutUserRequest
 	(*LogoutUserResponse)(nil),    // 4: mantrae.v1.LogoutUserResponse
-	(*VerifyOTPRequest)(nil),      // 5: mantrae.v1.VerifyOTPRequest
-	(*VerifyOTPResponse)(nil),     // 6: mantrae.v1.VerifyOTPResponse
-	(*SendOTPRequest)(nil),        // 7: mantrae.v1.SendOTPRequest
-	(*SendOTPResponse)(nil),       // 8: mantrae.v1.SendOTPResponse
-	(*GetUserRequest)(nil),        // 9: mantrae.v1.GetUserRequest
-	(*GetUserResponse)(nil),       // 10: mantrae.v1.GetUserResponse
-	(*CreateUserRequest)(nil),     // 11: mantrae.v1.CreateUserRequest
-	(*CreateUserResponse)(nil),    // 12: mantrae.v1.CreateUserResponse
-	(*UpdateUserRequest)(nil),     // 13: mantrae.v1.UpdateUserRequest
-	(*UpdateUserResponse)(nil),    // 14: mantrae.v1.UpdateUserResponse
-	(*DeleteUserRequest)(nil),     // 15: mantrae.v1.DeleteUserRequest
-	(*DeleteUserResponse)(nil),    // 16: mantrae.v1.DeleteUserResponse
-	(*ListUsersRequest)(nil),      // 17: mantrae.v1.ListUsersRequest
-	(*ListUsersResponse)(nil),     // 18: mantrae.v1.ListUsersResponse
-	(*GetOIDCStatusRequest)(nil),  // 19: mantrae.v1.GetOIDCStatusRequest
-	(*GetOIDCStatusResponse)(nil), // 20: mantrae.v1.GetOIDCStatusResponse
-	(*timestamppb.Timestamp)(nil), // 21: google.protobuf.Timestamp
+	(*GetUserRequest)(nil),        // 5: mantrae.v1.GetUserRequest
+	(*GetUserResponse)(nil),       // 6: mantrae.v1.GetUserResponse
+	(*CreateUserRequest)(nil),     // 7: mantrae.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),    // 8: mantrae.v1.CreateUserResponse
+	(*UpdateUserRequest)(nil),     // 9: mantrae.v1.UpdateUserRequest
+	(*UpdateUserResponse)(nil),    // 10: mantrae.v1.UpdateUserResponse
+	(*DeleteUserRequest)(nil),     // 11: mantrae.v1.DeleteUserRequest
+	(*DeleteUserResponse)(nil),    // 12: mantrae.v1.DeleteUserResponse
+	(*ListUsersRequest)(nil),      // 13: mantrae.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),     // 14: mantrae.v1.ListUsersResponse
+	(*GetOIDCStatusRequest)(nil),  // 15: mantrae.v1.GetOIDCStatusRequest
+	(*GetOIDCStatusResponse)(nil), // 16: mantrae.v1.GetOIDCStatusResponse
+	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
 }
 var file_mantrae_v1_user_proto_depIdxs = []int32{
-	21, // 0: mantrae.v1.User.otp_expiry:type_name -> google.protobuf.Timestamp
-	21, // 1: mantrae.v1.User.last_login:type_name -> google.protobuf.Timestamp
-	21, // 2: mantrae.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	21, // 3: mantrae.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 0: mantrae.v1.User.otp_expiry:type_name -> google.protobuf.Timestamp
+	17, // 1: mantrae.v1.User.last_login:type_name -> google.protobuf.Timestamp
+	17, // 2: mantrae.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	17, // 3: mantrae.v1.User.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: mantrae.v1.LoginUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 5: mantrae.v1.VerifyOTPResponse.user:type_name -> mantrae.v1.User
-	0,  // 6: mantrae.v1.GetUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 7: mantrae.v1.CreateUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 8: mantrae.v1.UpdateUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 9: mantrae.v1.ListUsersResponse.users:type_name -> mantrae.v1.User
-	1,  // 10: mantrae.v1.UserService.LoginUser:input_type -> mantrae.v1.LoginUserRequest
-	3,  // 11: mantrae.v1.UserService.LogoutUser:input_type -> mantrae.v1.LogoutUserRequest
-	5,  // 12: mantrae.v1.UserService.VerifyOTP:input_type -> mantrae.v1.VerifyOTPRequest
-	7,  // 13: mantrae.v1.UserService.SendOTP:input_type -> mantrae.v1.SendOTPRequest
-	9,  // 14: mantrae.v1.UserService.GetUser:input_type -> mantrae.v1.GetUserRequest
-	11, // 15: mantrae.v1.UserService.CreateUser:input_type -> mantrae.v1.CreateUserRequest
-	13, // 16: mantrae.v1.UserService.UpdateUser:input_type -> mantrae.v1.UpdateUserRequest
-	15, // 17: mantrae.v1.UserService.DeleteUser:input_type -> mantrae.v1.DeleteUserRequest
-	17, // 18: mantrae.v1.UserService.ListUsers:input_type -> mantrae.v1.ListUsersRequest
-	19, // 19: mantrae.v1.UserService.GetOIDCStatus:input_type -> mantrae.v1.GetOIDCStatusRequest
-	2,  // 20: mantrae.v1.UserService.LoginUser:output_type -> mantrae.v1.LoginUserResponse
-	4,  // 21: mantrae.v1.UserService.LogoutUser:output_type -> mantrae.v1.LogoutUserResponse
-	6,  // 22: mantrae.v1.UserService.VerifyOTP:output_type -> mantrae.v1.VerifyOTPResponse
-	8,  // 23: mantrae.v1.UserService.SendOTP:output_type -> mantrae.v1.SendOTPResponse
-	10, // 24: mantrae.v1.UserService.GetUser:output_type -> mantrae.v1.GetUserResponse
-	12, // 25: mantrae.v1.UserService.CreateUser:output_type -> mantrae.v1.CreateUserResponse
-	14, // 26: mantrae.v1.UserService.UpdateUser:output_type -> mantrae.v1.UpdateUserResponse
-	16, // 27: mantrae.v1.UserService.DeleteUser:output_type -> mantrae.v1.DeleteUserResponse
-	18, // 28: mantrae.v1.UserService.ListUsers:output_type -> mantrae.v1.ListUsersResponse
-	20, // 29: mantrae.v1.UserService.GetOIDCStatus:output_type -> mantrae.v1.GetOIDCStatusResponse
-	20, // [20:30] is the sub-list for method output_type
-	10, // [10:20] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	0,  // 5: mantrae.v1.GetUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 6: mantrae.v1.CreateUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 7: mantrae.v1.UpdateUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 8: mantrae.v1.ListUsersResponse.users:type_name -> mantrae.v1.User
+	1,  // 9: mantrae.v1.UserService.LoginUser:input_type -> mantrae.v1.LoginUserRequest
+	3,  // 10: mantrae.v1.UserService.LogoutUser:input_type -> mantrae.v1.LogoutUserRequest
+	5,  // 11: mantrae.v1.UserService.GetUser:input_type -> mantrae.v1.GetUserRequest
+	7,  // 12: mantrae.v1.UserService.CreateUser:input_type -> mantrae.v1.CreateUserRequest
+	9,  // 13: mantrae.v1.UserService.UpdateUser:input_type -> mantrae.v1.UpdateUserRequest
+	11, // 14: mantrae.v1.UserService.DeleteUser:input_type -> mantrae.v1.DeleteUserRequest
+	13, // 15: mantrae.v1.UserService.ListUsers:input_type -> mantrae.v1.ListUsersRequest
+	15, // 16: mantrae.v1.UserService.GetOIDCStatus:input_type -> mantrae.v1.GetOIDCStatusRequest
+	2,  // 17: mantrae.v1.UserService.LoginUser:output_type -> mantrae.v1.LoginUserResponse
+	4,  // 18: mantrae.v1.UserService.LogoutUser:output_type -> mantrae.v1.LogoutUserResponse
+	6,  // 19: mantrae.v1.UserService.GetUser:output_type -> mantrae.v1.GetUserResponse
+	8,  // 20: mantrae.v1.UserService.CreateUser:output_type -> mantrae.v1.CreateUserResponse
+	10, // 21: mantrae.v1.UserService.UpdateUser:output_type -> mantrae.v1.UpdateUserResponse
+	12, // 22: mantrae.v1.UserService.DeleteUser:output_type -> mantrae.v1.DeleteUserResponse
+	14, // 23: mantrae.v1.UserService.ListUsers:output_type -> mantrae.v1.ListUsersResponse
+	16, // 24: mantrae.v1.UserService.GetOIDCStatus:output_type -> mantrae.v1.GetOIDCStatusResponse
+	17, // [17:25] is the sub-list for method output_type
+	9,  // [9:17] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_user_proto_init() }
@@ -1422,28 +1145,20 @@ func file_mantrae_v1_user_proto_init() {
 		(*LoginUserRequest_Email)(nil),
 	}
 	file_mantrae_v1_user_proto_msgTypes[5].OneofWrappers = []any{
-		(*VerifyOTPRequest_Username)(nil),
-		(*VerifyOTPRequest_Email)(nil),
-	}
-	file_mantrae_v1_user_proto_msgTypes[7].OneofWrappers = []any{
-		(*SendOTPRequest_Username)(nil),
-		(*SendOTPRequest_Email)(nil),
-	}
-	file_mantrae_v1_user_proto_msgTypes[9].OneofWrappers = []any{
 		(*GetUserRequest_Id)(nil),
 		(*GetUserRequest_Username)(nil),
 		(*GetUserRequest_Email)(nil),
 	}
-	file_mantrae_v1_user_proto_msgTypes[11].OneofWrappers = []any{}
+	file_mantrae_v1_user_proto_msgTypes[7].OneofWrappers = []any{}
+	file_mantrae_v1_user_proto_msgTypes[9].OneofWrappers = []any{}
 	file_mantrae_v1_user_proto_msgTypes[13].OneofWrappers = []any{}
-	file_mantrae_v1_user_proto_msgTypes[17].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mantrae_v1_user_proto_rawDesc), len(file_mantrae_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

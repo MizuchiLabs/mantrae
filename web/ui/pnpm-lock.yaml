@@ -76,7 +76,11 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.49.1)
       oxlint:
+<<<<<<< Updated upstream
         specifier: ^1.42.0
+=======
+        specifier: ^1.43.0
+>>>>>>> Stashed changes
         version: 1.43.0(oxlint-tsgolint@0.11.4)
       oxlint-tsgolint:
         specifier: ^0.11.4

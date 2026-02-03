@@ -28,7 +28,7 @@ func NewLocalStorage(path string) (*LocalStorage, error) {
 
 func (ls *LocalStorage) Store(ctx context.Context, name string, data io.Reader) error {
 	path := filepath.Join(ls.basePath, name)
-	f, err := os.Create(path)
+	f, err := os.Create(filepath.Clean(path))
 	if err != nil {
 		return fmt.Errorf("failed to create backup file: %w", err)
 	}
@@ -46,7 +46,7 @@ func (ls *LocalStorage) Store(ctx context.Context, name string, data io.Reader) 
 
 func (ls *LocalStorage) Retrieve(ctx context.Context, name string) (io.ReadCloser, error) {
 	path := filepath.Join(ls.basePath, name)
-	return os.Open(path)
+	return os.Open(filepath.Clean(path))
 }
 
 func (ls *LocalStorage) List(ctx context.Context) ([]StoredFile, error) {

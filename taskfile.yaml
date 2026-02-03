@@ -1,7 +1,5 @@
 version: "3"
 
-output: prefixed
-
 env:
   CGO_ENABLED: 0
   IMAGE_SERVER_DEV: ko.local/mantrae

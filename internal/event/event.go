@@ -113,8 +113,6 @@ func getProfileIDFromEvent(event *mantraev1.EventStreamResponse) (int64, bool) {
 		return d.Middleware.ProfileId, false
 	case *mantraev1.EventStreamResponse_ServersTransport:
 		return d.ServersTransport.ProfileId, false
-	case *mantraev1.EventStreamResponse_TraefikInstance:
-		return d.TraefikInstance.ProfileId, false
 	case *mantraev1.EventStreamResponse_DnsProvider:
 		return 0, true
 	case *mantraev1.EventStreamResponse_User:

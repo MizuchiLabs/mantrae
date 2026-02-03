@@ -67,19 +67,9 @@ DELETE FROM users
 WHERE
   id = ?;
 
--- name: UpdateUserResetToken :exec
-UPDATE users
-SET
-  otp = ?,
-  otp_expiry = ?
-WHERE
-  id = ?;
-
 -- name: UpdateUserPassword :exec
 UPDATE users
 SET
-  password = ?,
-  otp = '',
-  otp_expiry = NULL
+  password = ?
 WHERE
   id = ?;

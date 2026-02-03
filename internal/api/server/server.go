@@ -139,7 +139,6 @@ func (s *Server) registerServices() {
 		mantraev1connect.ServersTransportServiceName,
 		mantraev1connect.BackupServiceName,
 		mantraev1connect.UtilServiceName,
-		mantraev1connect.TraefikInstanceServiceName,
 		mantraev1connect.AuditLogServiceName,
 	}
 	s.registerHealthAndReflection(serviceNames)
@@ -206,10 +205,6 @@ func (s *Server) registerServices() {
 	))
 	s.mux.Handle(mantraev1connect.NewUtilServiceHandler(
 		service.NewUtilService(s.app),
-		opts...,
-	))
-	s.mux.Handle(mantraev1connect.NewTraefikInstanceServiceHandler(
-		service.NewTraefikInstanceService(s.app),
 		opts...,
 	))
 	s.mux.Handle(mantraev1connect.NewAuditLogServiceHandler(

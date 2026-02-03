@@ -25,17 +25,15 @@
 		Truck,
 		Cog
 	} from '@lucide/svelte';
-	import { profile } from '$lib/stores/profile';
-	import { user } from '$lib/stores/user';
-	import { userClient } from '$lib/api';
 	import type { Profile } from '$lib/gen/mantrae/v1/profile_pb';
 	import ProfileModal from '$lib/components/modals/ProfileModal.svelte';
 	import UserModal from '$lib/components/modals/UserModal.svelte';
 	import { toggleMode, mode } from 'mode-watcher';
-	import { goto } from '$app/navigation';
-	import { profiles } from '$lib/stores/realtime';
 	import RandomAvatar from '../utils/RandomAvatar.svelte';
 	import { BackendURL } from '$lib/config';
+	import { profile } from '$lib/api/profiles.svelte';
+	import { user } from '$lib/api/users.svelte';
+	import { profileID } from '$lib/store.svelte';
 
 	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
 
@@ -67,15 +65,20 @@
 		{ title: 'API Reference', url: `${BackendURL}/openapi`, icon: Cog }
 	];
 
+	const profileList = profile.list();
+	const currentProfile = $derived(profile.get());
+	const currentUser = $derived(user.self());
+	const logout = user.logout();
+
 	let modalProfile = $state({} as Profile);
 	let modalProfileOpen = $state(false);
 	let modalUserOpen = $state(false);
 </script>
 
-<ProfileModal bind:item={modalProfile} bind:open={modalProfileOpen} />
+<ProfileModal data={modalProfile} bind:open={modalProfileOpen} />
 
-{#if user.isLoggedIn() && user.value}
-	<UserModal bind:open={modalUserOpen} bind:item={user.value} />
+{#if currentUser.data}
+	<UserModal bind:open={modalUserOpen} data={currentUser.data} />
 {/if}
 
 <Sidebar.Root collapsible="offcanvas" {...restProps}>
@@ -98,9 +101,9 @@
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">
-										{profile.name ? profile.name : 'Select Profile'}
+										{currentProfile.data?.name ? currentProfile.data.name : 'Select Profile'}
 									</span>
-									<span class="truncate text-xs">{profile.value?.description ?? ''}</span>
+									<span class="truncate text-xs">{currentProfile.data?.description ?? ''}</span>
 								</div>
 								<ChevronsUpDown class="ml-auto" />
 							</Sidebar.MenuButton>
@@ -113,9 +116,9 @@
 						sideOffset={4}
 					>
 						<DropdownMenu.Label class="text-xs text-muted-foreground">Profiles</DropdownMenu.Label>
-						{#each $profiles || [] as p (p.id)}
+						{#each profileList.data || [] as p (p.id)}
 							<DropdownMenu.Item
-								onSelect={() => (profile.value = p)}
+								onSelect={() => (profileID.current = p.id)}
 								class="flex justify-between gap-2"
 							>
 								<div class="flex items-center gap-2">
@@ -229,11 +232,11 @@
 								{...props}
 							>
 								<div class="relative">
-									<RandomAvatar name={user?.username} />
+									<RandomAvatar name={currentUser.data?.username} />
 								</div>
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">{user?.username}</span>
-									<span class="truncate text-xs">{user?.email}</span>
+									<span class="truncate font-semibold">{currentUser.data?.username}</span>
+									<span class="truncate text-xs">{currentUser.data?.email}</span>
 								</div>
 								<ChevronsUpDown class="ml-auto size-4" />
 							</Sidebar.MenuButton>
@@ -247,10 +250,10 @@
 					>
 						<DropdownMenu.Label class="p-0 font-normal">
 							<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-								<RandomAvatar name={user?.username} />
+								<RandomAvatar name={currentUser.data?.username} />
 								<div class="grid flex-1 text-left text-sm leading-tight">
-									<span class="truncate font-semibold">{user?.username}</span>
-									<span class="truncate text-xs">{user?.email}</span>
+									<span class="truncate font-semibold">{currentUser.data?.username}</span>
+									<span class="truncate text-xs">{currentUser.data?.email}</span>
 								</div>
 							</div>
 						</DropdownMenu.Label>
@@ -271,13 +274,7 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Group>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item
-							onSelect={() => {
-								userClient.logoutUser({});
-								user.clear();
-								goto('/login');
-							}}
-						>
+						<DropdownMenu.Item onSelect={() => logout.mutate({})}>
 							<LogOut />
 							Log out
 						</DropdownMenu.Item>

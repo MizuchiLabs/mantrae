@@ -2,7 +2,12 @@ import { PersistedState } from 'runed';
 
 export const NS = 'mantrae';
 
-export const profileID = new PersistedState<bigint>(`${NS}:profile:id`, 0n);
+export const profileID = new PersistedState<bigint>(`${NS}:profile:id`, 0n, {
+	serializer: {
+		serialize: (v: bigint) => v.toString(),
+		deserialize: (v: string) => BigInt(v)
+	}
+});
 
 // Table
 export const pageIndex = new PersistedState<number>(`${NS}:page:index`, 0);

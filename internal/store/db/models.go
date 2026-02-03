@@ -62,6 +62,13 @@ type Error struct {
 	CreatedAt *time.Time `json:"createdAt"`
 }
 
+type GooseDbVersion struct {
+	ID        int64      `json:"id"`
+	VersionID int64      `json:"versionId"`
+	IsApplied int64      `json:"isApplied"`
+	Tstamp    *time.Time `json:"tstamp"`
+}
+
 type HttpMiddleware struct {
 	ID        string                 `json:"id"`
 	ProfileID int64                  `json:"profileId"`
@@ -177,22 +184,6 @@ type TcpService struct {
 	UpdatedAt *time.Time         `json:"updatedAt"`
 }
 
-type TraefikInstance struct {
-	ID          string                `json:"id"`
-	ProfileID   int64                 `json:"profileId"`
-	Name        string                `json:"name"`
-	Entrypoints *schema.EntryPoints   `json:"entrypoints"`
-	Overview    *schema.Overview      `json:"overview"`
-	Config      *schema.Configuration `json:"config"`
-	Version     *schema.Version       `json:"version"`
-	Url         string                `json:"url"`
-	Username    *string               `json:"username"`
-	Password    *string               `json:"password"`
-	Tls         bool                  `json:"tls"`
-	CreatedAt   *time.Time            `json:"createdAt"`
-	UpdatedAt   *time.Time            `json:"updatedAt"`
-}
-
 type UdpRouter struct {
 	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
@@ -220,8 +211,6 @@ type User struct {
 	Username  string     `json:"username"`
 	Password  string     `json:"password"`
 	Email     *string    `json:"email"`
-	Otp       *string    `json:"otp"`
-	OtpExpiry *time.Time `json:"otpExpiry"`
 	LastLogin *time.Time `json:"lastLogin"`
 	CreatedAt *time.Time `json:"createdAt"`
 	UpdatedAt *time.Time `json:"updatedAt"`
