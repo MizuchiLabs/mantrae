@@ -1,5 +1,6 @@
 <script lang="ts">
-	import BackupModal from '$lib/components/modals/BackupModal.svelte';
+	import { setting } from '$lib/api/settings.svelte';
+	import { backup } from '$lib/api/util.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import CustomSwitch from '$lib/components/ui/custom-switch/custom-switch.svelte';
@@ -8,39 +9,44 @@
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Separator } from '$lib/components/ui/separator';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { ConnectError } from '@connectrpc/connect';
-	import { Download, List, SaveIcon, Settings, Upload } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { settingGroups, storageTypes } from './settings';
+	import * as Table from '$lib/components/ui/table';
+	import * as Tabs from '$lib/components/ui/tabs';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { BackendURL } from '$lib/config';
 	import { profileID } from '$lib/store.svelte';
-	import { setting } from '$lib/api/settings.svelte';
+	import { formatTs } from '$lib/utils';
+	import { ConnectError } from '@connectrpc/connect';
+	import { Download, Loader, RefreshCw, RotateCcw, Trash2, Upload } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
+	import { settingGroups, storageTypes } from './settings';
 
+	// Settings Data
 	const settings = $derived(setting.list());
 	const updateSettings = setting.update();
 
-	let settingsMap = $derived(Object.fromEntries(settings.data?.map((s) => [s.key, s.value]) || []));
-	let originalSettings: Record<string, string> = $state({});
-	let changedSettings = $state<Record<string, string>>({});
+	let settingsMap = $state<Record<string, string>>({});
+	let initialized = $state(false);
 
-	// Helper function to check if an entire group should be visible
-	function shouldShowGroup(groupKey: string): boolean {
-		// Hide S3 group when storage is local
-		if (groupKey === 's3' && settingsMap['storage_select'] === 'local') {
-			return false;
+	$effect(() => {
+		if (settings.data && !initialized) {
+			settingsMap = Object.fromEntries(settings.data.map((s) => [s.key, s.value]));
+			initialized = true;
 		}
-		return true;
-	}
+	});
 
-	// Helper function to check if a setting should be visible
+	// Backups Data
+	const backupList = $derived(backup.list());
+	const createBackupMutation = backup.create();
+	const deleteBackupMutation = backup.delete();
+	const restoreBackupMutation = backup.restore();
+
+	let backups = $derived(backupList.data || []);
+	let uploadInput: HTMLInputElement | null = $state(null);
+	let isUploading = $state(false);
+
+	// Visibility Helpers
 	function shouldShowSetting(settingKey: string): boolean {
-		// Hide client secret when PKCE is enabled
-		if (settingKey === 'oidc_client_secret' && settingsMap['oidc_pkce'] === 'true') {
-			return false;
-		}
-
-		// Hide OIDC-related settings when OIDC is disabled (except the enable toggle itself)
+		if (settingKey === 'oidc_client_secret' && settingsMap['oidc_pkce'] === 'true') return false;
 		if (
 			(settingKey.startsWith('oidc_') || settingKey === 'password_login_enabled') &&
 			settingKey !== 'oidc_enabled' &&
@@ -48,315 +54,407 @@
 		) {
 			return false;
 		}
-
 		return true;
 	}
 
-	function handleKeydown(e: KeyboardEvent, key: string) {
-		if (e.key === 'Enter') {
-			let input = e.currentTarget as HTMLInputElement;
-			updateSetting(key, input.value);
-			saveSettings();
-		}
-	}
-
-	async function updateSetting(key: string, value: string) {
+	// Settings Logic
+	async function handleSave(key: string, value: string) {
+		// Optimistic update
 		settingsMap = { ...settingsMap, [key]: value };
 
-		if (value !== originalSettings[key]) {
-			changedSettings = { ...changedSettings, [key]: value };
-		} else {
-			// remove it if it was reverted to original
-			const { [key]: _, ...rest } = changedSettings;
-			changedSettings = rest;
-		}
-	}
-
-	async function saveSettings() {
-		if (Object.keys(changedSettings).length === 0) return;
-
 		try {
-			await Promise.all(
-				Object.entries(changedSettings).map(([key, value]) => updateSettings.mutate({ key, value }))
-			);
-
-			// merge deltas into original and clear
-			originalSettings = { ...originalSettings, ...changedSettings };
-			changedSettings = {};
-			toast.success('Settings saved');
+			await updateSettings.mutateAsync({ key, value });
 		} catch (err) {
-			// Revert UI changes back to original values
-			const revertedSettings = { ...settingsMap };
-			Object.keys(changedSettings).forEach((key) => {
-				revertedSettings[key] = originalSettings[key] || '';
-			});
-			settingsMap = revertedSettings;
-
-			// Clear changed settings since we reverted
-			changedSettings = {};
-
+			// Revert is handled by list refetch or could be done here if needed.
+			// Since we use $state and init once, we might want to refetch on error to reset.
 			const e = ConnectError.from(err);
 			toast.error('Failed to save setting', { description: e.message });
 		}
 	}
 
-	// Validate the go duration string format
+	function handleKeydown(e: KeyboardEvent, key: string) {
+		if (e.key === 'Enter') {
+			handleSave(key, (e.currentTarget as HTMLInputElement).value);
+		}
+	}
+
+	// Duration Parsing
 	function parseDuration(str: string): string {
 		const cleanStr = str.trim();
 		try {
 			const patterns = /^(\d+h)?(\d+m)?(\d+s)?$/;
-			if (!patterns.test(cleanStr)) {
-				throw new Error('Invalid duration format');
-			}
+			if (!patterns.test(cleanStr)) throw new Error('Invalid duration format');
 			return cleanStr;
 		} catch (err) {
-			const error = err as Error;
-			toast.error('Invalid duration format. Use format like "24h0m0s"', {
-				description: error.message
-			});
+			toast.error('Invalid duration format. Use format like "24h0m0s"');
 			return str;
 		}
 	}
 
-	// Backup handling
-	let showBackupList = $state(false);
-	let uploadBackupFile: HTMLInputElement | null = $state(null);
+	// Backup Logic
+	async function downloadBackup(filename: string) {
+		try {
+			const params = filename ? `?name=${encodeURIComponent(filename)}` : '';
+			const response = await fetch(`${BackendURL}/backups/download${params}`, {
+				credentials: 'include'
+			});
+			if (!response.ok) throw new Error(await response.text());
 
-	async function downloadBackup(filename = '') {
-		const params = filename ? `?name=${encodeURIComponent(filename)}` : '';
-		const response = await fetch(`${BackendURL}/backups/download${params}`, {
-			credentials: 'include'
-		});
-		if (!response.ok) {
-			throw new Error(await response.text());
+			const disposition = response.headers.get('Content-Disposition');
+			const name = disposition?.match(/filename="?([^"]+)"?/i)?.[1] || filename;
+			const blob = await response.blob();
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = name;
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (err) {
+			toast.error('Download failed', { description: (err as Error).message });
 		}
-
-		const disposition = response.headers.get('Content-Disposition');
-		const name = disposition?.match(/filename="?([^"]+)"?/i)?.[1];
-		if (!name) {
-			throw new Error('Server did not provide filename');
-		}
-
-		const blob = await response.blob();
-		const url = URL.createObjectURL(blob);
-
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = name;
-		a.click();
-
-		URL.revokeObjectURL(url);
 	}
 
-	async function upload(input: HTMLInputElement | null) {
+	async function uploadBackup(input: HTMLInputElement | null) {
 		if (!input?.files?.length) return;
-
-		const body = new FormData();
-		body.append('file', input.files[0]);
-
-		const response = await fetch(`${BackendURL}/backups/upload/${profileID.current}`, {
-			method: 'POST',
-			body,
-			credentials: 'include'
-		});
-		if (!response.ok) {
-			throw new Error('Failed to upload');
+		isUploading = true;
+		try {
+			const body = new FormData();
+			body.append('file', input.files[0]);
+			const response = await fetch(`${BackendURL}/backups/upload/${profileID.current}`, {
+				method: 'POST',
+				body,
+				credentials: 'include'
+			});
+			if (!response.ok) throw new Error('Failed to upload');
+			toast.success('Backup uploaded successfully');
+			backup.list().refetch(); // Refresh list
+		} catch (err) {
+			toast.error('Upload failed', { description: (err as Error).message });
+		} finally {
+			isUploading = false;
+			if (input) input.value = '';
 		}
-		toast.success('Uploaded successfully');
+	}
+
+	// Group Rendering Component
+	function getGroup(key: string) {
+		return Object.entries(settingGroups).find(([k]) => k === key)?.[1];
 	}
 </script>
 
 <svelte:head>
 	<title>Settings - Mantrae</title>
-	<meta
-		name="description"
-		content="Configure your Mantrae system settings, backup management, and authentication options"
-	/>
 </svelte:head>
 
-<BackupModal bind:open={showBackupList} />
-
-<div class="flex min-h-full w-full items-start justify-center">
-	<div class="w-full max-w-[100rem] space-y-6">
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Backup Management</Card.Title>
-				<Card.Description>Download or restore database backups</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-					<input
-						type="file"
-						accept=".db,.yaml,.yml,.json"
-						class="hidden"
-						bind:this={uploadBackupFile}
-						onchange={() => upload(uploadBackupFile)}
-					/>
-
-					<div class="grid grid-cols-1 gap-2 sm:grid-cols-6">
-						<Button onclick={() => downloadBackup()} variant="outline" class="px-1">
-							<Download />
-							Download Backup
-						</Button>
-
-						<Tooltip.Provider>
-							<Tooltip.Root delayDuration={500}>
-								<Tooltip.Trigger class="w-full">
-									<Button
-										variant="outline"
-										onclick={() => uploadBackupFile?.click()}
-										class="w-full px-1"
-									>
-										<Upload />
-										Upload Backup
-									</Button>
-								</Tooltip.Trigger>
-								<Tooltip.Content side="bottom" align="end" class="max-w-md">
-									<p>
-										Upload a SQLite <code>.db</code> file to fully replace the current database, or
-										upload a Traefik dynamic config file in <code>.yaml</code> or
-										<code>.json</code>
-										format. Dynamic configs will be merged with the existing routers, services, and middlewares—overwriting
-										any entries with matching names.
-									</p>
-								</Tooltip.Content>
-							</Tooltip.Root>
-						</Tooltip.Provider>
-
-						<Button variant="outline" onclick={() => (showBackupList = true)} class="px-1">
-							<List />
-							View Backups
-						</Button>
-					</div>
-				</div>
-			</Card.Content>
-		</Card.Root>
-
-		<!-- Settings -->
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="mb-3">
-					<div class="flex items-center gap-2">
-						<Settings class="size-8" />
-						<h1 class="text-3xl font-bold">Settings</h1>
-					</div>
-				</Card.Title>
-				<Separator />
-			</Card.Header>
-			<Card.Content class="flex flex-col gap-6">
-				<!-- Loop through each settings group -->
-				{#each Object.entries(settingGroups) as [groupKey, group] (groupKey)}
-					{#if shouldShowGroup(groupKey)}
-						<div class="mt-4 first:mt-0">
-							<h2 class="mb-0.5 text-xl font-semibold" id={groupKey}>{group.title}</h2>
-							<p class="mb-2 text-sm text-muted-foreground">{group.description}</p>
-							<Separator class="mb-4" />
-
-							<!-- Loop through settings in this group -->
-							{#each group.keys as setting (setting.key)}
-								{#if shouldShowSetting(setting.key)}
-									<div
-										class="mb-4 flex flex-col justify-start gap-4 sm:flex-row sm:justify-between"
-									>
-										<div class="border-l-2 border-muted-foreground pl-4">
-											<Label class="flex flex-col items-start gap-1">
-												<span class="text-sm font-medium">{setting.label}</span>
-												<p class="text-xs text-muted-foreground">{setting.description}</p>
-											</Label>
-										</div>
-
-										<div class="flex w-full items-center justify-end gap-4 sm:w-auto md:w-[380px]">
-											{#if setting.type === 'text'}
-												<Input
-													type="text"
-													value={settingsMap[setting.key]}
-													autocomplete="off"
-													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-													onblur={saveSettings}
-													onkeydown={(e) => handleKeydown(e, setting.key)}
-												/>
-											{/if}
-											{#if setting.type === 'number'}
-												<Input
-													type="number"
-													value={settingsMap[setting.key]}
-													autocomplete="off"
-													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-													onblur={saveSettings}
-													onkeydown={(e) => handleKeydown(e, setting.key)}
-												/>
-											{/if}
-											{#if setting.type === 'boolean'}
-												<CustomSwitch
-													checked={settingsMap[setting.key] === 'true'}
-													onCheckedChange={(checked) => {
-														updateSetting(setting.key, checked ? 'true' : 'false');
-														saveSettings();
-													}}
-												/>
-											{/if}
-											{#if setting.type === 'password'}
-												<PasswordInput
-													class="sm:w-auto md:w-[380px]"
-													value={settingsMap[setting.key]}
-													autocomplete="new-password"
-													onblur={saveSettings}
-													onchange={(e) => updateSetting(setting.key, e.currentTarget.value)}
-													onkeydown={(e) => handleKeydown(e, setting.key)}
-												/>
-											{/if}
-											{#if setting.type === 'duration'}
-												<Input
-													type="text"
-													value={settingsMap[setting.key]}
-													autocomplete="off"
-													onblur={saveSettings}
-													onchange={(e) =>
-														updateSetting(setting.key, parseDuration(e.currentTarget.value))}
-													onkeydown={(e) => handleKeydown(e, setting.key)}
-												/>
-											{/if}
-											{#if setting.type === 'select'}
-												<Select.Root
-													type="single"
-													value={settingsMap[setting.key]}
-													onValueChange={(value) => {
-														updateSetting(setting.key, value);
-														saveSettings();
-													}}
-												>
-													<Select.Trigger class="w-full">
-														{settingsMap[setting.key] || 'Select...'}
-													</Select.Trigger>
-													<Select.Content>
-														{#if setting.key === 'storage_select'}
-															{#each storageTypes as option (option.value)}
-																<Select.Item value={option.value}>{option.label}</Select.Item>
-															{/each}
-														{/if}
-													</Select.Content>
-												</Select.Root>
-											{/if}
-										</div>
-									</div>
-									<Separator class="mb-4" />
-								{/if}
-							{/each}
-						</div>
-					{/if}
-				{/each}
-
-				<div class="flex justify-end">
-					<Button
-						variant={Object.keys(changedSettings).length === 0 ? 'outline' : 'default'}
-						onclick={saveSettings}
-						size="icon"
-						disabled={Object.keys(changedSettings).length === 0}
-					>
-						<SaveIcon />
-					</Button>
-				</div>
-			</Card.Content>
-		</Card.Root>
+<div class="container mx-auto max-w-7xl">
+	<div class="mb-8 flex items-center justify-between">
+		<div>
+			<h1 class="text-3xl font-bold tracking-tight">Settings</h1>
+			<p class="text-muted-foreground">Manage your application configuration and backups.</p>
+		</div>
 	</div>
+
+	<Tabs.Root value="general" class="space-y-6">
+		<Tabs.List class="w-full">
+			<Tabs.Trigger value="general">General</Tabs.Trigger>
+			<Tabs.Trigger value="backups">Backups</Tabs.Trigger>
+			{#if settingsMap['storage_select'] === 's3'}
+				<Tabs.Trigger value="s3">S3 Storage</Tabs.Trigger>
+			{/if}
+			<Tabs.Trigger value="auth">Auth</Tabs.Trigger>
+			<Tabs.Trigger value="email">Email</Tabs.Trigger>
+			<Tabs.Trigger value="agents">Agents</Tabs.Trigger>
+		</Tabs.List>
+
+		<!-- General Tab -->
+		<Tabs.Content value="general">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>General Configuration</Card.Title>
+					<Card.Description>Core system settings.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('general')}
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+
+		<!-- Backups Tab -->
+		<Tabs.Content value="backups" class="space-y-6">
+			<!-- Backup Configuration -->
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Configuration</Card.Title>
+					<Card.Description>Configure how automatic backups are handled.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('backup')}
+				</Card.Content>
+			</Card.Root>
+
+			<!-- Backup Management -->
+			<Card.Root>
+				<Card.Header>
+					<div class="flex items-center justify-between">
+						<div>
+							<Card.Title>Manage Backups</Card.Title>
+							<Card.Description>Create, download, or restore from backups.</Card.Description>
+						</div>
+						<div class="flex gap-2">
+							<input
+								type="file"
+								accept=".db,.yaml,.yml,.json"
+								class="hidden"
+								bind:this={uploadInput}
+								onchange={() => uploadBackup(uploadInput)}
+							/>
+							<Button variant="outline" onclick={() => uploadInput?.click()} disabled={isUploading}>
+								{#if isUploading}
+									<Loader class="mr-2 size-4 animate-spin" />
+								{:else}
+									<Upload class="mr-2 size-4" />
+								{/if}
+								Upload
+							</Button>
+							<Button onclick={() => createBackupMutation.mutate({})}>
+								<RefreshCw class="mr-2 size-4" />
+								Create Backup
+							</Button>
+						</div>
+					</div>
+				</Card.Header>
+				<Card.Content>
+					<Table.Root>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Name</Table.Head>
+								<Table.Head>Type</Table.Head>
+								<Table.Head>Size</Table.Head>
+								<Table.Head>Created</Table.Head>
+								<Table.Head class="text-right">Actions</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each backups as backup (backup.name)}
+								<Table.Row>
+									<Table.Cell class="font-medium">{backup.name}</Table.Cell>
+									<Table.Cell>
+										{#if backup.name.endsWith('.db')}
+											<span
+												class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+											>
+												SQLite
+											</span>
+										{:else}
+											<span
+												class="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+											>
+												YAML
+											</span>
+										{/if}
+									</Table.Cell>
+									<Table.Cell>
+										{Intl.NumberFormat('en-US', {
+											notation: 'compact',
+											style: 'unit',
+											unit: 'byte'
+										}).format(backup.size)}
+									</Table.Cell>
+									<Table.Cell>{formatTs(backup.createdAt)}</Table.Cell>
+									<Table.Cell class="text-right">
+										<div class="flex justify-end gap-2">
+											<Tooltip.Provider>
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Button
+															variant="ghost"
+															size="icon"
+															onclick={() => downloadBackup(backup.name)}
+														>
+															<Download class="size-4" />
+														</Button>
+													</Tooltip.Trigger>
+													<Tooltip.Content>Download</Tooltip.Content>
+												</Tooltip.Root>
+
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Button
+															variant="ghost"
+															size="icon"
+															class="text-green-600 hover:bg-green-50 hover:text-green-700"
+															onclick={() => restoreBackupMutation.mutate({ name: backup.name })}
+														>
+															<RotateCcw class="size-4" />
+														</Button>
+													</Tooltip.Trigger>
+													<Tooltip.Content>Restore</Tooltip.Content>
+												</Tooltip.Root>
+
+												<Tooltip.Root>
+													<Tooltip.Trigger>
+														<Button
+															variant="ghost"
+															size="icon"
+															class="text-red-600 hover:bg-red-50 hover:text-red-700"
+															onclick={() => deleteBackupMutation.mutate({ name: backup.name })}
+														>
+															<Trash2 class="size-4" />
+														</Button>
+													</Tooltip.Trigger>
+													<Tooltip.Content>Delete</Tooltip.Content>
+												</Tooltip.Root>
+											</Tooltip.Provider>
+										</div>
+									</Table.Cell>
+								</Table.Row>
+							{:else}
+								<Table.Row>
+									<Table.Cell colspan={5} class="text-center text-muted-foreground">
+										No backups found.
+									</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+
+		<!-- S3 Tab -->
+		<Tabs.Content value="s3">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>S3 Storage</Card.Title>
+					<Card.Description>Configure external object storage.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('s3')}
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+
+		<!-- Auth Tab -->
+		<Tabs.Content value="auth">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Authentication</Card.Title>
+					<Card.Description>Manage OIDC and login methods.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('oauth')}
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+
+		<!-- Email Tab -->
+		<Tabs.Content value="email">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Email Settings</Card.Title>
+					<Card.Description>SMTP configuration for notifications.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('email')}
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+
+		<!-- Agents Tab -->
+		<Tabs.Content value="agents">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Agent Configuration</Card.Title>
+					<Card.Description>Manage connected agents.</Card.Description>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					{@render settingsGroup('agents')}
+				</Card.Content>
+			</Card.Root>
+		</Tabs.Content>
+	</Tabs.Root>
 </div>
+
+{#snippet settingsGroup(groupKey: string)}
+	{#if getGroup(groupKey)}
+		{#each getGroup(groupKey)!.keys as setting (setting.key)}
+			{#if shouldShowSetting(setting.key)}
+				{#if setting.type === 'boolean'}
+					<div class="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+						<div class="space-y-0.5">
+							<Label class="text-base">{setting.label}</Label>
+							<p class="text-sm text-muted-foreground">{setting.description}</p>
+						</div>
+						<CustomSwitch
+							checked={settingsMap[setting.key] === 'true'}
+							onCheckedChange={(checked) => handleSave(setting.key, checked ? 'true' : 'false')}
+						/>
+					</div>
+				{:else}
+					<Separator />
+					<div class="grid gap-4 sm:grid-cols-12 sm:gap-6">
+						<div class="sm:col-span-5 md:col-span-7">
+							<Label class="text-base">{setting.label}</Label>
+							<p class="text-sm text-muted-foreground">{setting.description}</p>
+						</div>
+						<div class="sm:col-span-7 md:col-span-5">
+							{#if setting.type === 'text'}
+								<Input
+									type="text"
+									value={settingsMap[setting.key]}
+									autocomplete="off"
+									onchange={(e) => handleSave(setting.key, e.currentTarget.value)}
+									onkeydown={(e) => handleKeydown(e, setting.key)}
+								/>
+							{:else if setting.type === 'number'}
+								<Input
+									type="number"
+									value={settingsMap[setting.key]}
+									autocomplete="off"
+									onchange={(e) => handleSave(setting.key, e.currentTarget.value)}
+									onkeydown={(e) => handleKeydown(e, setting.key)}
+								/>
+							{:else if setting.type === 'password'}
+								<PasswordInput
+									value={settingsMap[setting.key]}
+									autocomplete="new-password"
+									onchange={(e) => handleSave(setting.key, e.currentTarget.value)}
+									onkeydown={(e) => handleKeydown(e, setting.key)}
+								/>
+							{:else if setting.type === 'duration'}
+								<Input
+									type="text"
+									value={settingsMap[setting.key]}
+									autocomplete="off"
+									onchange={(e) => handleSave(setting.key, parseDuration(e.currentTarget.value))}
+									onkeydown={(e) => handleKeydown(e, setting.key)}
+								/>
+							{:else if setting.type === 'select'}
+								<Select.Root
+									type="single"
+									value={settingsMap[setting.key]}
+									onValueChange={(value) => handleSave(setting.key, value)}
+								>
+									<Select.Trigger class="w-full">
+										{settingsMap[setting.key] === 'local'
+											? 'Local Storage'
+											: settingsMap[setting.key] === 's3'
+												? 'S3 Storage'
+												: settingsMap[setting.key] || 'Select...'}
+									</Select.Trigger>
+									<Select.Content>
+										{#if setting.key === 'storage_select'}
+											{#each storageTypes as option (option.value)}
+												<Select.Item value={option.value}>{option.label}</Select.Item>
+											{/each}
+										{/if}
+									</Select.Content>
+								</Select.Root>
+							{/if}
+						</div>
+					</div>
+				{/if}
+			{/if}
+		{/each}
+	{/if}
+{/snippet}
