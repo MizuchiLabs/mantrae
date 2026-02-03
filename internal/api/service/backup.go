@@ -77,7 +77,9 @@ func (s *BackupService) RestoreBackup(
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	case ".yaml", ".yml", ".json":
-		s.app.BM.RestoreViaConfig(ctx, req.ProfileId, req.Name)
+		if err := s.app.BM.RestoreViaConfig(ctx, req.ProfileId, req.Name); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
 	default:
 		return nil, connect.NewError(
 			connect.CodeInvalidArgument,

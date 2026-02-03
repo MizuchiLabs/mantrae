@@ -196,6 +196,26 @@ func (s *HTTPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
+	// Disable service if router is disabled
+	if result.Config.Service != "" {
+		service, err := s.app.Conn.Q.GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
+			ProfileID: result.ProfileID,
+			Name:      result.Config.Service,
+		})
+		if err != nil {
+			slog.Error("failed to get http service for disabling", "err", err)
+		} else {
+			if _, err := s.app.Conn.Q.UpdateHttpService(ctx, &db.UpdateHttpServiceParams{
+				ID:      service.ID,
+				Name:    service.Name,
+				Config:  service.Config,
+				Enabled: result.Enabled,
+			}); err != nil {
+				slog.Error("failed to disable http service", "err", err)
+			}
+		}
+	}
+
 	router := result.ToProto()
 
 	dnsProviders, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, result.ID)
@@ -410,6 +430,26 @@ func (s *TCPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
+	// Disable service if router is disabled
+	if result.Config.Service != "" {
+		service, err := s.app.Conn.Q.GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
+			ProfileID: result.ProfileID,
+			Name:      result.Config.Service,
+		})
+		if err != nil {
+			slog.Error("failed to get tcp service for disabling", "err", err)
+		} else {
+			if _, err := s.app.Conn.Q.UpdateTcpService(ctx, &db.UpdateTcpServiceParams{
+				ID:      service.ID,
+				Name:    service.Name,
+				Config:  service.Config,
+				Enabled: result.Enabled,
+			}); err != nil {
+				slog.Error("failed to disable tcp service", "err", err)
+			}
+		}
+	}
+
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
@@ -562,6 +602,27 @@ func (s *UDPRouterOps) Update(
 	if err != nil {
 		return nil, err
 	}
+
+	// Change service status
+	if result.Config.Service != "" {
+		service, err := s.app.Conn.Q.GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
+			ProfileID: result.ProfileID,
+			Name:      result.Config.Service,
+		})
+		if err != nil {
+			slog.Error("failed to get udp service for disabling", "err", err)
+		} else {
+			if _, err := s.app.Conn.Q.UpdateUdpService(ctx, &db.UpdateUdpServiceParams{
+				ID:      service.ID,
+				Name:    service.Name,
+				Config:  service.Config,
+				Enabled: result.Enabled,
+			}); err != nil {
+				slog.Error("failed to disable udp service", "err", err)
+			}
+		}
+	}
+
 	return &mantraev1.UpdateRouterResponse{
 		Router: result.ToProto(),
 	}, nil
