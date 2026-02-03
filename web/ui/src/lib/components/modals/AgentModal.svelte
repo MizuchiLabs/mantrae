@@ -78,7 +78,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[500px] overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-125 overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>{agentData.hostname ? 'Manage' : 'Connect'} Agent</Dialog.Title>
 			<Dialog.Description>
@@ -229,7 +229,7 @@
 				{/if}
 
 				<div class="flex gap-2">
-					<CopyInput bind:value={agentData.token} />
+					<CopyInput value={agentData.token} />
 					<Button variant="outline" size="icon" onclick={rotate} title="Rotate token">
 						<RotateCcw class="h-4 w-4" />
 					</Button>

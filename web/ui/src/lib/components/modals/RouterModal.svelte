@@ -121,7 +121,7 @@
 				<!-- DNS Providers (Editable) -->
 				{#if dnsList.isSuccess && dnsList.data.length}
 					<Card.Root>
-						<Card.Header>
+						<Card.Content>
 							<div class="flex items-center justify-between">
 								<div>
 									<Card.Title class="flex items-center gap-2">DNS Providers</Card.Title>
@@ -136,6 +136,7 @@
 											let providers =
 												dnsList.data?.filter((p) => value.includes(p.id.toString())) ?? [];
 											routerData.dnsProviders = providers;
+											updateRouter.mutate({ ...routerData });
 										}}
 									>
 										<Select.Trigger>
@@ -156,18 +157,7 @@
 									</Select.Root>
 								{/if}
 							</div>
-						</Card.Header>
-						{#if routerData.dnsProviders?.length > 0}
-							<Card.Content>
-								<div class="flex flex-wrap gap-2">
-									{#each routerData.dnsProviders as provider (provider.id)}
-										<Badge variant="secondary">
-											{provider.name}
-										</Badge>
-									{/each}
-								</div>
-							</Card.Content>
-						{/if}
+						</Card.Content>
 					</Card.Root>
 				{/if}
 
@@ -235,6 +225,7 @@
 										let providers =
 											dnsList.data?.filter((p) => value.includes(p.id.toString())) ?? [];
 										routerData.dnsProviders = providers;
+										updateRouter.mutate({ ...routerData });
 									}}
 								>
 									<Select.Trigger>
