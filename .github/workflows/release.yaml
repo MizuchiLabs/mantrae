@@ -30,13 +30,14 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "web/ui/pnpm-lock.yaml"
 
+      - name: Build frontend
+        working-directory: web/ui
+        run: pnpm install && pnpm build
+
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
-
-      - name: Install Task
-        uses: go-task/setup-task@v1
 
       - name: Install UPX
         run: |
@@ -53,11 +54,6 @@ jobs:
 
       - name: Install Ko
         uses: ko-build/setup-ko@v0.9
-
-      - name: Build frontend & lint
-        run: |
-          task build:web
-          task lint
 
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v9
