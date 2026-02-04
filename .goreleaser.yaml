@@ -11,9 +11,6 @@ before:
     - go mod tidy
     - go mod verify
 
-gomod:
-  proxy: false
-
 builds:
   - binary: "{{ .ProjectName }}"
     env: [CGO_ENABLED=0]
