@@ -29,7 +29,6 @@ require (
 	github.com/mizuchilabs/sqlite-schema-diff v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/ryanwholey/go-pihole v1.2.0
-	github.com/stretchr/testify v1.11.1
 	github.com/traefik/traefik/v3 v3.6.7
 	github.com/urfave/cli/v3 v3.6.2
 	github.com/vearutop/statigz v1.5.0
@@ -110,7 +109,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rs/zerolog v1.34.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect

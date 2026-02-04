@@ -58,8 +58,7 @@ tasks:
     desc: Build Frontend
     dir: web/ui
     cmds:
-      - pnpm install
-      - pnpm build
+      - pnpm install && pnpm build
 
   cleanup:tags:
     desc: "Delete all tags older than cutoff (local + remote)"
