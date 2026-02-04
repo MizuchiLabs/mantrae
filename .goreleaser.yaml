@@ -12,7 +12,7 @@ before:
     - go mod verify
 
 gomod:
-  proxy: true
+  proxy: false
 
 builds:
   - binary: "{{ .ProjectName }}"
