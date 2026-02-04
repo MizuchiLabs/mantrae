@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const createTcpRouterDNSProvider = `-- name: CreateTcpRouterDNSProvider :exec
@@ -102,12 +100,12 @@ FROM
 `
 
 type GetTcpRouterDomainsRow struct {
-	RouterID        string            `json:"routerId"`
-	RouterName      string            `json:"routerName"`
-	ConfigJson      *schema.TCPRouter `json:"configJson"`
-	ProfileName     string            `json:"profileName"`
-	DnsProviderID   *string           `json:"dnsProviderId"`
-	DnsProviderName *string           `json:"dnsProviderName"`
+	RouterID        string           `json:"routerId"`
+	RouterName      string           `json:"routerName"`
+	ConfigJson      *TCPRouterConfig `json:"configJson"`
+	ProfileName     string           `json:"profileName"`
+	DnsProviderID   *string          `json:"dnsProviderId"`
+	DnsProviderName *string          `json:"dnsProviderName"`
 }
 
 func (q *Queries) GetTcpRouterDomains(ctx context.Context) ([]*GetTcpRouterDomainsRow, error) {

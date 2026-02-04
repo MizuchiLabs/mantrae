@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countHttpRouters = `-- name: CountHttpRouters :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateHttpRouterParams struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.HTTPRouter `json:"config"`
+	ID        string        `json:"id"`
+	ProfileID int64         `json:"profileId"`
+	AgentID   *string       `json:"agentId"`
+	Name      string        `json:"name"`
+	Config    *RouterConfig `json:"config"`
 }
 
 func (q *Queries) CreateHttpRouter(ctx context.Context, arg *CreateHttpRouterParams) (*HttpRouter, error) {
@@ -137,10 +135,10 @@ type GetHttpRoutersUsingEntryPointParams struct {
 }
 
 type GetHttpRoutersUsingEntryPointRow struct {
-	ID      string             `json:"id"`
-	Name    string             `json:"name"`
-	Config  *schema.HTTPRouter `json:"config"`
-	Enabled bool               `json:"enabled"`
+	ID      string        `json:"id"`
+	Name    string        `json:"name"`
+	Config  *RouterConfig `json:"config"`
+	Enabled bool          `json:"enabled"`
 }
 
 func (q *Queries) GetHttpRoutersUsingEntryPoint(ctx context.Context, arg *GetHttpRoutersUsingEntryPointParams) ([]*GetHttpRoutersUsingEntryPointRow, error) {
@@ -199,10 +197,10 @@ type GetHttpRoutersUsingMiddlewareParams struct {
 }
 
 type GetHttpRoutersUsingMiddlewareRow struct {
-	ID      string             `json:"id"`
-	Name    string             `json:"name"`
-	Config  *schema.HTTPRouter `json:"config"`
-	Enabled bool               `json:"enabled"`
+	ID      string        `json:"id"`
+	Name    string        `json:"name"`
+	Config  *RouterConfig `json:"config"`
+	Enabled bool          `json:"enabled"`
 }
 
 func (q *Queries) GetHttpRoutersUsingMiddleware(ctx context.Context, arg *GetHttpRoutersUsingMiddlewareParams) ([]*GetHttpRoutersUsingMiddlewareRow, error) {
@@ -350,10 +348,10 @@ WHERE
 `
 
 type UpdateHttpRouterParams struct {
-	Name    string             `json:"name"`
-	Config  *schema.HTTPRouter `json:"config"`
-	Enabled bool               `json:"enabled"`
-	ID      string             `json:"id"`
+	Name    string        `json:"name"`
+	Config  *RouterConfig `json:"config"`
+	Enabled bool          `json:"enabled"`
+	ID      string        `json:"id"`
 }
 
 func (q *Queries) UpdateHttpRouter(ctx context.Context, arg *UpdateHttpRouterParams) (*HttpRouter, error) {

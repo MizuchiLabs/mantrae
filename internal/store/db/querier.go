@@ -46,9 +46,6 @@ type Querier interface {
 	DeleteAgent(ctx context.Context, id string) error
 	DeleteDnsProvider(ctx context.Context, id string) error
 	DeleteEntryPointByID(ctx context.Context, id string) error
-	DeleteErrorById(ctx context.Context, id int64) error
-	DeleteErrorsByProfile(ctx context.Context, profileID int64) error
-	DeleteErrorsByProfileCategory(ctx context.Context, arg *DeleteErrorsByProfileCategoryParams) error
 	DeleteHttpMiddleware(ctx context.Context, id string) error
 	DeleteHttpRouter(ctx context.Context, id string) error
 	DeleteHttpRouterDNSProvider(ctx context.Context, arg *DeleteHttpRouterDNSProviderParams) error
@@ -73,7 +70,6 @@ type Querier interface {
 	GetDnsProvidersByHttpRouter(ctx context.Context, httpRouterID string) ([]*DnsProvider, error)
 	GetDnsProvidersByTcpRouter(ctx context.Context, tcpRouterID string) ([]*DnsProvider, error)
 	GetEntryPoint(ctx context.Context, id string) (*EntryPoint, error)
-	GetErrorsByProfile(ctx context.Context, profileID int64) ([]*Error, error)
 	GetHttpMiddleware(ctx context.Context, id string) (*HttpMiddleware, error)
 	GetHttpRouter(ctx context.Context, id string) (*HttpRouter, error)
 	GetHttpRouterDomains(ctx context.Context) ([]*GetHttpRouterDomainsRow, error)
@@ -104,7 +100,6 @@ type Querier interface {
 	ListAuditLogs(ctx context.Context, arg *ListAuditLogsParams) ([]*ListAuditLogsRow, error)
 	ListDnsProviders(ctx context.Context, arg *ListDnsProvidersParams) ([]*DnsProvider, error)
 	ListEntryPoints(ctx context.Context, arg *ListEntryPointsParams) ([]*EntryPoint, error)
-	ListErrors(ctx context.Context) ([]*Error, error)
 	ListHttpMiddlewares(ctx context.Context, arg *ListHttpMiddlewaresParams) ([]*HttpMiddleware, error)
 	ListHttpMiddlewaresEnabled(ctx context.Context, profileID int64) ([]*HttpMiddleware, error)
 	ListHttpRouters(ctx context.Context, arg *ListHttpRoutersParams) ([]*HttpRouter, error)
@@ -128,7 +123,6 @@ type Querier interface {
 	ListUdpServices(ctx context.Context, arg *ListUdpServicesParams) ([]*UdpService, error)
 	ListUdpServicesEnabled(ctx context.Context, profileID int64) ([]*UdpService, error)
 	ListUsers(ctx context.Context, arg *ListUsersParams) ([]*User, error)
-	LogError(ctx context.Context, arg *LogErrorParams) error
 	UnsetDefaultDNSProvider(ctx context.Context) error
 	UnsetDefaultEntryPoint(ctx context.Context, profileID int64) error
 	UnsetDefaultHttpMiddleware(ctx context.Context, profileID int64) error

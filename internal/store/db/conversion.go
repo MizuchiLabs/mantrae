@@ -9,7 +9,7 @@ import (
 	"time"
 
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -217,16 +217,10 @@ func (a *Agent) ToProto() *mantraev1.Agent {
 
 func (d *DnsProvider) ToProto() *mantraev1.DNSProvider {
 	return &mantraev1.DNSProvider{
-		Id:   d.ID,
-		Name: d.Name,
-		Type: mantraev1.DNSProviderType(d.Type), // #nosec G115
-		Config: &mantraev1.DNSProviderConfig{
-			ApiKey:     d.Config.APIKey,
-			ApiUrl:     d.Config.APIUrl,
-			Ip:         d.Config.IP,
-			Proxied:    d.Config.Proxied,
-			AutoUpdate: d.Config.AutoUpdate,
-		},
+		Id:        d.ID,
+		Name:      d.Name,
+		Type:      mantraev1.DNSProviderType(d.Type), // #nosec G115
+		Config:    d.Config.Data,
 		IsDefault: d.IsDefault,
 		CreatedAt: SafeTimestamp(d.CreatedAt),
 		UpdatedAt: SafeTimestamp(d.UpdatedAt),
@@ -255,7 +249,7 @@ func (r *HttpRouter) FromProto(proto *mantraev1.Router) error {
 		return errors.New("invalid router type for HTTP router")
 	}
 
-	config, err := UnmarshalStruct[schema.HTTPRouter](proto.Config)
+	config, err := UnmarshalStruct[dynamic.Router](proto.Config)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
 	}
@@ -328,34 +322,36 @@ func TimePtr(t time.Time) *time.Time {
 
 // JSON Objects marshalling and unmarshalling helper --------------------------
 
-func UnmarshalStruct[T any](s *structpb.Struct) (*T, error) {
-	// Marshal the proto Struct to JSON bytes
+func UnmarshalStruct[T any](s *structpb.Struct) (*JSONType[T], error) {
+	if s == nil {
+		return nil, nil
+	}
 	data, err := s.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	// Unmarshal into your target struct
-	var out T
-	if err := json.Unmarshal(data, &out); err != nil {
+	out := new(T)
+	if err := json.Unmarshal(data, out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &JSONType[T]{Data: out}, nil
 }
 
-func MarshalStruct[T any](s *T) (*structpb.Struct, error) {
-	// Marshal the target struct to JSON bytes
-	data, err := json.Marshal(s)
+// And the reverse for responses
+func MarshalStruct[T any](j *JSONType[T]) (*structpb.Struct, error) {
+	if j == nil {
+		return nil, nil
+	}
+	data, err := json.Marshal(j.Data)
 	if err != nil {
 		return nil, err
 	}
-
-	// Unmarshal into your proto Struct
-	var out structpb.Struct
-	if err := out.UnmarshalJSON(data); err != nil {
+	s := &structpb.Struct{}
+	if err := s.UnmarshalJSON(data); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return s, nil
 }
 
 func MustMarshalStruct[T any](s *T) *structpb.Struct {

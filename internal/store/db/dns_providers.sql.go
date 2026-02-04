@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countDnsProviders = `-- name: CountDnsProviders :one
@@ -33,11 +31,11 @@ VALUES
 `
 
 type CreateDnsProviderParams struct {
-	ID        string                    `json:"id"`
-	Name      string                    `json:"name"`
-	Type      int64                     `json:"type"`
-	Config    *schema.DNSProviderConfig `json:"config"`
-	IsDefault bool                      `json:"isDefault"`
+	ID        string             `json:"id"`
+	Name      string             `json:"name"`
+	Type      int64              `json:"type"`
+	Config    *DNSProviderConfig `json:"config"`
+	IsDefault bool               `json:"isDefault"`
 }
 
 func (q *Queries) CreateDnsProvider(ctx context.Context, arg *CreateDnsProviderParams) (*DnsProvider, error) {
@@ -221,11 +219,11 @@ WHERE
 `
 
 type UpdateDnsProviderParams struct {
-	Name      string                    `json:"name"`
-	Type      int64                     `json:"type"`
-	Config    *schema.DNSProviderConfig `json:"config"`
-	IsDefault bool                      `json:"isDefault"`
-	ID        string                    `json:"id"`
+	Name      string             `json:"name"`
+	Type      int64              `json:"type"`
+	Config    *DNSProviderConfig `json:"config"`
+	IsDefault bool               `json:"isDefault"`
+	ID        string             `json:"id"`
 }
 
 func (q *Queries) UpdateDnsProvider(ctx context.Context, arg *UpdateDnsProviderParams) (*DnsProvider, error) {

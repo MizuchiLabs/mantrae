@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countHttpMiddlewares = `-- name: CountHttpMiddlewares :one
@@ -51,12 +49,12 @@ VALUES
 `
 
 type CreateHttpMiddlewareParams struct {
-	ID        string                 `json:"id"`
-	ProfileID int64                  `json:"profileId"`
-	AgentID   *string                `json:"agentId"`
-	Name      string                 `json:"name"`
-	Config    *schema.HTTPMiddleware `json:"config"`
-	IsDefault bool                   `json:"isDefault"`
+	ID        string            `json:"id"`
+	ProfileID int64             `json:"profileId"`
+	AgentID   *string           `json:"agentId"`
+	Name      string            `json:"name"`
+	Config    *MiddlewareConfig `json:"config"`
+	IsDefault bool              `json:"isDefault"`
 }
 
 func (q *Queries) CreateHttpMiddleware(ctx context.Context, arg *CreateHttpMiddlewareParams) (*HttpMiddleware, error) {
@@ -254,11 +252,11 @@ WHERE
 `
 
 type UpdateHttpMiddlewareParams struct {
-	Name      string                 `json:"name"`
-	Config    *schema.HTTPMiddleware `json:"config"`
-	Enabled   bool                   `json:"enabled"`
-	IsDefault bool                   `json:"isDefault"`
-	ID        string                 `json:"id"`
+	Name      string            `json:"name"`
+	Config    *MiddlewareConfig `json:"config"`
+	Enabled   bool              `json:"enabled"`
+	IsDefault bool              `json:"isDefault"`
+	ID        string            `json:"id"`
 }
 
 func (q *Queries) UpdateHttpMiddleware(ctx context.Context, arg *UpdateHttpMiddlewareParams) (*HttpMiddleware, error) {

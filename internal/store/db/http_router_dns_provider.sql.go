@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const createHttpRouterDNSProvider = `-- name: CreateHttpRouterDNSProvider :exec
@@ -102,12 +100,12 @@ FROM
 `
 
 type GetHttpRouterDomainsRow struct {
-	RouterID        string             `json:"routerId"`
-	RouterName      string             `json:"routerName"`
-	ConfigJson      *schema.HTTPRouter `json:"configJson"`
-	ProfileName     string             `json:"profileName"`
-	DnsProviderID   *string            `json:"dnsProviderId"`
-	DnsProviderName *string            `json:"dnsProviderName"`
+	RouterID        string        `json:"routerId"`
+	RouterName      string        `json:"routerName"`
+	ConfigJson      *RouterConfig `json:"configJson"`
+	ProfileName     string        `json:"profileName"`
+	DnsProviderID   *string       `json:"dnsProviderId"`
+	DnsProviderName *string       `json:"dnsProviderName"`
 }
 
 func (q *Queries) GetHttpRouterDomains(ctx context.Context) ([]*GetHttpRouterDomainsRow, error) {

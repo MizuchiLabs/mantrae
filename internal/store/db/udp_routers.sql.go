@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countUdpRouters = `-- name: CountUdpRouters :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateUdpRouterParams struct {
-	ID        string            `json:"id"`
-	ProfileID int64             `json:"profileId"`
-	AgentID   *string           `json:"agentId"`
-	Name      string            `json:"name"`
-	Config    *schema.UDPRouter `json:"config"`
+	ID        string           `json:"id"`
+	ProfileID int64            `json:"profileId"`
+	AgentID   *string          `json:"agentId"`
+	Name      string           `json:"name"`
+	Config    *UDPRouterConfig `json:"config"`
 }
 
 func (q *Queries) CreateUdpRouter(ctx context.Context, arg *CreateUdpRouterParams) (*UdpRouter, error) {
@@ -137,10 +135,10 @@ type GetUdpRoutersUsingEntryPointParams struct {
 }
 
 type GetUdpRoutersUsingEntryPointRow struct {
-	ID      string            `json:"id"`
-	Name    string            `json:"name"`
-	Config  *schema.UDPRouter `json:"config"`
-	Enabled bool              `json:"enabled"`
+	ID      string           `json:"id"`
+	Name    string           `json:"name"`
+	Config  *UDPRouterConfig `json:"config"`
+	Enabled bool             `json:"enabled"`
 }
 
 func (q *Queries) GetUdpRoutersUsingEntryPoint(ctx context.Context, arg *GetUdpRoutersUsingEntryPointParams) ([]*GetUdpRoutersUsingEntryPointRow, error) {
@@ -288,10 +286,10 @@ WHERE
 `
 
 type UpdateUdpRouterParams struct {
-	Name    string            `json:"name"`
-	Config  *schema.UDPRouter `json:"config"`
-	Enabled bool              `json:"enabled"`
-	ID      string            `json:"id"`
+	Name    string           `json:"name"`
+	Config  *UDPRouterConfig `json:"config"`
+	Enabled bool             `json:"enabled"`
+	ID      string           `json:"id"`
 }
 
 func (q *Queries) UpdateUdpRouter(ctx context.Context, arg *UpdateUdpRouterParams) (*UdpRouter, error) {

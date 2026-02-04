@@ -6,8 +6,6 @@ package db
 
 import (
 	"time"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 type Agent struct {
@@ -34,13 +32,13 @@ type AuditLog struct {
 }
 
 type DnsProvider struct {
-	ID        string                    `json:"id"`
-	Name      string                    `json:"name"`
-	Type      int64                     `json:"type"`
-	Config    *schema.DNSProviderConfig `json:"config"`
-	IsDefault bool                      `json:"isDefault"`
-	CreatedAt *time.Time                `json:"createdAt"`
-	UpdatedAt *time.Time                `json:"updatedAt"`
+	ID        string             `json:"id"`
+	Name      string             `json:"name"`
+	Type      int64              `json:"type"`
+	Config    *DNSProviderConfig `json:"config"`
+	IsDefault bool               `json:"isDefault"`
+	CreatedAt *time.Time         `json:"createdAt"`
+	UpdatedAt *time.Time         `json:"updatedAt"`
 }
 
 type EntryPoint struct {
@@ -53,36 +51,27 @@ type EntryPoint struct {
 	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
-type Error struct {
-	ID        int64      `json:"id"`
-	ProfileID int64      `json:"profileId"`
-	Category  string     `json:"category"`
-	Message   string     `json:"message"`
-	Details   *string    `json:"details"`
-	CreatedAt *time.Time `json:"createdAt"`
-}
-
 type HttpMiddleware struct {
-	ID        string                 `json:"id"`
-	ProfileID int64                  `json:"profileId"`
-	AgentID   *string                `json:"agentId"`
-	Name      string                 `json:"name"`
-	Config    *schema.HTTPMiddleware `json:"config"`
-	Enabled   bool                   `json:"enabled"`
-	IsDefault bool                   `json:"isDefault"`
-	CreatedAt *time.Time             `json:"createdAt"`
-	UpdatedAt *time.Time             `json:"updatedAt"`
+	ID        string            `json:"id"`
+	ProfileID int64             `json:"profileId"`
+	AgentID   *string           `json:"agentId"`
+	Name      string            `json:"name"`
+	Config    *MiddlewareConfig `json:"config"`
+	Enabled   bool              `json:"enabled"`
+	IsDefault bool              `json:"isDefault"`
+	CreatedAt *time.Time        `json:"createdAt"`
+	UpdatedAt *time.Time        `json:"updatedAt"`
 }
 
 type HttpRouter struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.HTTPRouter `json:"config"`
-	Enabled   bool               `json:"enabled"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
+	ID        string        `json:"id"`
+	ProfileID int64         `json:"profileId"`
+	AgentID   *string       `json:"agentId"`
+	Name      string        `json:"name"`
+	Config    *RouterConfig `json:"config"`
+	Enabled   bool          `json:"enabled"`
+	CreatedAt *time.Time    `json:"createdAt"`
+	UpdatedAt *time.Time    `json:"updatedAt"`
 }
 
 type HttpRouterDnsProvider struct {
@@ -91,25 +80,25 @@ type HttpRouterDnsProvider struct {
 }
 
 type HttpServersTransport struct {
-	ID        string                       `json:"id"`
-	ProfileID int64                        `json:"profileId"`
-	AgentID   *string                      `json:"agentId"`
-	Name      string                       `json:"name"`
-	Config    *schema.HTTPServersTransport `json:"config"`
-	Enabled   bool                         `json:"enabled"`
-	CreatedAt *time.Time                   `json:"createdAt"`
-	UpdatedAt *time.Time                   `json:"updatedAt"`
+	ID        string                  `json:"id"`
+	ProfileID int64                   `json:"profileId"`
+	AgentID   *string                 `json:"agentId"`
+	Name      string                  `json:"name"`
+	Config    *ServersTransportConfig `json:"config"`
+	Enabled   bool                    `json:"enabled"`
+	CreatedAt *time.Time              `json:"createdAt"`
+	UpdatedAt *time.Time              `json:"updatedAt"`
 }
 
 type HttpService struct {
-	ID        string              `json:"id"`
-	ProfileID int64               `json:"profileId"`
-	AgentID   *string             `json:"agentId"`
-	Name      string              `json:"name"`
-	Config    *schema.HTTPService `json:"config"`
-	Enabled   bool                `json:"enabled"`
-	CreatedAt *time.Time          `json:"createdAt"`
-	UpdatedAt *time.Time          `json:"updatedAt"`
+	ID        string         `json:"id"`
+	ProfileID int64          `json:"profileId"`
+	AgentID   *string        `json:"agentId"`
+	Name      string         `json:"name"`
+	Config    *ServiceConfig `json:"config"`
+	Enabled   bool           `json:"enabled"`
+	CreatedAt *time.Time     `json:"createdAt"`
+	UpdatedAt *time.Time     `json:"updatedAt"`
 }
 
 type Profile struct {
@@ -128,26 +117,26 @@ type Setting struct {
 }
 
 type TcpMiddleware struct {
-	ID        string                `json:"id"`
-	ProfileID int64                 `json:"profileId"`
-	AgentID   *string               `json:"agentId"`
-	Name      string                `json:"name"`
-	Config    *schema.TCPMiddleware `json:"config"`
-	Enabled   bool                  `json:"enabled"`
-	IsDefault bool                  `json:"isDefault"`
-	CreatedAt *time.Time            `json:"createdAt"`
-	UpdatedAt *time.Time            `json:"updatedAt"`
+	ID        string               `json:"id"`
+	ProfileID int64                `json:"profileId"`
+	AgentID   *string              `json:"agentId"`
+	Name      string               `json:"name"`
+	Config    *TCPMiddlewareConfig `json:"config"`
+	Enabled   bool                 `json:"enabled"`
+	IsDefault bool                 `json:"isDefault"`
+	CreatedAt *time.Time           `json:"createdAt"`
+	UpdatedAt *time.Time           `json:"updatedAt"`
 }
 
 type TcpRouter struct {
-	ID        string            `json:"id"`
-	ProfileID int64             `json:"profileId"`
-	AgentID   *string           `json:"agentId"`
-	Name      string            `json:"name"`
-	Config    *schema.TCPRouter `json:"config"`
-	Enabled   bool              `json:"enabled"`
-	CreatedAt *time.Time        `json:"createdAt"`
-	UpdatedAt *time.Time        `json:"updatedAt"`
+	ID        string           `json:"id"`
+	ProfileID int64            `json:"profileId"`
+	AgentID   *string          `json:"agentId"`
+	Name      string           `json:"name"`
+	Config    *TCPRouterConfig `json:"config"`
+	Enabled   bool             `json:"enabled"`
+	CreatedAt *time.Time       `json:"createdAt"`
+	UpdatedAt *time.Time       `json:"updatedAt"`
 }
 
 type TcpRouterDnsProvider struct {
@@ -156,47 +145,47 @@ type TcpRouterDnsProvider struct {
 }
 
 type TcpServersTransport struct {
-	ID        string                      `json:"id"`
-	ProfileID int64                       `json:"profileId"`
-	AgentID   *string                     `json:"agentId"`
-	Name      string                      `json:"name"`
-	Config    *schema.TCPServersTransport `json:"config"`
-	Enabled   bool                        `json:"enabled"`
-	CreatedAt *time.Time                  `json:"createdAt"`
-	UpdatedAt *time.Time                  `json:"updatedAt"`
+	ID        string                     `json:"id"`
+	ProfileID int64                      `json:"profileId"`
+	AgentID   *string                    `json:"agentId"`
+	Name      string                     `json:"name"`
+	Config    *TCPServersTransportConfig `json:"config"`
+	Enabled   bool                       `json:"enabled"`
+	CreatedAt *time.Time                 `json:"createdAt"`
+	UpdatedAt *time.Time                 `json:"updatedAt"`
 }
 
 type TcpService struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.TCPService `json:"config"`
-	Enabled   bool               `json:"enabled"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
-}
-
-type UdpRouter struct {
 	ID        string            `json:"id"`
 	ProfileID int64             `json:"profileId"`
 	AgentID   *string           `json:"agentId"`
 	Name      string            `json:"name"`
-	Config    *schema.UDPRouter `json:"config"`
+	Config    *TCPServiceConfig `json:"config"`
 	Enabled   bool              `json:"enabled"`
 	CreatedAt *time.Time        `json:"createdAt"`
 	UpdatedAt *time.Time        `json:"updatedAt"`
 }
 
+type UdpRouter struct {
+	ID        string           `json:"id"`
+	ProfileID int64            `json:"profileId"`
+	AgentID   *string          `json:"agentId"`
+	Name      string           `json:"name"`
+	Config    *UDPRouterConfig `json:"config"`
+	Enabled   bool             `json:"enabled"`
+	CreatedAt *time.Time       `json:"createdAt"`
+	UpdatedAt *time.Time       `json:"updatedAt"`
+}
+
 type UdpService struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.UDPService `json:"config"`
-	Enabled   bool               `json:"enabled"`
-	CreatedAt *time.Time         `json:"createdAt"`
-	UpdatedAt *time.Time         `json:"updatedAt"`
+	ID        string            `json:"id"`
+	ProfileID int64             `json:"profileId"`
+	AgentID   *string           `json:"agentId"`
+	Name      string            `json:"name"`
+	Config    *UDPServiceConfig `json:"config"`
+	Enabled   bool              `json:"enabled"`
+	CreatedAt *time.Time        `json:"createdAt"`
+	UpdatedAt *time.Time        `json:"updatedAt"`
 }
 
 type User struct {

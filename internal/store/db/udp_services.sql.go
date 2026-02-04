@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countUdpServices = `-- name: CountUdpServices :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateUdpServiceParams struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.UDPService `json:"config"`
+	ID        string            `json:"id"`
+	ProfileID int64             `json:"profileId"`
+	AgentID   *string           `json:"agentId"`
+	Name      string            `json:"name"`
+	Config    *UDPServiceConfig `json:"config"`
 }
 
 func (q *Queries) CreateUdpService(ctx context.Context, arg *CreateUdpServiceParams) (*UdpService, error) {
@@ -257,10 +255,10 @@ WHERE
 `
 
 type UpdateUdpServiceParams struct {
-	Name    string             `json:"name"`
-	Config  *schema.UDPService `json:"config"`
-	Enabled bool               `json:"enabled"`
-	ID      string             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *UDPServiceConfig `json:"config"`
+	Enabled bool              `json:"enabled"`
+	ID      string            `json:"id"`
 }
 
 func (q *Queries) UpdateUdpService(ctx context.Context, arg *UpdateUdpServiceParams) (*UdpService, error) {

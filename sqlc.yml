@@ -17,76 +17,45 @@ sql:
         overrides:
           - column: "http_routers.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "HTTPRouter"
+              type: "RouterConfig"
               pointer: true
           - column: "tcp_routers.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "TCPRouter"
+              type: "TCPRouterConfig"
               pointer: true
           - column: "udp_routers.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "UDPRouter"
+              type: "UDPRouterConfig"
               pointer: true
           - column: "http_services.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "HTTPService"
+              type: "ServiceConfig"
               pointer: true
           - column: "tcp_services.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "TCPService"
+              type: "TCPServiceConfig"
               pointer: true
           - column: "udp_services.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "UDPService"
+              type: "UDPServiceConfig"
               pointer: true
           - column: "http_middlewares.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "HTTPMiddleware"
+              type: "MiddlewareConfig"
               pointer: true
           - column: "tcp_middlewares.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "TCPMiddleware"
+              type: "TCPMiddlewareConfig"
               pointer: true
           - column: "http_servers_transports.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "HTTPServersTransport"
+              type: "ServersTransportConfig"
               pointer: true
           - column: "tcp_servers_transports.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "TCPServersTransport"
-              pointer: true
-          - column: "traefik_instances.config"
-            go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Configuration"
-              pointer: true
-          - column: "traefik_instances.entrypoints"
-            go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "EntryPoints"
-              pointer: true
-          - column: "traefik_instances.overview"
-            go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Overview"
-              pointer: true
-          - column: "traefik_instances.version"
-            go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
-              type: "Version"
+              type: "TCPServersTransportConfig"
               pointer: true
           - column: "dns_providers.config"
             go_type:
-              import: "github.com/mizuchilabs/mantrae/internal/store/schema"
               type: "DNSProviderConfig"
               pointer: true

@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countTcpRouters = `-- name: CountTcpRouters :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateTcpRouterParams struct {
-	ID        string            `json:"id"`
-	ProfileID int64             `json:"profileId"`
-	AgentID   *string           `json:"agentId"`
-	Name      string            `json:"name"`
-	Config    *schema.TCPRouter `json:"config"`
+	ID        string           `json:"id"`
+	ProfileID int64            `json:"profileId"`
+	AgentID   *string          `json:"agentId"`
+	Name      string           `json:"name"`
+	Config    *TCPRouterConfig `json:"config"`
 }
 
 func (q *Queries) CreateTcpRouter(ctx context.Context, arg *CreateTcpRouterParams) (*TcpRouter, error) {
@@ -137,10 +135,10 @@ type GetTcpRoutersUsingEntryPointParams struct {
 }
 
 type GetTcpRoutersUsingEntryPointRow struct {
-	ID      string            `json:"id"`
-	Name    string            `json:"name"`
-	Config  *schema.TCPRouter `json:"config"`
-	Enabled bool              `json:"enabled"`
+	ID      string           `json:"id"`
+	Name    string           `json:"name"`
+	Config  *TCPRouterConfig `json:"config"`
+	Enabled bool             `json:"enabled"`
 }
 
 func (q *Queries) GetTcpRoutersUsingEntryPoint(ctx context.Context, arg *GetTcpRoutersUsingEntryPointParams) ([]*GetTcpRoutersUsingEntryPointRow, error) {
@@ -199,10 +197,10 @@ type GetTcpRoutersUsingMiddlewareParams struct {
 }
 
 type GetTcpRoutersUsingMiddlewareRow struct {
-	ID      string            `json:"id"`
-	Name    string            `json:"name"`
-	Config  *schema.TCPRouter `json:"config"`
-	Enabled bool              `json:"enabled"`
+	ID      string           `json:"id"`
+	Name    string           `json:"name"`
+	Config  *TCPRouterConfig `json:"config"`
+	Enabled bool             `json:"enabled"`
 }
 
 func (q *Queries) GetTcpRoutersUsingMiddleware(ctx context.Context, arg *GetTcpRoutersUsingMiddlewareParams) ([]*GetTcpRoutersUsingMiddlewareRow, error) {
@@ -350,10 +348,10 @@ WHERE
 `
 
 type UpdateTcpRouterParams struct {
-	Name    string            `json:"name"`
-	Config  *schema.TCPRouter `json:"config"`
-	Enabled bool              `json:"enabled"`
-	ID      string            `json:"id"`
+	Name    string           `json:"name"`
+	Config  *TCPRouterConfig `json:"config"`
+	Enabled bool             `json:"enabled"`
+	ID      string           `json:"id"`
 }
 
 func (q *Queries) UpdateTcpRouter(ctx context.Context, arg *UpdateTcpRouterParams) (*TcpRouter, error) {

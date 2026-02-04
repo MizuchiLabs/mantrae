@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countTcpServersTransports = `-- name: CountTcpServersTransports :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateTcpServersTransportParams struct {
-	ID        string                      `json:"id"`
-	ProfileID int64                       `json:"profileId"`
-	AgentID   *string                     `json:"agentId"`
-	Name      string                      `json:"name"`
-	Config    *schema.TCPServersTransport `json:"config"`
+	ID        string                     `json:"id"`
+	ProfileID int64                      `json:"profileId"`
+	AgentID   *string                    `json:"agentId"`
+	Name      string                     `json:"name"`
+	Config    *TCPServersTransportConfig `json:"config"`
 }
 
 func (q *Queries) CreateTcpServersTransport(ctx context.Context, arg *CreateTcpServersTransportParams) (*TcpServersTransport, error) {
@@ -226,10 +224,10 @@ WHERE
 `
 
 type UpdateTcpServersTransportParams struct {
-	Name    string                      `json:"name"`
-	Config  *schema.TCPServersTransport `json:"config"`
-	Enabled bool                        `json:"enabled"`
-	ID      string                      `json:"id"`
+	Name    string                     `json:"name"`
+	Config  *TCPServersTransportConfig `json:"config"`
+	Enabled bool                       `json:"enabled"`
+	ID      string                     `json:"id"`
 }
 
 func (q *Queries) UpdateTcpServersTransport(ctx context.Context, arg *UpdateTcpServersTransportParams) (*TcpServersTransport, error) {

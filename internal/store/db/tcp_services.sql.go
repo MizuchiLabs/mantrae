@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countTcpServices = `-- name: CountTcpServices :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateTcpServiceParams struct {
-	ID        string             `json:"id"`
-	ProfileID int64              `json:"profileId"`
-	AgentID   *string            `json:"agentId"`
-	Name      string             `json:"name"`
-	Config    *schema.TCPService `json:"config"`
+	ID        string            `json:"id"`
+	ProfileID int64             `json:"profileId"`
+	AgentID   *string           `json:"agentId"`
+	Name      string            `json:"name"`
+	Config    *TCPServiceConfig `json:"config"`
 }
 
 func (q *Queries) CreateTcpService(ctx context.Context, arg *CreateTcpServiceParams) (*TcpService, error) {
@@ -257,10 +255,10 @@ WHERE
 `
 
 type UpdateTcpServiceParams struct {
-	Name    string             `json:"name"`
-	Config  *schema.TCPService `json:"config"`
-	Enabled bool               `json:"enabled"`
-	ID      string             `json:"id"`
+	Name    string            `json:"name"`
+	Config  *TCPServiceConfig `json:"config"`
+	Enabled bool              `json:"enabled"`
+	ID      string            `json:"id"`
 }
 
 func (q *Queries) UpdateTcpService(ctx context.Context, arg *UpdateTcpServiceParams) (*TcpService, error) {

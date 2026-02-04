@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countTcpMiddlewares = `-- name: CountTcpMiddlewares :one
@@ -51,12 +49,12 @@ VALUES
 `
 
 type CreateTcpMiddlewareParams struct {
-	ID        string                `json:"id"`
-	ProfileID int64                 `json:"profileId"`
-	AgentID   *string               `json:"agentId"`
-	Name      string                `json:"name"`
-	Config    *schema.TCPMiddleware `json:"config"`
-	IsDefault bool                  `json:"isDefault"`
+	ID        string               `json:"id"`
+	ProfileID int64                `json:"profileId"`
+	AgentID   *string              `json:"agentId"`
+	Name      string               `json:"name"`
+	Config    *TCPMiddlewareConfig `json:"config"`
+	IsDefault bool                 `json:"isDefault"`
 }
 
 func (q *Queries) CreateTcpMiddleware(ctx context.Context, arg *CreateTcpMiddlewareParams) (*TcpMiddleware, error) {
@@ -254,11 +252,11 @@ WHERE
 `
 
 type UpdateTcpMiddlewareParams struct {
-	Name      string                `json:"name"`
-	Config    *schema.TCPMiddleware `json:"config"`
-	Enabled   bool                  `json:"enabled"`
-	IsDefault bool                  `json:"isDefault"`
-	ID        string                `json:"id"`
+	Name      string               `json:"name"`
+	Config    *TCPMiddlewareConfig `json:"config"`
+	Enabled   bool                 `json:"enabled"`
+	IsDefault bool                 `json:"isDefault"`
+	ID        string               `json:"id"`
 }
 
 func (q *Queries) UpdateTcpMiddleware(ctx context.Context, arg *UpdateTcpMiddlewareParams) (*TcpMiddleware, error) {

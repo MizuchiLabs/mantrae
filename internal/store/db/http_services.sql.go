@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 )
 
 const countHttpServices = `-- name: CountHttpServices :one
@@ -44,11 +42,11 @@ VALUES
 `
 
 type CreateHttpServiceParams struct {
-	ID        string              `json:"id"`
-	ProfileID int64               `json:"profileId"`
-	AgentID   *string             `json:"agentId"`
-	Name      string              `json:"name"`
-	Config    *schema.HTTPService `json:"config"`
+	ID        string         `json:"id"`
+	ProfileID int64          `json:"profileId"`
+	AgentID   *string        `json:"agentId"`
+	Name      string         `json:"name"`
+	Config    *ServiceConfig `json:"config"`
 }
 
 func (q *Queries) CreateHttpService(ctx context.Context, arg *CreateHttpServiceParams) (*HttpService, error) {
@@ -257,10 +255,10 @@ WHERE
 `
 
 type UpdateHttpServiceParams struct {
-	Name    string              `json:"name"`
-	Config  *schema.HTTPService `json:"config"`
-	Enabled bool                `json:"enabled"`
-	ID      string              `json:"id"`
+	Name    string         `json:"name"`
+	Config  *ServiceConfig `json:"config"`
+	Enabled bool           `json:"enabled"`
+	ID      string         `json:"id"`
 }
 
 func (q *Queries) UpdateHttpService(ctx context.Context, arg *UpdateHttpServiceParams) (*HttpService, error) {
