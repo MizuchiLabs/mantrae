@@ -135,15 +135,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteEntryPointByIDStmt, err = db.PrepareContext(ctx, deleteEntryPointByID); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteEntryPointByID: %w", err)
 	}
-	if q.deleteErrorByIdStmt, err = db.PrepareContext(ctx, deleteErrorById); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteErrorById: %w", err)
-	}
-	if q.deleteErrorsByProfileStmt, err = db.PrepareContext(ctx, deleteErrorsByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteErrorsByProfile: %w", err)
-	}
-	if q.deleteErrorsByProfileCategoryStmt, err = db.PrepareContext(ctx, deleteErrorsByProfileCategory); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteErrorsByProfileCategory: %w", err)
-	}
 	if q.deleteHttpMiddlewareStmt, err = db.PrepareContext(ctx, deleteHttpMiddleware); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteHttpMiddleware: %w", err)
 	}
@@ -215,9 +206,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getEntryPointStmt, err = db.PrepareContext(ctx, getEntryPoint); err != nil {
 		return nil, fmt.Errorf("error preparing query GetEntryPoint: %w", err)
-	}
-	if q.getErrorsByProfileStmt, err = db.PrepareContext(ctx, getErrorsByProfile); err != nil {
-		return nil, fmt.Errorf("error preparing query GetErrorsByProfile: %w", err)
 	}
 	if q.getHttpMiddlewareStmt, err = db.PrepareContext(ctx, getHttpMiddleware); err != nil {
 		return nil, fmt.Errorf("error preparing query GetHttpMiddleware: %w", err)
@@ -309,9 +297,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.listEntryPointsStmt, err = db.PrepareContext(ctx, listEntryPoints); err != nil {
 		return nil, fmt.Errorf("error preparing query ListEntryPoints: %w", err)
 	}
-	if q.listErrorsStmt, err = db.PrepareContext(ctx, listErrors); err != nil {
-		return nil, fmt.Errorf("error preparing query ListErrors: %w", err)
-	}
 	if q.listHttpMiddlewaresStmt, err = db.PrepareContext(ctx, listHttpMiddlewares); err != nil {
 		return nil, fmt.Errorf("error preparing query ListHttpMiddlewares: %w", err)
 	}
@@ -380,9 +365,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
-	}
-	if q.logErrorStmt, err = db.PrepareContext(ctx, logError); err != nil {
-		return nil, fmt.Errorf("error preparing query LogError: %w", err)
 	}
 	if q.unsetDefaultDNSProviderStmt, err = db.PrepareContext(ctx, unsetDefaultDNSProvider); err != nil {
 		return nil, fmt.Errorf("error preparing query UnsetDefaultDNSProvider: %w", err)
@@ -640,21 +622,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteEntryPointByIDStmt: %w", cerr)
 		}
 	}
-	if q.deleteErrorByIdStmt != nil {
-		if cerr := q.deleteErrorByIdStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteErrorByIdStmt: %w", cerr)
-		}
-	}
-	if q.deleteErrorsByProfileStmt != nil {
-		if cerr := q.deleteErrorsByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteErrorsByProfileStmt: %w", cerr)
-		}
-	}
-	if q.deleteErrorsByProfileCategoryStmt != nil {
-		if cerr := q.deleteErrorsByProfileCategoryStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteErrorsByProfileCategoryStmt: %w", cerr)
-		}
-	}
 	if q.deleteHttpMiddlewareStmt != nil {
 		if cerr := q.deleteHttpMiddlewareStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteHttpMiddlewareStmt: %w", cerr)
@@ -773,11 +740,6 @@ func (q *Queries) Close() error {
 	if q.getEntryPointStmt != nil {
 		if cerr := q.getEntryPointStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getEntryPointStmt: %w", cerr)
-		}
-	}
-	if q.getErrorsByProfileStmt != nil {
-		if cerr := q.getErrorsByProfileStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getErrorsByProfileStmt: %w", cerr)
 		}
 	}
 	if q.getHttpMiddlewareStmt != nil {
@@ -930,11 +892,6 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing listEntryPointsStmt: %w", cerr)
 		}
 	}
-	if q.listErrorsStmt != nil {
-		if cerr := q.listErrorsStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listErrorsStmt: %w", cerr)
-		}
-	}
 	if q.listHttpMiddlewaresStmt != nil {
 		if cerr := q.listHttpMiddlewaresStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listHttpMiddlewaresStmt: %w", cerr)
@@ -1048,11 +1005,6 @@ func (q *Queries) Close() error {
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
-		}
-	}
-	if q.logErrorStmt != nil {
-		if cerr := q.logErrorStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing logErrorStmt: %w", cerr)
 		}
 	}
 	if q.unsetDefaultDNSProviderStmt != nil {
@@ -1241,9 +1193,6 @@ type Queries struct {
 	deleteAgentStmt                      *sql.Stmt
 	deleteDnsProviderStmt                *sql.Stmt
 	deleteEntryPointByIDStmt             *sql.Stmt
-	deleteErrorByIdStmt                  *sql.Stmt
-	deleteErrorsByProfileStmt            *sql.Stmt
-	deleteErrorsByProfileCategoryStmt    *sql.Stmt
 	deleteHttpMiddlewareStmt             *sql.Stmt
 	deleteHttpRouterStmt                 *sql.Stmt
 	deleteHttpRouterDNSProviderStmt      *sql.Stmt
@@ -1268,7 +1217,6 @@ type Queries struct {
 	getDnsProvidersByHttpRouterStmt      *sql.Stmt
 	getDnsProvidersByTcpRouterStmt       *sql.Stmt
 	getEntryPointStmt                    *sql.Stmt
-	getErrorsByProfileStmt               *sql.Stmt
 	getHttpMiddlewareStmt                *sql.Stmt
 	getHttpRouterStmt                    *sql.Stmt
 	getHttpRouterDomainsStmt             *sql.Stmt
@@ -1299,7 +1247,6 @@ type Queries struct {
 	listAuditLogsStmt                    *sql.Stmt
 	listDnsProvidersStmt                 *sql.Stmt
 	listEntryPointsStmt                  *sql.Stmt
-	listErrorsStmt                       *sql.Stmt
 	listHttpMiddlewaresStmt              *sql.Stmt
 	listHttpMiddlewaresEnabledStmt       *sql.Stmt
 	listHttpRoutersStmt                  *sql.Stmt
@@ -1323,7 +1270,6 @@ type Queries struct {
 	listUdpServicesStmt                  *sql.Stmt
 	listUdpServicesEnabledStmt           *sql.Stmt
 	listUsersStmt                        *sql.Stmt
-	logErrorStmt                         *sql.Stmt
 	unsetDefaultDNSProviderStmt          *sql.Stmt
 	unsetDefaultEntryPointStmt           *sql.Stmt
 	unsetDefaultHttpMiddlewareStmt       *sql.Stmt
@@ -1389,9 +1335,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteAgentStmt:                      q.deleteAgentStmt,
 		deleteDnsProviderStmt:                q.deleteDnsProviderStmt,
 		deleteEntryPointByIDStmt:             q.deleteEntryPointByIDStmt,
-		deleteErrorByIdStmt:                  q.deleteErrorByIdStmt,
-		deleteErrorsByProfileStmt:            q.deleteErrorsByProfileStmt,
-		deleteErrorsByProfileCategoryStmt:    q.deleteErrorsByProfileCategoryStmt,
 		deleteHttpMiddlewareStmt:             q.deleteHttpMiddlewareStmt,
 		deleteHttpRouterStmt:                 q.deleteHttpRouterStmt,
 		deleteHttpRouterDNSProviderStmt:      q.deleteHttpRouterDNSProviderStmt,
@@ -1416,7 +1359,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getDnsProvidersByHttpRouterStmt:      q.getDnsProvidersByHttpRouterStmt,
 		getDnsProvidersByTcpRouterStmt:       q.getDnsProvidersByTcpRouterStmt,
 		getEntryPointStmt:                    q.getEntryPointStmt,
-		getErrorsByProfileStmt:               q.getErrorsByProfileStmt,
 		getHttpMiddlewareStmt:                q.getHttpMiddlewareStmt,
 		getHttpRouterStmt:                    q.getHttpRouterStmt,
 		getHttpRouterDomainsStmt:             q.getHttpRouterDomainsStmt,
@@ -1447,7 +1389,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listAuditLogsStmt:                    q.listAuditLogsStmt,
 		listDnsProvidersStmt:                 q.listDnsProvidersStmt,
 		listEntryPointsStmt:                  q.listEntryPointsStmt,
-		listErrorsStmt:                       q.listErrorsStmt,
 		listHttpMiddlewaresStmt:              q.listHttpMiddlewaresStmt,
 		listHttpMiddlewaresEnabledStmt:       q.listHttpMiddlewaresEnabledStmt,
 		listHttpRoutersStmt:                  q.listHttpRoutersStmt,
@@ -1471,7 +1412,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		listUdpServicesStmt:                  q.listUdpServicesStmt,
 		listUdpServicesEnabledStmt:           q.listUdpServicesEnabledStmt,
 		listUsersStmt:                        q.listUsersStmt,
-		logErrorStmt:                         q.logErrorStmt,
 		unsetDefaultDNSProviderStmt:          q.unsetDefaultDNSProviderStmt,
 		unsetDefaultEntryPointStmt:           q.unsetDefaultEntryPointStmt,
 		unsetDefaultHttpMiddlewareStmt:       q.unsetDefaultHttpMiddlewareStmt,

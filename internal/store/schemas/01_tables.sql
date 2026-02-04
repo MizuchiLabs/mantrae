@@ -70,16 +70,6 @@ CREATE TABLE IF NOT EXISTS entry_points (
   UNIQUE (profile_id, name)
 );
 
-CREATE TABLE IF NOT EXISTS errors (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  profile_id INTEGER NOT NULL,
-  category TEXT NOT NULL,
-  message TEXT NOT NULL,
-  details TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (profile_id) REFERENCES profiles (id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS http_middlewares (
   id TEXT PRIMARY KEY,
   profile_id INTEGER NOT NULL,
