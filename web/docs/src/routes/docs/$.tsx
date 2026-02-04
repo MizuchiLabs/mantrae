@@ -15,6 +15,8 @@ export const Route = createFileRoute("/docs/$")({
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];
     const data = await loader({ data: slugs });
+    // In production on GH Pages, the static server functions might be served from /mantrae/_server
+    // but the client-side router needs to know the absolute path relative to the domain if it's hitting the index.html
     await clientLoader.preload(data.path);
     return data;
   },
