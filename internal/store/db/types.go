@@ -33,6 +33,10 @@ func (j JSONType[T]) Value() (driver.Value, error) {
 	return json.Marshal(j.Data)
 }
 
+func (j JSONType[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(j.Data)
+}
+
 // Type aliases for cleaner usage
 type (
 	RouterConfig              = JSONType[dynamic.Router]

@@ -324,7 +324,7 @@ func TimePtr(t time.Time) *time.Time {
 
 func UnmarshalStruct[T any](s *structpb.Struct) (*JSONType[T], error) {
 	if s == nil {
-		return nil, nil
+		return &JSONType[T]{Data: new(T)}, nil
 	}
 	data, err := s.MarshalJSON()
 	if err != nil {

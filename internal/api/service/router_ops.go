@@ -319,7 +319,7 @@ func (s *TCPRouterOps) Get(
 	if err != nil {
 		return nil, err
 	}
-	dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, result.ID)
+	dnsProvider, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, result.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -328,7 +328,7 @@ func (s *TCPRouterOps) Get(
 		router.DnsProviders = append(router.DnsProviders, p.ToProto())
 	}
 	return &mantraev1.GetRouterResponse{
-		Router: result.ToProto(),
+		Router: router,
 	}, nil
 }
 
@@ -450,8 +450,19 @@ func (s *TCPRouterOps) Update(
 		}
 	}
 
+	router := result.ToProto()
+
+	dnsProviders, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, result.ID)
+	if err != nil {
+		return nil, err
+	}
+	router.DnsProviders = make([]*mantraev1.DNSProvider, 0, len(dnsProviders))
+	for _, p := range dnsProviders {
+		router.DnsProviders = append(router.DnsProviders, p.ToProto())
+	}
+
 	return &mantraev1.UpdateRouterResponse{
-		Router: result.ToProto(),
+		Router: router,
 	}, nil
 }
 
