@@ -9,6 +9,5 @@ export function getRouter() {
     scrollRestoration: true,
     trailingSlash: "always",
     defaultNotFoundComponent: NotFound,
-    basepath: import.meta.env.PROD ? "/mantrae" : "/",
   });
 }

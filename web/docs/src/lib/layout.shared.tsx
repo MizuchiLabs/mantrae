@@ -15,7 +15,7 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: "Documentation",
-        url: (import.meta.env.PROD ? "/mantrae" : "") + "/docs",
+        url: "/docs",
         on: "nav",
       },
     ],
