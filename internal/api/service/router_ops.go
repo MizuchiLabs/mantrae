@@ -8,6 +8,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
+	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
@@ -146,6 +147,8 @@ func (s *HTTPRouterOps) Update(
 	if params.Config.Data.Service == "" {
 		params.Config.Data.Service = params.Name
 	}
+	params.Config.Data.EntryPoints = util.CleanSliceStr(params.Config.Data.EntryPoints)
+	params.Config.Data.Middlewares = util.CleanSliceStr(params.Config.Data.Middlewares)
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.Q.GetDnsProvidersByHttpRouter(ctx, params.ID)
@@ -381,6 +384,8 @@ func (s *TCPRouterOps) Update(
 	if params.Config.Data.Service == "" {
 		params.Config.Data.Service = params.Name
 	}
+	params.Config.Data.EntryPoints = util.CleanSliceStr(params.Config.Data.EntryPoints)
+	params.Config.Data.Middlewares = util.CleanSliceStr(params.Config.Data.Middlewares)
 
 	// Update DNS Providers
 	existing, err := s.app.Conn.Q.GetDnsProvidersByTcpRouter(ctx, params.ID)
@@ -608,6 +613,7 @@ func (s *UDPRouterOps) Update(
 	if params.Config.Data.Service == "" {
 		params.Config.Data.Service = params.Name
 	}
+	params.Config.Data.EntryPoints = util.CleanSliceStr(params.Config.Data.EntryPoints)
 
 	result, err := s.app.Conn.Q.UpdateUdpRouter(ctx, params)
 	if err != nil {

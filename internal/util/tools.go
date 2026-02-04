@@ -88,3 +88,16 @@ func CopyFile(src, dst string) error {
 
 	return dstFile.Sync()
 }
+
+func CleanSliceStr(in []string) []string {
+	out := in[:0]
+	for _, s := range in {
+		if s != "" {
+			out = append(out, s)
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}

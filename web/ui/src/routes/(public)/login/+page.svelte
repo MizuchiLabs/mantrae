@@ -3,7 +3,6 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import PasswordInput from '$lib/components/ui/password-input/password-input.svelte';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import logo from '$lib/assets/logo.svg';
 	import { user } from '$lib/api/users.svelte';
 	import { BackendURL } from '$lib/config';
@@ -75,8 +74,6 @@
 					<span class="text-xs text-muted-foreground">Or continue With</span>
 					<hr class="border-dashed" />
 				</div>
-
-				<Separator class="my-5" />
 			{/if}
 
 			{#if oidcStatus.data.oidcEnabled}

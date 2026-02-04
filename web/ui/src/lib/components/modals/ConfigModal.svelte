@@ -52,14 +52,18 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="flex max-h-[85vh] w-full max-w-4xl flex-col gap-0 overflow-hidden p-0">
+	<Dialog.Content class="flex max-h-[80vh] flex-col gap-0 overflow-hidden p-0">
 		<Dialog.Header class="border-b px-6 py-4">
 			<Dialog.Title>Configuration</Dialog.Title>
 			<Dialog.Description>View the current dynamic configuration.</Dialog.Description>
 		</Dialog.Header>
 
 		<div class="flex min-h-0 flex-1 flex-col">
-			<Tabs.Root value={lang} onValueChange={(v) => (lang = v as 'json' | 'yaml')}>
+			<Tabs.Root
+				value={lang}
+				onValueChange={(v) => (lang = v as 'json' | 'yaml')}
+				class="flex min-h-0 flex-1 flex-col"
+			>
 				<div class="flex items-center justify-between border-b bg-muted/40 px-4 py-2">
 					<Tabs.List class="w-full">
 						<Tabs.Trigger value="json">JSON</Tabs.Trigger>
@@ -68,7 +72,7 @@
 					<CopyButton text={formatted} class="ml-2" />
 				</div>
 
-				<div class="relative min-h-0 flex-1 overflow-auto bg-card">
+				<div class="min-h-0 overflow-y-auto bg-card">
 					{#if codeHtml}
 						<div class="tab-size-2 p-4 font-mono text-sm leading-relaxed">
 							{@html codeHtml}

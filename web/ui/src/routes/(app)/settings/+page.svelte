@@ -339,7 +339,11 @@
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Authentication</Card.Title>
-					<Card.Description>Manage OIDC and login methods.</Card.Description>
+					<Card.Description>
+						Manage OIDC and login methods. Callback endpoint is <span class="font-mono">
+							/oidc/callback
+						</span>.
+					</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-6">
 					{@render settingsGroup('oauth')}
