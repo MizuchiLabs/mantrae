@@ -1,0 +1,44 @@
+import react from "@vitejs/plugin-react";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { defineConfig } from "vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "@tailwindcss/vite";
+import mdx from "fumadocs-mdx/vite";
+import svgr from "vite-plugin-svgr";
+import { nitro } from "nitro/vite";
+
+export default defineConfig({
+  base: process.env.NODE_ENV === "production" ? "/mantrae/" : "/",
+  server: {
+    port: 3000,
+  },
+  plugins: [
+    mdx(await import("./source.config")),
+    tailwindcss(),
+    tsConfigPaths({
+      projects: ["./tsconfig.json"],
+    }),
+    svgr(),
+    tanstackStart({
+      spa: {
+        enabled: true,
+        prerender: {
+          outputPath: "index.html",
+          enabled: true,
+          crawlLinks: true,
+        },
+      },
+      pages: [
+        {
+          path: "/docs",
+        },
+        {
+          path: "/api/search",
+        },
+      ],
+    }),
+    react(),
+    // please see https://tanstack.com/start/latest/docs/framework/react/guide/hosting#nitro for guides on hosting
+    nitro(),
+  ],
+});

@@ -1,0 +1,57 @@
+---
+title: Introduction
+description: Welcome to the Mantræ documentation.
+---
+
+import { Layout, Activity, Globe, Database } from "lucide-react";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Card, Cards } from "fumadocs-ui/components/card";
+
+Mantræ is a web-based configuration manager for Traefik's dynamic configuration file. It provides a clean, intuitive interface to manage your routers, middleware, and services without editing YAML files manually.
+
+<Callout title="Important" type="warn">
+  Mantræ is **not** a dashboard for Traefik. It operates independently and does not monitor
+  Traefik's status. Instead, Traefik connects to Mantræ to fetch its dynamic configuration.
+</Callout>
+
+## Features
+
+<Cards>
+  <Card
+    title="Clean Interface"
+    icon={<Layout />}
+    description="Manage your Traefik configuration through a simple web UI."
+    href="/docs/management/profiles"
+  />
+  <Card
+    title="Agent Mode"
+    icon={<Activity />}
+    description="Automatic container discovery with the mantraed agent."
+    href="/docs/management/agents"
+  />
+  <Card
+    title="DNS Integration"
+    icon={<Globe />}
+    description="Automatic DNS record management for multiple providers."
+    href="/docs/management/dns"
+  />
+  <Card
+    title="Backups"
+    icon={<Database />}
+    description="Secure and automatic configuration backups."
+    href="/docs/management/backups"
+  />
+</Cards>
+
+## Why Mantræ?
+
+Traefik is incredibly powerful, but managing its dynamic configuration through YAML files can become cumbersome as your infrastructure grows. Mantræ simplifies this by providing:
+
+- **Visual Management**: See your entire routing infrastructure at a glance.
+- **Centralized Control**: Manage multiple Traefik instances (Profiles) from one place.
+- **Automation**: Let agents discover your containers and DNS integration handle your records.
+- **Security**: OIDC integration and audit logs for team environments.
+
+## Getting Started
+
+Ready to dive in? Follow our [Quickstart Guide](/docs/quickstart) to get Mantræ up and running in minutes.

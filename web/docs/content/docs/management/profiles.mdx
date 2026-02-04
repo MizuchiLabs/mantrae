@@ -1,0 +1,78 @@
+---
+title: Profiles
+description: Manage multiple Traefik instances from a single Mantræ installation.
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Profiles allow you to isolate configuration environments. Each profile is a completely separate instance within Mantræ, making it perfect for managing different environments (dev, staging, prod) or multiple clusters.
+
+## What's in a Profile?
+
+Each profile manages its own set of:
+
+- **Routers**
+- **Services**
+- **Middlewares**
+- **Server Transports**
+
+## Creating a Profile
+
+<Steps>
+<Step>
+### Open the Profile Menu
+Click the profile name in the top navigation bar.
+</Step>
+
+<Step>
+### Select "Create New Profile"
+Follow the prompts to name your profile (e.g., `production`).
+</Step>
+
+<Step>
+### Generate a Token
+A security token is automatically generated. This token is required by Traefik to pull the configuration.
+</Step>
+</Steps>
+
+## Connecting Traefik
+
+Once a profile is created, you can point Traefik to its unique API endpoint.
+
+```
+http://mantrae:3000/api/PROFILE_NAME?token=YOUR_TOKEN
+```
+
+### Example Traefik Configuration
+
+<Tabs items={['Static Config', 'Docker Compose']}>
+  <Tab value="Static Config">
+    ```yaml
+    providers:
+      http:
+        endpoint: "http://mantrae:3000/api/production?token=TOKEN"
+        pollInterval: "5s"
+    ```
+  </Tab>
+  <Tab value="Docker Compose">
+    ```yaml
+    services:
+      traefik:
+        image: traefik:latest
+        command:
+          - --providers.http.endpoint=http://mantrae:3000/api/production?token=TOKEN
+          - --providers.http.pollInterval=5s
+    ```
+  </Tab>
+</Tabs>
+
+## Switching Between Profiles
+
+Use the dropdown in the top navigation to switch the active profile. All configuration views (Routers, DNS, etc.) will update to show the data for the selected profile.
+
+## Token Security
+
+- Each profile has a **unique token**.
+- If a token is compromised, you can **regenerate** it in the profile settings.
+- Ensure your Traefik instances are updated immediately after token regeneration.

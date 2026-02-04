@@ -1,0 +1,47 @@
+---
+title: Authentication
+description: Secure your Mantræ instance with local or OIDC authentication.
+---
+
+Mantræ supports both local authentication and OIDC (OpenID Connect) for single sign-on.
+
+## Local Authentication
+
+This is the default authentication method using a username and password stored in the database.
+
+- **Initial Admin**: Set via the `ADMIN_PASSWORD` environment variable.
+- **Password Resets**: Can be performed via the [CLI](/docs/configuration/environment#command-line-interface).
+
+## OIDC (Single Sign-On)
+
+You can integrate Mantræ with any OIDC-compliant provider (like Keycloak, Authentik, Authelia, or Google).
+
+### Configuration
+
+1. Navigate to **Settings** → **Authentication**.
+2. Enable OIDC.
+3. Fill in the provider details:
+   - **Issuer URL**: The discovery URL of your provider.
+   - **Client ID**: The application ID.
+   - **Client Secret**: The application secret (can be empty if using PKCE).
+   - **PKCE**: Enable for public clients.
+
+### Provider Settings
+
+When configuring your OIDC provider, use the following settings:
+
+- **Redirect URI**: `https://your-mantrae-domain.com/oidc/callback`
+- **Scopes**: `openid`, `profile`, `email`
+- **Grant Type**: `Authorization Code`
+
+### User Provisioning
+
+- Users are automatically created upon their first successful OIDC login.
+- Users are matched based on their **email address**.
+- Email verification is required by default.
+
+## Security Best Practices
+
+- **Use HTTPS**: OIDC authentication requires a secure connection to function correctly.
+- **Rotate Secrets**: Regularly rotate your OIDC client secrets.
+- **Fallback**: Local authentication remains active as a fallback. Use the CLI reset tool if you lose access to your OIDC provider.

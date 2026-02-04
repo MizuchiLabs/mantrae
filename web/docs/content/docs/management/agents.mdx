@@ -1,0 +1,128 @@
+---
+title: Agents (mantraed)
+description: Automatic container discovery for remote Docker hosts.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Agents in Mantræ enable automatic configuration discovery from remote Docker hosts. Instead of manually defining routers in the web UI, you can label your containers with standard Traefik labels, and the agent will automatically synchronize this information with your Mantræ server.
+
+<Callout title="Important" type="info">
+  The Mantræ agent has moved to a separate repository: [mantraed](https://github.com/MizuchiLabs/mantraed). The agent is now called `mantraed` (Mantræ daemon) and has its own container image at `ghcr.io/mizuchilabs/mantraed`.
+</Callout>
+
+## How mantraed Works
+
+`mantraed` is a lightweight binary that runs on any machine where you want to manage Docker containers. Each agent:
+
+- Discovers Docker containers and their Traefik labels on the local machine.
+- Communicates with the Mantræ server using gRPC to synchronize container information.
+- Automatically creates routers, services, and middlewares based on container labels.
+- Updates the Mantræ server when containers are added, removed, or changed.
+
+## Setting Up an Agent
+
+<Steps>
+<Step>
+### Create an Agent in Mantræ
+
+1. Log into the Mantræ web interface.
+2. Navigate to the **Agents** section.
+3. Click **Add Agent**.
+
+</Step>
+<Step>
+
+### Copy the Agent Token
+
+After creating the agent, you'll see a configuration section with:
+
+- **Agent Token** (automatically generated)
+- **Docker Run** command
+- **Docker Compose** configuration
+
+</Step>
+<Step>
+
+### Deploy the Agent
+
+Choose your deployment method:
+
+<Tabs items={['Docker Compose', 'Docker', 'Binary']}>
+  <Tab value="Docker Compose">
+    ```yaml
+    services:
+      mantraed:
+        image: ghcr.io/mizuchilabs/mantraed:latest
+        container_name: mantraed
+        network_mode: host
+        environment:
+          - TOKEN=YOUR_AGENT_TOKEN
+          - HOST=https://mantrae.example.com
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+        restart: unless-stopped
+    ```
+  </Tab>
+  <Tab value="Docker">
+    ```bash
+    docker run -d \
+       --name mantraed \
+       -e TOKEN=YOUR_AGENT_TOKEN \
+       -e HOST=https://mantrae.example.com \
+       -v /var/run/docker.sock:/var/run/docker.sock:ro \
+       ghcr.io/mizuchilabs/mantraed:latest
+    ```
+  </Tab>
+  <Tab value="Binary">
+    1. Download the `mantraed` binary from the [releases page](https://github.com/mizuchilabs/mantraed/releases).
+    2. Run the agent:
+       ```bash
+       TOKEN=YOUR_AGENT_TOKEN HOST=https://mantrae.example.com ./mantraed
+       ```
+  </Tab>
+</Tabs>
+</Step>
+</Steps>
+
+## Using Traefik Labels
+
+Once `mantraed` is running, label your containers as you normally would with Traefik. The agent will automatically collect these labels and synchronize them with the Mantræ server.
+
+### Example HTTP Service
+
+```yaml
+services:
+  whoami:
+    image: containous/whoami:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.example.com`)"
+      - "traefik.http.routers.whoami.entrypoints=websecure"
+      - "traefik.http.routers.whoami.tls=true"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+```
+
+## Agent Configuration
+
+| Variable | Description                    | Default                 |
+| -------- | ------------------------------ | ----------------------- |
+| `TOKEN`  | Agent token from Mantræ server | **Required**            |
+| `HOST`   | Mantræ server URL              | `http://localhost:3000` |
+
+## Network Configuration
+
+Agents can automatically detect their network configuration:
+
+1. **Public IP Detection**: Agents will automatically detect their public IP address.
+2. **Private Network**: For internal networks, agents can use their private IP.
+3. **Manual Override**: You can manually specify the IP address in the Mantræ UI.
+
+## Security Considerations
+
+- Each agent has a **unique token** that should be kept secret.
+- Tokens can be **rotated** at any time from the web interface.
+- Agents only need **read-only access** to the Docker socket.
+- Communication between `mantraed` and Mantræ is done via gRPC, which can be secured with TLS.

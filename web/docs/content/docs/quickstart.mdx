@@ -1,0 +1,159 @@
+---
+title: Quickstart
+description: Get Mantræ up and running in minutes.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Mantræ is a web interface for managing Traefik's dynamic configuration. It generates configuration files that Traefik consumes via its HTTP provider.
+
+## What Mantræ Does
+
+- Generates Traefik dynamic configuration (routers, services, middlewares)
+- Manages multiple configuration profiles for different environments
+- Provides optional agents for automatic Docker container discovery
+- Integrates with DNS providers (Cloudflare, PowerDNS, Technitium)
+- Backs up and restores configurations
+
+<Callout title="Note">
+  Mantræ is **not** a Traefik dashboard. It doesn't monitor Traefik's status. Instead, Traefik pulls configuration from Mantræ.
+</Callout>
+
+## Prerequisites
+
+- **Docker** (recommended) or Go runtime
+- A running **Traefik** instance
+- **OpenSSL** or similar tool for secret generation
+
+## Installation
+
+<Steps>
+<Step>
+### Generate a Secret
+
+```bash
+openssl rand -hex 16
+```
+
+</Step>
+
+<Step>
+### Deploy Mantræ
+
+Choose your deployment method:
+
+<Tabs items={['Docker Compose', 'Docker', 'Binary']}>
+  <Tab value="Docker Compose">
+    Create a `compose.yml` file:
+    ```yaml title="compose.yml"
+    services:
+      mantrae:
+        image: ghcr.io/mizuchilabs/mantrae:latest
+        container_name: mantrae
+        environment:
+          - SECRET=your-generated-secret
+          - ADMIN_PASSWORD=your-admin-password
+        ports:
+          - "3000:3000"
+        volumes:
+          - ./mantrae:/data
+        restart: unless-stopped
+    ```
+
+    Run with:
+    ```bash
+    docker compose up -d
+    ```
+
+  </Tab>
+  <Tab value="Docker">
+    ```bash
+    docker run --name mantrae \
+       -e SECRET=your-generated-secret \
+       -e ADMIN_PASSWORD=your-admin-password \
+       -p 3000:3000 \
+       -v ./mantrae:/data \
+       ghcr.io/mizuchilabs/mantrae:latest
+    ```
+  </Tab>
+  <Tab value="Binary">
+    Download from the [releases page](https://github.com/mizuchilabs/mantrae/releases), then:
+
+    ```bash
+    export SECRET=your-generated-secret
+    export ADMIN_PASSWORD=your-admin-password
+    ./mantrae
+    ```
+
+  </Tab>
+</Tabs>
+</Step>
+
+<Step>
+### Access the Interface
+
+Open [http://localhost:3000](http://localhost:3000) and log in:
+
+- **Username**: `admin`
+- **Password**: your admin password
+
+</Step>
+</Steps>
+
+## Configure Traefik
+
+Point Traefik to Mantræ's HTTP provider endpoint. You'll need a profile token (found in profile settings).
+
+<Tabs items={['traefik.yml', 'Docker Compose']}>
+  <Tab value="traefik.yml">
+    ```yaml title="traefik.yml"
+    providers:
+      http:
+        endpoint: "http://mantrae:3000/api/default?token=PROFILE_TOKEN"
+        pollInterval: "5s"
+    ```
+  </Tab>
+  <Tab value="Docker Compose">
+    ```yaml title="compose.yml"
+    services:
+      traefik:
+        image: traefik:latest
+        container_name: traefik
+        command:
+          - --providers.http.endpoint=http://mantrae:3000/api/default?token=PROFILE_TOKEN
+          - --providers.http.pollInterval=5s
+          - --entrypoints.web.address=:80
+          - --entrypoints.websecure.address=:443
+        ports:
+          - "80:80"
+          - "443:443"
+        restart: unless-stopped
+    ```
+  </Tab>
+</Tabs>
+
+Replace `PROFILE_TOKEN` with your actual token from the profile settings.
+
+## Create Your First Router
+
+1. Navigate to **Routers** in the Mantræ interface.
+2. Click **Add Router**.
+3. Configure the router:
+   - **Name**: `whoami`
+   - **Rule**: Host(\`whoami.local\`)
+   - **Service**: Create or select a service pointing to your backend.
+4. Save.
+
+Traefik will poll Mantræ and apply the configuration automatically.
+
+## Next Steps
+
+<Cards>
+  <Card title="Profiles" href="/docs/management/profiles" description="Manage multiple environments." />
+  <Card title="Agents" href="/docs/management/agents" description="Automatic container discovery." />
+  <Card title="DNS Providers" href="/docs/management/dns" description="DNS integration." />
+  <Card title="Backups" href="/docs/management/backups" description="Configuration backups." />
+</Cards>

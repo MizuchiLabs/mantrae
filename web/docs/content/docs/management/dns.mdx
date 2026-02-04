@@ -1,0 +1,68 @@
+---
+title: DNS Providers
+description: Automatic DNS record management and ACME challenge support.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+Mantræ integrates with various DNS providers to automatically manage records for your routers and facilitate Let's Encrypt DNS challenges.
+
+## Supported Providers
+
+<Cards>
+  <Card title="Cloudflare" description="Using API Tokens." />
+  <Card title="PowerDNS" description="Via REST API." />
+  <Card title="Technitium" description="Self-hosted DNS." />
+  <Card title="PiHole" description="Local DNS management." />
+</Cards>
+
+## Adding a Provider
+
+1. Navigate to the **DNS** section (globe icon) in the sidebar.
+2. Click **Add Provider**.
+3. Select your provider type and enter the required credentials.
+
+### Provider Specifics
+
+<Tabs items={['Cloudflare', 'PowerDNS', 'Technitium', 'PiHole']}>
+  <Tab value="Cloudflare">
+    - **API Token**: A scoped token with `DNS:Edit` permissions for the zones you wish to manage.
+  </Tab>
+  <Tab value="PowerDNS">
+    - **API URL**: The base URL of your PowerDNS API.
+    - **API Key**: The secret key configured in PowerDNS.
+  </Tab>
+  <Tab value="Technitium">
+    - **API URL**: Your Technitium DNS API endpoint.
+    - **API Key**: Your API authentication key.
+  </Tab>
+  <Tab value="PiHole">
+    - **API URL**: Your PiHole API endpoint.
+    - **API Token**: Your PiHole API token.
+  </Tab>
+</Tabs>
+
+## Using DNS Providers
+
+### Automatic DNS Records
+
+When you assign a DNS provider to a router:
+
+- Mantræ creates DNS `A` or `CNAME` records for the router's host rule.
+- Existing records are checked to avoid duplicates.
+- You can set a provider as **Default** to have it automatically assigned to all new routers.
+
+### Certificate Management (ACME)
+
+DNS providers enable effortless TLS certificates via the DNS-01 challenge:
+
+1. Mantræ provides the necessary credentials to Traefik.
+2. Traefik performs the ACME challenge by creating a temporary TXT record.
+3. Once validated, Let's Encrypt issues the certificate.
+
+## Security
+
+- Credentials are **encrypted at rest** in the Mantræ database.
+- DNS providers are scoped to **Profiles**, ensuring isolation.
+- We recommend using **scoped tokens** with minimal permissions.

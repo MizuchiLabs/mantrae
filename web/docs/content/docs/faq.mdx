@@ -1,0 +1,107 @@
+---
+title: FAQ
+description: Frequently Asked Questions about Mantræ.
+---
+
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+## General Questions
+
+<Accordions>
+<Accordion title="Why would I use Mantræ instead of Traefik's built-in configuration discovery?">
+  Traefik's automatic discovery works great for Docker Swarm and Kubernetes, but many users run Traefik in simpler setups where these features aren't available. Mantræ fills this gap by:
+
+- Providing a visual interface for managing Traefik's file provider configuration.
+- Supporting multi-host Docker setups without requiring Swarm or Kubernetes.
+- Offering centralized management of multiple Traefik instances.
+- Automatically managing DNS records alongside routing configuration.
+- Enabling team collaboration with user management and audit logs.
+
+</Accordion>
+
+<Accordion title="Is Mantræ a replacement for Traefik's dashboard?">
+  No. Mantræ is a **configuration manager**, not a monitoring dashboard. It generates the dynamic configuration that Traefik consumes via its HTTP provider. Traefik's dashboard shows real-time routing status and metrics, while Mantræ helps you create and manage those routes.
+</Accordion>
+
+<Accordion title="Can I use Mantræ alongside Traefik's other providers (Docker, Kubernetes, etc.)?">
+  Yes! Mantræ uses Traefik's HTTP provider, which works alongside other providers. You can have Traefik auto-discover some services while managing others through Mantræ. Just be careful to avoid naming conflicts between configurations.
+</Accordion>
+
+<Accordion title="What happens if Mantræ goes down?">
+  Traefik caches the configuration it receives from Mantræ. If Mantræ becomes unavailable:
+  - Existing routes continue to work with the last cached configuration.
+  - You cannot make configuration changes until Mantræ is back online.
+  - DNS updates (if configured) won't happen until Mantræ recovers.
+</Accordion>
+</Accordions>
+
+## Profiles
+
+<Accordions>
+<Accordion title="What are profiles and when should I use them?">
+  Profiles are isolated configuration environments within Mantræ. Each profile has its own:
+  - Routers, services, and middleware.
+  - DNS provider settings.
+  - Agent connections.
+  - API token for Traefik.
+
+Common use cases:
+
+- Separate configurations for development, staging, and production.
+- Different Traefik instances for different teams or projects.
+- Isolating configurations by customer in managed hosting scenarios.
+
+</Accordion>
+</Accordions>
+
+## Agents
+
+<Accordions>
+<Accordion title="What do agents do and when do I need them?">
+  Agents watch Docker containers on remote hosts and automatically create Mantræ configurations based on container labels. Use agents when:
+
+- Your Docker hosts can't be reached directly by Mantræ (behind NAT/firewall).
+- You want automatic discovery similar to Traefik's Docker provider.
+- Managing multiple Docker hosts from a single Mantræ instance.
+- You prefer labeling containers over manual configuration.
+
+If you're managing static configurations or non-Docker services, you don't need agents.
+
+</Accordion>
+
+<Accordion title="How do agents communicate with Mantræ?">
+  Agents establish **outbound** connections to the Mantræ server using gRPC. This means:
+  - Agents work behind firewalls and NAT (only outbound access needed).
+  - No ports need to be opened on the agent's host.
+  - Communication can be secured with HTTPS/TLS.
+  - Mantræ server must be reachable from agent hosts.
+</Accordion>
+</Accordions>
+
+## DNS Integration
+
+<Accordions>
+<Accordion title="Which DNS providers are supported?">
+  Currently supported:
+  - Cloudflare
+  - PowerDNS
+  - Technitium DNS
+  - PiHole
+
+DNS integration automatically creates/updates DNS records when you configure routers, eliminating manual DNS management.
+
+</Accordion>
+
+<Accordion title="How do I handle multiple accounts for the same DNS provider?">
+  Traefik's ACME challenge only supports one provider instance. Use CNAME delegation:
+
+1. Configure the primary account (e.g., Cloudflare account A with `example.com`).
+2. For domains on other accounts (e.g., `example.org` on account B), add a CNAME:
+   - **Type**: `CNAME`
+   - **Name**: `_acme-challenge.example.org`
+   - **Target**: `_acme-challenge.example.com`
+
+This allows Traefik to validate certificates for domains across multiple accounts.
+
+</Accordion>
+</Accordions>

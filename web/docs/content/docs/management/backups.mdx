@@ -1,0 +1,94 @@
+---
+title: Backups & Restoration
+description: Protect your Mantræ configuration with automatic and manual backups.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Mantræ provides robust backup capabilities to ensure your configuration is safe and can be restored quickly.
+
+## Automatic Backups
+
+Mantræ can automatically back up your database on a schedule. This is configured via environment variables.
+
+```bash
+BACKUP_SCHEDULE=0 2 * * * # Daily at 2 AM (cron format)
+BACKUP_RETENTION=30       # Keep for 30 days
+BACKUP_AUTO_ENABLED=true  # Enable auto-backups
+```
+
+## Storage Options
+
+### Local Storage (Default)
+
+By default, backups are stored in the `/data/backups/` directory inside the container.
+
+```bash
+STORAGE_TYPE=local
+```
+
+### S3-Compatible Storage
+
+For better redundancy, you can store backups in S3-compatible storage.
+
+```bash
+STORAGE_TYPE=s3
+STORAGE_S3_ENDPOINT=https://s3.amazonaws.com
+STORAGE_S3_REGION=us-east-1
+STORAGE_S3_BUCKET=mantrae-backups
+STORAGE_S3_ACCESS_KEY=your-access-key
+STORAGE_S3_SECRET_KEY=your-secret-key
+STORAGE_S3_PATH=backups/
+```
+
+<Callout title="Compatibility">
+  Works with **AWS S3**, **MinIO**, **DigitalOcean Spaces**, **Backblaze B2**, and any other S3-compatible provider.
+</Callout>
+
+## Manual Operations
+
+Access backup controls in the **Settings** page:
+
+- **Create Backup**: Generate an immediate database backup.
+- **Download Backup**: Download existing backup files for off-site storage.
+- **Restore from Backup**: Restore from a previous database backup.
+
+<Callout title="Warning" type="warn">
+  Restoring from a database backup replaces **all** existing data including profiles, routers, services, and middlewares.
+</Callout>
+
+## Import Traefik Configuration
+
+You can import existing Traefik dynamic configuration files (YAML/JSON) directly into Mantræ:
+
+1. Go to **Settings** → **Import Configuration**.
+2. Select your Traefik configuration file.
+3. Review the changes.
+4. Confirm the import.
+
+### Example Import File
+
+```yaml
+http:
+  routers:
+    my-router:
+      rule: "Host(`example.com`)"
+      service: "my-service"
+      middlewares:
+        - "auth"
+      entryPoints:
+        - "websecure"
+      tls: {}
+
+  services:
+    my-service:
+      loadBalancer:
+        servers:
+          - url: "http://backend:8080"
+```
+
+## Best Practices
+
+- **Test restores**: Periodically verify that your backups can be successfully restored.
+- **Off-site storage**: Use S3 storage or manually download backups regularly.
+- **Before major changes**: Always create a manual backup before performing significant configuration updates.

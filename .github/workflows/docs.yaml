@@ -50,12 +50,12 @@ jobs:
 
       - name: Build
         working-directory: ./web/docs
-        run: pnpm run build
+        run: pnpm run build && touch .output/public/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./web/docs/build
+          path: ./web/docs/.output/public
 
   deploy:
     environment:

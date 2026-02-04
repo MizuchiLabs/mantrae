@@ -1,0 +1,19 @@
+{
+  "title": "Mantræ Documentation",
+  "icon": "Shield",
+  "root": true,
+  "pages": [
+    "index",
+    "quickstart",
+    "---Management---",
+    "management/profiles",
+    "management/agents",
+    "management/dns",
+    "management/backups",
+    "---Configuration---",
+    "configuration/authentication",
+    "configuration/environment",
+    "---Support---",
+    "faq"
+  ]
+}
