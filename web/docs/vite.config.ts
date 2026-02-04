@@ -8,7 +8,6 @@ import svgr from "vite-plugin-svgr";
 import { nitro } from "nitro/vite";
 
 export default defineConfig({
-  base: process.env.NODE_ENV === "production" ? "/mantrae/" : "/",
   server: {
     port: 3000,
   },
