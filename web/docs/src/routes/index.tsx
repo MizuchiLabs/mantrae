@@ -28,10 +28,7 @@ function Home() {
 
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Link
-            to="/docs/$"
-            params={{
-              _splat: "",
-            }}
+            to="/docs/$/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-fd-primary text-fd-primary-foreground font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-fd-primary/20"
           >
             Get Started

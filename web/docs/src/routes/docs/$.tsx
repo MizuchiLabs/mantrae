@@ -61,16 +61,9 @@ const clientLoader = browserCollections.docs.createClientLoader({
 
 function Page() {
   const data = useFumadocsLoader(Route.useLoaderData());
-  const options = baseOptions();
 
   return (
-    <DocsLayout
-      {...options}
-      tree={data.pageTree}
-      sidebar={{
-        banner: options.nav?.title as ReactNode,
-      }}
-    >
+    <DocsLayout {...baseOptions()} tree={data.pageTree}>
       <Suspense>
         {clientLoader.useContent(data.path, {
           className: "",
