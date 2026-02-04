@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/joeig/go-powerdns/v3"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -14,11 +14,11 @@ type PowerDNSProvider struct {
 	ip     string
 }
 
-func NewPowerDNSProvider(d *schema.DNSProviderConfig) *PowerDNSProvider {
-	client := powerdns.New(d.APIUrl, "", powerdns.WithAPIKey(d.APIKey))
+func NewPowerDNSProvider(d *mantraev1.DNSProviderConfig) *PowerDNSProvider {
+	client := powerdns.New(d.ApiUrl, "", powerdns.WithAPIKey(d.ApiKey))
 	return &PowerDNSProvider{
 		client: client,
-		ip:     d.IP,
+		ip:     d.Ip,
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type ServiceOps interface {
@@ -102,7 +102,7 @@ func (s *HTTPServiceOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Service](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (s *HTTPServiceOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Service](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func (s *TCPServiceOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPService](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func (s *TCPServiceOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPService](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -352,7 +352,7 @@ func (s *UDPServiceOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.UDPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.UDPService](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -377,7 +377,7 @@ func (s *UDPServiceOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.UDPService](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.UDPService](req.Config)
 	if err != nil {
 		return nil, err
 	}

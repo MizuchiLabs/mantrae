@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/util"
 	"github.com/ryanwholey/go-pihole"
 )
@@ -15,14 +15,14 @@ type PiholeProvider struct {
 	ip     string
 }
 
-func NewPiholeProvider(d *schema.DNSProviderConfig) *PiholeProvider {
-	if d == nil || d.APIKey == "" || d.APIUrl == "" {
+func NewPiholeProvider(d *mantraev1.DNSProviderConfig) *PiholeProvider {
+	if d == nil || d.ApiKey == "" || d.ApiUrl == "" {
 		slog.Error("Invalid Pi-hole provider config")
 		return nil
 	}
 	client, err := pihole.New(pihole.Config{
-		BaseURL:  d.APIUrl,
-		Password: d.APIKey,
+		BaseURL:  d.ApiUrl,
+		Password: d.ApiKey,
 	})
 	if err != nil {
 		slog.Error("failed to create pihole client", "error", err)
@@ -30,7 +30,7 @@ func NewPiholeProvider(d *schema.DNSProviderConfig) *PiholeProvider {
 	}
 	return &PiholeProvider{
 		client: client,
-		ip:     d.IP,
+		ip:     d.Ip,
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type RouterOps interface {
@@ -93,13 +93,13 @@ func (s *HTTPRouterOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Router](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	// Add default DNS provider
@@ -138,13 +138,13 @@ func (s *HTTPRouterOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Router](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	// Update DNS Providers
@@ -188,7 +188,7 @@ func (s *HTTPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
-			go s.app.DNS.DeleteDNS(id, params.Config.Rule)
+			go s.app.DNS.DeleteDNS(id, params.Config.Data.Rule)
 		}
 	}
 
@@ -197,10 +197,10 @@ func (s *HTTPRouterOps) Update(
 		return nil, err
 	}
 	// Disable service if router is disabled
-	if result.Config.Service != "" {
+	if result.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 			ProfileID: result.ProfileID,
-			Name:      result.Config.Service,
+			Name:      result.Config.Data.Service,
 		})
 		if err != nil {
 			slog.Error("failed to get http service for disabling", "err", err)
@@ -240,11 +240,11 @@ func (s *HTTPRouterOps) Delete(
 		return nil, err
 	}
 
-	if router.Config.Service != "" {
+	if router.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.
 			GetHttpServiceByName(ctx, &db.GetHttpServiceByNameParams{
 				ProfileID: router.ProfileID,
-				Name:      router.Config.Service,
+				Name:      router.Config.Data.Service,
 			})
 		if err != nil {
 			slog.Error("failed to get http service", "err", err)
@@ -260,7 +260,7 @@ func (s *HTTPRouterOps) Delete(
 		return nil, err
 	}
 	for _, p := range dnsProviders {
-		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
+		go s.app.DNS.DeleteDNS(p.ID, router.Config.Data.Rule)
 	}
 
 	if err := s.app.Conn.Q.DeleteHttpRouter(ctx, req.Id); err != nil {
@@ -344,13 +344,13 @@ func (s *TCPRouterOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPRouter](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	result, err := s.app.Conn.Q.CreateTcpRouter(ctx, params)
@@ -373,13 +373,13 @@ func (s *TCPRouterOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPRouter](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	// Update DNS Providers
@@ -422,7 +422,7 @@ func (s *TCPRouterOps) Update(
 				}); err != nil {
 				return nil, err
 			}
-			go s.app.DNS.DeleteDNS(id, params.Config.Rule)
+			go s.app.DNS.DeleteDNS(id, params.Config.Data.Rule)
 		}
 	}
 
@@ -431,10 +431,10 @@ func (s *TCPRouterOps) Update(
 		return nil, err
 	}
 	// Disable service if router is disabled
-	if result.Config.Service != "" {
+	if result.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 			ProfileID: result.ProfileID,
-			Name:      result.Config.Service,
+			Name:      result.Config.Data.Service,
 		})
 		if err != nil {
 			slog.Error("failed to get tcp service for disabling", "err", err)
@@ -464,11 +464,11 @@ func (s *TCPRouterOps) Delete(
 		return nil, err
 	}
 
-	if router.Config.Service != "" {
+	if router.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.
 			GetTcpServiceByName(ctx, &db.GetTcpServiceByNameParams{
 				ProfileID: router.ProfileID,
-				Name:      router.Config.Service,
+				Name:      router.Config.Data.Service,
 			})
 		if err != nil {
 			slog.Error("failed to get tcp service", "err", err)
@@ -484,7 +484,7 @@ func (s *TCPRouterOps) Delete(
 		return nil, err
 	}
 	for _, p := range dnsProviders {
-		go s.app.DNS.DeleteDNS(p.ID, router.Config.Rule)
+		go s.app.DNS.DeleteDNS(p.ID, router.Config.Data.Rule)
 	}
 
 	if err := s.app.Conn.Q.DeleteTcpRouter(ctx, req.Id); err != nil {
@@ -560,13 +560,13 @@ func (s *UDPRouterOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.UDPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.UDPRouter](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	result, err := s.app.Conn.Q.CreateUdpRouter(ctx, params)
@@ -589,13 +589,13 @@ func (s *UDPRouterOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.UDPRouter](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.UDPRouter](req.Config)
 	if err != nil {
 		return nil, err
 	}
 	// Use router name as fallback
-	if params.Config.Service == "" {
-		params.Config.Service = params.Name
+	if params.Config.Data.Service == "" {
+		params.Config.Data.Service = params.Name
 	}
 
 	result, err := s.app.Conn.Q.UpdateUdpRouter(ctx, params)
@@ -604,10 +604,10 @@ func (s *UDPRouterOps) Update(
 	}
 
 	// Change service status
-	if result.Config.Service != "" {
+	if result.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 			ProfileID: result.ProfileID,
-			Name:      result.Config.Service,
+			Name:      result.Config.Data.Service,
 		})
 		if err != nil {
 			slog.Error("failed to get udp service for disabling", "err", err)
@@ -636,11 +636,11 @@ func (s *UDPRouterOps) Delete(
 	if err != nil {
 		return nil, err
 	}
-	if router.Config.Service != "" {
+	if router.Config.Data.Service != "" {
 		service, err := s.app.Conn.Q.
 			GetUdpServiceByName(ctx, &db.GetUdpServiceByNameParams{
 				ProfileID: router.ProfileID,
-				Name:      router.Config.Service,
+				Name:      router.Config.Data.Service,
 			})
 		if err != nil {
 			slog.Error("failed to get udp service", "err", err)

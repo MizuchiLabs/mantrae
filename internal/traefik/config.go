@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mizuchilabs/mantrae/internal/storage"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	"gopkg.in/yaml.v3"
 )
@@ -89,37 +88,37 @@ func BuildDynamicConfig(
 	}
 
 	for _, r := range httpRouters {
-		cfg.HTTP.Routers[r.Name] = r.Config.ToDynamic()
+		cfg.HTTP.Routers[r.Name] = r.Config.Data
 	}
 	for _, r := range tcpRouters {
-		cfg.TCP.Routers[r.Name] = r.Config.ToDynamic()
+		cfg.TCP.Routers[r.Name] = r.Config.Data
 	}
 	for _, r := range udpRouters {
-		cfg.UDP.Routers[r.Name] = r.Config.ToDynamic()
+		cfg.UDP.Routers[r.Name] = r.Config.Data
 	}
 
 	for _, s := range httpServices {
-		cfg.HTTP.Services[s.Name] = s.Config.ToDynamic()
+		cfg.HTTP.Services[s.Name] = s.Config.Data
 	}
 	for _, s := range tcpServices {
-		cfg.TCP.Services[s.Name] = s.Config.ToDynamic()
+		cfg.TCP.Services[s.Name] = s.Config.Data
 	}
 	for _, s := range udpServices {
-		cfg.UDP.Services[s.Name] = s.Config.ToDynamic()
+		cfg.UDP.Services[s.Name] = s.Config.Data
 	}
 
 	for _, m := range httpMiddlewares {
-		cfg.HTTP.Middlewares[m.Name] = m.Config.ToDynamic()
+		cfg.HTTP.Middlewares[m.Name] = m.Config.Data
 	}
 	for _, m := range tcpMiddlewares {
-		cfg.TCP.Middlewares[m.Name] = m.Config.ToDynamic()
+		cfg.TCP.Middlewares[m.Name] = m.Config.Data
 	}
 
 	for _, s := range httpServersTransports {
-		cfg.HTTP.ServersTransports[s.Name] = s.Config.ToDynamic()
+		cfg.HTTP.ServersTransports[s.Name] = s.Config.Data
 	}
 	for _, s := range tcpServersTransports {
-		cfg.TCP.ServersTransports[s.Name] = s.Config.ToDynamic()
+		cfg.TCP.ServersTransports[s.Name] = s.Config.Data
 	}
 
 	// Cleanup empty sections (to avoid Traefik {} block warnings)
@@ -220,7 +219,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapRouter(v),
+				Config:    &db.RouterConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create http router", "err", err)
 			}
@@ -234,7 +233,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapService(v),
+				Config:    &db.ServiceConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create http service", "err", err)
 			}
@@ -247,7 +246,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapMiddleware(v),
+				Config:    &db.MiddlewareConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create http middleware", "err", err)
 			}
@@ -262,7 +261,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapTCPRouter(v),
+				Config:    &db.TCPRouterConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create tcp router", "err", err)
 			}
@@ -276,7 +275,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapTCPService(v),
+				Config:    &db.TCPServiceConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create tcp service", "err", err)
 			}
@@ -288,7 +287,7 @@ func DynamicToDB(
 			if _, err := q.CreateTcpMiddleware(ctx, &db.CreateTcpMiddlewareParams{
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapTCPMiddleware(v),
+				Config:    &db.TCPMiddlewareConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create tcp middleware", "err", err)
 			}
@@ -303,7 +302,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapUDPRouter(v),
+				Config:    &db.UDPRouterConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create udp router", "err", err)
 			}
@@ -317,7 +316,7 @@ func DynamicToDB(
 				ID:        uuid.New().String(),
 				ProfileID: profileID,
 				Name:      k,
-				Config:    schema.WrapUDPService(v),
+				Config:    &db.UDPServiceConfig{Data: v},
 			}); err != nil {
 				slog.Warn("failed to create udp service", "err", err)
 			}

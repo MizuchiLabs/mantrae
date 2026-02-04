@@ -7,7 +7,7 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type ServersTransportOps interface {
@@ -76,7 +76,7 @@ func (s *HTTPServersTransportOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPServersTransport](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.ServersTransport](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (s *HTTPServersTransportOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPServersTransport](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.ServersTransport](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (s *TCPServersTransportOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPServersTransport](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPServersTransport](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (s *TCPServersTransportOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPServersTransport](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPServersTransport](req.Config)
 	if err != nil {
 		return nil, err
 	}

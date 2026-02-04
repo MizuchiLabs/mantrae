@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -21,11 +21,11 @@ type TechnitiumProvider struct {
 	client  *http.Client
 }
 
-func NewTechnitiumProvider(d *schema.DNSProviderConfig) *TechnitiumProvider {
+func NewTechnitiumProvider(d *mantraev1.DNSProviderConfig) *TechnitiumProvider {
 	return &TechnitiumProvider{
-		baseURL: d.APIUrl,
-		apiKey:  d.APIKey,
-		ip:      d.IP,
+		baseURL: d.ApiUrl,
+		apiKey:  d.ApiKey,
+		ip:      d.Ip,
 		client:  http.DefaultClient,
 	}
 }

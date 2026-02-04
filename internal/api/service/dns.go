@@ -9,7 +9,6 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -29,11 +28,11 @@ func (s *DNSProviderService) GetDNSProvider(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	decryptedAPIKey, err := util.DecryptSecret(result.Config.APIKey, s.app.Secret)
+	decryptedAPIKey, err := util.DecryptSecret(result.Config.Data.ApiKey, s.app.Secret)
 	if err != nil {
 		return nil, err
 	}
-	result.Config.APIKey = decryptedAPIKey
+	result.Config.Data.ApiKey = decryptedAPIKey
 	return &mantraev1.GetDNSProviderResponse{DnsProvider: result.ToProto()}, nil
 }
 
@@ -42,15 +41,10 @@ func (s *DNSProviderService) CreateDNSProvider(
 	req *mantraev1.CreateDNSProviderRequest,
 ) (*mantraev1.CreateDNSProviderResponse, error) {
 	params := &db.CreateDnsProviderParams{
-		ID:   uuid.New().String(),
-		Name: req.Name,
-		Type: int64(req.Type),
-		Config: &schema.DNSProviderConfig{
-			APIUrl:     req.Config.ApiUrl,
-			IP:         req.Config.Ip,
-			Proxied:    req.Config.Proxied,
-			AutoUpdate: req.Config.AutoUpdate,
-		},
+		ID:        uuid.New().String(),
+		Name:      req.Name,
+		Type:      int64(req.Type),
+		Config:    &db.DNSProviderConfig{Data: req.Config},
 		IsDefault: req.IsDefault,
 	}
 	if req.Config.ApiKey != "" {
@@ -58,7 +52,7 @@ func (s *DNSProviderService) CreateDNSProvider(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		params.Config.APIKey = apiKeyHash
+		params.Config.Data.ApiKey = apiKeyHash
 	}
 	if req.IsDefault {
 		if err := s.app.Conn.Q.UnsetDefaultDNSProvider(ctx); err != nil {
@@ -79,15 +73,10 @@ func (s *DNSProviderService) UpdateDNSProvider(
 	req *mantraev1.UpdateDNSProviderRequest,
 ) (*mantraev1.UpdateDNSProviderResponse, error) {
 	params := &db.UpdateDnsProviderParams{
-		ID:   req.Id,
-		Name: req.Name,
-		Type: int64(req.Type),
-		Config: &schema.DNSProviderConfig{
-			APIUrl:     req.Config.ApiUrl,
-			IP:         req.Config.Ip,
-			Proxied:    req.Config.Proxied,
-			AutoUpdate: req.Config.AutoUpdate,
-		},
+		ID:        req.Id,
+		Name:      req.Name,
+		Type:      int64(req.Type),
+		Config:    &db.DNSProviderConfig{Data: req.Config},
 		IsDefault: req.IsDefault,
 	}
 	if req.Config.ApiKey != "" {
@@ -95,7 +84,7 @@ func (s *DNSProviderService) UpdateDNSProvider(
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		params.Config.APIKey = apiKeyHash
+		params.Config.Data.ApiKey = apiKeyHash
 	}
 	if req.IsDefault {
 		if err := s.app.Conn.Q.UnsetDefaultDNSProvider(ctx); err != nil {
@@ -141,11 +130,11 @@ func (s *DNSProviderService) ListDNSProviders(
 
 	dnsProviders := make([]*mantraev1.DNSProvider, 0, len(result))
 	for _, p := range result {
-		decryptedAPIKey, err := util.DecryptSecret(p.Config.APIKey, s.app.Secret)
+		decryptedAPIKey, err := util.DecryptSecret(p.Config.Data.ApiKey, s.app.Secret)
 		if err != nil {
 			return nil, err
 		}
-		p.Config.APIKey = decryptedAPIKey
+		p.Config.Data.ApiKey = decryptedAPIKey
 		dnsProviders = append(dnsProviders, p.ToProto())
 	}
 	return &mantraev1.ListDNSProvidersResponse{

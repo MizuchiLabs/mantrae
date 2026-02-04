@@ -8,7 +8,8 @@ import (
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/store/db"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
+	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 )
 
 type MiddlewareOps interface {
@@ -78,11 +79,11 @@ func (s *HTTPMiddlewareOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPMiddleware](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Middleware](req.Config)
 	if err != nil {
 		return nil, err
 	}
-	if err = params.Config.Verify(); err != nil {
+	if err = traefik.VerifyMiddleware(params.Config.Data); err != nil {
 		return nil, err
 	}
 
@@ -113,11 +114,11 @@ func (s *HTTPMiddlewareOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.HTTPMiddleware](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.Middleware](req.Config)
 	if err != nil {
 		return nil, err
 	}
-	if err = params.Config.Verify(); err != nil {
+	if err = traefik.VerifyMiddleware(params.Config.Data); err != nil {
 		return nil, err
 	}
 
@@ -143,10 +144,10 @@ func (s *HTTPMiddlewareOps) Update(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.Middlewares, middleware.Name); idx != -1 {
+			r.Config.Data.Middlewares = slices.Delete(r.Config.Data.Middlewares, idx, idx+1)
 		}
-		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)
+		r.Config.Data.Middlewares = append(r.Config.Data.Middlewares, req.Name)
 		if _, err = s.app.Conn.Q.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
@@ -185,8 +186,8 @@ func (s *HTTPMiddlewareOps) Delete(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.Middlewares, middleware.Name); idx != -1 {
+			r.Config.Data.Middlewares = slices.Delete(r.Config.Data.Middlewares, idx, idx+1)
 		}
 		if _, err := s.app.Conn.Q.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
@@ -265,7 +266,7 @@ func (s *TCPMiddlewareOps) Create(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPMiddleware](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPMiddleware](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +298,7 @@ func (s *TCPMiddlewareOps) Update(
 	}
 
 	var err error
-	params.Config, err = db.UnmarshalStruct[schema.TCPMiddleware](req.Config)
+	params.Config, err = db.UnmarshalStruct[dynamic.TCPMiddleware](req.Config)
 	if err != nil {
 		return nil, err
 	}
@@ -324,10 +325,10 @@ func (s *TCPMiddlewareOps) Update(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.Middlewares, middleware.Name); idx != -1 {
+			r.Config.Data.Middlewares = slices.Delete(r.Config.Data.Middlewares, idx, idx+1)
 		}
-		r.Config.Middlewares = append(r.Config.Middlewares, req.Name)
+		r.Config.Data.Middlewares = append(r.Config.Data.Middlewares, req.Name)
 		if _, err = s.app.Conn.Q.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
 			Enabled: r.Enabled,
@@ -366,8 +367,8 @@ func (s *TCPMiddlewareOps) Delete(
 		return nil, err
 	}
 	for _, r := range routers {
-		if idx := slices.Index(r.Config.Middlewares, middleware.Name); idx != -1 {
-			r.Config.Middlewares = slices.Delete(r.Config.Middlewares, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.Middlewares, middleware.Name); idx != -1 {
+			r.Config.Data.Middlewares = slices.Delete(r.Config.Data.Middlewares, idx, idx+1)
 		}
 		if _, err := s.app.Conn.Q.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,

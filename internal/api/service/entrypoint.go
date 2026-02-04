@@ -144,11 +144,11 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		return connect.NewError(connect.CodeInternal, err)
 	}
 	for _, r := range httpRouters {
-		if idx := slices.Index(r.Config.EntryPoints, entrypoint.Name); idx != -1 {
-			r.Config.EntryPoints = slices.Delete(r.Config.EntryPoints, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.EntryPoints, entrypoint.Name); idx != -1 {
+			r.Config.Data.EntryPoints = slices.Delete(r.Config.Data.EntryPoints, idx, idx+1)
 		}
 		if newEntrypoint != "" {
-			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
+			r.Config.Data.EntryPoints = append(r.Config.Data.EntryPoints, newEntrypoint)
 		}
 		if _, err = s.app.Conn.Q.UpdateHttpRouter(ctx, &db.UpdateHttpRouterParams{
 			ID:      r.ID,
@@ -168,11 +168,11 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		return connect.NewError(connect.CodeInternal, err)
 	}
 	for _, r := range tcpRouters {
-		if idx := slices.Index(r.Config.EntryPoints, entrypoint.Name); idx != -1 {
-			r.Config.EntryPoints = slices.Delete(r.Config.EntryPoints, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.EntryPoints, entrypoint.Name); idx != -1 {
+			r.Config.Data.EntryPoints = slices.Delete(r.Config.Data.EntryPoints, idx, idx+1)
 		}
 		if newEntrypoint != "" {
-			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
+			r.Config.Data.EntryPoints = append(r.Config.Data.EntryPoints, newEntrypoint)
 		}
 		if _, err = s.app.Conn.Q.UpdateTcpRouter(ctx, &db.UpdateTcpRouterParams{
 			ID:      r.ID,
@@ -192,11 +192,11 @@ func (s *EntryPointService) updateRouterEntrypoints(
 		return connect.NewError(connect.CodeInternal, err)
 	}
 	for _, r := range udpRouters {
-		if idx := slices.Index(r.Config.EntryPoints, entrypoint.Name); idx != -1 {
-			r.Config.EntryPoints = slices.Delete(r.Config.EntryPoints, idx, idx+1)
+		if idx := slices.Index(r.Config.Data.EntryPoints, entrypoint.Name); idx != -1 {
+			r.Config.Data.EntryPoints = slices.Delete(r.Config.Data.EntryPoints, idx, idx+1)
 		}
 		if newEntrypoint != "" {
-			r.Config.EntryPoints = append(r.Config.EntryPoints, newEntrypoint)
+			r.Config.Data.EntryPoints = append(r.Config.Data.EntryPoints, newEntrypoint)
 		}
 		if _, err = s.app.Conn.Q.UpdateUdpRouter(ctx, &db.UpdateUdpRouterParams{
 			ID:      r.ID,

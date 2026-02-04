@@ -95,37 +95,37 @@ func (d *DNSManager) getProvider(id string) (DNSProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-	if provider.Config.APIKey == "" {
+	if provider.Config.Data.ApiKey == "" {
 		return nil, fmt.Errorf("invalid provider config")
 	}
-	decryptedAPIKey, err := util.DecryptSecret(provider.Config.APIKey, d.secret)
+	decryptedAPIKey, err := util.DecryptSecret(provider.Config.Data.ApiKey, d.secret)
 	if err != nil {
 		return nil, err
 	}
-	provider.Config.APIKey = decryptedAPIKey
+	provider.Config.Data.ApiKey = decryptedAPIKey
 
-	if provider.Config.AutoUpdate {
+	if provider.Config.Data.AutoUpdate {
 		machineIPs, err := util.GetPublicIPs()
 		if err != nil {
 			return nil, err
 		}
 		if machineIPs.IPv4 != "" {
-			provider.Config.IP = machineIPs.IPv4
+			provider.Config.Data.Ip = machineIPs.IPv4
 		} else if machineIPs.IPv6 != "" {
-			provider.Config.IP = machineIPs.IPv6
+			provider.Config.Data.Ip = machineIPs.IPv6
 		}
 	}
 
 	var dnsProvider DNSProvider
 	switch provider.Type {
 	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_CLOUDFLARE):
-		dnsProvider = NewCloudflareProvider(provider.Config)
+		dnsProvider = NewCloudflareProvider(provider.Config.Data)
 	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_POWERDNS):
-		dnsProvider = NewPowerDNSProvider(provider.Config)
+		dnsProvider = NewPowerDNSProvider(provider.Config.Data)
 	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_TECHNITIUM):
-		dnsProvider = NewTechnitiumProvider(provider.Config)
+		dnsProvider = NewTechnitiumProvider(provider.Config.Data)
 	case int64(mantraev1.DNSProviderType_DNS_PROVIDER_TYPE_PIHOLE):
-		dnsProvider = NewPiholeProvider(provider.Config)
+		dnsProvider = NewPiholeProvider(provider.Config.Data)
 	default:
 		return nil, fmt.Errorf("invalid provider type")
 	}
@@ -175,7 +175,7 @@ func (d *DNSManager) getSubdomains() map[string][]DNSRouterInfo {
 		if r.DnsProviderID == nil {
 			continue
 		}
-		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
+		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Data.Rule, *r.DnsProviderID); err != nil {
 			slog.Error("Failed to process HTTP router", "router", r.RouterName, "error", err)
 			return nil
 		}
@@ -191,7 +191,7 @@ func (d *DNSManager) getSubdomains() map[string][]DNSRouterInfo {
 		if r.DnsProviderID == nil {
 			continue
 		}
-		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Rule, *r.DnsProviderID); err != nil {
+		if err := process(r.RouterName, r.ProfileName, r.ConfigJson.Data.Rule, *r.DnsProviderID); err != nil {
 			slog.Error("Failed to process TCP router", "router", r.RouterName, "error", err)
 			return nil
 		}

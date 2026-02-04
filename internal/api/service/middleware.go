@@ -12,7 +12,7 @@ import (
 
 	"github.com/mizuchilabs/mantrae/internal/config"
 	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	"github.com/mizuchilabs/mantrae/internal/traefik"
 )
 
 type MiddlewareService struct {
@@ -164,11 +164,11 @@ func (s *MiddlewareService) GetMiddlewarePlugins(
 		}
 	}()
 
-	var allPlugins []schema.Plugin
+	var allPlugins []traefik.Plugin
 	if err := json.NewDecoder(resp.Body).Decode(&allPlugins); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	filtered := slices.DeleteFunc(allPlugins, func(p schema.Plugin) bool {
+	filtered := slices.DeleteFunc(allPlugins, func(p traefik.Plugin) bool {
 		return p.Type != "middleware"
 	})
 	var plugins []*mantraev1.Plugin

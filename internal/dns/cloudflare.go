@@ -9,7 +9,7 @@ import (
 	"github.com/cloudflare/cloudflare-go/v6/dns"
 	"github.com/cloudflare/cloudflare-go/v6/option"
 	"github.com/cloudflare/cloudflare-go/v6/zones"
-	"github.com/mizuchilabs/mantrae/internal/store/schema"
+	mantraev1 "github.com/mizuchilabs/mantrae/internal/gen/mantrae/v1"
 	"github.com/mizuchilabs/mantrae/internal/util"
 )
 
@@ -19,14 +19,14 @@ type CloudflareProvider struct {
 	proxy  bool
 }
 
-func NewCloudflareProvider(d *schema.DNSProviderConfig) *CloudflareProvider {
-	if d == nil || d.APIKey == "" {
+func NewCloudflareProvider(d *mantraev1.DNSProviderConfig) *CloudflareProvider {
+	if d == nil || d.ApiKey == "" {
 		slog.Error("Invalid Cloudflare provider config")
 		return nil
 	}
 	return &CloudflareProvider{
-		client: cloudflare.NewClient(option.WithAPIToken(d.APIKey)),
-		ip:     d.IP,
+		client: cloudflare.NewClient(option.WithAPIToken(d.ApiKey)),
+		ip:     d.Ip,
 		proxy:  d.Proxied,
 	}
 }
