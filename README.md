@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/mizuchilabs/mantrae/main/install.sh
 Download the latest release from [releases](https://github.com/mizuchilabs/mantrae/releases) and extract to `~/.local/bin`.
 
 **Docker (recommended for production):**
-See the [documentation](https://mizuchilabs.github.io/mantrae/) for Docker setup instructions.
+See the [documentation](https://mantrae.pages.dev) for Docker setup instructions.
 
 ### Usage
 
@@ -80,7 +80,7 @@ Full documentation is available [here](https://mizuchilabs.github.io/mantrae/)
 
 ## Screenshot
 
-![Dashboard](./.github/screenshots/dashboard.png "Dashboard")
+![Dashboard](./.github/screenshots/dash.png "Dashboard")
 
 ## Contributing
 
