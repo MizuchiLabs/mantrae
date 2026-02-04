@@ -8,7 +8,7 @@ export function getRouter() {
     defaultPreload: "intent",
     scrollRestoration: true,
     trailingSlash: "always",
-    history: createHashHistory(),
+    history: typeof window !== "undefined" ? createHashHistory() : undefined,
     defaultNotFoundComponent: NotFound,
   });
 }
