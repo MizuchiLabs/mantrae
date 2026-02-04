@@ -5,13 +5,9 @@ import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import mdx from "fumadocs-mdx/vite";
 import svgr from "vite-plugin-svgr";
-import { nitro } from "nitro/vite";
 
 export default defineConfig({
-  base: "/mantrae/",
-  server: {
-    port: 3000,
-  },
+  server: { port: 3000 },
   plugins: [
     mdx(await import("./source.config")),
     tailwindcss(),
@@ -24,8 +20,6 @@ export default defineConfig({
         enabled: true,
         prerender: {
           outputPath: "index.html",
-          enabled: true,
-          crawlLinks: true,
         },
       },
       pages: [
@@ -38,12 +32,5 @@ export default defineConfig({
       ],
     }),
     react(),
-    // please see https://tanstack.com/start/latest/docs/framework/react/guide/hosting#nitro for guides on hosting
-    nitro({
-      prerender: {
-        autoSubfolderIndex: true,
-        crawlLinks: true,
-      },
-    }),
   ],
 });
