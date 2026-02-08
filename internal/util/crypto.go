@@ -4,10 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base32"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"math/big"
@@ -71,33 +69,12 @@ func GenerateAgentToken(profileID, agentID string) string {
 	return fmt.Sprintf("%s.%s.%s", profileID, agentID, GenerateToken(8))
 }
 
-// GenerateOTP creates a secure 6-digit token
-func GenerateOTP() (string, error) {
-	const otpChars = "0123456789"
-	buffer := make([]byte, 6)
-	_, err := rand.Read(buffer)
-	if err != nil {
-		return "", err
-	}
-
-	otp := []rune("0123456789")
-	otpLength := len(otpChars)
-	token := make([]rune, 6)
-
-	for i := range buffer {
-		token[i] = otp[int(buffer[i])%otpLength]
-	}
-
-	return string(token), nil
-}
-
-func HashOTP(otp string) string {
-	sum := sha256.Sum256([]byte(otp))
-	return hex.EncodeToString(sum[:])
-}
-
 // EncryptSecret encrypts a string using AES-GCM
 func EncryptSecret(plaintext, secret string) (string, error) {
+	if plaintext == "" {
+		return "", nil
+	}
+
 	secretKey, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return "", err
@@ -123,6 +100,9 @@ func EncryptSecret(plaintext, secret string) (string, error) {
 
 // DecryptSecret decrypts a string using AES-GCM
 func DecryptSecret(ciphertextB64, secret string) (string, error) {
+	if ciphertextB64 == "" {
+		return "", nil
+	}
 	ciphertext, err := base64.StdEncoding.DecodeString(ciphertextB64)
 	if err != nil {
 		return "", err
