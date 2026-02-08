@@ -24,8 +24,8 @@ builds:
       - -X main.Date={{ .CommitDate }}
     goos:
       - linux
-      - darwin
-      - windows
+      # - darwin
+      # - windows
     goarch:
       - amd64
       - arm64
