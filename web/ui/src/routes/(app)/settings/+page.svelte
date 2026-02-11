@@ -127,7 +127,7 @@
 			});
 			if (!response.ok) throw new Error('Failed to upload');
 			toast.success('Backup uploaded successfully');
-			backup.list().refetch(); // Refresh list
+			backupList.refetch(); // Refresh list
 		} catch (err) {
 			toast.error('Upload failed', { description: (err as Error).message });
 		} finally {

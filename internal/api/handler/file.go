@@ -110,20 +110,22 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 			return
 		}
 
-		// Handle sqlite db backups
-		if extension == ".db" {
-			filename := fmt.Sprintf("upload_%s%s",
-				time.Now().UTC().Format("20060102_150405"),
-				filepath.Ext(header.Filename))
+		// Save the file
+		filename := fmt.Sprintf("upload_%s%s",
+			time.Now().UTC().Format("20060102_150405"),
+			filepath.Ext(header.Filename))
 
-			if err = a.BM.Storage.Store(r.Context(), filename, file); err != nil {
-				http.Error(
-					w,
-					fmt.Sprintf("Failed to store backup file: %v", err),
-					http.StatusInternalServerError,
-				)
-				return
-			}
+		if err = a.BM.Storage.Store(r.Context(), filename, file); err != nil {
+			http.Error(
+				w,
+				fmt.Sprintf("Failed to store backup file: %v", err),
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		// Restore the backup depending on file type
+		if extension == ".db" {
 			if err = a.BM.Restore(r.Context(), filename); err != nil {
 				http.Error(
 					w,
@@ -132,7 +134,7 @@ func UploadBackup(a *config.App) http.HandlerFunc {
 				)
 				return
 			}
-		} else { // Handle dynamic configuration
+		} else {
 			profileID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 			if err != nil {
 				http.Error(
