@@ -24,7 +24,7 @@ tasks:
   docs:
     desc: Run docs
     cmds:
-      - pnpm run start
+      - pnpm run dev
     dir: web/docs
     silent: false
 

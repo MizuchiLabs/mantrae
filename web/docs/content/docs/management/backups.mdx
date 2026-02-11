@@ -61,10 +61,13 @@ Access backup controls in the **Settings** page:
 
 You can import existing Traefik dynamic configuration files (YAML/JSON) directly into Mantræ:
 
-1. Go to **Settings** → **Import Configuration**.
-2. Select your Traefik configuration file.
-3. Review the changes.
-4. Confirm the import.
+1. Go to **Settings** → **Backups** → **Upload**.
+2. Select your Traefik configuration file for uploading.
+3. It will immediately be imported into Mantræ and applied.
+
+<Callout title="Note" type="info">
+  If the same router or middleware names already exist in Mantræ, they will be skipped.
+</Callout>
 
 ### Example Import File
 
