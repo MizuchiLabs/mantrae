@@ -413,13 +413,13 @@ func sanitizeUsername(username string) string {
 	usernameRegex := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 	if !usernameRegex.MatchString(username) {
 		// Remove invalid characters
-		result := ""
+		var result strings.Builder
 		for _, r := range username {
 			if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') || r == '_' || r == '-' {
-				result += string(r)
+				result.WriteString(string(r))
 			}
 		}
-		username = result
+		username = result.String()
 	}
 	if len(username) > 50 {
 		username = username[:50]

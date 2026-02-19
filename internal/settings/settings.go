@@ -60,7 +60,7 @@ func NewManager(conn *store.Connection) *SettingsManager {
 	}
 	return &SettingsManager{
 		conn:    conn,
-		structT: reflect.TypeOf(Settings{}),
+		structT: reflect.TypeFor[Settings](),
 	}
 }
 
