@@ -32,7 +32,7 @@ func main() {
 
 	for _, strct := range types {
 		schema := zen.StructToZodSchema(strct, zen.WithCustomTypes(customTypeHandlers))
-		builder.WriteString(fmt.Sprintf("%s\n", schema))
+		fmt.Fprintf(&builder, "%s\n", schema)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(output), 0o750); err != nil {
