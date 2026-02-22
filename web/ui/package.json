@@ -31,7 +31,7 @@
 		"@tanstack/svelte-query": "^6.0.18",
 		"@tanstack/table-core": "^8.21.3",
 		"@types/node": "^25.3.0",
-		"bits-ui": "2.16.1",
+		"bits-ui": "2.16.2",
 		"clsx": "^2.1.1",
 		"formsnap": "^2.0.1",
 		"globals": "^17.3.0",
