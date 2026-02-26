@@ -20,7 +20,8 @@
 	});
 	$effect(() => {
 		if (epList.isSuccess && epList.data && !data.id) {
-			config.entryPoints = [epList.data.find((ep) => ep.isDefault)?.name ?? ''];
+			const defaultEp = epList.data.find((ep) => ep.isDefault);
+			config.entryPoints = defaultEp ? [defaultEp.name] : [];
 		}
 	});
 </script>
