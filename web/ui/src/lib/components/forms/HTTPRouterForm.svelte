@@ -45,14 +45,14 @@
 	});
 	$effect(() => {
 		if (epList.isSuccess && epList.data && !data.id) {
-			config.entryPoints = [epList.data.find((ep) => ep.isDefault)?.name ?? ''];
+			const defaultEp = epList.data.find((ep) => ep.isDefault);
+			config.entryPoints = defaultEp ? [defaultEp.name] : [];
 		}
 	});
 	$effect(() => {
 		if (mwList.isSuccess && mwList.data && !data.id) {
-			config.middlewares = [
-				mwList.data.find((mw) => mw.isDefault && mw.type === data.type)?.name ?? ''
-			];
+			const defaultMw = mwList.data.find((mw) => mw.isDefault && mw.type === data.type);
+			config.middlewares = defaultMw ? [defaultMw.name] : [];
 		}
 	});
 </script>
