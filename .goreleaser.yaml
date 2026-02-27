@@ -21,7 +21,7 @@ builds:
       - -s -w
       - -X main.Version={{ .Version }}
       - -X main.Commit={{ .Commit }}
-      - -X main.Date={{ .CommitDate }}
+      - -X main.BuildDate={{ .CommitDate }}
     goos:
       - linux
       # - darwin
