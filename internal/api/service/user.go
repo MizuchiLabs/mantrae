@@ -73,7 +73,7 @@ func (s *UserService) LoginUser(
 		SameSite: http.SameSiteLaxMode,
 	}
 	ci.ResponseHeader().Set("Set-Cookie", cookie.String())
-	return &mantraev1.LoginUserResponse{User: user.ToProto()}, nil
+	return &mantraev1.LoginUserResponse{Token: token}, nil
 }
 
 func (s *UserService) LogoutUser(

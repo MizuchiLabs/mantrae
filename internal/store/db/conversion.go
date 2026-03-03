@@ -185,7 +185,6 @@ func (u *User) ToProto() *mantraev1.User {
 	return &mantraev1.User{
 		Id:        u.ID,
 		Username:  u.Username,
-		Password:  u.Password,
 		Email:     SafeString(u.Email),
 		LastLogin: SafeTimestamp(u.LastLogin),
 		CreatedAt: SafeTimestamp(u.CreatedAt),

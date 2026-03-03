@@ -27,13 +27,10 @@ type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	Email         string                 `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	Otp           string                 `protobuf:"bytes,6,opt,name=otp,proto3" json:"otp,omitempty"`
-	OtpExpiry     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=otp_expiry,json=otpExpiry,proto3" json:"otp_expiry,omitempty"`
-	LastLogin     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	LastLogin     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=last_login,json=lastLogin,proto3" json:"last_login,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -82,32 +79,11 @@ func (x *User) GetUsername() string {
 	return ""
 }
 
-func (x *User) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
 func (x *User) GetEmail() string {
 	if x != nil {
 		return x.Email
 	}
 	return ""
-}
-
-func (x *User) GetOtp() string {
-	if x != nil {
-		return x.Otp
-	}
-	return ""
-}
-
-func (x *User) GetOtpExpiry() *timestamppb.Timestamp {
-	if x != nil {
-		return x.OtpExpiry
-	}
-	return nil
 }
 
 func (x *User) GetLastLogin() *timestamppb.Timestamp {
@@ -223,7 +199,7 @@ func (*LoginUserRequest_Email) isLoginUserRequest_Identifier() {}
 
 type LoginUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -258,11 +234,11 @@ func (*LoginUserResponse) Descriptor() ([]byte, []int) {
 	return file_mantrae_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *LoginUserResponse) GetUser() *User {
+func (x *LoginUserResponse) GetToken() string {
 	if x != nil {
-		return x.User
+		return x.Token
 	}
-	return nil
+	return ""
 }
 
 type LogoutUserRequest struct {
@@ -980,31 +956,26 @@ var File_mantrae_v1_user_proto protoreflect.FileDescriptor
 const file_mantrae_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"\x15mantrae/v1/user.proto\x12\n" +
-	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe2\x02\n" +
+	"mantrae.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf9\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x14\n" +
-	"\x05email\x18\x04 \x01(\tR\x05email\x12\x10\n" +
-	"\x03otp\x18\x06 \x01(\tR\x03otp\x129\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x129\n" +
 	"\n" +
-	"otp_expiry\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\totpExpiry\x129\n" +
+	"last_login\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tlastLogin\x129\n" +
 	"\n" +
-	"last_login\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tlastLogin\x129\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x97\x01\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x97\x01\n" +
 	"\x10LoginUserRequest\x12%\n" +
 	"\busername\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x03H\x00R\busername\x12\x1f\n" +
 	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01H\x00R\x05email\x12&\n" +
 	"\bpassword\x18\x03 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x10\bR\bpasswordB\x13\n" +
 	"\n" +
-	"identifier\x12\x05\xbaH\x02\b\x01\"9\n" +
-	"\x11LoginUserResponse\x12$\n" +
-	"\x04user\x18\x01 \x01(\v2\x10.mantrae.v1.UserR\x04user\"\x13\n" +
+	"identifier\x12\x05\xbaH\x02\b\x01\")\n" +
+	"\x11LoginUserResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"\x13\n" +
 	"\x11LogoutUserRequest\"\x14\n" +
 	"\x12LogoutUserResponse\"\x81\x01\n" +
 	"\x0eGetUserRequest\x12\x19\n" +
@@ -1103,36 +1074,34 @@ var file_mantrae_v1_user_proto_goTypes = []any{
 	(*timestamppb.Timestamp)(nil), // 17: google.protobuf.Timestamp
 }
 var file_mantrae_v1_user_proto_depIdxs = []int32{
-	17, // 0: mantrae.v1.User.otp_expiry:type_name -> google.protobuf.Timestamp
-	17, // 1: mantrae.v1.User.last_login:type_name -> google.protobuf.Timestamp
-	17, // 2: mantrae.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	17, // 3: mantrae.v1.User.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: mantrae.v1.LoginUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 5: mantrae.v1.GetUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 6: mantrae.v1.CreateUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 7: mantrae.v1.UpdateUserResponse.user:type_name -> mantrae.v1.User
-	0,  // 8: mantrae.v1.ListUsersResponse.users:type_name -> mantrae.v1.User
-	1,  // 9: mantrae.v1.UserService.LoginUser:input_type -> mantrae.v1.LoginUserRequest
-	3,  // 10: mantrae.v1.UserService.LogoutUser:input_type -> mantrae.v1.LogoutUserRequest
-	5,  // 11: mantrae.v1.UserService.GetUser:input_type -> mantrae.v1.GetUserRequest
-	7,  // 12: mantrae.v1.UserService.CreateUser:input_type -> mantrae.v1.CreateUserRequest
-	9,  // 13: mantrae.v1.UserService.UpdateUser:input_type -> mantrae.v1.UpdateUserRequest
-	11, // 14: mantrae.v1.UserService.DeleteUser:input_type -> mantrae.v1.DeleteUserRequest
-	13, // 15: mantrae.v1.UserService.ListUsers:input_type -> mantrae.v1.ListUsersRequest
-	15, // 16: mantrae.v1.UserService.GetOIDCStatus:input_type -> mantrae.v1.GetOIDCStatusRequest
-	2,  // 17: mantrae.v1.UserService.LoginUser:output_type -> mantrae.v1.LoginUserResponse
-	4,  // 18: mantrae.v1.UserService.LogoutUser:output_type -> mantrae.v1.LogoutUserResponse
-	6,  // 19: mantrae.v1.UserService.GetUser:output_type -> mantrae.v1.GetUserResponse
-	8,  // 20: mantrae.v1.UserService.CreateUser:output_type -> mantrae.v1.CreateUserResponse
-	10, // 21: mantrae.v1.UserService.UpdateUser:output_type -> mantrae.v1.UpdateUserResponse
-	12, // 22: mantrae.v1.UserService.DeleteUser:output_type -> mantrae.v1.DeleteUserResponse
-	14, // 23: mantrae.v1.UserService.ListUsers:output_type -> mantrae.v1.ListUsersResponse
-	16, // 24: mantrae.v1.UserService.GetOIDCStatus:output_type -> mantrae.v1.GetOIDCStatusResponse
-	17, // [17:25] is the sub-list for method output_type
-	9,  // [9:17] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	17, // 0: mantrae.v1.User.last_login:type_name -> google.protobuf.Timestamp
+	17, // 1: mantrae.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	17, // 2: mantrae.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: mantrae.v1.GetUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 4: mantrae.v1.CreateUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 5: mantrae.v1.UpdateUserResponse.user:type_name -> mantrae.v1.User
+	0,  // 6: mantrae.v1.ListUsersResponse.users:type_name -> mantrae.v1.User
+	1,  // 7: mantrae.v1.UserService.LoginUser:input_type -> mantrae.v1.LoginUserRequest
+	3,  // 8: mantrae.v1.UserService.LogoutUser:input_type -> mantrae.v1.LogoutUserRequest
+	5,  // 9: mantrae.v1.UserService.GetUser:input_type -> mantrae.v1.GetUserRequest
+	7,  // 10: mantrae.v1.UserService.CreateUser:input_type -> mantrae.v1.CreateUserRequest
+	9,  // 11: mantrae.v1.UserService.UpdateUser:input_type -> mantrae.v1.UpdateUserRequest
+	11, // 12: mantrae.v1.UserService.DeleteUser:input_type -> mantrae.v1.DeleteUserRequest
+	13, // 13: mantrae.v1.UserService.ListUsers:input_type -> mantrae.v1.ListUsersRequest
+	15, // 14: mantrae.v1.UserService.GetOIDCStatus:input_type -> mantrae.v1.GetOIDCStatusRequest
+	2,  // 15: mantrae.v1.UserService.LoginUser:output_type -> mantrae.v1.LoginUserResponse
+	4,  // 16: mantrae.v1.UserService.LogoutUser:output_type -> mantrae.v1.LogoutUserResponse
+	6,  // 17: mantrae.v1.UserService.GetUser:output_type -> mantrae.v1.GetUserResponse
+	8,  // 18: mantrae.v1.UserService.CreateUser:output_type -> mantrae.v1.CreateUserResponse
+	10, // 19: mantrae.v1.UserService.UpdateUser:output_type -> mantrae.v1.UpdateUserResponse
+	12, // 20: mantrae.v1.UserService.DeleteUser:output_type -> mantrae.v1.DeleteUserResponse
+	14, // 21: mantrae.v1.UserService.ListUsers:output_type -> mantrae.v1.ListUsersResponse
+	16, // 22: mantrae.v1.UserService.GetOIDCStatus:output_type -> mantrae.v1.GetOIDCStatusResponse
+	15, // [15:23] is the sub-list for method output_type
+	7,  // [7:15] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_mantrae_v1_user_proto_init() }
