@@ -335,6 +335,7 @@ export const ForwardAuthSchema = z.object({
   authResponseHeaders: z.string().array().optional(),
   authResponseHeadersRegex: z.string().optional(),
   authRequestHeaders: z.string().array().optional(),
+  maxResponseBodySize: z.number().optional(),
   addAuthCookiesToResponse: z.string().array().optional(),
   headerField: z.string().optional(),
   forwardBody: z.boolean().optional(),

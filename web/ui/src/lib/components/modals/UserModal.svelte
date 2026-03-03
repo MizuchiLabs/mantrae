@@ -29,20 +29,21 @@
 	const createMutation = user.create();
 	const updateMutation = user.update();
 	function onsubmit() {
-		if (password !== '') {
-			userData.password = password;
-		}
 		if (userData.id) {
-			updateMutation.mutate({ ...userData });
+			if (password) {
+				updateMutation.mutate({ ...userData, password });
+			} else {
+				updateMutation.mutate({ ...userData });
+			}
 		} else {
-			createMutation.mutate({ ...userData });
+			createMutation.mutate({ ...userData, password });
 		}
 		open = false;
 	}
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="no-scrollbar max-h-[95vh] w-[425px] overflow-y-auto">
+	<Dialog.Content class="no-scrollbar max-h-[95vh] w-100 overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title>
 				{userData?.id ? 'Edit' : 'Create'} User
