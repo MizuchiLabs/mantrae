@@ -38,13 +38,17 @@ jobs:
         with:
           go-version-file: "go.mod"
 
-      - name: Install Task
-        uses: go-task/setup-task@v1
+      - name: Build frontend
+        working-directory: web/ui
+        run: pnpm install && pnpm build
 
-      - name: Build frontend & lint
+      - name: Lint and test
         run: |
-          task build:web
-          task lint
+          go mod tidy
+          go mod verify
+          go fmt ./...
+          go vet ./...
+          go test ./...
 
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v9
