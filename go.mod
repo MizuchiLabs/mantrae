@@ -29,7 +29,7 @@ require (
 	github.com/mizuchilabs/sqlite-schema-diff v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/ryanwholey/go-pihole v1.2.0
-	github.com/traefik/traefik/v3 v3.6.11
+	github.com/traefik/traefik/v3 v3.6.12
 	github.com/urfave/cli/v3 v3.7.0
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.49.0
@@ -68,7 +68,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.0 // indirect
-	github.com/go-acme/lego/v4 v4.32.0 // indirect
+	github.com/go-acme/lego/v4 v4.33.0 // indirect
 	github.com/go-chi/chi/v5 v5.2.5 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/go-kit/log v0.2.1 // indirect
