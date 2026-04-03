@@ -71,7 +71,7 @@ importers:
         version: 14.2.6
       srvx:
         specifier: ^0.11.12
-        version: 0.11.12
+        version: 0.11.13
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
@@ -3087,8 +3087,8 @@ packages:
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
 
-  srvx@0.11.12:
-    resolution: {integrity: sha512-AQfrGqntqVPXgP03pvBDN1KyevHC+KmYVqb8vVf4N+aomQqdhaZxjvoVp+AOm4u6x+GgNQY3MVzAUIn+TqwkOA==}
+  srvx@0.11.13:
+    resolution: {integrity: sha512-oknN6qduuMPafxKtHucUeG32Q963pjriA5g3/Bl05cwEsUe5VVbIU4qR9LrALHbipSCyBe+VmfDGGydqazDRkw==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -4762,7 +4762,7 @@ snapshots:
       pathe: 2.0.3
       picomatch: 4.0.3
       source-map: 0.7.6
-      srvx: 0.11.12
+      srvx: 0.11.13
       tinyglobby: 0.2.15
       ufo: 1.6.3
       vite: 8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)
@@ -5473,7 +5473,7 @@ snapshots:
   h3@2.0.1-rc.16:
     dependencies:
       rou3: 0.8.1
-      srvx: 0.11.12
+      srvx: 0.11.13
 
   has-flag@4.0.0: {}
 
@@ -6649,7 +6649,7 @@ snapshots:
 
   space-separated-tokens@2.0.2: {}
 
-  srvx@0.11.12: {}
+  srvx@0.11.13: {}
 
   string-width@4.2.3:
     dependencies:
