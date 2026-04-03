@@ -37,7 +37,7 @@
     "serve": "^14.2.6",
     "srvx": "^0.11.12",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.0",
     "vite-plugin-svgr": "^5.0.0",
     "vite-tsconfig-paths": "^6.1.1",
     "wrangler": "^4.75.0"
