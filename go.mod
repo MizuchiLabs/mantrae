@@ -21,15 +21,15 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
-	github.com/hypersequent/zen v0.0.0-20260401161424-755c5a788614
+	github.com/hypersequent/zen v0.0.0-20260413170426-1390f784a63b
 	github.com/joeig/go-powerdns/v3 v3.21.0
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-colorable v0.1.14
-	github.com/mattn/go-isatty v0.0.20
+	github.com/mattn/go-isatty v0.0.21
 	github.com/mizuchilabs/sqlite-schema-diff v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/ryanwholey/go-pihole v1.2.0
-	github.com/traefik/traefik/v3 v3.6.12
+	github.com/traefik/traefik/v3 v3.6.13
 	github.com/urfave/cli/v3 v3.8.0
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.50.0
@@ -37,7 +37,7 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
-	modernc.org/sqlite v1.48.1
+	modernc.org/sqlite v1.48.2
 )
 
 require (
@@ -89,7 +89,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.25.5 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.5 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.5 // indirect
-	github.com/google/cel-go v0.27.0 // indirect
+	github.com/google/cel-go v0.28.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-github/v28 v28.1.1 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
@@ -102,7 +102,7 @@ require (
 	github.com/hashicorp/go-version v1.9.0 // indirect
 	github.com/http-wasm/http-wasm-host-go v0.7.0 // indirect
 	github.com/json-iterator/go v1.1.13-0.20220915233716-71ac16282d12 // indirect
-	github.com/klauspost/compress v1.18.2 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
@@ -135,16 +135,16 @@ require (
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
-	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/term v0.42.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.43.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260401024825-9d38bb4040a9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260401024825-9d38bb4040a9 // indirect
+	golang.org/x/tools v0.44.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260414002931-afd174a4e478 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260414002931-afd174a4e478 // indirect
 	google.golang.org/grpc v1.80.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -154,7 +154,7 @@ require (
 	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20260330154417-16be699c7b31 // indirect
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
-	modernc.org/libc v1.70.0 // indirect
+	modernc.org/libc v1.72.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
