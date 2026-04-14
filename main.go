@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -15,9 +16,9 @@ import (
 )
 
 var (
-	Version   = "dev"
-	Commit    = "none"
-	BuildDate = "unknown"
+	Version = "dev"
+	Commit  = "none"
+	Date    = "unknown"
 )
 
 func main() {
@@ -25,11 +26,18 @@ func main() {
 		EnableShellCompletion: true,
 		Suggest:               true,
 		Name:                  "mantrae",
-		Version:               Version,
-		Usage:                 "mantrae [command]",
-		Description: `Mantrae simplifies the management of Traefik reverse proxy configurations through an intuitive web interface. Manage routers, middleware, services, and DNS providers with ease.
-
-See https://github.com/mizuchilabs/mantrae for more information.`,
+		Version:               fmt.Sprintf("%s (commit: %s, built: %s)", Version, Commit, Date),
+		Usage:                 "traefik configuration manager",
+		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
+			level := slog.LevelInfo
+			if cmd.Bool("debug") {
+				level = slog.LevelDebug
+			}
+			slog.SetDefault(
+				slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: level})),
+			)
+			return ctx, nil
+		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			app, err := config.New(ctx, cmd)
 			if err != nil {
@@ -62,9 +70,10 @@ to specify a different username.`,
 		},
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
-				Name:    "version",
-				Aliases: []string{"v"},
-				Usage:   "Display version information and exit",
+				Name:    "debug",
+				Aliases: []string{"d"},
+				Usage:   "Enable debug logging",
+				Sources: cli.EnvVars("MANTRAE_DEBUG"),
 			},
 			&cli.StringFlag{
 				Name:    "password",

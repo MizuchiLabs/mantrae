@@ -6,15 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
-	"os"
 	"slices"
-	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
-	"github.com/lmittmann/tint"
-	"github.com/mattn/go-colorable"
-	"github.com/mattn/go-isatty"
 	"github.com/mizuchilabs/mantrae/internal/backup"
 	"github.com/mizuchilabs/mantrae/internal/dns"
 	"github.com/mizuchilabs/mantrae/internal/settings"
@@ -30,7 +25,7 @@ type EnvConfig struct {
 	AdminEmail    string `env:"ADMIN_EMAIL"`
 	BaseURL       string `env:"BASE_URL"       envDefault:"http://localhost:3000"`
 	FrontendURL   string `env:"FRONTEND_URL"   envDefault:"http://localhost:5173"`
-	Debug         bool   `env:"DEBUG"          envDefault:"false"`
+	Debug         bool
 	Version       string
 }
 
@@ -51,13 +46,10 @@ func New(ctx context.Context, cmd *cli.Command) (*App, error) {
 		return nil, err
 	}
 
-	// Merge command line flags (can override environment variables)
 	if cmd != nil {
 		app.Debug = cmd.Bool("debug")
 		app.Version = cmd.Root().Version
 	}
-
-	app.initLogger()
 
 	if !slices.Contains([]int{16, 24, 32}, len(app.Secret)) {
 		return nil, fmt.Errorf("secret must be either 16, 24 or 32 bytes, is %d", len(app.Secret))
@@ -73,21 +65,6 @@ func New(ctx context.Context, cmd *cli.Command) (*App, error) {
 	app.DNS = dns.NewManager(app.Conn, app.Secret)
 
 	return &app, app.setupDefaultData(ctx)
-}
-
-func (a App) initLogger() {
-	level := slog.LevelInfo
-	if a.Debug {
-		level = slog.LevelDebug
-	}
-
-	slog.SetDefault(slog.New(
-		tint.NewHandler(colorable.NewColorable(os.Stderr), &tint.Options{
-			Level:      level,
-			TimeFormat: time.RFC3339,
-			NoColor:    !isatty.IsTerminal(os.Stderr.Fd()),
-		}),
-	))
 }
 
 func (a *App) setupDefaultData(ctx context.Context) error {
