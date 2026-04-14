@@ -35,6 +35,7 @@
 		} else {
 			createMutation.mutate({ ...profileData });
 		}
+		open = false;
 	}
 
 	let newProfile = $derived(profile.get(profileData.id));
@@ -127,7 +128,10 @@
 									<Button
 										type="button"
 										variant="destructive"
-										onclick={() => deleteMutation.mutate({ id: profileData.id })}
+										onclick={() => {
+											deleteMutation.mutate({ id: profileData.id });
+											open = false;
+										}}
 									>
 										Delete
 									</Button>
@@ -135,10 +139,10 @@
 							</div>
 						</Popover.Content>
 					</Popover.Root>
-					<Button type="submit" class="flex-1">
-						{profileData.id ? 'Update' : 'Create'}
-					</Button>
 				{/if}
+				<Button type="submit" class="flex-1">
+					{profileData.id ? 'Update' : 'Create'}
+				</Button>
 			</div>
 		</form>
 	</Dialog.Content>
