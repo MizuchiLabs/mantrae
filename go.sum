@@ -263,6 +263,8 @@ github.com/go-acme/lego/v4 v4.32.0 h1:z7Ss7aa1noabhKj+DBzhNCO2SM96xhE3b0ucVW3x8T
 github.com/go-acme/lego/v4 v4.32.0/go.mod h1:lI2fZNdgeM/ymf9xQ9YKbgZm6MeDuf91UrohMQE4DhI=
 github.com/go-acme/lego/v4 v4.33.0 h1:2KrRKieG+VczT4zvVXKAY7Tp/S3XLvh/QImofBALRAM=
 github.com/go-acme/lego/v4 v4.33.0/go.mod h1:lI2fZNdgeM/ymf9xQ9YKbgZm6MeDuf91UrohMQE4DhI=
+github.com/go-acme/lego/v4 v4.34.0 h1:oRsIuPJ4ORX7ufviXvelUpBSez2XxeKGwo5pNG9BVeY=
+github.com/go-acme/lego/v4 v4.34.0/go.mod h1:gsmdlx/ZS6OUeXbOj0U+VnCLLfEFj4WCYRkcGpZw+pc=
 github.com/go-chi/chi/v5 v5.2.5 h1:Eg4myHZBjyvJmAFjFvWgrqDTXFyOzjj7YIm3L3mu6Ug=
 github.com/go-chi/chi/v5 v5.2.5/go.mod h1:X7Gx4mteadT3eDOMTsXzmI4/rwUpOwBHLpAfupzFJP0=
 github.com/go-chi/httplog/v3 v3.3.0 h1:Gr6Y7nSzbpyCyRwKPOVKjDH3BH6TH5uvRNDsTZWDpvU=
