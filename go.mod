@@ -29,7 +29,7 @@ require (
 	github.com/mizuchilabs/sqlite-schema-diff v0.1.7
 	github.com/rs/cors v1.11.1
 	github.com/ryanwholey/go-pihole v1.2.0
-	github.com/traefik/traefik/v3 v3.6.13
+	github.com/traefik/traefik/v3 v3.6.14
 	github.com/urfave/cli/v3 v3.8.0
 	github.com/vearutop/statigz v1.5.0
 	golang.org/x/crypto v0.50.0
