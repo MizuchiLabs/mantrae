@@ -1,10 +1,14 @@
 <p align="center">
-<img src="./.github/logo.svg" width="80">
+<img src="./.github/logo.svg" width="80">0
 <br><br>
 <img alt="GitHub Tag" src="https://img.shields.io/github/v/tag/MizuchiLabs/mantrae?label=Version">
 <img alt="GitHub License" src="https://img.shields.io/github/license/MizuchiLabs/mantrae">
 <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/MizuchiLabs/mantrae">
 </p>
+
+## 👋 Heads up!
+
+Development has officially moved to [Tether](https://github.com/MizuchiLabs/tether). I made this transition to focus on a more maintainable approach, you can read the full context and reasoning in this [discussion](https://github.com/MizuchiLabs/mantrae/discussions/253).
 
 # Mantræ
 
@@ -21,10 +25,6 @@
 - **Middleware Support**: Add rate limiting, authentication, headers, and other middleware
 - **Agent Mode**: Label your containers with standard Traefik labels and let the agent automatically sync them
 - **DNS Integration**: Automatic DNS record management for Cloudflare, PowerDNS, Technitium and PiHole DNS
-
-## 🚧 Development Status
-
-This project is in active development and not yet production-ready. Expect breaking changes before the first stable release.
 
 ## Quick Start
 
