@@ -15,6 +15,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.101.0
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/cloudflare/cloudflare-go/v6 v6.10.0
+	github.com/cloudflare/cloudflare-go/v7 v7.6.0
 	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/go-chi/httplog/v3 v3.3.0

@@ -356,6 +356,7 @@ github.com/cloudflare/cloudflare-go/v6 v6.9.0 h1:RpImnN6YgC2Wcvhep/EtxIl1c0R1+ST
 github.com/cloudflare/cloudflare-go/v6 v6.9.0/go.mod h1:Lj3MUqjvKctXRpdRhLQxZYRrNZHuRs0XYuH8JtQGyoI=
 github.com/cloudflare/cloudflare-go/v6 v6.10.0 h1:tm+YwMDAdxxy2eIAlLH9Wu8JWSMg6fE3j3ydZbMG6co=
 github.com/cloudflare/cloudflare-go/v6 v6.10.0/go.mod h1:Lj3MUqjvKctXRpdRhLQxZYRrNZHuRs0XYuH8JtQGyoI=
+github.com/cloudflare/cloudflare-go/v7 v7.6.0/go.mod h1:9zcoIAtu6cmcoPszCNISvqYMXs8wObtVGXE1qGFMrNU=
 github.com/coreos/go-oidc/v3 v3.17.0 h1:hWBGaQfbi0iVviX4ibC7bk8OKT5qNr4klBaCHVNvehc=
 github.com/coreos/go-oidc/v3 v3.17.0/go.mod h1:wqPbKFrVnE90vty060SB40FCJ8fTHTxSwyXJqZH+sI8=
 github.com/coreos/go-oidc/v3 v3.18.0 h1:V9orjXynvu5wiC9SemFTWnG4F45v403aIcjWo0d41+A=
