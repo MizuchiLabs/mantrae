@@ -4,36 +4,36 @@ go 1.26
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260415201107-50325440f8f2.1
-	connectrpc.com/connect v1.19.2
+	connectrpc.com/connect v1.20.0
 	connectrpc.com/cors v0.1.0
-	connectrpc.com/grpchealth v1.4.0
+	connectrpc.com/grpchealth v1.5.0
 	connectrpc.com/grpcreflect v1.3.0
 	connectrpc.com/validate v0.6.0
 	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.25
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.24
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.101.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.104.2
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/cloudflare/cloudflare-go/v6 v6.10.0
-	github.com/coreos/go-oidc/v3 v3.18.0
+	github.com/coreos/go-oidc/v3 v3.19.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
-	github.com/go-chi/httplog/v3 v3.3.0
+	github.com/go-chi/httplog/v3 v3.4.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
-	github.com/hypersequent/zen v0.0.0-20260413170426-1390f784a63b
-	github.com/joeig/go-powerdns/v3 v3.21.0
+	github.com/hypersequent/zen v0.0.0-20260625113527-787205d4ec88
+	github.com/joeig/go-powerdns/v3 v3.22.0
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-colorable v0.1.15
 	github.com/mattn/go-isatty v0.0.22
 	github.com/mizuchilabs/sqlite-schema-diff v0.1.12
 	github.com/rs/cors v1.11.1
 	github.com/ryanwholey/go-pihole v1.2.0
-	github.com/traefik/traefik/v3 v3.6.21
+	github.com/traefik/traefik/v3 v3.7.6
 	github.com/urfave/cli/v3 v3.10.0
 	github.com/vearutop/statigz v1.5.0
-	golang.org/x/crypto v0.52.0
-	golang.org/x/net v0.55.0
+	golang.org/x/crypto v0.53.0
+	golang.org/x/net v0.56.0
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
