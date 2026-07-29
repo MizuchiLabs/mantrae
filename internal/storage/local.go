@@ -77,6 +77,12 @@ func (ls *LocalStorage) List(ctx context.Context) ([]StoredFile, error) {
 }
 
 func (ls *LocalStorage) Delete(ctx context.Context, name string) error {
-	path := filepath.Join(ls.basePath, name)
-	return os.Remove(path)
+	// Prevent path traversal
+	root, err := os.OpenRoot(ls.basePath)
+	if err != nil {
+		return err
+	}
+	defer root.Close()
+
+	return root.Remove(name)
 }
