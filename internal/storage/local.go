@@ -82,7 +82,7 @@ func (ls *LocalStorage) Delete(ctx context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	defer root.Close()
+	defer func() { _ = root.Close() }()
 
 	return root.Remove(name)
 }
