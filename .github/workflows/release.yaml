@@ -53,7 +53,7 @@ jobs:
           upload-release-assets: false
 
       - name: Install Ko
-        uses: ko-build/setup-ko@v0.9
+        uses: ko-build/setup-ko@v0.10
 
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v9
